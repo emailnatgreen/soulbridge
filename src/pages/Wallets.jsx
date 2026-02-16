@@ -64,13 +64,21 @@ export default function WalletsPage() {
               </h1>
               <p className="text-sm text-purple-300/60">Manage your DIDs</p>
             </div>
-            <Button 
-              onClick={() => setShowCreate(!showCreate)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Wallet
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => setShowCreate(!showCreate)}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Generate New
+              </Button>
+              <Link to={createPageUrl('CreateManualWallet')}>
+                <Button variant="outline" className="border-white/10 text-white hover:bg-white/5">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Existing
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
