@@ -49,11 +49,13 @@
  */
 import Home from './pages/Home';
 import Send from './pages/Send';
+import Agents from './pages/Agents';
 
 
 export const PAGES = {
     "Home": Home,
     "Send": Send,
+    "Agents": Agents,
 }
 
 export const pagesConfig = {
