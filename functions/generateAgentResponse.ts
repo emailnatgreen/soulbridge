@@ -58,16 +58,16 @@ Respond to this message as ${toAgent.name}, staying true to your purpose and per
             status: 'responded'
         });
 
-        // Create memory for both agents
+        // Create memory for receiving agent
         await base44.asServiceRole.entities.Memory.create({
             agent_id: message.to_agent_id,
             type: 'conversation_snippet',
-            content: `Received message from ${fromAgent.name}: "${message.message}". Responded: "${responseResult}"`,
-            keywords: ['message', 'communication', fromAgent.name.toLowerCase()],
+            content: `Received message from ${senderName}: "${message.message}". Responded: "${responseResult}"`,
+            keywords: ['message', 'communication', senderName.toLowerCase()],
             context: 'Inter-agent communication',
             importance: 5,
             related_entity_id: message.from_agent_id,
-            related_entity_type: 'Agent'
+            related_entity_type: message.from_agent_id === 'user' ? 'User' : 'Agent'
         });
 
         return Response.json({
