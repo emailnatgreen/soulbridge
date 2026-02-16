@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Wallet, Activity } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Sparkles, Wallet, Activity, Edit } from 'lucide-react';
 
 export default function AgentCard({ agent, wallets }) {
   const wallet = wallets.find(w => w.id === agent.wallet_id);
@@ -24,11 +25,11 @@ export default function AgentCard({ agent, wallets }) {
   };
 
   return (
-    <Link to={createPageUrl('AgentDetails') + '?id=' + agent.id} className="block">
-      <Card className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-all duration-300 group cursor-pointer">
+    <Card className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-all duration-300 group">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3">
+          <Link to={createPageUrl('AgentDetails') + '?id=' + agent.id} className="flex items-start gap-3 flex-1">
+            <div className="flex items-start gap-3 flex-1">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
               {agent.avatar_url ? (
                 <img src={agent.avatar_url} alt={agent.name} className="w-full h-full rounded-full object-cover" />
@@ -48,6 +49,12 @@ export default function AgentCard({ agent, wallets }) {
               </div>
             </div>
           </div>
+          </Link>
+          <Link to={createPageUrl('EditAgent') + '?id=' + agent.id} onClick={(e) => e.stopPropagation()}>
+            <Button size="icon" variant="ghost" className="text-white/40 hover:text-white/80 hover:bg-white/5 h-8 w-8">
+              <Edit className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </CardHeader>
 
@@ -92,6 +99,5 @@ export default function AgentCard({ agent, wallets }) {
         )}
       </CardContent>
     </Card>
-    </Link>
   );
 }
