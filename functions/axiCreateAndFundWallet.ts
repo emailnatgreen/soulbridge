@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
         const payment = {
             TransactionType: 'Payment',
             Account: senderWallet.address,
-            Destination: newWallet.classicAddress,
+            Destination: newWallet.address,
             Amount: xrpToDrops(fundAmount)
         };
 
