@@ -97,6 +97,11 @@ const FunctionDisplay = ({ toolCall }) => {
 export default function MessageBubble({ message }) {
     const isUser = message.role === 'user';
     
+    const handleCopyMessage = () => {
+        navigator.clipboard.writeText(message.content);
+        toast.success('Message copied');
+    };
+    
     return (
         <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
             {!isUser && (
@@ -107,9 +112,17 @@ export default function MessageBubble({ message }) {
             <div className={cn("max-w-[85%]", isUser && "flex flex-col items-end")}>
                 {message.content && (
                     <div className={cn(
-                        "rounded-2xl px-4 py-2.5",
+                        "rounded-2xl px-4 py-2.5 relative group/message",
                         isUser ? "bg-slate-800 text-white" : "bg-white/10 border border-white/10 backdrop-blur-xl"
                     )}>
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover/message:opacity-100 transition-opacity bg-slate-800/80 hover:bg-slate-700"
+                            onClick={handleCopyMessage}
+                        >
+                            <Copy className="h-3 w-3 text-slate-300" />
+                        </Button>
                         {isUser ? (
                             <p className="text-sm leading-relaxed">{message.content}</p>
                         ) : (
