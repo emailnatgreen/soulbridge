@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
         // Create transaction record
         await base44.asServiceRole.entities.Transaction.create({
             recipient_name: walletName,
-            recipient_address: newWallet.classicAddress,
+            recipient_address: newWallet.address,
             amount: fundAmount,
             status: 'completed',
             hash: response.result.hash,
