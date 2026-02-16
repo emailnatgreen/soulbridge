@@ -59,6 +59,7 @@ import Send from './pages/Send';
 import TransactionHistory from './pages/TransactionHistory';
 import Wallets from './pages/Wallets';
 import Economy from './pages/Economy';
+import Village from './pages/Village';
 
 
 export const PAGES = {
@@ -74,6 +75,7 @@ export const PAGES = {
     "TransactionHistory": TransactionHistory,
     "Wallets": Wallets,
     "Economy": Economy,
+    "Village": Village,
 }
 
 export const pagesConfig = {
