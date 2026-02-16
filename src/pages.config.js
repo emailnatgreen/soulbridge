@@ -54,6 +54,7 @@ import Governance from './pages/Governance';
 import Home from './pages/Home';
 import Send from './pages/Send';
 import Wallets from './pages/Wallets';
+import AgentDetails from './pages/AgentDetails';
 
 
 export const PAGES = {
@@ -64,6 +65,7 @@ export const PAGES = {
     "Home": Home,
     "Send": Send,
     "Wallets": Wallets,
+    "AgentDetails": AgentDetails,
 }
 
 export const pagesConfig = {

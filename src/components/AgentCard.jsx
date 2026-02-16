@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Wallet, Activity } from 'lucide-react';
@@ -22,7 +24,8 @@ export default function AgentCard({ agent, wallets }) {
   };
 
   return (
-    <Card className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-all duration-300 group">
+    <Link to={createPageUrl('AgentDetails') + '?id=' + agent.id} className="block">
+      <Card className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-all duration-300 group cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
@@ -89,5 +92,6 @@ export default function AgentCard({ agent, wallets }) {
         )}
       </CardContent>
     </Card>
+    </Link>
   );
 }
