@@ -27,13 +27,15 @@ Deno.serve(async (req) => {
         }
 
         // Get both agents
-        const [fromAgent, toAgent] = await Promise.all([
-            base44.asServiceRole.entities.Agent.get(message.from_agent_id),
-            base44.asServiceRole.entities.Agent.get(message.to_agent_id)
-        ]);
+        const toAgent = await base44.asServiceRole.entities.Agent.get(message.to_agent_id);
+        
+        let fromAgent = null;
+        if (message.from_agent_id !== 'user') {
+            fromAgent = await base44.asServiceRole.entities.Agent.get(message.from_agent_id);
+        }
 
-        if (!fromAgent || !toAgent) {
-            return Response.json({ error: 'Agent not found' }, { status: 404 });
+        if (!toAgent) {
+            return Response.json({ error: 'Recipient agent not found' }, { status: 404 });
         }
 
         // Generate AI response
