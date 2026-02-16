@@ -57,6 +57,7 @@ import Send from './pages/Send';
 import TransactionHistory from './pages/TransactionHistory';
 import Wallets from './pages/Wallets';
 import EditAgent from './pages/EditAgent';
+import AgentChat from './pages/AgentChat';
 
 
 export const PAGES = {
@@ -70,6 +71,7 @@ export const PAGES = {
     "TransactionHistory": TransactionHistory,
     "Wallets": Wallets,
     "EditAgent": EditAgent,
+    "AgentChat": AgentChat,
 }
 
 export const pagesConfig = {
