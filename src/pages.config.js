@@ -61,6 +61,7 @@ import Send from './pages/Send';
 import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import Wallets from './pages/Wallets';
+import AgentTrainingModule from './pages/AgentTrainingModule';
 
 
 export const PAGES = {
@@ -78,6 +79,7 @@ export const PAGES = {
     "TransactionHistory": TransactionHistory,
     "Village": Village,
     "Wallets": Wallets,
+    "AgentTrainingModule": AgentTrainingModule,
 }
 
 export const pagesConfig = {
