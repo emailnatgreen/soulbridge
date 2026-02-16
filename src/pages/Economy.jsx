@@ -35,11 +35,11 @@ export default function EconomyPage() {
     const totalSpent = allActivities.filter(a => a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
     const totalTraded = allActivities.filter(a => a.activity_type === 'traded').reduce((sum, a) => sum + a.amount, 0);
 
-    const agentWithMostWealth = agents.reduce((prev, current) => {
+    const agentWithMostWealth = agents.length > 0 ? agents.reduce((prev, current) => {
         const currentEarnings = allActivities.filter(a => a.agent_id === current.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
         const prevEarnings = allActivities.filter(a => a.agent_id === prev.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
         return currentEarnings > prevEarnings ? current : prev;
-    });
+    }) : null;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
