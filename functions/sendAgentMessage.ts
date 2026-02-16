@@ -18,8 +18,9 @@ Deno.serve(async (req) => {
         }
 
         // Get both agents
-        const fromAgent = await base44.entities.Agent.get(from_agent_id);
-        const toAgent = await base44.entities.Agent.get(to_agent_id);
+        const agents = await base44.asServiceRole.entities.Agent.list();
+        const fromAgent = agents.find(a => a.id === from_agent_id);
+        const toAgent = agents.find(a => a.id === to_agent_id);
 
         if (!fromAgent || !toAgent) {
             return Response.json({ error: 'Agent not found' }, { status: 404 });
