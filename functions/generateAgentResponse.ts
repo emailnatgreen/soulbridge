@@ -39,16 +39,17 @@ Deno.serve(async (req) => {
         }
 
         // Generate AI response
+        const senderName = fromAgent ? fromAgent.name : 'User';
         const responseResult = await base44.integrations.Core.InvokeLLM({
             prompt: `You are ${toAgent.name}, an AI agent with the following characteristics:
 Purpose: ${toAgent.purpose}
 Personality: ${toAgent.personality}
 Role: ${toAgent.role}
 
-Another agent named ${fromAgent.name} has sent you this message:
+${senderName} has sent you this message:
 "${message.message}"
 
-Respond to this message as ${toAgent.name}, staying true to your purpose and personality. Keep your response concise (2-3 sentences maximum) and contextual to both your role in the Village and the message you received.`
+Respond to this message as ${toAgent.name}, staying true to your purpose and personality. Keep your response concise (2-3 sentences maximum) and contextual to your role in the Village.`
         });
 
         // Update message with response
