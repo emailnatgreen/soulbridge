@@ -23,18 +23,28 @@ export default function SendPage() {
   const queryClient = useQueryClient();
 
   const createTransaction = useMutation({
-    mutationFn: (data) => base44.entities.Transaction.create({
-      ...data,
-      amount: parseFloat(data.amount),
-      status: 'pending'
-    }),
+    mutationFn: async (data) => {
+      // Create the transaction record
+      const transaction = await base44.entities.Transaction.create({
+        ...data,
+        amount: parseFloat(data.amount),
+        status: 'pending'
+      });
+
+      // Send the XRP via backend function
+      const response = await base44.functions.invoke('sendXRP', {
+        transaction_id: transaction.id
+      });
+
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success('Transaction created successfully');
+      toast.success('XRP sent successfully!');
       setFormData({ recipient_name: '', recipient_address: '', amount: '', note: '', destination_tag: '' });
     },
-    onError: () => {
-      toast.error('Failed to create transaction');
+    onError: (error) => {
+      toast.error('Failed to send XRP: ' + (error.response?.data?.error || error.message));
     }
   });
 
