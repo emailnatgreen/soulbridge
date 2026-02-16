@@ -32,17 +32,9 @@ Deno.serve(async (req) => {
         const childWallet = Wallet.generate();
         console.log(`🔑 Generated wallet: ${childWallet.classicAddress}`);
 
-        // 2. Connect to XRPL to fund the wallet
-        const client = new Client('wss://s.altnet.rippletest.net:51233');
+        // 2. Connect to XRPL mainnet to check balance
+        const client = new Client('wss://xrplcluster.com');
         await client.connect();
-
-        try {
-            // Fund the wallet on testnet
-            const fundResult = await client.fundWallet(childWallet);
-            console.log(`💰 Funded wallet with ${fundResult.balance} XRP`);
-        } catch (error) {
-            console.log('⚠️ Funding failed, continuing with wallet creation:', error.message);
-        }
 
         // Get balance
         let balance = 0;
@@ -54,7 +46,7 @@ Deno.serve(async (req) => {
             });
             balance = Number(accountInfo.result.account_data.Balance) / 1000000;
         } catch (error) {
-            console.log('Could not fetch balance:', error.message);
+            console.log('Wallet not yet funded on mainnet:', error.message);
         }
 
         await client.disconnect();
@@ -64,7 +56,7 @@ Deno.serve(async (req) => {
             name: `${name || 'Agent'}'s Wallet`,
             classic_address: childWallet.classicAddress,
             encrypted_seed: childWallet.seed,
-            network: 'testnet',
+            network: 'mainnet',
             balance: balance,
             notes: `Auto-generated for agent: ${name || 'Unnamed'}`
         });
