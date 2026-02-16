@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
         const { walletName = 'Agent Wallet', fundAmount = 10, agentId } = await req.json();
 
         // Connect to mainnet
-        const client = new Client('wss://xrplcluster.com');
+        const client = new Client('wss://s1.ripple.com:51233');
         await client.connect();
 
         // Generate new wallet
