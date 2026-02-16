@@ -10,12 +10,15 @@ import { createPageUrl } from '../utils';
 import { ArrowLeft, Send, Loader2, MessageCircle, Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from 'sonner';
+import DraftResponseSuggestion from '../components/DraftResponseSuggestion';
 
 export default function DirectAgentChat() {
     const [selectedAgentId, setSelectedAgentId] = useState(null);
     const [messageInput, setMessageInput] = useState('');
     const [groupMessages, setGroupMessages] = useState([]);
     const [chatMode, setChatMode] = useState('direct');
+    const [draftMessageId, setDraftMessageId] = useState(null);
+    const [showDraft, setShowDraft] = useState(false);
     const scrollRef = useRef(null);
     const queryClient = useQueryClient();
 
@@ -61,10 +64,9 @@ export default function DirectAgentChat() {
                 message: `[From: User to ${selectedAgent?.name}] ${message}`,
                 status: 'sent'
             });
-            // Generate response from agent
-            await base44.functions.invoke('generateAgentResponse', {
-                message_id: newMessage.id
-            });
+            // Generate initial draft response for the agent to review
+            setDraftMessageId(newMessage.id);
+            setShowDraft(true);
             return newMessage;
         },
         onSuccess: () => {
@@ -132,6 +134,20 @@ export default function DirectAgentChat() {
     const handleSend = () => {
         if (!messageInput.trim()) return;
         sendMessageMutation.mutate(messageInput);
+    };
+
+    const handleSendDraft = async (draftText) => {
+        try {
+            await base44.entities.AgentMessage.update(draftMessageId, {
+                response: draftText,
+                status: 'responded'
+            });
+            queryClient.invalidateQueries({ queryKey: ['agent-conversations', selectedAgentId] });
+            setShowDraft(false);
+            toast.success('Response sent');
+        } catch (error) {
+            toast.error('Failed to send response');
+        }
     };
 
     const handleGenerateResponse = (messageId) => {
@@ -213,6 +229,15 @@ export default function DirectAgentChat() {
                                 <CardContent className="flex-1 overflow-hidden p-4 flex flex-col">
                                     <ScrollArea className="flex-1 mb-4">
                                         <div className="space-y-4">
+                                            {showDraft && draftMessageId && (
+                                                <DraftResponseSuggestion
+                                                    messageId={draftMessageId}
+                                                    agentId={selectedAgentId}
+                                                    agentName={selectedAgent.name}
+                                                    onSend={handleSendDraft}
+                                                    onDismiss={() => setShowDraft(false)}
+                                                />
+                                            )}
                                             {conversations && conversations.length === 0 ? (
                                                 <div className="text-center py-8">
                                                     <MessageCircle className="w-12 h-12 text-white/20 mx-auto mb-3" />
