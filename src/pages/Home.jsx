@@ -45,6 +45,12 @@ export default function Home() {
                   Agents
                 </Button>
               </Link>
+              <Link to={createPageUrl('Wallets')}>
+                <Button variant="outline" className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10">
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Wallets
+                </Button>
+              </Link>
               <Link to={createPageUrl('Send')}>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25 transition-all duration-300">
                   <Plus className="w-4 h-4 mr-2" />

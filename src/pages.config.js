@@ -51,6 +51,7 @@ import Home from './pages/Home';
 import Send from './pages/Send';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
+import Wallets from './pages/Wallets';
 
 
 export const PAGES = {
@@ -58,6 +59,7 @@ export const PAGES = {
     "Send": Send,
     "Agents": Agents,
     "Axi": Axi,
+    "Wallets": Wallets,
 }
 
 export const pagesConfig = {
