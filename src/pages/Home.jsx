@@ -72,10 +72,10 @@ export default function Home() {
                   Talk to Axi
                 </Button>
               </Link>
-              <Link to={createPageUrl('AgentChat')}>
+              <Link to={createPageUrl('DirectAgentChat')}>
                 <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
-                  <Users className="w-4 h-4 mr-2" />
-                  Agent Chat
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Direct Chat
                 </Button>
               </Link>
               <Link to={createPageUrl('Governance')}>
