@@ -50,12 +50,14 @@
 import Home from './pages/Home';
 import Send from './pages/Send';
 import Agents from './pages/Agents';
+import Axi from './pages/Axi';
 
 
 export const PAGES = {
     "Home": Home,
     "Send": Send,
     "Agents": Agents,
+    "Axi": Axi,
 }
 
 export const pagesConfig = {
