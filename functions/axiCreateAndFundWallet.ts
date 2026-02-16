@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
             wallet: {
                 id: walletData.id,
                 name: walletData.name,
-                classic_address: newWallet.classicAddress,
+                classic_address: newWallet.address,
                 seed: newWallet.seed,
                 network: 'mainnet',
                 balance: fundAmount,
