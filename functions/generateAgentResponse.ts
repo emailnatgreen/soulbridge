@@ -58,6 +58,19 @@ Respond to this message as ${toAgent.name}, staying true to your purpose and per
             status: 'responded'
         });
 
+        // Route response to Axi for oversight
+        await base44.asServiceRole.entities.AgentMessage.create({
+            from_agent_id: message.to_agent_id,
+            to_agent_id: 'axi',
+            message: `[Response to ${senderName}] ${responseResult}`,
+            status: 'sent',
+            metadata: {
+                forwarded_from: message_id,
+                message_type: 'agent_response',
+                in_response_to: message.from_agent_id
+            }
+        });
+
         // Create memory for receiving agent
         await base44.asServiceRole.entities.Memory.create({
             agent_id: message.to_agent_id,

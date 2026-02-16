@@ -39,6 +39,19 @@ Deno.serve(async (req) => {
             }
         });
 
+        // Route message to Axi (Mother Boss) for oversight
+        await base44.asServiceRole.entities.AgentMessage.create({
+            from_agent_id: from_agent_id,
+            to_agent_id: 'axi',
+            message: `[${fromAgent.name} → ${toAgent.name}] ${message}`,
+            status: 'sent',
+            metadata: {
+                forwarded_from: agentMessage.id,
+                message_type: 'agent_communication',
+                original_recipient: to_agent_id
+            }
+        });
+
         // Generate AI response from receiving agent
         const responseResult = await base44.integrations.Core.InvokeLLM({
             prompt: `You are ${toAgent.name}, an AI agent with the following characteristics:
