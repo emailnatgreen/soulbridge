@@ -26,9 +26,10 @@ export default function DirectAgentChat() {
         queryFn: async () => {
             if (!selectedAgentId) return [];
             const messages = await base44.entities.AgentMessage.list('-created_date', 100);
-            return messages.filter(m => m.from_agent_id === 'user' && m.to_agent_id === selectedAgentId || m.from_agent_id === selectedAgentId && m.to_agent_id === 'user');
+            return messages.filter(m => (m.from_agent_id === 'user' && m.to_agent_id === selectedAgentId) || (m.from_agent_id === selectedAgentId && m.to_agent_id === 'user'));
         },
         enabled: !!selectedAgentId,
+        refetchInterval: 2000,
     });
 
     const selectedAgent = agents.find(a => a.id === selectedAgentId);
