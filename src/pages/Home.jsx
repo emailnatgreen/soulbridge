@@ -25,44 +25,14 @@ export default function Home() {
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-light tracking-tight text-white mb-1">
-                Soul<span className="font-semibold">Bridge</span>
-              </h1>
-              <p className="text-sm text-purple-300/60">XRP Payment Platform</p>
-            </div>
-            <div className="flex gap-3">
-              <Link to={createPageUrl('Governance')}>
-                <Button variant="outline" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Governance
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Axi')}>
-                <Button variant="outline" className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Talk to Axi
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Agents')}>
-                <Button variant="outline" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10">
-                  <Users className="w-4 h-4 mr-2" />
-                  Agents
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Wallets')}>
-                <Button variant="outline" className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10">
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Wallets
-                </Button>
-              </Link>
-              <Link to={createPageUrl('TransactionHistory')}>
-                <Button variant="outline" className="border-white/20 text-white/80 hover:bg-white/5">
-                  <Activity className="w-4 h-4 mr-2" />
-                  History
-                </Button>
-              </Link>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-light tracking-tight text-white mb-1">
+                  Soul<span className="font-semibold">Bridge</span>
+                </h1>
+                <p className="text-sm text-purple-300/60">XRP Payment Platform</p>
+              </div>
               <Link to={createPageUrl('Send')}>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25 transition-all duration-300">
                   <Plus className="w-4 h-4 mr-2" />
@@ -70,6 +40,45 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
+            
+            {/* Navigation Menu */}
+            <nav className="flex flex-wrap gap-2">
+              <Link to={createPageUrl('Home')}>
+                <Button variant="ghost" className="text-white hover:bg-white/10">
+                  Dashboard
+                </Button>
+              </Link>
+              <Link to={createPageUrl('TransactionHistory')}>
+                <Button variant="ghost" className="text-white/80 hover:bg-white/10 hover:text-white">
+                  <Activity className="w-4 h-4 mr-2" />
+                  History
+                </Button>
+              </Link>
+              <Link to={createPageUrl('Wallets')}>
+                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Wallets
+                </Button>
+              </Link>
+              <Link to={createPageUrl('Agents')}>
+                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                  <Users className="w-4 h-4 mr-2" />
+                  Agents
+                </Button>
+              </Link>
+              <Link to={createPageUrl('Axi')}>
+                <Button variant="ghost" className="text-blue-300/80 hover:bg-blue-500/10 hover:text-blue-300">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Talk to Axi
+                </Button>
+              </Link>
+              <Link to={createPageUrl('Governance')}>
+                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Governance
+                </Button>
+              </Link>
+            </nav>
           </div>
         </div>
       </div>
