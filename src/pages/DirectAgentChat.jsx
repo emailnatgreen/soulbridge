@@ -36,12 +36,13 @@ export default function DirectAgentChat() {
 
     const sendMessageMutation = useMutation({
         mutationFn: async (message) => {
-            const response = await base44.functions.invoke('sendAgentMessage', {
+            const newMessage = await base44.entities.AgentMessage.create({
                 from_agent_id: 'user',
                 to_agent_id: selectedAgentId,
-                message: message
+                message: message,
+                status: 'sent'
             });
-            return response.data;
+            return newMessage;
         },
         onSuccess: () => {
             setMessageInput('');
