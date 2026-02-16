@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
@@ -33,6 +33,12 @@ export default function Home() {
               <p className="text-sm text-purple-300/60">XRP Payment Platform</p>
             </div>
             <div className="flex gap-3">
+              <Link to={createPageUrl('Governance')}>
+                <Button variant="outline" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Governance
+                </Button>
+              </Link>
               <Link to={createPageUrl('Axi')}>
                 <Button variant="outline" className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10">
                   <MessageCircle className="w-4 h-4 mr-2" />

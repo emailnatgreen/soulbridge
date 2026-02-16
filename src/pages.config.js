@@ -47,21 +47,23 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Home from './pages/Home';
-import Send from './pages/Send';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
-import Wallets from './pages/Wallets';
 import CreateManualWallet from './pages/CreateManualWallet';
+import Home from './pages/Home';
+import Send from './pages/Send';
+import Wallets from './pages/Wallets';
+import Governance from './pages/Governance';
 
 
 export const PAGES = {
-    "Home": Home,
-    "Send": Send,
     "Agents": Agents,
     "Axi": Axi,
-    "Wallets": Wallets,
     "CreateManualWallet": CreateManualWallet,
+    "Home": Home,
+    "Send": Send,
+    "Wallets": Wallets,
+    "Governance": Governance,
 }
 
 export const pagesConfig = {
