@@ -41,6 +41,19 @@ export default function WalletsPage() {
     }
   });
 
+  const refreshBalance = async (wallet_id) => {
+    try {
+      const response = await base44.functions.invoke('getBalance', { wallet_id });
+      if (response.data.success) {
+        queryClient.invalidateQueries({ queryKey: ['wallets'] });
+        toast.success('Balance updated: ' + response.data.balance + ' XRP');
+      }
+    } catch (error) {
+      toast.error('Failed to refresh balance');
+      console.error(error);
+    }
+  };
+
   const handleCreate = () => {
     if (!name.trim()) {
       toast.error('Please enter a wallet name');
@@ -163,7 +176,7 @@ export default function WalletsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {wallets.map(wallet => (
-              <WalletCard key={wallet.id} wallet={wallet} />
+              <WalletCard key={wallet.id} wallet={wallet} onRefresh={refreshBalance} />
             ))}
           </div>
         )}
