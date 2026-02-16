@@ -57,6 +57,12 @@ export default function Home() {
                   Wallets
                 </Button>
               </Link>
+              <Link to={createPageUrl('TransactionHistory')}>
+                <Button variant="outline" className="border-white/20 text-white/80 hover:bg-white/5">
+                  <Activity className="w-4 h-4 mr-2" />
+                  History
+                </Button>
+              </Link>
               <Link to={createPageUrl('Send')}>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25 transition-all duration-300">
                   <Plus className="w-4 h-4 mr-2" />
