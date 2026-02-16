@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Memory.create({
             agent_id: agentId || 'axi',
             type: 'village_detail',
-            content: `Created new mainnet wallet: ${walletName} (${newWallet.classicAddress}) funded with ${fundAmount} XRP`,
+            content: `Created new mainnet wallet: ${walletName} (${newWallet.address}) funded with ${fundAmount} XRP`,
             keywords: ['wallet', 'creation', 'mainnet', 'funding'],
             context: 'Axi autonomously manages Village wallets',
             importance: 8,
