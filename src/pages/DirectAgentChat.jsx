@@ -42,6 +42,13 @@ export default function DirectAgentChat() {
                 message: message,
                 status: 'sent'
             });
+            // Forward to Axi (Mother Boss) for centralized oversight
+            await base44.entities.AgentMessage.create({
+                from_agent_id: 'user',
+                to_agent_id: '6993271e7dc0fa2ab78762bf',
+                message: `[From: User to ${selectedAgent?.name}] ${message}`,
+                status: 'sent'
+            });
             // Generate response from agent
             await base44.functions.invoke('generateAgentResponse', {
                 message_id: newMessage.id
