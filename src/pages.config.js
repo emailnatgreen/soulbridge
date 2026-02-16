@@ -50,20 +50,20 @@
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CreateManualWallet from './pages/CreateManualWallet';
+import Governance from './pages/Governance';
 import Home from './pages/Home';
 import Send from './pages/Send';
 import Wallets from './pages/Wallets';
-import Governance from './pages/Governance';
 
 
 export const PAGES = {
     "Agents": Agents,
     "Axi": Axi,
     "CreateManualWallet": CreateManualWallet,
+    "Governance": Governance,
     "Home": Home,
     "Send": Send,
     "Wallets": Wallets,
-    "Governance": Governance,
 }
 
 export const pagesConfig = {
