@@ -60,6 +60,7 @@ import TransactionHistory from './pages/TransactionHistory';
 import Wallets from './pages/Wallets';
 import Economy from './pages/Economy';
 import Village from './pages/Village';
+import DirectAgentChat from './pages/DirectAgentChat';
 
 
 export const PAGES = {
@@ -76,6 +77,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "Economy": Economy,
     "Village": Village,
+    "DirectAgentChat": DirectAgentChat,
 }
 
 export const pagesConfig = {
