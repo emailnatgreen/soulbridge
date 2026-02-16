@@ -35,7 +35,7 @@ export default function DirectAgentChat() {
         refetchInterval: 2000,
     });
 
-    const { data: groupMessages: allGroupMessages = [] } = useQuery({
+    const { data: allGroupMessages = [] } = useQuery({
         queryKey: ['group-messages'],
         queryFn: async () => {
             const messages = await base44.entities.AgentMessage.list('-created_date', 200);
