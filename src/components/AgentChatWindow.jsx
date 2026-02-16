@@ -17,11 +17,14 @@ export default function AgentChatWindow({ selectedAgent, allMessages }) {
   const scrollRef = useRef(null);
   const queryClient = useQueryClient();
 
-  // Get current user's agent (first available agent)
+  // Get Axi as the default sender (user's perspective agent)
   useEffect(() => {
     const fetchUserAgent = async () => {
-      const agents = await base44.entities.Agent.list('-created_date', 1);
-      if (agents.length > 0) {
+      const agents = await base44.entities.Agent.list();
+      const axi = agents.find(a => a.name.toLowerCase() === 'axi');
+      if (axi) {
+        setFromAgent(axi);
+      } else if (agents.length > 0) {
         setFromAgent(agents[0]);
       }
     };
