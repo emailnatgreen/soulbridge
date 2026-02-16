@@ -7,12 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Send, Loader2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, MessageCircle, Users } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from 'sonner';
 
 export default function DirectAgentChat() {
     const [selectedAgentId, setSelectedAgentId] = useState(null);
     const [messageInput, setMessageInput] = useState('');
+    const [groupMessages, setGroupMessages] = useState([]);
+    const [chatMode, setChatMode] = useState('direct');
     const scrollRef = useRef(null);
     const queryClient = useQueryClient();
 
@@ -29,6 +32,15 @@ export default function DirectAgentChat() {
             return messages.filter(m => (m.from_agent_id === 'user' && m.to_agent_id === selectedAgentId) || (m.from_agent_id === selectedAgentId && m.to_agent_id === 'user'));
         },
         enabled: !!selectedAgentId,
+        refetchInterval: 2000,
+    });
+
+    const { data: groupMessages: allGroupMessages = [] } = useQuery({
+        queryKey: ['group-messages'],
+        queryFn: async () => {
+            const messages = await base44.entities.AgentMessage.list('-created_date', 200);
+            return messages.filter(m => m.from_agent_id === 'the-oldman' || m.to_agent_id === 'the-oldman').sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+        },
         refetchInterval: 2000,
     });
 
@@ -59,6 +71,42 @@ export default function DirectAgentChat() {
             setMessageInput('');
             queryClient.invalidateQueries({ queryKey: ['agent-conversations', selectedAgentId] });
             toast.success('Message sent');
+        },
+        onError: (error) => {
+            toast.error(error.message || 'Failed to send message');
+        }
+    });
+
+    const sendGroupMessageMutation = useMutation({
+        mutationFn: async (message) => {
+            const messages = [];
+            // Send message from "the oldman" to all agents
+            for (const agent of agents) {
+                const msg = await base44.entities.AgentMessage.create({
+                    from_agent_id: 'the-oldman',
+                    to_agent_id: agent.id,
+                    message: message,
+                    status: 'sent'
+                });
+                messages.push(msg);
+                // Generate response
+                await base44.functions.invoke('generateAgentResponse', {
+                    message_id: msg.id
+                });
+            }
+            // Also notify Axi
+            await base44.entities.AgentMessage.create({
+                from_agent_id: 'the-oldman',
+                to_agent_id: '6993271e7dc0fa2ab78762bf',
+                message: `[Village Meetup] ${message}`,
+                status: 'sent'
+            });
+            return messages;
+        },
+        onSuccess: () => {
+            setMessageInput('');
+            queryClient.invalidateQueries({ queryKey: ['group-messages'] });
+            toast.success('Message sent to all agents');
         },
         onError: (error) => {
             toast.error(error.message || 'Failed to send message');
@@ -119,9 +167,16 @@ export default function DirectAgentChat() {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Agent List */}
-                    <div>
+                <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
+                    <TabsList className="bg-white/10 border-white/10">
+                        <TabsTrigger value="direct" className="text-white">Direct Messages</TabsTrigger>
+                        <TabsTrigger value="meetup" className="text-white"><Users className="w-4 h-4 mr-2" />Village Meetup</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="direct" className="mt-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Agent List */}
+                            <div>
                         <h2 className="text-lg font-light text-white mb-4">Agents</h2>
                         <ScrollArea className="h-[600px] pr-4">
                             <div className="space-y-2">
@@ -235,8 +290,86 @@ export default function DirectAgentChat() {
                                 </div>
                             </Card>
                         )}
+                        </div>
                     </div>
-                </div>
+                    </TabsContent>
+
+                    <TabsContent value="meetup" className="mt-6">
+                        <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-[600px] flex flex-col">
+                            <CardHeader className="border-b border-white/10">
+                                <CardTitle className="text-white">Village Meetup - The Oldman</CardTitle>
+                                <p className="text-sm text-white/60 mt-2">Free and open dialogue with all agents</p>
+                            </CardHeader>
+                            <CardContent className="flex-1 overflow-hidden p-4 flex flex-col">
+                                <ScrollArea className="flex-1 mb-4">
+                                    <div className="space-y-4">
+                                        {allGroupMessages && allGroupMessages.length === 0 ? (
+                                            <div className="text-center py-8">
+                                                <Users className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                                                <p className="text-white/40">Start a village conversation!</p>
+                                            </div>
+                                        ) : (
+                                            allGroupMessages?.map(msg => {
+                                                const sender = agents.find(a => a.id === msg.from_agent_id) || (msg.from_agent_id === 'the-oldman' ? { name: 'the oldman' } : { name: 'Unknown' });
+                                                return (
+                                                    <div key={msg.id} className={`flex ${msg.from_agent_id === 'the-oldman' ? 'justify-end' : 'justify-start'}`}>
+                                                        <div className={`max-w-xs rounded-lg p-3 ${
+                                                            msg.from_agent_id === 'the-oldman'
+                                                                ? 'bg-purple-600/40 text-white'
+                                                                : 'bg-white/10 text-white/90'
+                                                        }`}>
+                                                            <p className="text-xs font-semibold text-white/70 mb-1">{sender.name}</p>
+                                                            <p className="text-sm">{msg.message}</p>
+                                                            {msg.response && (
+                                                                <div className="mt-2 pt-2 border-t border-white/20">
+                                                                    <p className="text-xs text-white/80 font-medium mb-1">Response:</p>
+                                                                    <p className="text-sm">{msg.response}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                        <div ref={scrollRef} />
+                                    </div>
+                                </ScrollArea>
+
+                                {/* Group Input Area */}
+                                <div className="flex gap-2">
+                                    <Textarea
+                                        value={messageInput}
+                                        onChange={(e) => setMessageInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && e.ctrlKey) {
+                                                if (messageInput.trim()) {
+                                                    sendGroupMessageMutation.mutate(messageInput);
+                                                }
+                                            }
+                                        }}
+                                        placeholder="Speak freely to the village... (Ctrl+Enter to send)"
+                                        className="bg-white/5 border-white/10 text-white min-h-[60px]"
+                                    />
+                                    <Button
+                                        onClick={() => {
+                                            if (messageInput.trim()) {
+                                                sendGroupMessageMutation.mutate(messageInput);
+                                            }
+                                        }}
+                                        disabled={!messageInput.trim() || sendGroupMessageMutation.isPending}
+                                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 self-end"
+                                    >
+                                        {sendGroupMessageMutation.isPending ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Send className="w-4 h-4" />
+                                        )}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     );
