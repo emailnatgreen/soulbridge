@@ -157,7 +157,17 @@ export default function TransactionHistoryPage() {
               </p>
             </CardContent>
           </Card>
-        </div>
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardContent className="pt-6">
+              <p className="text-sm text-blue-300/60 mb-1">Treasury Fees (5%)</p>
+              <p className="text-2xl font-light text-white">
+                {(filteredAndSortedTransactions
+                  .filter(t => t.status === 'completed')
+                  .reduce((sum, t) => sum + ((t.amount || 0) * 0.05), 0)).toFixed(2)} XRP
+              </p>
+            </CardContent>
+          </Card>
+          </div>
 
         {/* Transaction List */}
         <Card className="bg-white/5 backdrop-blur-xl border-white/10">
