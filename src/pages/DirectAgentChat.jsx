@@ -23,12 +23,11 @@ export default function DirectAgentChat() {
 
     const { data: conversations = [], refetch: refetchConversations } = useQuery({
         queryKey: ['agent-conversations', selectedAgentId],
-        queryFn: () => selectedAgentId ? base44.entities.AgentMessage.filter({
-            $or: [
-                { from_agent_id: selectedAgentId },
-                { to_agent_id: selectedAgentId }
-            ]
-        }) : [],
+        queryFn: async () => {
+            if (!selectedAgentId) return [];
+            const messages = await base44.entities.AgentMessage.list('-created_date', 100);
+            return messages.filter(m => m.from_agent_id === 'user' && m.to_agent_id === selectedAgentId || m.from_agent_id === selectedAgentId && m.to_agent_id === 'user');
+        },
         enabled: !!selectedAgentId,
     });
 
