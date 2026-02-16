@@ -41,6 +41,10 @@ export default function DirectAgentChat() {
                 message: message,
                 status: 'sent'
             });
+            // Generate response from agent
+            await base44.functions.invoke('generateAgentResponse', {
+                message_id: newMessage.id
+            });
             return newMessage;
         },
         onSuccess: () => {

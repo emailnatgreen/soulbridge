@@ -52,15 +52,15 @@ import AgentDetails from './pages/AgentDetails';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CreateManualWallet from './pages/CreateManualWallet';
+import DirectAgentChat from './pages/DirectAgentChat';
+import Economy from './pages/Economy';
 import EditAgent from './pages/EditAgent';
 import Governance from './pages/Governance';
 import Home from './pages/Home';
 import Send from './pages/Send';
 import TransactionHistory from './pages/TransactionHistory';
-import Wallets from './pages/Wallets';
-import Economy from './pages/Economy';
 import Village from './pages/Village';
-import DirectAgentChat from './pages/DirectAgentChat';
+import Wallets from './pages/Wallets';
 
 
 export const PAGES = {
@@ -69,15 +69,15 @@ export const PAGES = {
     "Agents": Agents,
     "Axi": Axi,
     "CreateManualWallet": CreateManualWallet,
+    "DirectAgentChat": DirectAgentChat,
+    "Economy": Economy,
     "EditAgent": EditAgent,
     "Governance": Governance,
     "Home": Home,
     "Send": Send,
     "TransactionHistory": TransactionHistory,
-    "Wallets": Wallets,
-    "Economy": Economy,
     "Village": Village,
-    "DirectAgentChat": DirectAgentChat,
+    "Wallets": Wallets,
 }
 
 export const pagesConfig = {
