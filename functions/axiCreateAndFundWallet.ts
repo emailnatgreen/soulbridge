@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { Client, Wallet, convertStringToHex } from 'npm:xrpl@3.0.0';
+import { Client, Wallet } from 'npm:xrpl@3.0.0';
 
 Deno.serve(async (req) => {
     try {
