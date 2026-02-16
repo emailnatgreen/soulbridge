@@ -24,6 +24,26 @@ Deno.serve(async (req) => {
 
         const senderWallet = Wallet.fromSeed(senderSeed);
 
+        // Check if sender wallet is funded on mainnet
+        try {
+            const accountInfo = await client.request({
+                command: 'account_info',
+                account: senderWallet.address
+            });
+            
+            if (!accountInfo.result.account_data) {
+                await client.disconnect();
+                return Response.json({
+                    error: `Sender wallet ${senderWallet.address} is not funded on mainnet`
+                }, { status: 500 });
+            }
+        } catch (error) {
+            await client.disconnect();
+            return Response.json({
+                error: `Cannot verify sender wallet: ${error.message}`
+            }, { status: 500 });
+        }
+
         // Prepare and submit funding transaction
         const payment = {
             TransactionType: 'Payment',
