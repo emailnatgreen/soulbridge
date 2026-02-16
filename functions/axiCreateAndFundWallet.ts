@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
         // Store wallet in database
         const walletData = await base44.asServiceRole.entities.Wallet.create({
             name: walletName,
-            classic_address: newWallet.classicAddress,
+            classic_address: newWallet.address,
             encrypted_seed: newWallet.seed,
             network: 'mainnet',
             balance: fundAmount
