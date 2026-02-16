@@ -24,13 +24,21 @@ Deno.serve(async (req) => {
 
         const senderWallet = Wallet.fromSeed(senderSeed);
 
-        // Create and submit funding transaction
-        const response = await client.submitAndWait({
-            account: senderWallet.classicAddress,
-            destination: newWallet.classicAddress,
-            amount: String(Math.floor(fundAmount * 1000000)), // Convert XRP to drops
-            ...(agentId && { destination_tag: parseInt(agentId) })
-        }, { wallet: senderWallet });
+        // Prepare and submit funding transaction
+        const payment = {
+            TransactionType: 'Payment',
+            Account: senderWallet.address,
+            Destination: newWallet.classicAddress,
+            Amount: xrpToDrops(fundAmount)
+        };
+
+        if (agentId) {
+            payment.DestinationTag = parseInt(agentId);
+        }
+
+        const prepared = await client.autofill(payment);
+        const signed = senderWallet.sign(prepared);
+        const response = await client.submitAndWait(signed.tx_blob);
 
         // Store wallet in database
         const walletData = await base44.asServiceRole.entities.Wallet.create({
