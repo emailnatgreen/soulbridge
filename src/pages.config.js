@@ -47,31 +47,33 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CreateManualWallet from './pages/CreateManualWallet';
+import EditAgent from './pages/EditAgent';
 import Governance from './pages/Governance';
 import Home from './pages/Home';
 import Send from './pages/Send';
 import TransactionHistory from './pages/TransactionHistory';
 import Wallets from './pages/Wallets';
-import EditAgent from './pages/EditAgent';
-import AgentChat from './pages/AgentChat';
+import Economy from './pages/Economy';
 
 
 export const PAGES = {
+    "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
     "Agents": Agents,
     "Axi": Axi,
     "CreateManualWallet": CreateManualWallet,
+    "EditAgent": EditAgent,
     "Governance": Governance,
     "Home": Home,
     "Send": Send,
     "TransactionHistory": TransactionHistory,
     "Wallets": Wallets,
-    "EditAgent": EditAgent,
-    "AgentChat": AgentChat,
+    "Economy": Economy,
 }
 
 export const pagesConfig = {
