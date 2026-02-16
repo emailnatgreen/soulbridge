@@ -28,7 +28,8 @@ Deno.serve(async (req) => {
         try {
             const accountInfo = await client.request({
                 command: 'account_info',
-                account: senderWallet.address
+                account: senderWallet.address,
+                ledger_index: 'validated'
             });
             
             if (!accountInfo.result.account_data) {
@@ -38,6 +39,7 @@ Deno.serve(async (req) => {
                 }, { status: 500 });
             }
         } catch (error) {
+            console.error('Account info error:', error);
             await client.disconnect();
             return Response.json({
                 error: `Cannot verify sender wallet: ${error.message}`
