@@ -37,12 +37,19 @@ Deno.serve(async (req) => {
         const client = new Client('wss://s.altnet.rippletest.net:51233');
         await client.connect();
 
-        // Prepare payment transaction
+        // Calculate 5% treasury fee for agent transactions
+        const TREASURY_WALLET = 'rK1dsNbsip594ArX4cQS8Acn2ibApEQjwU';
+        const TREASURY_FEE_PERCENT = 0.05;
+        
+        const treasuryFee = txn.amount * TREASURY_FEE_PERCENT;
+        const netAmount = txn.amount - treasuryFee;
+
+        // Prepare payment transaction (net amount after fee)
         const payment = {
             TransactionType: 'Payment',
             Account: wallet.address,
             Destination: txn.recipient_address,
-            Amount: xrpToDrops(txn.amount),
+            Amount: xrpToDrops(netAmount),
         };
 
         // Add destination tag if provided
@@ -50,10 +57,33 @@ Deno.serve(async (req) => {
             payment.DestinationTag = txn.destination_tag;
         }
 
-        // Submit the transaction
+        // Submit the main transaction
         const prepared = await client.autofill(payment);
         const signed = wallet.sign(prepared);
         const result = await client.submitAndWait(signed.tx_blob);
+
+        // If successful, send treasury fee
+        let treasuryHash = null;
+        if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+            try {
+                const treasuryPayment = {
+                    TransactionType: 'Payment',
+                    Account: wallet.address,
+                    Destination: TREASURY_WALLET,
+                    Amount: xrpToDrops(treasuryFee),
+                };
+
+                const treasuryPrepared = await client.autofill(treasuryPayment);
+                const treasurySigned = wallet.sign(treasuryPrepared);
+                const treasuryResult = await client.submitAndWait(treasurySigned.tx_blob);
+                
+                if (treasuryResult.result.meta.TransactionResult === 'tesSUCCESS') {
+                    treasuryHash = treasuryResult.result.hash;
+                }
+            } catch (treasuryError) {
+                console.error('Treasury fee payment failed:', treasuryError);
+            }
+        }
 
         await client.disconnect();
 
@@ -67,6 +97,9 @@ Deno.serve(async (req) => {
             return Response.json({
                 success: true,
                 hash: result.result.hash,
+                treasuryHash,
+                treasuryFee,
+                netAmount,
                 status: 'completed'
             });
         } else {
