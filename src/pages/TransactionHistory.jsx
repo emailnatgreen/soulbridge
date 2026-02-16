@@ -186,67 +186,79 @@ export default function TransactionHistoryPage() {
                 <p className="text-white/60">No transactions found</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {filteredAndSortedTransactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/[0.07] transition-all"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-white font-medium">
-                            {tx.recipient_name || 'Unknown Recipient'}
-                          </h3>
-                          <Badge className={getStatusBadge(tx.status)}>
-                            {tx.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-1 text-sm">
-                          <div className="flex items-center gap-2 text-purple-300/60">
-                            <span className="font-mono text-xs">
-                              {tx.recipient_address}
-                            </span>
-                            {tx.destination_tag && (
-                              <span className="text-xs bg-white/5 px-2 py-0.5 rounded">
-                                Tag: {tx.destination_tag}
-                              </span>
-                            )}
-                          </div>
-                          
-                          <div className="text-white/50">
-                            {format(new Date(tx.created_date), 'PPpp')}
-                          </div>
-                          
-                          {tx.note && (
-                            <div className="text-white/70 italic text-xs mt-2">
-                              "{tx.note}"
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="text-right ml-4">
-                        <p className="text-2xl font-light text-white mb-2">
-                          {tx.amount?.toFixed(6)} <span className="text-sm text-purple-300/60">XRP</span>
-                        </p>
-                        {tx.hash && (
-                          <a
-                            href={`https://testnet.xrpl.org/transactions/${tx.hash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition-colors"
-                          >
-                            View on Explorer
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="overflow-x-auto">
+                 <table className="w-full text-sm">
+                   <thead>
+                     <tr className="border-b border-white/10">
+                       <th className="text-left py-3 px-4 text-purple-300/60 font-medium">Recipient</th>
+                       <th className="text-right py-3 px-4 text-purple-300/60 font-medium">Original Amount</th>
+                       <th className="text-right py-3 px-4 text-purple-300/60 font-medium">Treasury Fee (5%)</th>
+                       <th className="text-right py-3 px-4 text-purple-300/60 font-medium">Net Amount</th>
+                       <th className="text-center py-3 px-4 text-purple-300/60 font-medium">Status</th>
+                       <th className="text-left py-3 px-4 text-purple-300/60 font-medium">Transaction Hash</th>
+                       <th className="text-left py-3 px-4 text-purple-300/60 font-medium">Timestamp</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                     {filteredAndSortedTransactions.map((tx) => {
+                       const fee = tx.status === 'completed' ? (tx.amount || 0) * 0.05 : 0;
+                       const netAmount = (tx.amount || 0) - fee;
+                       return (
+                         <tr key={tx.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                           <td className="py-3 px-4">
+                             <div>
+                               <p className="text-white font-medium">{tx.recipient_name || 'Unknown'}</p>
+                               <p className="text-xs text-purple-300/60 font-mono">{tx.recipient_address?.slice(0, 12)}...{tx.recipient_address?.slice(-6)}</p>
+                               {tx.destination_tag && <p className="text-xs text-white/40 mt-1">Tag: {tx.destination_tag}</p>}
+                             </div>
+                           </td>
+                           <td className="py-3 px-4 text-right text-white font-light">
+                             {(tx.amount || 0).toFixed(6)} XRP
+                           </td>
+                           <td className="py-3 px-4 text-right text-blue-300/80 font-light">
+                             {fee > 0 ? `${fee.toFixed(6)} XRP` : '—'}
+                           </td>
+                           <td className="py-3 px-4 text-right text-green-300/80 font-light">
+                             {netAmount.toFixed(6)} XRP
+                           </td>
+                           <td className="py-3 px-4 text-center">
+                             <Badge className={getStatusBadge(tx.status)}>
+                               {tx.status}
+                             </Badge>
+                           </td>
+                           <td className="py-3 px-4">
+                             {tx.hash ? (
+                               <div className="flex items-center gap-2">
+                                 <span className="text-xs text-purple-300/60 font-mono">{tx.hash.slice(0, 8)}...{tx.hash.slice(-6)}</span>
+                                 <button
+                                   onClick={() => {
+                                     navigator.clipboard.writeText(tx.hash);
+                                     toast.success('Hash copied');
+                                   }}
+                                   className="p-1 hover:bg-white/10 rounded transition-colors"
+                                 >
+                                   <Copy className="w-3 h-3 text-purple-400" />
+                                 </button>
+                                 <a
+                                   href={`https://testnet.xrpl.org/transactions/${tx.hash}`}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   className="p-1 hover:bg-white/10 rounded transition-colors"
+                                 >
+                                   <ExternalLink className="w-3 h-3 text-purple-400" />
+                                 </a>
+                               </div>
+                             ) : '—'}
+                           </td>
+                           <td className="py-3 px-4 text-white/60 text-xs">
+                             {format(new Date(tx.created_date), 'MMM d, yyyy HH:mm:ss')}
+                           </td>
+                         </tr>
+                       );
+                     })}
+                   </tbody>
+                 </table>
+               </div>
             )}
           </CardContent>
         </Card>
