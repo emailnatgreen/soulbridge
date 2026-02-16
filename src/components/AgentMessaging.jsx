@@ -144,9 +144,9 @@ export default function AgentMessaging({ currentAgent }) {
                         <div className="space-y-4">
                             {messages.map(msg => {
                                 const isSent = msg.from_agent_id === currentAgent.id;
-                                const otherAgentName = isSent 
-                                    ? msg.metadata?.to_agent_name 
-                                    : msg.metadata?.from_agent_name;
+                                const otherAgentId = isSent ? msg.to_agent_id : msg.from_agent_id;
+                                const otherAgent = agents.find(a => a.id === otherAgentId);
+                                const otherAgentName = otherAgent?.name || msg.metadata?.to_agent_name || msg.metadata?.from_agent_name || 'Unknown Agent';
 
                                 return (
                                     <div 
@@ -154,11 +154,19 @@ export default function AgentMessaging({ currentAgent }) {
                                         className="bg-white/5 rounded-lg p-4 border border-white/10"
                                     >
                                         <div className="flex items-start justify-between mb-3">
-                                            <div className="flex items-center gap-2">
-                                                <User className={`w-4 h-4 ${isSent ? 'text-blue-400' : 'text-green-400'}`} />
-                                                <span className="text-sm font-medium text-white">
-                                                    {isSent ? 'Sent to' : 'Received from'} {otherAgentName}
-                                                </span>
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <User className={`w-4 h-4 ${isSent ? 'text-blue-400' : 'text-green-400'}`} />
+                                                    <span className="text-sm font-medium text-white">
+                                                        {isSent ? 'Sent to' : 'Received from'} {otherAgentName}
+                                                    </span>
+                                                </div>
+                                                {otherAgent && (
+                                                    <div className="flex items-center gap-2 ml-6">
+                                                        <span className="text-xs text-white/40">Role:</span>
+                                                        <span className="text-xs text-purple-300/60 capitalize">{otherAgent.role}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                             <span className="text-xs text-white/40">
                                                 {moment(msg.created_date).fromNow()}
