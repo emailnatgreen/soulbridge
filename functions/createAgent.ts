@@ -15,9 +15,11 @@ Deno.serve(async (req) => {
             purpose, 
             personality,
             role = 'citizen',
-            initialFunding = 10,
+            initial_funding = 10,
             mother_wallet_id 
         } = await req.json();
+        
+        const initialFunding = initial_funding;
 
         if (!purpose) {
             return Response.json({ 
