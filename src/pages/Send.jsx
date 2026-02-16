@@ -16,7 +16,8 @@ export default function SendPage() {
     recipient_name: '',
     recipient_address: '',
     amount: '',
-    note: ''
+    note: '',
+    destination_tag: ''
   });
 
   const queryClient = useQueryClient();
@@ -30,7 +31,7 @@ export default function SendPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast.success('Transaction created successfully');
-      setFormData({ recipient_name: '', recipient_address: '', amount: '', note: '' });
+      setFormData({ recipient_name: '', recipient_address: '', amount: '', note: '', destination_tag: '' });
     },
     onError: () => {
       toast.error('Failed to create transaction');
@@ -43,7 +44,10 @@ export default function SendPage() {
       toast.error('Please fill in required fields');
       return;
     }
-    createTransaction.mutate(formData);
+    createTransaction.mutate({
+      ...formData,
+      destination_tag: formData.destination_tag ? parseInt(formData.destination_tag) : undefined,
+    });
   };
 
   return (
@@ -109,6 +113,21 @@ export default function SendPage() {
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-purple-500/50 focus:ring-purple-500/20 text-2xl font-light"
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="destination_tag" className="text-purple-200/90">
+                  Destination Tag (Optional)
+                </Label>
+                <Input
+                  id="destination_tag"
+                  type="number"
+                  value={formData.destination_tag}
+                  onChange={(e) => setFormData({ ...formData, destination_tag: e.target.value })}
+                  placeholder="e.g., 123456789"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-purple-500/50 focus:ring-purple-500/20"
+                />
+                <p className="text-xs text-purple-300/50">Required by some exchanges and wallets</p>
               </div>
 
               <div className="space-y-2">
