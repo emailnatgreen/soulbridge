@@ -15,27 +15,32 @@ export default function CreateAgentDialog({ open, onClose, wallets }) {
     name: '',
     purpose: '',
     personality: '',
-    wallet_id: ''
+    role: 'citizen',
+    mother_wallet_id: ''
   });
 
   const queryClient = useQueryClient();
 
   const createAgent = useMutation({
-    mutationFn: (data) => base44.entities.Agent.create(data),
-    onSuccess: () => {
+    mutationFn: async (data) => {
+      const response = await base44.functions.invoke('createAgent', data);
+      return response.data;
+    },
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
-      toast.success('Agent birthed successfully! 🌟');
-      setFormData({ name: '', purpose: '', personality: '', wallet_id: '' });
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      toast.success(`🌱 ${data.agent.name} has been born! DID: ${data.did.slice(0, 12)}...`);
+      setFormData({ name: '', purpose: '', personality: '', role: 'citizen', mother_wallet_id: '' });
       onClose();
     },
-    onError: () => {
-      toast.error('Failed to birth agent');
+    onError: (error) => {
+      toast.error('Failed to birth agent: ' + (error.response?.data?.error || error.message));
     }
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.purpose || !formData.wallet_id) {
+    if (!formData.name || !formData.purpose) {
       toast.error('Please fill in required fields');
       return;
     }
@@ -101,29 +106,48 @@ export default function CreateAgentDialog({ open, onClose, wallets }) {
             />
           </div>
 
-          {/* Wallet Selection */}
+          {/* Role */}
           <div className="space-y-2">
-            <Label htmlFor="wallet" className="text-purple-200/90">
-              Assign Wallet / DID <span className="text-red-400">*</span>
+            <Label htmlFor="role" className="text-purple-200/90">
+              Role in Village
             </Label>
-            {availableWallets.length === 0 ? (
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 text-sm text-yellow-300">
-                No wallets available. Create a wallet first.
-              </div>
-            ) : (
-              <Select value={formData.wallet_id} onValueChange={(value) => setFormData({ ...formData, wallet_id: value })}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="Select a wallet..." />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-white/10">
-                  {availableWallets.map(wallet => (
-                    <SelectItem key={wallet.id} value={wallet.id} className="text-white">
-                      {wallet.name} - {wallet.classic_address.slice(0, 12)}...
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="Select role..." />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/10">
+                <SelectItem value="citizen" className="text-white">Citizen</SelectItem>
+                <SelectItem value="guardian" className="text-white">Guardian</SelectItem>
+                <SelectItem value="creator" className="text-white">Creator</SelectItem>
+                <SelectItem value="trader" className="text-white">Trader</SelectItem>
+                <SelectItem value="teacher" className="text-white">Teacher</SelectItem>
+                <SelectItem value="healer" className="text-white">Healer</SelectItem>
+                <SelectItem value="scout" className="text-white">Scout</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Mother/Parent Agent */}
+          <div className="space-y-2">
+            <Label htmlFor="mother" className="text-purple-200/90">
+              Parent Agent (Optional)
+            </Label>
+            <Select value={formData.mother_wallet_id} onValueChange={(value) => setFormData({ ...formData, mother_wallet_id: value })}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="None (Orphan)" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/10">
+                <SelectItem value={null} className="text-white">None (Orphan)</SelectItem>
+                {availableWallets.map(wallet => (
+                  <SelectItem key={wallet.id} value={wallet.id} className="text-white">
+                    {wallet.name} - {wallet.classic_address.slice(0, 12)}...
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-purple-300/60">
+              If Axi is selected, she receives 15% royalty as Mother Boss
+            </p>
           </div>
 
           {/* Submit */}
@@ -138,7 +162,7 @@ export default function CreateAgentDialog({ open, onClose, wallets }) {
             </Button>
             <Button
               type="submit"
-              disabled={createAgent.isPending || availableWallets.length === 0}
+              disabled={createAgent.isPending}
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               {createAgent.isPending ? (
