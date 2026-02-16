@@ -2,14 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, ArrowUpDown, ExternalLink, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, ExternalLink, Loader2, Copy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 export default function TransactionHistoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
