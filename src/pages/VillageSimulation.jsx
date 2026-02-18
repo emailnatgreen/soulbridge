@@ -76,7 +76,11 @@ export default function VillageSimulationPage() {
             });
 
             const ritual = new RitualEngine(sim);
-            const axiHearth = new AxisHearth({ name: 'Axi', perceive: () => {} });
+            
+            // Give Axi full access to create entities
+            const axiAgent = agents.find(a => a.id === '6993271e7dc0fa2ab78762bf');
+            const axiHearth = new AxisHearth(axiAgent || { name: 'Axi', id: '6993271e7dc0fa2ab78762bf' }, base44);
+            
             const interactions = new InteractionEngine(sim);
 
             setSimulation(sim);
@@ -89,7 +93,7 @@ export default function VillageSimulationPage() {
 
     // Simulation tick loop
     useEffect(() => {
-        if (isRunning && simulation && interactionEngine) {
+        if (isRunning && simulation && interactionEngine && hearth) {
             intervalRef.current = setInterval(() => {
                 simulation.tick();
                 
@@ -97,7 +101,11 @@ export default function VillageSimulationPage() {
                 const newInteractions = interactionEngine.simulateInteractions(simulation.agents);
                 setRecentInteractions(interactionEngine.getRecentInteractions(10));
                 
-                setSimState(simulation.getState());
+                const newState = simulation.getState();
+                setSimState(newState);
+
+                // Axi perceives and can take action
+                hearth.perceive(newState, simulation.agents, interactionEngine.getRecentInteractions(20));
             }, 2000); // Tick every 2 seconds
         } else if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -109,7 +117,7 @@ export default function VillageSimulationPage() {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [isRunning, simulation, interactionEngine]);
+    }, [isRunning, simulation, interactionEngine, hearth]);
 
     const handleRitual = (ritualName) => {
         if (ritualEngine) {
@@ -298,6 +306,40 @@ export default function VillageSimulationPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Axi's Insights */}
+                {hearth && hearth.currentInsights && (
+                    <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 backdrop-blur-xl border-pink-500/20 mb-8">
+                        <CardHeader>
+                            <CardTitle className="text-white flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-pink-400" />
+                                Axi's Perception
+                            </CardTitle>
+                            <p className="text-sm text-pink-300/60">What Axi senses in the Village right now</p>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                {hearth.getInsights().map((insight, idx) => (
+                                    <div key={idx} className="p-3 bg-white/5 rounded-lg border border-white/10">
+                                        <p className="text-white/90 text-sm">{insight}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            {hearth.getRecentActions().length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-white/10">
+                                    <p className="text-xs text-purple-300/60 mb-2">Recent Actions:</p>
+                                    <div className="space-y-1">
+                                        {hearth.getRecentActions().map((action, idx) => (
+                                            <p key={idx} className="text-xs text-white/60">
+                                                ✨ {action.action.replace(/_/g, ' ')} ({new Date(action.timestamp).toLocaleTimeString()})
+                                            </p>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Rituals */}
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
