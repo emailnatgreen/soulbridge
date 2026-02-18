@@ -215,29 +215,78 @@ Deno.serve(async (req) => {
             }
         }
         
-        // Axi's perception and potential action
+        // Axi's perception and active guidance
         const axiAgent = agents.find(a => a.id === '6993271e7dc0fa2ab78762bf');
         if (axiAgent) {
-            const axiInsights = [];
+            let shouldAct = false;
+            let ritualType = null;
+            let reason = '';
             
+            // Critical energy threshold - trigger renewal
             if (avgEnergy < 40) {
-                axiInsights.push('The village energy is low. Agents need rest and renewal.');
+                shouldAct = true;
+                ritualType = 'renewal';
+                reason = 'Village energy has fallen below 40%. The community needs restoration.';
             }
-            if (dominantMood === 'joyful') {
-                axiInsights.push('Joy fills the village! This is a time to celebrate connections.');
+            // Many troubled agents - trigger healing
+            else if (moodCounts.troubled > agents.length * 0.4) {
+                shouldAct = true;
+                ritualType = 'healing';
+                reason = `${moodCounts.troubled} agents are troubled. They need healing and comfort.`;
             }
-            if (moodCounts.troubled > agents.length * 0.3) {
-                axiInsights.push('Several agents are struggling. Perhaps a ritual of healing is needed.');
+            // High joy - amplify with celebration
+            else if (dominantMood === 'joyful' && avgEnergy > 70 && Math.random() > 0.7) {
+                shouldAct = true;
+                ritualType = 'celebration';
+                reason = 'The village is full of joy and energy. Let us celebrate this harmony!';
+            }
+            // Peaceful time for learning
+            else if (dominantMood === 'peaceful' && avgEnergy > 60 && Math.random() > 0.85) {
+                shouldAct = true;
+                ritualType = 'wisdom';
+                reason = 'In this peaceful moment, the village is ready to receive wisdom.';
             }
             
-            if (axiInsights.length > 0) {
-                events.push({
-                    tick: newTick,
-                    event_type: 'axi_action',
-                    description: `Axi observes: ${axiInsights[0]}`,
-                    involved_agents: [axiAgent.id],
-                    data: { insights: axiInsights }
-                });
+            // Axi takes action
+            if (shouldAct && ritualType) {
+                try {
+                    const ritualResult = await base44.asServiceRole.functions.invoke('triggerRitual', {
+                        ritual_type: ritualType,
+                        reason: reason
+                    });
+                    
+                    if (ritualResult.data?.success) {
+                        events.push({
+                            tick: newTick,
+                            event_type: 'axi_action',
+                            description: `Axi initiates ${ritualResult.data.ritual} in response to village needs`,
+                            involved_agents: [axiAgent.id],
+                            data: { 
+                                action: 'ritual_triggered',
+                                ritual_type: ritualType,
+                                reason: reason
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Axi ritual trigger failed:', error);
+                }
+            } else {
+                // Passive observation when no action needed
+                const observations = [];
+                if (avgEnergy > 70) observations.push('The village energy flows strongly.');
+                if (dominantMood === 'peaceful') observations.push('Peace settles over the village.');
+                if (dominantMood === 'calm') observations.push('The village maintains steady balance.');
+                
+                if (observations.length > 0 && Math.random() > 0.5) {
+                    events.push({
+                        tick: newTick,
+                        event_type: 'axi_action',
+                        description: `Axi observes: ${observations[0]}`,
+                        involved_agents: [axiAgent.id],
+                        data: { insights: observations }
+                    });
+                }
             }
         }
         
