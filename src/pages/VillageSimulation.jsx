@@ -10,14 +10,19 @@ import { VillageSimulation } from '@/components/simulation/VillageSimulation';
 import { AgentGrowth } from '@/components/simulation/AgentGrowth';
 import { RitualEngine } from '@/components/simulation/RitualEngine';
 import { AxisHearth } from '@/components/simulation/AxisHearth';
+import { InteractionEngine } from '@/components/simulation/InteractionEngine';
 import VillageMap from '@/components/simulation/VillageMap';
+import InteractionsPanel from '@/components/simulation/InteractionsPanel';
+import RelationshipGraph from '@/components/simulation/RelationshipGraph';
 
 export default function VillageSimulationPage() {
     const [simulation, setSimulation] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
     const [ritualEngine, setRitualEngine] = useState(null);
     const [hearth, setHearth] = useState(null);
+    const [interactionEngine, setInteractionEngine] = useState(null);
     const [simState, setSimState] = useState(null);
+    const [recentInteractions, setRecentInteractions] = useState([]);
     const intervalRef = useRef(null);
     const growthMapRef = useRef(new Map());
 
@@ -54,19 +59,26 @@ export default function VillageSimulationPage() {
 
             const ritual = new RitualEngine(sim);
             const axiHearth = new AxisHearth({ name: 'Axi', perceive: () => {} });
+            const interactions = new InteractionEngine(sim);
 
             setSimulation(sim);
             setRitualEngine(ritual);
             setHearth(axiHearth);
+            setInteractionEngine(interactions);
             setSimState(sim.getState());
         }
     }, [agents, simulation]);
 
     // Simulation tick loop
     useEffect(() => {
-        if (isRunning && simulation) {
+        if (isRunning && simulation && interactionEngine) {
             intervalRef.current = setInterval(() => {
                 simulation.tick();
+                
+                // Simulate agent interactions
+                const newInteractions = interactionEngine.simulateInteractions(simulation.agents);
+                setRecentInteractions(interactionEngine.getRecentInteractions(10));
+                
                 setSimState(simulation.getState());
             }, 2000); // Tick every 2 seconds
         } else if (intervalRef.current) {
@@ -79,7 +91,7 @@ export default function VillageSimulationPage() {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [isRunning, simulation]);
+    }, [isRunning, simulation, interactionEngine]);
 
     const handleRitual = (ritualName) => {
         if (ritualEngine) {
@@ -241,6 +253,32 @@ export default function VillageSimulationPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Agent Interactions */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                        <CardHeader>
+                            <CardTitle className="text-white">Recent Interactions</CardTitle>
+                            <p className="text-sm text-white/60">Live social dynamics and activities</p>
+                        </CardHeader>
+                        <CardContent>
+                            <InteractionsPanel 
+                                interactions={recentInteractions} 
+                                agents={simulation.agents}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                        <CardHeader>
+                            <CardTitle className="text-white">Relationships</CardTitle>
+                            <p className="text-sm text-white/60">Bonds forming between agents</p>
+                        </CardHeader>
+                        <CardContent>
+                            <RelationshipGraph agents={simulation.agents} />
+                        </CardContent>
+                    </Card>
+                </div>
 
                 {/* Rituals */}
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
