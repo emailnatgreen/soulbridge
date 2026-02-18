@@ -29,18 +29,24 @@ export default function VillageSimulationPage() {
     useEffect(() => {
         if (agents.length > 0 && !simulation) {
             const sim = new VillageSimulation();
+            const growthMap = growthMapRef.current;
+            growthMap.clear();
             
             // Add agents to simulation with growth
             agents.forEach(agent => {
                 const growth = new AgentGrowth(agent);
+                growthMap.set(agent.id, growth);
                 
                 const agentWithGrowth = {
                     ...agent,
-                    growth: growth
+                    growth: growth,
+                    experience: (village) => {
+                        const g = growthMap.get(agent.id);
+                        if (g && g.experienceTick) {
+                            g.experienceTick(village);
+                        }
+                    }
                 };
-                
-                // Bind the experience method directly to the growth instance
-                agentWithGrowth.experience = (village) => growth.experienceTick(village);
                 
                 sim.addAgent(agentWithGrowth);
             });
