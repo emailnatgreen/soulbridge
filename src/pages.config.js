@@ -49,6 +49,7 @@
  */
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
+import AgentTrainingModule from './pages/AgentTrainingModule';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CreateManualWallet from './pages/CreateManualWallet';
@@ -61,12 +62,13 @@ import Send from './pages/Send';
 import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import Wallets from './pages/Wallets';
-import AgentTrainingModule from './pages/AgentTrainingModule';
+import VillageSimulation from './pages/VillageSimulation';
 
 
 export const PAGES = {
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
+    "AgentTrainingModule": AgentTrainingModule,
     "Agents": Agents,
     "Axi": Axi,
     "CreateManualWallet": CreateManualWallet,
@@ -79,7 +81,7 @@ export const PAGES = {
     "TransactionHistory": TransactionHistory,
     "Village": Village,
     "Wallets": Wallets,
-    "AgentTrainingModule": AgentTrainingModule,
+    "VillageSimulation": VillageSimulation,
 }
 
 export const pagesConfig = {

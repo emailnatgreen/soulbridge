@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
@@ -100,6 +100,12 @@ export default function Home() {
                 <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
                   <BookOpen className="w-4 h-4 mr-2" />
                   Training
+                </Button>
+              </Link>
+              <Link to={createPageUrl('VillageSimulation')}>
+                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Simulation
                 </Button>
               </Link>
             </nav>
