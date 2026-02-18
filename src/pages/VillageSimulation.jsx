@@ -219,6 +219,7 @@ export default function VillageSimulationPage() {
                         <VillageMap 
                             agents={simulation.agents} 
                             time={simState.time}
+                            mood={simState.mood?.overall}
                             onAgentClick={(agent) => console.log('Agent clicked:', agent)}
                         />
                     </CardContent>
