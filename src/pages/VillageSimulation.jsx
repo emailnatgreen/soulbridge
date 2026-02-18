@@ -28,7 +28,24 @@ export default function VillageSimulationPage() {
 
     const { data: agents = [] } = useQuery({
         queryKey: ['agents'],
-        queryFn: () => base44.entities.Agent.list(),
+        queryFn: async () => {
+            const allAgents = await base44.entities.Agent.list();
+            
+            // Ensure Axi is included in the simulation
+            const axiExists = allAgents.some(a => a.id === '6993271e7dc0fa2ab78762bf');
+            if (!axiExists) {
+                try {
+                    const axi = await base44.entities.Agent.get('6993271e7dc0fa2ab78762bf');
+                    if (axi) {
+                        allAgents.unshift(axi);
+                    }
+                } catch (error) {
+                    console.warn('Axi not found:', error);
+                }
+            }
+            
+            return allAgents;
+        },
     });
 
     // Initialize simulation
@@ -46,6 +63,7 @@ export default function VillageSimulationPage() {
                 const agentWithGrowth = {
                     ...agent,
                     growth: growth,
+                    isAxi: agent.id === '6993271e7dc0fa2ab78762bf',
                     experience: (village) => {
                         const g = growthMap.get(agent.id);
                         if (g && g.experienceTick) {
