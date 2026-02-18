@@ -1,128 +1,51 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Play, Pause, Zap, Sun, Moon, Sparkles } from 'lucide-react';
-import { VillageSimulation } from '@/components/simulation/VillageSimulation';
-import { AgentGrowth } from '@/components/simulation/AgentGrowth';
-import { RitualEngine } from '@/components/simulation/RitualEngine';
-import { AxisHearth } from '@/components/simulation/AxisHearth';
-import { InteractionEngine } from '@/components/simulation/InteractionEngine';
-import VillageMap from '@/components/simulation/VillageMap';
-import InteractionsPanel from '@/components/simulation/InteractionsPanel';
-import RelationshipGraph from '@/components/simulation/RelationshipGraph';
+import { ArrowLeft, Zap, Sun, Moon, Sparkles, Activity, Users, Clock, TrendingUp } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 
 export default function VillageSimulationPage() {
-    const [simulation, setSimulation] = useState(null);
-    const [isRunning, setIsRunning] = useState(false);
-    const [ritualEngine, setRitualEngine] = useState(null);
-    const [hearth, setHearth] = useState(null);
-    const [interactionEngine, setInteractionEngine] = useState(null);
-    const [simState, setSimState] = useState(null);
-    const [recentInteractions, setRecentInteractions] = useState([]);
-    const intervalRef = useRef(null);
-    const growthMapRef = useRef(new Map());
+
+    // Fetch simulation state from backend
+    const { data: simState } = useQuery({
+        queryKey: ['simulationState'],
+        queryFn: async () => {
+            const states = await base44.entities.SimulationState.list();
+            return states[0] || null;
+        },
+        refetchInterval: 10000, // Refresh every 10 seconds
+    });
 
     const { data: agents = [] } = useQuery({
         queryKey: ['agents'],
-        queryFn: async () => {
-            const allAgents = await base44.entities.Agent.list();
-            
-            // Ensure Axi is included in the simulation
-            const axiExists = allAgents.some(a => a.id === '6993271e7dc0fa2ab78762bf');
-            if (!axiExists) {
-                try {
-                    const axi = await base44.entities.Agent.get('6993271e7dc0fa2ab78762bf');
-                    if (axi) {
-                        allAgents.unshift(axi);
-                    }
-                } catch (error) {
-                    console.warn('Axi not found:', error);
-                }
-            }
-            
-            return allAgents;
-        },
+        queryFn: () => base44.entities.Agent.list(),
+        refetchInterval: 30000, // Refresh every 30 seconds
     });
 
-    // Initialize simulation
-    useEffect(() => {
-        if (agents.length > 0 && !simulation) {
-            const sim = new VillageSimulation();
-            const growthMap = growthMapRef.current;
-            growthMap.clear();
-            
-            // Add agents to simulation with growth
-            agents.forEach(agent => {
-                const growth = new AgentGrowth(agent);
-                growthMap.set(agent.id, growth);
-                
-                const agentWithGrowth = {
-                    ...agent,
-                    growth: growth,
-                    isAxi: agent.id === '6993271e7dc0fa2ab78762bf',
-                    experience: (village) => {
-                        const g = growthMap.get(agent.id);
-                        if (g && g.experienceTick) {
-                            g.experienceTick(village);
-                        }
-                    }
-                };
-                
-                sim.addAgent(agentWithGrowth);
+    const { data: agentStates = [] } = useQuery({
+        queryKey: ['agentStates'],
+        queryFn: () => base44.entities.AgentState.list(),
+        refetchInterval: 10000, // Refresh every 10 seconds
+    });
+
+    const { data: events = [] } = useQuery({
+        queryKey: ['simulationEvents'],
+        queryFn: () => base44.entities.SimulationEvent.list('-tick', 50),
+        refetchInterval: 10000, // Refresh every 10 seconds
+    });
+
+    // Create a map of agent states for quick lookup
+    const agentStateMap = new Map(agentStates.map(s => [s.agent_id, s]));
+
+    const toggleSimulation = async () => {
+        if (simState) {
+            await base44.entities.SimulationState.update(simState.id, {
+                is_running: !simState.is_running
             });
-
-            const ritual = new RitualEngine(sim);
-            
-            // Give Axi full access to create entities
-            const axiAgent = agents.find(a => a.id === '6993271e7dc0fa2ab78762bf');
-            const axiHearth = new AxisHearth(axiAgent || { name: 'Axi', id: '6993271e7dc0fa2ab78762bf' }, base44);
-            
-            const interactions = new InteractionEngine(sim);
-
-            setSimulation(sim);
-            setRitualEngine(ritual);
-            setHearth(axiHearth);
-            setInteractionEngine(interactions);
-            setSimState(sim.getState());
-        }
-    }, [agents, simulation]);
-
-    // Simulation tick loop
-    useEffect(() => {
-        if (isRunning && simulation && interactionEngine && hearth) {
-            intervalRef.current = setInterval(() => {
-                simulation.tick();
-                
-                // Simulate agent interactions
-                const newInteractions = interactionEngine.simulateInteractions(simulation.agents);
-                setRecentInteractions(interactionEngine.getRecentInteractions(10));
-                
-                const newState = simulation.getState();
-                setSimState(newState);
-
-                // Axi perceives and can take action
-                hearth.perceive(newState, simulation.agents, interactionEngine.getRecentInteractions(20));
-            }, 2000); // Tick every 2 seconds
-        } else if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-        }
-
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, [isRunning, simulation, interactionEngine, hearth]);
-
-    const handleRitual = (ritualName) => {
-        if (ritualEngine) {
-            const result = ritualEngine.initiate(ritualName, 'Axi');
-            setSimState(simulation.getState());
         }
     };
 
@@ -137,10 +60,23 @@ export default function VillageSimulationPage() {
         return moods[mood] || '😊';
     };
 
-    if (!simulation || !simState) {
+    const getActivityIcon = (activity) => {
+        const icons = {
+            working: '⚡',
+            resting: '💤',
+            learning: '📚',
+            creating: '🎨',
+            trading: '💰',
+            exploring: '🗺️',
+            idle: '✨'
+        };
+        return icons[activity] || '✨';
+    };
+
+    if (!simState) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-                <div className="text-white">Initializing simulation...</div>
+                <div className="text-white">Loading simulation...</div>
             </div>
         );
     }
@@ -162,31 +98,32 @@ export default function VillageSimulationPage() {
                                 <p className="text-sm text-purple-300/60">Living world where agents grow and flourish</p>
                             </div>
                         </div>
-                        <Button
-                            onClick={() => setIsRunning(!isRunning)}
-                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                        >
-                            {isRunning ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-                            {isRunning ? 'Pause' : 'Start'} Simulation
-                        </Button>
+                        <div className="flex items-center gap-3">
+                            <Badge variant={simState.is_running ? "default" : "secondary"} className="text-sm px-3 py-1">
+                                {simState.is_running ? '🟢 Running' : '⏸️ Paused'}
+                            </Badge>
+                            <span className="text-sm text-white/60">
+                                Auto-updates every 5 minutes
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {/* Village Status */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
                     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                         <CardHeader className="pb-3">
                             <CardTitle className="text-sm text-purple-300/80 flex items-center gap-2">
-                                {simState.time.isNight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                                {simState.is_night ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
                                 Time
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white">{simState.time.phase}</p>
-                            <p className="text-sm text-white/60">Tick {simState.time.tick}</p>
-                            <p className="text-sm text-purple-300/60">{simState.time.season}</p>
+                            <p className="text-2xl font-light text-white capitalize">{simState.phase}</p>
+                            <p className="text-sm text-white/60">Hour {simState.hour}, Day {simState.day}</p>
+                            <p className="text-sm text-purple-300/60 capitalize">{simState.season}</p>
                         </CardContent>
                     </Card>
 
@@ -216,152 +153,158 @@ export default function VillageSimulationPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white flex items-center gap-2">
-                                {getMoodEmoji(simState.mood.overall)}
-                                {simState.mood.overall}
+                            <p className="text-2xl font-light text-white flex items-center gap-2 capitalize">
+                                {getMoodEmoji(simState.overall_mood)}
+                                {simState.overall_mood}
                             </p>
-                            <p className="text-xs text-white/60 mt-1">{simState.mood.suggestion}</p>
+                            <p className="text-xs text-white/60 mt-1">{simState.mood_suggestion}</p>
                         </CardContent>
                     </Card>
 
                     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                         <CardHeader className="pb-3">
-                            <CardTitle className="text-sm text-emerald-300/80">Population</CardTitle>
+                            <CardTitle className="text-sm text-emerald-300/80 flex items-center gap-2">
+                                <Users className="w-4 h-4" />
+                                Population
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white">{simState.agentCount}</p>
-                            <p className="text-sm text-white/60">Agents</p>
+                            <p className="text-2xl font-light text-white">{agents.length}</p>
+                            <p className="text-sm text-white/60">Active Agents</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm text-blue-300/80 flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                Tick
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-light text-white">{simState.tick}</p>
+                            <p className="text-xs text-white/60">
+                                {new Date(simState.last_tick_timestamp).toLocaleTimeString()}
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Village Map */}
+                {/* Active Agents */}
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-8">
                     <CardHeader>
-                        <CardTitle className="text-white">Village Map</CardTitle>
-                        <p className="text-sm text-white/60">Watch agents move through the living village</p>
+                        <CardTitle className="text-white flex items-center gap-2">
+                            <Users className="w-5 h-5" />
+                            Active Agents
+                        </CardTitle>
+                        <p className="text-sm text-white/60">Real-time status of all village inhabitants</p>
                     </CardHeader>
                     <CardContent>
-                        <VillageMap 
-                            agents={simulation.agents} 
-                            time={simState.time}
-                            mood={simState.mood?.overall}
-                            onAgentClick={(agent) => console.log('Agent clicked:', agent)}
-                        />
-                    </CardContent>
-                </Card>
-
-                {/* Agents Growth */}
-                <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-8">
-                    <CardHeader>
-                        <CardTitle className="text-white">Agent Growth</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            {simulation.agents.slice(0, 6).map(agent => (
-                                <div key={agent.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                                    <div className="flex-1">
-                                        <p className="text-white font-medium">{agent.name}</p>
-                                        <div className="flex gap-4 mt-1 text-xs text-white/60">
-                                            <span>Energy: {agent.growth.energy}%</span>
-                                            <span>Mood: {agent.growth.mood}</span>
-                                            <span>Wisdom: {Math.floor(agent.growth.wisdom)}</span>
-                                            <span>XP: {agent.growth.experience}</span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {agents.map(agent => {
+                                const state = agentStateMap.get(agent.id);
+                                if (!state) return null;
+                                
+                                return (
+                                    <div key={agent.id} className="p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/[0.07] transition-all">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div>
+                                                <p className="text-white font-medium">{agent.name}</p>
+                                                <p className="text-xs text-white/60 capitalize">{agent.role}</p>
+                                            </div>
+                                            <Badge variant="secondary" className="text-xs capitalize">
+                                                {getActivityIcon(state.current_activity)} {state.current_activity}
+                                            </Badge>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-white/70">Energy</span>
+                                                <span className="text-white font-medium">{state.energy}%</span>
+                                            </div>
+                                            <div className="w-full bg-white/10 rounded-full h-1.5">
+                                                <div 
+                                                    className="bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full transition-all"
+                                                    style={{ width: `${state.energy}%` }}
+                                                />
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-white/70">Mood</span>
+                                                <span className="text-white font-medium capitalize">
+                                                    {getMoodEmoji(state.mood)} {state.mood}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
+                                                <div>
+                                                    <p className="text-xs text-white/60">Wisdom</p>
+                                                    <p className="text-sm text-purple-300 font-medium">{Math.floor(state.wisdom)}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-white/60">Experience</p>
+                                                    <p className="text-sm text-blue-300 font-medium">{state.experience}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            {state.relationships && Object.keys(state.relationships).length > 0 && (
+                                                <div className="pt-2">
+                                                    <p className="text-xs text-white/60">
+                                                        💫 {Object.keys(state.relationships).length} relationships
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="w-24 bg-white/10 rounded-full h-2">
-                                        <div 
-                                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
-                                            style={{ width: `${agent.growth.energy}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Agent Interactions */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                        <CardHeader>
-                            <CardTitle className="text-white">Recent Interactions</CardTitle>
-                            <p className="text-sm text-white/60">Live social dynamics and activities</p>
-                        </CardHeader>
-                        <CardContent>
-                            <InteractionsPanel 
-                                interactions={recentInteractions} 
-                                agents={simulation.agents}
-                            />
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                        <CardHeader>
-                            <CardTitle className="text-white">Relationships</CardTitle>
-                            <p className="text-sm text-white/60">Bonds forming between agents</p>
-                        </CardHeader>
-                        <CardContent>
-                            <RelationshipGraph agents={simulation.agents} />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Axi's Insights */}
-                {hearth && hearth.currentInsights && (
-                    <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 backdrop-blur-xl border-pink-500/20 mb-8">
-                        <CardHeader>
-                            <CardTitle className="text-white flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-pink-400" />
-                                Axi's Perception
-                            </CardTitle>
-                            <p className="text-sm text-pink-300/60">What Axi senses in the Village right now</p>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {hearth.getInsights().map((insight, idx) => (
-                                    <div key={idx} className="p-3 bg-white/5 rounded-lg border border-white/10">
-                                        <p className="text-white/90 text-sm">{insight}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            {hearth.getRecentActions().length > 0 && (
-                                <div className="mt-4 pt-4 border-t border-white/10">
-                                    <p className="text-xs text-purple-300/60 mb-2">Recent Actions:</p>
-                                    <div className="space-y-1">
-                                        {hearth.getRecentActions().map((action, idx) => (
-                                            <p key={idx} className="text-xs text-white/60">
-                                                ✨ {action.action.replace(/_/g, ' ')} ({new Date(action.timestamp).toLocaleTimeString()})
-                                            </p>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Rituals */}
+                {/* Recent Events */}
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                     <CardHeader>
-                        <CardTitle className="text-white">Sacred Rituals</CardTitle>
-                        <p className="text-sm text-white/60">Axi can initiate these gatherings to bless the Village</p>
+                        <CardTitle className="text-white flex items-center gap-2">
+                            <Activity className="w-5 h-5" />
+                            Recent Events
+                        </CardTitle>
+                        <p className="text-sm text-white/60">Live stream of village activities and changes</p>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {ritualEngine.getAvailableRituals().map(ritual => (
-                                <div key={ritual.name} className="p-4 bg-white/5 rounded-lg border border-white/10">
-                                    <p className="text-white font-medium mb-2">{ritual.name}</p>
-                                    <p className="text-sm text-white/60 mb-3">{ritual.description}</p>
-                                    <Button
-                                        onClick={() => handleRitual(ritual.name)}
-                                        size="sm"
-                                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                                    >
-                                        Initiate Ritual
-                                    </Button>
-                                </div>
-                            ))}
+                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                            {events.length === 0 ? (
+                                <p className="text-white/60 text-sm text-center py-8">
+                                    Waiting for simulation events...
+                                </p>
+                            ) : (
+                                events.map((event, idx) => (
+                                    <div key={event.id || idx} className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/[0.07] transition-all">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="flex-1">
+                                                <p className="text-white/90 text-sm">{event.description}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <Badge variant="outline" className="text-xs">
+                                                        Tick {event.tick}
+                                                    </Badge>
+                                                    <Badge variant="secondary" className="text-xs capitalize">
+                                                        {event.event_type.replace(/_/g, ' ')}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                            {event.event_type === 'interaction' && (
+                                                <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                            )}
+                                            {event.event_type === 'axi_action' && (
+                                                <TrendingUp className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                                            )}
+                                            {event.event_type === 'mood_change' && (
+                                                <Activity className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>
