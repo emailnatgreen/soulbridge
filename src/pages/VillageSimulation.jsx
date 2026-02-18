@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowLeft, Play, Pause, Zap, Sun, Moon, Sparkles } from 'lucide-react';
-import { VillageSimulation } from '../lib/simulation/VillageSimulation';
-import { AgentGrowth } from '../lib/simulation/AgentGrowth';
-import { RitualEngine } from '../lib/simulation/RitualEngine';
-import { AxisHearth } from '../lib/simulation/AxisHearth';
+import { VillageSimulation } from '../components/simulation/VillageSimulation';
+import { AgentGrowth } from '../components/simulation/AgentGrowth';
+import { RitualEngine } from '../components/simulation/RitualEngine';
+import { AxisHearth } from '../components/simulation/AxisHearth';
 
 export default function VillageSimulationPage() {
     const [simulation, setSimulation] = useState(null);
