@@ -10,6 +10,7 @@ import { VillageSimulation } from '@/components/simulation/VillageSimulation';
 import { AgentGrowth } from '@/components/simulation/AgentGrowth';
 import { RitualEngine } from '@/components/simulation/RitualEngine';
 import { AxisHearth } from '@/components/simulation/AxisHearth';
+import VillageMap from '@/components/simulation/VillageMap';
 
 export default function VillageSimulationPage() {
     const [simulation, setSimulation] = useState(null);
@@ -195,6 +196,21 @@ export default function VillageSimulationPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Village Map */}
+                <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-8">
+                    <CardHeader>
+                        <CardTitle className="text-white">Village Map</CardTitle>
+                        <p className="text-sm text-white/60">Watch agents move through the living village</p>
+                    </CardHeader>
+                    <CardContent>
+                        <VillageMap 
+                            agents={simulation.agents} 
+                            time={simState.time}
+                            onAgentClick={(agent) => console.log('Agent clicked:', agent)}
+                        />
+                    </CardContent>
+                </Card>
 
                 {/* Agents Growth */}
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-8">

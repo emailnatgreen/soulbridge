@@ -61,8 +61,8 @@ import Home from './pages/Home';
 import Send from './pages/Send';
 import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
-import Wallets from './pages/Wallets';
 import VillageSimulation from './pages/VillageSimulation';
+import Wallets from './pages/Wallets';
 
 
 export const PAGES = {
@@ -80,8 +80,8 @@ export const PAGES = {
     "Send": Send,
     "TransactionHistory": TransactionHistory,
     "Village": Village,
-    "Wallets": Wallets,
     "VillageSimulation": VillageSimulation,
+    "Wallets": Wallets,
 }
 
 export const pagesConfig = {
