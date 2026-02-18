@@ -30,13 +30,20 @@ export default function VillageSimulationPage() {
             const sim = new VillageSimulation();
             
             // Add agents to simulation with growth
+            const agentRefs = new Map();
+            
             agents.forEach(agent => {
                 const growth = new AgentGrowth(agent);
+                agentRefs.set(agent.id, growth);
+                
                 const agentWithGrowth = {
                     ...agent,
                     growth: growth,
-                    experience: (village) => {
-                        growth.experienceTick(village);
+                    experience: function(village) {
+                        const g = agentRefs.get(this.id);
+                        if (g) {
+                            g.experienceTick(village);
+                        }
                     }
                 };
                 sim.addAgent(agentWithGrowth);
