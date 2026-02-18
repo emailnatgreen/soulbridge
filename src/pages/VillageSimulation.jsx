@@ -18,6 +18,7 @@ export default function VillageSimulationPage() {
     const [hearth, setHearth] = useState(null);
     const [simState, setSimState] = useState(null);
     const intervalRef = useRef(null);
+    const growthMapRef = useRef(new Map());
 
     const { data: agents = [] } = useQuery({
         queryKey: ['agents'],
