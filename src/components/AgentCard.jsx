@@ -74,7 +74,7 @@ export default function AgentCard({ agent, wallets }) {
         </div>
 
         {/* Wallet DID */}
-        {wallet && (
+        {wallet && wallet.classic_address && (
           <div>
             <p className="text-xs text-white/40 mb-1">DID / Wallet</p>
             <div className="flex items-center gap-2">
