@@ -31,11 +31,12 @@ export default function VillageSimulationPage() {
             
             // Add agents to simulation with growth
             agents.forEach(agent => {
+                const growth = new AgentGrowth(agent);
                 const agentWithGrowth = {
                     ...agent,
-                    growth: new AgentGrowth(agent),
+                    growth: growth,
                     experience: (village) => {
-                        agent.growth.experienceTick(village);
+                        growth.experienceTick(village);
                     }
                 };
                 sim.addAgent(agentWithGrowth);
