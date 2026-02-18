@@ -64,6 +64,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import SimulationLab from './pages/SimulationLab';
+import SocialNetwork from './pages/SocialNetwork';
 
 
 export const PAGES = {
@@ -84,6 +85,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "SimulationLab": SimulationLab,
+    "SocialNetwork": SocialNetwork,
 }
 
 export const pagesConfig = {
