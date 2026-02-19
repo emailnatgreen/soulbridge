@@ -70,6 +70,7 @@ import DialogueStudio from './pages/DialogueStudio';
 import GovernanceSimulation from './pages/GovernanceSimulation';
 import TrainingSimulation from './pages/TrainingSimulation';
 import RelationshipNetwork from './pages/RelationshipNetwork';
+import ResourceMarketplace from './pages/ResourceMarketplace';
 
 
 export const PAGES = {
@@ -96,6 +97,7 @@ export const PAGES = {
     "GovernanceSimulation": GovernanceSimulation,
     "TrainingSimulation": TrainingSimulation,
     "RelationshipNetwork": RelationshipNetwork,
+    "ResourceMarketplace": ResourceMarketplace,
 }
 
 export const pagesConfig = {
