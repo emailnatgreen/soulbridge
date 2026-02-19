@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { Client, Wallet, xrpToDrops } from 'npm:xrpl@4.2.1';
 
-export default async function handler(req) {
+Deno.serve(async (req) => {
     try {
         // Initialize Base44 client
         const base44 = createClientFromRequest(req);
@@ -128,4 +128,4 @@ export default async function handler(req) {
             details: error.stack 
         }, { status: 500 });
     }
-}
+});
