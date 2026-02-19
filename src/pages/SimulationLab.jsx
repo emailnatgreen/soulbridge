@@ -13,6 +13,8 @@ import { ArrowLeft, Beaker, Play, CheckCircle, Users, TrendingUp, AlertTriangle,
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import EventDecisionPoint from '../components/EventDecisionPoint';
 import EventNarrativeCard from '../components/EventNarrativeCard';
+import AgentFeedbackCard from '../components/AgentFeedbackCard';
+import WhatIfScenarioCard from '../components/WhatIfScenarioCard';
 
 export default function SimulationLab() {
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -579,6 +581,29 @@ function EventDetailsModal({ event, decisions, agents, onClose, onAddParticipant
                                     )}
                                 </div>
                             </div>
+
+                            {/* Personalized Agent Feedback */}
+                            {event.outcomes.agent_feedback?.length > 0 && (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg text-indigo-300 mb-3">Personalized Performance Reviews</h3>
+                                    {event.outcomes.agent_feedback.map((feedback, idx) => (
+                                        <AgentFeedbackCard key={idx} feedback={feedback} />
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* What-If Scenarios */}
+                            {event.outcomes.what_if_scenarios?.length > 0 && (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg text-cyan-300 mb-3">Alternative Outcome Analysis</h3>
+                                    <p className="text-sm text-white/60 mb-3">
+                                        Explore how different decisions could have changed the outcome
+                                    </p>
+                                    {event.outcomes.what_if_scenarios.map((scenario, idx) => (
+                                        <WhatIfScenarioCard key={idx} scenario={scenario} index={idx} />
+                                    ))}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>

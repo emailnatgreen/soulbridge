@@ -49,59 +49,59 @@
  */
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
+import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CreateManualWallet from './pages/CreateManualWallet';
+import DialogueStudio from './pages/DialogueStudio';
+import DiplomacyHub from './pages/DiplomacyHub';
 import DirectAgentChat from './pages/DirectAgentChat';
 import Economy from './pages/Economy';
 import EditAgent from './pages/EditAgent';
 import Governance from './pages/Governance';
+import GovernanceSimulation from './pages/GovernanceSimulation';
 import Home from './pages/Home';
+import RelationshipNetwork from './pages/RelationshipNetwork';
+import ResourceMarketplace from './pages/ResourceMarketplace';
 import Send from './pages/Send';
 import SimulationLab from './pages/SimulationLab';
+import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 import SocialNetwork from './pages/SocialNetwork';
+import TrainingSimulation from './pages/TrainingSimulation';
 import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import AgentSkillTree from './pages/AgentSkillTree';
-import DialogueStudio from './pages/DialogueStudio';
-import GovernanceSimulation from './pages/GovernanceSimulation';
-import TrainingSimulation from './pages/TrainingSimulation';
-import RelationshipNetwork from './pages/RelationshipNetwork';
-import ResourceMarketplace from './pages/ResourceMarketplace';
-import DiplomacyHub from './pages/DiplomacyHub';
-import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 
 
 export const PAGES = {
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
+    "AgentSkillTree": AgentSkillTree,
     "AgentTrainingModule": AgentTrainingModule,
     "Agents": Agents,
     "Axi": Axi,
     "CreateManualWallet": CreateManualWallet,
+    "DialogueStudio": DialogueStudio,
+    "DiplomacyHub": DiplomacyHub,
     "DirectAgentChat": DirectAgentChat,
     "Economy": Economy,
     "EditAgent": EditAgent,
     "Governance": Governance,
+    "GovernanceSimulation": GovernanceSimulation,
     "Home": Home,
+    "RelationshipNetwork": RelationshipNetwork,
+    "ResourceMarketplace": ResourceMarketplace,
     "Send": Send,
     "SimulationLab": SimulationLab,
+    "SocialCapitalDashboard": SocialCapitalDashboard,
     "SocialNetwork": SocialNetwork,
+    "TrainingSimulation": TrainingSimulation,
     "TransactionHistory": TransactionHistory,
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "AgentSkillTree": AgentSkillTree,
-    "DialogueStudio": DialogueStudio,
-    "GovernanceSimulation": GovernanceSimulation,
-    "TrainingSimulation": TrainingSimulation,
-    "RelationshipNetwork": RelationshipNetwork,
-    "ResourceMarketplace": ResourceMarketplace,
-    "DiplomacyHub": DiplomacyHub,
-    "SocialCapitalDashboard": SocialCapitalDashboard,
 }
 
 export const pagesConfig = {
