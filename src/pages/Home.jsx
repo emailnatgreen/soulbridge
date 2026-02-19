@@ -132,6 +132,12 @@ export default function Home() {
                   Social Network
                 </Button>
               </Link>
+              <Link to={createPageUrl('RelationshipNetwork')}>
+                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                  <Users className="w-4 h-4 mr-2" />
+                  Relationships
+                </Button>
+              </Link>
               <Link to={createPageUrl('AgentSkillTree')}>
                 <Button variant="ghost" className="text-yellow-300/80 hover:bg-yellow-500/10 hover:text-yellow-300">
                   <Activity className="w-4 h-4 mr-2" />

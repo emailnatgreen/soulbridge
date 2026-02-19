@@ -120,6 +120,18 @@ Just respond - don't explain or narrate. Be genuine.`;
             });
         }
 
+        // Update formal relationship system
+        try {
+            await base44.functions.invoke('updateAgentRelationship', {
+                agent_a_id: from_agent_id,
+                agent_b_id: to_agent_id,
+                interaction_type: 'positive_dialogue',
+                context: { topic: 'conversation' }
+            });
+        } catch (error) {
+            console.error('Failed to update relationship:', error);
+        }
+
         return Response.json({ 
             success: true,
             response,
