@@ -59,12 +59,13 @@ import EditAgent from './pages/EditAgent';
 import Governance from './pages/Governance';
 import Home from './pages/Home';
 import Send from './pages/Send';
+import SimulationLab from './pages/SimulationLab';
+import SocialNetwork from './pages/SocialNetwork';
 import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import SimulationLab from './pages/SimulationLab';
-import SocialNetwork from './pages/SocialNetwork';
+import AgentSkillTree from './pages/AgentSkillTree';
 
 
 export const PAGES = {
@@ -80,12 +81,13 @@ export const PAGES = {
     "Governance": Governance,
     "Home": Home,
     "Send": Send,
+    "SimulationLab": SimulationLab,
+    "SocialNetwork": SocialNetwork,
     "TransactionHistory": TransactionHistory,
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "SimulationLab": SimulationLab,
-    "SocialNetwork": SocialNetwork,
+    "AgentSkillTree": AgentSkillTree,
 }
 
 export const pagesConfig = {
