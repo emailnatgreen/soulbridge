@@ -75,6 +75,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import TaskDelegation from './pages/TaskDelegation';
+import RLUSDManager from './pages/RLUSDManager';
 
 
 export const PAGES = {
@@ -106,6 +107,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "TaskDelegation": TaskDelegation,
+    "RLUSDManager": RLUSDManager,
 }
 
 export const pagesConfig = {

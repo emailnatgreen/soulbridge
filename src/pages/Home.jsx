@@ -168,6 +168,18 @@ export default function Home() {
                   Diplomacy
                 </Button>
               </Link>
+              <Link to={createPageUrl('TaskDelegation')}>
+                <Button variant="ghost" className="text-orange-300/80 hover:bg-orange-500/10 hover:text-orange-300">
+                  <Activity className="w-4 h-4 mr-2" />
+                  Task Delegation
+                </Button>
+              </Link>
+              <Link to={createPageUrl('RLUSDManager')}>
+                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
+                  <Wallet className="w-4 h-4 mr-2" />
+                  RLUSD Manager
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
