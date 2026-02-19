@@ -127,4 +127,4 @@ export default async function handler(req) {
             details: error.stack 
         }, { status: 500 });
     }
-});
+}
