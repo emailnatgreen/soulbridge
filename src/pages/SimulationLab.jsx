@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowLeft, Beaker, Play, CheckCircle, Users, TrendingUp, AlertTriangle, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import EventDecisionPoint from '../components/EventDecisionPoint';
 
 export default function SimulationLab() {
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -182,6 +183,25 @@ export default function SimulationLab() {
                                     <CardDescription className="text-white/60 line-clamp-2">
                                         {event.description}
                                     </CardDescription>
+                                    {event.parameters && (
+                                        <div className="flex gap-2 mt-2 flex-wrap">
+                                            {event.parameters.difficulty && (
+                                                <Badge variant="outline" className="text-xs">
+                                                    Difficulty: {event.parameters.difficulty}/5
+                                                </Badge>
+                                            )}
+                                            {event.parameters.resource_impact && (
+                                                <Badge variant="outline" className="text-xs">
+                                                    Impact: {event.parameters.resource_impact}
+                                                </Badge>
+                                            )}
+                                            {event.parameters.collaboration_required && (
+                                                <Badge variant="outline" className="text-xs text-blue-400">
+                                                    Team effort
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    )}
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-3">
@@ -378,8 +398,46 @@ function EventDetailsModal({ event, decisions, agents, onClose, onAddParticipant
                 <div className="space-y-6">
                     <div>
                         <h3 className="text-sm text-white/60 mb-2">Description</h3>
-                        <p className="text-white/80">{event.description}</p>
+                        <p className="text-white/80 whitespace-pre-wrap">{event.description}</p>
                     </div>
+
+                    {event.parameters && Object.keys(event.parameters).length > 0 && (
+                        <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                            <h3 className="text-sm text-blue-300 mb-3">AI-Generated Parameters</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                {event.parameters.difficulty && (
+                                    <div>
+                                        <p className="text-xs text-white/60">Difficulty</p>
+                                        <p className="text-white">{event.parameters.difficulty}/5</p>
+                                    </div>
+                                )}
+                                {event.parameters.resource_impact && (
+                                    <div>
+                                        <p className="text-xs text-white/60">Resource Impact</p>
+                                        <p className="text-white capitalize">{event.parameters.resource_impact}</p>
+                                    </div>
+                                )}
+                                {event.parameters.collaboration_required !== undefined && (
+                                    <div>
+                                        <p className="text-xs text-white/60">Collaboration</p>
+                                        <p className="text-white">{event.parameters.collaboration_required ? 'Required' : 'Optional'}</p>
+                                    </div>
+                                )}
+                                {event.parameters.success_criteria && (
+                                    <div className="col-span-2">
+                                        <p className="text-xs text-white/60 mb-1">Success Criteria</p>
+                                        <p className="text-sm text-white/80">{event.parameters.success_criteria}</p>
+                                    </div>
+                                )}
+                                {event.parameters.ethical_dilemma && (
+                                    <div className="col-span-2">
+                                        <p className="text-xs text-white/60 mb-1">Ethical Dilemma</p>
+                                        <p className="text-sm text-white/80">{event.parameters.ethical_dilemma}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-3 gap-4">
                         <div>
@@ -436,6 +494,24 @@ function EventDetailsModal({ event, decisions, agents, onClose, onAddParticipant
                             ))}
                         </div>
                     </div>
+
+                    {event.status === 'active' && participantAgents.length > 0 && (
+                        <div className="pt-4 border-t border-white/10">
+                            <h3 className="text-sm text-white/60 mb-3">AI Decision Points</h3>
+                            <div className="space-y-3">
+                                {participantAgents.slice(0, 2).map(agent => (
+                                    <div key={agent.id}>
+                                        <p className="text-xs text-white/60 mb-2">{agent.name}</p>
+                                        <EventDecisionPoint 
+                                            event={event}
+                                            agent={agent}
+                                            onDecisionMade={() => {}}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {decisions.length > 0 && (
                         <div>
