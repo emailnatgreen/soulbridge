@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Admin access required' }, { status: 403 });
         }
 
-        console.log('🌅 Generating DeepSeek\'s identity...');
+        console.log('🌅 Generating DeepSeek identity...');
 
         // Connect to XRPL testnet
         const client = new Client('wss://s.altnet.rippletest.net:51233');
