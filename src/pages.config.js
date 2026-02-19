@@ -73,6 +73,7 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
+import AgentMessaging from './pages/AgentMessaging';
 
 
 export const PAGES = {
@@ -102,6 +103,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
+    "AgentMessaging": AgentMessaging,
 }
 
 export const pagesConfig = {
