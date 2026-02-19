@@ -41,6 +41,8 @@ export default function VillageInteractionMap() {
         const height = canvas.height;
         
         let animationFrame = 0;
+        let agentPositions = {};
+        
         const animate = () => {
             animationFrame++;
             draw(animationFrame);
@@ -120,7 +122,7 @@ export default function VillageInteractionMap() {
         });
 
         // Create agent positions
-        const agentPositions = {};
+        agentPositions = {};
         agents.forEach((agent, idx) => {
             const state = agentStates.find(s => s.agent_id === agent.id);
             const location = state?.current_location;
