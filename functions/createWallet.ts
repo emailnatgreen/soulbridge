@@ -10,12 +10,10 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { name, network = 'testnet' } = await req.json();
+        const { name, network = 'mainnet', fund_from_treasury = true } = await req.json();
 
-        // Connect to XRPL
-        const networkUrl = network === 'mainnet' 
-            ? 'wss://xrplcluster.com' 
-            : 'wss://s.altnet.rippletest.net:51233';
+        // Connect to XRPL Mainnet
+        const networkUrl = 'wss://xrpl.ws';
         
         const client = new Client(networkUrl);
         await client.connect();
@@ -23,12 +21,25 @@ Deno.serve(async (req) => {
         // Generate new wallet
         const wallet = Wallet.generate();
 
-        // Fund testnet wallet if needed
-        if (network === 'testnet') {
-            try {
-                await client.fundWallet(wallet);
-            } catch (error) {
-                console.log('Testnet funding not available, continuing...');
+        // Fund new wallet from treasury if requested
+        if (fund_from_treasury && network === 'mainnet') {
+            const treasurySeed = Deno.env.get('XRPL_SENDER_SEED');
+            if (treasurySeed) {
+                try {
+                    const treasuryWallet = Wallet.fromSeed(treasurySeed);
+                    const payment = {
+                        TransactionType: 'Payment',
+                        Account: treasuryWallet.classicAddress,
+                        Destination: wallet.classicAddress,
+                        Amount: '2000000' // 2 XRP (enough for base + RLUSD reserve)
+                    };
+                    const prepared = await client.autofill(payment);
+                    const signed = treasuryWallet.sign(prepared);
+                    await client.submitAndWait(signed.tx_blob);
+                    console.log(`✅ Funded ${wallet.classicAddress} with 2 XRP from treasury`);
+                } catch (error) {
+                    console.log('Treasury funding failed:', error.message);
+                }
             }
         }
 
@@ -47,13 +58,13 @@ Deno.serve(async (req) => {
 
         await client.disconnect();
 
-        // Store wallet info in database (in production, encrypt the seed properly)
-        const walletData = await base44.entities.Wallet.create({
+        // Store wallet info in database
+        const walletData = await base44.asServiceRole.entities.Wallet.create({
             name: name || `Wallet ${wallet.classicAddress.slice(0, 8)}`,
             classic_address: wallet.classicAddress,
-            encrypted_seed: wallet.seed, // In production: encrypt this!
+            encrypted_seed: wallet.seed,
             seed: wallet.seed,
-            network: network,
+            network: 'mainnet',
             balance: balance,
             metadata: {
                 has_rlusd_trustline: false,

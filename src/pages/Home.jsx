@@ -180,6 +180,12 @@ export default function Home() {
                   RLUSD Manager
                 </Button>
               </Link>
+              <Link to={createPageUrl('MainnetMigration')}>
+                <Button variant="ghost" className="text-orange-300/80 hover:bg-orange-500/10 hover:text-orange-300">
+                  <Activity className="w-4 h-4 mr-2" />
+                  Mainnet Migration
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>

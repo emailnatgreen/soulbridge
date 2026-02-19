@@ -76,6 +76,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import TaskDelegation from './pages/TaskDelegation';
 import RLUSDManager from './pages/RLUSDManager';
+import MainnetMigration from './pages/MainnetMigration';
 
 
 export const PAGES = {
@@ -108,6 +109,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "TaskDelegation": TaskDelegation,
     "RLUSDManager": RLUSDManager,
+    "MainnetMigration": MainnetMigration,
 }
 
 export const pagesConfig = {

@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
         const address = walletRecord.classic_address;
         const seed = walletRecord.seed;
 
-        const client = new Client('wss://s.altnet.rippletest.net:51233');
+        const client = new Client('wss://xrpl.ws');
         await client.connect();
 
         // Check current status

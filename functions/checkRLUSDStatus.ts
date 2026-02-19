@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Address or wallet_id required' }, { status: 400 });
         }
 
-        const client = new Client('wss://s.altnet.rippletest.net:51233');
+        const client = new Client('wss://xrpl.ws');
         await client.connect();
 
         try {
