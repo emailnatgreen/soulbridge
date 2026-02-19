@@ -88,11 +88,31 @@ export default function VillageSimulationPage() {
                 <div className="max-w-7xl mx-auto px-6 py-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <Link to={createPageUrl('Home')}>
-                                <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
-                                    <ArrowLeft className="w-5 h-5" />
+                            <div className="flex items-center gap-2">
+                                <Link to={createPageUrl('Home')}>
+                                    <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
+                                        <ArrowLeft className="w-5 h-5" />
+                                    </Button>
+                                </Link>
+                                <Button 
+                                    onClick={() => generateWorldEventMutation.mutate()}
+                                    disabled={generateWorldEventMutation.isPending}
+                                    className="bg-gradient-to-r from-purple-600 to-pink-600"
+                                    size="sm"
+                                >
+                                    {generateWorldEventMutation.isPending ? (
+                                        <>
+                                            <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Globe className="w-4 h-4 mr-2" />
+                                            Generate World Event
+                                        </>
+                                    )}
                                 </Button>
-                            </Link>
+                            </div>
                             <div>
                                 <h1 className="text-3xl font-light tracking-tight text-white">Village Simulation</h1>
                                 <p className="text-sm text-purple-300/60">Living world where agents grow and flourish</p>
