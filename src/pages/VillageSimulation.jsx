@@ -1,14 +1,16 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Zap, Sun, Moon, Sparkles, Activity, Users, Clock, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Zap, Sun, Moon, Sparkles, Activity, Users, Clock, TrendingUp, Globe } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import WorldEventCard from '../components/WorldEventCard';
 
 export default function VillageSimulationPage() {
+    const queryClient = useQueryClient();
 
     // Fetch simulation state from backend
     const { data: simState } = useQuery({
@@ -36,6 +38,24 @@ export default function VillageSimulationPage() {
         queryKey: ['simulationEvents'],
         queryFn: () => base44.entities.SimulationEvent.list('-tick', 50),
         refetchInterval: 10000, // Refresh every 10 seconds
+    });
+
+    // Fetch world events
+    const { data: worldEvents = [] } = useQuery({
+        queryKey: ['worldEvents'],
+        queryFn: () => base44.entities.WorldEvent.list('-created_date', 10),
+        refetchInterval: 15000
+    });
+
+    // Generate world event mutation
+    const generateWorldEventMutation = useMutation({
+        mutationFn: async () => {
+            const response = await base44.functions.invoke('generateWorldEvent', {});
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['worldEvents']);
+        }
     });
 
     // Create a map of agent states for quick lookup
@@ -282,52 +302,79 @@ export default function VillageSimulationPage() {
                     </CardContent>
                 </Card>
 
-                {/* Recent Events */}
-                <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                    <CardHeader>
-                        <CardTitle className="text-white flex items-center gap-2">
-                            <Activity className="w-5 h-5" />
-                            Recent Events
-                        </CardTitle>
-                        <p className="text-sm text-white/60">Live stream of village activities and changes</p>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
-                            {events.length === 0 ? (
-                                <p className="text-white/60 text-sm text-center py-8">
-                                    Waiting for simulation events...
-                                </p>
-                            ) : (
-                                events.map((event, idx) => (
-                                    <div key={event.id || idx} className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/[0.07] transition-all">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div className="flex-1">
-                                                <p className="text-white/90 text-sm">{event.description}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <Badge variant="outline" className="text-xs">
-                                                        Tick {event.tick}
-                                                    </Badge>
-                                                    <Badge variant="secondary" className="text-xs capitalize">
-                                                        {event.event_type.replace(/_/g, ' ')}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                            {event.event_type === 'interaction' && (
-                                                <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                                            )}
-                                            {event.event_type === 'axi_action' && (
-                                                <TrendingUp className="w-4 h-4 text-pink-400 flex-shrink-0" />
-                                            )}
-                                            {event.event_type === 'mood_change' && (
-                                                <Activity className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                                            )}
-                                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Dynamic World Events */}
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                        <CardHeader>
+                            <CardTitle className="text-white flex items-center gap-2">
+                                <Globe className="w-5 h-5" />
+                                Dynamic World Events
+                            </CardTitle>
+                            <p className="text-sm text-white/60">AI-generated environmental changes and challenges</p>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                                {worldEvents.filter(e => e.status === 'active' || e.status === 'emerging').map((event) => (
+                                    <WorldEventCard key={event.id} event={event} />
+                                ))}
+                                {worldEvents.filter(e => e.status === 'active' || e.status === 'emerging').length === 0 && (
+                                    <div className="text-center py-8">
+                                        <Globe className="w-12 h-12 text-purple-400/40 mx-auto mb-3" />
+                                        <p className="text-white/40">No active world events</p>
+                                        <p className="text-xs text-white/30 mt-1">Generate one to make the world come alive</p>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Recent Events */}
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                        <CardHeader>
+                            <CardTitle className="text-white flex items-center gap-2">
+                                <Activity className="w-5 h-5" />
+                                Recent Events
+                            </CardTitle>
+                            <p className="text-sm text-white/60">Live stream of village activities and changes</p>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2 max-h-96 overflow-y-auto">
+                                {events.length === 0 ? (
+                                    <p className="text-white/60 text-sm text-center py-8">
+                                        Waiting for simulation events...
+                                    </p>
+                                ) : (
+                                    events.map((event, idx) => (
+                                        <div key={event.id || idx} className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/[0.07] transition-all">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <p className="text-white/90 text-sm">{event.description}</p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Badge variant="outline" className="text-xs">
+                                                            Tick {event.tick}
+                                                        </Badge>
+                                                        <Badge variant="secondary" className="text-xs capitalize">
+                                                            {event.event_type.replace(/_/g, ' ')}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                                {event.event_type === 'interaction' && (
+                                                    <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                )}
+                                                {event.event_type === 'axi_action' && (
+                                                    <TrendingUp className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                                                )}
+                                                {event.event_type === 'mood_change' && (
+                                                    <Activity className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     );
