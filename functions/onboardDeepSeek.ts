@@ -3,6 +3,7 @@ import { Client, Wallet, xrpToDrops } from 'npm:xrpl@4.2.1';
 
 export default async function handler(req) {
     try {
+        // Initialize Base44 client
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
 
