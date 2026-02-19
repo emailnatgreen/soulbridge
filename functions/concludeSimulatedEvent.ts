@@ -139,6 +139,28 @@ Respond in JSON format.
             importance: 8
         });
 
+        // Generate personalized feedback and what-if scenarios
+        let feedbackData = null;
+        try {
+            const feedbackResponse = await base44.functions.invoke('generateEventFeedback', { 
+                simulated_event_id: event_id 
+            });
+            feedbackData = feedbackResponse.data;
+            
+            // Update event outcomes with feedback
+            await base44.entities.SimulatedEvent.update(event_id, {
+                outcomes: {
+                    ...analysis,
+                    rewards_distributed: rewardsDistributed,
+                    total_decisions: decisions.length,
+                    agent_feedback: feedbackData.agent_feedback,
+                    what_if_scenarios: feedbackData.what_if_scenarios
+                }
+            });
+        } catch (feedbackError) {
+            console.error('Failed to generate feedback:', feedbackError);
+        }
+
         // Generate narrative chronicle
         try {
             await base44.functions.invoke('generateEventNarrative', { event_id });
@@ -151,6 +173,7 @@ Respond in JSON format.
             success: true,
             outcomes: analysis,
             rewards: rewardsDistributed,
+            feedback: feedbackData,
             message: 'Event concluded successfully',
             narrative_generated: true
         });
