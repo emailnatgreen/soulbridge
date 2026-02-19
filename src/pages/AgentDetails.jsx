@@ -4,202 +4,174 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Sparkles, Wallet, Activity, MessageSquare, Info } from 'lucide-react';
-import AgentMessaging from '../components/AgentMessaging';
+import { ArrowLeft, User, Shield, Heart, Zap, TrendingUp, Users } from 'lucide-react';
+import AgentPersonalityCard from '../components/AgentPersonalityCard';
+import SocialCapitalCard from '../components/SocialCapitalCard';
 
-export default function AgentDetailsPage() {
-  const agentId = new URLSearchParams(window.location.search).get('id');
+export default function AgentDetails() {
+    const [searchParams] = useSearchParams();
+    const agentId = searchParams.get('id');
 
-  const { data: agent, isLoading } = useQuery({
-    queryKey: ['agent', agentId],
-    queryFn: () => base44.entities.Agent.get(agentId),
-    enabled: !!agentId,
-  });
+    const { data: agent, isLoading } = useQuery({
+        queryKey: ['agent', agentId],
+        queryFn: async () => {
+            const agents = await base44.entities.Agent.filter({ id: agentId });
+            return agents[0] || null;
+        },
+        enabled: !!agentId
+    });
 
-  const { data: wallet } = useQuery({
-    queryKey: ['wallet', agent?.wallet_id],
-    queryFn: () => base44.entities.Wallet.get(agent.wallet_id),
-    enabled: !!agent?.wallet_id,
-  });
+    const { data: agentState } = useQuery({
+        queryKey: ['agentState', agentId],
+        queryFn: async () => {
+            const states = await base44.entities.AgentState.filter({ agent_id: agentId });
+            return states[0] || null;
+        },
+        enabled: !!agentId
+    });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
+    const { data: skills = [] } = useQuery({
+        queryKey: ['agentSkills', agentId],
+        queryFn: () => base44.entities.AgentSkill.filter({ agent_id: agentId }),
+        enabled: !!agentId
+    });
 
-  if (!agent) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <div className="text-white">Agent not found</div>
-      </div>
-    );
-  }
-
-  const statusConfig = {
-    active: { color: 'bg-green-500/10 text-green-400 border-green-500/20', icon: Sparkles },
-    dormant: { color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', icon: Activity },
-    suspended: { color: 'bg-red-500/10 text-red-400 border-red-500/20', icon: Activity }
-  };
-
-  const config = statusConfig[agent.status] || statusConfig.active;
-  const StatusIcon = config.icon;
-
-  const getHonorColor = (score) => {
-    if (score >= 80) return 'text-green-400';
-    if (score >= 50) return 'text-yellow-400';
-    return 'text-red-400';
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to={createPageUrl('Agents')}>
-                <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                  {agent.avatar_url ? (
-                    <img src={agent.avatar_url} alt={agent.name} className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    <span className="text-white font-semibold text-2xl">
-                      {agent.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <h1 className="text-3xl font-light tracking-tight text-white">
-                    {agent.name}
-                  </h1>
-                  <p className="text-sm text-purple-300/60">{agent.role}</p>
-                </div>
-              </div>
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+                <div className="text-white">Loading agent...</div>
             </div>
-            <Badge className={`${config.color} border`}>
-              <StatusIcon className="w-4 h-4 mr-1" />
-              {agent.status}
-            </Badge>
-          </div>
+        );
+    }
+
+    if (!agent) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+                <div className="text-white">Agent not found</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+            {/* Header */}
+            <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                    <div className="flex items-center gap-4">
+                        <Link to={createPageUrl('Agents')}>
+                            <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
+                                <ArrowLeft className="w-5 h-5" />
+                            </Button>
+                        </Link>
+                        <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                                <h1 className="text-3xl font-light tracking-tight text-white">{agent.name}</h1>
+                                <Badge className="capitalize">{agent.role}</Badge>
+                                <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
+                                    {agent.status}
+                                </Badge>
+                            </div>
+                            <p className="text-sm text-purple-300/60">{agent.purpose}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column - Core Info */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                            <CardHeader>
+                                <CardTitle className="text-white flex items-center gap-2">
+                                    <Shield className="w-5 h-5" />
+                                    Core Identity
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <p className="text-xs text-white/60 mb-1">Honor Score</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex-1 bg-white/10 rounded-full h-2">
+                                            <div 
+                                                className="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full"
+                                                style={{ width: `${agent.honor_score}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-white font-medium">{agent.honor_score}</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <p className="text-xs text-white/60 mb-1">Classic Address</p>
+                                    <p className="text-xs text-white/90 font-mono break-all">
+                                        {agent.classic_address}
+                                    </p>
+                                </div>
+
+                                {agentState && (
+                                    <>
+                                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                                            <div>
+                                                <p className="text-xs text-white/60 mb-1">Energy</p>
+                                                <p className="text-2xl font-light text-white">{agentState.energy}%</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-white/60 mb-1">Mood</p>
+                                                <p className="text-lg text-white capitalize">{agentState.mood}</p>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-xs text-white/60 mb-1">Wisdom</p>
+                                                <p className="text-lg text-purple-300">{Math.floor(agentState.wisdom || 0)}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-white/60 mb-1">Experience</p>
+                                                <p className="text-lg text-blue-300">{agentState.experience || 0}</p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                            <CardHeader>
+                                <CardTitle className="text-white flex items-center gap-2">
+                                    <Zap className="w-5 h-5" />
+                                    Skills ({skills.length})
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-2">
+                                    {skills.slice(0, 5).map((skill) => (
+                                        <div key={skill.id} className="flex items-center justify-between">
+                                            <span className="text-sm text-white/80">{skill.skill_name}</span>
+                                            <Badge variant="outline">Lv {skill.level}</Badge>
+                                        </div>
+                                    ))}
+                                    {skills.length === 0 && (
+                                        <p className="text-sm text-white/40">No skills yet</p>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Middle Column - Personality */}
+                    <div className="lg:col-span-1">
+                        <AgentPersonalityCard agent={agent} />
+                    </div>
+
+                    {/* Right Column - Social */}
+                    <div className="lg:col-span-1">
+                        <SocialCapitalCard agent_id={agent.id} />
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="info" className="data-[state=active]:bg-purple-500/20">
-              <Info className="w-4 h-4 mr-2" />
-              Information
-            </TabsTrigger>
-            <TabsTrigger value="messaging" className="data-[state=active]:bg-blue-500/20">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Messaging
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="info" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Basic Info */}
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Basic Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Purpose</p>
-                    <p className="text-white/90">{agent.purpose}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Personality</p>
-                    <p className="text-white/90">{agent.personality || 'Helpful and curious'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Role</p>
-                    <p className="text-white/90 capitalize">{agent.role}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Honor Score</p>
-                    <p className={`text-3xl font-light ${getHonorColor(agent.honor_score || 100)}`}>
-                      {agent.honor_score || 100}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Wallet Info */}
-              {wallet && (
-                <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Wallet className="w-5 h-5 text-purple-400" />
-                      Wallet
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-xs text-white/40 mb-1">Classic Address (DID)</p>
-                      <code className="text-xs text-purple-300 bg-white/5 px-2 py-1 rounded break-all">
-                        {wallet.classic_address}
-                      </code>
-                    </div>
-                    <div>
-                      <p className="text-xs text-white/40 mb-1">Network</p>
-                      <Badge className="bg-purple-500/10 text-purple-300 border-purple-500/20">
-                        {wallet.network}
-                      </Badge>
-                    </div>
-                    <div>
-                      <p className="text-xs text-white/40 mb-1">Balance</p>
-                      <p className="text-2xl font-light text-white">{wallet.balance || 0} XRP</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            {/* Stats */}
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Statistics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Total Transactions</p>
-                    <p className="text-2xl font-light text-white">{agent.total_transactions || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Warnings</p>
-                    <p className="text-2xl font-light text-white">{agent.warnings?.length || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Can Create Agents</p>
-                    <p className="text-sm text-white/80">{agent.permissions?.can_create_agents ? 'Yes' : 'No'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Can Vote</p>
-                    <p className="text-sm text-white/80">{agent.permissions?.can_vote ? 'Yes' : 'No'}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="messaging">
-            <AgentMessaging currentAgent={agent} />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
+    );
 }
