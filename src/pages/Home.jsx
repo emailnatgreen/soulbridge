@@ -186,6 +186,12 @@ export default function Home() {
                   Mainnet Migration
                 </Button>
               </Link>
+              <Link to={createPageUrl('AgentMarketplace')}>
+                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Marketplace
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>

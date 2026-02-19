@@ -77,6 +77,7 @@ import Wallets from './pages/Wallets';
 import TaskDelegation from './pages/TaskDelegation';
 import RLUSDManager from './pages/RLUSDManager';
 import MainnetMigration from './pages/MainnetMigration';
+import AgentMarketplace from './pages/AgentMarketplace';
 
 
 export const PAGES = {
@@ -110,6 +111,7 @@ export const PAGES = {
     "TaskDelegation": TaskDelegation,
     "RLUSDManager": RLUSDManager,
     "MainnetMigration": MainnetMigration,
+    "AgentMarketplace": AgentMarketplace,
 }
 
 export const pagesConfig = {
