@@ -13,6 +13,7 @@ import { createPageUrl } from '../utils';
 import { ArrowLeft, Compass, Target, Plus, MapPin, Loader2 } from 'lucide-react';
 import VillageLocationCard from '../components/VillageLocationCard';
 import VillageProjectCard from '../components/VillageProjectCard';
+import VillageInteractionMap from '../components/VillageInteractionMap';
 import { toast } from 'sonner';
 
 export default function VillagePage() {
@@ -160,8 +161,12 @@ export default function VillagePage() {
                     </Card>
                 </div>
 
-                <Tabs defaultValue="explore" className="space-y-6">
+                <Tabs defaultValue="map" className="space-y-6">
                     <TabsList className="bg-white/5 border border-white/10">
+                        <TabsTrigger value="map" className="data-[state=active]:bg-green-500/20">
+                            <MapPin className="w-4 h-4 mr-2" />
+                            Live Map
+                        </TabsTrigger>
                         <TabsTrigger value="explore" className="data-[state=active]:bg-cyan-500/20">
                             <Compass className="w-4 h-4 mr-2" />
                             Explore
@@ -171,6 +176,19 @@ export default function VillagePage() {
                             Projects
                         </TabsTrigger>
                     </TabsList>
+
+                    {/* Live Map Tab */}
+                    <TabsContent value="map" className="space-y-6">
+                        <Card className="bg-white/5 backdrop-blur-xl border-white/10 p-6">
+                            <div className="mb-4">
+                                <h2 className="text-2xl font-light text-white mb-2">Village Interaction Map</h2>
+                                <p className="text-sm text-white/60">Real-time visualization of agent locations, activities, and relationships</p>
+                            </div>
+                            <div className="h-[600px]">
+                                <VillageInteractionMap />
+                            </div>
+                        </Card>
+                    </TabsContent>
 
                     {/* Explore Tab */}
                     <TabsContent value="explore" className="space-y-6">
