@@ -12,6 +12,7 @@ import { createPageUrl } from '../utils';
 import { ArrowLeft, Beaker, Play, CheckCircle, Users, TrendingUp, AlertTriangle, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import EventDecisionPoint from '../components/EventDecisionPoint';
+import EventNarrativeCard from '../components/EventNarrativeCard';
 
 export default function SimulationLab() {
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -540,35 +541,45 @@ function EventDetailsModal({ event, decisions, agents, onClose, onAddParticipant
                     )}
 
                     {event.status === 'concluded' && event.outcomes && (
-                        <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                            <h3 className="text-lg text-blue-300 mb-3 flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5" />
-                                Final Outcomes
-                            </h3>
-                            <div className="space-y-3">
-                                <div>
-                                    <p className="text-sm text-white/60 mb-1">Overall Result</p>
-                                    <p className="text-white">{event.outcomes.outcome_summary}</p>
+                        <>
+                            {/* Narrative Chronicle */}
+                            {event.outcomes.narrative && (
+                                <div className="mb-4">
+                                    <EventNarrativeCard event={event} />
                                 </div>
-                                <div>
-                                    <p className="text-sm text-white/60 mb-1">Collective Score</p>
-                                    <p className="text-2xl text-green-400 font-light">{event.outcomes.collective_score}/100</p>
-                                </div>
-                                {event.outcomes.lessons_learned?.length > 0 && (
+                            )}
+
+                            {/* Outcome Summary */}
+                            <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                                <h3 className="text-lg text-blue-300 mb-3 flex items-center gap-2">
+                                    <TrendingUp className="w-5 h-5" />
+                                    Final Outcomes
+                                </h3>
+                                <div className="space-y-3">
                                     <div>
-                                        <p className="text-sm text-white/60 mb-2">Lessons Learned</p>
-                                        <ul className="space-y-1">
-                                            {event.outcomes.lessons_learned.map((lesson, idx) => (
-                                                <li key={idx} className="text-sm text-white/80 flex items-start gap-2">
-                                                    <span className="text-purple-400">•</span>
-                                                    {lesson}
-                                                </li>
-                                            ))}
-                                        </ul>
+                                        <p className="text-sm text-white/60 mb-1">Overall Result</p>
+                                        <p className="text-white">{event.outcomes.outcome_summary}</p>
                                     </div>
-                                )}
+                                    <div>
+                                        <p className="text-sm text-white/60 mb-1">Collective Score</p>
+                                        <p className="text-2xl text-green-400 font-light">{event.outcomes.collective_score}/100</p>
+                                    </div>
+                                    {event.outcomes.lessons_learned?.length > 0 && (
+                                        <div>
+                                            <p className="text-sm text-white/60 mb-2">Lessons Learned</p>
+                                            <ul className="space-y-1">
+                                                {event.outcomes.lessons_learned.map((lesson, idx) => (
+                                                    <li key={idx} className="text-sm text-white/80 flex items-start gap-2">
+                                                        <span className="text-purple-400">•</span>
+                                                        {lesson}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        </>
                     )}
                 </div>
             </DialogContent>

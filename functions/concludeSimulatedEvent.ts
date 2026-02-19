@@ -139,11 +139,20 @@ Respond in JSON format.
             importance: 8
         });
 
+        // Generate narrative chronicle
+        try {
+            await base44.functions.invoke('generateEventNarrative', { event_id });
+        } catch (narrativeError) {
+            console.error('Failed to generate narrative:', narrativeError);
+            // Continue even if narrative generation fails
+        }
+
         return Response.json({ 
             success: true,
             outcomes: analysis,
             rewards: rewardsDistributed,
-            message: 'Event concluded successfully'
+            message: 'Event concluded successfully',
+            narrative_generated: true
         });
 
     } catch (error) {
