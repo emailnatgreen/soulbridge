@@ -66,6 +66,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import AgentSkillTree from './pages/AgentSkillTree';
+import DialogueStudio from './pages/DialogueStudio';
 
 
 export const PAGES = {
@@ -88,6 +89,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "AgentSkillTree": AgentSkillTree,
+    "DialogueStudio": DialogueStudio,
 }
 
 export const pagesConfig = {

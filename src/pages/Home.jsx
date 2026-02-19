@@ -126,6 +126,12 @@ export default function Home() {
                   Skill Trees
                 </Button>
               </Link>
+              <Link to={createPageUrl('DialogueStudio')}>
+                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Dialogue Studio
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
