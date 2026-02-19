@@ -38,19 +38,19 @@ Deno.serve(async (req) => {
                 const newWallet = Wallet.generate();
                 console.log(`  Generated mainnet address: ${newWallet.classicAddress}`);
 
-                // Fund with 50 XRP from treasury
+                // Fund with 2 XRP minimum from treasury
                 const payment = {
                     TransactionType: 'Payment',
                     Account: treasuryWallet.classicAddress,
                     Destination: newWallet.classicAddress,
-                    Amount: xrpToDrops('50')
+                    Amount: xrpToDrops('2')
                 };
 
                 const prepared = await client.autofill(payment);
                 const signed = treasuryWallet.sign(prepared);
                 const result = await client.submitAndWait(signed.tx_blob);
 
-                console.log(`  💸 Funded with 50 XRP: ${result.result.hash}`);
+                console.log(`  💸 Funded with 2 XRP: ${result.result.hash}`);
 
                 // Create new wallet record
                 const walletRecord = await base44.asServiceRole.entities.Wallet.create({
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
                     seed: newWallet.seed,
                     encrypted_seed: newWallet.seed,
                     network: 'mainnet',
-                    balance: 50,
+                    balance: 2,
                     agent_name: agent.name,
                     metadata: {
                         has_rlusd_trustline: false,

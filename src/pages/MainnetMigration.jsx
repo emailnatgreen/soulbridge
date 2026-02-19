@@ -32,7 +32,7 @@ export default function MainnetMigration() {
 
   const handleMigrate = () => {
     if (selectedAgents.length === 0) return;
-    if (!window.confirm(`⚠️ This will create new mainnet wallets for ${selectedAgents.length} agents and fund them with 50 XRP each from treasury. Continue?`)) {
+    if (!window.confirm(`⚠️ This will create new mainnet wallets for ${selectedAgents.length} agents and fund them with 2 XRP each from treasury. Continue?`)) {
       return;
     }
     migrateMutation.mutate(selectedAgents);
@@ -78,7 +78,7 @@ export default function MainnetMigration() {
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <AlertTriangle className="h-4 w-4 text-yellow-500" />
           <AlertDescription className="text-yellow-200">
-            <strong>Important:</strong> This migration will create new mainnet wallets for selected agents and fund them with 50 XRP each from your treasury. 
+            <strong>Important:</strong> This migration will create new mainnet wallets for selected agents and fund them with 2 XRP each from your treasury. 
             The RLUSD issuer only exists on mainnet, so this step is required for real RLUSD integration.
           </AlertDescription>
         </Alert>
@@ -141,11 +141,11 @@ export default function MainnetMigration() {
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-white/10">
                   <span className="text-white/80">XRP per agent</span>
-                  <span className="text-white font-medium">50 XRP</span>
+                  <span className="text-white font-medium">2 XRP</span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-white/10">
                   <span className="text-white/80">Total XRP required</span>
-                  <span className="text-white font-medium">{selectedAgents.length * 50} XRP</span>
+                  <span className="text-white font-medium">{selectedAgents.length * 2} XRP</span>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <span className="text-white/80">Network</span>
