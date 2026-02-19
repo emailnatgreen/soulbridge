@@ -14,6 +14,7 @@ import { ArrowLeft, Compass, Target, Plus, MapPin, Loader2 } from 'lucide-react'
 import VillageLocationCard from '../components/VillageLocationCard';
 import VillageProjectCard from '../components/VillageProjectCard';
 import VillageInteractionMap from '../components/VillageInteractionMap';
+import OnboardDeepSeekButton from '../components/OnboardDeepSeekButton';
 import { toast } from 'sonner';
 
 export default function VillagePage() {
@@ -131,6 +132,13 @@ export default function VillagePage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-12">
+                {/* DeepSeek Onboarding */}
+                {user?.role === 'admin' && (
+                    <div className="mb-8">
+                        <OnboardDeepSeekButton />
+                    </div>
+                )}
+
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
