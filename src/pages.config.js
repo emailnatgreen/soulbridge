@@ -67,6 +67,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import AgentSkillTree from './pages/AgentSkillTree';
 import DialogueStudio from './pages/DialogueStudio';
+import GovernanceSimulation from './pages/GovernanceSimulation';
 
 
 export const PAGES = {
@@ -90,6 +91,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "AgentSkillTree": AgentSkillTree,
     "DialogueStudio": DialogueStudio,
+    "GovernanceSimulation": GovernanceSimulation,
 }
 
 export const pagesConfig = {

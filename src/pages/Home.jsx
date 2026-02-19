@@ -84,6 +84,12 @@ export default function Home() {
                   Governance
                 </Button>
               </Link>
+              <Link to={createPageUrl('GovernanceSimulation')}>
+                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Gov Simulation
+                </Button>
+              </Link>
               <Link to={createPageUrl('Economy')}>
                 <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
                   <Wallet className="w-4 h-4 mr-2" />
