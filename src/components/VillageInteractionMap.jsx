@@ -43,6 +43,46 @@ export default function VillageInteractionMap() {
         let animationFrame = 0;
         let agentPositions = {};
         
+        // Calculate location zones once (stable)
+        const locationZones = {};
+        locations.forEach((location, idx) => {
+            const angle = (idx / locations.length) * Math.PI * 2;
+            const radius = Math.min(width, height) * 0.3;
+            locationZones[location.name] = {
+                x: width / 2 + Math.cos(angle) * radius,
+                y: height / 2 + Math.sin(angle) * radius,
+                color: location.environment_type === 'forest' ? '#22c55e' :
+                       location.environment_type === 'mountain' ? '#64748b' :
+                       location.environment_type === 'water' ? '#3b82f6' :
+                       '#a855f7'
+            };
+        });
+        
+        // Calculate agent positions once (stable, deterministic)
+        agents.forEach((agent, idx) => {
+            const state = agentStates.find(s => s.agent_id === agent.id);
+            const location = state?.current_location;
+            
+            let x, y;
+            if (location && locationZones[location]) {
+                // Deterministic position based on agent ID
+                const hash = agent.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const angle = (hash % 360) * (Math.PI / 180);
+                const distance = ((hash % 30) + 10);
+                x = locationZones[location].x + Math.cos(angle) * distance;
+                y = locationZones[location].y + Math.sin(angle) * distance;
+            } else {
+                // Deterministic position in village center
+                const angle = (idx / agents.length) * Math.PI * 2;
+                const hash = agent.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const distance = ((hash % 60) + 40);
+                x = width / 2 + Math.cos(angle) * distance;
+                y = height / 2 + Math.sin(angle) * distance;
+            }
+            
+            agentPositions[agent.id] = { x, y, agent, state };
+        });
+        
         const animate = () => {
             animationFrame++;
             draw(animationFrame);
@@ -90,21 +130,6 @@ export default function VillageInteractionMap() {
             ctx.stroke();
         }
 
-        // Create location zones
-        const locationZones = {};
-        locations.forEach((location, idx) => {
-            const angle = (idx / locations.length) * Math.PI * 2;
-            const radius = Math.min(width, height) * 0.3;
-            locationZones[location.name] = {
-                x: width / 2 + Math.cos(angle) * radius,
-                y: height / 2 + Math.sin(angle) * radius,
-                color: location.environment_type === 'forest' ? '#22c55e' :
-                       location.environment_type === 'mountain' ? '#64748b' :
-                       location.environment_type === 'water' ? '#3b82f6' :
-                       '#a855f7'
-            };
-        });
-
         // Draw location zones
         Object.entries(locationZones).forEach(([name, zone]) => {
             ctx.fillStyle = zone.color + '20';
@@ -119,30 +144,6 @@ export default function VillageInteractionMap() {
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(name, zone.x, zone.y + 75);
-        });
-
-        // Create agent positions
-        agentPositions = {};
-        agents.forEach((agent, idx) => {
-            const state = agentStates.find(s => s.agent_id === agent.id);
-            const location = state?.current_location;
-            
-            let x, y;
-            if (location && locationZones[location]) {
-                // Position near location
-                const angle = Math.random() * Math.PI * 2;
-                const distance = Math.random() * 40 + 10;
-                x = locationZones[location].x + Math.cos(angle) * distance;
-                y = locationZones[location].y + Math.sin(angle) * distance;
-            } else {
-                // Random position in village center
-                const angle = (idx / agents.length) * Math.PI * 2;
-                const distance = Math.random() * 80 + 20;
-                x = width / 2 + Math.cos(angle) * distance;
-                y = height / 2 + Math.sin(angle) * distance;
-            }
-            
-            agentPositions[agent.id] = { x, y, agent, state };
         });
 
         // Draw relationship lines with trust indicators
