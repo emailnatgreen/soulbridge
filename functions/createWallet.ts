@@ -52,9 +52,26 @@ Deno.serve(async (req) => {
             name: name || `Wallet ${wallet.classicAddress.slice(0, 8)}`,
             classic_address: wallet.classicAddress,
             encrypted_seed: wallet.seed, // In production: encrypt this!
+            seed: wallet.seed,
             network: network,
-            balance: balance
+            balance: balance,
+            metadata: {
+                has_rlusd_trustline: false,
+                created_date: new Date().toISOString()
+            }
         });
+
+        // Auto-add RLUSD trustline if wallet has enough XRP
+        if (balance >= 1.2) {
+            try {
+                const rlusdResult = await base44.asServiceRole.functions.invoke('addRLUSDTrustline', {
+                    wallet_id: walletData.id
+                });
+                console.log(`✅ RLUSD auto-configured for ${walletData.name}`);
+            } catch (error) {
+                console.log(`⚠️ RLUSD auto-config will be done later for ${walletData.name}`);
+            }
+        }
 
         return Response.json({
             success: true,
