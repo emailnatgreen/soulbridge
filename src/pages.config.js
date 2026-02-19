@@ -68,6 +68,7 @@ import Wallets from './pages/Wallets';
 import AgentSkillTree from './pages/AgentSkillTree';
 import DialogueStudio from './pages/DialogueStudio';
 import GovernanceSimulation from './pages/GovernanceSimulation';
+import TrainingSimulation from './pages/TrainingSimulation';
 
 
 export const PAGES = {
@@ -92,6 +93,7 @@ export const PAGES = {
     "AgentSkillTree": AgentSkillTree,
     "DialogueStudio": DialogueStudio,
     "GovernanceSimulation": GovernanceSimulation,
+    "TrainingSimulation": TrainingSimulation,
 }
 
 export const pagesConfig = {
