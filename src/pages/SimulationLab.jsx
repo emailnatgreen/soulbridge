@@ -36,7 +36,10 @@ export default function SimulationLab() {
 
     const createEventMutation = useMutation({
         mutationFn: async (eventData) => {
-            const response = await base44.functions.invoke('createSimulatedEvent', eventData);
+            const response = await base44.functions.invoke('createSimulatedEvent', {
+                ...eventData,
+                use_ai_generation: true
+            });
             return response.data;
         },
         onSuccess: () => {
@@ -262,7 +265,6 @@ function CreateEventDialog({ agents, onSubmit, isLoading }) {
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
-        description: '',
         event_type: 'resource_challenge',
         duration_ticks: 20,
         creator_agent_id: 'axi'
@@ -273,7 +275,6 @@ function CreateEventDialog({ agents, onSubmit, isLoading }) {
         onSubmit(formData);
         setFormData({
             name: '',
-            description: '',
             event_type: 'resource_challenge',
             duration_ticks: 20,
             creator_agent_id: 'axi'
@@ -294,6 +295,12 @@ function CreateEventDialog({ agents, onSubmit, isLoading }) {
                     <DialogTitle>Create Simulated Event</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20 mb-4">
+                        <p className="text-sm text-purple-300 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" />
+                            AI will generate event description, objectives, and parameters based on your selections
+                        </p>
+                    </div>
                     <div>
                         <label className="text-sm text-white/60 mb-2 block">Event Name</label>
                         <Input 
@@ -301,16 +308,6 @@ function CreateEventDialog({ agents, onSubmit, isLoading }) {
                             onChange={(e) => setFormData({...formData, name: e.target.value})}
                             className="bg-white/5 border-white/10"
                             placeholder="e.g., Resource Scarcity Crisis"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="text-sm text-white/60 mb-2 block">Description</label>
-                        <Textarea 
-                            value={formData.description}
-                            onChange={(e) => setFormData({...formData, description: e.target.value})}
-                            className="bg-white/5 border-white/10 min-h-32"
-                            placeholder="Describe the scenario, objectives, and what agents should learn..."
                             required
                         />
                     </div>
@@ -356,8 +353,8 @@ function CreateEventDialog({ agents, onSubmit, isLoading }) {
                             </SelectContent>
                         </Select>
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? 'Creating...' : 'Create Event'}
+                    <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600" disabled={isLoading}>
+                        {isLoading ? 'AI Generating...' : '✨ Create with AI'}
                     </Button>
                 </form>
             </DialogContent>
