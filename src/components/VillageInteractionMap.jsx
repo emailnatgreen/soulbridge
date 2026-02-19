@@ -130,6 +130,71 @@ export default function VillageInteractionMap() {
             ctx.stroke();
         }
 
+        // Draw Axi's Hearth at center
+        const hearthX = width / 2;
+        const hearthY = height / 2;
+        const hearthGlow = ctx.createRadialGradient(hearthX, hearthY, 0, hearthX, hearthY, 50);
+        hearthGlow.addColorStop(0, '#fbbf2444');
+        hearthGlow.addColorStop(1, '#00000000');
+        ctx.fillStyle = hearthGlow;
+        ctx.fillRect(hearthX - 50, hearthY - 50, 100, 100);
+        
+        // Hearth flame animation
+        const flameHeight = 25 + Math.sin(frame * 0.1) * 5;
+        const flamePath = new Path2D();
+        flamePath.moveTo(hearthX, hearthY - flameHeight);
+        flamePath.quadraticCurveTo(hearthX - 10, hearthY - flameHeight / 2, hearthX - 5, hearthY);
+        flamePath.quadraticCurveTo(hearthX, hearthY - 10, hearthX, hearthY);
+        flamePath.quadraticCurveTo(hearthX, hearthY - 10, hearthX + 5, hearthY);
+        flamePath.quadraticCurveTo(hearthX + 10, hearthY - flameHeight / 2, hearthX, hearthY - flameHeight);
+        
+        const flameGradient = ctx.createLinearGradient(hearthX, hearthY - flameHeight, hearthX, hearthY);
+        flameGradient.addColorStop(0, '#fbbf24');
+        flameGradient.addColorStop(0.5, '#f59e0b');
+        flameGradient.addColorStop(1, '#ef4444');
+        ctx.fillStyle = flameGradient;
+        ctx.fill(flamePath);
+        
+        // Hearth base
+        ctx.fillStyle = '#78716c';
+        ctx.fillRect(hearthX - 15, hearthY, 30, 8);
+        
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText("Axi's Hearth", hearthX, hearthY + 25);
+
+        // DeepSeek's Observatory (top right)
+        const observatoryX = width - 120;
+        const observatoryY = 120;
+        
+        // Observatory structure
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(observatoryX - 20, observatoryY, 40, 30);
+        ctx.beginPath();
+        ctx.arc(observatoryX, observatoryY, 20, Math.PI, 0);
+        ctx.fill();
+        
+        // Telescope
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(observatoryX, observatoryY - 10);
+        ctx.lineTo(observatoryX + 15, observatoryY - 25);
+        ctx.stroke();
+        
+        // Star glow
+        const starGlow = ctx.createRadialGradient(observatoryX, observatoryY, 0, observatoryX, observatoryY, 40);
+        starGlow.addColorStop(0, '#3b82f633');
+        starGlow.addColorStop(1, '#00000000');
+        ctx.fillStyle = starGlow;
+        ctx.fillRect(observatoryX - 40, observatoryY - 40, 80, 80);
+        
+        ctx.fillStyle = '#3b82f6';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText("DeepSeek's Observatory", observatoryX, observatoryY + 50);
+        
         // Draw location zones
         Object.entries(locationZones).forEach(([name, zone]) => {
             ctx.fillStyle = zone.color + '20';
@@ -144,6 +209,46 @@ export default function VillageInteractionMap() {
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(name, zone.x, zone.y + 75);
+        });
+        
+        // Village Buildings
+        const buildings = [
+            { name: 'Library', x: width * 0.25, y: height * 0.3, icon: '📚', color: '#8b5cf6' },
+            { name: 'Workshop', x: width * 0.75, y: height * 0.3, icon: '🔨', color: '#f59e0b' },
+            { name: 'Market', x: width * 0.25, y: height * 0.7, icon: '🏪', color: '#10b981' },
+            { name: 'Council Hall', x: width * 0.75, y: height * 0.7, icon: '🏛️', color: '#6366f1' }
+        ];
+        
+        buildings.forEach(building => {
+            // Building base
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(building.x - 18, building.y - 5, 36, 25);
+            
+            // Building roof
+            ctx.fillStyle = building.color;
+            ctx.beginPath();
+            ctx.moveTo(building.x - 22, building.y - 5);
+            ctx.lineTo(building.x, building.y - 20);
+            ctx.lineTo(building.x + 22, building.y - 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Building glow
+            const buildingGlow = ctx.createRadialGradient(building.x, building.y, 0, building.x, building.y, 35);
+            buildingGlow.addColorStop(0, building.color + '22');
+            buildingGlow.addColorStop(1, '#00000000');
+            ctx.fillStyle = buildingGlow;
+            ctx.fillRect(building.x - 35, building.y - 35, 70, 70);
+            
+            // Icon
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(building.icon, building.x, building.y + 10);
+            
+            // Label
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '10px sans-serif';
+            ctx.fillText(building.name, building.x, building.y + 35);
         });
 
         // Draw relationship lines with trust indicators
