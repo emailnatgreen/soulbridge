@@ -49,6 +49,7 @@
  */
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
+import AgentMessaging from './pages/AgentMessaging';
 import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
 import Agents from './pages/Agents';
@@ -73,12 +74,13 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import AgentMessaging from './pages/AgentMessaging';
+import TaskDelegation from './pages/TaskDelegation';
 
 
 export const PAGES = {
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
+    "AgentMessaging": AgentMessaging,
     "AgentSkillTree": AgentSkillTree,
     "AgentTrainingModule": AgentTrainingModule,
     "Agents": Agents,
@@ -103,7 +105,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "AgentMessaging": AgentMessaging,
+    "TaskDelegation": TaskDelegation,
 }
 
 export const pagesConfig = {
