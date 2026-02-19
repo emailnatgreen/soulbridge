@@ -49,6 +49,7 @@
  */
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
+import AgentMarketplace from './pages/AgentMarketplace';
 import AgentMessaging from './pages/AgentMessaging';
 import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
@@ -63,26 +64,28 @@ import EditAgent from './pages/EditAgent';
 import Governance from './pages/Governance';
 import GovernanceSimulation from './pages/GovernanceSimulation';
 import Home from './pages/Home';
+import MainnetMigration from './pages/MainnetMigration';
+import RLUSDManager from './pages/RLUSDManager';
 import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceMarketplace from './pages/ResourceMarketplace';
 import Send from './pages/Send';
 import SimulationLab from './pages/SimulationLab';
 import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 import SocialNetwork from './pages/SocialNetwork';
+import TaskDelegation from './pages/TaskDelegation';
 import TrainingSimulation from './pages/TrainingSimulation';
 import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import TaskDelegation from './pages/TaskDelegation';
-import RLUSDManager from './pages/RLUSDManager';
-import MainnetMigration from './pages/MainnetMigration';
-import AgentMarketplace from './pages/AgentMarketplace';
+import AgentProfile from './pages/AgentProfile';
+import EditAgentProfile from './pages/EditAgentProfile';
 
 
 export const PAGES = {
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
+    "AgentMarketplace": AgentMarketplace,
     "AgentMessaging": AgentMessaging,
     "AgentSkillTree": AgentSkillTree,
     "AgentTrainingModule": AgentTrainingModule,
@@ -97,21 +100,22 @@ export const PAGES = {
     "Governance": Governance,
     "GovernanceSimulation": GovernanceSimulation,
     "Home": Home,
+    "MainnetMigration": MainnetMigration,
+    "RLUSDManager": RLUSDManager,
     "RelationshipNetwork": RelationshipNetwork,
     "ResourceMarketplace": ResourceMarketplace,
     "Send": Send,
     "SimulationLab": SimulationLab,
     "SocialCapitalDashboard": SocialCapitalDashboard,
     "SocialNetwork": SocialNetwork,
+    "TaskDelegation": TaskDelegation,
     "TrainingSimulation": TrainingSimulation,
     "TransactionHistory": TransactionHistory,
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "TaskDelegation": TaskDelegation,
-    "RLUSDManager": RLUSDManager,
-    "MainnetMigration": MainnetMigration,
-    "AgentMarketplace": AgentMarketplace,
+    "AgentProfile": AgentProfile,
+    "EditAgentProfile": EditAgentProfile,
 }
 
 export const pagesConfig = {
