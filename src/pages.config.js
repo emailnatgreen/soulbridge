@@ -72,6 +72,7 @@ import TrainingSimulation from './pages/TrainingSimulation';
 import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceMarketplace from './pages/ResourceMarketplace';
 import DiplomacyHub from './pages/DiplomacyHub';
+import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 
 
 export const PAGES = {
@@ -100,6 +101,7 @@ export const PAGES = {
     "RelationshipNetwork": RelationshipNetwork,
     "ResourceMarketplace": ResourceMarketplace,
     "DiplomacyHub": DiplomacyHub,
+    "SocialCapitalDashboard": SocialCapitalDashboard,
 }
 
 export const pagesConfig = {
