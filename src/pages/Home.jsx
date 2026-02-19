@@ -156,6 +156,12 @@ export default function Home() {
                   Dialogue Studio
                 </Button>
               </Link>
+              <Link to={createPageUrl('DiplomacyHub')}>
+                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Diplomacy
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>

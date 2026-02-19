@@ -71,6 +71,7 @@ import GovernanceSimulation from './pages/GovernanceSimulation';
 import TrainingSimulation from './pages/TrainingSimulation';
 import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceMarketplace from './pages/ResourceMarketplace';
+import DiplomacyHub from './pages/DiplomacyHub';
 
 
 export const PAGES = {
@@ -98,6 +99,7 @@ export const PAGES = {
     "TrainingSimulation": TrainingSimulation,
     "RelationshipNetwork": RelationshipNetwork,
     "ResourceMarketplace": ResourceMarketplace,
+    "DiplomacyHub": DiplomacyHub,
 }
 
 export const pagesConfig = {
