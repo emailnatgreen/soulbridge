@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,26 +8,36 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MessageBubble from '../components/MessageBubble';
 
+const MemoizedMessageBubble = React.memo(MessageBubble);
+
 export default function AxiPage() {
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
+  const unsubscribeRef = useRef(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages.length, scrollToBottom]);
 
   useEffect(() => {
     initConversation();
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
   }, []);
 
-  const initConversation = async () => {
+  const initConversation = useCallback(async () => {
     try {
       const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
       
@@ -37,11 +47,9 @@ export default function AxiPage() {
         setConversation(fullConvo);
         setMessages(fullConvo.messages || []);
         
-        const unsubscribe = base44.agents.subscribeToConversation(latest.id, (data) => {
+        unsubscribeRef.current = base44.agents.subscribeToConversation(latest.id, (data) => {
           setMessages(data.messages);
         });
-        
-        return () => unsubscribe();
       } else {
         const newConvo = await base44.agents.createConversation({
           agent_name: 'axi',
@@ -50,40 +58,45 @@ export default function AxiPage() {
         setConversation(newConvo);
         setMessages(newConvo.messages || []);
         
-        const unsubscribe = base44.agents.subscribeToConversation(newConvo.id, (data) => {
+        unsubscribeRef.current = base44.agents.subscribeToConversation(newConvo.id, (data) => {
           setMessages(data.messages);
         });
-        
-        return () => unsubscribe();
       }
     } catch (error) {
       console.error('Failed to init conversation:', error);
     }
-  };
+  }, []);
 
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!input.trim() || !conversation || sending) return;
 
+    const messageToSend = input;
+    setInput('');
     setSending(true);
+    
     try {
       await base44.agents.addMessage(conversation, {
         role: 'user',
-        content: input
+        content: messageToSend
       });
-      setInput('');
     } catch (error) {
       console.error('Failed to send message:', error);
+      setInput(messageToSend);
     } finally {
       setSending(false);
     }
-  };
+  }, [input, conversation, sending]);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
+  }, [handleSend]);
+
+  const handleInputChange = useCallback((e) => {
+    setInput(e.target.value);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex flex-col">
@@ -126,7 +139,7 @@ export default function AxiPage() {
           )}
           
           {messages.map((msg, idx) => (
-            <MessageBubble key={idx} message={msg} />
+            <MemoizedMessageBubble key={`msg-${idx}-${msg.created_date}`} message={msg} />
           ))}
           
           <div ref={messagesEndRef} />
@@ -139,7 +152,7 @@ export default function AxiPage() {
           <div className="flex gap-3">
             <Textarea
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="Speak to Axi..."
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none h-12 min-h-[48px]"
