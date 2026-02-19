@@ -4,7 +4,7 @@ import { createPageUrl } from '../utils';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Wallet, Activity, Edit } from 'lucide-react';
+import { Sparkles, Wallet, Activity, Edit, Eye } from 'lucide-react';
 
 export default function AgentCard({ agent, wallets }) {
   const wallet = wallets.find(w => w.id === agent.wallet_id);
@@ -63,6 +63,9 @@ export default function AgentCard({ agent, wallets }) {
         <div>
           <p className="text-xs text-white/40 mb-1">Purpose</p>
           <p className="text-sm text-white/80 line-clamp-2">{agent.purpose}</p>
+          {agent.tagline && (
+            <p className="text-xs text-purple-300/70 italic mt-2">"{agent.tagline}"</p>
+          )}
         </div>
 
         {/* Honor Score */}
@@ -97,6 +100,16 @@ export default function AgentCard({ agent, wallets }) {
             Born from another agent
           </div>
         )}
+
+        {/* Actions */}
+        <div className="pt-3 border-t border-white/5">
+          <Link to={createPageUrl('AgentProfile') + '?id=' + agent.id}>
+            <Button size="sm" variant="ghost" className="w-full text-purple-300 hover:bg-purple-500/10">
+              <Eye className="w-3 h-3 mr-2" />
+              View Profile
+            </Button>
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
