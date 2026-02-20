@@ -187,7 +187,7 @@ function ProjectCard({ project, agents }) {
   };
 
   return (
-    <Link to={createPageUrl('ProjectDetails') + `?id=${project.id}`}>
+    <Link to={createPageUrl('AIProjectHub') + `?projectId=${project.id}`}>
       <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all cursor-pointer">
         <CardHeader>
           <div className="flex items-start justify-between mb-2">
