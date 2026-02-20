@@ -83,6 +83,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import SkillValidation from './pages/SkillValidation';
+import AIProjectHub from './pages/AIProjectHub';
 
 
 export const PAGES = {
@@ -122,6 +123,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "SkillValidation": SkillValidation,
+    "AIProjectHub": AIProjectHub,
 }
 
 export const pagesConfig = {

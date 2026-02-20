@@ -215,6 +215,12 @@ export default function Home() {
                   Skill Validation
                 </Button>
               </Link>
+              <Link to={createPageUrl('AIProjectHub')}>
+                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
+                  <Target className="w-4 h-4 mr-2" />
+                  Project Hub
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
