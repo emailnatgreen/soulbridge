@@ -81,6 +81,7 @@ import Wallets from './pages/Wallets';
 import AgentProfile from './pages/AgentProfile';
 import EditAgentProfile from './pages/EditAgentProfile';
 import AIProjectManager from './pages/AIProjectManager';
+import Notifications from './pages/Notifications';
 
 
 export const PAGES = {
@@ -118,6 +119,7 @@ export const PAGES = {
     "AgentProfile": AgentProfile,
     "EditAgentProfile": EditAgentProfile,
     "AIProjectManager": AIProjectManager,
+    "Notifications": Notifications,
 }
 
 export const pagesConfig = {

@@ -3,10 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
+import NotificationCenter from '../components/NotificationCenter';
 
 export default function Home() {
   const { data: transactions = [], isLoading } = useQuery({
@@ -33,12 +34,15 @@ export default function Home() {
                 </h1>
                 <p className="text-sm text-purple-300/60">XRP Payment Platform</p>
               </div>
-              <Link to={createPageUrl('Send')}>
-                <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25 transition-all duration-300">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Send XRP
-                </Button>
-              </Link>
+              <div className="flex items-center gap-3">
+                <NotificationCenter agentId="axi_main_001" />
+                <Link to={createPageUrl('Send')}>
+                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25 transition-all duration-300">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Send XRP
+                  </Button>
+                </Link>
+              </div>
             </div>
             
             {/* Navigation Menu */}
