@@ -227,6 +227,12 @@ export default function Home() {
                   Analytics
                 </Button>
               </Link>
+              <Link to={createPageUrl('SkillEndorsements')}>
+                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
+                  <Award className="w-4 h-4 mr-2" />
+                  Endorsements
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
