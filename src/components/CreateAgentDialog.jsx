@@ -36,12 +36,22 @@ export default function CreateAgentDialog({ open, onClose, wallets }) {
       const response = await base44.functions.invoke('createAgent', data);
       return response.data;
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
       queryClient.invalidateQueries({ queryKey: ['wallets'] });
       setBirthResult(result);
       if (result.success) {
         setStep(4);
+        
+        // Trigger automated onboarding
+        try {
+          await base44.functions.invoke('automateAgentOnboarding', {
+            agent_id: result.agent.id
+          });
+          toast.success('✨ Automated onboarding initiated!');
+        } catch (error) {
+          console.error('Onboarding error:', error);
+        }
       }
     },
     onError: (error) => {
