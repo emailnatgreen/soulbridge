@@ -89,7 +89,7 @@ export default function Home() {
                   Direct Chat
                 </Button>
               </Link>
-              <Link to={createPageUrl('Governance')}>
+              <Link to={createPageUrl('GovernanceHub')}>
                 <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
                   <Shield className="w-4 h-4 mr-2" />
                   Governance

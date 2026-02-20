@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AIProjectHub from './pages/AIProjectHub';
 import AIProjectManager from './pages/AIProjectManager';
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
@@ -57,6 +58,7 @@ import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
+import CollaborationHub from './pages/CollaborationHub';
 import CreateManualWallet from './pages/CreateManualWallet';
 import DialogueStudio from './pages/DialogueStudio';
 import DiplomacyHub from './pages/DiplomacyHub';
@@ -67,13 +69,18 @@ import EditAgentProfile from './pages/EditAgentProfile';
 import Governance from './pages/Governance';
 import GovernanceSimulation from './pages/GovernanceSimulation';
 import Home from './pages/Home';
+import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
 import MainnetMigration from './pages/MainnetMigration';
 import Notifications from './pages/Notifications';
+import ProjectAnalytics from './pages/ProjectAnalytics';
+import ProjectTemplates from './pages/ProjectTemplates';
 import RLUSDManager from './pages/RLUSDManager';
 import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceMarketplace from './pages/ResourceMarketplace';
 import Send from './pages/Send';
 import SimulationLab from './pages/SimulationLab';
+import SkillEndorsements from './pages/SkillEndorsements';
+import SkillValidation from './pages/SkillValidation';
 import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 import SocialNetwork from './pages/SocialNetwork';
 import TaskDelegation from './pages/TaskDelegation';
@@ -82,16 +89,11 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import SkillValidation from './pages/SkillValidation';
-import AIProjectHub from './pages/AIProjectHub';
-import ProjectAnalytics from './pages/ProjectAnalytics';
-import SkillEndorsements from './pages/SkillEndorsements';
-import ProjectTemplates from './pages/ProjectTemplates';
-import CollaborationHub from './pages/CollaborationHub';
-import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
+import GovernanceHub from './pages/GovernanceHub';
 
 
 export const PAGES = {
+    "AIProjectHub": AIProjectHub,
     "AIProjectManager": AIProjectManager,
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
@@ -102,6 +104,7 @@ export const PAGES = {
     "AgentTrainingModule": AgentTrainingModule,
     "Agents": Agents,
     "Axi": Axi,
+    "CollaborationHub": CollaborationHub,
     "CreateManualWallet": CreateManualWallet,
     "DialogueStudio": DialogueStudio,
     "DiplomacyHub": DiplomacyHub,
@@ -112,13 +115,18 @@ export const PAGES = {
     "Governance": Governance,
     "GovernanceSimulation": GovernanceSimulation,
     "Home": Home,
+    "KnowledgeSynthesis": KnowledgeSynthesis,
     "MainnetMigration": MainnetMigration,
     "Notifications": Notifications,
+    "ProjectAnalytics": ProjectAnalytics,
+    "ProjectTemplates": ProjectTemplates,
     "RLUSDManager": RLUSDManager,
     "RelationshipNetwork": RelationshipNetwork,
     "ResourceMarketplace": ResourceMarketplace,
     "Send": Send,
     "SimulationLab": SimulationLab,
+    "SkillEndorsements": SkillEndorsements,
+    "SkillValidation": SkillValidation,
     "SocialCapitalDashboard": SocialCapitalDashboard,
     "SocialNetwork": SocialNetwork,
     "TaskDelegation": TaskDelegation,
@@ -127,13 +135,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "SkillValidation": SkillValidation,
-    "AIProjectHub": AIProjectHub,
-    "ProjectAnalytics": ProjectAnalytics,
-    "SkillEndorsements": SkillEndorsements,
-    "ProjectTemplates": ProjectTemplates,
-    "CollaborationHub": CollaborationHub,
-    "KnowledgeSynthesis": KnowledgeSynthesis,
+    "GovernanceHub": GovernanceHub,
 }
 
 export const pagesConfig = {
