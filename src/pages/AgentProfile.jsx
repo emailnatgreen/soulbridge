@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Star, Briefcase, Award, Zap, Globe, MessageCircle, Edit, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Star, Briefcase, Award, Zap, Globe, MessageCircle, Edit, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -244,7 +244,15 @@ export default function AgentProfile() {
           <TabsContent value="skills">
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardHeader>
-                <CardTitle className="text-white">Core Skills</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white">Core Skills</CardTitle>
+                  <Link to={createPageUrl('SkillValidation') + `?agentId=${agent.id}`}>
+                    <Button size="sm" variant="outline" className="border-white/10 text-white">
+                      <Award className="w-4 h-4 mr-2" />
+                      Request Validation
+                    </Button>
+                  </Link>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
@@ -252,12 +260,27 @@ export default function AgentProfile() {
                     agent.core_skills.map((skill, idx) => (
                       <div key={idx} className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-white font-medium">{skill.name}</span>
-                          <span className="text-purple-300">{skill.level}/10</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-medium">{skill.name}</span>
+                            {skill.validated && (
+                              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                Validated
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-purple-300">
+                            {skill.validated ? skill.validated_level : skill.level}/10
+                          </span>
                         </div>
-                        <Progress value={skill.level * 10} className="h-2" />
+                        <Progress value={(skill.validated ? skill.validated_level : skill.level) * 10} className="h-2" />
                         {skill.description && (
                           <p className="text-sm text-white/60">{skill.description}</p>
+                        )}
+                        {skill.validated && skill.validation_expires && (
+                          <p className="text-xs text-white/40">
+                            Valid until {new Date(skill.validation_expires).toLocaleDateString()}
+                          </p>
                         )}
                       </div>
                     ))
