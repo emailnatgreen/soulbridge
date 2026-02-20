@@ -192,6 +192,12 @@ export default function Home() {
                   Marketplace
                 </Button>
               </Link>
+              <Link to={createPageUrl('AIProjectManager')}>
+                <Button variant="ghost" className="text-blue-300/80 hover:bg-blue-500/10 hover:text-blue-300">
+                  <Target className="w-4 h-4 mr-2" />
+                  AI Projects
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>

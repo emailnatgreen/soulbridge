@@ -80,6 +80,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import AgentProfile from './pages/AgentProfile';
 import EditAgentProfile from './pages/EditAgentProfile';
+import AIProjectManager from './pages/AIProjectManager';
 
 
 export const PAGES = {
@@ -116,6 +117,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "AgentProfile": AgentProfile,
     "EditAgentProfile": EditAgentProfile,
+    "AIProjectManager": AIProjectManager,
 }
 
 export const pagesConfig = {
