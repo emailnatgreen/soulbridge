@@ -87,6 +87,7 @@ import AIProjectHub from './pages/AIProjectHub';
 import ProjectAnalytics from './pages/ProjectAnalytics';
 import SkillEndorsements from './pages/SkillEndorsements';
 import ProjectTemplates from './pages/ProjectTemplates';
+import CollaborationHub from './pages/CollaborationHub';
 
 
 export const PAGES = {
@@ -130,6 +131,7 @@ export const PAGES = {
     "ProjectAnalytics": ProjectAnalytics,
     "SkillEndorsements": SkillEndorsements,
     "ProjectTemplates": ProjectTemplates,
+    "CollaborationHub": CollaborationHub,
 }
 
 export const pagesConfig = {

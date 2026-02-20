@@ -239,6 +239,12 @@ export default function Home() {
                   Templates
                 </Button>
               </Link>
+              <Link to={createPageUrl('CollaborationHub')}>
+                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
+                  <Users className="w-4 h-4 mr-2" />
+                  Collaboration
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
