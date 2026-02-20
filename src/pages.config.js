@@ -67,6 +67,7 @@ import Economy from './pages/Economy';
 import EditAgent from './pages/EditAgent';
 import EditAgentProfile from './pages/EditAgentProfile';
 import Governance from './pages/Governance';
+import GovernanceHub from './pages/GovernanceHub';
 import GovernanceSimulation from './pages/GovernanceSimulation';
 import Home from './pages/Home';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
@@ -89,7 +90,7 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import GovernanceHub from './pages/GovernanceHub';
+import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
 
 
 export const PAGES = {
@@ -113,6 +114,7 @@ export const PAGES = {
     "EditAgent": EditAgent,
     "EditAgentProfile": EditAgentProfile,
     "Governance": Governance,
+    "GovernanceHub": GovernanceHub,
     "GovernanceSimulation": GovernanceSimulation,
     "Home": Home,
     "KnowledgeSynthesis": KnowledgeSynthesis,
@@ -135,7 +137,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "GovernanceHub": GovernanceHub,
+    "AgentPerformanceAnalytics": AgentPerformanceAnalytics,
 }
 
 export const pagesConfig = {

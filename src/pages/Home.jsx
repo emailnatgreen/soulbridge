@@ -251,6 +251,12 @@ export default function Home() {
                   AI Synthesis
                 </Button>
               </Link>
+              <Link to={createPageUrl('AgentPerformanceAnalytics')}>
+                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Performance
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
