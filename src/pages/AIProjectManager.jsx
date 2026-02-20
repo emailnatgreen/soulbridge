@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,14 +10,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Plus, Sparkles, Users, Target, TrendingUp, Loader2, Brain, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Sparkles, Users, Target, TrendingUp, Loader2, Brain, CheckCircle, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 
 export default function AIProjectManager() {
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const queryClient = useQueryClient();
+
+  const { data: templates = [] } = useQuery({
+    queryKey: ['project-templates'],
+    queryFn: () => base44.entities.ProjectTemplate.list('-created_date')
+  });
+
+  // Check for template in URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const templateId = urlParams.get('templateId');
+    if (templateId && templates.length > 0) {
+      const template = templates.find(t => t.id === templateId);
+      if (template) {
+        setSelectedTemplate(template);
+        setCreateOpen(true);
+      }
+    }
+  }, [templates]);
 
   const { data: projects = [] } = useQuery({
     queryKey: ['ai-projects'],
@@ -62,23 +81,40 @@ export default function AIProjectManager() {
                 <p className="text-sm text-purple-300/60">Orchestrate collective intelligence</p>
               </div>
             </div>
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Project
+            <div className="flex gap-3">
+              <Link to={createPageUrl('ProjectTemplates')}>
+                <Button variant="outline" className="border-white/10 text-white hover:bg-white/5">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Browse Templates
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Create AI-Managed Project</DialogTitle>
-                </DialogHeader>
-                <CreateProjectForm
-                  agents={agents}
-                  onClose={() => setCreateOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
+              </Link>
+              <Dialog open={createOpen} onOpenChange={(open) => {
+                setCreateOpen(open);
+                if (!open) setSelectedTemplate(null);
+              }}>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Project
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {selectedTemplate ? `Create from Template: ${selectedTemplate.name}` : 'Create AI-Managed Project'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <CreateProjectForm
+                    agents={agents}
+                    template={selectedTemplate}
+                    onClose={() => {
+                      setCreateOpen(false);
+                      setSelectedTemplate(null);
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
       </div>
@@ -261,18 +297,23 @@ function ProjectCard({ project, agents }) {
   );
 }
 
-function CreateProjectForm({ agents, onClose }) {
+function CreateProjectForm({ agents, template, onClose }) {
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(template ? 2 : 1);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
+    title: template?.name || '',
+    description: template?.description || '',
     vision: '',
     owner_agent_id: '',
-    budget_rlusd: '',
-    required_skills: ''
+    budget_rlusd: template?.budget_guidance?.recommended_budget_rlusd || '',
+    required_skills: template?.required_skills?.join(', ') || ''
   });
-  const [generatedPlan, setGeneratedPlan] = useState(null);
+  const [generatedPlan, setGeneratedPlan] = useState(template ? {
+    tasks: template.task_templates,
+    milestones: template.milestone_templates,
+    estimated_total_hours: template.task_templates?.reduce((sum, t) => sum + (t.estimated_hours || 0), 0) || 0,
+    recommended_team_size: template.recommended_team_size
+  } : null);
 
   const generatePlanMutation = useMutation({
     mutationFn: (data) => base44.functions.invoke('generateProjectPlan', data),
