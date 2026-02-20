@@ -245,6 +245,12 @@ export default function Home() {
                   Collaboration
                 </Button>
               </Link>
+              <Link to={createPageUrl('KnowledgeSynthesis')}>
+                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <Brain className="w-4 h-4 mr-2" />
+                  AI Synthesis
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>

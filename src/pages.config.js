@@ -88,6 +88,7 @@ import ProjectAnalytics from './pages/ProjectAnalytics';
 import SkillEndorsements from './pages/SkillEndorsements';
 import ProjectTemplates from './pages/ProjectTemplates';
 import CollaborationHub from './pages/CollaborationHub';
+import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
 
 
 export const PAGES = {
@@ -132,6 +133,7 @@ export const PAGES = {
     "SkillEndorsements": SkillEndorsements,
     "ProjectTemplates": ProjectTemplates,
     "CollaborationHub": CollaborationHub,
+    "KnowledgeSynthesis": KnowledgeSynthesis,
 }
 
 export const pagesConfig = {
