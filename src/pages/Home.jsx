@@ -221,6 +221,12 @@ export default function Home() {
                   Project Hub
                 </Button>
               </Link>
+              <Link to={createPageUrl('ProjectAnalytics')}>
+                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
