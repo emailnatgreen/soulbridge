@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Send, CheckCircle2, Circle, Loader2, MessageSquare, ListTodo, Target, Users, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import AgentMatcher from '../components/AgentMatcher';
 
 export default function AIProjectHub() {
   const [searchParams] = useSearchParams();
@@ -226,22 +227,30 @@ export default function AIProjectHub() {
                             Assigned: {agents.find(a => a.id === task.assigned_agent_id)?.name || 'Agent'}
                           </span>
                         ) : (
-                          <Select
-                            onValueChange={(agentId) => assignTaskMutation.mutate({ task_id: task.id, agent_id: agentId })}
-                          >
-                            <SelectTrigger className="w-48 h-8 bg-white/5 border-white/10 text-white text-xs">
-                              <SelectValue placeholder="Assign to agent..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {agents
-                                .filter(a => a.core_skills?.some(s => s.validated))
-                                .map(agent => (
-                                  <SelectItem key={agent.id} value={agent.id}>
-                                    {agent.name}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="flex items-center gap-2">
+                            <AgentMatcher
+                              task={task}
+                              projectId={projectId}
+                              onAgentSelected={(agentId) => assignTaskMutation.mutate({ task_id: task.id, agent_id: agentId })}
+                            />
+                            <span className="text-white/40">or</span>
+                            <Select
+                              onValueChange={(agentId) => assignTaskMutation.mutate({ task_id: task.id, agent_id: agentId })}
+                            >
+                              <SelectTrigger className="w-48 h-8 bg-white/5 border-white/10 text-white text-xs">
+                                <SelectValue placeholder="Manual assign..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {agents
+                                  .filter(a => a.core_skills?.some(s => s.validated))
+                                  .map(agent => (
+                                    <SelectItem key={agent.id} value={agent.id}>
+                                      {agent.name}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         )}
                         
                         {task.estimated_hours && (
