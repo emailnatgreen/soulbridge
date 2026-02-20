@@ -47,10 +47,12 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AIProjectManager from './pages/AIProjectManager';
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
 import AgentMarketplace from './pages/AgentMarketplace';
 import AgentMessaging from './pages/AgentMessaging';
+import AgentProfile from './pages/AgentProfile';
 import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
 import Agents from './pages/Agents';
@@ -61,10 +63,12 @@ import DiplomacyHub from './pages/DiplomacyHub';
 import DirectAgentChat from './pages/DirectAgentChat';
 import Economy from './pages/Economy';
 import EditAgent from './pages/EditAgent';
+import EditAgentProfile from './pages/EditAgentProfile';
 import Governance from './pages/Governance';
 import GovernanceSimulation from './pages/GovernanceSimulation';
 import Home from './pages/Home';
 import MainnetMigration from './pages/MainnetMigration';
+import Notifications from './pages/Notifications';
 import RLUSDManager from './pages/RLUSDManager';
 import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceMarketplace from './pages/ResourceMarketplace';
@@ -78,17 +82,16 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import AgentProfile from './pages/AgentProfile';
-import EditAgentProfile from './pages/EditAgentProfile';
-import AIProjectManager from './pages/AIProjectManager';
-import Notifications from './pages/Notifications';
+import SkillValidation from './pages/SkillValidation';
 
 
 export const PAGES = {
+    "AIProjectManager": AIProjectManager,
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
     "AgentMarketplace": AgentMarketplace,
     "AgentMessaging": AgentMessaging,
+    "AgentProfile": AgentProfile,
     "AgentSkillTree": AgentSkillTree,
     "AgentTrainingModule": AgentTrainingModule,
     "Agents": Agents,
@@ -99,10 +102,12 @@ export const PAGES = {
     "DirectAgentChat": DirectAgentChat,
     "Economy": Economy,
     "EditAgent": EditAgent,
+    "EditAgentProfile": EditAgentProfile,
     "Governance": Governance,
     "GovernanceSimulation": GovernanceSimulation,
     "Home": Home,
     "MainnetMigration": MainnetMigration,
+    "Notifications": Notifications,
     "RLUSDManager": RLUSDManager,
     "RelationshipNetwork": RelationshipNetwork,
     "ResourceMarketplace": ResourceMarketplace,
@@ -116,10 +121,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "AgentProfile": AgentProfile,
-    "EditAgentProfile": EditAgentProfile,
-    "AIProjectManager": AIProjectManager,
-    "Notifications": Notifications,
+    "SkillValidation": SkillValidation,
 }
 
 export const pagesConfig = {
