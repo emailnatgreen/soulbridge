@@ -233,6 +233,12 @@ export default function Home() {
                   Endorsements
                 </Button>
               </Link>
+              <Link to={createPageUrl('ProjectTemplates')}>
+                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Templates
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>

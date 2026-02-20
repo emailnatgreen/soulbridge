@@ -86,6 +86,7 @@ import SkillValidation from './pages/SkillValidation';
 import AIProjectHub from './pages/AIProjectHub';
 import ProjectAnalytics from './pages/ProjectAnalytics';
 import SkillEndorsements from './pages/SkillEndorsements';
+import ProjectTemplates from './pages/ProjectTemplates';
 
 
 export const PAGES = {
@@ -128,6 +129,7 @@ export const PAGES = {
     "AIProjectHub": AIProjectHub,
     "ProjectAnalytics": ProjectAnalytics,
     "SkillEndorsements": SkillEndorsements,
+    "ProjectTemplates": ProjectTemplates,
 }
 
 export const pagesConfig = {
