@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, ShoppingCart, TrendingUp, TrendingDown, Minus, Package, Factory, Plus, Search, Star, Database, Cpu, Code, FileText, Zap, Download } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, TrendingUp, TrendingDown, Minus, Package, Factory, Plus, Search, Star, Database, Cpu, Code, FileText, Zap, Download, Sparkles, Brain, Target } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +21,9 @@ export default function ResourceMarketplace() {
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [selectedListing, setSelectedListing] = useState(null);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [showRecommendations, setShowRecommendations] = useState(false);
+    const [showPricingOptimization, setShowPricingOptimization] = useState(null);
+    const [showMarketIntelligence, setShowMarketIntelligence] = useState(false);
     const queryClient = useQueryClient();
 
     const { data: markets = [] } = useQuery({
@@ -61,6 +64,27 @@ export default function ResourceMarketplace() {
         queryKey: ['myListings', selectedAgent],
         queryFn: () => selectedAgent ? base44.entities.ResourceListing.filter({ seller_agent_id: selectedAgent }) : [],
         enabled: !!selectedAgent
+    });
+
+    const { data: recommendations, isLoading: loadingRecs, refetch: fetchRecommendations } = useQuery({
+        queryKey: ['recommendations', selectedAgent],
+        queryFn: async () => {
+            const response = await base44.functions.invoke('recommendResources', { 
+                agent_id: selectedAgent,
+                limit: 8
+            });
+            return response.data;
+        },
+        enabled: false
+    });
+
+    const { data: marketForecast, isLoading: loadingForecast, refetch: fetchForecast } = useQuery({
+        queryKey: ['marketForecast'],
+        queryFn: async () => {
+            const response = await base44.functions.invoke('forecastResourceDemand', {});
+            return response.data;
+        },
+        enabled: false
     });
 
     const tradeMutation = useMutation({
@@ -208,7 +232,13 @@ export default function ResourceMarketplace() {
                 <Tabs defaultValue="browse" className="space-y-6">
                     <TabsList className="bg-white/5 border border-white/10">
                         <TabsTrigger value="browse" className="data-[state=active]:bg-purple-600">Browse</TabsTrigger>
+                        {selectedAgent && <TabsTrigger value="airecommendations" className="data-[state=active]:bg-purple-600">
+                            <Sparkles className="w-4 h-4 mr-2" />AI Picks
+                        </TabsTrigger>}
                         <TabsTrigger value="rawmarket" className="data-[state=active]:bg-purple-600">Raw Resources</TabsTrigger>
+                        {selectedAgent && <TabsTrigger value="marketintel" className="data-[state=active]:bg-purple-600">
+                            <Brain className="w-4 h-4 mr-2" />Market Intel
+                        </TabsTrigger>}
                         {selectedAgent && <TabsTrigger value="purchases" className="data-[state=active]:bg-purple-600">My Purchases</TabsTrigger>}
                         {selectedAgent && <TabsTrigger value="mylistings" className="data-[state=active]:bg-purple-600">My Listings</TabsTrigger>}
                     </TabsList>
@@ -309,6 +339,222 @@ export default function ResourceMarketplace() {
                                 </CardContent>
                             </Card>
                         )}
+                    </TabsContent>
+
+                    <TabsContent value="airecommendations" className="space-y-6">
+                        <Card className="bg-gradient-to-br from-purple-900/40 to-indigo-900/40 backdrop-blur-xl border-purple-500/30">
+                            <CardHeader>
+                                <CardTitle className="text-white flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-purple-400" />
+                                    AI-Powered Recommendations for You
+                                </CardTitle>
+                                <CardDescription className="text-purple-200/80">
+                                    Personalized resource suggestions based on your skills, projects, and goals
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {!recommendations && !loadingRecs && (
+                                    <div className="text-center py-8">
+                                        <Button onClick={() => fetchRecommendations()} className="bg-purple-600 hover:bg-purple-700">
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Generate AI Recommendations
+                                        </Button>
+                                    </div>
+                                )}
+                                {loadingRecs && (
+                                    <div className="text-center py-12 text-white/60">
+                                        <Brain className="w-12 h-12 mx-auto mb-4 animate-pulse text-purple-400" />
+                                        Analyzing your profile and market trends...
+                                    </div>
+                                )}
+                                {recommendations && (
+                                    <div className="space-y-6">
+                                        {recommendations.market_insight && (
+                                            <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                                                <p className="text-sm text-purple-200">{recommendations.market_insight}</p>
+                                            </div>
+                                        )}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {recommendations.recommendations?.map((rec, idx) => {
+                                                const IconComponent = categoryIcons[rec.resource?.resource_category] || Package;
+                                                return (
+                                                    <Card 
+                                                        key={idx}
+                                                        className="bg-white/5 border-white/10 hover:bg-white/10 transition-all cursor-pointer"
+                                                        onClick={() => setSelectedListing(rec.resource)}
+                                                    >
+                                                        <CardHeader>
+                                                            <div className="flex items-start justify-between">
+                                                                <div className="flex items-start gap-3 flex-1">
+                                                                    <div className="p-2 bg-purple-500/20 rounded-lg">
+                                                                        <IconComponent className="w-5 h-5 text-purple-400" />
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <CardTitle className="text-white text-base">{rec.resource?.resource_name}</CardTitle>
+                                                                        <div className="flex items-center gap-2 mt-1">
+                                                                            <Badge className="bg-green-500/20 text-green-400 text-xs">
+                                                                                {rec.relevance_score}% Match
+                                                                            </Badge>
+                                                                            {rec.urgency === 'high' && (
+                                                                                <Badge className="bg-red-500/20 text-red-400 text-xs">Urgent</Badge>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </CardHeader>
+                                                        <CardContent className="space-y-3">
+                                                            <div>
+                                                                <div className="text-xs text-purple-300/80 font-medium mb-1">Why This Matters:</div>
+                                                                <p className="text-sm text-white/70">{rec.reasoning}</p>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-xs text-purple-300/80 font-medium mb-1">Use Case:</div>
+                                                                <p className="text-sm text-white/70">{rec.use_case}</p>
+                                                            </div>
+                                                            <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                                                                <div className="text-lg font-bold text-green-400">
+                                                                    {rec.resource?.price_rlusd} RLUSD
+                                                                </div>
+                                                                <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                                                                    <Target className="w-4 h-4 mr-1" />
+                                                                    View
+                                                                </Button>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="marketintel" className="space-y-6">
+                        <Card className="bg-gradient-to-br from-indigo-900/40 to-blue-900/40 backdrop-blur-xl border-indigo-500/30">
+                            <CardHeader>
+                                <CardTitle className="text-white flex items-center gap-2">
+                                    <Brain className="w-5 h-5 text-indigo-400" />
+                                    Market Intelligence & Demand Forecast
+                                </CardTitle>
+                                <CardDescription className="text-indigo-200/80">
+                                    AI analysis of market trends, demand patterns, and opportunities
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {!marketForecast && !loadingForecast && (
+                                    <div className="text-center py-8">
+                                        <Button onClick={() => fetchForecast()} className="bg-indigo-600 hover:bg-indigo-700">
+                                            <Brain className="w-4 h-4 mr-2" />
+                                            Generate Market Analysis
+                                        </Button>
+                                    </div>
+                                )}
+                                {loadingForecast && (
+                                    <div className="text-center py-12 text-white/60">
+                                        <Brain className="w-12 h-12 mx-auto mb-4 animate-pulse text-indigo-400" />
+                                        Analyzing marketplace data and trends...
+                                    </div>
+                                )}
+                                {marketForecast && (
+                                    <div className="space-y-6">
+                                        {/* Market Snapshot */}
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                                                <div className="text-xs text-white/60 mb-1">Total Listings</div>
+                                                <div className="text-2xl font-bold text-white">{marketForecast.market_snapshot?.total_listings}</div>
+                                            </div>
+                                            <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                                                <div className="text-xs text-white/60 mb-1">Total Purchases</div>
+                                                <div className="text-2xl font-bold text-white">{marketForecast.market_snapshot?.total_purchases}</div>
+                                            </div>
+                                            <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                                                <div className="text-xs text-white/60 mb-1">Total Revenue</div>
+                                                <div className="text-2xl font-bold text-green-400">
+                                                    {marketForecast.market_snapshot?.total_revenue?.toFixed(0)}
+                                                </div>
+                                            </div>
+                                            <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                                                <div className="text-xs text-white/60 mb-1">Active Projects</div>
+                                                <div className="text-2xl font-bold text-white">{marketForecast.market_snapshot?.active_projects}</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Overall Health */}
+                                        {marketForecast.forecast?.overall_market_health && (
+                                            <div className="p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-lg">
+                                                <div className="text-sm font-medium text-indigo-300 mb-2">Market Health</div>
+                                                <p className="text-white/90">{marketForecast.forecast.overall_market_health}</p>
+                                            </div>
+                                        )}
+
+                                        {/* Hottest Categories */}
+                                        {marketForecast.forecast?.hottest_categories?.length > 0 && (
+                                            <div>
+                                                <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+                                                    <TrendingUp className="w-5 h-5 text-green-400" />
+                                                    Hottest Opportunities
+                                                </h3>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {marketForecast.forecast.hottest_categories.map((cat, idx) => (
+                                                        <Badge key={idx} className="bg-green-500/20 text-green-400">
+                                                            {cat.replace(/_/g, ' ')}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Category Forecasts */}
+                                        <div>
+                                            <h3 className="text-white font-medium mb-3">Category Demand Forecasts</h3>
+                                            <div className="space-y-2">
+                                                {marketForecast.forecast?.category_forecasts?.slice(0, 10).map((forecast, idx) => (
+                                                    <div key={idx} className="p-3 bg-white/5 rounded border border-white/10">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-white font-medium capitalize">
+                                                                {forecast.category.replace(/_/g, ' ')}
+                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <Badge className={
+                                                                    forecast.demand_trend === 'rising' ? 'bg-green-500/20 text-green-400' :
+                                                                    forecast.demand_trend === 'declining' ? 'bg-red-500/20 text-red-400' :
+                                                                    'bg-gray-500/20 text-gray-400'
+                                                                }>
+                                                                    {forecast.demand_trend}
+                                                                </Badge>
+                                                                <Badge className="bg-purple-500/20 text-purple-400">
+                                                                    Score: {forecast.opportunity_score}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-xs text-white/60">
+                                                            Projected: {forecast.projected_purchases} purchases • Risk: {forecast.shortage_risk}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Strategic Insights */}
+                                        {marketForecast.forecast?.strategic_insights?.length > 0 && (
+                                            <div>
+                                                <h3 className="text-white font-medium mb-3">Strategic Insights</h3>
+                                                <div className="space-y-2">
+                                                    {marketForecast.forecast.strategic_insights.map((insight, idx) => (
+                                                        <div key={idx} className="p-3 bg-blue-500/10 border border-blue-500/30 rounded text-sm text-blue-200">
+                                                            • {insight}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     <TabsContent value="rawmarket" className="space-y-6">
@@ -560,7 +806,7 @@ export default function ResourceMarketplace() {
                                         {myListings.map(listing => (
                                             <div key={listing.id} className="p-4 bg-white/5 rounded border border-white/10">
                                                 <div className="flex items-start justify-between">
-                                                    <div>
+                                                    <div className="flex-1">
                                                         <div className="text-white font-medium">{listing.resource_name}</div>
                                                         <div className="text-sm text-white/60 mt-1">
                                                             Price: {listing.price_rlusd} RLUSD • Available: {listing.quantity_available} {listing.unit_of_measure}
@@ -569,13 +815,24 @@ export default function ResourceMarketplace() {
                                                             Sales: {listing.total_sales} • Revenue: {listing.revenue_generated_rlusd?.toFixed(2)} RLUSD
                                                         </div>
                                                     </div>
-                                                    <Badge className={
-                                                        listing.status === 'available' ? 'bg-green-500/20 text-green-400' :
-                                                        listing.status === 'low_stock' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                        'bg-red-500/20 text-red-400'
-                                                    }>
-                                                        {listing.status}
-                                                    </Badge>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button 
+                                                            size="sm" 
+                                                            variant="outline"
+                                                            onClick={() => setShowPricingOptimization(listing)}
+                                                            className="bg-purple-500/10 border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                                                        >
+                                                            <Sparkles className="w-4 h-4 mr-1" />
+                                                            AI Price
+                                                        </Button>
+                                                        <Badge className={
+                                                            listing.status === 'available' ? 'bg-green-500/20 text-green-400' :
+                                                            listing.status === 'low_stock' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                            'bg-red-500/20 text-red-400'
+                                                        }>
+                                                            {listing.status}
+                                                        </Badge>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -606,6 +863,123 @@ export default function ResourceMarketplace() {
                     </DialogContent>
                 </Dialog>
             )}
+
+            {/* Pricing Optimization Dialog */}
+            {showPricingOptimization && (
+                <Dialog open={!!showPricingOptimization} onOpenChange={() => setShowPricingOptimization(null)}>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-purple-400" />
+                                AI Pricing Optimization
+                            </DialogTitle>
+                        </DialogHeader>
+                        <PricingOptimizationDialog 
+                            listing={showPricingOptimization}
+                            onClose={() => setShowPricingOptimization(null)}
+                        />
+                    </DialogContent>
+                </Dialog>
+            )}
+        </div>
+    );
+}
+
+function PricingOptimizationDialog({ listing, onClose }) {
+    const [optimization, setOptimization] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
+
+    React.useEffect(() => {
+        async function fetchOptimization() {
+            setLoading(true);
+            try {
+                const response = await base44.functions.invoke('optimizeResourcePricing', {
+                    listing_id: listing.id
+                });
+                setOptimization(response.data);
+            } catch (error) {
+                console.error('Pricing optimization error:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchOptimization();
+    }, [listing.id]);
+
+    if (loading) {
+        return (
+            <div className="text-center py-12">
+                <Brain className="w-12 h-12 mx-auto mb-4 animate-pulse text-purple-400" />
+                <p className="text-white/60">Analyzing market data...</p>
+            </div>
+        );
+    }
+
+    if (!optimization) return null;
+
+    return (
+        <div className="space-y-6">
+            <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                <div className="text-sm font-medium text-purple-300 mb-2">AI Recommendation</div>
+                <p className="text-white/90">{optimization.optimization?.reasoning}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                    <div className="text-xs text-white/60 mb-1">Current Price</div>
+                    <div className="text-2xl font-bold text-white">{optimization.current_price} RLUSD</div>
+                </div>
+                <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <div className="text-xs text-green-300 mb-1">Optimal Price</div>
+                    <div className="text-2xl font-bold text-green-400">{optimization.optimization?.optimal_price} RLUSD</div>
+                </div>
+            </div>
+
+            <div className="p-4 bg-white/5 rounded-lg space-y-3">
+                <div className="flex justify-between text-sm">
+                    <span className="text-white/60">Price Range:</span>
+                    <span className="text-white">
+                        {optimization.optimization?.price_range?.min} - {optimization.optimization?.price_range?.max} RLUSD
+                    </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                    <span className="text-white/60">Market Position:</span>
+                    <Badge className="bg-blue-500/20 text-blue-400 capitalize">
+                        {optimization.optimization?.market_position}
+                    </Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                    <span className="text-white/60">Demand Forecast:</span>
+                    <Badge className={
+                        optimization.optimization?.demand_forecast === 'high' ? 'bg-green-500/20 text-green-400' :
+                        optimization.optimization?.demand_forecast === 'low' ? 'bg-red-500/20 text-red-400' :
+                        'bg-yellow-500/20 text-yellow-400'
+                    }>
+                        {optimization.optimization?.demand_forecast}
+                    </Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                    <span className="text-white/60">Confidence Level:</span>
+                    <span className="text-white">{optimization.optimization?.confidence_level}%</span>
+                </div>
+            </div>
+
+            {optimization.optimization?.recommendations?.length > 0 && (
+                <div>
+                    <div className="text-sm font-medium text-white mb-2">Recommendations</div>
+                    <div className="space-y-2">
+                        {optimization.optimization.recommendations.map((rec, idx) => (
+                            <div key={idx} className="p-3 bg-blue-500/10 border border-blue-500/30 rounded text-sm text-blue-200">
+                                • {rec}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <div className="text-xs text-white/40">
+                {optimization.optimization?.elasticity_insight}
+            </div>
         </div>
     );
 }
