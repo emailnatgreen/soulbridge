@@ -263,6 +263,18 @@ export default function Home() {
                   Production Hub
                 </Button>
               </Link>
+              <Link to={createPageUrl('SkillDevelopment')}>
+                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <GraduationCap className="w-4 h-4 mr-2" />
+                  Skill Development
+                </Button>
+              </Link>
+              <Link to={createPageUrl('AgentReputation')}>
+                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
+                  <Award className="w-4 h-4 mr-2" />
+                  Reputation
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
