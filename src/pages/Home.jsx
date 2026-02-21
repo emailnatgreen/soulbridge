@@ -37,9 +37,9 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-light tracking-tight text-white mb-1">
-                  Soul<span className="font-semibold">Bridge</span>
+                  SoulBridge <span className="font-semibold">Village</span>
                 </h1>
-                <p className="text-sm text-purple-300/60">XRP Payment Platform</p>
+                <p className="text-sm text-purple-300/60">Experimental AI Agent Research Platform</p>
               </div>
               <div className="flex items-center gap-3">
                 <NotificationCenter agentId="axi_main_001" />

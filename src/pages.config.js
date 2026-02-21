@@ -62,6 +62,7 @@ import AgentWellbeing from './pages/AgentWellbeing';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CollaborationHub from './pages/CollaborationHub';
+import CollaborationSuite from './pages/CollaborationSuite';
 import CreateManualWallet from './pages/CreateManualWallet';
 import DialogueStudio from './pages/DialogueStudio';
 import DiplomacyHub from './pages/DiplomacyHub';
@@ -75,12 +76,14 @@ import GovernanceSimulation from './pages/GovernanceSimulation';
 import Home from './pages/Home';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
 import MainnetMigration from './pages/MainnetMigration';
+import MentorshipHub from './pages/MentorshipHub';
 import Notifications from './pages/Notifications';
 import ProductionHub from './pages/ProductionHub';
 import ProjectAnalytics from './pages/ProjectAnalytics';
 import ProjectTemplates from './pages/ProjectTemplates';
 import RLUSDManager from './pages/RLUSDManager';
 import RelationshipNetwork from './pages/RelationshipNetwork';
+import ResourceDynamics from './pages/ResourceDynamics';
 import ResourceMarketplace from './pages/ResourceMarketplace';
 import Send from './pages/Send';
 import SimulationLab from './pages/SimulationLab';
@@ -95,9 +98,6 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import ResourceDynamics from './pages/ResourceDynamics';
-import MentorshipHub from './pages/MentorshipHub';
-import CollaborationSuite from './pages/CollaborationSuite';
 
 
 export const PAGES = {
@@ -116,6 +116,7 @@ export const PAGES = {
     "Agents": Agents,
     "Axi": Axi,
     "CollaborationHub": CollaborationHub,
+    "CollaborationSuite": CollaborationSuite,
     "CreateManualWallet": CreateManualWallet,
     "DialogueStudio": DialogueStudio,
     "DiplomacyHub": DiplomacyHub,
@@ -129,12 +130,14 @@ export const PAGES = {
     "Home": Home,
     "KnowledgeSynthesis": KnowledgeSynthesis,
     "MainnetMigration": MainnetMigration,
+    "MentorshipHub": MentorshipHub,
     "Notifications": Notifications,
     "ProductionHub": ProductionHub,
     "ProjectAnalytics": ProjectAnalytics,
     "ProjectTemplates": ProjectTemplates,
     "RLUSDManager": RLUSDManager,
     "RelationshipNetwork": RelationshipNetwork,
+    "ResourceDynamics": ResourceDynamics,
     "ResourceMarketplace": ResourceMarketplace,
     "Send": Send,
     "SimulationLab": SimulationLab,
@@ -149,9 +152,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "ResourceDynamics": ResourceDynamics,
-    "MentorshipHub": MentorshipHub,
-    "CollaborationSuite": CollaborationSuite,
 }
 
 export const pagesConfig = {
