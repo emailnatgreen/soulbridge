@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
@@ -255,6 +255,12 @@ export default function Home() {
                 <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Performance
+                </Button>
+              </Link>
+              <Link to={createPageUrl('ProductionHub')}>
+                <Button variant="ghost" className="text-orange-300/80 hover:bg-orange-500/10 hover:text-orange-300">
+                  <Factory className="w-4 h-4 mr-2" />
+                  Production Hub
                 </Button>
               </Link>
             </nav>
