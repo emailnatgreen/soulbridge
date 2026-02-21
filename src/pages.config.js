@@ -92,6 +92,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import ProductionHub from './pages/ProductionHub';
+import SkillDevelopment from './pages/SkillDevelopment';
 
 
 export const PAGES = {
@@ -140,6 +141,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "ProductionHub": ProductionHub,
+    "SkillDevelopment": SkillDevelopment,
 }
 
 export const pagesConfig = {
