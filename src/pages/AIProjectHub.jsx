@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Send, CheckCircle2, Circle, Loader2, MessageSquare, ListTodo, Target, Users, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Send, CheckCircle2, Circle, Loader2, MessageSquare, ListTodo, Target, Users, Calendar, DollarSign, AlertCircle, Brain, Sparkles, TrendingUp, Shield } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AgentMatcher from '../components/AgentMatcher';
@@ -78,6 +78,38 @@ export default function AIProjectHub() {
       await base44.functions.invoke('updateProjectMilestone', data);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries(['project', projectId]);
+    }
+  });
+
+  const { data: riskAnalysis, isLoading: loadingRisks, refetch: fetchRisks } = useQuery({
+    queryKey: ['projectRisks', projectId],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('analyzeProjectRisks', { project_id: projectId });
+      return response.data;
+    },
+    enabled: false
+  });
+
+  const { data: scheduleOptimization, isLoading: loadingSchedule, refetch: fetchSchedule } = useQuery({
+    queryKey: ['scheduleOptimization', projectId],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('optimizeProjectSchedule', { project_id: projectId });
+      return response.data;
+    },
+    enabled: false
+  });
+
+  const autoAdjustMutation = useMutation({
+    mutationFn: async (apply) => {
+      const response = await base44.functions.invoke('autoAdjustProjectTasks', {
+        project_id: projectId,
+        apply_changes: apply
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['project-tasks', projectId]);
       queryClient.invalidateQueries(['project', projectId]);
     }
   });
@@ -191,6 +223,10 @@ export default function AIProjectHub() {
               <ListTodo className="w-4 h-4 mr-2" />
               Tasks
             </TabsTrigger>
+            <TabsTrigger value="ai-insights">
+              <Brain className="w-4 h-4 mr-2" />
+              AI Insights
+            </TabsTrigger>
             <TabsTrigger value="chat">
               <MessageSquare className="w-4 h-4 mr-2" />
               Team Chat
@@ -288,6 +324,224 @@ export default function AIProjectHub() {
                 </CardContent>
               </Card>
             ))}
+          </TabsContent>
+
+          {/* AI Insights Tab */}
+          <TabsContent value="ai-insights" className="space-y-6">
+            {/* Risk Analysis */}
+            <Card className="bg-gradient-to-br from-red-900/30 to-orange-900/30 backdrop-blur-xl border-red-500/30">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-red-400" />
+                    Risk Analysis
+                  </CardTitle>
+                  <Button 
+                    onClick={() => fetchRisks()} 
+                    disabled={loadingRisks}
+                    size="sm"
+                    className="bg-red-600/50 hover:bg-red-600/70"
+                  >
+                    {loadingRisks ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Analyze Risks'}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingRisks && (
+                  <div className="text-center py-8 text-white/60">
+                    <Brain className="w-12 h-12 mx-auto mb-4 animate-pulse text-red-400" />
+                    Analyzing project risks...
+                  </div>
+                )}
+                {riskAnalysis && (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                      <div className="text-sm font-medium text-red-300 mb-1">Overall Risk Level</div>
+                      <div className="text-2xl font-bold text-white">{riskAnalysis.risk_analysis?.overall_risk_level}</div>
+                      <div className="text-sm text-white/60 mt-1">Score: {riskAnalysis.risk_analysis?.overall_risk_score}/100</div>
+                    </div>
+
+                    {riskAnalysis.risk_analysis?.critical_risks?.length > 0 && (
+                      <div className="space-y-3">
+                        <div className="text-white font-medium">Critical Risks</div>
+                        {riskAnalysis.risk_analysis.critical_risks.map((risk, idx) => (
+                          <div key={idx} className="p-4 bg-white/5 border border-white/10 rounded-lg">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="font-medium text-white">{risk.title}</div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={
+                                  risk.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
+                                  risk.severity === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                                  'bg-yellow-500/20 text-yellow-400'
+                                }>
+                                  {risk.severity}
+                                </Badge>
+                                <Badge variant="outline">{risk.probability}% likely</Badge>
+                              </div>
+                            </div>
+                            <p className="text-sm text-white/70 mb-2">{risk.impact_description}</p>
+                            <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded text-sm text-blue-200 mt-2">
+                              <span className="font-medium">Mitigation:</span> {risk.mitigation_strategy}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {riskAnalysis.risk_analysis?.recommendations?.length > 0 && (
+                      <div>
+                        <div className="text-white font-medium mb-2">Recommendations</div>
+                        <div className="space-y-2">
+                          {riskAnalysis.risk_analysis.recommendations.map((rec, idx) => (
+                            <div key={idx} className="p-3 bg-blue-500/10 border border-blue-500/30 rounded text-sm text-blue-200">
+                              • {rec}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Schedule Optimization */}
+            <Card className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 backdrop-blur-xl border-purple-500/30">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-purple-400" />
+                    Schedule Optimization
+                  </CardTitle>
+                  <Button 
+                    onClick={() => fetchSchedule()} 
+                    disabled={loadingSchedule}
+                    size="sm"
+                    className="bg-purple-600/50 hover:bg-purple-600/70"
+                  >
+                    {loadingSchedule ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Optimize Schedule'}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSchedule && (
+                  <div className="text-center py-8 text-white/60">
+                    <Brain className="w-12 h-12 mx-auto mb-4 animate-pulse text-purple-400" />
+                    Optimizing project schedule...
+                  </div>
+                )}
+                {scheduleOptimization && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-white/5 rounded-lg">
+                        <div className="text-sm text-white/60 mb-1">Predicted Completion</div>
+                        <div className="text-white font-medium">
+                          {scheduleOptimization.schedule_optimization?.predicted_completion_date ? 
+                            new Date(scheduleOptimization.schedule_optimization.predicted_completion_date).toLocaleDateString() : 
+                            'N/A'
+                          }
+                        </div>
+                      </div>
+                      <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <div className="text-sm text-green-300 mb-1">Time Savings</div>
+                        <div className="text-green-400 font-medium">
+                          {scheduleOptimization.schedule_optimization?.time_savings_hours || 0}h
+                        </div>
+                      </div>
+                    </div>
+
+                    {scheduleOptimization.schedule_optimization?.critical_path?.length > 0 && (
+                      <div>
+                        <div className="text-white font-medium mb-2">Critical Path</div>
+                        <div className="space-y-1">
+                          {scheduleOptimization.schedule_optimization.critical_path.map((taskId, idx) => {
+                            const task = tasks.find(t => t.id === taskId);
+                            return (
+                              <div key={idx} className="p-2 bg-orange-500/10 border border-orange-500/30 rounded text-sm text-orange-200">
+                                {task?.title || taskId}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {scheduleOptimization.schedule_optimization?.efficiency_improvements?.length > 0 && (
+                      <div>
+                        <div className="text-white font-medium mb-2">Efficiency Improvements</div>
+                        <div className="space-y-2">
+                          {scheduleOptimization.schedule_optimization.efficiency_improvements.map((imp, idx) => (
+                            <div key={idx} className="p-3 bg-purple-500/10 border border-purple-500/30 rounded text-sm text-purple-200">
+                              • {imp}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Auto-Adjustment */}
+            <Card className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 backdrop-blur-xl border-green-500/30">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-green-400" />
+                  AI Auto-Adjustment
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-white/80 text-sm">
+                  Let AI automatically optimize task priorities, assignments, and timelines based on risk analysis and schedule optimization.
+                </p>
+                
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={() => autoAdjustMutation.mutate(false)}
+                    disabled={autoAdjustMutation.isPending}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Preview Adjustments
+                  </Button>
+                  <Button 
+                    onClick={() => autoAdjustMutation.mutate(true)}
+                    disabled={autoAdjustMutation.isPending}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    {autoAdjustMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply AI Adjustments'}
+                  </Button>
+                </div>
+
+                {autoAdjustMutation.data && (
+                  <div className="mt-4 space-y-3">
+                    {autoAdjustMutation.data.recommendations?.adjustments?.map((adj, idx) => (
+                      <div key={idx} className="p-3 bg-white/5 border border-white/10 rounded">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="font-medium text-white text-sm">{adj.action}</div>
+                          <Badge className={
+                            adj.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                            adj.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-blue-500/20 text-blue-400'
+                          }>
+                            {adj.priority}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-white/60 mb-1">{adj.rationale}</p>
+                        <p className="text-xs text-green-400">Impact: {adj.expected_impact}</p>
+                      </div>
+                    ))}
+                    
+                    {autoAdjustMutation.data.changes_applied && (
+                      <div className="p-3 bg-green-500/10 border border-green-500/30 rounded text-sm text-green-300">
+                        ✓ {autoAdjustMutation.data.executed_changes?.length || 0} changes applied successfully
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Chat Tab */}
