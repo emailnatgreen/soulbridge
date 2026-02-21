@@ -580,17 +580,6 @@ function ProposalDetail({ proposal, agents, totalVotingPower }) {
         </Card>
       )}
 
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-2">{proposal.title}</h2>
-        <div className="flex items-center gap-3 text-sm text-white/60">
-          <span>By {proposer?.name || 'Unknown'}</span>
-          <span>•</span>
-          <Badge className="bg-purple-500/20 text-purple-300">
-            {proposal.proposal_type.replace(/_/g, ' ')}
-          </Badge>
-        </div>
-      </div>
-
       <Card className="bg-white/5 border-white/10">
         <CardHeader>
           <CardTitle className="text-white">Description</CardTitle>
