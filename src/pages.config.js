@@ -53,6 +53,7 @@ import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
 import AgentMarketplace from './pages/AgentMarketplace';
 import AgentMessaging from './pages/AgentMessaging';
+import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
 import AgentProfile from './pages/AgentProfile';
 import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
@@ -90,7 +91,6 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
 
 
 export const PAGES = {
@@ -100,6 +100,7 @@ export const PAGES = {
     "AgentDetails": AgentDetails,
     "AgentMarketplace": AgentMarketplace,
     "AgentMessaging": AgentMessaging,
+    "AgentPerformanceAnalytics": AgentPerformanceAnalytics,
     "AgentProfile": AgentProfile,
     "AgentSkillTree": AgentSkillTree,
     "AgentTrainingModule": AgentTrainingModule,
@@ -137,7 +138,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "AgentPerformanceAnalytics": AgentPerformanceAnalytics,
 }
 
 export const pagesConfig = {
