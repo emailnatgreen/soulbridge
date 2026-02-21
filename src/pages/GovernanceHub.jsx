@@ -93,19 +93,20 @@ export default function GovernanceHub() {
                 </DialogContent>
               </Dialog>
               <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
-                  <Vote className="w-4 h-4 mr-2" />
-                  Create Proposal
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Create Governance Proposal</DialogTitle>
-                </DialogHeader>
-                <CreateProposalForm onClose={() => setCreateOpen(false)} />
-              </DialogContent>
-            </Dialog>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
+                    <Vote className="w-4 h-4 mr-2" />
+                    Create Proposal
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Create Governance Proposal</DialogTitle>
+                  </DialogHeader>
+                  <CreateProposalForm onClose={() => setCreateOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
       </div>
