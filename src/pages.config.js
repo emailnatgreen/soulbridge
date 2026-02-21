@@ -93,6 +93,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import ProductionHub from './pages/ProductionHub';
 import SkillDevelopment from './pages/SkillDevelopment';
+import AgentReputation from './pages/AgentReputation';
 
 
 export const PAGES = {
@@ -142,6 +143,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "ProductionHub": ProductionHub,
     "SkillDevelopment": SkillDevelopment,
+    "AgentReputation": AgentReputation,
 }
 
 export const pagesConfig = {
