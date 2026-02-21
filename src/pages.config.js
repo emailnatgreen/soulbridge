@@ -97,6 +97,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import ResourceDynamics from './pages/ResourceDynamics';
 import MentorshipHub from './pages/MentorshipHub';
+import CollaborationSuite from './pages/CollaborationSuite';
 
 
 export const PAGES = {
@@ -150,6 +151,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "ResourceDynamics": ResourceDynamics,
     "MentorshipHub": MentorshipHub,
+    "CollaborationSuite": CollaborationSuite,
 }
 
 export const pagesConfig = {
