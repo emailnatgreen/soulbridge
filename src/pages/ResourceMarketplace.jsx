@@ -500,8 +500,10 @@ export default function ResourceMarketplace() {
                             </Card>
                         )}
                     </div>
+                </div>
+            </TabsContent>
 
-                    <TabsContent value="purchases">
+            <TabsContent value="purchases">
                         <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                             <CardHeader>
                                 <CardTitle className="text-white">My Purchases</CardTitle>
@@ -545,9 +547,9 @@ export default function ResourceMarketplace() {
                                 )}
                             </CardContent>
                         </Card>
-                    </TabsContent>
+            </TabsContent>
 
-                    <TabsContent value="mylistings">
+            <TabsContent value="mylistings">
                         <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                             <CardHeader>
                                 <CardTitle className="text-white">My Resource Listings</CardTitle>
@@ -583,9 +585,9 @@ export default function ResourceMarketplace() {
                                 )}
                             </CardContent>
                         </Card>
-                    </TabsContent>
-                </Tabs>
-            </div>
+            </TabsContent>
+        </Tabs>
+    </div>
 
             {/* Purchase Dialog */}
             {selectedListing && (
