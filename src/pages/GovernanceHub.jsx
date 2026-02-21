@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Vote, CheckCircle, XCircle, Clock, Gavel, TrendingUp, Users, Loader2, AlertCircle, ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
+import { ArrowLeft, Vote, CheckCircle, XCircle, Clock, Gavel, TrendingUp, Users, Loader2, AlertCircle, ThumbsUp, ThumbsDown, Minus, Brain, Sparkles, Shield, FileText, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
@@ -19,7 +19,17 @@ import { toast } from 'sonner';
 export default function GovernanceHub() {
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState(null);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const { data: governanceHealth, isLoading: loadingHealth, refetch: fetchHealth } = useQuery({
+    queryKey: ['governanceHealth'],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('analyzeGovernanceHealth', {});
+      return response.data;
+    },
+    enabled: false
+  });
 
   const { data: proposals = [] } = useQuery({
     queryKey: ['governance-proposals'],
@@ -52,10 +62,37 @@ export default function GovernanceHub() {
               </Link>
               <div>
                 <h1 className="text-2xl font-light text-white">Decentralized Governance</h1>
-                <p className="text-sm text-purple-300/60">Those who dwell decide</p>
+                <p className="text-sm text-purple-300/60">Law 8: Those Who Dwell Decide</p>
               </div>
             </div>
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={() => fetchHealth()}
+                disabled={loadingHealth}
+                variant="outline"
+                className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+              >
+                <Brain className="w-4 h-4 mr-2" />
+                System Health
+              </Button>
+              <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    AI Template
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-slate-900 border-white/10 text-white max-w-3xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Generate AI Proposal Template</DialogTitle>
+                  </DialogHeader>
+                  <TemplateGenerator onUseTemplate={(template) => {
+                    setTemplateDialogOpen(false);
+                    setCreateOpen(true);
+                  }} />
+                </DialogContent>
+              </Dialog>
+              <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
                   <Vote className="w-4 h-4 mr-2" />
@@ -112,6 +149,77 @@ export default function GovernanceHub() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Governance Health Analysis */}
+        {governanceHealth && (
+          <Card className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 backdrop-blur-xl border-purple-500/30 mb-6">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Brain className="w-5 h-5 text-purple-400" />
+                Governance Health Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-3 bg-white/5 rounded">
+                  <div className="text-xs text-white/60 mb-1">Health Score</div>
+                  <div className="text-2xl font-bold text-white">
+                    {governanceHealth.governance_health?.overall_health_score}/100
+                  </div>
+                </div>
+                <div className="p-3 bg-white/5 rounded">
+                  <div className="text-xs text-white/60 mb-1">Rating</div>
+                  <div className="text-lg font-medium text-green-400">
+                    {governanceHealth.governance_health?.health_rating}
+                  </div>
+                </div>
+                <div className="p-3 bg-white/5 rounded">
+                  <div className="text-xs text-white/60 mb-1">Participation</div>
+                  <div className="text-lg font-medium text-white">
+                    {governanceHealth.metrics?.avg_participation?.toFixed(1)}%
+                  </div>
+                </div>
+                <div className="p-3 bg-white/5 rounded">
+                  <div className="text-xs text-white/60 mb-1">Success Rate</div>
+                  <div className="text-lg font-medium text-white">
+                    {governanceHealth.metrics?.success_rate?.toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+
+              {governanceHealth.governance_health?.concerns?.length > 0 && (
+                <div>
+                  <div className="text-white font-medium mb-2">Concerns</div>
+                  <div className="space-y-2">
+                    {governanceHealth.governance_health.concerns.map((concern, idx) => (
+                      <div key={idx} className="p-3 bg-red-500/10 border border-red-500/30 rounded">
+                        <div className="flex items-start justify-between mb-1">
+                          <span className="text-red-300 text-sm font-medium">{concern.issue}</span>
+                          <Badge className="bg-red-500/20 text-red-400 text-xs">{concern.severity}</Badge>
+                        </div>
+                        <p className="text-xs text-red-200/80">{concern.recommendation}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {governanceHealth.governance_health?.recommendations?.length > 0 && (
+                <div>
+                  <div className="text-white font-medium mb-2">Recommendations</div>
+                  <div className="space-y-2">
+                    {governanceHealth.governance_health.recommendations.slice(0, 5).map((rec, idx) => (
+                      <div key={idx} className="p-3 bg-blue-500/10 border border-blue-500/30 rounded text-sm">
+                        <div className="text-blue-300 font-medium mb-1">{rec.recommendation}</div>
+                        <p className="text-xs text-blue-200/70">Impact: {rec.expected_impact}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Proposals */}
         <Tabs defaultValue="active" className="space-y-6">
@@ -283,6 +391,29 @@ function ProposalCard({ proposal, agents, totalVotingPower, onClick }) {
 function ProposalDetail({ proposal, agents, totalVotingPower }) {
   const queryClient = useQueryClient();
   const proposer = agents.find(a => a.id === proposal.proposed_by);
+  const [showImpactAssessment, setShowImpactAssessment] = useState(false);
+  const [showConstitutionalCheck, setShowConstitutionalCheck] = useState(false);
+
+  const { data: impactAssessment, isLoading: loadingImpact, refetch: fetchImpact } = useQuery({
+    queryKey: ['impactAssessment', proposal.id],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('assessProposalImpact', { proposal_id: proposal.id });
+      return response.data;
+    },
+    enabled: false
+  });
+
+  const { data: constitutionalCheck, isLoading: loadingCheck, refetch: fetchCheck } = useQuery({
+    queryKey: ['constitutionalCheck', proposal.id],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('checkConstitutionalAlignment', {
+        proposal_text: `${proposal.title}\n\n${proposal.description}`,
+        proposal_changes: proposal.proposed_changes || {}
+      });
+      return response.data;
+    },
+    enabled: false
+  });
 
   const { data: votes = [] } = useQuery({
     queryKey: ['governance-votes', proposal.id],
@@ -316,6 +447,139 @@ function ProposalDetail({ proposal, agents, totalVotingPower }) {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-white mb-2">{proposal.title}</h2>
+        <div className="flex items-center gap-3 text-sm text-white/60 mb-3">
+          <span>By {proposer?.name || 'Unknown'}</span>
+          <span>•</span>
+          <Badge className="bg-purple-500/20 text-purple-300">
+            {proposal.proposal_type.replace(/_/g, ' ')}
+          </Badge>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => { fetchImpact(); setShowImpactAssessment(true); }}
+            disabled={loadingImpact}
+            className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
+          >
+            <Target className="w-4 h-4 mr-2" />
+            Impact Assessment
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => { fetchCheck(); setShowConstitutionalCheck(true); }}
+            disabled={loadingCheck}
+            className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+          >
+            <Shield className="w-4 h-4 mr-2" />
+            Constitutional Check
+          </Button>
+        </div>
+      </div>
+
+      {/* Impact Assessment */}
+      {showImpactAssessment && impactAssessment && (
+        <Card className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 border-blue-500/30">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Target className="w-5 h-5 text-blue-400" />
+              AI Impact Assessment
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded">
+              <p className="text-blue-200">{impactAssessment.impact_assessment?.impact_summary}</p>
+              <div className="flex items-center gap-4 mt-3 text-sm">
+                <span className="text-white/60">AI Recommendation:</span>
+                <Badge className={
+                  impactAssessment.impact_assessment?.approval_recommendation?.toLowerCase().includes('approve') 
+                    ? 'bg-green-500/20 text-green-400' 
+                    : 'bg-red-500/20 text-red-400'
+                }>
+                  {impactAssessment.impact_assessment?.approval_recommendation}
+                </Badge>
+                <span className="text-white/60">Confidence: {impactAssessment.impact_assessment?.confidence}%</span>
+              </div>
+            </div>
+
+            {impactAssessment.impact_assessment?.if_approved && (
+              <div className="space-y-3">
+                <div className="text-white font-medium">If Approved:</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="p-3 bg-white/5 rounded">
+                    <div className="text-xs text-green-300 font-medium mb-1">Economic Impact</div>
+                    <p className="text-sm text-white/80">{impactAssessment.impact_assessment.if_approved.economic_impact?.description}</p>
+                    <div className="text-xs text-white/60 mt-2">
+                      Affects {impactAssessment.impact_assessment.if_approved.economic_impact?.estimated_agents_affected} agents
+                    </div>
+                  </div>
+                  <div className="p-3 bg-white/5 rounded">
+                    <div className="text-xs text-blue-300 font-medium mb-1">Social Impact</div>
+                    <p className="text-sm text-white/80">{impactAssessment.impact_assessment.if_approved.social_impact?.description}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Constitutional Check */}
+      {showConstitutionalCheck && constitutionalCheck && (
+        <Card className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border-purple-500/30">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Shield className="w-5 h-5 text-purple-400" />
+              Constitutional Alignment Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white font-medium">Overall Alignment</span>
+                <Badge className={
+                  constitutionalCheck.constitutional_check?.alignment_verdict === 'Aligned' ? 'bg-green-500/20 text-green-400' :
+                  constitutionalCheck.constitutional_check?.alignment_verdict === 'Violates' ? 'bg-red-500/20 text-red-400' :
+                  'bg-yellow-500/20 text-yellow-400'
+                }>
+                  {constitutionalCheck.constitutional_check?.alignment_verdict}
+                </Badge>
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">
+                {constitutionalCheck.constitutional_check?.overall_alignment_score?.toFixed(1)}/10
+              </div>
+              <p className="text-sm text-purple-200">{constitutionalCheck.constitutional_check?.constitutional_summary}</p>
+            </div>
+
+            {constitutionalCheck.constitutional_check?.critical_conflicts?.length > 0 && (
+              <div>
+                <div className="text-red-300 font-medium mb-2">Critical Conflicts</div>
+                {constitutionalCheck.constitutional_check.critical_conflicts.map((conflict, idx) => (
+                  <div key={idx} className="p-3 bg-red-500/10 border border-red-500/30 rounded mb-2">
+                    <div className="text-red-400 font-medium text-sm">{conflict.law}</div>
+                    <p className="text-xs text-red-200 mt-1">{conflict.conflict}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {constitutionalCheck.constitutional_check?.strengthens_laws?.length > 0 && (
+              <div>
+                <div className="text-green-300 font-medium mb-2">Strengthens Laws</div>
+                <div className="flex flex-wrap gap-2">
+                  {constitutionalCheck.constitutional_check.strengthens_laws.map((law, idx) => (
+                    <Badge key={idx} className="bg-green-500/20 text-green-400">{law}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <div>
         <h2 className="text-2xl font-bold text-white mb-2">{proposal.title}</h2>
         <div className="flex items-center gap-3 text-sm text-white/60">
@@ -547,5 +811,129 @@ function CreateProposalForm({ onClose }) {
         )}
       </Button>
     </form>
+  );
+}
+
+function TemplateGenerator({ onUseTemplate }) {
+  const [category, setCategory] = useState('general');
+  const [briefDescription, setBriefDescription] = useState('');
+  const [template, setTemplate] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const generateTemplate = async () => {
+    if (!briefDescription.trim()) return;
+    
+    setLoading(true);
+    try {
+      const response = await base44.functions.invoke('generateProposalTemplate', {
+        category,
+        brief_description: briefDescription
+      });
+      setTemplate(response.data.template);
+    } catch (error) {
+      console.error('Template generation error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {!template ? (
+        <>
+          <div>
+            <Label className="text-white">Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/10">
+                <SelectItem value="general">General</SelectItem>
+                <SelectItem value="project_funding">Project Funding</SelectItem>
+                <SelectItem value="treasury_allocation">Treasury Allocation</SelectItem>
+                <SelectItem value="resource_policy">Resource Policy</SelectItem>
+                <SelectItem value="constitutional">Constitutional</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-white">Brief Description</Label>
+            <Textarea
+              value={briefDescription}
+              onChange={(e) => setBriefDescription(e.target.value)}
+              placeholder="Briefly describe what you want to propose..."
+              className="bg-white/5 border-white/10 text-white h-24"
+            />
+          </div>
+          <Button 
+            onClick={generateTemplate} 
+            disabled={loading || !briefDescription.trim()}
+            className="w-full bg-purple-600 hover:bg-purple-700"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating Template...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate Template
+              </>
+            )}
+          </Button>
+        </>
+      ) : (
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded">
+            <div className="text-white font-bold text-lg mb-2">{template.title}</div>
+            <p className="text-purple-200 text-sm">{template.executive_summary}</p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="p-3 bg-white/5 rounded">
+              <div className="text-white font-medium text-sm mb-1">Problem Statement</div>
+              <p className="text-white/80 text-sm">{template.problem_statement}</p>
+            </div>
+
+            <div className="p-3 bg-white/5 rounded">
+              <div className="text-white font-medium text-sm mb-1">Proposed Solution</div>
+              <p className="text-white/80 text-sm">{template.proposed_solution}</p>
+            </div>
+
+            {template.expected_outcomes?.length > 0 && (
+              <div className="p-3 bg-white/5 rounded">
+                <div className="text-white font-medium text-sm mb-2">Expected Outcomes</div>
+                {template.expected_outcomes.map((outcome, idx) => (
+                  <div key={idx} className="text-white/70 text-sm">• {outcome}</div>
+                ))}
+              </div>
+            )}
+
+            {template.resource_requirements && (
+              <div className="p-3 bg-green-500/10 border border-green-500/30 rounded">
+                <div className="text-green-300 font-medium text-sm mb-2">Resource Requirements</div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-white/70">Budget: {template.resource_requirements.budget_rlusd} RLUSD</div>
+                  <div className="text-white/70">Timeline: {template.resource_requirements.time_estimate}</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 sticky bottom-0 bg-slate-900 pt-4">
+            <Button variant="outline" onClick={() => setTemplate(null)} className="flex-1">
+              Regenerate
+            </Button>
+            <Button 
+              onClick={() => onUseTemplate(template)} 
+              className="flex-1 bg-purple-600 hover:bg-purple-700"
+            >
+              Use This Template
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
