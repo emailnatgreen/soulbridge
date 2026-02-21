@@ -275,6 +275,12 @@ export default function Home() {
                   Reputation
                 </Button>
               </Link>
+              <Link to={createPageUrl('AgentWellbeing')}>
+                <Button variant="ghost" className="text-rose-300/80 hover:bg-rose-500/10 hover:text-rose-300">
+                  <Heart className="w-4 h-4 mr-2" />
+                  Wellbeing
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>

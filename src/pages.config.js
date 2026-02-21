@@ -94,6 +94,7 @@ import Wallets from './pages/Wallets';
 import ProductionHub from './pages/ProductionHub';
 import SkillDevelopment from './pages/SkillDevelopment';
 import AgentReputation from './pages/AgentReputation';
+import AgentWellbeing from './pages/AgentWellbeing';
 
 
 export const PAGES = {
@@ -144,6 +145,7 @@ export const PAGES = {
     "ProductionHub": ProductionHub,
     "SkillDevelopment": SkillDevelopment,
     "AgentReputation": AgentReputation,
+    "AgentWellbeing": AgentWellbeing,
 }
 
 export const pagesConfig = {
