@@ -55,8 +55,10 @@ import AgentMarketplace from './pages/AgentMarketplace';
 import AgentMessaging from './pages/AgentMessaging';
 import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
 import AgentProfile from './pages/AgentProfile';
+import AgentReputation from './pages/AgentReputation';
 import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
+import AgentWellbeing from './pages/AgentWellbeing';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CollaborationHub from './pages/CollaborationHub';
@@ -74,6 +76,7 @@ import Home from './pages/Home';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
 import MainnetMigration from './pages/MainnetMigration';
 import Notifications from './pages/Notifications';
+import ProductionHub from './pages/ProductionHub';
 import ProjectAnalytics from './pages/ProjectAnalytics';
 import ProjectTemplates from './pages/ProjectTemplates';
 import RLUSDManager from './pages/RLUSDManager';
@@ -81,6 +84,7 @@ import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceMarketplace from './pages/ResourceMarketplace';
 import Send from './pages/Send';
 import SimulationLab from './pages/SimulationLab';
+import SkillDevelopment from './pages/SkillDevelopment';
 import SkillEndorsements from './pages/SkillEndorsements';
 import SkillValidation from './pages/SkillValidation';
 import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
@@ -91,10 +95,7 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import ProductionHub from './pages/ProductionHub';
-import SkillDevelopment from './pages/SkillDevelopment';
-import AgentReputation from './pages/AgentReputation';
-import AgentWellbeing from './pages/AgentWellbeing';
+import ResourceDynamics from './pages/ResourceDynamics';
 
 
 export const PAGES = {
@@ -106,8 +107,10 @@ export const PAGES = {
     "AgentMessaging": AgentMessaging,
     "AgentPerformanceAnalytics": AgentPerformanceAnalytics,
     "AgentProfile": AgentProfile,
+    "AgentReputation": AgentReputation,
     "AgentSkillTree": AgentSkillTree,
     "AgentTrainingModule": AgentTrainingModule,
+    "AgentWellbeing": AgentWellbeing,
     "Agents": Agents,
     "Axi": Axi,
     "CollaborationHub": CollaborationHub,
@@ -125,6 +128,7 @@ export const PAGES = {
     "KnowledgeSynthesis": KnowledgeSynthesis,
     "MainnetMigration": MainnetMigration,
     "Notifications": Notifications,
+    "ProductionHub": ProductionHub,
     "ProjectAnalytics": ProjectAnalytics,
     "ProjectTemplates": ProjectTemplates,
     "RLUSDManager": RLUSDManager,
@@ -132,6 +136,7 @@ export const PAGES = {
     "ResourceMarketplace": ResourceMarketplace,
     "Send": Send,
     "SimulationLab": SimulationLab,
+    "SkillDevelopment": SkillDevelopment,
     "SkillEndorsements": SkillEndorsements,
     "SkillValidation": SkillValidation,
     "SocialCapitalDashboard": SocialCapitalDashboard,
@@ -142,10 +147,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "ProductionHub": ProductionHub,
-    "SkillDevelopment": SkillDevelopment,
-    "AgentReputation": AgentReputation,
-    "AgentWellbeing": AgentWellbeing,
+    "ResourceDynamics": ResourceDynamics,
 }
 
 export const pagesConfig = {

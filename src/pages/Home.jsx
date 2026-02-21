@@ -281,6 +281,12 @@ export default function Home() {
                   Wellbeing
                 </Button>
               </Link>
+              <Link to={createPageUrl('ResourceDynamics')}>
+                <Button variant="ghost" className="text-blue-300/80 hover:bg-blue-500/10 hover:text-blue-300">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Resource Dynamics
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
