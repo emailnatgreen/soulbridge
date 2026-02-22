@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
         const { wallet_id } = await req.json();
+        console.log('Adding RLUSD trustline for wallet:', wallet_id);
 
         if (!wallet_id) {
             return Response.json({ error: 'wallet_id required' }, { status: 400 });
