@@ -22,6 +22,11 @@ export default function GovernanceHub() {
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
   const { data: governanceHealth, isLoading: loadingHealth, refetch: fetchHealth } = useQuery({
     queryKey: ['governanceHealth'],
     queryFn: async () => {
@@ -40,6 +45,8 @@ export default function GovernanceHub() {
     queryKey: ['agents'],
     queryFn: () => base44.entities.Agent.list()
   });
+
+  const currentAgent = agents.find(a => a.email === currentUser?.email);
 
   const activeProposals = proposals.filter(p => p.status === 'active');
   const passedProposals = proposals.filter(p => p.status === 'passed' || p.status === 'executed');
