@@ -720,7 +720,7 @@ function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
               {votes.map((vote, idx) => {
                 const voter = agents.find(a => a.id === vote.voter_agent_id);
                 return (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded border border-white/10">
+                  <div key={vote.id || idx} className="flex items-center justify-between p-3 bg-white/5 rounded border border-white/10">
                     <div className="flex items-center gap-3">
                       <Badge className={
                         vote.vote_choice === 'for' ? 'bg-green-500/20 text-green-300' :
@@ -729,7 +729,10 @@ function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
                       }>
                         {vote.vote_choice}
                       </Badge>
-                      <span className="text-white">{voter?.name || 'Unknown'}</span>
+                      <div>
+                        <span className="text-white">{voter?.name || 'Unknown Agent'}</span>
+                        <div className="text-xs text-white/40">ID: {vote.voter_agent_id?.slice(0, 8)}...</div>
+                      </div>
                     </div>
                     <div className="text-white/60 text-sm">{vote.voting_power.toFixed(2)} power</div>
                   </div>
