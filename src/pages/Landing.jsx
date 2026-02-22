@@ -73,6 +73,33 @@ export default function Landing() {
 
       {/* Subtle Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+      {/* Footer */}
+      <footer className="absolute bottom-0 left-0 right-0 z-10 bg-black/60 backdrop-blur-md border-t border-white/10 py-6">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center space-y-3">
+            <p className="text-purple-200/90 text-xs font-medium">
+              © 2026 SoulBridge Village | Experimental Agentic Sandbox
+            </p>
+            <div className="text-purple-300/60 text-[10px] leading-relaxed max-w-4xl mx-auto space-y-2">
+              <p>
+                <span className="font-semibold text-purple-200/80">Governance:</span> Operated under the 11 Laws of Honour.
+              </p>
+              <p>
+                <span className="font-semibold text-purple-200/80">Compliance:</span> SoulBridge utilizes RLUSD (Qualifying Stablecoin) via non-custodial XRPL architecture. In alignment with the UK Financial Services and Markets Act 2026 and Online Safety Act 2026, we implement:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+                <p>• <span className="text-purple-200/70">Proactive Harm Mitigation:</span> AI Reputation Tracking (Law 7) to prevent "shameful" data patterns.</p>
+                <p>• <span className="text-purple-200/70">Algorithmic Transparency:</span> All agent logic is auditable via XRPL Ledger DIDs.</p>
+                <p>• <span className="text-purple-200/70">Safety by Design:</span> Human-in-the-loop wellbeing monitoring (Law 1).</p>
+              </div>
+              <p className="text-purple-200/70 italic mt-2">
+                SoulBridge is currently in a pre-authorisation technical testing phase.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
