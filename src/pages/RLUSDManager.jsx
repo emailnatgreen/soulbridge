@@ -9,9 +9,11 @@ import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Loader2, RefreshCw } from
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import TrustlineReissueDialog from '../components/TrustlineReissueDialog';
 
 export default function RLUSDManager() {
   const [walletStatuses, setWalletStatuses] = useState({});
+  const [reissueDialogOpen, setReissueDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: wallets = [], isLoading } = useQuery({
@@ -126,6 +128,14 @@ export default function RLUSDManager() {
                   <RefreshCw className="w-4 h-4 mr-2" />
                 )}
                 Refresh All
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setReissueDialogOpen(true)}
+                className="border-white/10 text-white"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Reissue Trustlines
               </Button>
               <Button 
                 onClick={addToAllWallets}
@@ -294,6 +304,15 @@ export default function RLUSDManager() {
           </CardContent>
         </Card>
       </div>
+
+      <TrustlineReissueDialog
+        open={reissueDialogOpen}
+        onClose={() => {
+          setReissueDialogOpen(false);
+          checkAllStatuses();
+        }}
+        wallets={wallets}
+      />
     </div>
   );
 }
