@@ -102,6 +102,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import SendRLUSD from './pages/SendRLUSD';
+import ReceiveRLUSD from './pages/ReceiveRLUSD';
 import __Layout from './Layout.jsx';
 
 
@@ -161,6 +162,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "SendRLUSD": SendRLUSD,
+    "ReceiveRLUSD": ReceiveRLUSD,
 }
 
 export const pagesConfig = {
