@@ -427,6 +427,10 @@ function ProposalDetail({ proposal, agents, totalVotingPower }) {
       queryClient.invalidateQueries(['governance-proposals']);
       queryClient.invalidateQueries(['governance-votes']);
       toast.success('Vote cast successfully!');
+    },
+    onError: (error) => {
+      console.error('Vote error:', error);
+      toast.error(error?.response?.data?.error || error?.message || 'Failed to cast vote');
     }
   });
 
