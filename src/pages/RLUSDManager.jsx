@@ -48,6 +48,22 @@ export default function RLUSDManager() {
     }
   });
 
+  const redeployMutation = useMutation({
+    mutationFn: (wallet_id) => base44.functions.invoke('reissueTrustlines', { wallet_ids: [wallet_id] }),
+    onSuccess: (response, wallet_id) => {
+      const result = response.data?.results?.[0];
+      if (result?.success) {
+        toast.success(result.message || 'Trustline redeployed successfully');
+      } else {
+        toast.error(result?.error || 'Failed to redeploy trustline');
+      }
+      checkStatusMutation.mutate(wallet_id);
+    },
+    onError: (error) => {
+      toast.error(`Failed: ${error.message}`);
+    }
+  });
+
   const batchAddMutation = useMutation({
     mutationFn: (wallet_ids) => base44.functions.invoke('batchAddRLUSD', { wallet_ids }),
     onSuccess: (response) => {
@@ -282,6 +298,21 @@ export default function RLUSDManager() {
                                 <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
                                 'Add RLUSD'
+                              )}
+                            </Button>
+                          )}
+                          {status && status.has_rlusd_trustline && (
+                            <Button
+                              size="sm"
+                              onClick={() => redeployMutation.mutate(wallet.id)}
+                              disabled={redeployMutation.isPending}
+                              className="bg-blue-600 hover:bg-blue-700"
+                              title="Redeploy the RLUSD trustline"
+                            >
+                              {redeployMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                'Redeploy'
                               )}
                             </Button>
                           )}
