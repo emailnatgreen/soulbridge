@@ -397,7 +397,7 @@ function ProposalCard({ proposal, agents, totalVotingPower, onClick }) {
   );
 }
 
-function ProposalDetail({ proposal, agents, totalVotingPower }) {
+function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
   const queryClient = useQueryClient();
   const proposer = agents.find(a => a.id === proposal.proposed_by);
   const [showImpactAssessment, setShowImpactAssessment] = useState(false);
