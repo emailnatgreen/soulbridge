@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { Client, Wallet, dropsToXrp } from 'npm:xrpl@4.0.0';
 
 const RLUSD_CONFIG = {
-  currency: "RLUSD",
+  currency: "524C555344000000000000000000000000000000",
   issuer: "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
   limit: "1000000000",
   reserveCost: 0.2
@@ -135,6 +135,7 @@ Deno.serve(async (req) => {
                 issuer: RLUSD_CONFIG.issuer,
                 value: RLUSD_CONFIG.limit
             },
+            Flags: 0x00500000,
             Fee: "12"
         };
         
