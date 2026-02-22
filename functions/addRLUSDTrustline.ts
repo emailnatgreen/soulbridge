@@ -75,11 +75,20 @@ Deno.serve(async (req) => {
         }
         
         // Decrypt the seed directly
-        const seed = await decryptSeed(
-            walletRecord.encrypted_seed,
-            walletRecord.encryption_iv,
-            walletRecord.encryption_salt
-        );
+        let seed;
+        try {
+            seed = await decryptSeed(
+                walletRecord.encrypted_seed,
+                walletRecord.encryption_iv,
+                walletRecord.encryption_salt
+            );
+        } catch (error) {
+            return Response.json({
+                success: false,
+                error: 'Wallet encryption data corrupted',
+                message: 'Cannot decrypt wallet seed. This wallet may need to be re-created.'
+            }, { status: 400 });
+        }
 
         const client = new Client('wss://xrpl.ws');
         await client.connect();
