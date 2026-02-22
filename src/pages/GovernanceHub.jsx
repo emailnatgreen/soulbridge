@@ -46,7 +46,7 @@ export default function GovernanceHub() {
     queryFn: () => base44.entities.Agent.list()
   });
 
-  const currentAgent = agents.find(a => a.email === currentUser?.email);
+  const currentAgent = agents.find(a => a.created_by === currentUser?.email);
 
   const activeProposals = proposals.filter(p => p.status === 'active');
   const passedProposals = proposals.filter(p => p.status === 'passed' || p.status === 'executed');
