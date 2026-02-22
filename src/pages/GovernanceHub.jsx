@@ -842,9 +842,9 @@ function TemplateGenerator({ onUseTemplate }) {
       {!template ? (
         <>
           <div>
-            <Label className="text-white">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <Label htmlFor="template-category" className="text-white">Category</Label>
+            <Select name="category" value={category} onValueChange={setCategory}>
+              <SelectTrigger id="template-category" className="bg-white/5 border-white/10 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-white/10">
@@ -857,8 +857,10 @@ function TemplateGenerator({ onUseTemplate }) {
             </Select>
           </div>
           <div>
-            <Label className="text-white">Brief Description</Label>
+            <Label htmlFor="template-description" className="text-white">Brief Description</Label>
             <Textarea
+              id="template-description"
+              name="brief_description"
               value={briefDescription}
               onChange={(e) => setBriefDescription(e.target.value)}
               placeholder="Briefly describe what you want to propose..."
