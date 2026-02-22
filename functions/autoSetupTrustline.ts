@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { Client, Wallet } from 'npm:xrpl@4.2.4';
+import { Client, Wallet } from 'npm:xrpl@4.0.0';
 import crypto from 'node:crypto';
 
 Deno.serve(async (req) => {
