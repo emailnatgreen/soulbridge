@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { Client, Wallet, dropsToXrp } from 'npm:xrpl@4.0.0';
 
 const RLUSD_CONFIG = {
-  currency: "524C555344000000000000000000000000000000",
+  currency: "RLUSD",
   issuer: "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
   limit: "1000000000",
   reserveCost: 0.2
@@ -135,7 +135,7 @@ async function reissueTrustlineForWallet(walletRecord, client, base44, maxRetrie
                 };
             }
 
-            // Add new trustline with Deep Freeze
+            // Add new trustline
             const trustlineTx = {
                 TransactionType: "TrustSet",
                 Account: address,
@@ -144,7 +144,6 @@ async function reissueTrustlineForWallet(walletRecord, client, base44, maxRetrie
                     issuer: RLUSD_CONFIG.issuer,
                     value: RLUSD_CONFIG.limit
                 },
-                Flags: 0x00500000,
                 Fee: "12"
             };
             
