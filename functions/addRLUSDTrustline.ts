@@ -17,13 +17,22 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'wallet_id required' }, { status: 400 });
         }
 
-        const walletRecord = await base44.entities.Wallet.get(wallet_id);
+        const walletRecord = await base44.asServiceRole.entities.Wallet.get(wallet_id);
         const address = walletRecord.classic_address;
         
-        // Decrypt the wallet seed
-        const { seed } = await base44.asServiceRole.functions.invoke('decryptWalletSeed', {
-            wallet_id
-        });
+        if (!walletRecord.encrypted_seed) {
+            return Response.json({ 
+                success: false, 
+                error: 'No seed available (tracking-only wallet)' 
+            }, { status: 400 });
+        }
+        
+        // Decrypt the seed directly
+        const seed = await decryptSeed(
+            walletRecord.encrypted_seed,
+            walletRecord.encryption_iv,
+            walletRecord.encryption_salt
+        );
 
         const client = new Client('wss://xrpl.ws');
         await client.connect();
