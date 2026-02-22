@@ -430,14 +430,15 @@ function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
   });
 
   const voteMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       if (!currentAgent) {
         throw new Error('You must be registered as an agent to vote');
       }
-      return base44.functions.invoke('castGovernanceVote', { 
+      const response = await base44.functions.invoke('castGovernanceVote', { 
         ...data, 
         agent_id: currentAgent.id 
       });
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['governance-proposals']);
@@ -446,7 +447,8 @@ function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
     },
     onError: (error) => {
       console.error('Vote error:', error);
-      toast.error(error?.response?.data?.error || error?.message || 'Failed to cast vote');
+      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to cast vote';
+      toast.error(errorMessage);
     }
   });
 
