@@ -1,46 +1,74 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { Client, Wallet } from 'npm:xrpl@4.2.1';
+import { Client, Wallet, dropsToXrp } from 'npm:xrpl@4.2.1';
 
 const RLUSD_CONFIG = {
   currency: "RLUSD",
   issuer: "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
-  limit: "1000000000"
+  limit: "1000000000",
+  reserveCost: 0.2
 };
 
 async function decryptSeed(encryptedData, iv, salt) {
     const masterKey = Deno.env.get('WALLET_ENCRYPTION_KEY');
-    if (!masterKey) throw new Error('WALLET_ENCRYPTION_KEY not configured');
+    if (!masterKey) {
+        throw new Error('WALLET_ENCRYPTION_KEY not configured');
+    }
 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
+
+    // Convert from base64
     const encryptedBytes = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
     const ivBytes = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
     const saltBytes = Uint8Array.from(atob(salt), c => c.charCodeAt(0));
 
+    // Derive same key
     const keyMaterial = await crypto.subtle.importKey(
-        'raw', encoder.encode(masterKey), 'PBKDF2', false, ['deriveBits', 'deriveKey']
+        'raw',
+        encoder.encode(masterKey),
+        'PBKDF2',
+        false,
+        ['deriveBits', 'deriveKey']
     );
 
     const key = await crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+        {
+            name: 'PBKDF2',
+            salt: saltBytes,
+            iterations: 100000,
+            hash: 'SHA-256'
+        },
         keyMaterial,
         { name: 'AES-GCM', length: 256 },
-        false, ['decrypt']
+        false,
+        ['decrypt']
     );
 
+    // Decrypt
     const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: ivBytes }, key, encryptedBytes
+        { name: 'AES-GCM', iv: ivBytes },
+        key,
+        encryptedBytes
     );
 
     return decoder.decode(decrypted);
 }
 
-async function reissueTrustlineForWallet(walletRecord, client, maxRetries = 3) {
+async function reissueTrustlineForWallet(walletRecord, client, base44, maxRetries = 3) {
     const address = walletRecord.classic_address;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             console.log(`Attempt ${attempt}/${maxRetries} for ${walletRecord.name}`);
+
+            // Check account status
+            const accountInfo = await client.request({
+                command: "account_info",
+                account: address,
+                ledger_index: "validated"
+            });
+            
+            const balance = parseFloat(dropsToXrp(accountInfo.result.account_data.Balance));
 
             // Check existing trustlines
             const lines = await client.request({
@@ -60,11 +88,10 @@ async function reissueTrustlineForWallet(walletRecord, client, maxRetries = 3) {
             );
             const wallet = Wallet.fromSeed(seed);
 
-            // If trustline exists with wrong issuer or we want to force reissue
+            // If trustline exists with wrong issuer, remove it first
             if (existingRLUSD && existingRLUSD.account !== RLUSD_CONFIG.issuer) {
                 console.log(`Removing old trustline from ${existingRLUSD.account}`);
                 
-                // Remove old trustline by setting limit to 0
                 const removeTx = {
                     TransactionType: "TrustSet",
                     Account: address,
@@ -79,6 +106,33 @@ async function reissueTrustlineForWallet(walletRecord, client, maxRetries = 3) {
                 const preparedRemove = await client.autofill(removeTx);
                 const signedRemove = wallet.sign(preparedRemove);
                 await client.submitAndWait(signedRemove.tx_blob);
+                
+                console.log('Old trustline removed, waiting before adding new one...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            // Check if correct trustline already exists
+            if (existingRLUSD && existingRLUSD.account === RLUSD_CONFIG.issuer) {
+                return {
+                    success: true,
+                    wallet_id: walletRecord.id,
+                    wallet_name: walletRecord.name,
+                    address,
+                    attempts: attempt,
+                    message: 'RLUSD trustline already exists with correct issuer'
+                };
+            }
+
+            // Check balance
+            if (balance < 1.2) {
+                return {
+                    success: false,
+                    wallet_id: walletRecord.id,
+                    wallet_name: walletRecord.name,
+                    address,
+                    error: `Insufficient XRP (has ${balance.toFixed(2)}, needs 1.2)`,
+                    attempts: attempt
+                };
             }
 
             // Add new trustline
@@ -98,6 +152,16 @@ async function reissueTrustlineForWallet(walletRecord, client, maxRetries = 3) {
             const result = await client.submitAndWait(signed.tx_blob);
 
             if (result.result.meta.TransactionResult === "tesSUCCESS") {
+                // Update wallet metadata
+                await base44.asServiceRole.entities.Wallet.update(walletRecord.id, {
+                    metadata: {
+                        ...walletRecord.metadata,
+                        has_rlusd_trustline: true,
+                        rlusd_reissue_date: new Date().toISOString(),
+                        current_issuer: RLUSD_CONFIG.issuer
+                    }
+                });
+
                 return {
                     success: true,
                     wallet_id: walletRecord.id,
@@ -178,20 +242,8 @@ Deno.serve(async (req) => {
                     continue;
                 }
 
-                const result = await reissueTrustlineForWallet(walletRecord, client, max_retries);
+                const result = await reissueTrustlineForWallet(walletRecord, client, base44, max_retries);
                 results.push(result);
-
-                // Update wallet metadata on success
-                if (result.success) {
-                    await base44.asServiceRole.entities.Wallet.update(wallet_id, {
-                        metadata: {
-                            ...walletRecord.metadata,
-                            has_rlusd_trustline: true,
-                            rlusd_reissue_date: new Date().toISOString(),
-                            current_issuer: RLUSD_CONFIG.issuer
-                        }
-                    });
-                }
             } catch (error) {
                 results.push({
                     success: false,
