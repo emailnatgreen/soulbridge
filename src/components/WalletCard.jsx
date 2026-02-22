@@ -103,19 +103,27 @@ export default function WalletCard({ wallet, onRefresh }) {
 
                 <div>
                     <p className="text-sm text-gray-500 mb-1">DID / Address</p>
-                    <div className="flex items-center gap-2">
-                        <code className="text-xs bg-gray-100 px-2 py-1 rounded flex-1 overflow-hidden text-ellipsis">
-                            {wallet.classic_address}
-                        </code>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => copyToClipboard(wallet.classic_address, 'Address')}
-                            className="h-8 w-8"
-                        >
-                            <Copy className="w-3 h-3" />
-                        </Button>
-                    </div>
+                    {wallet.classic_address ? (
+                        <div className="flex items-center gap-2">
+                            <code className="text-xs bg-gray-100 px-2 py-1 rounded flex-1 overflow-hidden text-ellipsis">
+                                {wallet.classic_address}
+                            </code>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => copyToClipboard(wallet.classic_address, 'Address')}
+                                className="h-8 w-8"
+                            >
+                                <Copy className="w-3 h-3" />
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="bg-amber-50 border border-amber-200 rounded px-3 py-2">
+                            <p className="text-xs text-amber-800">
+                                ⚠️ Wallet not yet activated on XRPL. Fund with XRP to generate address.
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {wallet.encrypted_seed && (
