@@ -307,6 +307,7 @@ export default function GovernanceHub() {
               proposal={selectedProposal} 
               agents={agents}
               totalVotingPower={totalVotingPower}
+              currentAgent={currentAgent}
             />
           </DialogContent>
         </Dialog>
