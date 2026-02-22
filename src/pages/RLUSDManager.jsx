@@ -152,6 +152,7 @@ export default function RLUSDManager() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-light text-white">{stats.total}</p>
+              <p className="text-xs text-white/50 mt-1">All mainnet wallets</p>
             </CardContent>
           </Card>
 
@@ -164,6 +165,7 @@ export default function RLUSDManager() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-light text-white">{stats.ready}</p>
+              <p className="text-xs text-white/50 mt-1">Already has trustline</p>
             </CardContent>
           </Card>
 
@@ -176,6 +178,7 @@ export default function RLUSDManager() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-light text-white">{stats.needsSetup}</p>
+              <p className="text-xs text-white/50 mt-1">Has ≥1.2 XRP, ready to add</p>
             </CardContent>
           </Card>
 
@@ -188,6 +191,7 @@ export default function RLUSDManager() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-light text-white">{stats.needsFunding}</p>
+              <p className="text-xs text-white/50 mt-1">Needs more XRP (1.2 min)</p>
             </CardContent>
           </Card>
         </div>
