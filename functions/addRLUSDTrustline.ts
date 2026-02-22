@@ -25,7 +25,11 @@ Deno.serve(async (req) => {
 
         const walletRecord = await base44.entities.Wallet.get(wallet_id);
         const address = walletRecord.classic_address;
-        const seed = walletRecord.seed;
+        
+        // Decrypt the wallet seed
+        const { seed } = await base44.asServiceRole.functions.invoke('decryptWalletSeed', {
+            wallet_id
+        });
 
         const client = new Client('wss://xrpl.ws');
         await client.connect();
