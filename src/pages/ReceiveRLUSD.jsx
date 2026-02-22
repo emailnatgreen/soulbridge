@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 export default function ReceiveRLUSDPage() {
   const [selectedWalletId, setSelectedWalletId] = useState('');
   const [checkingStatus, setCheckingStatus] = useState(false);
+  const [walletStatus, setWalletStatus] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -29,6 +30,28 @@ export default function ReceiveRLUSDPage() {
   });
 
   const selectedWallet = wallets.find(w => w.id === selectedWalletId);
+
+  // Check wallet status when wallet is selected
+  React.useEffect(() => {
+    if (selectedWalletId) {
+      checkWalletStatus();
+    }
+  }, [selectedWalletId]);
+
+  const checkWalletStatus = async () => {
+    if (!selectedWalletId) return;
+    setCheckingStatus(true);
+    try {
+      const response = await base44.functions.invoke('checkRLUSDStatus', {
+        wallet_id: selectedWalletId
+      });
+      setWalletStatus(response.data);
+    } catch (error) {
+      toast.error('Failed to check wallet status');
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
 
   const copyAddress = (address) => {
     navigator.clipboard.writeText(address);
