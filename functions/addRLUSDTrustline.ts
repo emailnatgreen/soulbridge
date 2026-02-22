@@ -11,16 +11,6 @@ const RLUSD_CONFIG = {
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        
-        // Allow both admin users and service role (for automation)
-        const isServiceRole = !req.headers.get('authorization')?.includes('Bearer');
-        if (!isServiceRole) {
-            const user = await base44.auth.me();
-            if (user?.role !== 'admin') {
-                return Response.json({ error: 'Admin access required' }, { status: 403 });
-            }
-        }
-
         const { wallet_id } = await req.json();
 
         if (!wallet_id) {
