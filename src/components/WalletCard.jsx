@@ -3,13 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Wallet, Copy, RefreshCw, Eye, EyeOff, History } from "lucide-react";
+import { Wallet, Copy, RefreshCw, Eye, EyeOff, History, UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import WalletTransactionHistory from './WalletTransactionHistory';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 export default function WalletCard({ wallet, onRefresh }) {
     const [showSeed, setShowSeed] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const queryClient = useQueryClient();
+
+    const { data: currentUser } = useQuery({
+        queryKey: ['currentUser'],
+        queryFn: () => base44.auth.me(),
+    });
 
     const copyToClipboard = (text, label) => {
         navigator.clipboard.writeText(text);
@@ -20,6 +28,26 @@ export default function WalletCard({ wallet, onRefresh }) {
         setRefreshing(true);
         await onRefresh(wallet.id);
         setRefreshing(false);
+    };
+
+    const reassignWallet = useMutation({
+        mutationFn: async ({ wallet_id, new_owner_id }) => {
+            const response = await base44.functions.invoke('reassignWalletOwnership', { wallet_id, new_owner_id });
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['wallets'] });
+            toast.success('Wallet ownership reassigned successfully!');
+        },
+        onError: (error) => {
+            toast.error(error?.response?.data?.error || 'Failed to reassign wallet');
+        }
+    });
+
+    const handleReassign = () => {
+        if (currentUser?.id) {
+            reassignWallet.mutate({ wallet_id: wallet.id, new_owner_id: currentUser.id });
+        }
     };
 
     return (
@@ -37,14 +65,32 @@ export default function WalletCard({ wallet, onRefresh }) {
                             </Badge>
                         </div>
                     </div>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                    >
-                        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                    </Button>
+                    <div className="flex gap-2">
+                        {currentUser?.role === 'admin' && wallet.owner_id !== currentUser?.id && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleReassign}
+                                disabled={reassignWallet.isPending}
+                                className="text-xs"
+                            >
+                                {reassignWallet.isPending ? (
+                                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                ) : (
+                                    <UserPlus className="w-3 h-3 mr-1" />
+                                )}
+                                Reassign to Me
+                            </Button>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleRefresh}
+                            disabled={refreshing}
+                        >
+                            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                        </Button>
+                    </div>
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">

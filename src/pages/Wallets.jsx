@@ -26,9 +26,8 @@ export default function WalletsPage() {
   const { data: wallets = [], isLoading } = useQuery({
     queryKey: ['wallets'],
     queryFn: async () => {
-      const allWallets = await base44.entities.Wallet.list('-created_date', 100);
-      // Filter to only show wallets owned by current user
-      return allWallets.filter(w => w.owner_id === user?.id);
+      // Fetch all wallets in the system
+      return await base44.entities.Wallet.list('-created_date', 100);
     },
     enabled: !!user,
   });
