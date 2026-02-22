@@ -191,6 +191,18 @@ export default function Home() {
                   Task Delegation
                 </Button>
               </Link>
+              <Link to={createPageUrl('SendRLUSD')}>
+                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
+                  <ArrowUpRight className="w-4 h-4 mr-2" />
+                  Send RLUSD
+                </Button>
+              </Link>
+              <Link to={createPageUrl('ReceiveRLUSD')}>
+                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
+                  <ArrowDownRight className="w-4 h-4 mr-2" />
+                  Receive RLUSD
+                </Button>
+              </Link>
               <Link to={createPageUrl('RLUSDManager')}>
                 <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
                   <Wallet className="w-4 h-4 mr-2" />
