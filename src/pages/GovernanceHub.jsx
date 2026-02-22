@@ -430,7 +430,15 @@ function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
   });
 
   const voteMutation = useMutation({
-    mutationFn: (data) => base44.functions.invoke('castGovernanceVote', data),
+    mutationFn: (data) => {
+      if (!currentAgent) {
+        throw new Error('You must be registered as an agent to vote');
+      }
+      return base44.functions.invoke('castGovernanceVote', { 
+        ...data, 
+        agent_id: currentAgent.id 
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['governance-proposals']);
       queryClient.invalidateQueries(['governance-votes']);
