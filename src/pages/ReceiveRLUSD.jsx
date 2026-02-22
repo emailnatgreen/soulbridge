@@ -164,13 +164,17 @@ export default function ReceiveRLUSDPage() {
                         <div className="flex gap-2">
                           <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
                           <p className="text-sm text-amber-200">
-                            This wallet needs to activate an RLUSD trustline before it can receive RLUSD.
+                            {walletStatus?.can_add_trustline 
+                              ? 'This wallet needs to activate an RLUSD trustline before it can receive RLUSD.'
+                              : `This wallet needs ${walletStatus?.needs_funding?.toFixed(2)} more XRP to set up an RLUSD trustline.`
+                            }
                           </p>
                         </div>
                         <Button
                           onClick={setupTrustline}
-                          disabled={checkingStatus}
+                          disabled={checkingStatus || !walletStatus?.can_add_trustline}
                           className="w-full bg-amber-600 hover:bg-amber-700"
+                          title={!walletStatus?.can_add_trustline ? 'Wallet needs at least 1.2 XRP' : ''}
                         >
                           {checkingStatus ? (
                             <>
@@ -182,9 +186,9 @@ export default function ReceiveRLUSDPage() {
                           )}
                         </Button>
                       </div>
-                    )}
+                      )}
 
-                    {selectedWallet?.metadata?.has_rlusd_trustline && (
+                      {walletStatus?.has_rlusd_trustline && (
                       <>
                         <div className="space-y-2">
                           <Label className="text-purple-200/90">XRP Address</Label>
