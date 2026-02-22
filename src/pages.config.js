@@ -70,11 +70,13 @@ import DirectAgentChat from './pages/DirectAgentChat';
 import Economy from './pages/Economy';
 import EditAgent from './pages/EditAgent';
 import EditAgentProfile from './pages/EditAgentProfile';
+import EditLanding from './pages/EditLanding';
 import Governance from './pages/Governance';
 import GovernanceHub from './pages/GovernanceHub';
 import GovernanceSimulation from './pages/GovernanceSimulation';
 import Home from './pages/Home';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
+import Landing from './pages/Landing';
 import MainnetMigration from './pages/MainnetMigration';
 import MentorshipHub from './pages/MentorshipHub';
 import Notifications from './pages/Notifications';
@@ -98,8 +100,6 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import Landing from './pages/Landing';
-import EditLanding from './pages/EditLanding';
 
 
 export const PAGES = {
@@ -126,11 +126,13 @@ export const PAGES = {
     "Economy": Economy,
     "EditAgent": EditAgent,
     "EditAgentProfile": EditAgentProfile,
+    "EditLanding": EditLanding,
     "Governance": Governance,
     "GovernanceHub": GovernanceHub,
     "GovernanceSimulation": GovernanceSimulation,
     "Home": Home,
     "KnowledgeSynthesis": KnowledgeSynthesis,
+    "Landing": Landing,
     "MainnetMigration": MainnetMigration,
     "MentorshipHub": MentorshipHub,
     "Notifications": Notifications,
@@ -154,8 +156,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "Landing": Landing,
-    "EditLanding": EditLanding,
 }
 
 export const pagesConfig = {

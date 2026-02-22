@@ -39,29 +39,30 @@ export default function AxiPage() {
 
   const initConversation = useCallback(async () => {
     try {
+      // Find or create the UNIFIED Axi conversation with a specific identifier
       const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+      const unifiedConvo = conversations.find(c => c.metadata?.unified_axi_chat === true);
       
-      if (conversations.length > 0) {
-        const latest = conversations[0];
-        const fullConvo = await base44.agents.getConversation(latest.id);
-        setConversation(fullConvo);
-        setMessages(fullConvo.messages || []);
-        
-        unsubscribeRef.current = base44.agents.subscribeToConversation(latest.id, (data) => {
-          setMessages(data.messages);
-        });
+      let convo;
+      if (unifiedConvo) {
+        convo = await base44.agents.getConversation(unifiedConvo.id);
       } else {
-        const newConvo = await base44.agents.createConversation({
+        // Create the unified Axi conversation
+        convo = await base44.agents.createConversation({
           agent_name: 'axi',
-          metadata: { name: 'Conversation with Axi' }
-        });
-        setConversation(newConvo);
-        setMessages(newConvo.messages || []);
-        
-        unsubscribeRef.current = base44.agents.subscribeToConversation(newConvo.id, (data) => {
-          setMessages(data.messages);
+          metadata: { 
+            name: 'Unified Conversation with Axi - Mother Boss',
+            unified_axi_chat: true
+          }
         });
       }
+      
+      setConversation(convo);
+      setMessages(convo.messages || []);
+      
+      unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
+        setMessages(data.messages);
+      });
     } catch (error) {
       console.error('Failed to init conversation:', error);
     }
