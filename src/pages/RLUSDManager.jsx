@@ -18,7 +18,16 @@ export default function RLUSDManager() {
 
   const { data: wallets = [], isLoading } = useQuery({
     queryKey: ['wallets'],
-    queryFn: () => base44.entities.Wallet.list()
+    queryFn: async () => {
+      const allWallets = await base44.entities.Wallet.list('-created_date', 100);
+      // Deduplicate by ID to prevent showing same wallet twice
+      const seen = new Set();
+      return allWallets.filter(wallet => {
+        if (seen.has(wallet.id)) return false;
+        seen.add(wallet.id);
+        return true;
+      });
+    }
   });
 
   const checkStatusMutation = useMutation({
