@@ -305,6 +305,12 @@ export default function Home() {
                   Collaboration
                 </Button>
               </Link>
+              <Link to={createPageUrl('Admin')}>
+                <Button variant="ghost" className="text-red-300/80 hover:bg-red-500/10 hover:text-red-300">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
