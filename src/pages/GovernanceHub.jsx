@@ -646,33 +646,41 @@ function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
 
       {/* Vote Buttons */}
       {canVote && (
-        <div className="grid grid-cols-3 gap-3">
-          <Button
-            onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'for' })}
-            disabled={voteMutation.isPending}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            <ThumbsUp className="w-4 h-4 mr-2" />
-            Vote For
-          </Button>
-          <Button
-            onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'against' })}
-            disabled={voteMutation.isPending}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            <ThumbsDown className="w-4 h-4 mr-2" />
-            Vote Against
-          </Button>
-          <Button
-            onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'abstain' })}
-            disabled={voteMutation.isPending}
-            variant="outline"
-            className="bg-white/5 border-white/10 hover:bg-white/10"
-          >
-            <Minus className="w-4 h-4 mr-2" />
-            Abstain
-          </Button>
-        </div>
+        currentAgent ? (
+          <div className="grid grid-cols-3 gap-3">
+            <Button
+              onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'for' })}
+              disabled={voteMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <ThumbsUp className="w-4 h-4 mr-2" />
+              Vote For
+            </Button>
+            <Button
+              onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'against' })}
+              disabled={voteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <ThumbsDown className="w-4 h-4 mr-2" />
+              Vote Against
+            </Button>
+            <Button
+              onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'abstain' })}
+              disabled={voteMutation.isPending}
+              variant="outline"
+              className="bg-white/5 border-white/10 hover:bg-white/10"
+            >
+              <Minus className="w-4 h-4 mr-2" />
+              Abstain
+            </Button>
+          </div>
+        ) : (
+          <Card className="bg-yellow-500/10 border-yellow-500/30">
+            <CardContent className="p-4 text-center">
+              <p className="text-yellow-300 text-sm">You must be registered as an agent to vote on proposals.</p>
+            </CardContent>
+          </Card>
+        )
       )}
 
       {/* Execute Button */}
