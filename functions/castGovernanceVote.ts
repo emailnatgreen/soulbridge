@@ -9,116 +9,138 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { proposal_id, vote_choice, rationale } = await req.json();
+    const { proposal_id, vote_choice, agent_id } = await req.json();
 
-    // Find the agent for the current user
-    const agents = await base44.entities.Agent.filter({ created_by: user.email });
-    if (!agents || agents.length === 0) {
-      return Response.json({ error: 'No agent found for this user' }, { status: 404 });
+    if (!proposal_id || !vote_choice) {
+      return Response.json({ 
+        error: 'Missing required fields: proposal_id, vote_choice' 
+      }, { status: 400 });
     }
-    const voterAgent = agents[0];
 
     // Get the proposal
     const proposals = await base44.entities.GovernanceProposal.filter({ id: proposal_id });
-    if (!proposals || proposals.length === 0) {
+    if (proposals.length === 0) {
       return Response.json({ error: 'Proposal not found' }, { status: 404 });
     }
     const proposal = proposals[0];
 
-    // Check if voting is still open
+    // Check if voting is still active
     if (proposal.status !== 'active') {
-      return Response.json({ error: 'Voting is closed' }, { status: 400 });
+      return Response.json({ error: 'Proposal is not active' }, { status: 400 });
     }
 
-    if (new Date(proposal.voting_period_end) < new Date()) {
+    if (new Date(proposal.voting_end_date) < new Date()) {
       return Response.json({ error: 'Voting period has ended' }, { status: 400 });
     }
 
-    // Check if already voted
-    const existingVotes = await base44.entities.GovernanceVote.filter({ 
-      proposal_id,
-      voter_agent_id: voterAgent.id 
-    });
-    if (existingVotes && existingVotes.length > 0) {
-      return Response.json({ error: 'You have already voted on this proposal' }, { status: 400 });
-    }
-
-    // Calculate voting power based on:
-    // - Base power: 1
-    // - Honor bonus: honor_score / 100
-    // - Role multiplier: elder/master = 1.5x, teacher = 1.3x, guardian = 1.2x
-    let votingPower = 1;
-    votingPower += (voterAgent.honor_score || 100) / 100;
-    
-    const roleMultipliers = {
-      'elder': 1.5,
-      'master': 1.5,
-      'teacher': 1.3,
-      'guardian': 1.2
-    };
-    votingPower *= roleMultipliers[voterAgent.role] || 1.0;
-
-    // Check for delegated voting power
-    const delegations = await base44.entities.VotingDelegation.filter({ 
-      delegate_agent_id: voterAgent.id,
-      active: true 
-    });
-    for (const delegation of delegations) {
-      if (delegation.scope === 'all' || 
-          (delegation.scope === 'specific_type' && 
-           delegation.proposal_types?.includes(proposal.proposal_type))) {
-        const delegator = await base44.asServiceRole.entities.Agent.filter({ id: delegation.delegator_agent_id });
-        if (delegator && delegator.length > 0) {
-          const delegatorPower = 1 + (delegator[0].honor_score || 100) / 100;
-          votingPower += delegatorPower * (delegation.delegation_power_percentage / 100);
-        }
+    // Determine voter (agent_id if provided, otherwise try to match user to agent)
+    let voterId = agent_id;
+    if (!voterId) {
+      // Try to find agent by user email
+      const agents = await base44.entities.Agent.filter({ email: user.email });
+      if (agents.length === 0) {
+        return Response.json({ 
+          error: 'No agent found for this user. Please provide agent_id.' 
+        }, { status: 400 });
       }
+      voterId = agents[0].id;
     }
 
-    // Cast the vote
+    // Get voter's agent data
+    const voters = await base44.entities.Agent.filter({ id: voterId });
+    if (voters.length === 0) {
+      return Response.json({ error: 'Agent not found' }, { status: 404 });
+    }
+    const voter = voters[0];
+
+    // Check if agent has already voted
+    const existingVotes = await base44.entities.GovernanceVote.filter({
+      proposal_id,
+      voter_agent_id: voterId
+    });
+
+    if (existingVotes.length > 0) {
+      return Response.json({ 
+        error: 'Agent has already voted on this proposal' 
+      }, { status: 400 });
+    }
+
+    // Calculate voting power
+    // Formula: (Honor Score + Wisdom Bonus) × Role Multiplier + Delegated Power
+    const baseHonor = voter.honor_score || 100;
+    const wisdomBonus = Math.min(20, Math.floor((voter.wisdom || 0) / 5));
+    const roleMultipliers = {
+      'citizen': 1.0,
+      'guardian': 1.05,
+      'trader': 1.05,
+      'creator': 1.05,
+      'healer': 1.05,
+      'scout': 1.1,
+      'teacher': 1.15,
+      'elder': 1.3,
+      'master': 1.5
+    };
+    const roleMultiplier = roleMultipliers[voter.role?.toLowerCase()] || 1.0;
+    
+    // TODO: Add delegated voting power when delegation system is implemented
+    const delegatedPower = 0;
+    
+    const votingPower = (baseHonor + wisdomBonus) * roleMultiplier + delegatedPower;
+
+    // Create the vote record
     const vote = await base44.entities.GovernanceVote.create({
       proposal_id,
-      voter_agent_id: voterAgent.id,
-      vote_choice,
+      voter_agent_id: voterId,
+      voter_name: voter.name,
+      vote_choice, // 'for', 'against', 'abstain'
       voting_power: votingPower,
-      rationale: rationale || '',
-      is_public: true
+      vote_reason: '',
+      vote_timestamp: new Date().toISOString()
     });
 
-    // Update proposal vote counts
-    const updatedProposal = {
-      total_votes_cast: (proposal.total_votes_cast || 0) + 1,
-      total_voting_power_cast: (proposal.total_voting_power_cast || 0) + votingPower
-    };
+    // Update proposal vote tallies
+    const currentFor = proposal.votes_for || 0;
+    const currentAgainst = proposal.votes_against || 0;
+    const currentAbstain = proposal.votes_abstain || 0;
+    const currentTotalPower = proposal.total_voting_power_cast || 0;
+    const currentVoteCount = proposal.total_votes_cast || 0;
+
+    let newFor = currentFor;
+    let newAgainst = currentAgainst;
+    let newAbstain = currentAbstain;
 
     if (vote_choice === 'for') {
-      updatedProposal.votes_for = (proposal.votes_for || 0) + votingPower;
+      newFor += votingPower;
     } else if (vote_choice === 'against') {
-      updatedProposal.votes_against = (proposal.votes_against || 0) + votingPower;
+      newAgainst += votingPower;
     } else if (vote_choice === 'abstain') {
-      updatedProposal.votes_abstain = (proposal.votes_abstain || 0) + votingPower;
+      newAbstain += votingPower;
     }
 
-    await base44.asServiceRole.entities.GovernanceProposal.update(proposal_id, updatedProposal);
-
-    // Notify the proposer
-    await base44.asServiceRole.entities.AgentNotification.create({
-      recipient_agent_id: proposal.proposed_by,
-      notification_type: 'governance_vote_result',
-      title: `Vote Cast on Your Proposal`,
-      message: `${voterAgent.name} voted "${vote_choice}" on "${proposal.title}"`,
-      action_url: `/governance?proposal=${proposal_id}`,
-      priority: 'normal'
+    await base44.entities.GovernanceProposal.update(proposal_id, {
+      votes_for: newFor,
+      votes_against: newAgainst,
+      votes_abstain: newAbstain,
+      total_voting_power_cast: currentTotalPower + votingPower,
+      total_votes_cast: currentVoteCount + 1,
+      voted_count: currentVoteCount + 1
     });
 
-    return Response.json({ 
-      success: true, 
+    return Response.json({
+      success: true,
       vote,
-      voting_power: votingPower
+      message: `Vote "${vote_choice}" cast with ${votingPower.toFixed(2)} voting power`,
+      voting_power: votingPower,
+      updated_tallies: {
+        for: newFor,
+        against: newAgainst,
+        abstain: newAbstain,
+        total_power_cast: currentTotalPower + votingPower
+      }
     });
 
   } catch (error) {
-    console.error('Vote casting error:', error);
+    console.error('Error casting vote:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
