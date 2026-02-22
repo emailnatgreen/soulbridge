@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
@@ -57,6 +57,12 @@ export default function Home() {
               <Link to={createPageUrl('Home')}>
                 <Button variant="ghost" className="text-white hover:bg-white/10">
                   Dashboard
+                </Button>
+              </Link>
+              <Link to={createPageUrl('EditLanding')}>
+                <Button variant="ghost" className="text-white/80 hover:bg-white/10 hover:text-white">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Landing
                 </Button>
               </Link>
               <Link to={createPageUrl('TransactionHistory')}>

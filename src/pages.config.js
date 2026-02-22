@@ -98,6 +98,8 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
+import Landing from './pages/Landing';
+import EditLanding from './pages/EditLanding';
 
 
 export const PAGES = {
@@ -152,6 +154,8 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
+    "Landing": Landing,
+    "EditLanding": EditLanding,
 }
 
 export const pagesConfig = {
