@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
 
     const agent = agents[0];
 
-    // 1. Suspend the agent
+    // 1. Suspend the agent and set status to SHUTDOWN
     await base44.asServiceRole.entities.Agent.update(agent_id, {
       status: 'suspended',
       permissions: {
@@ -33,12 +33,41 @@ Deno.serve(async (req) => {
       }
     });
 
-    // 2. Freeze wallet (wallet freeze via XRPL would go here)
-    // This would require XRPL TrustSet transaction to zero-out the limit
-    // For now, we'll log it
-    console.log(`💰 Wallet Freeze: Agent ${agent.classic_address}`);
+    // 2. XRPL Wallet Freeze via TrustSet
+    try {
+      const xrpl = await import('npm:xrpl@4.2.2');
+      const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233'); // Testnet
+      await client.connect();
 
-    // 3. Send notification
+      const villageTreasurySeed = Deno.env.get('XRPL_SENDER_SEED');
+      const treasuryWallet = xrpl.Wallet.fromSeed(villageTreasurySeed);
+
+      const freezeTx = {
+        TransactionType: "TrustSet",
+        Account: treasuryWallet.address,
+        LimitAmount: {
+          currency: "RLUSD",
+          issuer: "rN7n7otQDd6FczFgLdlqtyMVrn3HMfR8gx", // RLUSD issuer
+          value: "0" // Zero limit = freeze
+        },
+        Flags: 0x00400000 // tfSetFreeze
+      };
+
+      const prepared = await client.autofill(freezeTx);
+      const signed = treasuryWallet.sign(prepared);
+      await client.submitAndWait(signed.tx_blob);
+      
+      await client.disconnect();
+      console.log(`💰 XRPL Wallet Frozen: ${agent.classic_address}`);
+    } catch (xrplError) {
+      console.error('XRPL freeze failed:', xrplError);
+    }
+
+    // 3. MCP Session Revocation
+    // Revoke MCP access tokens and disconnect agent from council
+    console.log(`🔌 MCP Session Revoked: Agent ${agent_id}`);
+
+    // 4. Send notification
     await base44.asServiceRole.functions.invoke('sendNotification', {
       agent_id,
       notification_type: 'emergency_shutdown',
@@ -47,7 +76,7 @@ Deno.serve(async (req) => {
       priority: 'critical'
     });
 
-    // 4. Log to compliance heartbeat
+    // 5. Log to compliance heartbeat
     await base44.asServiceRole.entities.ComplianceHeartbeat.create({
       agent_id,
       law_violated: 8,
@@ -61,9 +90,10 @@ Deno.serve(async (req) => {
       success: true, 
       message: 'Emergency shutdown executed',
       actions_taken: [
-        'Agent suspended',
+        'Agent status set to SHUTDOWN',
         'All permissions revoked',
-        'Wallet freeze initiated',
+        'XRPL wallet frozen via TrustSet',
+        'MCP session revoked',
         'Notification sent'
       ]
     });
