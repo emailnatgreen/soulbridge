@@ -137,21 +137,29 @@ export default function ReceiveRLUSDPage() {
                 </div>
 
                 {selectedWallet && (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-500/20">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-purple-300">Network</span>
-                        <span className="text-sm font-medium text-white uppercase">{selectedWallet.network}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-purple-300">RLUSD Trustline</span>
-                        <span className={`text-sm font-medium ${selectedWallet?.metadata?.has_rlusd_trustline ? 'text-green-400' : 'text-yellow-400'}`}>
-                          {selectedWallet?.metadata?.has_rlusd_trustline ? 'Active' : 'Not Setup'}
-                        </span>
-                      </div>
-                    </div>
+                   <div className="space-y-4">
+                     <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-500/20">
+                       <div className="flex items-center justify-between mb-2">
+                         <span className="text-sm text-purple-300">Network</span>
+                         <span className="text-sm font-medium text-white uppercase">{selectedWallet.network}</span>
+                       </div>
+                       <div className="flex items-center justify-between mb-2">
+                         <span className="text-sm text-purple-300">XRP Balance</span>
+                         <span className="text-sm font-medium text-white">{walletStatus?.xrp_balance?.toFixed(2) || '—'} XRP</span>
+                       </div>
+                       <div className="flex items-center justify-between">
+                         <span className="text-sm text-purple-300">RLUSD Trustline</span>
+                         {checkingStatus ? (
+                           <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                         ) : (
+                           <span className={`text-sm font-medium ${walletStatus?.has_rlusd_trustline ? 'text-green-400' : 'text-yellow-400'}`}>
+                             {walletStatus?.has_rlusd_trustline ? 'Active' : 'Not Setup'}
+                           </span>
+                         )}
+                       </div>
+                     </div>
 
-                    {!selectedWallet?.metadata?.has_rlusd_trustline && (
+                     {walletStatus && !walletStatus?.has_rlusd_trustline && (
                       <div className="p-4 bg-amber-900/20 rounded-lg border border-amber-500/20 space-y-3">
                         <div className="flex gap-2">
                           <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
