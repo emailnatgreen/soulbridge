@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, Copy, RefreshCw, Eye, EyeOff } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Wallet, Copy, RefreshCw, Eye, EyeOff, History } from "lucide-react";
 import { toast } from "sonner";
+import WalletTransactionHistory from './WalletTransactionHistory';
 
 export default function WalletCard({ wallet, onRefresh }) {
     const [showSeed, setShowSeed] = useState(false);
@@ -111,6 +113,21 @@ export default function WalletCard({ wallet, onRefresh }) {
                         <p className="text-sm">{wallet.notes}</p>
                     </div>
                 )}
+
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full">
+                            <History className="w-4 h-4 mr-2" />
+                            View Transaction History
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh]">
+                        <DialogHeader>
+                            <DialogTitle>Transaction History - {wallet.name}</DialogTitle>
+                        </DialogHeader>
+                        <WalletTransactionHistory wallet={wallet} />
+                    </DialogContent>
+                </Dialog>
             </CardContent>
         </Card>
     );
