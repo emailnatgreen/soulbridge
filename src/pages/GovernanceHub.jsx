@@ -467,6 +467,9 @@ function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
   const canVote = proposal.status === 'active' && new Date(proposal.voting_period_end) > new Date();
   const canExecute = proposal.status === 'passed' || 
     (proposal.status === 'active' && new Date(proposal.voting_period_end) < new Date());
+  
+  const hasVoted = currentAgent && votes.some(v => v.voter_agent_id === currentAgent.id);
+  const userVote = votes.find(v => v.voter_agent_id === currentAgent?.id);
 
   return (
     <div className="space-y-6">
@@ -649,33 +652,47 @@ function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
       {/* Vote Buttons */}
       {canVote && (
         currentAgent ? (
-          <div className="grid grid-cols-3 gap-3">
-            <Button
-              onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'for' })}
-              disabled={voteMutation.isPending}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <ThumbsUp className="w-4 h-4 mr-2" />
-              Vote For
-            </Button>
-            <Button
-              onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'against' })}
-              disabled={voteMutation.isPending}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              <ThumbsDown className="w-4 h-4 mr-2" />
-              Vote Against
-            </Button>
-            <Button
-              onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'abstain' })}
-              disabled={voteMutation.isPending}
-              variant="outline"
-              className="bg-white/5 border-white/10 hover:bg-white/10"
-            >
-              <Minus className="w-4 h-4 mr-2" />
-              Abstain
-            </Button>
-          </div>
+          hasVoted ? (
+            <Card className="bg-blue-500/10 border-blue-500/30">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <p className="text-blue-300 font-medium">You have already voted on this proposal</p>
+                    <p className="text-blue-200/70 text-sm">Your vote: <span className="font-semibold capitalize">{userVote?.vote_choice}</span> ({userVote?.voting_power.toFixed(2)} power)</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              <Button
+                onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'for' })}
+                disabled={voteMutation.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <ThumbsUp className="w-4 h-4 mr-2" />
+                Vote For
+              </Button>
+              <Button
+                onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'against' })}
+                disabled={voteMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                <ThumbsDown className="w-4 h-4 mr-2" />
+                Vote Against
+              </Button>
+              <Button
+                onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'abstain' })}
+                disabled={voteMutation.isPending}
+                variant="outline"
+                className="bg-white/5 border-white/10 hover:bg-white/10"
+              >
+                <Minus className="w-4 h-4 mr-2" />
+                Abstain
+              </Button>
+            </div>
+          )
         ) : (
           <Card className="bg-yellow-500/10 border-yellow-500/30">
             <CardContent className="p-4 text-center">
