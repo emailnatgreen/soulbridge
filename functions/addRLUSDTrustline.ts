@@ -8,6 +8,52 @@ const RLUSD_CONFIG = {
   reserveCost: 0.2
 };
 
+async function decryptSeed(encryptedData, iv, salt) {
+    const masterKey = Deno.env.get('WALLET_ENCRYPTION_KEY');
+    if (!masterKey) {
+        throw new Error('WALLET_ENCRYPTION_KEY not configured');
+    }
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    // Convert from base64
+    const encryptedBytes = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+    const ivBytes = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
+    const saltBytes = Uint8Array.from(atob(salt), c => c.charCodeAt(0));
+
+    // Derive same key
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(masterKey),
+        'PBKDF2',
+        false,
+        ['deriveBits', 'deriveKey']
+    );
+
+    const key = await crypto.subtle.deriveKey(
+        {
+            name: 'PBKDF2',
+            salt: saltBytes,
+            iterations: 100000,
+            hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+    );
+
+    // Decrypt
+    const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: ivBytes },
+        key,
+        encryptedBytes
+    );
+
+    return decoder.decode(decrypted);
+}
+
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
