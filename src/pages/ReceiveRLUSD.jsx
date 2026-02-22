@@ -191,7 +191,7 @@ export default function ReceiveRLUSDPage() {
                       {walletStatus?.has_rlusd_trustline && (
                       <>
                         <div className="space-y-2">
-                          <Label className="text-purple-200/90">XRP Address</Label>
+                           <Label className="text-purple-200/90">RLUSD Address</Label>
                           <div className="flex gap-2">
                             <Input
                               value={selectedWallet.classic_address || ''}
