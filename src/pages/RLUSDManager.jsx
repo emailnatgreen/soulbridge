@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { toast } from 'sonner';
 
 export default function RLUSDManager() {
   const [walletStatuses, setWalletStatuses] = useState({});
@@ -30,15 +31,36 @@ export default function RLUSDManager() {
 
   const addTrustlineMutation = useMutation({
     mutationFn: (wallet_id) => base44.functions.invoke('addRLUSDTrustline', { wallet_id }),
-    onSuccess: (_, wallet_id) => {
+    onSuccess: (response, wallet_id) => {
+      if (response.data?.success) {
+        toast.success(response.data.message || 'RLUSD trustline added');
+      } else if (response.data?.already_exists) {
+        toast.info('RLUSD trustline already exists');
+      } else {
+        toast.error(response.data?.error || 'Failed to add trustline');
+      }
       checkStatusMutation.mutate(wallet_id);
+    },
+    onError: (error) => {
+      toast.error(`Failed: ${error.message}`);
     }
   });
 
   const batchAddMutation = useMutation({
     mutationFn: (wallet_ids) => base44.functions.invoke('batchAddRLUSD', { wallet_ids }),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      toast.dismiss();
+      const summary = response.data?.summary;
+      if (summary) {
+        toast.success(`✅ ${summary.successful} trustlines added, ${summary.already_existed} already existed, ${summary.failed} failed`);
+      } else {
+        toast.success('RLUSD trustlines processed');
+      }
       wallets.forEach(w => checkStatusMutation.mutate(w.id));
+    },
+    onError: (error) => {
+      toast.dismiss();
+      toast.error(`Failed to add trustlines: ${error.message}`);
     }
   });
 
@@ -55,7 +77,10 @@ export default function RLUSDManager() {
       .map(w => w.id);
     
     if (eligibleWallets.length > 0) {
+      toast.loading(`Adding RLUSD to ${eligibleWallets.length} wallets...`);
       batchAddMutation.mutate(eligibleWallets);
+    } else {
+      toast.error('No eligible wallets found. Wallets need ≥1.2 XRP and no existing RLUSD trustline.');
     }
   };
 

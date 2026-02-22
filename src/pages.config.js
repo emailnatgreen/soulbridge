@@ -49,6 +49,7 @@
  */
 import AIProjectHub from './pages/AIProjectHub';
 import AIProjectManager from './pages/AIProjectManager';
+import Admin from './pages/Admin';
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
 import AgentMarketplace from './pages/AgentMarketplace';
@@ -100,13 +101,13 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import Admin from './pages/Admin';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AIProjectHub": AIProjectHub,
     "AIProjectManager": AIProjectManager,
+    "Admin": Admin,
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
     "AgentMarketplace": AgentMarketplace,
@@ -158,7 +159,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "Admin": Admin,
 }
 
 export const pagesConfig = {
