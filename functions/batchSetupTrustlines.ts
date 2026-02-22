@@ -51,17 +51,16 @@ Deno.serve(async (req) => {
       try {
         console.log(`🔧 Setting up trustline for ${wallet.name} (${wallet.classic_address})...`);
         
-        const result = await base44.asServiceRole.functions.invoke('addRLUSDTrustline', {
-          wallet_id: wallet.id
-        });
+        // Setup trustline directly
+        const result = await setupTrustline(base44, wallet);
 
-        if (result.data.success) {
+        if (result.success) {
           console.log(`✅ Trustline set up for ${wallet.name}`);
           results.successful++;
         } else {
-          console.log(`❌ Failed for ${wallet.name}: ${result.data.error}`);
+          console.log(`❌ Failed for ${wallet.name}: ${result.error}`);
           results.failed++;
-          results.errors.push({ wallet: wallet.name, error: result.data.error });
+          results.errors.push({ wallet: wallet.name, error: result.error });
         }
       } catch (error) {
         console.error(`❌ Error processing ${wallet.name}:`, error);
