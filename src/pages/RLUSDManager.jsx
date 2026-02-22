@@ -130,12 +130,13 @@ export default function RLUSDManager() {
               <Button 
                 onClick={addToAllWallets}
                 disabled={batchAddMutation.isPending || stats.needsSetup === 0}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={stats.needsSetup === 0 ? 'No eligible wallets (need ≥1.2 XRP and no existing trustline)' : 'Add RLUSD trustlines to all eligible wallets'}
               >
                 {batchAddMutation.isPending ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
-                  'Add RLUSD to All Eligible'
+                  `Add RLUSD to All (${stats.needsSetup})`
                 )}
               </Button>
             </div>
