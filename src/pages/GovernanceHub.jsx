@@ -738,8 +738,10 @@ function CreateProposalForm({ onClose }) {
   return (
     <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }} className="space-y-4">
       <div>
-        <Label className="text-white">Proposal Title</Label>
+        <Label htmlFor="proposal-title" className="text-white">Proposal Title</Label>
         <Input
+          id="proposal-title"
+          name="title"
           value={formData.title}
           onChange={(e) => setFormData({...formData, title: e.target.value})}
           className="bg-white/5 border-white/10 text-white"
@@ -748,8 +750,10 @@ function CreateProposalForm({ onClose }) {
       </div>
 
       <div>
-        <Label className="text-white">Description</Label>
+        <Label htmlFor="proposal-description" className="text-white">Description</Label>
         <Textarea
+          id="proposal-description"
+          name="description"
           value={formData.description}
           onChange={(e) => setFormData({...formData, description: e.target.value})}
           className="bg-white/5 border-white/10 text-white h-32"
@@ -758,9 +762,9 @@ function CreateProposalForm({ onClose }) {
       </div>
 
       <div>
-        <Label className="text-white">Proposal Type</Label>
-        <Select value={formData.proposal_type} onValueChange={(v) => setFormData({...formData, proposal_type: v})}>
-          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+        <Label htmlFor="proposal-type" className="text-white">Proposal Type</Label>
+        <Select name="proposal_type" value={formData.proposal_type} onValueChange={(v) => setFormData({...formData, proposal_type: v})}>
+          <SelectTrigger id="proposal-type" className="bg-white/5 border-white/10 text-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-slate-900 border-white/10">
@@ -776,8 +780,10 @@ function CreateProposalForm({ onClose }) {
       </div>
 
       <div>
-        <Label className="text-white">Voting Duration (hours)</Label>
+        <Label htmlFor="voting-duration" className="text-white">Voting Duration (hours)</Label>
         <Input
+          id="voting-duration"
+          name="voting_duration_hours"
           type="number"
           value={formData.voting_duration_hours}
           onChange={(e) => setFormData({...formData, voting_duration_hours: parseInt(e.target.value)})}
