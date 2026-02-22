@@ -36,8 +36,8 @@ Deno.serve(async (req) => {
     // Determine voter (agent_id if provided, otherwise try to match user to agent)
     let voterId = agent_id;
     if (!voterId) {
-      // Try to find agent by user email
-      const agents = await base44.entities.Agent.filter({ email: user.email });
+      // Try to find agent by user
+      const agents = await base44.entities.Agent.filter({ created_by: user.email });
       if (agents.length === 0) {
         return Response.json({ 
           error: 'No agent found for this user. Please provide agent_id.' 
