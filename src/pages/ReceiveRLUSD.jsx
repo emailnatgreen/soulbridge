@@ -212,6 +212,7 @@ export default function ReceiveRLUSDPage() {
                           <h4 className="text-sm font-medium text-green-300 mb-2">Ready to Receive RLUSD</h4>
                           <ul className="text-xs text-green-200/70 space-y-1">
                             <li>✓ Your wallet has an active RLUSD trustline</li>
+                            <li>✓ Current RLUSD balance: {walletStatus?.rlusd_balance?.toFixed(2)} RLUSD</li>
                             <li>✓ Share your address with the sender</li>
                             <li>✓ RLUSD will arrive within seconds</li>
                           </ul>
