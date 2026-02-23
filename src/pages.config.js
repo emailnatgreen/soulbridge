@@ -106,6 +106,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import Support from './pages/Support';
 import __Layout from './Layout.jsx';
 
 
@@ -169,6 +170,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "Terms": Terms,
     "Privacy": Privacy,
+    "Support": Support,
 }
 
 export const pagesConfig = {
