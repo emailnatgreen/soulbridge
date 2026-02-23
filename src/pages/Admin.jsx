@@ -86,7 +86,7 @@ export default function Admin() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link to={createPageUrl('DeepSeekIntegration')}>
+            <Link to={createPageUrl('DeepSeek')}>
               <Button className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Open DeepSeek Integration

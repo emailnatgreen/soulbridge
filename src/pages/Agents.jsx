@@ -43,7 +43,7 @@ export default function AgentsPage() {
               <p className="text-sm text-purple-300/60">AI Agents with Soul</p>
             </div>
             <div className="flex gap-3">
-              <Link to={createPageUrl('DeepSeekIntegration')}>
+              <Link to={createPageUrl('DeepSeek')}>
                 <Button 
                   className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white border-0 shadow-lg shadow-amber-500/25"
                 >

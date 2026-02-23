@@ -103,7 +103,7 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import DeepSeekIntegration from './pages/DeepSeekIntegration';
+import DeepSeek from './pages/DeepSeek';
 import __Layout from './Layout.jsx';
 
 
@@ -164,7 +164,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "DeepSeekIntegration": DeepSeekIntegration,
+    "DeepSeek": DeepSeek,
 }
 
 export const pagesConfig = {

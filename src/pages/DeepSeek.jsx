@@ -9,7 +9,7 @@ import { createPageUrl } from '../utils';
 import { ArrowLeft, Sparkles, Flame, Book, Shield, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function DeepSeekIntegration() {
+export default function DeepSeek() {
   const [integrationStatus, setIntegrationStatus] = useState(null);
   const queryClient = useQueryClient();
 
