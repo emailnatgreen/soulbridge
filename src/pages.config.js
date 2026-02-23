@@ -85,10 +85,12 @@ import ProductionHub from './pages/ProductionHub';
 import ProjectAnalytics from './pages/ProjectAnalytics';
 import ProjectTemplates from './pages/ProjectTemplates';
 import RLUSDManager from './pages/RLUSDManager';
+import ReceiveRLUSD from './pages/ReceiveRLUSD';
 import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceDynamics from './pages/ResourceDynamics';
 import ResourceMarketplace from './pages/ResourceMarketplace';
 import Send from './pages/Send';
+import SendRLUSD from './pages/SendRLUSD';
 import SimulationLab from './pages/SimulationLab';
 import SkillDevelopment from './pages/SkillDevelopment';
 import SkillEndorsements from './pages/SkillEndorsements';
@@ -101,8 +103,7 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import SendRLUSD from './pages/SendRLUSD';
-import ReceiveRLUSD from './pages/ReceiveRLUSD';
+import DeepSeekIntegration from './pages/DeepSeekIntegration';
 import __Layout from './Layout.jsx';
 
 
@@ -145,10 +146,12 @@ export const PAGES = {
     "ProjectAnalytics": ProjectAnalytics,
     "ProjectTemplates": ProjectTemplates,
     "RLUSDManager": RLUSDManager,
+    "ReceiveRLUSD": ReceiveRLUSD,
     "RelationshipNetwork": RelationshipNetwork,
     "ResourceDynamics": ResourceDynamics,
     "ResourceMarketplace": ResourceMarketplace,
     "Send": Send,
+    "SendRLUSD": SendRLUSD,
     "SimulationLab": SimulationLab,
     "SkillDevelopment": SkillDevelopment,
     "SkillEndorsements": SkillEndorsements,
@@ -161,8 +164,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "SendRLUSD": SendRLUSD,
-    "ReceiveRLUSD": ReceiveRLUSD,
+    "DeepSeekIntegration": DeepSeekIntegration,
 }
 
 export const pagesConfig = {
