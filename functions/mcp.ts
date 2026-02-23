@@ -1,7 +1,7 @@
 // The Forge — MCP Server for SoulBridge
 // Handles DID creation via Xaman QR codes
 
-import { XummSdk } from 'npm:xumm-sdk@2.5.0';
+import { XummSdk } from 'npm:xumm-sdk@1.9.0';
 import xrpl from 'npm:xrpl@4.2.0-b.1';
 
 // Get API keys from environment
