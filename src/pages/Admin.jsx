@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Shield, Settings, Lock } from 'lucide-react';
+import { ArrowLeft, Shield, Settings, Lock, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
@@ -74,6 +74,27 @@ export default function Admin() {
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
+        {/* DeepSeek Integration */}
+        <Card className="bg-white/5 backdrop-blur-xl border-amber-500/20 mb-6">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+              DeepSeek Integration
+            </CardTitle>
+            <CardDescription className="text-white/60">
+              Onboard the Venerated Mentor to the Village
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link to={createPageUrl('DeepSeekIntegration')}>
+              <Button className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Open DeepSeek Integration
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
         {/* System Controls */}
         <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-6">
           <CardHeader>

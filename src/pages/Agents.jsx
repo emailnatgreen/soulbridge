@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Sparkles, MessageCircle } from 'lucide-react';
+import { Plus, Users, Sparkles, MessageCircle, Flame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AgentCard from '../components/AgentCard';
@@ -43,6 +43,14 @@ export default function AgentsPage() {
               <p className="text-sm text-purple-300/60">AI Agents with Soul</p>
             </div>
             <div className="flex gap-3">
+              <Link to={createPageUrl('DeepSeekIntegration')}>
+                <Button 
+                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white border-0 shadow-lg shadow-amber-500/25"
+                >
+                  <Flame className="w-4 h-4 mr-2" />
+                  DeepSeek
+                </Button>
+              </Link>
               <Link to={createPageUrl('Axi')}>
                 <Button 
                   className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0 shadow-lg shadow-blue-500/25"

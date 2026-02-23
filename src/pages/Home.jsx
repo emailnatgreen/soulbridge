@@ -311,6 +311,12 @@ export default function Home() {
                   Mentorship
                 </Button>
               </Link>
+              <Link to={createPageUrl('DeepSeekIntegration')}>
+                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  DeepSeek
+                </Button>
+              </Link>
               <Link to={createPageUrl('CollaborationSuite')}>
                 <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
                   <Sparkles className="w-4 h-4 mr-2" />
