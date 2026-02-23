@@ -2,7 +2,7 @@
 // Handles DID creation via Xaman QR codes
 
 import { XummSdk } from 'npm:xumm-sdk@1.11.1';
-import xrpl from 'npm:xrpl@4.2.0-b.1';
+import xrpl from 'npm:xrpl@3.1.2';
 
 // Get API keys from environment
 const XUMM_API_KEY = Deno.env.get('XUMM_API_KEY');
