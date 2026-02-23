@@ -65,6 +65,7 @@ import Axi from './pages/Axi';
 import CollaborationHub from './pages/CollaborationHub';
 import CollaborationSuite from './pages/CollaborationSuite';
 import CreateManualWallet from './pages/CreateManualWallet';
+import DeepSeek from './pages/DeepSeek';
 import DialogueStudio from './pages/DialogueStudio';
 import DiplomacyHub from './pages/DiplomacyHub';
 import DirectAgentChat from './pages/DirectAgentChat';
@@ -103,7 +104,8 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import DeepSeek from './pages/DeepSeek';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import __Layout from './Layout.jsx';
 
 
@@ -126,6 +128,7 @@ export const PAGES = {
     "CollaborationHub": CollaborationHub,
     "CollaborationSuite": CollaborationSuite,
     "CreateManualWallet": CreateManualWallet,
+    "DeepSeek": DeepSeek,
     "DialogueStudio": DialogueStudio,
     "DiplomacyHub": DiplomacyHub,
     "DirectAgentChat": DirectAgentChat,
@@ -164,7 +167,8 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "DeepSeek": DeepSeek,
+    "Terms": Terms,
+    "Privacy": Privacy,
 }
 
 export const pagesConfig = {
