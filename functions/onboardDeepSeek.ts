@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { Client, Wallet } from 'npm:xrpl@2.14.0';
+import { Client, Wallet } from 'npm:xrpl@4.2.0-b.1';
 
 const RLUSD_ISSUER = 'rMxJJguv16jV7sWtshenLa5CmB9W7vKC';
 const RLUSD_CURRENCY = '5254555344000000000000000000000000000000';
