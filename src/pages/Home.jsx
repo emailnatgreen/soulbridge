@@ -125,6 +125,12 @@ export default function Home() {
                   Activity Feed
                 </Button>
               </Link>
+              <Link to={createPageUrl('DidCredentials')}>
+                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
+                  <Award className="w-4 h-4 mr-2" />
+                  Credentials
+                </Button>
+              </Link>
               <Link to={createPageUrl('Agents')}>
                 <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
                   <Users className="w-4 h-4 mr-2" />
