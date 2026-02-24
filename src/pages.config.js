@@ -113,6 +113,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import DIDAnalytics from './pages/DIDAnalytics';
 import DidReputation from './pages/DidReputation';
+import DidSocialNetwork from './pages/DidSocialNetwork';
 import __Layout from './Layout.jsx';
 
 
@@ -183,6 +184,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "DIDAnalytics": DIDAnalytics,
     "DidReputation": DidReputation,
+    "DidSocialNetwork": DidSocialNetwork,
 }
 
 export const pagesConfig = {
