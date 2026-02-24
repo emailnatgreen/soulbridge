@@ -262,70 +262,72 @@ export default function DIDManager() {
           </div>
         </div>
 
-        {/* DIDs Grid */}
-        {wallets.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardContent>
-              <Fingerprint className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No DIDs Yet</h3>
-              <p className="text-gray-600 mb-4">Create a wallet to generate your first DID on XRPL</p>
-              <Link to={createPageUrl('Wallets')}>
-                <Button>Create Wallet</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2">
-            {wallets.map((wallet) => {
-              const agent = getAgentForWallet(wallet.id);
-              const didAddress = `did:xrpl:${wallet.classic_address}`;
-              const revoked = isRevoked(wallet);
-              const didDoc = getDIDDocument(wallet);
-              
-              return (
-                <Card key={wallet.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Fingerprint className="w-5 h-5 text-indigo-600" />
-                          {wallet.name || 'Unnamed Wallet'}
-                        </CardTitle>
-                        <Badge variant="outline" className="mt-2">
-                          {wallet.network}
-                        </Badge>
-                      </div>
-                      {revoked ? (
-                        <Badge className="bg-red-600">
-                          <AlertTriangle className="w-3 h-3 mr-1" />
-                          Revoked
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-green-600">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Active
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
+        {/* DID Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Active DIDs ({activeWallets.length})
+            </TabsTrigger>
+            <TabsTrigger value="revoked" className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Revoked DIDs ({revokedWallets.length})
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Active DIDs Tab */}
+          <TabsContent value="active" className="mt-6">
+            {activeWallets.length === 0 ? (
+              <Card className="bg-gray-50">
+                <CardContent className="py-12 text-center">
+                  <Fingerprint className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No active DIDs found</p>
+                  <Link to={createPageUrl('CreateDID')} className="mt-4 inline-block">
+                    <Button>Create Your First DID</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                {activeWallets.map((wallet) => {
+                  const agent = getAgentForWallet(wallet.id);
+                  const didAddress = `did:xrpl:${wallet.classic_address}`;
+                  const didDoc = getDIDDocument(wallet);
+                  
+                  return (
+                    <Card key={wallet.id} className="hover:shadow-lg transition-shadow border-green-200">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg flex items-center gap-2">
+                              <Fingerprint className="w-5 h-5 text-indigo-600" />
+                              {wallet.name || 'Unnamed Wallet'}
+                            </CardTitle>
+                            <Badge variant="outline" className="mt-2">
+                              {wallet.network}
+                            </Badge>
+                          </div>
+                          <Badge className="bg-green-600">Active</Badge>
+                        </div>
+                      </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* DID Address */}
-                    <div>
-                      <div className="text-sm font-medium text-gray-700 mb-1">DID Address</div>
-                      <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-md">
-                        <code className="text-xs flex-1 overflow-hidden text-ellipsis">
-                          {didAddress}
-                        </code>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7"
-                          onClick={() => copyToClipboard(didAddress, 'DID Address')}
-                        >
-                          <Copy className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
+                        {/* DID Address */}
+                        <div>
+                          <div className="text-sm font-medium text-gray-700 mb-1">DID Address</div>
+                          <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-md">
+                            <code className="text-xs flex-1 overflow-hidden text-ellipsis">
+                              {didAddress}
+                            </code>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              onClick={() => copyToClipboard(didAddress, 'DID Address')}
+                            >
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
 
                     {/* Classic Address */}
                     <div>
@@ -484,20 +486,20 @@ export default function DIDManager() {
                       </div>
                     </div>
 
-                    {/* Metadata */}
-                    <div className="text-xs text-gray-500 border-t pt-2">
-                      Created: {new Date(wallet.created_date).toLocaleDateString()}
-                    </div>
-                  </CardContent>
-                  </Card>
+                        {/* Metadata */}
+                        <div className="text-xs text-gray-500 border-t pt-2">
+                          Created: {new Date(wallet.created_date).toLocaleDateString()}
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
-                  })}
-                  </div>
-                  )}
-                  </TabsContent>
+                })}
+              </div>
+            )}
+          </TabsContent>
 
-                  {/* Revoked DIDs Tab */}
-                  <TabsContent value="revoked" className="mt-6">
+          {/* Revoked DIDs Tab */}
+          <TabsContent value="revoked" className="mt-6">
                   {revokedWallets.length === 0 ? (
                     <Card className="bg-gray-50">
                       <CardContent className="py-12 text-center">
@@ -627,8 +629,6 @@ export default function DIDManager() {
                     )}
                     </TabsContent>
                     </Tabs>
-          </div>
-        )}
 
         {/* Revoke Confirmation Dialog */}
         <Dialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>
