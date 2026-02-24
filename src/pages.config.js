@@ -66,11 +66,17 @@ import CollaborationHub from './pages/CollaborationHub';
 import CollaborationSuite from './pages/CollaborationSuite';
 import CreateDID from './pages/CreateDID';
 import CreateManualWallet from './pages/CreateManualWallet';
+import DIDAnalytics from './pages/DIDAnalytics';
 import DIDManager from './pages/DIDManager';
 import DIDRegistry from './pages/DIDRegistry';
 import DeepSeek from './pages/DeepSeek';
 import DialogueStudio from './pages/DialogueStudio';
+import DidActivityFeed from './pages/DidActivityFeed';
+import DidCredentials from './pages/DidCredentials';
 import DidMessaging from './pages/DidMessaging';
+import DidReputation from './pages/DidReputation';
+import DidSocialNetwork from './pages/DidSocialNetwork';
+import DidTrustGraph from './pages/DidTrustGraph';
 import DiplomacyHub from './pages/DiplomacyHub';
 import DirectAgentChat from './pages/DirectAgentChat';
 import Economy from './pages/Economy';
@@ -111,12 +117,6 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import DIDAnalytics from './pages/DIDAnalytics';
-import DidReputation from './pages/DidReputation';
-import DidSocialNetwork from './pages/DidSocialNetwork';
-import DidActivityFeed from './pages/DidActivityFeed';
-import DidCredentials from './pages/DidCredentials';
-import DidTrustGraph from './pages/DidTrustGraph';
 import DidPrivacy from './pages/DidPrivacy';
 import __Layout from './Layout.jsx';
 
@@ -141,11 +141,17 @@ export const PAGES = {
     "CollaborationSuite": CollaborationSuite,
     "CreateDID": CreateDID,
     "CreateManualWallet": CreateManualWallet,
+    "DIDAnalytics": DIDAnalytics,
     "DIDManager": DIDManager,
     "DIDRegistry": DIDRegistry,
     "DeepSeek": DeepSeek,
     "DialogueStudio": DialogueStudio,
+    "DidActivityFeed": DidActivityFeed,
+    "DidCredentials": DidCredentials,
     "DidMessaging": DidMessaging,
+    "DidReputation": DidReputation,
+    "DidSocialNetwork": DidSocialNetwork,
+    "DidTrustGraph": DidTrustGraph,
     "DiplomacyHub": DiplomacyHub,
     "DirectAgentChat": DirectAgentChat,
     "Economy": Economy,
@@ -186,12 +192,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "DIDAnalytics": DIDAnalytics,
-    "DidReputation": DidReputation,
-    "DidSocialNetwork": DidSocialNetwork,
-    "DidActivityFeed": DidActivityFeed,
-    "DidCredentials": DidCredentials,
-    "DidTrustGraph": DidTrustGraph,
     "DidPrivacy": DidPrivacy,
 }
 
