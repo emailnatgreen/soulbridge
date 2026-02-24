@@ -11,6 +11,7 @@ import NotificationCenter from '../components/NotificationCenter';
 import PrivacyQuickToggle from '../components/PrivacyQuickToggle';
 import MobileNav from '../components/MobileNav';
 import MobileBottomNav from '../components/MobileBottomNav';
+import DidAuthStatus from '../components/DidAuthStatus';
 
 export default function Home() {
   const { data: transactions = [], isLoading } = useQuery({
@@ -56,6 +57,7 @@ export default function Home() {
                 <p className="text-sm text-purple-300/60">Experimental AI Agent Research Platform</p>
               </div>
               <div className="flex items-center gap-3">
+                <DidAuthStatus />
                 <PrivacyQuickToggle />
                 <NotificationCenter agentId="axi_main_001" />
                 <Link to={createPageUrl('Send')}>

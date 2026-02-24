@@ -122,6 +122,8 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
+import DidLogin from './pages/DidLogin';
+import DidProtectedDemo from './pages/DidProtectedDemo';
 import __Layout from './Layout.jsx';
 
 
@@ -201,6 +203,8 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
+    "DidLogin": DidLogin,
+    "DidProtectedDemo": DidProtectedDemo,
 }
 
 export const pagesConfig = {
