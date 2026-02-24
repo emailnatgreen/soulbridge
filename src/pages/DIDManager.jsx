@@ -499,32 +499,32 @@ export default function DIDManager() {
                   {/* Revoked DIDs Tab */}
                   <TabsContent value="revoked" className="mt-6">
                   {revokedWallets.length === 0 ? (
-                  <Card className="bg-gray-50">
-                  <CardContent className="py-12 text-center">
-                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                  <p className="text-gray-600">No revoked DIDs</p>
-                  <p className="text-sm text-gray-500 mt-2">All your DIDs are active</p>
-                  </CardContent>
-                  </Card>
+                    <Card className="bg-gray-50">
+                      <CardContent className="py-12 text-center">
+                        <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                        <p className="text-gray-600">No revoked DIDs</p>
+                        <p className="text-sm text-gray-500 mt-2">All your DIDs are active</p>
+                      </CardContent>
+                    </Card>
                   ) : (
-                  <div className="space-y-4">
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                  <div className="flex gap-3">
-                  <Info className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-                  <div className="text-sm text-yellow-800">
-                  <p className="font-medium mb-1">About Revoked DIDs</p>
-                  <p>Revoked DIDs have been deleted from the XRPL. You can reverse a revocation to recreate the DID on-chain.</p>
-                  </div>
-                  </div>
-                  </div>
+                    <div className="space-y-4">
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                        <div className="flex gap-3">
+                          <Info className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                          <div className="text-sm text-yellow-800">
+                            <p className="font-medium mb-1">About Revoked DIDs</p>
+                            <p>Revoked DIDs have been deleted from the XRPL. You can reverse a revocation to recreate the DID on-chain.</p>
+                          </div>
+                        </div>
+                      </div>
 
-                  {revokedWallets.map(wallet => {
-                  const agent = agents.find(a => a.wallet_id === wallet.id);
-                  const didAddress = `did:xrpl:${wallet.classic_address}`;
-                  const revocationInfo = getRevocationInfo(wallet);
+                      {revokedWallets.map(wallet => {
+                        const agent = agents.find(a => a.wallet_id === wallet.id);
+                        const didAddress = `did:xrpl:${wallet.classic_address}`;
+                        const revocationInfo = getRevocationInfo(wallet);
 
-                  return (
-                  <Card key={wallet.id} className="border-red-200 bg-red-50/50">
+                        return (
+                          <Card key={wallet.id} className="border-red-200 bg-red-50/50">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -619,18 +619,14 @@ export default function DIDManager() {
                         This will recreate the DID on XRPL
                       </p>
                     </div>
-                  </CardContent>
-                  </Card>
-                  );
-                  })}
-                  </div>
-                  )}
-                  </TabsContent>
-                  </Tabs>
-
-                  {/* Legacy layout for empty state - moved inside tabs */}
-                  {!isLoadingWallets && wallets.length === 0 && activeTab === 'active' && (
-                  <div className="hidden">{/* Empty wallets handling now in tabs */}
+                    </CardContent>
+                    </Card>
+                    );
+                    })}
+                    </div>
+                    )}
+                    </TabsContent>
+                    </Tabs>
           </div>
         )}
 
