@@ -74,9 +74,11 @@ import DialogueStudio from './pages/DialogueStudio';
 import DidActivityFeed from './pages/DidActivityFeed';
 import DidConnections from './pages/DidConnections';
 import DidCredentials from './pages/DidCredentials';
+import DidLogin from './pages/DidLogin';
 import DidMessaging from './pages/DidMessaging';
 import DidPrivacy from './pages/DidPrivacy';
 import DidPrivacyAnalytics from './pages/DidPrivacyAnalytics';
+import DidProtectedDemo from './pages/DidProtectedDemo';
 import DidReputation from './pages/DidReputation';
 import DidSocialNetwork from './pages/DidSocialNetwork';
 import DidTrustDashboard from './pages/DidTrustDashboard';
@@ -122,8 +124,6 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import DidLogin from './pages/DidLogin';
-import DidProtectedDemo from './pages/DidProtectedDemo';
 import __Layout from './Layout.jsx';
 
 
@@ -155,9 +155,11 @@ export const PAGES = {
     "DidActivityFeed": DidActivityFeed,
     "DidConnections": DidConnections,
     "DidCredentials": DidCredentials,
+    "DidLogin": DidLogin,
     "DidMessaging": DidMessaging,
     "DidPrivacy": DidPrivacy,
     "DidPrivacyAnalytics": DidPrivacyAnalytics,
+    "DidProtectedDemo": DidProtectedDemo,
     "DidReputation": DidReputation,
     "DidSocialNetwork": DidSocialNetwork,
     "DidTrustDashboard": DidTrustDashboard,
@@ -203,8 +205,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "DidLogin": DidLogin,
-    "DidProtectedDemo": DidProtectedDemo,
 }
 
 export const pagesConfig = {

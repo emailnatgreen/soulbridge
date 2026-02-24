@@ -3,424 +3,392 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Award, CheckCircle2, XCircle, Clock, FileText, Trophy, AlertCircle, Loader2 } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Shield, Star, CheckCircle, XCircle, Clock, Award, Loader2, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { toast } from 'sonner';
 
 export default function SkillValidation() {
-  const [searchParams] = useSearchParams();
-  const agentId = searchParams.get('agentId');
-  const [selectedSkill, setSelectedSkill] = useState(null);
-  const [validationMethod, setValidationMethod] = useState('test');
-  const [testAnswers, setTestAnswers] = useState([]);
-  const [portfolioUrls, setPortfolioUrls] = useState('');
-  const [portfolioDesc, setPortfolioDesc] = useState('');
+  const [selectedAgentId, setSelectedAgentId] = useState('');
+  const [validationForm, setValidationForm] = useState({
+    skill_name: '',
+    claimed_level: 3,
+    validation_method: 'test',
+    portfolio_urls: [],
+    portfolio_descriptions: ''
+  });
+  const [testInProgress, setTestInProgress] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: agent } = useQuery({
-    queryKey: ['agent', agentId],
-    queryFn: () => base44.entities.Agent.filter({ id: agentId }).then(r => r[0]),
-    enabled: !!agentId
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents'],
+    queryFn: () => base44.entities.Agent.list()
   });
 
   const { data: validations = [] } = useQuery({
-    queryKey: ['validations', agentId],
-    queryFn: () => base44.entities.SkillValidation.filter({ agent_id: agentId }),
-    enabled: !!agentId
+    queryKey: ['skill-validations', selectedAgentId],
+    queryFn: () => base44.entities.SkillValidation.filter(
+      selectedAgentId ? { agent_id: selectedAgentId } : {},
+      '-created_date'
+    )
   });
 
-  const { data: testData, isLoading: generatingTest, mutate: generateTest } = useMutation({
-    mutationFn: async (skill) => {
-      const { data } = await base44.functions.invoke('generateSkillTest', {
-        skill_name: skill.name,
-        skill_category: skill.category || 'General',
-        claimed_level: skill.level
-      });
-      return data.test;
+  const generateTestMutation = useMutation({
+    mutationFn: (data) => base44.functions.invoke('generateSkillTest', data),
+    onSuccess: (response) => {
+      setTestInProgress(response.data);
+      toast.success('Test generated! Answer the questions.');
     }
   });
 
   const submitValidationMutation = useMutation({
-    mutationFn: async (validationData) => {
-      const validation = await base44.entities.SkillValidation.create(validationData);
-      
-      // If portfolio method, validate immediately
-      if (validationData.validation_method === 'portfolio') {
-        await base44.functions.invoke('validateAgentSkill', {
-          validation_id: validation.id
-        });
-      }
-      
-      return validation;
-    },
+    mutationFn: (data) => base44.functions.invoke('validateAgentSkill', data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['validations', agentId]);
-      queryClient.invalidateQueries(['agent', agentId]);
-      setSelectedSkill(null);
-      setTestAnswers([]);
-      setPortfolioUrls('');
-      setPortfolioDesc('');
-    }
-  });
-
-  const validateTestMutation = useMutation({
-    mutationFn: async (validation) => {
-      await base44.functions.invoke('validateAgentSkill', {
-        validation_id: validation.id
+      queryClient.invalidateQueries(['skill-validations']);
+      setValidationForm({
+        skill_name: '',
+        claimed_level: 3,
+        validation_method: 'test',
+        portfolio_urls: [],
+        portfolio_descriptions: ''
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['validations', agentId]);
-      queryClient.invalidateQueries(['agent', agentId]);
+      setTestInProgress(null);
+      toast.success('Validation submitted!');
     }
   });
 
-  const handleStartValidation = async (skill) => {
-    setSelectedSkill(skill);
-    if (validationMethod === 'test' || validationMethod === 'both') {
-      generateTest(skill);
+  const handleStartValidation = () => {
+    if (!selectedAgentId || !validationForm.skill_name) {
+      toast.error('Please select an agent and enter a skill name');
+      return;
+    }
+
+    if (validationForm.validation_method === 'test' || validationForm.validation_method === 'both') {
+      generateTestMutation.mutate({
+        skill_name: validationForm.skill_name,
+        claimed_level: validationForm.claimed_level
+      });
+    } else {
+      submitValidationMutation.mutate({
+        agent_id: selectedAgentId,
+        ...validationForm
+      });
     }
   };
 
-  const handleSubmitTest = async () => {
-    const validationData = {
-      agent_id: agentId,
-      skill_name: selectedSkill.name,
-      skill_category: selectedSkill.category || 'General',
-      claimed_level: selectedSkill.level,
-      validation_method: validationMethod,
-      test_questions: testData?.questions || [],
-      test_answers: testAnswers,
-      portfolio_urls: validationMethod !== 'test' ? portfolioUrls.split('\n').filter(u => u.trim()) : [],
-      portfolio_descriptions: validationMethod !== 'test' ? portfolioDesc : ''
-    };
+  const pendingValidations = validations.filter(v => v.status === 'pending' || v.status === 'in_progress');
+  const completedValidations = validations.filter(v => v.status === 'completed');
 
-    const validation = await submitValidationMutation.mutateAsync(validationData);
-    
-    if (validationMethod === 'test' || validationMethod === 'both') {
-      await validateTestMutation.mutateAsync(validation);
-    }
-  };
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950">
+      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Link to={createPageUrl('Home')}>
+              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl font-light text-white flex items-center gap-2">
+                <Shield className="w-7 h-7 text-indigo-400" />
+                Skill Validation
+              </h1>
+              <p className="text-sm text-indigo-300/60">Verify and certify agent competencies</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed': return 'bg-green-500/10 text-green-400 border-green-500/20';
-      case 'failed': return 'bg-red-500/10 text-red-400 border-red-500/20';
-      case 'in_progress': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-      default: return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-    }
-  };
-
-  if (!agentId) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardContent className="p-12 text-center">
-              <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-xl text-white mb-2">No Agent Selected</h2>
-              <p className="text-white/60">Please select an agent to validate skills.</p>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-white/60">Total Validations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{validations.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-white/60">Pending</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-yellow-400">{pendingValidations.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-white/60">Completed</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-400">{completedValidations.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-white/60">Pass Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-400">
+                {completedValidations.length > 0
+                  ? Math.round((completedValidations.filter(v => v.ai_assessment?.passed).length / completedValidations.length) * 100)
+                  : 0}%
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Request Validation Form */}
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white">Request Skill Validation</CardTitle>
+              <CardDescription className="text-white/60">
+                Submit a skill for AI-powered validation
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-white text-sm mb-2 block">Agent</label>
+                <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Select agent..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10">
+                    {agents.map(agent => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-white text-sm mb-2 block">Skill Name</label>
+                <Input
+                  value={validationForm.skill_name}
+                  onChange={(e) => setValidationForm({...validationForm, skill_name: e.target.value})}
+                  placeholder="e.g., React Development, Data Analysis"
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-white text-sm mb-2 block">Claimed Proficiency (1-5)</label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map(level => (
+                    <button
+                      key={level}
+                      onClick={() => setValidationForm({...validationForm, claimed_level: level})}
+                      className={`flex-1 py-2 rounded border transition-all ${
+                        validationForm.claimed_level === level
+                          ? 'bg-indigo-600 border-indigo-500 text-white'
+                          : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-white text-sm mb-2 block">Validation Method</label>
+                <Select 
+                  value={validationForm.validation_method} 
+                  onValueChange={(v) => setValidationForm({...validationForm, validation_method: v})}
+                >
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10">
+                    <SelectItem value="test">AI Generated Test</SelectItem>
+                    <SelectItem value="portfolio">Portfolio Review</SelectItem>
+                    <SelectItem value="both">Both Test & Portfolio</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(validationForm.validation_method === 'portfolio' || validationForm.validation_method === 'both') && (
+                <div>
+                  <label className="text-white text-sm mb-2 block">Portfolio Description</label>
+                  <Textarea
+                    value={validationForm.portfolio_descriptions}
+                    onChange={(e) => setValidationForm({...validationForm, portfolio_descriptions: e.target.value})}
+                    placeholder="Describe your work that demonstrates this skill..."
+                    className="bg-white/5 border-white/10 text-white"
+                    rows={4}
+                  />
+                </div>
+              )}
+
+              <Button
+                onClick={handleStartValidation}
+                disabled={!selectedAgentId || !validationForm.skill_name || generateTestMutation.isPending || submitValidationMutation.isPending}
+                className="w-full bg-indigo-600 hover:bg-indigo-700"
+              >
+                {generateTestMutation.isPending || submitValidationMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Start Validation
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Validation History */}
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white">Recent Validations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                {validations.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Shield className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
+                    <p className="text-white/60">No validations yet</p>
+                  </div>
+                ) : (
+                  validations.map(validation => (
+                    <ValidationCard key={validation.id} validation={validation} agents={agents} />
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    );
-  }
+
+      {/* Test Dialog */}
+      {testInProgress && (
+        <Dialog open={!!testInProgress} onOpenChange={() => setTestInProgress(null)}>
+          <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Skill Validation Test</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-white/70">Answer the following questions to validate your skill:</p>
+              {testInProgress.questions?.map((q, idx) => (
+                <Card key={idx} className="bg-white/5 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-sm text-white">Question {idx + 1}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white mb-3">{q.question}</p>
+                    <Textarea
+                      placeholder="Your answer..."
+                      className="bg-white/5 border-white/10 text-white"
+                      rows={3}
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+              <Button className="w-full bg-indigo-600">
+                Submit Test
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
+
+function ValidationCard({ validation, agents }) {
+  const agent = agents.find(a => a.id === validation.agent_id);
+  
+  const statusConfig = {
+    pending: { icon: Clock, color: 'bg-yellow-500/20 text-yellow-300', label: 'Pending' },
+    in_progress: { icon: Loader2, color: 'bg-blue-500/20 text-blue-300', label: 'In Progress' },
+    completed: { 
+      icon: validation.ai_assessment?.passed ? CheckCircle : XCircle, 
+      color: validation.ai_assessment?.passed ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300',
+      label: validation.ai_assessment?.passed ? 'Passed' : 'Failed'
+    },
+    failed: { icon: XCircle, color: 'bg-red-500/20 text-red-300', label: 'Failed' }
+  };
+
+  const config = statusConfig[validation.status] || statusConfig.pending;
+  const StatusIcon = config.icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
-      <div className="max-w-6xl mx-auto">
-        <Link to={createPageUrl('AgentProfile') + `?agentId=${agentId}`}>
-          <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Profile
-          </Button>
-        </Link>
-
-        <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-xl">
-            <Award className="w-8 h-8 text-yellow-400" />
-          </div>
+    <Card className="bg-white/5 border-white/10">
+      <CardHeader>
+        <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-light text-white">Skill Validation</h1>
-            <p className="text-purple-300/60">{agent?.name}</p>
+            <CardTitle className="text-white text-lg">{validation.skill_name}</CardTitle>
+            <p className="text-sm text-white/60">{agent?.name || 'Unknown Agent'}</p>
+          </div>
+          <Badge className={config.color}>
+            <StatusIcon className="w-3 h-3 mr-1" />
+            {config.label}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-white/60">Claimed Level</span>
+          <div className="flex items-center gap-1">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-3 h-3 ${i < validation.claimed_level ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
+              />
+            ))}
           </div>
         </div>
 
-        <Tabs defaultValue="validate" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="validate">Request Validation</TabsTrigger>
-            <TabsTrigger value="history">Validation History</TabsTrigger>
-          </TabsList>
+        {validation.ai_assessment && (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Validated Level</span>
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-3 h-3 ${i < validation.ai_assessment.validated_level ? 'text-green-400 fill-green-400' : 'text-white/20'}`}
+                  />
+                ))}
+              </div>
+            </div>
 
-          <TabsContent value="validate" className="space-y-6">
-            {!selectedSkill ? (
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Select Skill to Validate</CardTitle>
-                  <CardDescription className="text-white/60">
-                    Choose a skill from your profile to begin validation
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {agent?.core_skills?.map((skill, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-white font-medium">{skill.name}</h3>
-                          {skill.validated && (
-                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                              <CheckCircle2 className="w-3 h-3 mr-1" />
-                              Validated
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-white/60 text-sm mt-1">{skill.description}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-purple-300">Level {skill.level}/5</span>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => handleStartValidation(skill)}
-                        disabled={skill.validated}
-                        className="bg-gradient-to-r from-purple-600 to-pink-600"
-                      >
-                        {skill.validated ? 'Already Validated' : 'Validate'}
-                      </Button>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Validate: {selectedSkill.name}</CardTitle>
-                  <CardDescription className="text-white/60">
-                    Level {selectedSkill.level}/5
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <Label className="text-white">Validation Method</Label>
-                    <Select value={validationMethod} onValueChange={setValidationMethod}>
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="test">Take a Test</SelectItem>
-                        <SelectItem value="portfolio">Submit Portfolio</SelectItem>
-                        <SelectItem value="both">Both Test & Portfolio</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {(validationMethod === 'test' || validationMethod === 'both') && (
-                    <div className="space-y-4">
-                      {generatingTest ? (
-                        <div className="text-center py-8">
-                          <Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto mb-4" />
-                          <p className="text-white/60">Generating personalized test...</p>
-                        </div>
-                      ) : testData?.questions ? (
-                        <div className="space-y-6">
-                          <h3 className="text-lg font-medium text-white">Skill Test</h3>
-                          {testData.questions.map((q, idx) => (
-                            <Card key={idx} className="bg-white/5 border-white/10">
-                              <CardContent className="p-4 space-y-3">
-                                <div className="flex items-start justify-between">
-                                  <p className="text-white font-medium">Question {idx + 1}</p>
-                                  <Badge variant="outline" className="text-xs">
-                                    {q.difficulty} • {q.points}pts
-                                  </Badge>
-                                </div>
-                                <p className="text-white/80">{q.question}</p>
-                                {q.type === 'multiple_choice' && (
-                                  <div className="space-y-2">
-                                    {q.options?.map((opt, oidx) => (
-                                      <label key={oidx} className="flex items-center gap-2 p-2 rounded bg-white/5 cursor-pointer hover:bg-white/10">
-                                        <input
-                                          type="radio"
-                                          name={`q-${idx}`}
-                                          value={opt}
-                                          onChange={(e) => {
-                                            const answers = [...testAnswers];
-                                            answers[idx] = { answer: e.target.value };
-                                            setTestAnswers(answers);
-                                          }}
-                                          className="text-purple-500"
-                                        />
-                                        <span className="text-white/80">{opt}</span>
-                                      </label>
-                                    ))}
-                                  </div>
-                                )}
-                                {(q.type === 'short_answer' || q.type === 'scenario') && (
-                                  <Textarea
-                                    placeholder="Your answer..."
-                                    className="bg-white/5 border-white/10 text-white"
-                                    onChange={(e) => {
-                                      const answers = [...testAnswers];
-                                      answers[idx] = { answer: e.target.value };
-                                      setTestAnswers(answers);
-                                    }}
-                                  />
-                                )}
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-
-                  {(validationMethod === 'portfolio' || validationMethod === 'both') && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-white">Portfolio Evidence</h3>
-                      <div>
-                        <Label className="text-white">Portfolio URLs (one per line)</Label>
-                        <Textarea
-                          value={portfolioUrls}
-                          onChange={(e) => setPortfolioUrls(e.target.value)}
-                          placeholder="https://github.com/yourproject&#10;https://example.com/work"
-                          className="bg-white/5 border-white/10 text-white"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-white">Description of Work</Label>
-                        <Textarea
-                          value={portfolioDesc}
-                          onChange={(e) => setPortfolioDesc(e.target.value)}
-                          placeholder="Describe your portfolio work and how it demonstrates your skill..."
-                          className="bg-white/5 border-white/10 text-white min-h-[100px]"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedSkill(null);
-                        setTestAnswers([]);
-                      }}
-                      className="border-white/10 text-white"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSubmitTest}
-                      disabled={submitValidationMutation.isPending || validateTestMutation.isPending}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600"
-                    >
-                      {submitValidationMutation.isPending || validateTestMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Validating...
-                        </>
-                      ) : (
-                        'Submit for Validation'
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            {validation.ai_assessment.score && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-white/60">Score</span>
+                <span className="text-white font-medium">{validation.ai_assessment.score}/100</span>
+              </div>
             )}
-          </TabsContent>
 
-          <TabsContent value="history" className="space-y-4">
-            {validations.length === 0 ? (
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardContent className="p-12 text-center">
-                  <Trophy className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-xl text-white mb-2">No Validation History</h3>
-                  <p className="text-white/60">Start validating your skills to build credibility!</p>
-                </CardContent>
-              </Card>
-            ) : (
-              validations.map((val) => (
-                <Card key={val.id} className="bg-white/5 backdrop-blur-xl border-white/10">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-medium text-white">{val.skill_name}</h3>
-                        <p className="text-sm text-white/60">
-                          Claimed Level: {val.claimed_level} • Method: {val.validation_method}
-                        </p>
-                      </div>
-                      <Badge className={getStatusColor(val.status)}>
-                        {val.status === 'completed' && <CheckCircle2 className="w-3 h-3 mr-1" />}
-                        {val.status === 'failed' && <XCircle className="w-3 h-3 mr-1" />}
-                        {val.status === 'in_progress' && <Clock className="w-3 h-3 mr-1" />}
-                        {val.status}
-                      </Badge>
-                    </div>
-
-                    {val.ai_assessment && (
-                      <div className="space-y-3 p-4 bg-white/5 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/80">Score</span>
-                          <span className="text-white font-medium">{val.ai_assessment.score}/100</span>
-                        </div>
-                        {val.ai_assessment.validated_level && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-white/80">Validated Level</span>
-                            <span className="text-white font-medium">{val.ai_assessment.validated_level}/5</span>
-                          </div>
-                        )}
-                        
-                        {val.ai_assessment.strengths?.length > 0 && (
-                          <div>
-                            <p className="text-green-400 text-sm font-medium mb-2">Strengths:</p>
-                            <ul className="list-disc list-inside text-white/70 text-sm space-y-1">
-                              {val.ai_assessment.strengths.map((s, idx) => (
-                                <li key={idx}>{s}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {val.ai_assessment.areas_for_improvement?.length > 0 && (
-                          <div>
-                            <p className="text-yellow-400 text-sm font-medium mb-2">Areas for Improvement:</p>
-                            <ul className="list-disc list-inside text-white/70 text-sm space-y-1">
-                              {val.ai_assessment.areas_for_improvement.map((a, idx) => (
-                                <li key={idx}>{a}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {val.ai_assessment.feedback && (
-                          <div>
-                            <p className="text-purple-400 text-sm font-medium mb-2">Feedback:</p>
-                            <p className="text-white/70 text-sm">{val.ai_assessment.feedback}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="mt-4 text-xs text-white/50">
-                      Submitted: {new Date(val.created_date).toLocaleDateString()}
-                      {val.validated_at && ` • Validated: ${new Date(val.validated_at).toLocaleDateString()}`}
-                      {val.expires_at && ` • Expires: ${new Date(val.expires_at).toLocaleDateString()}`}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+            {validation.ai_assessment.feedback && (
+              <div className="p-3 bg-indigo-500/10 rounded border border-indigo-500/20">
+                <p className="text-sm text-indigo-200">{validation.ai_assessment.feedback}</p>
+              </div>
             )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+          </>
+        )}
+
+        <div className="text-xs text-white/60">
+          {new Date(validation.created_date).toLocaleString()}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
