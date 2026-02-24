@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -32,6 +32,9 @@ export default function DIDManager() {
   const [selectedAgent, setSelectedAgent] = useState('');
   const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
   const [walletToRevoke, setWalletToRevoke] = useState(null);
+  const [verificationResults, setVerificationResults] = useState({});
+  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+  const [currentVerification, setCurrentVerification] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -145,6 +148,40 @@ export default function DIDManager() {
     if (selectedAgent) {
       linkMutation.mutate({ agent_id: selectedAgent, wallet_id: walletId });
     }
+  };
+
+  const verifyMutation = useMutation({
+    mutationFn: (walletId) => base44.functions.invoke('verifyDIDStatus', { wallet_id: walletId }),
+    onSuccess: (response, walletId) => {
+      setVerificationResults(prev => ({
+        ...prev,
+        [walletId]: response.data
+      }));
+      setCurrentVerification(response.data);
+      setVerifyDialogOpen(true);
+      toast.success('DID verification complete');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to verify DID');
+    }
+  });
+
+  const handleVerifyDID = (walletId) => {
+    verifyMutation.mutate(walletId);
+  };
+
+  const getVerificationBadge = (walletId) => {
+    const result = verificationResults[walletId];
+    if (!result) return null;
+
+    const verification = result.verification;
+    if (!verification.account_exists) {
+      return <Badge variant="outline" className="text-red-600">Not on Chain</Badge>;
+    }
+    if (!verification.did_active) {
+      return <Badge variant="outline" className="text-yellow-600">No DID Data</Badge>;
+    }
+    return <Badge className="bg-green-600">Verified Active</Badge>;
   };
 
   if (walletsLoading) {
@@ -337,46 +374,72 @@ export default function DIDManager() {
                       </div>
                     )}
 
+                    {/* Verification Status */}
+                    {getVerificationBadge(wallet.id) && (
+                      <div className="border-t pt-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">Last Verification:</span>
+                          {getVerificationBadge(wallet.id)}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {new Date(verificationResults[wallet.id]?.verification?.verified_at).toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Actions */}
-                    <div className="border-t pt-4 flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="outline" className="flex-1">
-                            <FileJson className="w-3 h-3 mr-2" />
-                            View DID Doc
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>DID Document</DialogTitle>
-                            <DialogDescription>
-                              Complete DID Document for {didAddress}
-                            </DialogDescription>
-                          </DialogHeader>
-                          <pre className="bg-gray-50 p-4 rounded-md text-xs overflow-x-auto">
-                            {JSON.stringify(didDoc, null, 2)}
-                          </pre>
-                          <DialogFooter>
-                            <Button
-                              onClick={() => copyToClipboard(JSON.stringify(didDoc, null, 2), 'DID Document')}
-                            >
-                              Copy Document
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                    <div className="border-t pt-4 space-y-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => handleVerifyDID(wallet.id)}
+                        disabled={verifyMutation.isPending}
+                      >
+                        <Shield className="w-3 h-3 mr-2" />
+                        {verifyMutation.isPending ? 'Verifying...' : 'Verify on XRPL'}
+                      </Button>
                       
-                      {!revoked && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleRevoke(wallet)}
-                          disabled={revokeMutation.isPending}
-                        >
-                          <Trash2 className="w-3 h-3 mr-2" />
-                          Revoke
-                        </Button>
-                      )}
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="flex-1">
+                              <FileJson className="w-3 h-3 mr-2" />
+                              View DID Doc
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>DID Document</DialogTitle>
+                              <DialogDescription>
+                                Complete DID Document for {didAddress}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <pre className="bg-gray-50 p-4 rounded-md text-xs overflow-x-auto">
+                              {JSON.stringify(didDoc, null, 2)}
+                            </pre>
+                            <DialogFooter>
+                              <Button
+                                onClick={() => copyToClipboard(JSON.stringify(didDoc, null, 2), 'DID Document')}
+                              >
+                                Copy Document
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        {!revoked && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleRevoke(wallet)}
+                            disabled={revokeMutation.isPending}
+                          >
+                            <Trash2 className="w-3 h-3 mr-2" />
+                            Revoke
+                          </Button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Metadata */}
@@ -426,6 +489,109 @@ export default function DIDManager() {
               >
                 {revokeMutation.isPending ? 'Revoking...' : 'Revoke DID'}
               </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Verification Results Dialog */}
+        <Dialog open={verifyDialogOpen} onOpenChange={setVerifyDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-green-600" />
+                DID Verification Results
+              </DialogTitle>
+              <DialogDescription>
+                Real-time status from XRPL network
+              </DialogDescription>
+            </DialogHeader>
+            {currentVerification && (
+              <div className="space-y-4">
+                {/* Status Summary */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">DID:</span>
+                    <code className="text-xs bg-white px-2 py-1 rounded">
+                      {currentVerification.did}
+                    </code>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Network:</span>
+                    <Badge variant="outline">{currentVerification.network}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Account Exists:</span>
+                    {currentVerification.verification.account_exists ? (
+                      <Badge className="bg-green-600">Yes</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-red-600">No</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">DID Active:</span>
+                    {currentVerification.verification.did_active ? (
+                      <Badge className="bg-green-600">Active</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-yellow-600">Not Set</Badge>
+                    )}
+                  </div>
+                  {currentVerification.verification.balance && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Balance:</span>
+                      <span className="text-sm font-mono">{currentVerification.verification.balance} XRP</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* DID Data */}
+                {currentVerification.did_data && (
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">On-Chain DID Data:</div>
+                    <div className="bg-gray-50 p-3 rounded-md space-y-2">
+                      {currentVerification.did_data.document && (
+                        <div>
+                          <div className="text-xs text-gray-600 mb-1">Document:</div>
+                          <pre className="text-xs bg-white p-2 rounded overflow-x-auto">
+                            {JSON.stringify(currentVerification.did_data.document, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                      {currentVerification.did_data.uri && (
+                        <div>
+                          <div className="text-xs text-gray-600 mb-1">URI:</div>
+                          <div className="text-xs bg-white p-2 rounded">
+                            {currentVerification.did_data.uri}
+                          </div>
+                        </div>
+                      )}
+                      {currentVerification.did_data.data && (
+                        <div>
+                          <div className="text-xs text-gray-600 mb-1">Data:</div>
+                          <div className="text-xs bg-white p-2 rounded">
+                            {currentVerification.did_data.data}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Message */}
+                {currentVerification.verification.message && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-sm text-yellow-800">
+                      {currentVerification.verification.message}
+                    </p>
+                  </div>
+                )}
+
+                <div className="text-xs text-gray-500 text-center">
+                  Verified at: {new Date(currentVerification.verification.verified_at).toLocaleString()}
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button onClick={() => setVerifyDialogOpen(false)}>Close</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
