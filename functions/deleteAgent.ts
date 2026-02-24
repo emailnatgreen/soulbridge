@@ -32,6 +32,26 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Log agent deletion before deleting
+    try {
+      const ip_address = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const user_agent = req.headers.get('user-agent') || 'unknown';
+      await base44.asServiceRole.entities.DidAuditLog.create({
+        action_type: 'agent_deleted',
+        did_classic_address: agent.classic_address,
+        wallet_id: agent.wallet_id || null,
+        agent_id: agent_id,
+        user_id: user.id,
+        user_email: user.email,
+        ip_address,
+        user_agent,
+        action_details: { name: agent.name, role: agent.role },
+        success: true
+      });
+    } catch (logError) {
+      console.error('Failed to log agent deletion:', logError);
+    }
+
     // Delete agent
     await base44.entities.Agent.delete(agent_id);
 

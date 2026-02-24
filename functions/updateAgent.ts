@@ -47,6 +47,26 @@ Deno.serve(async (req) => {
     // Update agent
     const updatedAgent = await base44.entities.Agent.update(agent_id, updateData);
 
+    // Log agent update
+    try {
+      const ip_address = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const user_agent = req.headers.get('user-agent') || 'unknown';
+      await base44.asServiceRole.entities.DidAuditLog.create({
+        action_type: 'agent_updated',
+        did_classic_address: updatedAgent.classic_address,
+        wallet_id: updatedAgent.wallet_id || null,
+        agent_id: agent_id,
+        user_id: user.id,
+        user_email: user.email,
+        ip_address,
+        user_agent,
+        action_details: { updates: Object.keys(updateData) },
+        success: true
+      });
+    } catch (logError) {
+      console.error('Failed to log agent update:', logError);
+    }
+
     return Response.json({
       success: true,
       agent: updatedAgent

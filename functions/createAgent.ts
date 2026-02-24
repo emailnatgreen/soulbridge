@@ -62,6 +62,26 @@ Deno.serve(async (req) => {
       status: 'active'
     });
 
+    // Log agent creation
+    try {
+      const ip_address = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const user_agent = req.headers.get('user-agent') || 'unknown';
+      await base44.asServiceRole.entities.DidAuditLog.create({
+        action_type: 'agent_created',
+        did_classic_address: classic_address,
+        wallet_id: wallet_id || null,
+        agent_id: agent.id,
+        user_id: user.id,
+        user_email: user.email,
+        ip_address,
+        user_agent,
+        action_details: { name, role, linked_to_did: !!wallet_id },
+        success: true
+      });
+    } catch (logError) {
+      console.error('Failed to log agent creation:', logError);
+    }
+
     return Response.json({
       success: true,
       agent: agent

@@ -60,6 +60,25 @@ Deno.serve(async (req) => {
       created_by_user_id: user.id
     });
 
+    // Log the version creation
+    try {
+      const ip_address = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const user_agent = req.headers.get('user-agent') || 'unknown';
+      await base44.asServiceRole.entities.DidAuditLog.create({
+        action_type: 'version_created',
+        did_classic_address: wallet.classic_address,
+        wallet_id: wallet_id,
+        user_id: user.id,
+        user_email: user.email,
+        ip_address,
+        user_agent,
+        action_details: { version_number: nextVersionNumber, changes_summary, set_as_active },
+        success: true
+      });
+    } catch (logError) {
+      console.error('Failed to log version creation:', logError);
+    }
+
     return Response.json({
       success: true,
       version: newVersion

@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info, UserPlus, Edit3 } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info, UserPlus, Edit3, History } from 'lucide-react';
 import { toast } from 'sonner';
 import DidPermissionsDialog from '../components/DidPermissionsDialog';
 import DidVersioningDialog from '../components/DidVersioningDialog';
 import AgentManagementDialog from '../components/AgentManagementDialog';
+import AuditLogViewer from '../components/AuditLogViewer';
 import {
   Dialog,
   DialogContent,
@@ -503,7 +504,7 @@ export default function DIDManager() {
                         {verifyMutation.isPending ? 'Verifying...' : 'Verify on XRPL'}
                         </Button>
 
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-3 gap-2">
                           <DidPermissionsDialog 
                             wallet={wallet}
                             trigger={
@@ -520,6 +521,15 @@ export default function DIDManager() {
                               <Button size="sm" variant="outline" className="w-full">
                                 <Clock className="w-3 h-3 mr-2" />
                                 Versions
+                              </Button>
+                            }
+                          />
+                          <AuditLogViewer 
+                            wallet={wallet}
+                            trigger={
+                              <Button size="sm" variant="outline" className="w-full">
+                                <History className="w-3 h-3 mr-2" />
+                                Audit Log
                               </Button>
                             }
                           />

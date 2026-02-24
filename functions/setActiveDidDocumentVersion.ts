@@ -51,6 +51,25 @@ Deno.serve(async (req) => {
       is_active: true
     });
 
+    // Log the version activation
+    try {
+      const ip_address = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const user_agent = req.headers.get('user-agent') || 'unknown';
+      await base44.asServiceRole.entities.DidAuditLog.create({
+        action_type: 'version_activated',
+        did_classic_address: version.did_classic_address,
+        wallet_id: version.wallet_id,
+        user_id: user.id,
+        user_email: user.email,
+        ip_address,
+        user_agent,
+        action_details: { version_number: version.version_number },
+        success: true
+      });
+    } catch (logError) {
+      console.error('Failed to log version activation:', logError);
+    }
+
     return Response.json({
       success: true,
       version: updatedVersion
