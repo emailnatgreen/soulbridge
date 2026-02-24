@@ -37,6 +37,8 @@ import { toast } from 'sonner';
 import PrivacyTemplates from '../components/PrivacyTemplates';
 import TemporaryAccessGrant from '../components/TemporaryAccessGrant';
 import PrivacyShareLinks from '../components/PrivacyShareLinks';
+import EmergencyLockdown from '../components/EmergencyLockdown';
+import DataExportCompliance from '../components/DataExportCompliance';
 
 export default function DidPrivacy() {
   const queryClient = useQueryClient();
@@ -291,12 +293,13 @@ export default function DidPrivacy() {
 
         {/* Main Content with Tabs */}
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="share">Share Links</TabsTrigger>
             <TabsTrigger value="access">Temp Access</TabsTrigger>
-            <TabsTrigger value="lists">Block/Whitelist</TabsTrigger>
+            <TabsTrigger value="emergency">Emergency</TabsTrigger>
+            <TabsTrigger value="export">Export</TabsTrigger>
           </TabsList>
 
           {/* Settings Tab */}
@@ -536,7 +539,17 @@ export default function DidPrivacy() {
             <TemporaryAccessGrant myDid={userWallet.classic_address} />
           </TabsContent>
 
-          {/* Block/Whitelist Tab */}
+          {/* Emergency Lockdown Tab */}
+          <TabsContent value="emergency">
+            <EmergencyLockdown myDid={userWallet.classic_address} />
+          </TabsContent>
+
+          {/* Data Export Tab */}
+          <TabsContent value="export">
+            <DataExportCompliance myDid={userWallet.classic_address} />
+          </TabsContent>
+
+          {/* Block/Whitelist Tab - moved to deprecated */}
           <TabsContent value="lists" className="space-y-6">
         {/* Block List */}
         <Card className="mb-6">
