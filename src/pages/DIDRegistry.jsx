@@ -49,6 +49,11 @@ export default function DIDRegistry() {
     queryFn: () => base44.entities.ReputationScore.list('-overall_score', 100)
   });
 
+  const { data: privacySettings = [] } = useQuery({
+    queryKey: ['registry-privacy'],
+    queryFn: () => base44.entities.DidPrivacySetting.list(),
+  });
+
   const activeWallets = wallets.filter(w => !w.notes?.includes('REVOKED'));
 
   const filteredWallets = activeWallets.filter(wallet => {
