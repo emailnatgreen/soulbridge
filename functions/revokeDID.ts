@@ -100,8 +100,9 @@ Deno.serve(async (req) => {
     await client.disconnect();
 
     // Update wallet notes to reflect revocation
+    const revocationNote = `REVOKED at ${new Date().toISOString()}${reason ? `. Reason: ${reason}` : ''}`;
     await base44.asServiceRole.entities.Wallet.update(wallet_id, {
-      notes: `${walletData.notes || ''}\n[DID REVOKED: ${new Date().toISOString()}]`.trim()
+      notes: revocationNote
     });
 
     return Response.json({
