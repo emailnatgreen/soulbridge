@@ -116,6 +116,7 @@ import DidReputation from './pages/DidReputation';
 import DidSocialNetwork from './pages/DidSocialNetwork';
 import DidActivityFeed from './pages/DidActivityFeed';
 import DidCredentials from './pages/DidCredentials';
+import DidTrustGraph from './pages/DidTrustGraph';
 import __Layout from './Layout.jsx';
 
 
@@ -189,6 +190,7 @@ export const PAGES = {
     "DidSocialNetwork": DidSocialNetwork,
     "DidActivityFeed": DidActivityFeed,
     "DidCredentials": DidCredentials,
+    "DidTrustGraph": DidTrustGraph,
 }
 
 export const pagesConfig = {

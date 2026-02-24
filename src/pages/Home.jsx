@@ -131,6 +131,12 @@ export default function Home() {
                   Credentials
                 </Button>
               </Link>
+              <Link to={createPageUrl('DidTrustGraph')}>
+                <Button variant="ghost" className="text-teal-300/80 hover:bg-teal-500/10 hover:text-teal-300">
+                  <Network className="w-4 h-4 mr-2" />
+                  Trust Graph
+                </Button>
+              </Link>
               <Link to={createPageUrl('Agents')}>
                 <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
                   <Users className="w-4 h-4 mr-2" />
