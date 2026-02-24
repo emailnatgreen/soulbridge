@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info, UserPlus, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 import DidPermissionsDialog from '../components/DidPermissionsDialog';
 import DidVersioningDialog from '../components/DidVersioningDialog';
+import AgentManagementDialog from '../components/AgentManagementDialog';
 import {
   Dialog,
   DialogContent,
@@ -250,6 +251,16 @@ export default function DIDManager() {
               <Badge className="mt-2 bg-purple-600">World's First XRPL DID Manager</Badge>
             </div>
             <div className="flex items-center gap-4">
+              <AgentManagementDialog 
+                mode="create"
+                trigger={
+                  <Button variant="outline">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Create Agent
+                  </Button>
+                }
+                onSuccess={() => queryClient.invalidateQueries(['agents'])}
+              />
               <Link to={createPageUrl('CreateDID')}>
                 <Button>
                   <Fingerprint className="w-4 h-4 mr-2" />
@@ -357,42 +368,71 @@ export default function DIDManager() {
                             <User className="w-4 h-4" />
                             Associated Agent
                           </span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => unlinkMutation.mutate(agent.id)}
-                            disabled={unlinkMutation.isPending}
-                          >
-                            <Unlink className="w-3 h-3" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <AgentManagementDialog 
+                              mode="edit"
+                              existingAgent={agent}
+                              trigger={
+                                <Button size="sm" variant="ghost">
+                                  <Edit3 className="w-3 h-3" />
+                                </Button>
+                              }
+                              onSuccess={() => queryClient.invalidateQueries(['agents'])}
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => unlinkMutation.mutate(agent.id)}
+                              disabled={unlinkMutation.isPending}
+                            >
+                              <Unlink className="w-3 h-3" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="bg-indigo-50 p-3 rounded-md">
-                          <div className="font-medium text-indigo-900">{agent.name}</div>
-                          <div className="text-sm text-indigo-700 mt-1">{agent.role}</div>
-                          <div className="text-xs text-indigo-600 mt-2 line-clamp-2">
+                        <div className="bg-indigo-50 p-3 rounded-md space-y-2">
+                          <div>
+                            <div className="font-medium text-indigo-900">{agent.name}</div>
+                            {agent.tagline && (
+                              <div className="text-xs text-indigo-600 italic">{agent.tagline}</div>
+                            )}
+                            <Badge variant="outline" className="mt-1 text-xs">{agent.role}</Badge>
+                          </div>
+                          <div className="text-xs text-indigo-600 line-clamp-2">
                             {agent.purpose}
                           </div>
-                          <Link to={createPageUrl('AgentDetails') + `?id=${agent.id}`}>
-                            <Button size="sm" variant="outline" className="mt-3 w-full">
-                              View Agent <ExternalLink className="w-3 h-3 ml-1" />
-                            </Button>
-                          </Link>
+                          {(agent.metadata?.contact_email || agent.metadata?.contact_phone) && (
+                            <div className="text-xs text-indigo-700 pt-2 border-t border-indigo-200">
+                              {agent.metadata?.contact_email && (
+                                <div>📧 {agent.metadata.contact_email}</div>
+                              )}
+                              {agent.metadata?.contact_phone && (
+                                <div>📞 {agent.metadata.contact_phone}</div>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <Link to={createPageUrl('AgentDetails') + `?id=${agent.id}`} className="flex-1">
+                              <Button size="sm" variant="outline" className="w-full">
+                                View Details <ExternalLink className="w-3 h-3 ml-1" />
+                              </Button>
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="border-t pt-4">
+                      <div className="border-t pt-4 space-y-2">
                         <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
                           <DialogTrigger asChild>
                             <Button size="sm" variant="outline" className="w-full">
                               <Link2 className="w-3 h-3 mr-2" />
-                              Link Agent to DID
+                              Link Existing Agent
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
                               <DialogTitle>Link Agent to DID</DialogTitle>
                               <DialogDescription>
-                                Select an agent to link to this DID
+                                Select an existing agent or create a new one
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
@@ -418,9 +458,24 @@ export default function DIDManager() {
                               </Button>
                             </DialogFooter>
                           </DialogContent>
-                          </Dialog>
-                          </div>
-                          )}
+                        </Dialog>
+                        
+                        <AgentManagementDialog 
+                          mode="create"
+                          trigger={
+                            <Button size="sm" variant="outline" className="w-full">
+                              <UserPlus className="w-3 h-3 mr-2" />
+                              Create & Link New Agent
+                            </Button>
+                          }
+                          onSuccess={(newAgent) => {
+                            if (newAgent.wallet_id === wallet.id) {
+                              queryClient.invalidateQueries(['agents']);
+                            }
+                          }}
+                        />
+                      </div>
+                      )}
 
                           {/* Verification Status */}
                           {getVerificationBadge(wallet.id) && (
