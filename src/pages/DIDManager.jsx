@@ -74,6 +74,19 @@ export default function DIDManager() {
     }
   });
 
+  const reversalMutation = useMutation({
+    mutationFn: (walletId) => base44.functions.invoke('reverseDIDRevocation', { wallet_id: walletId }),
+    onSuccess: () => {
+      toast.success('DID revocation reversed successfully');
+      queryClient.invalidateQueries(['wallets']);
+      setReversalDialogOpen(false);
+      setWalletToReverse(null);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to reverse revocation');
+    }
+  });
+
   const linkMutation = useMutation({
     mutationFn: ({ agent_id, wallet_id }) => 
       base44.functions.invoke('linkAgentToDID', { agent_id, wallet_id }),
