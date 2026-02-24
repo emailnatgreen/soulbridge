@@ -129,6 +129,25 @@ Deno.serve(async (req) => {
       notes: revocationNote
     });
 
+    // Log the revocation
+    try {
+      const ip_address = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const user_agent = req.headers.get('user-agent') || 'unknown';
+      await base44.asServiceRole.entities.DidAuditLog.create({
+        action_type: 'did_revoked',
+        did_classic_address: walletData.classic_address,
+        wallet_id: wallet_id,
+        user_id: user.id,
+        user_email: user.email,
+        ip_address,
+        user_agent,
+        action_details: { reason: reason || 'No reason provided', transaction_hash: result.result.hash },
+        success: true
+      });
+    } catch (logError) {
+      console.error('Failed to log revocation:', logError);
+    }
+
     return Response.json({
       success: true,
       message: 'DID successfully revoked on XRPL',
