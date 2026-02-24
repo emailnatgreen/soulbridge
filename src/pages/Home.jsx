@@ -9,6 +9,8 @@ import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
 import NotificationCenter from '../components/NotificationCenter';
 import PrivacyQuickToggle from '../components/PrivacyQuickToggle';
+import MobileNav from '../components/MobileNav';
+import MobileBottomNav from '../components/MobileBottomNav';
 
 export default function Home() {
   const { data: transactions = [], isLoading } = useQuery({
@@ -23,7 +25,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative">
+    <>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative pb-20 md:pb-0">
       {/* Background Image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-10 pointer-events-none"
@@ -33,9 +36,19 @@ export default function Home() {
       />
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            {/* Mobile Header */}
+            <div className="flex md:hidden items-center justify-between">
+              <MobileNav />
+              <h1 className="text-xl font-semibold text-white">
+                SoulBridge
+              </h1>
+              <NotificationCenter agentId="axi_main_001" />
+            </div>
+            
+            {/* Desktop Header */}
+            <div className="hidden md:flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-light tracking-tight text-white mb-1">
                   SoulBridge <span className="font-semibold">Village</span>
@@ -54,8 +67,8 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Navigation Menu */}
-            <nav className="flex flex-wrap gap-2">
+            {/* Navigation Menu - Desktop Only */}
+            <nav className="hidden md:flex flex-wrap gap-2">
               <Link to={createPageUrl('Home')}>
                 <Button variant="ghost" className="text-white hover:bg-white/10">
                   Dashboard
@@ -414,9 +427,9 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
