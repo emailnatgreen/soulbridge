@@ -43,13 +43,19 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import CredentialTemplates from '../components/CredentialTemplates';
+import CredentialQRCode from '../components/CredentialQRCode';
+import BatchCredentialIssue from '../components/BatchCredentialIssue';
 
 export default function DidCredentials() {
   const [issueDialogOpen, setIssueDialogOpen] = useState(false);
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+  const [batchDialogOpen, setBatchDialogOpen] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -221,21 +227,81 @@ export default function DidCredentials() {
               <p className="text-gray-600">Issue and manage verifiable credentials</p>
               <Badge className="mt-2 bg-purple-600">W3C Compliant</Badge>
             </div>
-            <Dialog open={issueDialogOpen} onOpenChange={setIssueDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-indigo-600 hover:bg-indigo-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Issue Credential
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+            <div className="flex gap-2">
+              <Dialog open={batchDialogOpen} onOpenChange={setBatchDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="bg-white">
+                    <Send className="w-4 h-4 mr-2" />
+                    Batch Issue
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Batch Credential Issuance</DialogTitle>
+                    <DialogDescription>
+                      Issue the same credential to multiple DIDs at once
+                    </DialogDescription>
+                  </DialogHeader>
+                  <BatchCredentialIssue 
+                    issuerDID={userDID} 
+                    onComplete={() => setBatchDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={issueDialogOpen} onOpenChange={setIssueDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-indigo-600 hover:bg-indigo-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Issue Credential
+                  </Button>
+                </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Issue New Credential</DialogTitle>
                   <DialogDescription>
-                    Create and issue a verifiable credential to another DID
+                    Choose a template or create a custom credential
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
+                <div className="space-y-6 py-4">
+                  {!selectedTemplate ? (
+                    <>
+                      <div>
+                        <h3 className="text-sm font-semibold mb-3">Choose a Template</h3>
+                        <CredentialTemplates 
+                          onSelectTemplate={(template) => {
+                            setSelectedTemplate(template);
+                            setIssueForm({
+                              ...issueForm,
+                              credential_type: template.type,
+                              credential_name: template.name
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="text-center">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setSelectedTemplate({ type: 'custom', name: 'Custom' })}
+                        >
+                          Or Create Custom Credential
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
+                        <span className="font-medium text-indigo-900">
+                          Template: {selectedTemplate.name}
+                        </span>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => setSelectedTemplate(null)}
+                        >
+                          Change
+                        </Button>
+                      </div>
                   <div>
                     <label className="text-sm font-medium mb-2 block">Recipient DID</label>
                     <Input
@@ -309,16 +375,19 @@ export default function DidCredentials() {
                       </Select>
                     </div>
                   </div>
-                  <Button
-                    onClick={handleIssueCredential}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700"
-                    disabled={issueCredentialMutation.isPending}
-                  >
-                    {issueCredentialMutation.isPending ? 'Issuing...' : 'Issue Credential'}
-                  </Button>
+                      <Button
+                        onClick={handleIssueCredential}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700"
+                        disabled={issueCredentialMutation.isPending}
+                      >
+                        {issueCredentialMutation.isPending ? 'Issuing...' : 'Issue Credential'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
         </div>
 
@@ -429,7 +498,10 @@ export default function DidCredentials() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleVerifyCredential(cred)}
+                              onClick={() => {
+                                setSelectedCredential(cred);
+                                setShowQRCode(true);
+                              }}
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -511,6 +583,24 @@ export default function DidCredentials() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* QR Code Dialog */}
+        {showQRCode && selectedCredential && (
+          <Dialog open={showQRCode} onOpenChange={() => {
+            setShowQRCode(false);
+            setSelectedCredential(null);
+          }}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>{selectedCredential.credential_name}</DialogTitle>
+                <DialogDescription>
+                  Scan or share this QR code to verify the credential
+                </DialogDescription>
+              </DialogHeader>
+              <CredentialQRCode credential={selectedCredential} />
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* Verification Result Dialog */}
         {verificationResult && (
