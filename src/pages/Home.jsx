@@ -77,6 +77,18 @@ export default function Home() {
                   Wallets
                 </Button>
               </Link>
+              <Link to={createPageUrl('DIDManager')}>
+                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <Shield className="w-4 h-4 mr-2" />
+                  DID Manager
+                </Button>
+              </Link>
+              <Link to={createPageUrl('CreateDID')}>
+                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create DID
+                </Button>
+              </Link>
               <Link to={createPageUrl('Agents')}>
                 <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
                   <Users className="w-4 h-4 mr-2" />
