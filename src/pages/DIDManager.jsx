@@ -1,15 +1,38 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function DIDManager() {
+  const queryClient = useQueryClient();
+  const [selectedDID, setSelectedDID] = useState(null);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState('');
+  const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
+  const [walletToRevoke, setWalletToRevoke] = useState(null);
+
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me()
@@ -26,6 +49,45 @@ export default function DIDManager() {
     queryFn: () => base44.entities.Agent.list()
   });
 
+  const revokeMutation = useMutation({
+    mutationFn: (walletId) => base44.functions.invoke('revokeDID', { wallet_id: walletId }),
+    onSuccess: () => {
+      toast.success('DID successfully revoked on XRPL');
+      queryClient.invalidateQueries(['wallets']);
+      setRevokeDialogOpen(false);
+      setWalletToRevoke(null);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to revoke DID');
+    }
+  });
+
+  const linkMutation = useMutation({
+    mutationFn: ({ agent_id, wallet_id }) => 
+      base44.functions.invoke('linkAgentToDID', { agent_id, wallet_id }),
+    onSuccess: () => {
+      toast.success('Agent successfully linked to DID');
+      queryClient.invalidateQueries(['agents']);
+      setLinkDialogOpen(false);
+      setSelectedAgent('');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to link agent');
+    }
+  });
+
+  const unlinkMutation = useMutation({
+    mutationFn: (agentId) => 
+      base44.functions.invoke('linkAgentToDID', { agent_id: agentId, wallet_id: null }),
+    onSuccess: () => {
+      toast.success('Agent unlinked from DID');
+      queryClient.invalidateQueries(['agents']);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to unlink agent');
+    }
+  });
+
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copied to clipboard`);
@@ -33,6 +95,56 @@ export default function DIDManager() {
 
   const getAgentForWallet = (walletId) => {
     return agents.find(agent => agent.wallet_id === walletId);
+  };
+
+  const isRevoked = (wallet) => {
+    return wallet.notes && wallet.notes.includes('[DID REVOKED:');
+  };
+
+  const getUnlinkedAgents = () => {
+    return agents.filter(agent => !agent.wallet_id);
+  };
+
+  const getDIDDocument = (wallet) => {
+    const agent = getAgentForWallet(wallet.id);
+    return {
+      "@context": "https://www.w3.org/ns/did/v1",
+      "id": `did:xrpl:${wallet.classic_address}`,
+      "alsoKnownAs": [agent?.name || wallet.name || 'SoulBridge Citizen'],
+      "controller": wallet.classic_address,
+      "verificationMethod": [{
+        "id": `did:xrpl:${wallet.classic_address}#keys-1`,
+        "type": "EcdsaSecp256k1VerificationKey2019",
+        "controller": `did:xrpl:${wallet.classic_address}`,
+        "publicKeyBase58": wallet.classic_address
+      }],
+      "authentication": [`did:xrpl:${wallet.classic_address}#keys-1`],
+      "service": [{
+        "id": `did:xrpl:${wallet.classic_address}#soulbridge`,
+        "type": "SoulBridgeProfile",
+        "serviceEndpoint": "https://soulbridge.base44.app",
+        "description": agent?.purpose || "SoulBridge Village Citizen"
+      }],
+      "created": wallet.created_date,
+      "updated": wallet.updated_date
+    };
+  };
+
+  const handleRevoke = (wallet) => {
+    setWalletToRevoke(wallet);
+    setRevokeDialogOpen(true);
+  };
+
+  const confirmRevoke = () => {
+    if (walletToRevoke) {
+      revokeMutation.mutate(walletToRevoke.id);
+    }
+  };
+
+  const handleLinkAgent = (walletId) => {
+    if (selectedAgent) {
+      linkMutation.mutate({ agent_id: selectedAgent, wallet_id: walletId });
+    }
   };
 
   if (walletsLoading) {
@@ -86,6 +198,8 @@ export default function DIDManager() {
             {wallets.map((wallet) => {
               const agent = getAgentForWallet(wallet.id);
               const didAddress = `did:xrpl:${wallet.classic_address}`;
+              const revoked = isRevoked(wallet);
+              const didDoc = getDIDDocument(wallet);
               
               return (
                 <Card key={wallet.id} className="hover:shadow-lg transition-shadow">
@@ -100,10 +214,17 @@ export default function DIDManager() {
                           {wallet.network}
                         </Badge>
                       </div>
-                      <Badge className="bg-green-600">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Active
-                      </Badge>
+                      {revoked ? (
+                        <Badge className="bg-red-600">
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Revoked
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-green-600">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Active
+                        </Badge>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -146,9 +267,19 @@ export default function DIDManager() {
                     {/* Agent Profile */}
                     {agent ? (
                       <div className="border-t pt-4">
-                        <div className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                          <User className="w-4 h-4" />
-                          Associated Agent
+                        <div className="text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            <User className="w-4 h-4" />
+                            Associated Agent
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => unlinkMutation.mutate(agent.id)}
+                            disabled={unlinkMutation.isPending}
+                          >
+                            <Unlink className="w-3 h-3" />
+                          </Button>
                         </div>
                         <div className="bg-indigo-50 p-3 rounded-md">
                           <div className="font-medium text-indigo-900">{agent.name}</div>
@@ -165,11 +296,88 @@ export default function DIDManager() {
                       </div>
                     ) : (
                       <div className="border-t pt-4">
-                        <div className="text-sm text-gray-500 text-center py-2">
-                          No agent linked to this DID
-                        </div>
+                        <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="w-full">
+                              <Link2 className="w-3 h-3 mr-2" />
+                              Link Agent to DID
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Link Agent to DID</DialogTitle>
+                              <DialogDescription>
+                                Select an agent to link to this DID
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select an agent" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {getUnlinkedAgents().map((a) => (
+                                    <SelectItem key={a.id} value={a.id}>
+                                      {a.name} ({a.role})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <DialogFooter>
+                              <Button
+                                onClick={() => handleLinkAgent(wallet.id)}
+                                disabled={!selectedAgent || linkMutation.isPending}
+                              >
+                                {linkMutation.isPending ? 'Linking...' : 'Link Agent'}
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     )}
+
+                    {/* Actions */}
+                    <div className="border-t pt-4 flex gap-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="flex-1">
+                            <FileJson className="w-3 h-3 mr-2" />
+                            View DID Doc
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>DID Document</DialogTitle>
+                            <DialogDescription>
+                              Complete DID Document for {didAddress}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <pre className="bg-gray-50 p-4 rounded-md text-xs overflow-x-auto">
+                            {JSON.stringify(didDoc, null, 2)}
+                          </pre>
+                          <DialogFooter>
+                            <Button
+                              onClick={() => copyToClipboard(JSON.stringify(didDoc, null, 2), 'DID Document')}
+                            >
+                              Copy Document
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      {!revoked && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleRevoke(wallet)}
+                          disabled={revokeMutation.isPending}
+                        >
+                          <Trash2 className="w-3 h-3 mr-2" />
+                          Revoke
+                        </Button>
+                      )}
+                    </div>
 
                     {/* Metadata */}
                     <div className="text-xs text-gray-500 border-t pt-2">
@@ -181,6 +389,46 @@ export default function DIDManager() {
             })}
           </div>
         )}
+
+        {/* Revoke Confirmation Dialog */}
+        <Dialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="w-5 h-5" />
+                Revoke DID
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to revoke this DID? This action will submit a DIDDelete transaction to the XRPL and cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            {walletToRevoke && (
+              <div className="py-4 space-y-2">
+                <div className="text-sm">
+                  <span className="font-medium">DID:</span>
+                  <code className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
+                    did:xrpl:{walletToRevoke.classic_address}
+                  </code>
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">Wallet:</span> {walletToRevoke.name || 'Unnamed'}
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRevokeDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmRevoke}
+                disabled={revokeMutation.isPending}
+              >
+                {revokeMutation.isPending ? 'Revoking...' : 'Revoke DID'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
