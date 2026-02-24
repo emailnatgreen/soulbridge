@@ -32,7 +32,10 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import PrivacyTemplates from '../components/PrivacyTemplates';
+import TemporaryAccessGrant from '../components/TemporaryAccessGrant';
 
 export default function DidPrivacy() {
   const queryClient = useQueryClient();
@@ -162,6 +165,14 @@ export default function DidPrivacy() {
     });
   };
 
+  const handleApplyTemplate = (templateSettings) => {
+    setSettings({
+      ...settings,
+      ...templateSettings
+    });
+    toast.success('Template applied - remember to save your changes');
+  };
+
   const getVisibilityIcon = (level) => {
     if (level === 'public' || level === 'anyone') return <Globe className="w-4 h-4 text-green-600" />;
     if (level === 'connections_only' || level === 'trusted_only') return <Users className="w-4 h-4 text-blue-600" />;
@@ -277,6 +288,17 @@ export default function DidPrivacy() {
           </CardContent>
         </Card>
 
+        {/* Main Content with Tabs */}
+        <Tabs defaultValue="settings" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="access">Temp Access</TabsTrigger>
+            <TabsTrigger value="lists">Block/Whitelist</TabsTrigger>
+          </TabsList>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
         {/* Visibility Settings */}
         <Card className="mb-6">
           <CardHeader>
@@ -491,7 +513,24 @@ export default function DidPrivacy() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
 
+          {/* Templates Tab */}
+          <TabsContent value="templates">
+            <PrivacyTemplates 
+              currentSettings={settings}
+              onApplyTemplate={handleApplyTemplate}
+              disabled={updatePrivacyMutation.isPending}
+            />
+          </TabsContent>
+
+          {/* Temporary Access Tab */}
+          <TabsContent value="access">
+            <TemporaryAccessGrant myDid={userWallet.classic_address} />
+          </TabsContent>
+
+          {/* Block/Whitelist Tab */}
+          <TabsContent value="lists" className="space-y-6">
         {/* Block List */}
         <Card className="mb-6">
           <CardHeader>
@@ -575,6 +614,8 @@ export default function DidPrivacy() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
