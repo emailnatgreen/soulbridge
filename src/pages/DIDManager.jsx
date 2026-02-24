@@ -422,20 +422,20 @@ export default function DIDManager() {
 
                           {/* Verification Status */}
                           {getVerificationBadge(wallet.id) && (
-                      <div className="border-t pt-4">
+                          <div className="border-t pt-4">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-700">Last Verification:</span>
                           {getVerificationBadge(wallet.id)}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {new Date(verificationResults[wallet.id]?.verification?.verified_at).toLocaleString()}
-                        </div>
-                        </div>
-                        )}
+                          </div>
+                          </div>
+                          )}
 
-                        {/* Actions */}
-                        <div className="border-t pt-4 space-y-2">
-                      <Button
+                          {/* Actions */}
+                          <div className="border-t pt-4 space-y-2">
+                          <Button
                         size="sm"
                         variant="outline"
                         className="w-full"
@@ -444,9 +444,9 @@ export default function DIDManager() {
                       >
                         <Shield className="w-3 h-3 mr-2" />
                         {verifyMutation.isPending ? 'Verifying...' : 'Verify on XRPL'}
-                      </Button>
-                      
-                      <div className="flex gap-2">
+                        </Button>
+
+                        <div className="flex gap-2">
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button size="sm" variant="outline" className="flex-1">
@@ -482,12 +482,12 @@ export default function DIDManager() {
                         >
                           <Trash2 className="w-3 h-3 mr-2" />
                           Revoke
-                        </Button>
-                      </div>
-                      </div>
+                          </Button>
+                          </div>
+                          </div>
 
-                      {/* Metadata */}
-                      <div className="text-xs text-gray-500 border-t pt-2">
+                          {/* Metadata */}
+                          <div className="text-xs text-gray-500 border-t pt-2">
                           Created: {new Date(wallet.created_date).toLocaleDateString()}
                         </div>
                       </CardContent>
@@ -527,22 +527,22 @@ export default function DIDManager() {
 
                         return (
                           <Card key={wallet.id} className="border-red-200 bg-red-50/50">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Fingerprint className="w-5 h-5 text-red-600" />
-                          {wallet.name || 'Unnamed DID'}
-                        </CardTitle>
-                        <CardDescription className="mt-1">
-                          {didAddress}
-                        </CardDescription>
-                      </div>
-                      <Badge variant="destructive">Revoked</Badge>
-                    </div>
-                  </CardHeader>
+                            <CardHeader>
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <CardTitle className="text-lg flex items-center gap-2">
+                                    <Fingerprint className="w-5 h-5 text-red-600" />
+                                    {wallet.name || 'Unnamed DID'}
+                                  </CardTitle>
+                                  <CardDescription className="mt-1">
+                                    {didAddress}
+                                  </CardDescription>
+                                </div>
+                                <Badge variant="destructive">Revoked</Badge>
+                              </div>
+                            </CardHeader>
 
-                  <CardContent className="space-y-4">
+                            <CardContent className="space-y-4">
                     {/* Revocation Details */}
                     <div className="bg-white rounded-lg p-4 space-y-3 border border-red-200">
                       <div className="flex items-start gap-2">
@@ -559,11 +559,11 @@ export default function DIDManager() {
                           <div className="text-sm font-medium text-gray-700">Reason</div>
                           <div className="text-sm text-gray-600">{revocationInfo?.reason}</div>
                         </div>
-                      </div>
-                    </div>
+                        </div>
+                        </div>
 
-                    {/* Basic Info */}
-                    <div className="grid grid-cols-2 gap-3">
+                        {/* Basic Info */}
+                        <div className="grid grid-cols-2 gap-3">
                       <div>
                         <div className="text-xs text-gray-600 mb-1">Network</div>
                         <Badge variant="outline">{wallet.network}</Badge>
@@ -571,11 +571,11 @@ export default function DIDManager() {
                       <div>
                         <div className="text-xs text-gray-600 mb-1">Balance</div>
                         <div className="text-sm font-mono">{wallet.balance?.toFixed(2) || '0.00'} XRP</div>
-                      </div>
-                    </div>
+                        </div>
+                        </div>
 
-                    {/* XRPL Address */}
-                    <div>
+                        {/* XRPL Address */}
+                        <div>
                       <div className="text-xs text-gray-600 mb-1">XRPL Address</div>
                       <div className="flex items-center gap-2">
                         <code className="text-xs bg-white px-2 py-1 rounded border border-red-200 flex-1">
@@ -588,11 +588,11 @@ export default function DIDManager() {
                         >
                           <Copy className="w-3 h-3" />
                         </Button>
-                      </div>
-                    </div>
+                        </div>
+                        </div>
 
-                    {/* Linked Agent */}
-                    {agent && (
+                        {/* Linked Agent */}
+                        {agent && (
                       <div className="bg-white border border-red-200 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
@@ -603,12 +603,12 @@ export default function DIDManager() {
                             </div>
                           </div>
                           <Badge variant="outline">Linked</Badge>
-                        </div>
-                      </div>
-                    )}
+                          </div>
+                          </div>
+                          )}
 
-                    {/* Actions */}
-                    <div className="border-t pt-4">
+                          {/* Actions */}
+                          <div className="border-t pt-4">
                       <Button
                         className="w-full bg-green-600 hover:bg-green-700"
                         onClick={() => handleReverseRevocation(wallet)}
@@ -619,16 +619,16 @@ export default function DIDManager() {
                       </Button>
                       <p className="text-xs text-gray-500 mt-2 text-center">
                         This will recreate the DID on XRPL
-                      </p>
-                    </div>
-                    </CardContent>
-                    </Card>
-                    );
-                    })}
-                    </div>
-                    )}
-                    </TabsContent>
-                    </Tabs>
+                        </p>
+                        </div>
+                        </CardContent>
+                        </Card>
+                        );
+                        })}
+                        </div>
+                        )}
+                        </TabsContent>
+                        </Tabs>
 
         {/* Revoke Confirmation Dialog */}
         <Dialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>
