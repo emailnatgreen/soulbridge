@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
 import NotificationCenter from '../components/NotificationCenter';
+import PrivacyQuickToggle from '../components/PrivacyQuickToggle';
 
 export default function Home() {
   const { data: transactions = [], isLoading } = useQuery({
@@ -42,6 +43,7 @@ export default function Home() {
                 <p className="text-sm text-purple-300/60">Experimental AI Agent Research Platform</p>
               </div>
               <div className="flex items-center gap-3">
+                <PrivacyQuickToggle />
                 <NotificationCenter agentId="axi_main_001" />
                 <Link to={createPageUrl('Send')}>
                   <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25 transition-all duration-300">

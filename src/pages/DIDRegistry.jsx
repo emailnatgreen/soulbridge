@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ReputationBadge from '../components/ReputationBadge';
+import PrivacyBadge from '../components/PrivacyBadge';
 import {
   Select,
   SelectContent,
@@ -205,6 +206,7 @@ export default function DIDRegistry() {
             {filteredWallets.map((wallet) => {
               const agent = agents.find(a => a.wallet_id === wallet.id);
               const reputation = reputations.find(r => r.did_classic_address === wallet.classic_address);
+              const privacy = privacySettings.find(p => p.did_address === wallet.classic_address);
               const didAddress = `did:xrpl:${wallet.classic_address}`;
               
               return (
@@ -217,11 +219,14 @@ export default function DIDRegistry() {
                           {wallet.name || 'Unnamed Identity'}
                         </CardTitle>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className="text-xs">
                           {wallet.network}
                         </Badge>
                         <ReputationBadge reputation={reputation} size="sm" />
+                        {privacy && (
+                          <PrivacyBadge level={privacy.profile_visibility} size="sm" />
+                        )}
                       </div>
                     </div>
                     {agent && (
