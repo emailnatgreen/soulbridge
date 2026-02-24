@@ -64,7 +64,9 @@ import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CollaborationHub from './pages/CollaborationHub';
 import CollaborationSuite from './pages/CollaborationSuite';
+import CreateDID from './pages/CreateDID';
 import CreateManualWallet from './pages/CreateManualWallet';
+import DIDManager from './pages/DIDManager';
 import DeepSeek from './pages/DeepSeek';
 import DialogueStudio from './pages/DialogueStudio';
 import DiplomacyHub from './pages/DiplomacyHub';
@@ -107,8 +109,7 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import DIDManager from './pages/DIDManager';
-import CreateDID from './pages/CreateDID';
+import DIDRegistry from './pages/DIDRegistry';
 import __Layout from './Layout.jsx';
 
 
@@ -130,7 +131,9 @@ export const PAGES = {
     "Axi": Axi,
     "CollaborationHub": CollaborationHub,
     "CollaborationSuite": CollaborationSuite,
+    "CreateDID": CreateDID,
     "CreateManualWallet": CreateManualWallet,
+    "DIDManager": DIDManager,
     "DeepSeek": DeepSeek,
     "DialogueStudio": DialogueStudio,
     "DiplomacyHub": DiplomacyHub,
@@ -173,8 +176,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "DIDManager": DIDManager,
-    "CreateDID": CreateDID,
+    "DIDRegistry": DIDRegistry,
 }
 
 export const pagesConfig = {
