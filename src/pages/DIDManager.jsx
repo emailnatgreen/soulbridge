@@ -211,9 +211,17 @@ export default function DIDManager() {
               <p className="text-gray-600">Decentralized Identifiers on XRPL</p>
               <Badge className="mt-2 bg-purple-600">World's First XRPL DID Manager</Badge>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-indigo-600">{wallets.length}</div>
-              <div className="text-sm text-gray-600">Total DIDs</div>
+            <div className="flex items-center gap-4">
+              <Link to={createPageUrl('CreateDID')}>
+                <Button>
+                  <Fingerprint className="w-4 h-4 mr-2" />
+                  Create New DID
+                </Button>
+              </Link>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-indigo-600">{wallets.length}</div>
+                <div className="text-sm text-gray-600">Total DIDs</div>
+              </div>
             </div>
           </div>
         </div>

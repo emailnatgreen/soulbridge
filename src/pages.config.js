@@ -108,6 +108,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import DIDManager from './pages/DIDManager';
+import CreateDID from './pages/CreateDID';
 import __Layout from './Layout.jsx';
 
 
@@ -173,6 +174,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "DIDManager": DIDManager,
+    "CreateDID": CreateDID,
 }
 
 export const pagesConfig = {
