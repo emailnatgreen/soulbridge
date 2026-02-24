@@ -107,6 +107,12 @@ export default function Home() {
                   DID Analytics
                 </Button>
               </Link>
+              <Link to={createPageUrl('DidReputation')}>
+                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
+                  <Award className="w-4 h-4 mr-2" />
+                  DID Reputation
+                </Button>
+              </Link>
               <Link to={createPageUrl('Agents')}>
                 <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
                   <Users className="w-4 h-4 mr-2" />

@@ -19,6 +19,7 @@ import {
   Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
+import ReputationBadge from '../components/ReputationBadge';
 import {
   Select,
   SelectContent,
@@ -40,6 +41,11 @@ export default function DIDRegistry() {
   const { data: agents = [] } = useQuery({
     queryKey: ['public-agents'],
     queryFn: () => base44.entities.Agent.list('-created_date', 100)
+  });
+
+  const { data: reputations = [] } = useQuery({
+    queryKey: ['public-reputations'],
+    queryFn: () => base44.entities.ReputationScore.list('-overall_score', 100)
   });
 
   const activeWallets = wallets.filter(w => !w.notes?.includes('REVOKED'));
@@ -198,6 +204,7 @@ export default function DIDRegistry() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredWallets.map((wallet) => {
               const agent = agents.find(a => a.wallet_id === wallet.id);
+              const reputation = reputations.find(r => r.did_classic_address === wallet.classic_address);
               const didAddress = `did:xrpl:${wallet.classic_address}`;
               
               return (
@@ -210,9 +217,12 @@ export default function DIDRegistry() {
                           {wallet.name || 'Unnamed Identity'}
                         </CardTitle>
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        {wallet.network}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {wallet.network}
+                        </Badge>
+                        <ReputationBadge reputation={reputation} size="sm" />
+                      </div>
                     </div>
                     {agent && (
                       <div className="flex items-center gap-2 mt-2">
