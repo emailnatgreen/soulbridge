@@ -310,7 +310,7 @@ export default function DIDManager() {
                           <Badge className="bg-green-600">Active</Badge>
                         </div>
                       </CardHeader>
-                  <CardContent className="space-y-4">
+                      <CardContent className="space-y-4">
                         {/* DID Address */}
                         <div>
                           <div className="text-sm font-medium text-gray-700 mb-1">DID Address</div>
@@ -329,8 +329,8 @@ export default function DIDManager() {
                           </div>
                         </div>
 
-                    {/* Classic Address */}
-                    <div>
+                        {/* Classic Address */}
+                        <div>
                       <div className="text-sm font-medium text-gray-700 mb-1">XRPL Address</div>
                       <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-md">
                         <code className="text-xs flex-1 overflow-hidden text-ellipsis">
@@ -345,10 +345,10 @@ export default function DIDManager() {
                           <Copy className="w-3 h-3" />
                         </Button>
                       </div>
-                    </div>
+                      </div>
 
-                    {/* Agent Profile */}
-                    {agent ? (
+                      {/* Agent Profile */}
+                      {agent ? (
                       <div className="border-t pt-4">
                         <div className="text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
                           <span className="flex items-center gap-2">
@@ -416,12 +416,12 @@ export default function DIDManager() {
                               </Button>
                             </DialogFooter>
                           </DialogContent>
-                        </Dialog>
-                      </div>
-                    )}
+                          </Dialog>
+                          </div>
+                          )}
 
-                    {/* Verification Status */}
-                    {getVerificationBadge(wallet.id) && (
+                          {/* Verification Status */}
+                          {getVerificationBadge(wallet.id) && (
                       <div className="border-t pt-4">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-700">Last Verification:</span>
@@ -430,11 +430,11 @@ export default function DIDManager() {
                         <div className="text-xs text-gray-500 mt-1">
                           {new Date(verificationResults[wallet.id]?.verification?.verified_at).toLocaleString()}
                         </div>
-                      </div>
-                    )}
+                        </div>
+                        )}
 
-                    {/* Actions */}
-                    <div className="border-t pt-4 space-y-2">
+                        {/* Actions */}
+                        <div className="border-t pt-4 space-y-2">
                       <Button
                         size="sm"
                         variant="outline"
@@ -484,10 +484,10 @@ export default function DIDManager() {
                           Revoke
                         </Button>
                       </div>
-                    </div>
+                      </div>
 
-                        {/* Metadata */}
-                        <div className="text-xs text-gray-500 border-t pt-2">
+                      {/* Metadata */}
+                      <div className="text-xs text-gray-500 border-t pt-2">
                           Created: {new Date(wallet.created_date).toLocaleDateString()}
                         </div>
                       </CardContent>
