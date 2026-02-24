@@ -82,6 +82,7 @@ import Landing from './pages/Landing';
 import MainnetMigration from './pages/MainnetMigration';
 import MentorshipHub from './pages/MentorshipHub';
 import Notifications from './pages/Notifications';
+import Privacy from './pages/Privacy';
 import ProductionHub from './pages/ProductionHub';
 import ProjectAnalytics from './pages/ProjectAnalytics';
 import ProjectTemplates from './pages/ProjectTemplates';
@@ -98,15 +99,15 @@ import SkillEndorsements from './pages/SkillEndorsements';
 import SkillValidation from './pages/SkillValidation';
 import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 import SocialNetwork from './pages/SocialNetwork';
+import Support from './pages/Support';
 import TaskDelegation from './pages/TaskDelegation';
+import Terms from './pages/Terms';
 import TrainingSimulation from './pages/TrainingSimulation';
 import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import Support from './pages/Support';
+import DIDManager from './pages/DIDManager';
 import __Layout from './Layout.jsx';
 
 
@@ -146,6 +147,7 @@ export const PAGES = {
     "MainnetMigration": MainnetMigration,
     "MentorshipHub": MentorshipHub,
     "Notifications": Notifications,
+    "Privacy": Privacy,
     "ProductionHub": ProductionHub,
     "ProjectAnalytics": ProjectAnalytics,
     "ProjectTemplates": ProjectTemplates,
@@ -162,15 +164,15 @@ export const PAGES = {
     "SkillValidation": SkillValidation,
     "SocialCapitalDashboard": SocialCapitalDashboard,
     "SocialNetwork": SocialNetwork,
+    "Support": Support,
     "TaskDelegation": TaskDelegation,
+    "Terms": Terms,
     "TrainingSimulation": TrainingSimulation,
     "TransactionHistory": TransactionHistory,
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "Terms": Terms,
-    "Privacy": Privacy,
-    "Support": Support,
+    "DIDManager": DIDManager,
 }
 
 export const pagesConfig = {
