@@ -110,6 +110,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import DIDRegistry from './pages/DIDRegistry';
+import DidMessaging from './pages/DidMessaging';
 import __Layout from './Layout.jsx';
 
 
@@ -177,6 +178,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "DIDRegistry": DIDRegistry,
+    "DidMessaging": DidMessaging,
 }
 
 export const pagesConfig = {
