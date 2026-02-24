@@ -236,7 +236,7 @@ export default function CreateDID() {
                     <option value="">Choose a wallet...</option>
                     {wallets.map(wallet => (
                       <option key={wallet.id} value={wallet.id}>
-                        {wallet.name || 'Unnamed'} - {wallet.classic_address.slice(0, 10)}... ({wallet.network})
+                        {wallet.name || 'Unnamed'} - {wallet.classic_address?.slice(0, 10) || 'N/A'}... ({wallet.network})
                       </option>
                     ))}
                   </select>
