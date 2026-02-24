@@ -4,9 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -35,6 +36,9 @@ export default function DIDManager() {
   const [verificationResults, setVerificationResults] = useState({});
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [currentVerification, setCurrentVerification] = useState(null);
+  const [reversalDialogOpen, setReversalDialogOpen] = useState(false);
+  const [walletToReverse, setWalletToReverse] = useState(null);
+  const [activeTab, setActiveTab] = useState('active');
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -140,7 +144,22 @@ export default function DIDManager() {
 
   const confirmRevoke = () => {
     if (walletToRevoke) {
-      revokeMutation.mutate(walletToRevoke.id);
+      const reason = document.getElementById('revocation-reason')?.value || 'No reason provided';
+      revokeMutation.mutate({ 
+        walletId: walletToRevoke.id,
+        reason: reason 
+      });
+    }
+  };
+
+  const handleReverseRevocation = (wallet) => {
+    setWalletToReverse(wallet);
+    setReversalDialogOpen(true);
+  };
+
+  const confirmReversal = () => {
+    if (walletToReverse) {
+      reversalMutation.mutate(walletToReverse.id);
     }
   };
 
@@ -182,6 +201,23 @@ export default function DIDManager() {
       return <Badge variant="outline" className="text-yellow-600">No DID Data</Badge>;
     }
     return <Badge className="bg-green-600">Verified Active</Badge>;
+  };
+
+  // Separate wallets into active and revoked
+  const activeWallets = wallets.filter(w => !w.notes?.includes('REVOKED'));
+  const revokedWallets = wallets.filter(w => w.notes?.includes('REVOKED'));
+
+  const getRevocationInfo = (wallet) => {
+    if (!wallet.notes?.includes('REVOKED')) return null;
+    
+    const match = wallet.notes.match(/REVOKED at (.*?)(?:\. Reason: (.*))?$/);
+    if (match) {
+      return {
+        timestamp: match[1],
+        reason: match[2] || 'No reason provided'
+      };
+    }
+    return { timestamp: 'Unknown', reason: 'Unknown' };
   };
 
   if (walletsLoading) {
@@ -436,17 +472,15 @@ export default function DIDManager() {
                           </DialogContent>
                         </Dialog>
                         
-                        {!revoked && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleRevoke(wallet)}
-                            disabled={revokeMutation.isPending}
-                          >
-                            <Trash2 className="w-3 h-3 mr-2" />
-                            Revoke
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleRevoke(wallet)}
+                          disabled={revokeMutation.isPending}
+                        >
+                          <Trash2 className="w-3 h-3 mr-2" />
+                          Revoke
+                        </Button>
                       </div>
                     </div>
 
@@ -455,9 +489,148 @@ export default function DIDManager() {
                       Created: {new Date(wallet.created_date).toLocaleDateString()}
                     </div>
                   </CardContent>
-                </Card>
-              );
-            })}
+                  </Card>
+                  );
+                  })}
+                  </div>
+                  )}
+                  </TabsContent>
+
+                  {/* Revoked DIDs Tab */}
+                  <TabsContent value="revoked" className="mt-6">
+                  {revokedWallets.length === 0 ? (
+                  <Card className="bg-gray-50">
+                  <CardContent className="py-12 text-center">
+                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <p className="text-gray-600">No revoked DIDs</p>
+                  <p className="text-sm text-gray-500 mt-2">All your DIDs are active</p>
+                  </CardContent>
+                  </Card>
+                  ) : (
+                  <div className="space-y-4">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                  <div className="flex gap-3">
+                  <Info className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                  <div className="text-sm text-yellow-800">
+                  <p className="font-medium mb-1">About Revoked DIDs</p>
+                  <p>Revoked DIDs have been deleted from the XRPL. You can reverse a revocation to recreate the DID on-chain.</p>
+                  </div>
+                  </div>
+                  </div>
+
+                  {revokedWallets.map(wallet => {
+                  const agent = agents.find(a => a.wallet_id === wallet.id);
+                  const didAddress = `did:xrpl:${wallet.classic_address}`;
+                  const revocationInfo = getRevocationInfo(wallet);
+
+                  return (
+                  <Card key={wallet.id} className="border-red-200 bg-red-50/50">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Fingerprint className="w-5 h-5 text-red-600" />
+                          {wallet.name || 'Unnamed DID'}
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          {didAddress}
+                        </CardDescription>
+                      </div>
+                      <Badge variant="destructive">Revoked</Badge>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    {/* Revocation Details */}
+                    <div className="bg-white rounded-lg p-4 space-y-3 border border-red-200">
+                      <div className="flex items-start gap-2">
+                        <Clock className="w-4 h-4 text-gray-500 mt-0.5" />
+                        <div>
+                          <div className="text-sm font-medium text-gray-700">Revoked At</div>
+                          <div className="text-sm text-gray-600">{revocationInfo?.timestamp}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-gray-500 mt-0.5" />
+                        <div>
+                          <div className="text-sm font-medium text-gray-700">Reason</div>
+                          <div className="text-sm text-gray-600">{revocationInfo?.reason}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Basic Info */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-xs text-gray-600 mb-1">Network</div>
+                        <Badge variant="outline">{wallet.network}</Badge>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-600 mb-1">Balance</div>
+                        <div className="text-sm font-mono">{wallet.balance?.toFixed(2) || '0.00'} XRP</div>
+                      </div>
+                    </div>
+
+                    {/* XRPL Address */}
+                    <div>
+                      <div className="text-xs text-gray-600 mb-1">XRPL Address</div>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs bg-white px-2 py-1 rounded border border-red-200 flex-1">
+                          {wallet.classic_address}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(wallet.classic_address, 'Address')}
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Linked Agent */}
+                    {agent && (
+                      <div className="bg-white border border-red-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-red-600" />
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{agent.name}</div>
+                              <div className="text-xs text-gray-600">{agent.role}</div>
+                            </div>
+                          </div>
+                          <Badge variant="outline">Linked</Badge>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="border-t pt-4">
+                      <Button
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        onClick={() => handleReverseRevocation(wallet)}
+                        disabled={reversalMutation.isPending}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        {reversalMutation.isPending ? 'Reversing...' : 'Reverse Revocation'}
+                      </Button>
+                      <p className="text-xs text-gray-500 mt-2 text-center">
+                        This will recreate the DID on XRPL
+                      </p>
+                    </div>
+                  </CardContent>
+                  </Card>
+                  );
+                  })}
+                  </div>
+                  )}
+                  </TabsContent>
+                  </Tabs>
+
+                  {/* Legacy layout for empty state - moved inside tabs */}
+                  {!isLoadingWallets && wallets.length === 0 && activeTab === 'active' && (
+                  <div className="hidden">{/* Empty wallets handling now in tabs */}
           </div>
         )}
 
@@ -470,11 +643,11 @@ export default function DIDManager() {
                 Revoke DID
               </DialogTitle>
               <DialogDescription>
-                Are you sure you want to revoke this DID? This action will submit a DIDDelete transaction to the XRPL and cannot be undone.
+                This will delete the DID from XRPL. You can reverse this later to recreate the DID.
               </DialogDescription>
             </DialogHeader>
             {walletToRevoke && (
-              <div className="py-4 space-y-2">
+              <div className="py-4 space-y-4">
                 <div className="text-sm">
                   <span className="font-medium">DID:</span>
                   <code className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
@@ -483,6 +656,18 @@ export default function DIDManager() {
                 </div>
                 <div className="text-sm">
                   <span className="font-medium">Wallet:</span> {walletToRevoke.name || 'Unnamed'}
+                </div>
+                
+                <div>
+                  <label htmlFor="revocation-reason" className="text-sm font-medium text-gray-700 block mb-2">
+                    Reason for Revocation (Optional)
+                  </label>
+                  <textarea
+                    id="revocation-reason"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="e.g., Security concerns, wallet compromise, testing..."
+                    rows={3}
+                  />
                 </div>
               </div>
             )}
@@ -496,6 +681,61 @@ export default function DIDManager() {
                 disabled={revokeMutation.isPending}
               >
                 {revokeMutation.isPending ? 'Revoking...' : 'Revoke DID'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Reversal Confirmation Dialog */}
+        <Dialog open={reversalDialogOpen} onOpenChange={setReversalDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-green-600">
+                <RefreshCw className="w-5 h-5" />
+                Reverse DID Revocation
+              </DialogTitle>
+              <DialogDescription>
+                This will recreate the DID on XRPL and restore it to active status.
+              </DialogDescription>
+            </DialogHeader>
+            {walletToReverse && (
+              <div className="py-4 space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex gap-3">
+                    <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium mb-1">What happens:</p>
+                      <ul className="list-disc ml-4 space-y-1">
+                        <li>A new DIDSet transaction will be submitted to XRPL</li>
+                        <li>The DID will be recreated with the same address</li>
+                        <li>Status will change from "Revoked" to "Active"</li>
+                        <li>Revocation history will be preserved for records</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-sm">
+                  <span className="font-medium">DID:</span>
+                  <code className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
+                    did:xrpl:{walletToReverse.classic_address}
+                  </code>
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">Wallet:</span> {walletToReverse.name || 'Unnamed'}
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setReversalDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={confirmReversal}
+                disabled={reversalMutation.isPending}
+              >
+                {reversalMutation.isPending ? 'Reversing...' : 'Reverse Revocation'}
               </Button>
             </DialogFooter>
           </DialogContent>

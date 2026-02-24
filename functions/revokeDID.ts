@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { wallet_id } = await req.json();
+    const { wallet_id, reason } = await req.json();
 
     if (!wallet_id) {
       return Response.json({ error: 'wallet_id is required' }, { status: 400 });
