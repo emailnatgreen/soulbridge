@@ -72,10 +72,14 @@ import DIDRegistry from './pages/DIDRegistry';
 import DeepSeek from './pages/DeepSeek';
 import DialogueStudio from './pages/DialogueStudio';
 import DidActivityFeed from './pages/DidActivityFeed';
+import DidConnections from './pages/DidConnections';
 import DidCredentials from './pages/DidCredentials';
 import DidMessaging from './pages/DidMessaging';
+import DidPrivacy from './pages/DidPrivacy';
+import DidPrivacyAnalytics from './pages/DidPrivacyAnalytics';
 import DidReputation from './pages/DidReputation';
 import DidSocialNetwork from './pages/DidSocialNetwork';
+import DidTrustDashboard from './pages/DidTrustDashboard';
 import DidTrustGraph from './pages/DidTrustGraph';
 import DiplomacyHub from './pages/DiplomacyHub';
 import DirectAgentChat from './pages/DirectAgentChat';
@@ -103,6 +107,7 @@ import ResourceDynamics from './pages/ResourceDynamics';
 import ResourceMarketplace from './pages/ResourceMarketplace';
 import Send from './pages/Send';
 import SendRLUSD from './pages/SendRLUSD';
+import SharedDidView from './pages/SharedDidView';
 import SimulationLab from './pages/SimulationLab';
 import SkillDevelopment from './pages/SkillDevelopment';
 import SkillEndorsements from './pages/SkillEndorsements';
@@ -117,11 +122,6 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import DidPrivacy from './pages/DidPrivacy';
-import DidConnections from './pages/DidConnections';
-import DidPrivacyAnalytics from './pages/DidPrivacyAnalytics';
-import SharedDidView from './pages/SharedDidView';
-import DidTrustDashboard from './pages/DidTrustDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -151,10 +151,14 @@ export const PAGES = {
     "DeepSeek": DeepSeek,
     "DialogueStudio": DialogueStudio,
     "DidActivityFeed": DidActivityFeed,
+    "DidConnections": DidConnections,
     "DidCredentials": DidCredentials,
     "DidMessaging": DidMessaging,
+    "DidPrivacy": DidPrivacy,
+    "DidPrivacyAnalytics": DidPrivacyAnalytics,
     "DidReputation": DidReputation,
     "DidSocialNetwork": DidSocialNetwork,
+    "DidTrustDashboard": DidTrustDashboard,
     "DidTrustGraph": DidTrustGraph,
     "DiplomacyHub": DiplomacyHub,
     "DirectAgentChat": DirectAgentChat,
@@ -182,6 +186,7 @@ export const PAGES = {
     "ResourceMarketplace": ResourceMarketplace,
     "Send": Send,
     "SendRLUSD": SendRLUSD,
+    "SharedDidView": SharedDidView,
     "SimulationLab": SimulationLab,
     "SkillDevelopment": SkillDevelopment,
     "SkillEndorsements": SkillEndorsements,
@@ -196,11 +201,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "DidPrivacy": DidPrivacy,
-    "DidConnections": DidConnections,
-    "DidPrivacyAnalytics": DidPrivacyAnalytics,
-    "SharedDidView": SharedDidView,
-    "DidTrustDashboard": DidTrustDashboard,
 }
 
 export const pagesConfig = {
