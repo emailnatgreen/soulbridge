@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info, UserPlus, Edit3, History } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info, UserPlus, Edit3, History, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import DidPermissionsDialog from '../components/DidPermissionsDialog';
 import DidVersioningDialog from '../components/DidVersioningDialog';
 import AgentManagementDialog from '../components/AgentManagementDialog';
 import AuditLogViewer from '../components/AuditLogViewer';
+import DidResolverTool from '../components/DidResolverTool';
 import {
   Dialog,
   DialogContent,
@@ -252,6 +253,14 @@ export default function DIDManager() {
               <Badge className="mt-2 bg-purple-600">World's First XRPL DID Manager</Badge>
             </div>
             <div className="flex items-center gap-4">
+              <DidResolverTool 
+                trigger={
+                  <Button variant="outline">
+                    <Search className="w-4 h-4 mr-2" />
+                    Resolve DID
+                  </Button>
+                }
+              />
               <AgentManagementDialog 
                 mode="create"
                 trigger={
