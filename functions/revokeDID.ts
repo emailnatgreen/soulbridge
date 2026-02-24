@@ -64,9 +64,33 @@ Deno.serve(async (req) => {
 
     const walletData = wallet[0];
 
-    // Verify ownership
-    if (walletData.owner_id !== user.id) {
-      return Response.json({ error: 'Not authorized to revoke this DID' }, { status: 403 });
+    // Verify ownership or permission
+    const isOwner = walletData.owner_id === user.id;
+    
+    if (!isOwner) {
+      // Check if user has an agent with permission
+      const userAgents = await base44.entities.Agent.filter({ 
+        classic_address: user.email // Assuming agents might be linked by email or another identifier
+      });
+      
+      let hasPermission = false;
+      
+      if (userAgents.length > 0) {
+        // Check if any of the user's agents have permission to revoke
+        const permissions = await base44.entities.DidPermission.filter({
+          did_classic_address: walletData.classic_address,
+          action: 'revoke_did',
+          status: 'active'
+        });
+        
+        hasPermission = permissions.some(p => 
+          userAgents.some(agent => agent.id === p.agent_id)
+        );
+      }
+      
+      if (!hasPermission) {
+        return Response.json({ error: 'Not authorized to revoke this DID' }, { status: 403 });
+      }
     }
 
     // Decrypt seed
