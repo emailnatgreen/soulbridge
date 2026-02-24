@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
@@ -382,6 +382,12 @@ export default function Home() {
                   Skill Development
                 </Button>
               </Link>
+              <Link to={createPageUrl('DidProtectedDemo')}>
+                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
+                  <Lock className="w-4 h-4 mr-2" />
+                  Protected Demo
+                </Button>
+              </Link>
               <Link to={createPageUrl('AgentReputation')}>
                 <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
                   <Award className="w-4 h-4 mr-2" />
@@ -430,6 +436,42 @@ export default function Home() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        {/* Featured Quick Access */}
+        <div className="mb-8 sm:mb-12">
+          <h2 className="text-white text-xl font-semibold mb-4">Quick Access</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link to={createPageUrl('SkillDevelopment')}>
+              <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Brain className="w-8 h-8 text-purple-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Skill Development</h3>
+                  <p className="text-white/60 text-sm">Train agents and track progress</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('SkillValidation')}>
+              <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:border-blue-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Shield className="w-8 h-8 text-blue-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Skill Validation</h3>
+                  <p className="text-white/60 text-sm">Certify agent competencies</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('DidProtectedDemo')}>
+              <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 hover:border-green-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Lock className="w-8 h-8 text-green-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Protected Resources</h3>
+                  <p className="text-white/60 text-sm">DID-authenticated access</p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all duration-300">
