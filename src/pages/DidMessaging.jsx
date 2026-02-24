@@ -22,6 +22,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import PrivacyGuard from '../components/PrivacyGuard';
 import {
   Dialog,
   DialogContent,

@@ -118,6 +118,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import DidPrivacy from './pages/DidPrivacy';
+import DidConnections from './pages/DidConnections';
 import __Layout from './Layout.jsx';
 
 
@@ -193,6 +194,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "DidPrivacy": DidPrivacy,
+    "DidConnections": DidConnections,
 }
 
 export const pagesConfig = {

@@ -103,6 +103,12 @@ export default function Home() {
                   DID Messages
                 </Button>
               </Link>
+              <Link to={createPageUrl('DidConnections')}>
+                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
+                  <Users className="w-4 h-4 mr-2" />
+                  Connections
+                </Button>
+              </Link>
               <Link to={createPageUrl('DIDAnalytics')}>
                 <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
                   <BarChart3 className="w-4 h-4 mr-2" />
