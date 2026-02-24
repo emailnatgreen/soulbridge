@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import DidPermissionsDialog from '../components/DidPermissionsDialog';
 import {
   Dialog,
   DialogContent,
@@ -445,6 +446,16 @@ export default function DIDManager() {
                         <Shield className="w-3 h-3 mr-2" />
                         {verifyMutation.isPending ? 'Verifying...' : 'Verify on XRPL'}
                         </Button>
+
+                        <DidPermissionsDialog 
+                          wallet={wallet}
+                          trigger={
+                            <Button size="sm" variant="outline" className="w-full">
+                              <Shield className="w-3 h-3 mr-2" />
+                              Manage Permissions
+                            </Button>
+                          }
+                        />
 
                         <div className="flex gap-2">
                         <Dialog>
