@@ -119,6 +119,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import DidPrivacy from './pages/DidPrivacy';
 import DidConnections from './pages/DidConnections';
+import DidPrivacyAnalytics from './pages/DidPrivacyAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -195,6 +196,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "DidPrivacy": DidPrivacy,
     "DidConnections": DidConnections,
+    "DidPrivacyAnalytics": DidPrivacyAnalytics,
 }
 
 export const pagesConfig = {

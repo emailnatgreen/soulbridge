@@ -19,7 +19,8 @@ import {
   Settings,
   AlertCircle,
   CheckCircle,
-  Save
+  Save,
+  BarChart3
 } from 'lucide-react';
 import {
   Select,
@@ -222,14 +223,22 @@ export default function DidPrivacy() {
               <p className="text-gray-600">Control who can access your DID information</p>
               <Badge className="mt-2 bg-purple-600">Advanced Privacy Controls</Badge>
             </div>
-            <Button
-              onClick={handleSaveSettings}
-              disabled={updatePrivacyMutation.isPending}
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {updatePrivacyMutation.isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <div className="flex gap-2">
+              <Link to={createPageUrl('DidPrivacyAnalytics')}>
+                <Button variant="outline">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
+                </Button>
+              </Link>
+              <Button
+                onClick={handleSaveSettings}
+                disabled={updatePrivacyMutation.isPending}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {updatePrivacyMutation.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
           </div>
         </div>
 

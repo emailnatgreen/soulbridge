@@ -151,6 +151,12 @@ export default function Home() {
                   Privacy
                 </Button>
               </Link>
+              <Link to={createPageUrl('DidPrivacyAnalytics')}>
+                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Privacy Analytics
+                </Button>
+              </Link>
               <Link to={createPageUrl('Agents')}>
                 <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
                   <Users className="w-4 h-4 mr-2" />
