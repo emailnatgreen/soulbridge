@@ -125,6 +125,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import EconomicDashboard from './pages/EconomicDashboard';
+import MemoryBrowser from './pages/MemoryBrowser';
 import __Layout from './Layout.jsx';
 
 
@@ -207,6 +208,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "EconomicDashboard": EconomicDashboard,
+    "MemoryBrowser": MemoryBrowser,
 }
 
 export const pagesConfig = {
