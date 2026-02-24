@@ -121,6 +121,7 @@ import DidPrivacy from './pages/DidPrivacy';
 import DidConnections from './pages/DidConnections';
 import DidPrivacyAnalytics from './pages/DidPrivacyAnalytics';
 import SharedDidView from './pages/SharedDidView';
+import DidTrustDashboard from './pages/DidTrustDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -199,6 +200,7 @@ export const PAGES = {
     "DidConnections": DidConnections,
     "DidPrivacyAnalytics": DidPrivacyAnalytics,
     "SharedDidView": SharedDidView,
+    "DidTrustDashboard": DidTrustDashboard,
 }
 
 export const pagesConfig = {
