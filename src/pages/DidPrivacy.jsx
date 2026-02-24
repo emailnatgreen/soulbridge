@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import PrivacyTemplates from '../components/PrivacyTemplates';
 import TemporaryAccessGrant from '../components/TemporaryAccessGrant';
+import PrivacyShareLinks from '../components/PrivacyShareLinks';
 
 export default function DidPrivacy() {
   const queryClient = useQueryClient();
@@ -290,9 +291,10 @@ export default function DidPrivacy() {
 
         {/* Main Content with Tabs */}
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="share">Share Links</TabsTrigger>
             <TabsTrigger value="access">Temp Access</TabsTrigger>
             <TabsTrigger value="lists">Block/Whitelist</TabsTrigger>
           </TabsList>
@@ -522,6 +524,11 @@ export default function DidPrivacy() {
               onApplyTemplate={handleApplyTemplate}
               disabled={updatePrivacyMutation.isPending}
             />
+          </TabsContent>
+
+          {/* Share Links Tab */}
+          <TabsContent value="share">
+            <PrivacyShareLinks myDid={userWallet.classic_address} />
           </TabsContent>
 
           {/* Temporary Access Tab */}

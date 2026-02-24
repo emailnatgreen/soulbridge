@@ -120,6 +120,7 @@ import Wallets from './pages/Wallets';
 import DidPrivacy from './pages/DidPrivacy';
 import DidConnections from './pages/DidConnections';
 import DidPrivacyAnalytics from './pages/DidPrivacyAnalytics';
+import SharedDidView from './pages/SharedDidView';
 import __Layout from './Layout.jsx';
 
 
@@ -197,6 +198,7 @@ export const PAGES = {
     "DidPrivacy": DidPrivacy,
     "DidConnections": DidConnections,
     "DidPrivacyAnalytics": DidPrivacyAnalytics,
+    "SharedDidView": SharedDidView,
 }
 
 export const pagesConfig = {
