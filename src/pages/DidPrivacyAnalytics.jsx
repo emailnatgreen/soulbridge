@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import PrivacyBadge from '../components/PrivacyBadge';
+import PrivacyAlerts from '../components/PrivacyAlerts';
 
 export default function DidPrivacyAnalytics() {
   const [timeRange, setTimeRange] = useState('7d');
@@ -319,6 +320,11 @@ export default function DidPrivacyAnalytics() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Privacy Alerts */}
+        <div className="mb-8">
+          <PrivacyAlerts myDid={myDid} />
         </div>
 
         {/* Activity Breakdown */}
