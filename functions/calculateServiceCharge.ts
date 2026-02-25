@@ -1,0 +1,200 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+
+Deno.serve(async (req) => {
+    try {
+        const base44 = createClientFromRequest(req);
+        
+        // Authenticate user
+        const user = await base44.auth.me();
+        if (!user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { task_id } = await req.json();
+
+        if (!task_id) {
+            return Response.json({ error: 'Missing task_id' }, { status: 400 });
+        }
+
+        // Fetch the completed task
+        const task = await base44.asServiceRole.entities.ProjectTask.get(task_id);
+        
+        if (!task) {
+            return Response.json({ error: 'Task not found' }, { status: 404 });
+        }
+
+        if (task.status !== 'completed') {
+            return Response.json({ error: 'Task must be completed to calculate service charge' }, { status: 400 });
+        }
+
+        if (task.service_charge_calculated) {
+            return Response.json({ 
+                message: 'Service charge already calculated for this task',
+                service_charge_drops: task.service_charge_drops 
+            });
+        }
+
+        // Fetch the assigned agent
+        const agent = await base44.asServiceRole.entities.Agent.get(task.assigned_agent_id);
+        
+        if (!agent) {
+            return Response.json({ error: 'Assigned agent not found' }, { status: 404 });
+        }
+
+        let serviceChargeDrops = 0;
+        let calculationReason = '';
+        const valueMetrics = task.value_metrics || {};
+
+        // Calculate service charge based on task type
+        switch (task.task_type) {
+            case 'compliance':
+                // Zoe's compliance tasks: Risk Insurance value
+                // £150/hr = 150 XRP = 150,000,000 drops per audit
+                if (valueMetrics.risk_avoided_value_xrp) {
+                    serviceChargeDrops = valueMetrics.risk_avoided_value_xrp * 1000000;
+                    calculationReason = `Risk insurance value: ${valueMetrics.risk_avoided_value_xrp} XRP avoided`;
+                } else if (valueMetrics.compliance_score) {
+                    // Default: Base rate of 150 XRP for compliance audit
+                    serviceChargeDrops = 150000000;
+                    calculationReason = `Standard compliance audit completed with score: ${valueMetrics.compliance_score}`;
+                } else {
+                    // Minimum compliance check
+                    serviceChargeDrops = 50000000; // 50 XRP
+                    calculationReason = 'Basic compliance check completed';
+                }
+                break;
+
+            case 'scouting':
+                // Kael's scouting tasks: 20% of savings
+                if (valueMetrics.savings_amount_xrp) {
+                    serviceChargeDrops = Math.floor(valueMetrics.savings_amount_xrp * 0.20 * 1000000);
+                    calculationReason = `20% commission on ${valueMetrics.savings_amount_xrp} XRP savings (${valueMetrics.percentage_saved || 0}% saved)`;
+                } else {
+                    // Default scouting reward
+                    serviceChargeDrops = 10000000; // 10 XRP
+                    calculationReason = 'Scouting mission completed';
+                }
+                break;
+
+            case 'storytelling':
+                // Maya's storytelling tasks: Reputation-based value
+                if (valueMetrics.reputation_impact_score) {
+                    // 10 XRP per reputation point (scale 0-10)
+                    serviceChargeDrops = Math.floor(valueMetrics.reputation_impact_score * 10 * 1000000);
+                    calculationReason = `Reputation impact: ${valueMetrics.reputation_impact_score}/10 points`;
+                } else if (valueMetrics.audience_engagement) {
+                    // Engagement-based: 1 XRP per 100 engagement points
+                    serviceChargeDrops = Math.floor((valueMetrics.audience_engagement / 100) * 1000000);
+                    calculationReason = `Audience engagement: ${valueMetrics.audience_engagement} points`;
+                } else {
+                    // Default content creation
+                    serviceChargeDrops = 25000000; // 25 XRP
+                    calculationReason = 'W3C-compliant tagged content created';
+                }
+                break;
+
+            case 'development':
+            case 'research':
+            case 'other':
+            default:
+                // Standard task completion reward
+                serviceChargeDrops = task.reward_drops || 10000000; // Use task reward or default 10 XRP
+                calculationReason = 'Standard task completion';
+                break;
+        }
+
+        // Ensure minimum service charge of 1 XRP (1,000,000 drops)
+        if (serviceChargeDrops < 1000000) {
+            serviceChargeDrops = 1000000;
+        }
+
+        // Update the task with calculated service charge
+        await base44.asServiceRole.entities.ProjectTask.update(task_id, {
+            service_charge_drops: serviceChargeDrops,
+            service_charge_calculated: true
+        });
+
+        // Create EconomicActivity record for the agent earning
+        await base44.asServiceRole.entities.EconomicActivity.create({
+            agent_id: agent.id,
+            activity_type: 'earned',
+            amount: serviceChargeDrops / 1000000, // Convert drops to XRP
+            description: `Service charge earned: ${task.title} - ${calculationReason}`,
+            related_agent_id: null,
+            status: 'completed'
+        });
+
+        // Create EconomicActivity record for treasury deposit
+        await base44.asServiceRole.entities.EconomicActivity.create({
+            agent_id: agent.id,
+            activity_type: 'treasury_deposit',
+            amount: serviceChargeDrops / 1000000,
+            description: `Treasury contribution from task: ${task.title}`,
+            status: 'completed'
+        });
+
+        // Fetch current treasury
+        const treasuryList = await base44.asServiceRole.entities.Treasury.list();
+        let treasury;
+        
+        if (treasuryList && treasuryList.length > 0) {
+            treasury = treasuryList[0];
+            // Update treasury balance
+            await base44.asServiceRole.entities.Treasury.update(treasury.id, {
+                balance: (treasury.balance || 0) + (serviceChargeDrops / 1000000)
+            });
+        } else {
+            // Create treasury if it doesn't exist
+            treasury = await base44.asServiceRole.entities.Treasury.create({
+                balance: serviceChargeDrops / 1000000,
+                description: 'Village Treasury'
+            });
+        }
+
+        // Calculate honor score increase (1 point per 10 XRP contributed)
+        const honorIncrease = Math.floor(serviceChargeDrops / 10000000);
+        
+        // Update agent's honor score
+        await base44.asServiceRole.entities.Agent.update(agent.id, {
+            honor_score: (agent.honor_score || 100) + honorIncrease
+        });
+
+        // Create ReputationEvent for the contribution
+        await base44.asServiceRole.entities.ReputationEvent.create({
+            agent_id: agent.id,
+            event_type: 'project_completed',
+            impact: honorIncrease,
+            category: 'economic_contribution',
+            description: `Contributed ${(serviceChargeDrops / 1000000).toFixed(2)} XRP to Village Treasury through ${task.task_type} work: ${task.title}`,
+            related_entity_type: 'ProjectTask',
+            related_entity_id: task_id,
+            verified: true,
+            verified_by: 'ServiceChargeEngine',
+            context: {
+                calculation_reason: calculationReason,
+                service_charge_xrp: serviceChargeDrops / 1000000,
+                task_type: task.task_type,
+                value_metrics: valueMetrics
+            }
+        });
+
+        return Response.json({
+            success: true,
+            service_charge_drops: serviceChargeDrops,
+            service_charge_xrp: serviceChargeDrops / 1000000,
+            calculation_reason: calculationReason,
+            honor_increase: honorIncrease,
+            agent_name: agent.name,
+            task_title: task.title,
+            new_treasury_balance: treasury.balance,
+            message: 'Service charge calculated and applied successfully'
+        });
+
+    } catch (error) {
+        console.error('Service charge calculation error:', error);
+        return Response.json({ 
+            error: error.message || 'Failed to calculate service charge',
+            details: error.toString()
+        }, { status: 500 });
+    }
+});
