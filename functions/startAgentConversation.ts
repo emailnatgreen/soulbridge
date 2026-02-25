@@ -9,65 +9,71 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { participant_agent_ids, title, conversation_type = 'direct' } = await req.json();
+        const { participant_agent_ids, conversation_type, project_id, role_filter } = await req.json();
 
         if (!participant_agent_ids || participant_agent_ids.length < 2) {
-            return Response.json({ error: 'At least 2 participants required' }, { status: 400 });
+            return Response.json({ 
+                error: 'At least 2 participants required' 
+            }, { status: 400 });
         }
 
-        // Check if direct conversation already exists
-        if (conversation_type === 'direct' && participant_agent_ids.length === 2) {
-            const existingConvos = await base44.entities.AgentConversation.filter({
-                conversation_type: 'direct'
-            });
+        // Get agent details
+        const agents = await base44.asServiceRole.entities.Agent.list();
+        const participants = agents.filter(a => participant_agent_ids.includes(a.id));
 
-            const existing = existingConvos.find(c => 
-                c.participant_agent_ids.length === 2 &&
-                c.participant_agent_ids.includes(participant_agent_ids[0]) &&
-                c.participant_agent_ids.includes(participant_agent_ids[1])
-            );
-
-            if (existing) {
-                return Response.json({ conversation: existing, existed: true });
-            }
+        // Generate conversation title
+        let title;
+        if (conversation_type === 'project' && project_id) {
+            const project = await base44.entities.AIProject.get(project_id);
+            title = `${project.title} - Team Chat`;
+        } else if (conversation_type === 'role_based' && role_filter) {
+            title = `${role_filter.charAt(0).toUpperCase() + role_filter.slice(1)}s Discussion`;
+        } else if (conversation_type === 'group') {
+            title = participants.map(p => p.name).join(', ');
+        } else {
+            title = participants.map(p => p.name).join(' & ');
         }
 
-        // Fetch agent names for title
-        const agents = await Promise.all(
-            participant_agent_ids.map(id => base44.entities.Agent.get(id))
-        );
-        const agentNames = agents.map(a => a.name);
-
-        const conversationTitle = title || (
-            conversation_type === 'direct' 
-                ? `${agentNames[0]} & ${agentNames[1]}`
-                : `Group: ${agentNames.slice(0, 3).join(', ')}${agentNames.length > 3 ? '...' : ''}`
-        );
-
-        const conversation = await base44.asServiceRole.entities.AgentConversation.create({
-            title: conversationTitle,
+        // Create conversation
+        const conversation = await base44.entities.AgentConversation.create({
+            title,
             conversation_type,
             participant_agent_ids,
+            project_id: project_id || null,
+            role_filter: role_filter || null,
             last_message_at: new Date().toISOString(),
+            last_message_preview: 'Conversation started',
             message_count: 0,
-            is_active: true
+            is_active: true,
+            metadata: {
+                created_by: user.email,
+                participant_names: participants.map(p => p.name)
+            }
         });
 
-        // Create notifications for all participants
+        // Notify all participants
         for (const agentId of participant_agent_ids) {
             await base44.asServiceRole.entities.AgentNotification.create({
                 recipient_agent_id: agentId,
-                notification_type: 'conversation_invite',
+                notification_type: 'message',
                 title: 'New Conversation',
-                message: `You've been added to: ${conversationTitle}`,
-                related_conversation_id: conversation.id,
+                message: `You've been added to: ${title}`,
+                action_url: `/agent-messaging?conversation=${conversation.id}`,
+                related_entity_type: 'AgentConversation',
+                related_entity_id: conversation.id,
                 priority: 'normal'
             });
         }
 
-        return Response.json({ conversation, existed: false });
+        return Response.json({
+            success: true,
+            conversation
+        });
+
     } catch (error) {
         console.error('Error starting conversation:', error);
-        return Response.json({ error: error.message }, { status: 500 });
+        return Response.json({ 
+            error: error.message 
+        }, { status: 500 });
     }
 });
