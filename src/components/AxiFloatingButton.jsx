@@ -26,17 +26,6 @@ export default function AxiFloatingButton() {
     }
   }, [messages.length, scrollToBottom]);
 
-  useEffect(() => {
-    if (isOpen && !conversation) {
-      initConversation();
-    }
-    return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
-    };
-  }, [isOpen, conversation, initConversation]);
-
   const initConversation = useCallback(async () => {
     try {
       const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
@@ -65,6 +54,17 @@ export default function AxiFloatingButton() {
       console.error('Failed to init conversation:', error);
     }
   }, []);
+
+  useEffect(() => {
+    if (isOpen && !conversation) {
+      initConversation();
+    }
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, [isOpen, conversation, initConversation]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !conversation || sending) return;
