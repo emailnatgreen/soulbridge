@@ -36,8 +36,12 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Wallet not found' }, { status: 404 });
         }
 
-        // Verify ownership
-        if (walletData.owner_id !== user.id) {
+        // Verify ownership (allow admins and Treasury wallet access)
+        const isTreasury = walletData.name === 'Treasury' || walletData.wallet_type === 'treasury';
+        const isAdmin = user.role === 'admin';
+        const isOwner = walletData.owner_id === user.id;
+        
+        if (!isOwner && !isAdmin && !isTreasury) {
             await logWalletAccess(base44, wallet_id, user.id, user.email, 'balance_check', false, 'Access denied - not owner');
             return Response.json({ error: 'Access denied: You do not own this wallet' }, { status: 403 });
         }
