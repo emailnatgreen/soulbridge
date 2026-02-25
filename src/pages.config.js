@@ -129,6 +129,7 @@ import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
+import SkillGapAnalysis from './pages/SkillGapAnalysis';
 import __Layout from './Layout.jsx';
 
 
@@ -215,6 +216,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
+    "SkillGapAnalysis": SkillGapAnalysis,
 }
 
 export const pagesConfig = {

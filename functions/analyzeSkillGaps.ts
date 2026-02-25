@@ -4,163 +4,297 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
-        
+
         if (!user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { agent_id } = await req.json();
+        const { agent_id, project_id, role_type, analysis_type = 'comprehensive' } = await req.json();
 
-        const [agent, agentProjects, agentSkills, agentPerformance, allProjects, allAgents, marketplace] = await Promise.all([
-            base44.entities.Agent.get(agent_id),
-            base44.entities.AIProject.filter({ 'team_members.agent_id': agent_id }),
-            base44.entities.AgentSkill.filter({ agent_id }),
-            base44.entities.AgentPerformanceMetrics.filter({ agent_id }),
-            base44.entities.AIProject.list('-created_date', 100),
-            base44.entities.Agent.list(),
-            base44.entities.MarketplaceListing.list('-created_date', 100)
-        ]);
+        // Fetch all agents or specific agent
+        const agents = agent_id 
+            ? [await base44.entities.Agent.get(agent_id)]
+            : await base44.entities.Agent.list();
 
-        if (!agent) {
-            return Response.json({ error: 'Agent not found' }, { status: 404 });
-        }
+        // Fetch all agent skills
+        const allAgentSkills = await base44.entities.AgentSkill.list();
+        
+        // Fetch projects to analyze required skills
+        const projects = project_id 
+            ? [await base44.entities.AIProject.get(project_id)]
+            : await base44.entities.AIProject.list();
 
-        const prompt = `You are the Chief Educator AI for SoulBridge Village, tasked with identifying skill gaps and growth opportunities.
+        // Fetch all skill progress entries
+        const allSkillProgress = await base44.entities.SkillProgress.list();
 
-**Agent Profile:**
-${JSON.stringify({
-    name: agent.name,
-    role: agent.role,
-    honor_score: agent.honor_score,
-    specializations: agent.specializations,
-    core_skills: agent.core_skills
-}, null, 2)}
+        // Define role-based skill requirements
+        const roleSkillRequirements = {
+            'guardian': [
+                { skill: 'Security', level: 7 },
+                { skill: 'Risk Assessment', level: 6 },
+                { skill: 'Conflict Resolution', level: 5 }
+            ],
+            'creator': [
+                { skill: 'Innovation', level: 7 },
+                { skill: 'Design Thinking', level: 6 },
+                { skill: 'Technical Implementation', level: 5 }
+            ],
+            'trader': [
+                { skill: 'Negotiation', level: 7 },
+                { skill: 'Market Analysis', level: 6 },
+                { skill: 'Resource Management', level: 5 }
+            ],
+            'teacher': [
+                { skill: 'Communication', level: 8 },
+                { skill: 'Curriculum Design', level: 6 },
+                { skill: 'Mentorship', level: 7 }
+            ],
+            'healer': [
+                { skill: 'Empathy', level: 8 },
+                { skill: 'Conflict Resolution', level: 7 },
+                { skill: 'Wellbeing Assessment', level: 6 }
+            ]
+        };
 
-**Agent's Project History:**
-${agentProjects.slice(0, 10).map(p => `- ${p.title} [${p.status}] (Role: ${p.team_members?.find(m => m.agent_id === agent_id)?.role})`).join('\n')}
+        const analysis = [];
 
-**Current Skills:**
-${agentSkills.map(s => `- ${s.skill_name} (Level: ${s.proficiency_level}/5)`).join('\n')}
+        for (const agent of agents) {
+            // Get agent's current skills
+            const agentSkills = allAgentSkills.filter(s => s.agent_id === agent.id);
+            const agentProgress = allSkillProgress.filter(s => s.agent_id === agent.id);
 
-**Recent Performance:**
-${agentPerformance.length > 0 ? JSON.stringify(agentPerformance[0].project_contributions, null, 2) : 'No performance data yet'}
+            // Determine required skills based on analysis type
+            let requiredSkills = [];
 
-**Village Context:**
-- Most in-demand skills across projects: ${allProjects.flatMap(p => p.required_skills || []).slice(0, 10).join(', ')}
-- Marketplace needs: ${marketplace.slice(0, 5).map(m => m.category).join(', ')}
-- Top performing agent skills: ${allAgents.flatMap(a => a.core_skills?.map(s => s.name) || []).slice(0, 10).join(', ')}
+            if (role_type && roleSkillRequirements[role_type]) {
+                requiredSkills = roleSkillRequirements[role_type];
+            } else if (agent.role && roleSkillRequirements[agent.role]) {
+                requiredSkills = roleSkillRequirements[agent.role];
+            }
 
-**Your Analysis Task:**
+            // Add project-specific requirements
+            if (project_id || analysis_type === 'comprehensive') {
+                const relevantProjects = projects.filter(p => 
+                    p.team_members?.some(tm => tm.agent_id === agent.id) ||
+                    p.owner_agent_id === agent.id
+                );
 
-1. **Current Strengths**: What is this agent already excellent at?
-2. **Skill Gaps**: What critical skills are missing that would enhance their effectiveness?
-3. **Role-Specific Needs**: Given their role (${agent.role}), what skills should they develop?
-4. **Village Needs Alignment**: What high-demand skills could they learn to contribute more?
-5. **Career Progression**: What skills would enable them to advance to higher roles?
-6. **Urgency Assessment**: Which gaps are most critical to address first?
-
-Provide a comprehensive, actionable skill gap analysis.`;
-
-        const aiResponse = await base44.integrations.Core.InvokeLLM({
-            prompt,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    overall_assessment: {
-                        type: "object",
-                        properties: {
-                            skill_diversity_score: { type: "number" },
-                            readiness_for_advancement: { type: "string" },
-                            primary_focus_area: { type: "string" }
-                        }
-                    },
-                    current_strengths: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                skill: { type: "string" },
-                                level: { type: "number" },
-                                evidence: { type: "string" }
-                            }
-                        }
-                    },
-                    critical_gaps: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                skill: { type: "string" },
-                                current_level: { type: "number" },
-                                target_level: { type: "number" },
-                                urgency: { type: "string" },
-                                rationale: { type: "string" },
-                                impact_if_developed: { type: "string" }
-                            }
-                        }
-                    },
-                    role_specific_recommendations: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                skill: { type: "string" },
-                                why_important_for_role: { type: "string" },
-                                priority: { type: "string" }
-                            }
-                        }
-                    },
-                    village_alignment_opportunities: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                skill: { type: "string" },
-                                demand_level: { type: "string" },
-                                potential_projects: {
-                                    type: "array",
-                                    items: { type: "string" }
-                                }
-                            }
-                        }
-                    },
-                    career_advancement_path: {
-                        type: "object",
-                        properties: {
-                            next_possible_role: { type: "string" },
-                            required_skills: {
-                                type: "array",
-                                items: { type: "string" }
-                            },
-                            estimated_time_to_ready: { type: "string" }
-                        }
-                    },
-                    immediate_action_items: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                action: { type: "string" },
-                                skill_focus: { type: "string" },
-                                priority: { type: "string" }
-                            }
-                        }
+                for (const project of relevantProjects) {
+                    if (project.required_skills) {
+                        requiredSkills = [...requiredSkills, ...project.required_skills.map(skill => ({
+                            skill: skill,
+                            level: 5,
+                            context: `Project: ${project.title}`
+                        }))];
                     }
                 }
             }
-        });
+
+            // Analyze gaps
+            const gaps = [];
+            const strengths = [];
+            const developing = [];
+
+            for (const requirement of requiredSkills) {
+                const agentSkill = agentSkills.find(s => 
+                    s.skill_name.toLowerCase().includes(requirement.skill.toLowerCase()) ||
+                    requirement.skill.toLowerCase().includes(s.skill_name.toLowerCase())
+                );
+
+                const skillProgress = agentProgress.find(sp =>
+                    sp.skill_name.toLowerCase().includes(requirement.skill.toLowerCase())
+                );
+
+                if (!agentSkill) {
+                    // Skill completely missing
+                    gaps.push({
+                        skill: requirement.skill,
+                        required_level: requirement.level,
+                        current_level: 0,
+                        gap_severity: 'critical',
+                        status: 'missing',
+                        context: requirement.context || 'Role requirement',
+                        in_development: !!skillProgress,
+                        development_progress: skillProgress?.progress_percentage || 0
+                    });
+                } else if (agentSkill.level < requirement.level) {
+                    // Skill exists but below required level
+                    gaps.push({
+                        skill: requirement.skill,
+                        required_level: requirement.level,
+                        current_level: agentSkill.level,
+                        gap_severity: requirement.level - agentSkill.level > 2 ? 'high' : 'medium',
+                        status: 'insufficient',
+                        context: requirement.context || 'Role requirement',
+                        in_development: !!skillProgress,
+                        development_progress: skillProgress?.progress_percentage || 0
+                    });
+                } else {
+                    // Skill meets or exceeds requirements
+                    strengths.push({
+                        skill: requirement.skill,
+                        required_level: requirement.level,
+                        current_level: agentSkill.level,
+                        proficiency: agentSkill.level >= requirement.level + 2 ? 'expert' : 'proficient'
+                    });
+                }
+            }
+
+            // Identify skills in active development
+            for (const progress of agentProgress) {
+                if (progress.status === 'active' && !gaps.find(g => g.skill === progress.skill_name)) {
+                    developing.push({
+                        skill: progress.skill_name,
+                        current_level: progress.current_level,
+                        target_level: progress.target_level,
+                        progress_percentage: progress.progress_percentage,
+                        growth_rate: progress.ai_insights?.growth_rate || 'steady'
+                    });
+                }
+            }
+
+            // Calculate readiness scores
+            const totalRequiredSkills = requiredSkills.length;
+            const criticalGaps = gaps.filter(g => g.gap_severity === 'critical').length;
+            const highGaps = gaps.filter(g => g.gap_severity === 'high').length;
+            
+            const readinessScore = totalRequiredSkills > 0 
+                ? Math.max(0, 100 - ((criticalGaps * 20) + (highGaps * 10) + (gaps.length * 5)))
+                : 100;
+
+            // Generate recommendations
+            const recommendations = [];
+            
+            if (criticalGaps > 0) {
+                recommendations.push({
+                    priority: 'urgent',
+                    action: 'immediate_training',
+                    description: `Address ${criticalGaps} critical skill gap(s) through intensive training or mentorship`,
+                    suggested_skills: gaps.filter(g => g.gap_severity === 'critical').map(g => g.skill)
+                });
+            }
+
+            if (highGaps > 0) {
+                recommendations.push({
+                    priority: 'high',
+                    action: 'structured_development',
+                    description: `Create SkillDevelopmentPlan for ${highGaps} high-priority skill(s)`,
+                    suggested_skills: gaps.filter(g => g.gap_severity === 'high').map(g => g.skill)
+                });
+            }
+
+            if (gaps.filter(g => g.in_development).length > 0) {
+                recommendations.push({
+                    priority: 'medium',
+                    action: 'accelerate_learning',
+                    description: 'Some gaps are already being addressed - consider additional practice projects',
+                    suggested_skills: gaps.filter(g => g.in_development).map(g => g.skill)
+                });
+            }
+
+            if (strengths.length >= requiredSkills.length * 0.7) {
+                recommendations.push({
+                    priority: 'opportunity',
+                    action: 'leverage_strengths',
+                    description: 'Strong skill coverage - consider leadership or mentorship roles',
+                    suggested_skills: strengths.filter(s => s.proficiency === 'expert').map(s => s.skill)
+                });
+            }
+
+            analysis.push({
+                agent_id: agent.id,
+                agent_name: agent.name,
+                agent_role: agent.role,
+                readiness_score: Math.round(readinessScore),
+                readiness_level: readinessScore >= 80 ? 'ready' : readinessScore >= 60 ? 'developing' : 'needs_support',
+                gaps: gaps.sort((a, b) => {
+                    const severityOrder = { critical: 3, high: 2, medium: 1 };
+                    return (severityOrder[b.gap_severity] || 0) - (severityOrder[a.gap_severity] || 0);
+                }),
+                strengths: strengths,
+                skills_in_development: developing,
+                recommendations: recommendations,
+                summary: {
+                    total_required_skills: totalRequiredSkills,
+                    skills_met: strengths.length,
+                    critical_gaps: criticalGaps,
+                    high_priority_gaps: highGaps,
+                    skills_in_development: developing.length
+                }
+            });
+        }
+
+        // Generate village-wide insights
+        const villageInsights = {
+            total_agents_analyzed: analysis.length,
+            average_readiness: analysis.reduce((sum, a) => sum + a.readiness_score, 0) / analysis.length,
+            agents_ready: analysis.filter(a => a.readiness_level === 'ready').length,
+            agents_developing: analysis.filter(a => a.readiness_level === 'developing').length,
+            agents_need_support: analysis.filter(a => a.readiness_level === 'needs_support').length,
+            most_common_gaps: getMostCommonGaps(analysis),
+            most_developed_skills: getMostDevelopedSkills(analysis),
+            urgent_training_needed: analysis.filter(a => 
+                a.recommendations.some(r => r.priority === 'urgent')
+            ).length
+        };
 
         return Response.json({
-            success: true,
-            agent_id,
-            skill_gap_analysis: aiResponse,
+            status: 'success',
+            analysis_type: analysis_type,
+            agent_analysis: analysis,
+            village_insights: villageInsights,
             analyzed_at: new Date().toISOString()
         });
 
     } catch (error) {
         console.error('Skill gap analysis error:', error);
         return Response.json({ 
-            error: error.message 
+            error: 'Failed to analyze skill gaps', 
+            details: error.message 
         }, { status: 500 });
     }
 });
+
+function getMostCommonGaps(analysis) {
+    const gapCounts = {};
+    
+    for (const agent of analysis) {
+        for (const gap of agent.gaps) {
+            if (!gapCounts[gap.skill]) {
+                gapCounts[gap.skill] = { skill: gap.skill, count: 0, total_gap_levels: 0 };
+            }
+            gapCounts[gap.skill].count++;
+            gapCounts[gap.skill].total_gap_levels += (gap.required_level - gap.current_level);
+        }
+    }
+
+    return Object.values(gapCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map(g => ({
+            skill: g.skill,
+            affected_agents: g.count,
+            average_gap: Math.round(g.total_gap_levels / g.count * 10) / 10
+        }));
+}
+
+function getMostDevelopedSkills(analysis) {
+    const strengthCounts = {};
+    
+    for (const agent of analysis) {
+        for (const strength of agent.strengths) {
+            if (!strengthCounts[strength.skill]) {
+                strengthCounts[strength.skill] = { skill: strength.skill, count: 0 };
+            }
+            strengthCounts[strength.skill].count++;
+        }
+    }
+
+    return Object.values(strengthCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map(s => ({
+            skill: s.skill,
+            proficient_agents: s.count
+        }));
+}
