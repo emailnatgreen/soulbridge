@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
@@ -72,380 +73,210 @@ export default function Home() {
             {/* Navigation Menu - Desktop Only */}
             <nav className="hidden md:flex flex-wrap gap-2">
               <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" className="text-white hover:bg-white/10">
-                  Dashboard
-                </Button>
+                <Button variant="ghost" className="text-white hover:bg-white/10">Dashboard</Button>
               </Link>
+              
+              {/* Wallets & Payments */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
+                    <Wallet className="w-4 h-4 mr-2" />
+                    Wallets <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('Wallets')} className="cursor-pointer">Wallets</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('Send')} className="cursor-pointer">Send XRP</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('TransactionHistory')} className="cursor-pointer">Transaction History</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('SendRLUSD')} className="cursor-pointer">Send RLUSD</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('ReceiveRLUSD')} className="cursor-pointer">Receive RLUSD</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('RLUSDManager')} className="cursor-pointer">RLUSD Manager</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('MainnetMigration')} className="cursor-pointer">Mainnet Migration</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* DID System */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                    <Shield className="w-4 h-4 mr-2" />
+                    DID <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DIDManager')} className="cursor-pointer">DID Manager</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('CreateDID')} className="cursor-pointer">Create DID</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DIDRegistry')} className="cursor-pointer">DID Registry</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidMessaging')} className="cursor-pointer">Messages</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidConnections')} className="cursor-pointer">Connections</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidSocialNetwork')} className="cursor-pointer">Social Network</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidActivityFeed')} className="cursor-pointer">Activity Feed</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidCredentials')} className="cursor-pointer">Credentials</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidReputation')} className="cursor-pointer">Reputation</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidTrustGraph')} className="cursor-pointer">Trust Graph</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidPrivacy')} className="cursor-pointer">Privacy Settings</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidPrivacyAnalytics')} className="cursor-pointer">Privacy Analytics</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DIDAnalytics')} className="cursor-pointer">DID Analytics</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DidProtectedDemo')} className="cursor-pointer">Protected Demo</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Agents */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                    <Users className="w-4 h-4 mr-2" />
+                    Agents <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('Agents')} className="cursor-pointer">All Agents</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('Axi')} className="cursor-pointer">Talk to Axi</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DirectAgentChat')} className="cursor-pointer">Direct Chat</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DeepSeek')} className="cursor-pointer">DeepSeek</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Governance */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Governance <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('GovernanceHub')} className="cursor-pointer">Governance Hub</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('GovernanceSimulation')} className="cursor-pointer">Gov Simulation</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('CovenantEchoes')} className="cursor-pointer">Covenant Echoes</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Projects */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-blue-300/80 hover:bg-blue-500/10 hover:text-blue-300">
+                    <Target className="w-4 h-4 mr-2" />
+                    Projects <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AIProjectManager')} className="cursor-pointer">AI Projects</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AIProjectHub')} className="cursor-pointer">Project Hub</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('ProjectTemplates')} className="cursor-pointer">Templates</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('ProjectAnalytics')} className="cursor-pointer">Analytics</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('CollaborationHub')} className="cursor-pointer">Collaboration Hub</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('CollaborationSuite')} className="cursor-pointer">Collaboration Suite</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('TaskDelegation')} className="cursor-pointer">Task Delegation</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Skills & Training */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                    <GraduationCap className="w-4 h-4 mr-2" />
+                    Skills <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('SkillDevelopment')} className="cursor-pointer">Skill Development</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('SkillValidation')} className="cursor-pointer">Skill Validation</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('SkillEndorsements')} className="cursor-pointer">Endorsements</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AgentSkillTree')} className="cursor-pointer">Skill Trees</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AgentTrainingModule')} className="cursor-pointer">Training</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('TrainingSimulation')} className="cursor-pointer">Training Simulation</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Economy */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
+                    <Wallet className="w-4 h-4 mr-2" />
+                    Economy <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('Economy')} className="cursor-pointer">Economy</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('TreasuryDashboard')} className="cursor-pointer">Treasury Dashboard</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('ResourceMarketplace')} className="cursor-pointer">Resource Marketplace</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AgentMarketplace')} className="cursor-pointer">Agent Marketplace</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('ResourceDynamics')} className="cursor-pointer">Resource Dynamics</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('ProductionHub')} className="cursor-pointer">Production Hub</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Social */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
+                    <Users className="w-4 h-4 mr-2" />
+                    Social <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('SocialNetwork')} className="cursor-pointer">Social Network</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('SocialCapitalDashboard')} className="cursor-pointer">Social Capital</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('RelationshipNetwork')} className="cursor-pointer">Relationships</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('MentorshipHub')} className="cursor-pointer">Mentorship</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DialogueStudio')} className="cursor-pointer">Dialogue Studio</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('DiplomacyHub')} className="cursor-pointer">Diplomacy</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AgentReputation')} className="cursor-pointer">Reputation</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AgentWellbeing')} className="cursor-pointer">Wellbeing</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Village & Simulation */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
+                    <Map className="w-4 h-4 mr-2" />
+                    Village <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('Village')} className="cursor-pointer">Village</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('VillageSimulation')} className="cursor-pointer">Village Simulation</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('SimulationLab')} className="cursor-pointer">Simulation Lab</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Analytics */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Analytics <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-slate-900 border-white/10">
+                  <DropdownMenuItem asChild><Link to={createPageUrl('SystemDashboard')} className="cursor-pointer">Village Pulse</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AgentPerformanceAnalytics')} className="cursor-pointer">Agent Performance</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={createPageUrl('KnowledgeSynthesis')} className="cursor-pointer">AI Synthesis</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Link to={createPageUrl('EditLanding')}>
                 <Button variant="ghost" className="text-white/80 hover:bg-white/10 hover:text-white">
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Landing
                 </Button>
               </Link>
-              <Link to={createPageUrl('TransactionHistory')}>
-                <Button variant="ghost" className="text-white/80 hover:bg-white/10 hover:text-white">
-                  <Activity className="w-4 h-4 mr-2" />
-                  History
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Wallets')}>
-                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Wallets
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DIDManager')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <Shield className="w-4 h-4 mr-2" />
-                  DID Manager
-                </Button>
-              </Link>
-              <Link to={createPageUrl('CreateDID')}>
-                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create DID
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DIDRegistry')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <Shield className="w-4 h-4 mr-2" />
-                  DID Registry
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidMessaging')}>
-                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  DID Messages
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidConnections')}>
-                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
-                  <Users className="w-4 h-4 mr-2" />
-                  Connections
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DIDAnalytics')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  DID Analytics
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidReputation')}>
-                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
-                  <Award className="w-4 h-4 mr-2" />
-                  DID Reputation
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidSocialNetwork')}>
-                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
-                  <Users className="w-4 h-4 mr-2" />
-                  Social Network
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidActivityFeed')}>
-                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Activity Feed
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidCredentials')}>
-                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
-                  <Award className="w-4 h-4 mr-2" />
-                  Credentials
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidTrustGraph')}>
-                <Button variant="ghost" className="text-teal-300/80 hover:bg-teal-500/10 hover:text-teal-300">
-                  <Network className="w-4 h-4 mr-2" />
-                  Trust Graph
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidPrivacy')}>
-                <Button variant="ghost" className="text-rose-300/80 hover:bg-rose-500/10 hover:text-rose-300">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Privacy
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidPrivacyAnalytics')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Privacy Analytics
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Agents')}>
-                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
-                  <Users className="w-4 h-4 mr-2" />
-                  Agents
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Axi')}>
-                <Button variant="ghost" className="text-blue-300/80 hover:bg-blue-500/10 hover:text-blue-300">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Talk to Axi
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DirectAgentChat')}>
-                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Direct Chat
-                </Button>
-              </Link>
-              <Link to={createPageUrl('GovernanceHub')}>
-                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Governance
-                </Button>
-              </Link>
-              <Link to={createPageUrl('GovernanceSimulation')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Gov Simulation
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Economy')}>
-                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Economy
-                </Button>
-              </Link>
-              <Link to={createPageUrl('ResourceMarketplace')}>
-                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Marketplace
-                </Button>
-              </Link>
-              <Link to={createPageUrl('Village')}>
-                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
-                  <Map className="w-4 h-4 mr-2" />
-                  Village
-                </Button>
-              </Link>
-              <Link to={createPageUrl('AgentTrainingModule')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Training
-                </Button>
-              </Link>
-              <Link to={createPageUrl('TrainingSimulation')}>
-                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
-                  <GraduationCap className="w-4 h-4 mr-2" />
-                  Train Simulation
-                </Button>
-              </Link>
-              <Link to={createPageUrl('VillageSimulation')}>
-                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Simulation
-                </Button>
-              </Link>
-              <Link to={createPageUrl('SimulationLab')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Sim Lab
-                </Button>
-              </Link>
-              <Link to={createPageUrl('SocialNetwork')}>
-                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
-                  <Users className="w-4 h-4 mr-2" />
-                  Social Network
-                </Button>
-              </Link>
-              <Link to={createPageUrl('SocialCapitalDashboard')}>
-                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Social Capital
-                </Button>
-              </Link>
-              <Link to={createPageUrl('RelationshipNetwork')}>
-                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
-                  <Users className="w-4 h-4 mr-2" />
-                  Relationships
-                </Button>
-              </Link>
-              <Link to={createPageUrl('AgentSkillTree')}>
-                <Button variant="ghost" className="text-yellow-300/80 hover:bg-yellow-500/10 hover:text-yellow-300">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Skill Trees
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DialogueStudio')}>
-                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Dialogue Studio
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DiplomacyHub')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Diplomacy
-                </Button>
-              </Link>
-              <Link to={createPageUrl('TaskDelegation')}>
-                <Button variant="ghost" className="text-orange-300/80 hover:bg-orange-500/10 hover:text-orange-300">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Task Delegation
-                </Button>
-              </Link>
-              <Link to={createPageUrl('SendRLUSD')}>
-                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
-                  <ArrowUpRight className="w-4 h-4 mr-2" />
-                  Send RLUSD
-                </Button>
-              </Link>
-              <Link to={createPageUrl('ReceiveRLUSD')}>
-                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
-                  <ArrowDownRight className="w-4 h-4 mr-2" />
-                  Receive RLUSD
-                </Button>
-              </Link>
-              <Link to={createPageUrl('RLUSDManager')}>
-                <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
-                  <Wallet className="w-4 h-4 mr-2" />
-                  RLUSD Manager
-                </Button>
-              </Link>
-              <Link to={createPageUrl('MainnetMigration')}>
-                <Button variant="ghost" className="text-orange-300/80 hover:bg-orange-500/10 hover:text-orange-300">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Mainnet Migration
-                </Button>
-              </Link>
-              <Link to={createPageUrl('AgentMarketplace')}>
-                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Marketplace
-                </Button>
-              </Link>
-              <Link to={createPageUrl('AIProjectManager')}>
-                <Button variant="ghost" className="text-blue-300/80 hover:bg-blue-500/10 hover:text-blue-300">
-                  <Target className="w-4 h-4 mr-2" />
-                  AI Projects
-                </Button>
-              </Link>
-              <Link to={createPageUrl('SkillValidation')}>
-                <Button variant="ghost" className="text-yellow-300/80 hover:bg-yellow-500/10 hover:text-yellow-300">
-                  <Award className="w-4 h-4 mr-2" />
-                  Skill Validation
-                </Button>
-              </Link>
-              <Link to={createPageUrl('AIProjectHub')}>
-                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
-                  <Target className="w-4 h-4 mr-2" />
-                  Project Hub
-                </Button>
-              </Link>
-              <Link to={createPageUrl('CovenantEchoes')}>
-                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Covenant Echoes
-                </Button>
-              </Link>
-              <Link to={createPageUrl('ProjectAnalytics')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Analytics
-                </Button>
-              </Link>
-              <Link to={createPageUrl('SkillEndorsements')}>
-                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
-                  <Award className="w-4 h-4 mr-2" />
-                  Endorsements
-                </Button>
-              </Link>
-              <Link to={createPageUrl('ProjectTemplates')}>
-                <Button variant="ghost" className="text-cyan-300/80 hover:bg-cyan-500/10 hover:text-cyan-300">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Templates
-                </Button>
-              </Link>
-              <Link to={createPageUrl('CollaborationHub')}>
-                <Button variant="ghost" className="text-pink-300/80 hover:bg-pink-500/10 hover:text-pink-300">
-                  <Users className="w-4 h-4 mr-2" />
-                  Collaboration
-                </Button>
-              </Link>
-              <Link to={createPageUrl('KnowledgeSynthesis')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <Brain className="w-4 h-4 mr-2" />
-                  AI Synthesis
-                </Button>
-              </Link>
-              <Link to={createPageUrl('AgentPerformanceAnalytics')}>
-                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Performance
-                </Button>
-              </Link>
-              <Link to={createPageUrl('ProductionHub')}>
-                <Button variant="ghost" className="text-orange-300/80 hover:bg-orange-500/10 hover:text-orange-300">
-                  <Factory className="w-4 h-4 mr-2" />
-                  Production Hub
-                </Button>
-              </Link>
-              <Link to={createPageUrl('SkillDevelopment')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <GraduationCap className="w-4 h-4 mr-2" />
-                  Skill Development
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DidProtectedDemo')}>
-                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
-                  <Lock className="w-4 h-4 mr-2" />
-                  Protected Demo
-                </Button>
-              </Link>
-              <Link to={createPageUrl('AgentReputation')}>
-                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
-                  <Award className="w-4 h-4 mr-2" />
-                  Reputation
-                </Button>
-              </Link>
-              <Link to={createPageUrl('AgentWellbeing')}>
-                <Button variant="ghost" className="text-rose-300/80 hover:bg-rose-500/10 hover:text-rose-300">
-                  <Heart className="w-4 h-4 mr-2" />
-                  Wellbeing
-                </Button>
-              </Link>
-              <Link to={createPageUrl('ResourceDynamics')}>
-                <Button variant="ghost" className="text-blue-300/80 hover:bg-blue-500/10 hover:text-blue-300">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Resource Dynamics
-                </Button>
-              </Link>
-              <Link to={createPageUrl('MentorshipHub')}>
-                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
-                  <Users className="w-4 h-4 mr-2" />
-                  Mentorship
-                </Button>
-              </Link>
-              <Link to={createPageUrl('DeepSeek')}>
-                <Button variant="ghost" className="text-amber-300/80 hover:bg-amber-500/10 hover:text-amber-300">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  DeepSeek
-                </Button>
-              </Link>
-              <Link to={createPageUrl('CollaborationSuite')}>
-                <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Collaboration
-                </Button>
-              </Link>
+
               <Link to={createPageUrl('Admin')}>
                 <Button variant="ghost" className="text-red-300/80 hover:bg-red-500/10 hover:text-red-300">
                   <Shield className="w-4 h-4 mr-2" />
                   Admin
-                </Button>
-              </Link>
-              <Link to={createPageUrl('TreasuryDashboard')}>
-                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Treasury
-                </Button>
-              </Link>
-              <Link to={createPageUrl('SystemDashboard')}>
-                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Village Pulse
                 </Button>
               </Link>
             </nav>
