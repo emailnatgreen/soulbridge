@@ -324,15 +324,18 @@ export default function TreasuryDashboard() {
                 </div>
               </div>
               <div className="mt-4 bg-white/50 rounded-lg p-3 border border-green-200">
-                <div className="text-xs text-green-800 mb-2 font-semibold">Recent Service Charge Contributions:</div>
+                <div className="text-xs text-green-800 mb-2 font-semibold">Recent Service Charge Contributions (Internal View - Drops):</div>
                 <div className="space-y-1 max-h-32 overflow-y-auto">
                   {filteredActivities
                     .filter(a => a.activity_type === 'treasury_deposit' && a.description?.includes('Service charge'))
                     .slice(0, 5)
                     .map((activity) => (
-                      <div key={activity.id} className="text-xs text-green-700 flex justify-between">
+                      <div key={activity.id} className="text-xs text-green-700 flex justify-between gap-2">
                         <span className="truncate flex-1">{activity.description}</span>
-                        <span className="font-semibold ml-2">+{activity.amount.toFixed(4)} XRP</span>
+                        <div className="text-right">
+                          <div className="font-semibold">+{(activity.amount * 1000000).toLocaleString()} drops</div>
+                          <div className="text-[10px] text-green-600">(+{activity.amount.toFixed(4)} XRP)</div>
+                        </div>
                       </div>
                     ))}
                   {filteredActivities.filter(a => a.activity_type === 'treasury_deposit' && a.description?.includes('Service charge')).length === 0 && (
