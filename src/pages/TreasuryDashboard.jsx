@@ -51,19 +51,31 @@ export default function TreasuryDashboard() {
     queryFn: () => base44.entities.AIProject.list()
   });
 
+  // Smart display formatter - Nathan Era Display Strategy
+  const formatAmount = (drops) => {
+    const xrp = drops / 1000000;
+    // If less than 0.1 XRP, show in drops for precision
+    if (xrp < 0.1) {
+      return { value: drops.toLocaleString(), unit: 'drops', xrp };
+    }
+    return { value: xrp.toFixed(2), unit: 'XRP', drops };
+  };
+
   // Calculate key metrics
   const currentBalance = treasury?.balance_xrp || 69;
   const balanceInDrops = currentBalance * 1000000;
 
-  // Calculate committed rewards from active tasks
-  const committedRewards = tasks
+  // Calculate committed rewards from active tasks (in drops)
+  const committedRewardsDrops = tasks
     .filter(t => ['todo', 'in_progress', 'blocked'].includes(t.status))
-    .reduce((sum, t) => sum + (t.reward_rlusd || 0), 0);
+    .reduce((sum, t) => sum + (t.reward_drops || 0), 0);
+  const committedRewards = committedRewardsDrops / 1000000;
 
-  // Calculate completed rewards (already paid)
-  const paidRewards = tasks
+  // Calculate completed rewards (already paid) in drops
+  const paidRewardsDrops = tasks
     .filter(t => t.status === 'completed')
-    .reduce((sum, t) => sum + (t.reward_rlusd || 0), 0);
+    .reduce((sum, t) => sum + (t.reward_drops || 0), 0);
+  const paidRewards = paidRewardsDrops / 1000000;
 
   // Calculate available balance
   const availableBalance = currentBalance - committedRewards;
@@ -110,12 +122,12 @@ export default function TreasuryDashboard() {
     );
   }, [filteredActivities]);
 
-  // Project-wise commitment breakdown
+  // Project-wise commitment breakdown (in drops converted to XRP for display)
   const projectCommitments = React.useMemo(() => {
     const breakdown = {};
     
     tasks.forEach(task => {
-      if (['todo', 'in_progress', 'blocked'].includes(task.status) && task.reward_rlusd) {
+      if (['todo', 'in_progress', 'blocked'].includes(task.status) && task.reward_drops) {
         const projectId = task.project_id;
         if (!breakdown[projectId]) {
           const project = projects.find(p => p.id === projectId);
@@ -126,7 +138,7 @@ export default function TreasuryDashboard() {
             taskCount: 0
           };
         }
-        breakdown[projectId].committed += task.reward_rlusd;
+        breakdown[projectId].committed += task.reward_drops / 1000000;
         breakdown[projectId].taskCount += 1;
       }
     });
@@ -138,9 +150,13 @@ export default function TreasuryDashboard() {
   const monthlyBurnRate = outflows / (parseInt(timeRange) / 30);
   const runwayMonths = availableBalance > 0 ? availableBalance / monthlyBurnRate : 0;
 
-  // Micro-drop efficiency stats
-  const microDropTasks = tasks.filter(t => t.reward_rlusd && t.reward_rlusd < 1);
+  // Micro-drop efficiency stats (tasks under 100,000 drops = 0.1 XRP)
+  const microDropTasks = tasks.filter(t => t.reward_drops && t.reward_drops < 100000);
   const microDropPercent = tasks.length > 0 ? (microDropTasks.length / tasks.length) * 100 : 0;
+  const averageTaskReward = tasks.length > 0 
+    ? tasks.reduce((sum, t) => sum + (t.reward_drops || 0), 0) / tasks.length
+    : 0;
+  const standardTaskCapacity = Math.floor(balanceInDrops / 50000); // 50k drops per standard task
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
@@ -195,14 +211,17 @@ export default function TreasuryDashboard() {
                 <div>
                   <div className="text-white/70 text-sm">Committed</div>
                   <div className="text-xl font-semibold">{committedRewards.toFixed(2)} XRP</div>
+                  <div className="text-xs text-white/50">{committedRewardsDrops.toLocaleString()} drops</div>
                 </div>
                 <div>
                   <div className="text-white/70 text-sm">Available</div>
                   <div className="text-xl font-semibold">{availableBalance.toFixed(2)} XRP</div>
+                  <div className="text-xs text-white/50">{(availableBalance * 1000000).toLocaleString()} drops</div>
                 </div>
                 <div>
-                  <div className="text-white/70 text-sm">Availability</div>
-                  <div className="text-xl font-semibold">{availabilityPercent.toFixed(0)}%</div>
+                  <div className="text-white/70 text-sm">Task Capacity</div>
+                  <div className="text-xl font-semibold">{standardTaskCapacity.toLocaleString()}</div>
+                  <div className="text-xs text-white/50">@ 50k drops each</div>
                 </div>
               </div>
 
@@ -319,24 +338,25 @@ export default function TreasuryDashboard() {
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Tasks under 1 XRP:</span>
+                      <span className="text-slate-600">Tasks under 0.1 XRP:</span>
                       <span className="font-semibold">{microDropTasks.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-600">Average reward:</span>
                       <span className="font-semibold">
-                        {tasks.length > 0 
-                          ? (tasks.reduce((sum, t) => sum + (t.reward_rlusd || 0), 0) / tasks.length).toFixed(3)
-                          : '0.000'
-                        } XRP
+                        {averageTaskReward.toLocaleString()} drops
                       </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Standard tasks capacity:</span>
+                      <span className="font-semibold">{standardTaskCapacity.toLocaleString()}</span>
                     </div>
                   </div>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
                       <div className="text-sm text-green-800">
-                        Micro-drop precision enables {Math.floor(availableBalance / 0.05)} additional small tasks
+                        <strong>Drop Buffer Active:</strong> {balanceInDrops.toLocaleString()} drops = {standardTaskCapacity.toLocaleString()} standard 50k-drop tasks
                       </div>
                     </div>
                   </div>
@@ -394,7 +414,9 @@ export default function TreasuryDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {projectCommitments.length > 0 ? (
-                    projectCommitments.map((project) => (
+                    projectCommitments.map((project) => {
+                      const formattedAmount = formatAmount(project.committed * 1000000);
+                      return (
                       <div key={project.projectId} className="border rounded-lg p-4">
                         <div className="flex justify-between items-start mb-2">
                           <div>
@@ -403,11 +425,13 @@ export default function TreasuryDashboard() {
                           </div>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-indigo-600">
-                              {project.committed.toFixed(2)} XRP
+                              {formattedAmount.value} {formattedAmount.unit}
                             </div>
-                            <div className="text-xs text-slate-500">
-                              {(project.committed * 1000000).toLocaleString()} drops
-                            </div>
+                            {formattedAmount.unit === 'XRP' && (
+                              <div className="text-xs text-slate-500">
+                                {formattedAmount.drops.toLocaleString()} drops
+                              </div>
+                            )}
                           </div>
                         </div>
                         <Progress 
@@ -418,7 +442,7 @@ export default function TreasuryDashboard() {
                           {((project.committed / committedRewards) * 100).toFixed(1)}% of total commitments
                         </div>
                       </div>
-                    ))
+                    )})
                   ) : (
                     <div className="text-center py-8 text-slate-500">
                       No active commitments
@@ -477,15 +501,15 @@ export default function TreasuryDashboard() {
                   <ul className="space-y-2 text-sm text-blue-800">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      <span>Micro-drop rewards enable up to 10x more task assignments per XRP</span>
+                      <span><strong>Drop Buffer:</strong> 69 XRP = 69 million drops of micro-precision currency</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      <span>Current available balance can support {Math.floor(availableBalance / 0.05)} micro-tasks at 0.05 XRP each</span>
+                      <span><strong>Volatility Shield:</strong> Task prices remain stable in drops regardless of XRP market swings</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      <span>Precision compensation ensures fairness while extending runway</span>
+                      <span><strong>Capacity:</strong> Can support {standardTaskCapacity.toLocaleString()} standard 50k-drop tasks with available balance</span>
                     </li>
                   </ul>
                 </div>

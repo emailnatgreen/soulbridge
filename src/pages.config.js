@@ -120,6 +120,7 @@ import SkillValidation from './pages/SkillValidation';
 import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 import SocialNetwork from './pages/SocialNetwork';
 import Support from './pages/Support';
+import SystemDashboard from './pages/SystemDashboard';
 import TaskDelegation from './pages/TaskDelegation';
 import Terms from './pages/Terms';
 import TrainingSimulation from './pages/TrainingSimulation';
@@ -128,7 +129,6 @@ import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import SystemDashboard from './pages/SystemDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -206,6 +206,7 @@ export const PAGES = {
     "SocialCapitalDashboard": SocialCapitalDashboard,
     "SocialNetwork": SocialNetwork,
     "Support": Support,
+    "SystemDashboard": SystemDashboard,
     "TaskDelegation": TaskDelegation,
     "Terms": Terms,
     "TrainingSimulation": TrainingSimulation,
@@ -214,7 +215,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "SystemDashboard": SystemDashboard,
 }
 
 export const pagesConfig = {
