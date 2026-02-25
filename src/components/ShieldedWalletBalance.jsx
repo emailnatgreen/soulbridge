@@ -62,18 +62,18 @@ export default function ShieldedWalletBalance({ autoRefresh = true, refreshInter
         ) : balance ? (
           <>
             <div>
-              <p className="text-xs text-white/50 mb-1">RLUSD Balance</p>
-              {parseFloat(balance.balance) === 0 ? (
-                <p className="text-xl font-medium text-purple-400 flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Ready for Deposit
-                </p>
-              ) : (
-                <p className="text-3xl font-light text-white">
-                  {parseFloat(balance.balance).toFixed(2)}
-                  <span className="text-lg text-white/60 ml-2">RLUSD</span>
-                </p>
-              )}
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-white/50">RLUSD Balance</p>
+                {parseFloat(balance.balance) > 0 && (
+                  <Badge variant="outline" className="border-green-500/30 text-green-400 text-xs">
+                    ✓ Verified Assets
+                  </Badge>
+                )}
+              </div>
+              <p className="text-3xl font-light text-white">
+                {parseFloat(balance.balance).toFixed(2)}
+                <span className="text-lg text-white/60 ml-2">RLUSD</span>
+              </p>
             </div>
 
             <div className="pt-3 border-t border-white/10">
