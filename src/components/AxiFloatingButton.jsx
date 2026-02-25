@@ -35,7 +35,7 @@ export default function AxiFloatingButton() {
         unsubscribeRef.current();
       }
     };
-  }, [isOpen]);
+  }, [isOpen, conversation, initConversation]);
 
   const initConversation = useCallback(async () => {
     try {
