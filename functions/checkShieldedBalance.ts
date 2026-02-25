@@ -1,7 +1,7 @@
 import { ethers } from 'npm:ethers@6.13.0';
 
 const RLUSD_CONTRACT = "0xCfd748B9De538c9f5b1805e8db9e1d4671f7F2ec";
-const ETH_RPC = "https://eth.llamarpc.com";
+const ETH_RPC = "https://ethereum.publicnode.com";
 
 const ERC20_ABI = [
     "function balanceOf(address owner) view returns (uint256)",
