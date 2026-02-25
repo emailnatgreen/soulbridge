@@ -130,6 +130,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import SkillGapAnalysis from './pages/SkillGapAnalysis';
+import AgentOnboarding from './pages/AgentOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -217,6 +218,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "SkillGapAnalysis": SkillGapAnalysis,
+    "AgentOnboarding": AgentOnboarding,
 }
 
 export const pagesConfig = {
