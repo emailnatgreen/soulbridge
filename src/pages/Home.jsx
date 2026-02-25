@@ -13,6 +13,7 @@ import PrivacyQuickToggle from '../components/PrivacyQuickToggle';
 import MobileNav from '../components/MobileNav';
 import MobileBottomNav from '../components/MobileBottomNav';
 import DidAuthStatus from '../components/DidAuthStatus';
+import ShieldedWalletBalance from '../components/ShieldedWalletBalance';
 
 export default function Home() {
   const { data: transactions = [], isLoading } = useQuery({
@@ -329,6 +330,11 @@ export default function Home() {
               </Card>
             </Link>
           </div>
+        </div>
+
+        {/* Shielded Wallet Balance */}
+        <div className="mb-8 sm:mb-12">
+          <ShieldedWalletBalance autoRefresh={true} refreshInterval={30000} />
         </div>
 
         {/* Stats Cards */}
