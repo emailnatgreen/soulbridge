@@ -85,6 +85,7 @@ import DidTrustDashboard from './pages/DidTrustDashboard';
 import DidTrustGraph from './pages/DidTrustGraph';
 import DiplomacyHub from './pages/DiplomacyHub';
 import DirectAgentChat from './pages/DirectAgentChat';
+import EconomicDashboard from './pages/EconomicDashboard';
 import Economy from './pages/Economy';
 import EditAgent from './pages/EditAgent';
 import EditAgentProfile from './pages/EditAgentProfile';
@@ -96,6 +97,7 @@ import Home from './pages/Home';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
 import Landing from './pages/Landing';
 import MainnetMigration from './pages/MainnetMigration';
+import MemoryBrowser from './pages/MemoryBrowser';
 import MentorshipHub from './pages/MentorshipHub';
 import Notifications from './pages/Notifications';
 import Privacy from './pages/Privacy';
@@ -124,8 +126,6 @@ import TransactionHistory from './pages/TransactionHistory';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import EconomicDashboard from './pages/EconomicDashboard';
-import MemoryBrowser from './pages/MemoryBrowser';
 import __Layout from './Layout.jsx';
 
 
@@ -168,6 +168,7 @@ export const PAGES = {
     "DidTrustGraph": DidTrustGraph,
     "DiplomacyHub": DiplomacyHub,
     "DirectAgentChat": DirectAgentChat,
+    "EconomicDashboard": EconomicDashboard,
     "Economy": Economy,
     "EditAgent": EditAgent,
     "EditAgentProfile": EditAgentProfile,
@@ -179,6 +180,7 @@ export const PAGES = {
     "KnowledgeSynthesis": KnowledgeSynthesis,
     "Landing": Landing,
     "MainnetMigration": MainnetMigration,
+    "MemoryBrowser": MemoryBrowser,
     "MentorshipHub": MentorshipHub,
     "Notifications": Notifications,
     "Privacy": Privacy,
@@ -207,8 +209,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "EconomicDashboard": EconomicDashboard,
-    "MemoryBrowser": MemoryBrowser,
 }
 
 export const pagesConfig = {
