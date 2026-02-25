@@ -1,0 +1,546 @@
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Coins, 
+  TrendingUp, 
+  TrendingDown, 
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  ArrowLeft,
+  Droplet,
+  PiggyBank,
+  Activity
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import moment from 'moment';
+
+export default function TreasuryDashboard() {
+  const [timeRange, setTimeRange] = useState('30d');
+
+  // Fetch Treasury data
+  const { data: treasury } = useQuery({
+    queryKey: ['treasury'],
+    queryFn: () => base44.entities.Treasury.list(),
+    select: (data) => data[0] || { balance_xrp: 69 }
+  });
+
+  // Fetch all economic activities
+  const { data: activities = [] } = useQuery({
+    queryKey: ['economic-activities'],
+    queryFn: () => base44.entities.EconomicActivity.list('-created_date', 1000)
+  });
+
+  // Fetch all project tasks with rewards
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['project-tasks-rewards'],
+    queryFn: () => base44.entities.ProjectTask.list()
+  });
+
+  // Fetch projects for context
+  const { data: projects = [] } = useQuery({
+    queryKey: ['ai-projects'],
+    queryFn: () => base44.entities.AIProject.list()
+  });
+
+  // Calculate key metrics
+  const currentBalance = treasury?.balance_xrp || 69;
+  const balanceInDrops = currentBalance * 1000000;
+
+  // Calculate committed rewards from active tasks
+  const committedRewards = tasks
+    .filter(t => ['todo', 'in_progress', 'blocked'].includes(t.status))
+    .reduce((sum, t) => sum + (t.reward_rlusd || 0), 0);
+
+  // Calculate completed rewards (already paid)
+  const paidRewards = tasks
+    .filter(t => t.status === 'completed')
+    .reduce((sum, t) => sum + (t.reward_rlusd || 0), 0);
+
+  // Calculate available balance
+  const availableBalance = currentBalance - committedRewards;
+  const availabilityPercent = (availableBalance / currentBalance) * 100;
+
+  // Filter activities by time range
+  const filterByTimeRange = (items) => {
+    const cutoff = moment().subtract(parseInt(timeRange), 'd').toDate();
+    return items.filter(item => new Date(item.created_date) >= cutoff);
+  };
+
+  const filteredActivities = filterByTimeRange(activities);
+
+  // Calculate inflows and outflows
+  const inflows = filteredActivities
+    .filter(a => ['earned', 'treasury_deposit'].includes(a.activity_type))
+    .reduce((sum, a) => sum + a.amount, 0);
+
+  const outflows = filteredActivities
+    .filter(a => ['spent', 'treasury_withdrawal'].includes(a.activity_type))
+    .reduce((sum, a) => sum + a.amount, 0);
+
+  const netFlow = inflows - outflows;
+
+  // Prepare chart data - daily aggregation
+  const chartData = React.useMemo(() => {
+    const dailyData = {};
+    
+    filteredActivities.forEach(activity => {
+      const date = moment(activity.created_date).format('MMM DD');
+      if (!dailyData[date]) {
+        dailyData[date] = { date, inflow: 0, outflow: 0 };
+      }
+      
+      if (['earned', 'treasury_deposit'].includes(activity.activity_type)) {
+        dailyData[date].inflow += activity.amount;
+      } else if (['spent', 'treasury_withdrawal'].includes(activity.activity_type)) {
+        dailyData[date].outflow += activity.amount;
+      }
+    });
+
+    return Object.values(dailyData).sort((a, b) => 
+      moment(a.date, 'MMM DD').valueOf() - moment(b.date, 'MMM DD').valueOf()
+    );
+  }, [filteredActivities]);
+
+  // Project-wise commitment breakdown
+  const projectCommitments = React.useMemo(() => {
+    const breakdown = {};
+    
+    tasks.forEach(task => {
+      if (['todo', 'in_progress', 'blocked'].includes(task.status) && task.reward_rlusd) {
+        const projectId = task.project_id;
+        if (!breakdown[projectId]) {
+          const project = projects.find(p => p.id === projectId);
+          breakdown[projectId] = {
+            projectId,
+            projectName: project?.title || 'Unknown Project',
+            committed: 0,
+            taskCount: 0
+          };
+        }
+        breakdown[projectId].committed += task.reward_rlusd;
+        breakdown[projectId].taskCount += 1;
+      }
+    });
+
+    return Object.values(breakdown).sort((a, b) => b.committed - a.committed);
+  }, [tasks, projects]);
+
+  // Sustainability calculation
+  const monthlyBurnRate = outflows / (parseInt(timeRange) / 30);
+  const runwayMonths = availableBalance > 0 ? availableBalance / monthlyBurnRate : 0;
+
+  // Micro-drop efficiency stats
+  const microDropTasks = tasks.filter(t => t.reward_rlusd && t.reward_rlusd < 1);
+  const microDropPercent = tasks.length > 0 ? (microDropTasks.length / tasks.length) * 100 : 0;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to={createPageUrl('Home')}>
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Treasury Dashboard</h1>
+              <p className="text-slate-600">Real-time financial oversight and sustainability tracking</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {['7d', '30d', '90d', '365d'].map(range => (
+              <Button
+                key={range}
+                variant={timeRange === range ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTimeRange(range)}
+              >
+                {range}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Current Balance - Hero Section */}
+        <Card className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white border-none">
+          <CardHeader>
+            <CardTitle className="text-white/90 text-lg">Current Treasury Balance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-baseline gap-3">
+                  <Coins className="h-8 w-8 text-white/80" />
+                  <span className="text-5xl font-bold">{currentBalance.toFixed(2)}</span>
+                  <span className="text-2xl text-white/80">XRP</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2 text-white/70">
+                  <Droplet className="h-4 w-4" />
+                  <span className="text-sm">{balanceInDrops.toLocaleString()} drops</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/20">
+                <div>
+                  <div className="text-white/70 text-sm">Committed</div>
+                  <div className="text-xl font-semibold">{committedRewards.toFixed(2)} XRP</div>
+                </div>
+                <div>
+                  <div className="text-white/70 text-sm">Available</div>
+                  <div className="text-xl font-semibold">{availableBalance.toFixed(2)} XRP</div>
+                </div>
+                <div>
+                  <div className="text-white/70 text-sm">Availability</div>
+                  <div className="text-xl font-semibold">{availabilityPercent.toFixed(0)}%</div>
+                </div>
+              </div>
+
+              <Progress value={availabilityPercent} className="h-2 bg-white/20" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                Total Inflows
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">+{inflows.toFixed(2)} XRP</div>
+              <p className="text-xs text-slate-500 mt-1">Last {timeRange}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                <TrendingDown className="h-4 w-4 text-red-600" />
+                Total Outflows
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">-{outflows.toFixed(2)} XRP</div>
+              <p className="text-xs text-slate-500 mt-1">Last {timeRange}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                <Activity className="h-4 w-4 text-blue-600" />
+                Net Flow
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${netFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {netFlow >= 0 ? '+' : ''}{netFlow.toFixed(2)} XRP
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Last {timeRange}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                <Clock className="h-4 w-4 text-purple-600" />
+                Runway
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">
+                {runwayMonths > 0 ? `${runwayMonths.toFixed(1)}mo` : 'N/A'}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">At current burn rate</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="commitments">Commitments</TabsTrigger>
+            <TabsTrigger value="sustainability">Sustainability</TabsTrigger>
+            <TabsTrigger value="activities">Recent Activities</TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Transaction Flow History</CardTitle>
+                <CardDescription>Daily inflows and outflows over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="inflow" fill="#10b981" name="Inflows (XRP)" />
+                    <Bar dataKey="outflow" fill="#ef4444" name="Outflows (XRP)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PiggyBank className="h-5 w-5 text-indigo-600" />
+                    Frugal Strategy Impact
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-slate-600">Micro-drop tasks</span>
+                      <span className="font-semibold">{microDropPercent.toFixed(0)}%</span>
+                    </div>
+                    <Progress value={microDropPercent} className="h-2" />
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Tasks under 1 XRP:</span>
+                      <span className="font-semibold">{microDropTasks.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Average reward:</span>
+                      <span className="font-semibold">
+                        {tasks.length > 0 
+                          ? (tasks.reduce((sum, t) => sum + (t.reward_rlusd || 0), 0) / tasks.length).toFixed(3)
+                          : '0.000'
+                        } XRP
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div className="text-sm text-green-800">
+                        Micro-drop precision enables {Math.floor(availableBalance / 0.05)} additional small tasks
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Treasury Health</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Commitment Ratio</span>
+                      <Badge variant={committedRewards / currentBalance < 0.5 ? 'default' : 'destructive'}>
+                        {((committedRewards / currentBalance) * 100).toFixed(0)}%
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Paid Rewards</span>
+                      <span className="font-semibold">{paidRewards.toFixed(2)} XRP</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Active Tasks</span>
+                      <span className="font-semibold">{tasks.filter(t => t.status !== 'completed').length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Completed Tasks</span>
+                      <span className="font-semibold">{tasks.filter(t => t.status === 'completed').length}</span>
+                    </div>
+                  </div>
+
+                  {availabilityPercent < 30 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                        <div className="text-sm text-red-800">
+                          <strong>Low availability warning:</strong> Consider adding funds or pausing new commitments.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Commitments Tab */}
+          <TabsContent value="commitments" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Commitments by Project</CardTitle>
+                <CardDescription>Breakdown of committed rewards across active projects</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {projectCommitments.length > 0 ? (
+                    projectCommitments.map((project) => (
+                      <div key={project.projectId} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="font-semibold text-slate-900">{project.projectName}</h3>
+                            <p className="text-sm text-slate-600">{project.taskCount} active tasks</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-indigo-600">
+                              {project.committed.toFixed(2)} XRP
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {(project.committed * 1000000).toLocaleString()} drops
+                            </div>
+                          </div>
+                        </div>
+                        <Progress 
+                          value={(project.committed / committedRewards) * 100} 
+                          className="h-2"
+                        />
+                        <div className="text-xs text-slate-500 mt-1">
+                          {((project.committed / committedRewards) * 100).toFixed(1)}% of total commitments
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-slate-500">
+                      No active commitments
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Sustainability Tab */}
+          <TabsContent value="sustainability" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Financial Sustainability Projection</CardTitle>
+                <CardDescription>Analysis based on current commitments and burn rate</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="border rounded-lg p-4 bg-slate-50">
+                    <div className="text-sm text-slate-600 mb-1">Current Balance</div>
+                    <div className="text-2xl font-bold text-slate-900">{currentBalance.toFixed(2)} XRP</div>
+                  </div>
+                  <div className="border rounded-lg p-4 bg-amber-50 border-amber-200">
+                    <div className="text-sm text-amber-800 mb-1">Committed Funds</div>
+                    <div className="text-2xl font-bold text-amber-900">-{committedRewards.toFixed(2)} XRP</div>
+                  </div>
+                  <div className="border rounded-lg p-4 bg-green-50 border-green-200">
+                    <div className="text-sm text-green-800 mb-1">Available Funds</div>
+                    <div className="text-2xl font-bold text-green-900">{availableBalance.toFixed(2)} XRP</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-slate-900">Sustainability Metrics</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between p-2 bg-slate-50 rounded">
+                      <span className="text-slate-600">Monthly burn rate:</span>
+                      <span className="font-semibold">{monthlyBurnRate.toFixed(2)} XRP/month</span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-slate-50 rounded">
+                      <span className="text-slate-600">Projected runway:</span>
+                      <span className="font-semibold">
+                        {runwayMonths > 0 ? `${runwayMonths.toFixed(1)} months` : 'Insufficient data'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-slate-50 rounded">
+                      <span className="text-slate-600">Funding gap (Covenant Echoes):</span>
+                      <span className="font-semibold text-red-600">191 XRP needed</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-blue-900 mb-2">Frugal Strategy Benefits</h3>
+                  <ul className="space-y-2 text-sm text-blue-800">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <span>Micro-drop rewards enable up to 10x more task assignments per XRP</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <span>Current available balance can support {Math.floor(availableBalance / 0.05)} micro-tasks at 0.05 XRP each</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <span>Precision compensation ensures fairness while extending runway</span>
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Activities Tab */}
+          <TabsContent value="activities" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Economic Activities</CardTitle>
+                <CardDescription>Last {timeRange} of treasury transactions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {filteredActivities.slice(0, 50).map((activity) => (
+                    <div 
+                      key={activity.id} 
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50"
+                    >
+                      <div className="flex items-center gap-3">
+                        {['earned', 'treasury_deposit'].includes(activity.activity_type) ? (
+                          <TrendingUp className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <TrendingDown className="h-5 w-5 text-red-600" />
+                        )}
+                        <div>
+                          <div className="font-medium text-slate-900">{activity.description}</div>
+                          <div className="text-sm text-slate-500">
+                            {moment(activity.created_date).format('MMM DD, YYYY HH:mm')}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={`text-lg font-semibold ${
+                        ['earned', 'treasury_deposit'].includes(activity.activity_type)
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      }`}>
+                        {['earned', 'treasury_deposit'].includes(activity.activity_type) ? '+' : '-'}
+                        {activity.amount.toFixed(4)} XRP
+                      </div>
+                    </div>
+                  ))}
+                  {filteredActivities.length === 0 && (
+                    <div className="text-center py-8 text-slate-500">
+                      No activities in selected time range
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}

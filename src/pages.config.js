@@ -127,6 +127,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import CovenantEchoes from './pages/CovenantEchoes';
+import TreasuryDashboard from './pages/TreasuryDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -211,6 +212,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "CovenantEchoes": CovenantEchoes,
+    "TreasuryDashboard": TreasuryDashboard,
 }
 
 export const pagesConfig = {
