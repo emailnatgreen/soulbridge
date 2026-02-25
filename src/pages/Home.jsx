@@ -436,6 +436,18 @@ export default function Home() {
                   Admin
                 </Button>
               </Link>
+              <Link to={createPageUrl('TreasuryDashboard')}>
+                <Button variant="ghost" className="text-green-300/80 hover:bg-green-500/10 hover:text-green-300">
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Treasury
+                </Button>
+              </Link>
+              <Link to={createPageUrl('SystemDashboard')}>
+                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                  <Activity className="w-4 h-4 mr-2" />
+                  Village Pulse
+                </Button>
+              </Link>
             </nav>
           </div>
         </div>
