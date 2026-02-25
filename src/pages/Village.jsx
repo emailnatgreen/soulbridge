@@ -38,17 +38,20 @@ export default function VillagePage() {
     const { data: locations = [], isLoading: locationsLoading } = useQuery({
         queryKey: ['locations'],
         queryFn: () => base44.entities.VillageLocation.list(),
+        refetchInterval: 10000
     });
 
     const { data: projects = [], isLoading: projectsLoading } = useQuery({
         queryKey: ['projects'],
         queryFn: () => base44.entities.VillageProject.list('-created_date'),
+        refetchInterval: 10000
     });
 
     const { data: agentResources = [] } = useQuery({
         queryKey: ['resources', user?.id],
         queryFn: () => user ? base44.entities.Resource.filter({ owner_agent_id: user.id }) : [],
         enabled: !!user,
+        refetchInterval: 15000
     });
 
     const createProjectMutation = useMutation({

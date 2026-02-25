@@ -40,12 +40,14 @@ export default function AIProjectManager() {
 
   const { data: projects = [] } = useQuery({
     queryKey: ['ai-projects'],
-    queryFn: () => base44.entities.AIProject.list('-created_date')
+    queryFn: () => base44.entities.AIProject.list('-created_date'),
+    refetchInterval: 10000
   });
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list()
+    queryFn: () => base44.entities.Agent.list(),
+    refetchInterval: 15000
   });
 
   const activeProjects = projects.filter(p => p.status === 'active' || p.status === 'recruiting');

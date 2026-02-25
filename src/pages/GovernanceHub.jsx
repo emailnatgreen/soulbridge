@@ -38,12 +38,14 @@ export default function GovernanceHub() {
 
   const { data: proposals = [] } = useQuery({
     queryKey: ['governance-proposals'],
-    queryFn: () => base44.entities.GovernanceProposal.list('-created_date')
+    queryFn: () => base44.entities.GovernanceProposal.list('-created_date'),
+    refetchInterval: 10000
   });
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list()
+    queryFn: () => base44.entities.Agent.list(),
+    refetchInterval: 15000
   });
 
   const currentAgent = agents.find(a => a.created_by === currentUser?.email);
