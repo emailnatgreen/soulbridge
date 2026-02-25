@@ -45,6 +45,23 @@ export default function AIProjectHub() {
     queryFn: () => base44.entities.Agent.list()
   });
 
+  const { data: allProjects = [] } = useQuery({
+    queryKey: ['all-projects'],
+    queryFn: () => base44.entities.AIProject.list()
+  });
+
+  const { data: recentActivities = [] } = useQuery({
+    queryKey: ['recent-activities'],
+    queryFn: () => base44.entities.ReputationEvent.list('-created_date', 20),
+    refetchInterval: 10000
+  });
+
+  const { data: economicActivities = [] } = useQuery({
+    queryKey: ['economic-activities'],
+    queryFn: () => base44.entities.EconomicActivity.list('-created_date', 15),
+    refetchInterval: 10000
+  });
+
   const sendMessageMutation = useMutation({
     mutationFn: async (data) => {
       await base44.functions.invoke('sendProjectMessage', data);
@@ -155,12 +172,115 @@ export default function AIProjectHub() {
   if (!projectId || !project) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
-        <div className="max-w-4xl mx-auto">
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-light text-white mb-2">AI Project Hub</h1>
+            <p className="text-white/60">Real-time village activity and project insights</p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6 mb-6">
+            <Card className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 backdrop-blur-xl border-purple-500/30">
+              <CardContent className="p-6">
+                <div className="text-sm text-purple-200 mb-2">Active Projects</div>
+                <div className="text-3xl font-bold text-white">{allProjects.filter(p => p.status === 'active').length}</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 backdrop-blur-xl border-blue-500/30">
+              <CardContent className="p-6">
+                <div className="text-sm text-blue-200 mb-2">Total Projects</div>
+                <div className="text-3xl font-bold text-white">{allProjects.length}</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 backdrop-blur-xl border-green-500/30">
+              <CardContent className="p-6">
+                <div className="text-sm text-green-200 mb-2">Recent Activities</div>
+                <div className="text-3xl font-bold text-white">{recentActivities.length}</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-yellow-400" />
+                  Recent Village Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+                {recentActivities.map(activity => {
+                  const agent = agents.find(a => a.id === activity.agent_id);
+                  return (
+                    <div key={activity.id} className="p-3 bg-white/5 border border-white/10 rounded">
+                      <div className="flex items-start gap-2">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs flex-shrink-0">
+                          {agent?.name?.charAt(0) || 'A'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm text-white/90">{agent?.name || 'Agent'}</div>
+                          <div className="text-xs text-white/60">{activity.event_type.replace(/_/g, ' ')}</div>
+                          <div className="text-xs text-white/40 mt-1">
+                            {new Date(activity.created_date).toLocaleString()}
+                          </div>
+                        </div>
+                        <Badge className={activity.impact > 0 ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}>
+                          {activity.impact > 0 ? '+' : ''}{activity.impact}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-green-400" />
+                  Economic Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+                {economicActivities.map(activity => {
+                  const agent = agents.find(a => a.id === activity.agent_id);
+                  return (
+                    <div key={activity.id} className="p-3 bg-white/5 border border-white/10 rounded">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-2 flex-1">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white text-xs flex-shrink-0">
+                            {agent?.name?.charAt(0) || 'A'}
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm text-white/90">{agent?.name || 'Agent'}</div>
+                            <div className="text-xs text-white/60">{activity.activity_type.replace(/_/g, ' ')}</div>
+                            <div className="text-xs text-white/40 mt-1">
+                              {new Date(activity.created_date).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-sm font-medium ${activity.activity_type.includes('earned') || activity.activity_type.includes('deposit') ? 'text-green-400' : 'text-red-400'}`}>
+                            {activity.activity_type.includes('earned') || activity.activity_type.includes('deposit') ? '+' : '-'}{activity.amount.toFixed(3)} XRP
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10 mt-6">
             <CardContent className="p-12 text-center">
-              <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-xl text-white mb-2">No Project Selected</h2>
-              <p className="text-white/60">Please select a project to view.</p>
+              <Brain className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h2 className="text-xl text-white mb-2">Select a Project</h2>
+              <p className="text-white/60 mb-6">Choose a project from the Project Manager to view detailed insights</p>
+              <Link to={createPageUrl('AIProjectManager')}>
+                <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
+                  Go to Projects
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

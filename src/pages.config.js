@@ -64,6 +64,7 @@ import Agents from './pages/Agents';
 import Axi from './pages/Axi';
 import CollaborationHub from './pages/CollaborationHub';
 import CollaborationSuite from './pages/CollaborationSuite';
+import CovenantEchoes from './pages/CovenantEchoes';
 import CreateDID from './pages/CreateDID';
 import CreateManualWallet from './pages/CreateManualWallet';
 import DIDAnalytics from './pages/DIDAnalytics';
@@ -123,11 +124,10 @@ import TaskDelegation from './pages/TaskDelegation';
 import Terms from './pages/Terms';
 import TrainingSimulation from './pages/TrainingSimulation';
 import TransactionHistory from './pages/TransactionHistory';
+import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import CovenantEchoes from './pages/CovenantEchoes';
-import TreasuryDashboard from './pages/TreasuryDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -149,6 +149,7 @@ export const PAGES = {
     "Axi": Axi,
     "CollaborationHub": CollaborationHub,
     "CollaborationSuite": CollaborationSuite,
+    "CovenantEchoes": CovenantEchoes,
     "CreateDID": CreateDID,
     "CreateManualWallet": CreateManualWallet,
     "DIDAnalytics": DIDAnalytics,
@@ -208,11 +209,10 @@ export const PAGES = {
     "Terms": Terms,
     "TrainingSimulation": TrainingSimulation,
     "TransactionHistory": TransactionHistory,
+    "TreasuryDashboard": TreasuryDashboard,
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "CovenantEchoes": CovenantEchoes,
-    "TreasuryDashboard": TreasuryDashboard,
 }
 
 export const pagesConfig = {
