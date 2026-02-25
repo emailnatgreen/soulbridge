@@ -54,6 +54,7 @@ import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
 import AgentMarketplace from './pages/AgentMarketplace';
 import AgentMessaging from './pages/AgentMessaging';
+import AgentOnboarding from './pages/AgentOnboarding';
 import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
 import AgentProfile from './pages/AgentProfile';
 import AgentReputation from './pages/AgentReputation';
@@ -116,6 +117,7 @@ import SharedDidView from './pages/SharedDidView';
 import SimulationLab from './pages/SimulationLab';
 import SkillDevelopment from './pages/SkillDevelopment';
 import SkillEndorsements from './pages/SkillEndorsements';
+import SkillGapAnalysis from './pages/SkillGapAnalysis';
 import SkillValidation from './pages/SkillValidation';
 import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 import SocialNetwork from './pages/SocialNetwork';
@@ -129,8 +131,6 @@ import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import SkillGapAnalysis from './pages/SkillGapAnalysis';
-import AgentOnboarding from './pages/AgentOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -142,6 +142,7 @@ export const PAGES = {
     "AgentDetails": AgentDetails,
     "AgentMarketplace": AgentMarketplace,
     "AgentMessaging": AgentMessaging,
+    "AgentOnboarding": AgentOnboarding,
     "AgentPerformanceAnalytics": AgentPerformanceAnalytics,
     "AgentProfile": AgentProfile,
     "AgentReputation": AgentReputation,
@@ -204,6 +205,7 @@ export const PAGES = {
     "SimulationLab": SimulationLab,
     "SkillDevelopment": SkillDevelopment,
     "SkillEndorsements": SkillEndorsements,
+    "SkillGapAnalysis": SkillGapAnalysis,
     "SkillValidation": SkillValidation,
     "SocialCapitalDashboard": SocialCapitalDashboard,
     "SocialNetwork": SocialNetwork,
@@ -217,8 +219,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "SkillGapAnalysis": SkillGapAnalysis,
-    "AgentOnboarding": AgentOnboarding,
 }
 
 export const pagesConfig = {
