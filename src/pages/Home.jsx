@@ -334,6 +334,12 @@ export default function Home() {
                   Project Hub
                 </Button>
               </Link>
+              <Link to={createPageUrl('CovenantEchoes')}>
+                <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Covenant Echoes
+                </Button>
+              </Link>
               <Link to={createPageUrl('ProjectAnalytics')}>
                 <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
                   <BarChart3 className="w-4 h-4 mr-2" />
@@ -466,6 +472,16 @@ export default function Home() {
                   <Lock className="w-8 h-8 text-green-400 mb-3" />
                   <h3 className="text-white font-semibold mb-1">Protected Resources</h3>
                   <p className="text-white/60 text-sm">DID-authenticated access</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('CovenantEchoes')}>
+              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Sparkles className="w-8 h-8 text-purple-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Covenant Echoes</h3>
+                  <p className="text-white/60 text-sm">Document our Living Laws</p>
                 </CardContent>
               </Card>
             </Link>
