@@ -379,6 +379,16 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to={createPageUrl('WellbeingMonitor')}>
+              <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-pink-500/20 hover:border-pink-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Heart className="w-8 h-8 text-pink-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Well-being Monitor</h3>
+                  <p className="text-white/60 text-sm">Nurturing every soul</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
