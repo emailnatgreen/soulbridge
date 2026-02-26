@@ -133,6 +133,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import AgentOrchestration from './pages/AgentOrchestration';
+import ResourceManagement from './pages/ResourceManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -223,6 +224,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "AgentOrchestration": AgentOrchestration,
+    "ResourceManagement": ResourceManagement,
 }
 
 export const pagesConfig = {

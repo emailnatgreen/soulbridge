@@ -349,6 +349,16 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to={createPageUrl('ResourceManagement')}>
+              <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20 hover:border-emerald-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <BarChart3 className="w-8 h-8 text-emerald-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Resource Management</h3>
+                  <p className="text-white/60 text-sm">Optimize & track resources</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
