@@ -339,6 +339,16 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to={createPageUrl('AgentOrchestration')}>
+              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Network className="w-8 h-8 text-indigo-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Agent Orchestration</h3>
+                  <p className="text-white/60 text-sm">Coordinate agent workforce</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
