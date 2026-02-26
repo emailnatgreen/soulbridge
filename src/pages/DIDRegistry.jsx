@@ -55,6 +55,8 @@ export default function DIDRegistry() {
   });
 
   const activeWallets = wallets.filter(w => !w.notes?.includes('REVOKED'));
+  console.log('DID Registry - All wallets:', wallets);
+  console.log('DID Registry - Active wallets:', activeWallets);
 
   const filteredWallets = activeWallets.filter(wallet => {
     const agent = agents.find(a => a.wallet_id === wallet.id);
