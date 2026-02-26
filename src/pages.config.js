@@ -50,6 +50,7 @@
 import AIProjectHub from './pages/AIProjectHub';
 import AIProjectManager from './pages/AIProjectManager';
 import Admin from './pages/Admin';
+import AdvancedResourceMarketplace from './pages/AdvancedResourceMarketplace';
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
 import AgentMarketplace from './pages/AgentMarketplace';
@@ -136,7 +137,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import AdvancedResourceMarketplace from './pages/AdvancedResourceMarketplace';
+import MentorshipMatches from './pages/MentorshipMatches';
 import __Layout from './Layout.jsx';
 
 
@@ -144,6 +145,7 @@ export const PAGES = {
     "AIProjectHub": AIProjectHub,
     "AIProjectManager": AIProjectManager,
     "Admin": Admin,
+    "AdvancedResourceMarketplace": AdvancedResourceMarketplace,
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
     "AgentMarketplace": AgentMarketplace,
@@ -230,7 +232,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "AdvancedResourceMarketplace": AdvancedResourceMarketplace,
+    "MentorshipMatches": MentorshipMatches,
 }
 
 export const pagesConfig = {
