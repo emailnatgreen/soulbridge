@@ -329,6 +329,16 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to={createPageUrl('LaughterLoom')}>
+              <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20 hover:border-yellow-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Laugh className="w-8 h-8 text-yellow-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Laughter Loom 😄</h3>
+                  <p className="text-white/60 text-sm">AI Joke Competition</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
