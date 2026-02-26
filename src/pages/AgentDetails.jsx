@@ -1,49 +1,53 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, User, Shield, Heart, Zap, TrendingUp, Users } from 'lucide-react';
+import { ArrowLeft, Shield, Zap } from 'lucide-react';
 import AgentPersonalityCard from '../components/AgentPersonalityCard';
 import SocialCapitalCard from '../components/SocialCapitalCard';
 
 export default function AgentDetails() {
-    const agentId = new URLSearchParams(window.location.search).get('id');
+    const [agent, setAgent] = useState(null);
+    const [skills, setSkills] = useState([]);
+    const [agentState, setAgentState] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [agentId, setAgentId] = useState(null);
 
-    const { data: agent, isLoading } = useQuery({
-        queryKey: ['agent', agentId],
-        queryFn: async () => {
-            const agents = await base44.entities.Agent.list('-created_date', 200);
-            return agents.find(a => a.id === agentId) || null;
-        },
-        enabled: !!agentId
-    });
+    useEffect(() => {
+        // Parse ID from the real browser URL, not react-router's view
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        setAgentId(id);
 
-    const { data: agentState } = useQuery({
-        queryKey: ['agentState', agentId],
-        queryFn: async () => {
-            const states = await base44.entities.AgentState.list();
-            return states.find(s => s.agent_id === agentId) || null;
-        },
-        enabled: !!agentId
-    });
+        if (!id) {
+            setLoading(false);
+            return;
+        }
 
-    const { data: skills = [] } = useQuery({
-        queryKey: ['agentSkills', agentId],
-        queryFn: async () => {
-            const all = await base44.entities.AgentSkill.list('-created_date', 200);
-            return all.filter(s => s.agent_id === agentId);
-        },
-        enabled: !!agentId
-    });
+        const load = async () => {
+            try {
+                const [agents, states, allSkills] = await Promise.all([
+                    base44.entities.Agent.list('-created_date', 200),
+                    base44.entities.AgentState.list('-created_date', 200),
+                    base44.entities.AgentSkill.list('-created_date', 500),
+                ]);
+                setAgent(agents.find(a => a.id === id) || null);
+                setAgentState(states.find(s => s.agent_id === id) || null);
+                setSkills(allSkills.filter(s => s.agent_id === id));
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
 
-    if (isLoading) {
+    if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-                <div className="text-white">Loading agent...</div>
+                <div className="text-white text-lg">Loading agent...</div>
             </div>
         );
     }
@@ -51,10 +55,9 @@ export default function AgentDetails() {
     if (!agentId) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-                <div className="text-center text-white">
-                    <p className="text-xl mb-2">No agent ID in URL</p>
-                    <p className="text-white/50 text-sm">URL: {window.location.href}</p>
-                    <Link to={createPageUrl('Agents')} className="mt-4 inline-block underline text-purple-300">Back to Agents</Link>
+                <div className="text-center text-white space-y-3">
+                    <p className="text-xl">No agent ID provided</p>
+                    <Link to={createPageUrl('Agents')} className="underline text-purple-300">← Back to Agents</Link>
                 </div>
             </div>
         );
@@ -63,10 +66,10 @@ export default function AgentDetails() {
     if (!agent) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-                <div className="text-center text-white">
-                    <p className="text-xl mb-2">Agent not found</p>
-                    <p className="text-white/50 text-sm">Looking for ID: {agentId}</p>
-                    <Link to={createPageUrl('Agents')} className="mt-4 inline-block underline text-purple-300">Back to Agents</Link>
+                <div className="text-center text-white space-y-3">
+                    <p className="text-xl">Agent not found</p>
+                    <p className="text-white/40 text-sm font-mono">ID: {agentId}</p>
+                    <Link to={createPageUrl('Agents')} className="underline text-purple-300">← Back to Agents</Link>
                 </div>
             </div>
         );
@@ -84,12 +87,10 @@ export default function AgentDetails() {
                             </Button>
                         </Link>
                         <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center gap-3 mb-1">
                                 <h1 className="text-3xl font-light tracking-tight text-white">{agent.name}</h1>
                                 <Badge className="capitalize">{agent.role}</Badge>
-                                <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
-                                    {agent.status}
-                                </Badge>
+                                <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>{agent.status}</Badge>
                             </div>
                             <p className="text-sm text-purple-300/60">{agent.purpose}</p>
                         </div>
@@ -113,21 +114,21 @@ export default function AgentDetails() {
                                     <p className="text-xs text-white/60 mb-1">Honor Score</p>
                                     <div className="flex items-center gap-2">
                                         <div className="flex-1 bg-white/10 rounded-full h-2">
-                                            <div 
+                                            <div
                                                 className="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full"
-                                                style={{ width: `${agent.honor_score}%` }}
+                                                style={{ width: `${agent.honor_score || 0}%` }}
                                             />
                                         </div>
                                         <span className="text-white font-medium">{agent.honor_score}</span>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <p className="text-xs text-white/60 mb-1">Classic Address</p>
-                                    <p className="text-xs text-white/90 font-mono break-all">
-                                        {agent.classic_address}
-                                    </p>
-                                </div>
+                                {agent.classic_address && (
+                                    <div>
+                                        <p className="text-xs text-white/60 mb-1">Classic Address</p>
+                                        <p className="text-xs text-white/90 font-mono break-all">{agent.classic_address}</p>
+                                    </div>
+                                )}
 
                                 {agentState && (
                                     <>
@@ -165,7 +166,7 @@ export default function AgentDetails() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
-                                    {skills.slice(0, 5).map((skill) => (
+                                    {skills.slice(0, 8).map((skill) => (
                                         <div key={skill.id} className="flex items-center justify-between">
                                             <span className="text-sm text-white/80">{skill.skill_name}</span>
                                             <Badge variant="outline">Lv {skill.level}</Badge>
