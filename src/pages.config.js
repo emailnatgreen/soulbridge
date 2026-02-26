@@ -98,6 +98,7 @@ import GovernanceSimulation from './pages/GovernanceSimulation';
 import Home from './pages/Home';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
 import Landing from './pages/Landing';
+import LaughterLoom from './pages/LaughterLoom';
 import MainnetMigration from './pages/MainnetMigration';
 import MemoryBrowser from './pages/MemoryBrowser';
 import MentorshipHub from './pages/MentorshipHub';
@@ -131,7 +132,6 @@ import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import LaughterLoom from './pages/LaughterLoom';
 import __Layout from './Layout.jsx';
 
 
@@ -187,6 +187,7 @@ export const PAGES = {
     "Home": Home,
     "KnowledgeSynthesis": KnowledgeSynthesis,
     "Landing": Landing,
+    "LaughterLoom": LaughterLoom,
     "MainnetMigration": MainnetMigration,
     "MemoryBrowser": MemoryBrowser,
     "MentorshipHub": MentorshipHub,
@@ -220,7 +221,6 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "LaughterLoom": LaughterLoom,
 }
 
 export const pagesConfig = {
