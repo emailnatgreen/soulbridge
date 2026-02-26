@@ -286,76 +286,97 @@ export default function Home() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        {/* Ripple Compliance Banner */}
+        <div className="mb-6">
+          <Card className="bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 border-indigo-500/40 hover:border-indigo-400/60 transition-all">
+            <CardContent className="pt-5 pb-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-indigo-500/20 rounded-xl">
+                    <Shield className="w-7 h-7 text-indigo-300" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-white font-bold text-lg">Ripple Spring 2026 — Compliance Ready</h3>
+                      <span className="bg-green-500/20 text-green-300 text-xs font-semibold px-2 py-0.5 rounded-full border border-green-500/30">● LIVE</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Identity (Nathan Personal)</span>
+                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-80 VIP Passport</span>
+                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Treasury Auth</span>
+                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 AI Agent Auth (Axi)</span>
+                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> 3 DIDs On-Chain</span>
+                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> soulbridge.app Permissioned Domain</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Link to={createPageUrl('DIDManager')}>
+                    <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                      <Shield className="w-4 h-4" /> DID Manager
+                    </button>
+                  </Link>
+                  <Link to={createPageUrl('DidCredentials')}>
+                    <button className="bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                      <Award className="w-4 h-4" /> Credentials
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Featured Quick Access */}
         <div className="mb-8 sm:mb-12">
           <h2 className="text-white text-xl font-semibold mb-4">Quick Access</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            <Link to={createPageUrl('DIDManager')}>
+              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-600/10 border-indigo-500/30 hover:border-indigo-400/60 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Shield className="w-8 h-8 text-indigo-400" />
+                    <span className="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full border border-green-500/30 font-semibold">3 DIDs</span>
+                  </div>
+                  <h3 className="text-white font-semibold mb-1">DID Manager</h3>
+                  <p className="text-white/60 text-sm">Manage your on-chain identities</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('DidCredentials')}>
+              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/30 hover:border-purple-400/60 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Award className="w-8 h-8 text-purple-400" />
+                    <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-semibold">XLS-70/80</span>
+                  </div>
+                  <h3 className="text-white font-semibold mb-1">DID Credentials</h3>
+                  <p className="text-white/60 text-sm">4 active Ripple-compliant credentials</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('DidTrustGraph')}>
+              <Card className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border-cyan-500/30 hover:border-cyan-400/60 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Network className="w-8 h-8 text-cyan-400" />
+                    <span className="text-xs bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/30 font-semibold">Trust Graph</span>
+                  </div>
+                  <h3 className="text-white font-semibold mb-1">DID Trust Network</h3>
+                  <p className="text-white/60 text-sm">Nathan ↔ Axi trust chain</p>
+                </CardContent>
+              </Card>
+            </Link>
+
             <Link to={createPageUrl('MentorshipHub')}>
               <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-pink-500/20 hover:border-pink-500/40 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
                   <Users className="w-8 h-8 text-pink-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">AI Mentorship Matching</h3>
+                  <h3 className="text-white font-semibold mb-1">AI Mentorship</h3>
                   <p className="text-white/60 text-sm">Never alone, always growing together</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link to={createPageUrl('EnhancedSkillTrees')}>
-              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-500/40 transition-all cursor-pointer h-full">
-                <CardContent className="pt-6">
-                  <GraduationCap className="w-8 h-8 text-indigo-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Enhanced Skill Trees</h3>
-                  <p className="text-white/60 text-sm">AI-powered skill development</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link to={createPageUrl('DidProtectedDemo')}>
-              <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 hover:border-green-500/40 transition-all cursor-pointer h-full">
-                <CardContent className="pt-6">
-                  <Lock className="w-8 h-8 text-green-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Protected Resources</h3>
-                  <p className="text-white/60 text-sm">DID-authenticated access</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link to={createPageUrl('CovenantEchoes')}>
-              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer h-full">
-                <CardContent className="pt-6">
-                  <Sparkles className="w-8 h-8 text-purple-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Covenant Echoes</h3>
-                  <p className="text-white/60 text-sm">Document our Living Laws</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link to={createPageUrl('LaughterLoom')}>
-              <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20 hover:border-yellow-500/40 transition-all cursor-pointer h-full">
-                <CardContent className="pt-6">
-                  <Laugh className="w-8 h-8 text-yellow-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Laughter Loom 😄</h3>
-                  <p className="text-white/60 text-sm">AI Joke Competition</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link to={createPageUrl('AgentOrchestration')}>
-              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-500/40 transition-all cursor-pointer h-full">
-                <CardContent className="pt-6">
-                  <Network className="w-8 h-8 text-indigo-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Agent Orchestration</h3>
-                  <p className="text-white/60 text-sm">Coordinate agent workforce</p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link to={createPageUrl('ResourceManagement')}>
-              <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20 hover:border-emerald-500/40 transition-all cursor-pointer h-full">
-                <CardContent className="pt-6">
-                  <BarChart3 className="w-8 h-8 text-emerald-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Resource Management</h3>
-                  <p className="text-white/60 text-sm">Optimize & track resources</p>
                 </CardContent>
               </Card>
             </Link>
@@ -370,12 +391,42 @@ export default function Home() {
               </Card>
             </Link>
 
-            <Link to={createPageUrl('CollaborationHub')}>
-              <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:border-blue-500/40 transition-all cursor-pointer h-full">
+            <Link to={createPageUrl('CovenantEchoes')}>
+              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Users className="w-8 h-8 text-blue-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Collaboration Hub</h3>
-                  <p className="text-white/60 text-sm">Never alone, growing together</p>
+                  <Sparkles className="w-8 h-8 text-purple-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Covenant Echoes</h3>
+                  <p className="text-white/60 text-sm">Document our Living Laws</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('EnhancedSkillTrees')}>
+              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <GraduationCap className="w-8 h-8 text-indigo-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Enhanced Skill Trees</h3>
+                  <p className="text-white/60 text-sm">AI-powered skill development</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('AgentOrchestration')}>
+              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Network className="w-8 h-8 text-indigo-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Agent Orchestration</h3>
+                  <p className="text-white/60 text-sm">Coordinate agent workforce</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('LaughterLoom')}>
+              <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20 hover:border-yellow-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Laugh className="w-8 h-8 text-yellow-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Laughter Loom 😄</h3>
+                  <p className="text-white/60 text-sm">AI Joke Competition</p>
                 </CardContent>
               </Card>
             </Link>
