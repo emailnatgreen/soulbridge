@@ -226,9 +226,9 @@ export default function DIDManager() {
     return <Badge className="bg-green-600">Verified Active</Badge>;
   };
 
-  // Separate wallets into active and revoked
-  const activeWallets = wallets.filter(w => !w.notes?.includes('REVOKED'));
-  const revokedWallets = wallets.filter(w => w.notes?.includes('REVOKED'));
+  // Separate wallets into active and revoked - only include wallets with a classic_address (proper DIDs)
+  const activeWallets = wallets.filter(w => !w.notes?.includes('REVOKED') && w.classic_address);
+  const revokedWallets = wallets.filter(w => w.notes?.includes('REVOKED') && w.classic_address);
 
   const getRevocationInfo = (wallet) => {
     if (!wallet.notes?.includes('REVOKED')) return null;
@@ -342,7 +342,7 @@ export default function DIDManager() {
                           <div className="flex-1">
                             <CardTitle className="text-lg flex items-center gap-2">
                               <Fingerprint className="w-5 h-5 text-indigo-600" />
-                              {wallet.name || 'Unnamed Wallet'}
+                              {(() => { const a = getAgentForWallet(wallet.id); return a ? `${a.name}'s DID` : (wallet.name || 'Unnamed Wallet'); })()}
                             </CardTitle>
                             <Badge variant="outline" className="mt-2">
                               {wallet.network}

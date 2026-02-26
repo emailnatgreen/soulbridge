@@ -54,9 +54,7 @@ export default function DIDRegistry() {
     queryFn: () => base44.entities.DidPrivacySetting.list(),
   });
 
-  const activeWallets = wallets.filter(w => !w.notes?.includes('REVOKED'));
-  console.log('DID Registry - All wallets:', wallets);
-  console.log('DID Registry - Active wallets:', activeWallets);
+  const activeWallets = wallets.filter(w => !w.notes?.includes('REVOKED') && w.classic_address);
 
   const filteredWallets = activeWallets.filter(wallet => {
     const agent = agents.find(a => a.wallet_id === wallet.id);
@@ -223,7 +221,9 @@ export default function DIDRegistry() {
                       <div className="flex-1">
                         <CardTitle className="text-base flex items-center gap-2">
                           <Fingerprint className="w-4 h-4 text-indigo-600" />
-                          {wallet.name || 'Unnamed Identity'}
+                          {agents.find(a => a.wallet_id === wallet.id)?.name 
+                            ? `${agents.find(a => a.wallet_id === wallet.id).name}'s DID` 
+                            : (wallet.name || 'Unnamed Identity')}
                         </CardTitle>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
