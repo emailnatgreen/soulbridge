@@ -135,6 +135,7 @@ import Wallets from './pages/Wallets';
 import AgentOrchestration from './pages/AgentOrchestration';
 import ResourceManagement from './pages/ResourceManagement';
 import WellbeingMonitor from './pages/WellbeingMonitor';
+import EnhancedSkillTrees from './pages/EnhancedSkillTrees';
 import __Layout from './Layout.jsx';
 
 
@@ -227,6 +228,7 @@ export const PAGES = {
     "AgentOrchestration": AgentOrchestration,
     "ResourceManagement": ResourceManagement,
     "WellbeingMonitor": WellbeingMonitor,
+    "EnhancedSkillTrees": EnhancedSkillTrees,
 }
 
 export const pagesConfig = {

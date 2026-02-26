@@ -300,12 +300,12 @@ export default function Home() {
               </Card>
             </Link>
 
-            <Link to={createPageUrl('SkillValidation')}>
-              <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:border-blue-500/40 transition-all cursor-pointer h-full">
+            <Link to={createPageUrl('EnhancedSkillTrees')}>
+              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-500/40 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Shield className="w-8 h-8 text-blue-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Skill Validation</h3>
-                  <p className="text-white/60 text-sm">Certify agent competencies</p>
+                  <GraduationCap className="w-8 h-8 text-indigo-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Enhanced Skill Trees</h3>
+                  <p className="text-white/60 text-sm">AI-powered skill development</p>
                 </CardContent>
               </Card>
             </Link>
