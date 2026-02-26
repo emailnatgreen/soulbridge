@@ -9,6 +9,64 @@ import { ArrowLeft, Shield, Zap, Users } from 'lucide-react';
 import AgentPersonalityCard from '../components/AgentPersonalityCard';
 import SocialCapitalCard from '../components/SocialCapitalCard';
 
+function AgentPicker() {
+    const [agents, setAgents] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        base44.entities.Agent.list('-created_date', 100).then(data => {
+            setAgents(data);
+            setLoading(false);
+        });
+    }, []);
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+            <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                    <div className="flex items-center gap-4">
+                        <Link to={createPageUrl('Agents')}>
+                            <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
+                                <ArrowLeft className="w-5 h-5" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-3xl font-light text-white">Select an Agent</h1>
+                            <p className="text-sm text-purple-300/60">Choose an agent to view details</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="max-w-3xl mx-auto px-6 py-10">
+                {loading ? (
+                    <p className="text-white/50 text-center">Loading agents...</p>
+                ) : agents.length === 0 ? (
+                    <p className="text-white/50 text-center">No agents found</p>
+                ) : (
+                    <div className="space-y-3">
+                        {agents.map(agent => (
+                            <a
+                                key={agent.id}
+                                href={createPageUrl('AgentDetails') + '?id=' + agent.id}
+                                className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                                    {agent.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-white font-medium">{agent.name}</p>
+                                    <p className="text-white/50 text-sm truncate">{agent.purpose}</p>
+                                </div>
+                                <Badge className="capitalize shrink-0">{agent.role || 'citizen'}</Badge>
+                            </a>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 export default function AgentDetails() {
     const [agent, setAgent] = useState(null);
     const [skills, setSkills] = useState([]);
