@@ -1,6 +1,6 @@
 import { ethers } from 'npm:ethers@6.13.0';
 
-const RLUSD_CONTRACT = "0xCfd748B9De538c9f5b1805e8db9e1d4671f7F2ec";
+const RLUSD_CONTRACT = "0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD";
 const ETH_RPC = "https://ethereum.publicnode.com";
 
 const ERC20_ABI = [
