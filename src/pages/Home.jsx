@@ -369,6 +369,16 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to={createPageUrl('CollaborationHub')}>
+              <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:border-blue-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Users className="w-8 h-8 text-blue-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Collaboration Hub</h3>
+                  <p className="text-white/60 text-sm">Never alone, growing together</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
