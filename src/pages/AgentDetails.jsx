@@ -70,6 +70,7 @@ export default function AgentDetails() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+
             {/* Header */}
             <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-6 py-6">
