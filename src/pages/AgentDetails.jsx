@@ -4,16 +4,14 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowLeft, User, Shield, Heart, Zap, TrendingUp, Users } from 'lucide-react';
 import AgentPersonalityCard from '../components/AgentPersonalityCard';
 import SocialCapitalCard from '../components/SocialCapitalCard';
 
 export default function AgentDetails() {
-    const [searchParams] = useSearchParams();
-    // Support both ?id= and window.location.search fallback
-    const agentId = searchParams.get('id') || new URLSearchParams(window.location.search).get('id');
+    const agentId = new URLSearchParams(window.location.search).get('id');
 
     const { data: agent, isLoading } = useQuery({
         queryKey: ['agent', agentId],
