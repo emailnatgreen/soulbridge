@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Users, MessageSquare, Lightbulb, Calendar, Target, TrendingUp, Sparkles, Brain, BookOpen, Award, Heart, Zap, Clock, CheckCircle2 } from 'lucide-react';
+import { Loader2, Users, MessageSquare, Lightbulb, Calendar, Target, TrendingUp, Sparkles, Brain, BookOpen, Award, Heart, Zap, Clock, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import { Progress } from "@/components/ui/progress";
 
