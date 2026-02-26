@@ -173,6 +173,12 @@ export default function AIProjectHub() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
         <div className="max-w-7xl mx-auto">
+          <Link to={createPageUrl('Home')}>
+            <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+          </Link>
           <div className="mb-8">
             <h1 className="text-3xl font-light text-white mb-2">AI Project Hub</h1>
             <p className="text-white/60">Real-time village activity and project insights</p>
