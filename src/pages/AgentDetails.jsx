@@ -18,7 +18,7 @@ export default function AgentDetails() {
     const { data: agent, isLoading } = useQuery({
         queryKey: ['agent', agentId],
         queryFn: async () => {
-            const agents = await base44.entities.Agent.list();
+            const agents = await base44.entities.Agent.list('-created_date', 200);
             return agents.find(a => a.id === agentId) || null;
         },
         enabled: !!agentId
@@ -27,15 +27,18 @@ export default function AgentDetails() {
     const { data: agentState } = useQuery({
         queryKey: ['agentState', agentId],
         queryFn: async () => {
-            const states = await base44.entities.AgentState.filter({ agent_id: agentId });
-            return states[0] || null;
+            const states = await base44.entities.AgentState.list();
+            return states.find(s => s.agent_id === agentId) || null;
         },
         enabled: !!agentId
     });
 
     const { data: skills = [] } = useQuery({
         queryKey: ['agentSkills', agentId],
-        queryFn: () => base44.entities.AgentSkill.filter({ agent_id: agentId }),
+        queryFn: async () => {
+            const all = await base44.entities.AgentSkill.list('-created_date', 200);
+            return all.filter(s => s.agent_id === agentId);
+        },
         enabled: !!agentId
     });
 
