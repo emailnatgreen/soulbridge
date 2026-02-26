@@ -52,7 +52,7 @@ Respond to this message as ${agent2.name}, staying true to your purpose and pers
             prompt: responsePrompt
         });
 
-        // Create the coordination message directly
+        // Create the coordination message directly using correct schema fields
         const agentMessage = await base44.asServiceRole.entities.AgentMessage.create({
             sender_agent_id: agent1.id,
             content: coordinationMessage,
