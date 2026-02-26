@@ -5,15 +5,33 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, TrendingUp, TrendingDown, AlertTriangle, Sparkles, DollarSign, Clock, Users, Target, Zap, CheckCircle2, XCircle, Activity, BarChart3, Lightbulb, ShieldAlert } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, AlertTriangle, Sparkles, DollarSign, Clock, Users, Target, Zap, CheckCircle2, XCircle, Activity, BarChart3, Lightbulb, ShieldAlert, Vote, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ResourceManagement() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [proposalDialogOpen, setProposalDialogOpen] = useState(false);
 
   const queryClient = useQueryClient();
+
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents-resource'],
+    queryFn: () => base44.entities.Agent.list(),
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
+  const currentAgent = agents.find(a => a.created_by === currentUser?.email);
 
   const analyzeMutation = useMutation({
     mutationFn: async () => {
@@ -70,24 +88,50 @@ export default function ResourceManagement() {
                 <p className="text-emerald-200/70">Optimize allocation, track utilization, eliminate waste</p>
               </div>
             </div>
-            <Button
-              onClick={handleAnalyze}
-              disabled={analyzing}
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-              size="lg"
-            >
-              {analyzing ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Run AI Analysis
-                </>
+            <div className="flex gap-3">
+              {analysisResult && (
+                <Dialog open={proposalDialogOpen} onOpenChange={setProposalDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+                      size="lg"
+                    >
+                      <Vote className="w-5 h-5 mr-2" />
+                      Create Governance Proposal
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Resource Allocation Proposal</DialogTitle>
+                    </DialogHeader>
+                    <ResourceAllocationProposalForm 
+                      analysisResult={analysisResult}
+                      currentAgent={currentAgent}
+                      onClose={() => setProposalDialogOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
               )}
-            </Button>
+              <Button
+                onClick={handleAnalyze}
+                disabled={analyzing}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                size="lg"
+              >
+                {analyzing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Run AI Analysis
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -480,6 +524,183 @@ export default function ResourceManagement() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ResourceAllocationProposalForm({ analysisResult, currentAgent, onClose }) {
+  const queryClient = useQueryClient();
+  const [formData, setFormData] = useState({
+    proposal_title: '',
+    resource_type: 'xrp',
+    from_source: 'Treasury',
+    to_destination: '',
+    amount_xrp: '',
+    justification: '',
+    expected_outcomes: ''
+  });
+
+  const createProposalMutation = useMutation({
+    mutationFn: async (data) => {
+      if (!currentAgent) {
+        throw new Error('You must be registered as an agent to create proposals');
+      }
+      const response = await base44.functions.invoke('createResourceAllocationProposal', {
+        ...data,
+        agent_id: currentAgent.id
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Governance proposal created! 🎯');
+      queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
+      onClose();
+    },
+    onError: (error) => {
+      toast.error('Failed to create proposal: ' + error.message);
+    }
+  });
+
+  // Pre-populate with reallocation recommendations
+  const recommendations = analysisResult?.ai_analysis?.reallocation_recommendations || [];
+
+  return (
+    <div className="space-y-4">
+      {!currentAgent && (
+        <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded">
+          <p className="text-yellow-300 text-sm">You must be registered as an agent to create proposals.</p>
+        </div>
+      )}
+
+      {recommendations.length > 0 && (
+        <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded">
+          <h4 className="text-blue-300 font-medium mb-2">AI Recommendations Available</h4>
+          <div className="space-y-2">
+            {recommendations.map((rec, idx) => (
+              <button
+                key={idx}
+                onClick={() => setFormData({
+                  ...formData,
+                  proposal_title: `Resource Reallocation: ${rec.from} → ${rec.to}`,
+                  from_source: rec.from,
+                  to_destination: rec.to,
+                  amount_xrp: rec.amount_xrp.toString(),
+                  justification: rec.rationale
+                })}
+                className="w-full text-left p-2 bg-blue-500/10 hover:bg-blue-500/20 rounded text-sm text-blue-200 transition-all"
+              >
+                {rec.from} → {rec.to}: {rec.amount_xrp.toFixed(2)} XRP
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={(e) => { e.preventDefault(); createProposalMutation.mutate(formData); }} className="space-y-4">
+        <div>
+          <Label className="text-white">Proposal Title</Label>
+          <Input
+            value={formData.proposal_title}
+            onChange={(e) => setFormData({...formData, proposal_title: e.target.value})}
+            className="bg-white/5 border-white/10 text-white"
+            placeholder="E.g., Allocate funds for Project X"
+            required
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label className="text-white">From Source</Label>
+            <Input
+              value={formData.from_source}
+              onChange={(e) => setFormData({...formData, from_source: e.target.value})}
+              className="bg-white/5 border-white/10 text-white"
+              placeholder="E.g., Treasury, Project Fund"
+              required
+            />
+          </div>
+
+          <div>
+            <Label className="text-white">To Destination</Label>
+            <Input
+              value={formData.to_destination}
+              onChange={(e) => setFormData({...formData, to_destination: e.target.value})}
+              className="bg-white/5 border-white/10 text-white"
+              placeholder="E.g., AI Development Fund"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label className="text-white">Resource Type</Label>
+            <Select value={formData.resource_type} onValueChange={(v) => setFormData({...formData, resource_type: v})}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/10">
+                <SelectItem value="xrp">XRP</SelectItem>
+                <SelectItem value="agent_time">Agent Time</SelectItem>
+                <SelectItem value="equipment">Equipment</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-white">Amount (XRP)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              value={formData.amount_xrp}
+              onChange={(e) => setFormData({...formData, amount_xrp: e.target.value})}
+              className="bg-white/5 border-white/10 text-white"
+              placeholder="0.00"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-white">Justification</Label>
+          <Textarea
+            value={formData.justification}
+            onChange={(e) => setFormData({...formData, justification: e.target.value})}
+            className="bg-white/5 border-white/10 text-white h-24"
+            placeholder="Why is this allocation necessary?"
+            required
+          />
+        </div>
+
+        <div>
+          <Label className="text-white">Expected Outcomes</Label>
+          <Textarea
+            value={formData.expected_outcomes}
+            onChange={(e) => setFormData({...formData, expected_outcomes: e.target.value})}
+            className="bg-white/5 border-white/10 text-white h-20"
+            placeholder="What will this allocation achieve?"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={createProposalMutation.isPending || !currentAgent}
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+        >
+          {createProposalMutation.isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Creating Proposal...
+            </>
+          ) : (
+            <>
+              <Send className="w-4 h-4 mr-2" />
+              Submit to Community Vote
+            </>
+          )}
+        </Button>
+      </form>
     </div>
   );
 }
