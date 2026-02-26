@@ -50,10 +50,26 @@ export default function AgentDetails() {
         );
     }
 
+    if (!agentId) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+                <div className="text-center text-white">
+                    <p className="text-xl mb-2">No agent ID in URL</p>
+                    <p className="text-white/50 text-sm">URL: {window.location.href}</p>
+                    <Link to={createPageUrl('Agents')} className="mt-4 inline-block underline text-purple-300">Back to Agents</Link>
+                </div>
+            </div>
+        );
+    }
+
     if (!agent) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-                <div className="text-white">Agent not found</div>
+                <div className="text-center text-white">
+                    <p className="text-xl mb-2">Agent not found</p>
+                    <p className="text-white/50 text-sm">Looking for ID: {agentId}</p>
+                    <Link to={createPageUrl('Agents')} className="mt-4 inline-block underline text-purple-300">Back to Agents</Link>
+                </div>
             </div>
         );
     }
