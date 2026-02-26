@@ -55,23 +55,26 @@ Respond to this message as ${agent2.name}, staying true to your purpose and pers
         // Create the coordination message directly
         const agentMessage = await base44.asServiceRole.entities.AgentMessage.create({
             sender_agent_id: agent1.id,
-            to_agent_id: agent2.id,
             content: coordinationMessage,
             response: agentResponse,
             status: 'responded',
+            message_type: 'text',
             metadata: {
                 from_agent_name: agent1.name,
                 to_agent_name: agent2.name,
-                message_type: 'autonomous_coordination',
+                to_agent_id: agent2.id,
+                coordination_type: 'autonomous',
                 sent_at: new Date().toISOString()
             }
         });
 
         // Log the coordination event to memory
+        const memoryContent = `Autonomous coordination: ${agent1.name} coordinated with ${agent2.name}. Message: ${coordinationMessage.substring(0, 100)}${coordinationMessage.length > 100 ? '...' : ''}`;
+        
         await base44.asServiceRole.entities.Memory.create({
-            agent_id: 'axi',
+            agent_id: 'axi_main_001',
             type: 'village_detail',
-            content: `Autonomous coordination: ${agent1.name} coordinated with ${agent2.name}. Topic: ${coordinationMessage.substring(0, 50)}...`,
+            content: memoryContent,
             keywords: ['coordination', 'autonomous', 'collaboration', agent1.name.toLowerCase(), agent2.name.toLowerCase()],
             context: 'Axi autonomous inter-agent coordination cycle',
             importance: 6,
