@@ -17,8 +17,8 @@ export default function AgentDetails() {
     const { data: agent, isLoading } = useQuery({
         queryKey: ['agent', agentId],
         queryFn: async () => {
-            const agents = await base44.entities.Agent.filter({ id: agentId });
-            return agents[0] || null;
+            const agents = await base44.entities.Agent.list();
+            return agents.find(a => a.id === agentId) || null;
         },
         enabled: !!agentId
     });
