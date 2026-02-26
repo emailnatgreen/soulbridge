@@ -12,7 +12,8 @@ import SocialCapitalCard from '../components/SocialCapitalCard';
 
 export default function AgentDetails() {
     const [searchParams] = useSearchParams();
-    const agentId = searchParams.get('id');
+    // Support both ?id= and window.location.search fallback
+    const agentId = searchParams.get('id') || new URLSearchParams(window.location.search).get('id');
 
     const { data: agent, isLoading } = useQuery({
         queryKey: ['agent', agentId],
