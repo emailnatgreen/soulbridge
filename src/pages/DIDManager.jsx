@@ -52,7 +52,12 @@ export default function DIDManager() {
 
   const { data: wallets = [], isLoading: walletsLoading } = useQuery({
     queryKey: ['wallets'],
-    queryFn: () => base44.entities.Wallet.filter({ owner_id: user?.id }),
+    queryFn: async () => {
+      const result = await base44.entities.Wallet.filter({ owner_id: user?.id });
+      console.log('Fetched wallets:', result);
+      console.log('Current user ID:', user?.id);
+      return result;
+    },
     enabled: !!user?.id
   });
 

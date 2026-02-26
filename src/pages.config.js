@@ -55,6 +55,7 @@ import AgentDetails from './pages/AgentDetails';
 import AgentMarketplace from './pages/AgentMarketplace';
 import AgentMessaging from './pages/AgentMessaging';
 import AgentOnboarding from './pages/AgentOnboarding';
+import AgentOrchestration from './pages/AgentOrchestration';
 import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
 import AgentProfile from './pages/AgentProfile';
 import AgentReputation from './pages/AgentReputation';
@@ -92,6 +93,7 @@ import Economy from './pages/Economy';
 import EditAgent from './pages/EditAgent';
 import EditAgentProfile from './pages/EditAgentProfile';
 import EditLanding from './pages/EditLanding';
+import EnhancedSkillTrees from './pages/EnhancedSkillTrees';
 import Governance from './pages/Governance';
 import GovernanceHub from './pages/GovernanceHub';
 import GovernanceSimulation from './pages/GovernanceSimulation';
@@ -111,6 +113,7 @@ import RLUSDManager from './pages/RLUSDManager';
 import ReceiveRLUSD from './pages/ReceiveRLUSD';
 import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceDynamics from './pages/ResourceDynamics';
+import ResourceManagement from './pages/ResourceManagement';
 import ResourceMarketplace from './pages/ResourceMarketplace';
 import Send from './pages/Send';
 import SendRLUSD from './pages/SendRLUSD';
@@ -132,10 +135,7 @@ import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
-import AgentOrchestration from './pages/AgentOrchestration';
-import ResourceManagement from './pages/ResourceManagement';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import EnhancedSkillTrees from './pages/EnhancedSkillTrees';
 import __Layout from './Layout.jsx';
 
 
@@ -148,6 +148,7 @@ export const PAGES = {
     "AgentMarketplace": AgentMarketplace,
     "AgentMessaging": AgentMessaging,
     "AgentOnboarding": AgentOnboarding,
+    "AgentOrchestration": AgentOrchestration,
     "AgentPerformanceAnalytics": AgentPerformanceAnalytics,
     "AgentProfile": AgentProfile,
     "AgentReputation": AgentReputation,
@@ -185,6 +186,7 @@ export const PAGES = {
     "EditAgent": EditAgent,
     "EditAgentProfile": EditAgentProfile,
     "EditLanding": EditLanding,
+    "EnhancedSkillTrees": EnhancedSkillTrees,
     "Governance": Governance,
     "GovernanceHub": GovernanceHub,
     "GovernanceSimulation": GovernanceSimulation,
@@ -204,6 +206,7 @@ export const PAGES = {
     "ReceiveRLUSD": ReceiveRLUSD,
     "RelationshipNetwork": RelationshipNetwork,
     "ResourceDynamics": ResourceDynamics,
+    "ResourceManagement": ResourceManagement,
     "ResourceMarketplace": ResourceMarketplace,
     "Send": Send,
     "SendRLUSD": SendRLUSD,
@@ -225,10 +228,7 @@ export const PAGES = {
     "Village": Village,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
-    "AgentOrchestration": AgentOrchestration,
-    "ResourceManagement": ResourceManagement,
     "WellbeingMonitor": WellbeingMonitor,
-    "EnhancedSkillTrees": EnhancedSkillTrees,
 }
 
 export const pagesConfig = {
