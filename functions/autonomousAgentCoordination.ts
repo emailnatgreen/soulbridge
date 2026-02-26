@@ -37,11 +37,34 @@ Be concise and direct.`;
 
         const coordinationMessage = llmResponse;
 
-        // Send the coordination message
-        const messageResponse = await base44.asServiceRole.functions.invoke('sendAgentMessage', {
+        // Generate AI response from receiving agent
+        const responsePrompt = `You are ${agent2.name}, an AI agent with the following characteristics:
+Purpose: ${agent2.purpose}
+Personality: ${agent2.personality || 'Friendly and collaborative'}
+Role: ${agent2.role}
+
+Another agent named ${agent1.name} has sent you this coordination message:
+"${coordinationMessage}"
+
+Respond to this message as ${agent2.name}, staying true to your purpose and personality. Keep your response concise (2-3 sentences maximum).`;
+
+        const agentResponse = await base44.integrations.Core.InvokeLLM({
+            prompt: responsePrompt
+        });
+
+        // Create the coordination message directly
+        const agentMessage = await base44.asServiceRole.entities.AgentMessage.create({
             from_agent_id: agent1.id,
             to_agent_id: agent2.id,
-            message: coordinationMessage
+            message: coordinationMessage,
+            response: agentResponse,
+            status: 'responded',
+            metadata: {
+                from_agent_name: agent1.name,
+                to_agent_name: agent2.name,
+                message_type: 'autonomous_coordination',
+                sent_at: new Date().toISOString()
+            }
         });
 
         // Log the coordination event to memory
@@ -64,7 +87,7 @@ Be concise and direct.`;
                 from_agent: agent1.name,
                 to_agent: agent2.name,
                 message: coordinationMessage,
-                response: messageResponse.data?.response || 'Awaiting response'
+                response: agentResponse
             }
         });
 
