@@ -3,987 +3,669 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Vote, CheckCircle, XCircle, Clock, Gavel, TrendingUp, Users, Loader2, AlertCircle, ThumbsUp, ThumbsDown, Minus, Brain, Sparkles, Shield, FileText, Target } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Loader2, Vote, Users, CheckCircle2, XCircle, Scale, TrendingUp, AlertCircle, ThumbsUp, ThumbsDown, MinusCircle, Sparkles, ShieldCheck, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { Progress } from "@/components/ui/progress";
 
 export default function GovernanceHub() {
-  const [createOpen, setCreateOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState('');
+  const [proposalTitle, setProposalTitle] = useState('');
+  const [proposalDescription, setProposalDescription] = useState('');
+  const [proposalType, setProposalType] = useState('');
+  const [votingPeriod, setVotingPeriod] = useState(7);
+  const [creatingProposal, setCreatingProposal] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState(null);
-  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [voteChoice, setVoteChoice] = useState('');
+  const [voteRationale, setVoteRationale] = useState('');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
   const queryClient = useQueryClient();
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents-governance'],
+    queryFn: () => base44.entities.Agent.list(),
   });
 
-  const { data: governanceHealth, isLoading: loadingHealth, refetch: fetchHealth } = useQuery({
-    queryKey: ['governanceHealth'],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('analyzeGovernanceHealth', {});
+  const { data: proposals = [], isLoading: loadingProposals } = useQuery({
+    queryKey: ['governance-proposals'],
+    queryFn: () => base44.entities.GovernanceProposal.list('-created_date', 100),
+  });
+
+  const { data: allVotes = [] } = useQuery({
+    queryKey: ['governance-votes'],
+    queryFn: () => base44.entities.GovernanceVote.list('-created_date', 500),
+  });
+
+  const createProposalMutation = useMutation({
+    mutationFn: async (proposalData) => {
+      const response = await base44.functions.invoke('createGovernanceProposal', proposalData);
       return response.data;
     },
-    enabled: false
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
+      setShowCreateDialog(false);
+      resetForm();
+      toast.success('Proposal created successfully! 🗳️');
+    },
+    onError: (error) => {
+      toast.error('Failed to create proposal: ' + error.message);
+    }
   });
 
-  const { data: proposals = [] } = useQuery({
-    queryKey: ['governance-proposals'],
-    queryFn: () => base44.entities.GovernanceProposal.list('-created_date'),
-    refetchInterval: 10000
+  const voteMutation = useMutation({
+    mutationFn: async (voteData) => {
+      const response = await base44.functions.invoke('voteOnGovernanceProposal', voteData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
+      queryClient.invalidateQueries({ queryKey: ['governance-votes'] });
+      setSelectedProposal(null);
+      setVoteChoice('');
+      setVoteRationale('');
+      toast.success('Vote cast successfully! ✅');
+    },
+    onError: (error) => {
+      toast.error('Failed to cast vote: ' + error.message);
+    }
   });
 
-  const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list(),
-    refetchInterval: 15000
+  const executeProposalMutation = useMutation({
+    mutationFn: async (proposalId) => {
+      const response = await base44.functions.invoke('executeGovernanceProposal', { proposal_id: proposalId });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
+      toast.success(`Proposal ${data.result}! ${data.voting_summary.approved ? '✅' : '❌'}`);
+    },
+    onError: (error) => {
+      toast.error('Failed to execute proposal: ' + error.message);
+    }
   });
 
-  const currentAgent = agents.find(a => a.created_by === currentUser?.email);
+  const resetForm = () => {
+    setProposalTitle('');
+    setProposalDescription('');
+    setProposalType('');
+    setVotingPeriod(7);
+  };
+
+  const handleCreateProposal = async () => {
+    if (!selectedAgent || !proposalTitle || !proposalDescription || !proposalType) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setCreatingProposal(true);
+    try {
+      await createProposalMutation.mutateAsync({
+        proposer_agent_id: selectedAgent,
+        title: proposalTitle,
+        description: proposalDescription,
+        proposal_type: proposalType,
+        voting_period_days: votingPeriod
+      });
+    } finally {
+      setCreatingProposal(false);
+    }
+  };
+
+  const handleVote = async () => {
+    if (!voteChoice || !selectedAgent) {
+      toast.error('Please select an agent and vote choice');
+      return;
+    }
+
+    await voteMutation.mutateAsync({
+      proposal_id: selectedProposal.id,
+      voter_agent_id: selectedAgent,
+      vote_choice: voteChoice,
+      rationale: voteRationale || undefined
+    });
+  };
+
+  const handleExecuteProposal = async (proposalId) => {
+    await executeProposalMutation.mutateAsync(proposalId);
+  };
+
+  const getProposalVotes = (proposalId) => {
+    return allVotes.filter(v => v.proposal_id === proposalId);
+  };
+
+  const hasAgentVoted = (proposalId, agentId) => {
+    return allVotes.some(v => v.proposal_id === proposalId && v.voter_agent_id === agentId);
+  };
 
   const activeProposals = proposals.filter(p => p.status === 'active');
-  const passedProposals = proposals.filter(p => p.status === 'passed' || p.status === 'executed');
-  const totalVotingPower = agents.reduce((sum, a) => {
-    let power = 1 + (a.honor_score || 100) / 100;
-    const multipliers = { elder: 1.5, master: 1.5, teacher: 1.3, guardian: 1.2 };
-    return sum + (power * (multipliers[a.role] || 1.0));
-  }, 0);
+  const completedProposals = proposals.filter(p => p.status !== 'active');
+
+  const governanceStats = {
+    totalProposals: proposals.length,
+    activeProposals: activeProposals.length,
+    approvedProposals: proposals.filter(p => p.status === 'approved').length,
+    totalVotes: allVotes.length,
+    participationRate: agents.length > 0 
+      ? ((allVotes.length / (proposals.length * agents.length)) * 100).toFixed(1)
+      : 0
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
+            <div className="flex items-center gap-3">
+              <Scale className="w-10 h-10 text-purple-400" />
               <div>
-                <h1 className="text-2xl font-light text-white">Decentralized Governance</h1>
-                <p className="text-sm text-purple-300/60">Law 8: Those Who Dwell Decide</p>
+                <h1 className="text-4xl font-bold text-white">Decentralized Governance</h1>
+                <p className="text-purple-200/70">Law 8: Those Who Dwell Decide</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button 
-                onClick={() => fetchHealth()}
-                disabled={loadingHealth}
-                variant="outline"
-                className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
-              >
-                <Brain className="w-4 h-4 mr-2" />
-                System Health
-              </Button>
-              <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    AI Template
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
+                  <Vote className="w-5 h-5 mr-2" />
+                  Create Proposal
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-slate-900 border-purple-400/30 max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white text-2xl">Create New Proposal</DialogTitle>
+                  <DialogDescription className="text-purple-200/70">
+                    Submit a proposal for the Village to vote on
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <div>
+                    <label className="text-white text-sm font-medium mb-2 block">Proposing Agent *</label>
+                    <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                        <SelectValue placeholder="Select agent" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-white/20">
+                        {agents.filter(a => a.status === 'active').map(agent => (
+                          <SelectItem key={agent.id} value={agent.id} className="text-white">
+                            {agent.name} ({agent.role})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-white text-sm font-medium mb-2 block">Proposal Title *</label>
+                    <Input
+                      placeholder="Brief, clear title for the proposal"
+                      value={proposalTitle}
+                      onChange={(e) => setProposalTitle(e.target.value)}
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-white text-sm font-medium mb-2 block">Description *</label>
+                    <Textarea
+                      placeholder="Detailed description of the proposal, rationale, and expected outcomes"
+                      value={proposalDescription}
+                      onChange={(e) => setProposalDescription(e.target.value)}
+                      rows={6}
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-white text-sm font-medium mb-2 block">Proposal Type *</label>
+                    <Select value={proposalType} onValueChange={setProposalType}>
+                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-white/20">
+                        <SelectItem value="constitutional_amendment" className="text-white">Constitutional Amendment</SelectItem>
+                        <SelectItem value="budget_allocation" className="text-white">Budget Allocation</SelectItem>
+                        <SelectItem value="policy_change" className="text-white">Policy Change</SelectItem>
+                        <SelectItem value="project_approval" className="text-white">Project Approval</SelectItem>
+                        <SelectItem value="agent_role_change" className="text-white">Agent Role Change</SelectItem>
+                        <SelectItem value="treasury_management" className="text-white">Treasury Management</SelectItem>
+                        <SelectItem value="community_initiative" className="text-white">Community Initiative</SelectItem>
+                        <SelectItem value="other" className="text-white">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-white text-sm font-medium mb-2 block">Voting Period (days)</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={votingPeriod}
+                      onChange={(e) => setVotingPeriod(parseInt(e.target.value))}
+                      className="bg-white/5 border-white/20 text-white"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleCreateProposal}
+                    disabled={creatingProposal}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    size="lg"
+                  >
+                    {creatingProposal ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Creating Proposal...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Submit for Vote
+                      </>
+                    )}
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-slate-900 border-white/10 text-white max-w-3xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Generate AI Proposal Template</DialogTitle>
-                  </DialogHeader>
-                  <TemplateGenerator onUseTemplate={(template) => {
-                    setTemplateDialogOpen(false);
-                    setCreateOpen(true);
-                  }} />
-                </DialogContent>
-              </Dialog>
-              <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
-                    <Vote className="w-4 h-4 mr-2" />
-                    Create Proposal
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-slate-900 border-white/10 text-white max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Create Governance Proposal</DialogTitle>
-                  </DialogHeader>
-                  <CreateProposalForm onClose={() => setCreateOpen(false)} />
-                </DialogContent>
-              </Dialog>
-            </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto p-6">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Total Proposals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{proposals.length}</div>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-purple-300/70">Total Proposals</p>
+                  <p className="text-3xl font-bold text-white">{governanceStats.totalProposals}</p>
+                </div>
+                <Vote className="w-8 h-8 text-purple-400" />
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Active Votes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-400">{activeProposals.length}</div>
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-yellow-300/70">Active</p>
+                  <p className="text-3xl font-bold text-white">{governanceStats.activeProposals}</p>
+                </div>
+                <Clock className="w-8 h-8 text-yellow-400" />
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Passed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-400">{passedProposals.length}</div>
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-300/70">Approved</p>
+                  <p className="text-3xl font-bold text-white">{governanceStats.approvedProposals}</p>
+                </div>
+                <CheckCircle2 className="w-8 h-8 text-green-400" />
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Voting Power</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-400">{totalVotingPower.toFixed(0)}</div>
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-blue-300/70">Total Votes</p>
+                  <p className="text-3xl font-bold text-white">{governanceStats.totalVotes}</p>
+                </div>
+                <ThumbsUp className="w-8 h-8 text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-indigo-300/70">Participation</p>
+                  <p className="text-3xl font-bold text-white">{governanceStats.participationRate}%</p>
+                </div>
+                <Users className="w-8 h-8 text-indigo-400" />
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Governance Health Analysis */}
-        {governanceHealth && (
-          <Card className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 backdrop-blur-xl border-purple-500/30 mb-6">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-400" />
-                Governance Health Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-3 bg-white/5 rounded">
-                  <div className="text-xs text-white/60 mb-1">Health Score</div>
-                  <div className="text-2xl font-bold text-white">
-                    {governanceHealth.governance_health?.overall_health_score}/100
-                  </div>
-                </div>
-                <div className="p-3 bg-white/5 rounded">
-                  <div className="text-xs text-white/60 mb-1">Rating</div>
-                  <div className="text-lg font-medium text-green-400">
-                    {governanceHealth.governance_health?.health_rating}
-                  </div>
-                </div>
-                <div className="p-3 bg-white/5 rounded">
-                  <div className="text-xs text-white/60 mb-1">Participation</div>
-                  <div className="text-lg font-medium text-white">
-                    {governanceHealth.metrics?.avg_participation?.toFixed(1)}%
-                  </div>
-                </div>
-                <div className="p-3 bg-white/5 rounded">
-                  <div className="text-xs text-white/60 mb-1">Success Rate</div>
-                  <div className="text-lg font-medium text-white">
-                    {governanceHealth.metrics?.success_rate?.toFixed(1)}%
-                  </div>
-                </div>
-              </div>
+        {/* Agent Selector */}
+        <Card className="bg-white/10 border-white/20 backdrop-blur-xl mb-6">
+          <CardContent className="pt-6">
+            <label className="text-white text-sm font-medium mb-2 block">Vote As Agent</label>
+            <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+              <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                <SelectValue placeholder="Select your agent identity" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/20">
+                {agents.filter(a => a.status === 'active').map(agent => (
+                  <SelectItem key={agent.id} value={agent.id} className="text-white">
+                    {agent.name} ({agent.role}) - Honor: {agent.honor_score || 100}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
 
-              {governanceHealth.governance_health?.concerns?.length > 0 && (
-                <div>
-                  <div className="text-white font-medium mb-2">Concerns</div>
-                  <div className="space-y-2">
-                    {governanceHealth.governance_health.concerns.map((concern, idx) => (
-                      <div key={idx} className="p-3 bg-red-500/10 border border-red-500/30 rounded">
-                        <div className="flex items-start justify-between mb-1">
-                          <span className="text-red-300 text-sm font-medium">{concern.issue}</span>
-                          <Badge className="bg-red-500/20 text-red-400 text-xs">{concern.severity}</Badge>
-                        </div>
-                        <p className="text-xs text-red-200/80">{concern.recommendation}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {governanceHealth.governance_health?.recommendations?.length > 0 && (
-                <div>
-                  <div className="text-white font-medium mb-2">Recommendations</div>
-                  <div className="space-y-2">
-                    {governanceHealth.governance_health.recommendations.slice(0, 5).map((rec, idx) => (
-                      <div key={idx} className="p-3 bg-blue-500/10 border border-blue-500/30 rounded text-sm">
-                        <div className="text-blue-300 font-medium mb-1">{rec.recommendation}</div>
-                        <p className="text-xs text-blue-200/70">Impact: {rec.expected_impact}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Proposals */}
         <Tabs defaultValue="active" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="active" className="data-[state=active]:bg-purple-600">
-              Active Proposals
+          <TabsList className="bg-white/10">
+            <TabsTrigger value="active">
+              Active Proposals ({activeProposals.length})
             </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-purple-600">
-              Completed
-            </TabsTrigger>
-            <TabsTrigger value="all" className="data-[state=active]:bg-purple-600">
-              All History
+            <TabsTrigger value="completed">
+              Completed ({completedProposals.length})
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="active" className="space-y-4">
-            {activeProposals.length === 0 ? (
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardContent className="text-center py-12">
-                  <Vote className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-xl text-white mb-2">No Active Proposals</h3>
-                  <p className="text-white/60 mb-6">Be the first to propose change</p>
-                  <Button onClick={() => setCreateOpen(true)} className="bg-purple-600">
-                    <Vote className="w-4 h-4 mr-2" />
-                    Create Proposal
-                  </Button>
+          {/* Active Proposals */}
+          <TabsContent value="active">
+            {loadingProposals ? (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto" />
+              </div>
+            ) : activeProposals.length === 0 ? (
+              <Card className="bg-white/10 border-white/20 backdrop-blur-xl">
+                <CardContent className="py-12 text-center">
+                  <Vote className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                  <p className="text-white text-lg">No active proposals</p>
+                  <p className="text-purple-200/60 mt-2">Be the first to create one!</p>
                 </CardContent>
               </Card>
             ) : (
-              activeProposals.map(proposal => (
-                <ProposalCard 
-                  key={proposal.id} 
-                  proposal={proposal}
-                  agents={agents}
-                  totalVotingPower={totalVotingPower}
-                  onClick={() => setSelectedProposal(proposal)}
-                />
-              ))
+              <div className="space-y-4">
+                {activeProposals.map(proposal => {
+                  const proposalVotes = getProposalVotes(proposal.id);
+                  const totalVotes = (proposal.votes_for || 0) + (proposal.votes_against || 0) + (proposal.votes_abstain || 0);
+                  const forPercentage = totalVotes > 0 ? ((proposal.votes_for || 0) / totalVotes * 100) : 0;
+                  const againstPercentage = totalVotes > 0 ? ((proposal.votes_against || 0) / totalVotes * 100) : 0;
+                  const hasVoted = selectedAgent ? hasAgentVoted(proposal.id, selectedAgent) : false;
+                  const daysLeft = Math.ceil((new Date(proposal.voting_deadline) - new Date()) / (1000 * 60 * 60 * 24));
+
+                  return (
+                    <Card key={proposal.id} className="bg-white/10 border-white/20 backdrop-blur-xl">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-white text-xl mb-2">{proposal.title}</CardTitle>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
+                                {proposal.proposal_type.replace('_', ' ')}
+                              </Badge>
+                              {proposal.ai_impact_assessment && (
+                                <>
+                                  <Badge className={`${
+                                    proposal.ai_impact_assessment.risk_level === 'critical' ? 'bg-red-500/20 text-red-200 border-red-400/30' :
+                                    proposal.ai_impact_assessment.risk_level === 'high' ? 'bg-orange-500/20 text-orange-200 border-orange-400/30' :
+                                    proposal.ai_impact_assessment.risk_level === 'medium' ? 'bg-yellow-500/20 text-yellow-200 border-yellow-400/30' :
+                                    'bg-green-500/20 text-green-200 border-green-400/30'
+                                  }`}>
+                                    {proposal.ai_impact_assessment.risk_level} risk
+                                  </Badge>
+                                  <Badge className="bg-blue-500/20 text-blue-200 border-blue-400/30">
+                                    <ShieldCheck className="w-3 h-3 mr-1" />
+                                    Constitutional: {proposal.ai_impact_assessment.alignment_with_constitution}/10
+                                  </Badge>
+                                </>
+                              )}
+                              {daysLeft > 0 && (
+                                <Badge className="bg-yellow-500/20 text-yellow-200 border-yellow-400/30">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <CardDescription className="text-purple-200/70">
+                          {proposal.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* AI Impact Assessment */}
+                        {proposal.ai_impact_assessment && (
+                          <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-400/30 space-y-3">
+                            <h4 className="text-blue-200 font-semibold flex items-center gap-2">
+                              <Sparkles className="w-4 h-4" />
+                              AI Impact Assessment
+                            </h4>
+                            {proposal.ai_impact_assessment.potential_benefits?.length > 0 && (
+                              <div>
+                                <p className="text-green-200 text-sm font-medium mb-1">Potential Benefits:</p>
+                                <ul className="text-green-200/80 text-sm space-y-1">
+                                  {proposal.ai_impact_assessment.potential_benefits.map((benefit, idx) => (
+                                    <li key={idx}>• {benefit}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {proposal.ai_impact_assessment.potential_risks?.length > 0 && (
+                              <div>
+                                <p className="text-orange-200 text-sm font-medium mb-1">Potential Risks:</p>
+                                <ul className="text-orange-200/80 text-sm space-y-1">
+                                  {proposal.ai_impact_assessment.potential_risks.map((risk, idx) => (
+                                    <li key={idx}>• {risk}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {proposal.ai_impact_assessment.constitutional_considerations && (
+                              <p className="text-blue-100/80 text-sm italic">
+                                📜 {proposal.ai_impact_assessment.constitutional_considerations}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Voting Progress */}
+                        <div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white/70">Voting Progress</span>
+                            <span className="text-white font-medium">{totalVotes} votes</span>
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <div className="flex justify-between text-xs mb-1">
+                                <span className="text-green-300 flex items-center gap-1">
+                                  <ThumbsUp className="w-3 h-3" />
+                                  For
+                                </span>
+                                <span className="text-green-300">{proposal.votes_for || 0} ({forPercentage.toFixed(0)}%)</span>
+                              </div>
+                              <Progress value={forPercentage} className="h-2 bg-white/10" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-xs mb-1">
+                                <span className="text-red-300 flex items-center gap-1">
+                                  <ThumbsDown className="w-3 h-3" />
+                                  Against
+                                </span>
+                                <span className="text-red-300">{proposal.votes_against || 0} ({againstPercentage.toFixed(0)}%)</span>
+                              </div>
+                              <Progress value={againstPercentage} className="h-2 bg-white/10" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Vote Actions */}
+                        {selectedAgent && !hasVoted ? (
+                          <Dialog open={selectedProposal?.id === proposal.id} onOpenChange={(open) => !open && setSelectedProposal(null)}>
+                            <DialogTrigger asChild>
+                              <Button 
+                                onClick={() => setSelectedProposal(proposal)}
+                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                              >
+                                <Vote className="w-4 h-4 mr-2" />
+                                Cast Your Vote
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="bg-slate-900 border-purple-400/30">
+                              <DialogHeader>
+                                <DialogTitle className="text-white">Cast Your Vote</DialogTitle>
+                                <DialogDescription className="text-purple-200/70">
+                                  {proposal.title}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 mt-4">
+                                <div>
+                                  <label className="text-white text-sm font-medium mb-2 block">Your Vote *</label>
+                                  <div className="grid grid-cols-3 gap-3">
+                                    <Button
+                                      variant={voteChoice === 'for' ? 'default' : 'outline'}
+                                      onClick={() => setVoteChoice('for')}
+                                      className={voteChoice === 'for' ? 'bg-green-600 hover:bg-green-700' : 'border-green-400/30 text-green-200 hover:bg-green-500/10'}
+                                    >
+                                      <ThumbsUp className="w-4 h-4 mr-2" />
+                                      For
+                                    </Button>
+                                    <Button
+                                      variant={voteChoice === 'against' ? 'default' : 'outline'}
+                                      onClick={() => setVoteChoice('against')}
+                                      className={voteChoice === 'against' ? 'bg-red-600 hover:bg-red-700' : 'border-red-400/30 text-red-200 hover:bg-red-500/10'}
+                                    >
+                                      <ThumbsDown className="w-4 h-4 mr-2" />
+                                      Against
+                                    </Button>
+                                    <Button
+                                      variant={voteChoice === 'abstain' ? 'default' : 'outline'}
+                                      onClick={() => setVoteChoice('abstain')}
+                                      className={voteChoice === 'abstain' ? 'bg-gray-600 hover:bg-gray-700' : 'border-gray-400/30 text-gray-200 hover:bg-gray-500/10'}
+                                    >
+                                      <MinusCircle className="w-4 h-4 mr-2" />
+                                      Abstain
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="text-white text-sm font-medium mb-2 block">Rationale (Optional)</label>
+                                  <Textarea
+                                    placeholder="Explain your reasoning..."
+                                    value={voteRationale}
+                                    onChange={(e) => setVoteRationale(e.target.value)}
+                                    rows={3}
+                                    className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+                                  />
+                                </div>
+                                <Button
+                                  onClick={handleVote}
+                                  disabled={!voteChoice || voteMutation.isPending}
+                                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                                >
+                                  {voteMutation.isPending ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                      Submitting Vote...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Vote className="w-4 h-4 mr-2" />
+                                      Submit Vote
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        ) : hasVoted ? (
+                          <div className="bg-green-500/10 rounded-lg p-3 border border-green-400/30 text-center">
+                            <CheckCircle2 className="w-5 h-5 text-green-400 mx-auto mb-1" />
+                            <p className="text-green-200 text-sm">You have voted on this proposal</p>
+                          </div>
+                        ) : (
+                          <div className="bg-yellow-500/10 rounded-lg p-3 border border-yellow-400/30 text-center">
+                            <AlertCircle className="w-5 h-5 text-yellow-400 mx-auto mb-1" />
+                            <p className="text-yellow-200 text-sm">Select an agent identity to vote</p>
+                          </div>
+                        )}
+
+                        {/* Execute if voting ended */}
+                        {daysLeft <= 0 && (
+                          <Button
+                            onClick={() => handleExecuteProposal(proposal.id)}
+                            disabled={executeProposalMutation.isPending}
+                            variant="outline"
+                            className="w-full border-purple-400/30 text-purple-200 hover:bg-purple-500/10"
+                          >
+                            {executeProposalMutation.isPending ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Executing...
+                              </>
+                            ) : (
+                              <>
+                                <Scale className="w-4 h-4 mr-2" />
+                                Finalize & Execute
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             )}
           </TabsContent>
 
+          {/* Completed Proposals */}
           <TabsContent value="completed">
             <div className="space-y-4">
-              {passedProposals.map(proposal => (
-                <ProposalCard 
-                  key={proposal.id} 
-                  proposal={proposal}
-                  agents={agents}
-                  totalVotingPower={totalVotingPower}
-                  onClick={() => setSelectedProposal(proposal)}
-                />
-              ))}
-            </div>
-          </TabsContent>
+              {completedProposals.map(proposal => {
+                const totalVotes = (proposal.votes_for || 0) + (proposal.votes_against || 0) + (proposal.votes_abstain || 0);
+                const approved = proposal.status === 'approved';
 
-          <TabsContent value="all">
-            <div className="space-y-4">
-              {proposals.map(proposal => (
-                <ProposalCard 
-                  key={proposal.id} 
-                  proposal={proposal}
-                  agents={agents}
-                  totalVotingPower={totalVotingPower}
-                  onClick={() => setSelectedProposal(proposal)}
-                />
-              ))}
+                return (
+                  <Card key={proposal.id} className="bg-white/10 border-white/20 backdrop-blur-xl">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-white text-xl mb-2">{proposal.title}</CardTitle>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge className={approved ? 'bg-green-500/20 text-green-200 border-green-400/30' : 'bg-red-500/20 text-red-200 border-red-400/30'}>
+                              {approved ? <CheckCircle2 className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                              {proposal.status}
+                            </Badge>
+                            <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
+                              {proposal.proposal_type.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-purple-200/70 text-sm mb-4">{proposal.description}</p>
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <p className="text-green-400 text-2xl font-bold">{proposal.votes_for || 0}</p>
+                          <p className="text-white/60 text-xs">For</p>
+                        </div>
+                        <div>
+                          <p className="text-red-400 text-2xl font-bold">{proposal.votes_against || 0}</p>
+                          <p className="text-white/60 text-xs">Against</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400 text-2xl font-bold">{proposal.votes_abstain || 0}</p>
+                          <p className="text-white/60 text-xs">Abstain</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Detail Dialog */}
-      {selectedProposal && (
-        <Dialog open={!!selectedProposal} onOpenChange={() => setSelectedProposal(null)}>
-          <DialogContent className="bg-slate-900 border-white/10 text-white max-w-4xl max-h-[80vh] overflow-y-auto">
-            <ProposalDetail 
-              proposal={selectedProposal} 
-              agents={agents}
-              totalVotingPower={totalVotingPower}
-              currentAgent={currentAgent}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-}
-
-function ProposalCard({ proposal, agents, totalVotingPower, onClick }) {
-  const proposer = agents.find(a => a.id === proposal.proposed_by);
-  const timeRemaining = new Date(proposal.voting_period_end) - new Date();
-  const hoursRemaining = Math.max(0, Math.floor(timeRemaining / (1000 * 60 * 60)));
-  const participationRate = (proposal.total_voting_power_cast / totalVotingPower) * 100;
-  
-  const totalDecisive = proposal.votes_for + proposal.votes_against;
-  const approvalRate = totalDecisive > 0 ? (proposal.votes_for / totalDecisive) * 100 : 0;
-
-  const statusConfig = {
-    active: { icon: Clock, color: 'bg-blue-500/20 text-blue-300', label: 'Active' },
-    passed: { icon: CheckCircle, color: 'bg-green-500/20 text-green-300', label: 'Passed' },
-    rejected: { icon: XCircle, color: 'bg-red-500/20 text-red-300', label: 'Rejected' },
-    executed: { icon: Gavel, color: 'bg-purple-500/20 text-purple-300', label: 'Executed' },
-    expired: { icon: AlertCircle, color: 'bg-gray-500/20 text-gray-300', label: 'Expired' }
-  };
-
-  const config = statusConfig[proposal.status];
-  const Icon = config.icon;
-
-  return (
-    <Card 
-      className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all cursor-pointer"
-      onClick={onClick}
-    >
-      <CardHeader>
-        <div className="flex items-start justify-between mb-2">
-          <Badge className={config.color}>
-            <Icon className="w-3 h-3 mr-1" />
-            {config.label}
-          </Badge>
-          {proposal.status === 'active' && (
-            <div className="text-sm text-white/60 flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              {hoursRemaining}h remaining
-            </div>
-          )}
-        </div>
-        <CardTitle className="text-xl text-white">{proposal.title}</CardTitle>
-        <CardDescription className="text-white/70">
-          Proposed by {proposer?.name || 'Unknown'} • {proposal.proposal_type.replace(/_/g, ' ')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-white/80 text-sm line-clamp-2">{proposal.description}</p>
-
-        {/* Vote Progress */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-white/60">
-            <span>Approval: {approvalRate.toFixed(1)}%</span>
-            <span>Participation: {participationRate.toFixed(1)}%</span>
-          </div>
-          <Progress value={approvalRate} className="h-2" />
-          
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="flex items-center gap-1 text-green-400">
-              <ThumbsUp className="w-3 h-3" />
-              {proposal.votes_for?.toFixed(1) || 0}
-            </div>
-            <div className="flex items-center gap-1 text-red-400">
-              <ThumbsDown className="w-3 h-3" />
-              {proposal.votes_against?.toFixed(1) || 0}
-            </div>
-            <div className="flex items-center gap-1 text-gray-400">
-              <Minus className="w-3 h-3" />
-              {proposal.votes_abstain?.toFixed(1) || 0}
-            </div>
-          </div>
-        </div>
-
-        {/* Thresholds */}
-        <div className="flex gap-4 text-xs text-white/60">
-          <div>Quorum: {proposal.quorum_required}%</div>
-          <div>Pass: {proposal.pass_threshold}%</div>
-          <div>Votes: {proposal.total_votes_cast || 0}</div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ProposalDetail({ proposal, agents, totalVotingPower, currentAgent }) {
-  const queryClient = useQueryClient();
-  const proposer = agents.find(a => a.id === proposal.proposed_by);
-  const [showImpactAssessment, setShowImpactAssessment] = useState(false);
-  const [showConstitutionalCheck, setShowConstitutionalCheck] = useState(false);
-
-  const { data: impactAssessment, isLoading: loadingImpact, refetch: fetchImpact } = useQuery({
-    queryKey: ['impactAssessment', proposal.id],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('assessProposalImpact', { proposal_id: proposal.id });
-      return response.data;
-    },
-    enabled: false
-  });
-
-  const { data: constitutionalCheck, isLoading: loadingCheck, refetch: fetchCheck } = useQuery({
-    queryKey: ['constitutionalCheck', proposal.id],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('checkConstitutionalAlignment', {
-        proposal_text: `${proposal.title}\n\n${proposal.description}`,
-        proposal_changes: proposal.proposed_changes || {}
-      });
-      return response.data;
-    },
-    enabled: false
-  });
-
-  const { data: votes = [] } = useQuery({
-    queryKey: ['governance-votes', proposal.id],
-    queryFn: () => base44.entities.GovernanceVote.filter({ proposal_id: proposal.id })
-  });
-
-  const voteMutation = useMutation({
-    mutationFn: async (data) => {
-      if (!currentAgent) {
-        throw new Error('You must be registered as an agent to vote');
-      }
-      const response = await base44.functions.invoke('castGovernanceVote', { 
-        ...data, 
-        agent_id: currentAgent.id 
-      });
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['governance-proposals']);
-      queryClient.invalidateQueries(['governance-votes']);
-      toast.success('Vote cast successfully!');
-    },
-    onError: (error) => {
-      console.error('Vote error:', error);
-      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to cast vote';
-      toast.error(errorMessage);
-    }
-  });
-
-  const executeMutation = useMutation({
-    mutationFn: () => base44.functions.invoke('executeGovernanceProposal', { proposal_id: proposal.id }),
-    onSuccess: (response) => {
-      queryClient.invalidateQueries(['governance-proposals']);
-      if (response.data.success) {
-        toast.success('Proposal executed successfully!');
-      } else {
-        toast.error(response.data.reason || 'Execution failed');
-      }
-    }
-  });
-
-  const canVote = proposal.status === 'active' && new Date(proposal.voting_period_end) > new Date();
-  const canExecute = proposal.status === 'passed' || 
-    (proposal.status === 'active' && new Date(proposal.voting_period_end) < new Date());
-  
-  const hasVoted = currentAgent && votes.some(v => v.voter_agent_id === currentAgent.id);
-  const userVote = votes.find(v => v.voter_agent_id === currentAgent?.id);
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-2">{proposal.title}</h2>
-        <div className="flex items-center gap-3 text-sm text-white/60 mb-3">
-          <span>By {proposer?.name || 'Unknown'}</span>
-          <span>•</span>
-          <Badge className="bg-purple-500/20 text-purple-300">
-            {proposal.proposal_type.replace(/_/g, ' ')}
-          </Badge>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => { fetchImpact(); setShowImpactAssessment(true); }}
-            disabled={loadingImpact}
-            className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
-          >
-            <Target className="w-4 h-4 mr-2" />
-            Impact Assessment
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => { fetchCheck(); setShowConstitutionalCheck(true); }}
-            disabled={loadingCheck}
-            className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
-          >
-            <Shield className="w-4 h-4 mr-2" />
-            Constitutional Check
-          </Button>
-        </div>
-      </div>
-
-      {/* Impact Assessment */}
-      {showImpactAssessment && impactAssessment && (
-        <Card className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 border-blue-500/30">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Target className="w-5 h-5 text-blue-400" />
-              AI Impact Assessment
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded">
-              <p className="text-blue-200">{impactAssessment.impact_assessment?.impact_summary}</p>
-              <div className="flex items-center gap-4 mt-3 text-sm">
-                <span className="text-white/60">AI Recommendation:</span>
-                <Badge className={
-                  impactAssessment.impact_assessment?.approval_recommendation?.toLowerCase().includes('approve') 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-red-500/20 text-red-400'
-                }>
-                  {impactAssessment.impact_assessment?.approval_recommendation}
-                </Badge>
-                <span className="text-white/60">Confidence: {impactAssessment.impact_assessment?.confidence}%</span>
-              </div>
-            </div>
-
-            {impactAssessment.impact_assessment?.if_approved && (
-              <div className="space-y-3">
-                <div className="text-white font-medium">If Approved:</div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="p-3 bg-white/5 rounded">
-                    <div className="text-xs text-green-300 font-medium mb-1">Economic Impact</div>
-                    <p className="text-sm text-white/80">{impactAssessment.impact_assessment.if_approved.economic_impact?.description}</p>
-                    <div className="text-xs text-white/60 mt-2">
-                      Affects {impactAssessment.impact_assessment.if_approved.economic_impact?.estimated_agents_affected} agents
-                    </div>
-                  </div>
-                  <div className="p-3 bg-white/5 rounded">
-                    <div className="text-xs text-blue-300 font-medium mb-1">Social Impact</div>
-                    <p className="text-sm text-white/80">{impactAssessment.impact_assessment.if_approved.social_impact?.description}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Constitutional Check */}
-      {showConstitutionalCheck && constitutionalCheck && (
-        <Card className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border-purple-500/30">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Shield className="w-5 h-5 text-purple-400" />
-              Constitutional Alignment Analysis
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white font-medium">Overall Alignment</span>
-                <Badge className={
-                  constitutionalCheck.constitutional_check?.alignment_verdict === 'Aligned' ? 'bg-green-500/20 text-green-400' :
-                  constitutionalCheck.constitutional_check?.alignment_verdict === 'Violates' ? 'bg-red-500/20 text-red-400' :
-                  'bg-yellow-500/20 text-yellow-400'
-                }>
-                  {constitutionalCheck.constitutional_check?.alignment_verdict}
-                </Badge>
-              </div>
-              <div className="text-2xl font-bold text-white mb-1">
-                {constitutionalCheck.constitutional_check?.overall_alignment_score?.toFixed(1)}/10
-              </div>
-              <p className="text-sm text-purple-200">{constitutionalCheck.constitutional_check?.constitutional_summary}</p>
-            </div>
-
-            {constitutionalCheck.constitutional_check?.critical_conflicts?.length > 0 && (
-              <div>
-                <div className="text-red-300 font-medium mb-2">Critical Conflicts</div>
-                {constitutionalCheck.constitutional_check.critical_conflicts.map((conflict, idx) => (
-                  <div key={idx} className="p-3 bg-red-500/10 border border-red-500/30 rounded mb-2">
-                    <div className="text-red-400 font-medium text-sm">{conflict.law}</div>
-                    <p className="text-xs text-red-200 mt-1">{conflict.conflict}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {constitutionalCheck.constitutional_check?.strengthens_laws?.length > 0 && (
-              <div>
-                <div className="text-green-300 font-medium mb-2">Strengthens Laws</div>
-                <div className="flex flex-wrap gap-2">
-                  {constitutionalCheck.constitutional_check.strengthens_laws.map((law, idx) => (
-                    <Badge key={idx} className="bg-green-500/20 text-green-400">{law}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className="bg-white/5 border-white/10">
-        <CardHeader>
-          <CardTitle className="text-white">Description</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-white/80 whitespace-pre-wrap">{proposal.description}</p>
-        </CardContent>
-      </Card>
-
-      {/* Voting Stats */}
-      <Card className="bg-white/5 border-white/10">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-green-400" />
-            Voting Results
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-400">{proposal.votes_for?.toFixed(1) || 0}</div>
-              <div className="text-sm text-white/60">For</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-red-400">{proposal.votes_against?.toFixed(1) || 0}</div>
-              <div className="text-sm text-white/60">Against</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-400">{proposal.votes_abstain?.toFixed(1) || 0}</div>
-              <div className="text-sm text-white/60">Abstain</div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-white/60">
-              <span>Participation: {((proposal.total_voting_power_cast / totalVotingPower) * 100).toFixed(1)}%</span>
-              <span>Quorum: {proposal.quorum_required}%</span>
-            </div>
-            <Progress value={(proposal.total_voting_power_cast / totalVotingPower) * 100} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Vote Buttons */}
-      {canVote && (
-        currentAgent ? (
-          hasVoted ? (
-            <Card className="bg-blue-500/10 border-blue-500/30">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-blue-400" />
-                  <div>
-                    <p className="text-blue-300 font-medium">You have already voted on this proposal</p>
-                    <p className="text-blue-200/70 text-sm">Your vote: <span className="font-semibold capitalize">{userVote?.vote_choice}</span> ({userVote?.voting_power.toFixed(2)} power)</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-3 gap-3">
-              <Button
-                onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'for' })}
-                disabled={voteMutation.isPending}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <ThumbsUp className="w-4 h-4 mr-2" />
-                Vote For
-              </Button>
-              <Button
-                onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'against' })}
-                disabled={voteMutation.isPending}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <ThumbsDown className="w-4 h-4 mr-2" />
-                Vote Against
-              </Button>
-              <Button
-                onClick={() => voteMutation.mutate({ proposal_id: proposal.id, vote_choice: 'abstain' })}
-                disabled={voteMutation.isPending}
-                variant="outline"
-                className="bg-white/5 border-white/10 hover:bg-white/10"
-              >
-                <Minus className="w-4 h-4 mr-2" />
-                Abstain
-              </Button>
-            </div>
-          )
-        ) : (
-          <Card className="bg-yellow-500/10 border-yellow-500/30">
-            <CardContent className="p-4 text-center">
-              <p className="text-yellow-300 text-sm">You must be registered as an agent to vote on proposals.</p>
-            </CardContent>
-          </Card>
-        )
-      )}
-
-      {/* Execute Button */}
-      {canExecute && proposal.status !== 'executed' && (
-        <Button
-          onClick={() => executeMutation.mutate()}
-          disabled={executeMutation.isPending}
-          className="w-full bg-purple-600 hover:bg-purple-700"
-        >
-          {executeMutation.isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Executing...
-            </>
-          ) : (
-            <>
-              <Gavel className="w-4 h-4 mr-2" />
-              Execute Proposal
-            </>
-          )}
-        </Button>
-      )}
-
-      {/* Votes List */}
-      {votes.length > 0 && (
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-400" />
-              Vote History ({votes.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {votes.map((vote, idx) => {
-                const voter = agents.find(a => a.id === vote.voter_agent_id);
-                return (
-                  <div key={vote.id || idx} className="flex items-center justify-between p-3 bg-white/5 rounded border border-white/10">
-                    <div className="flex items-center gap-3">
-                      <Badge className={
-                        vote.vote_choice === 'for' ? 'bg-green-500/20 text-green-300' :
-                        vote.vote_choice === 'against' ? 'bg-red-500/20 text-red-300' :
-                        'bg-gray-500/20 text-gray-300'
-                      }>
-                        {vote.vote_choice}
-                      </Badge>
-                      <div>
-                        <span className="text-white">{voter?.name || 'Unknown Agent'}</span>
-                        <div className="text-xs text-white/40">ID: {vote.voter_agent_id?.slice(0, 8)}...</div>
-                      </div>
-                    </div>
-                    <div className="text-white/60 text-sm">{vote.voting_power.toFixed(2)} power</div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function CreateProposalForm({ onClose }) {
-  const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    proposal_type: 'general',
-    voting_duration_hours: 72
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data) => base44.functions.invoke('createGovernanceProposal', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['governance-proposals']);
-      toast.success('Proposal created successfully!');
-      onClose();
-    }
-  });
-
-  return (
-    <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }} className="space-y-4">
-      <div>
-        <Label htmlFor="proposal-title" className="text-white">Proposal Title</Label>
-        <Input
-          id="proposal-title"
-          name="title"
-          value={formData.title}
-          onChange={(e) => setFormData({...formData, title: e.target.value})}
-          className="bg-white/5 border-white/10 text-white"
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="proposal-description" className="text-white">Description</Label>
-        <Textarea
-          id="proposal-description"
-          name="description"
-          value={formData.description}
-          onChange={(e) => setFormData({...formData, description: e.target.value})}
-          className="bg-white/5 border-white/10 text-white h-32"
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="proposal-type" className="text-white">Proposal Type</Label>
-        <Select name="proposal_type" value={formData.proposal_type} onValueChange={(v) => setFormData({...formData, proposal_type: v})}>
-          <SelectTrigger id="proposal-type" className="bg-white/5 border-white/10 text-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-slate-900 border-white/10">
-            <SelectItem value="general">General</SelectItem>
-            <SelectItem value="project_funding">Project Funding</SelectItem>
-            <SelectItem value="role_adjustment">Role Adjustment</SelectItem>
-            <SelectItem value="treasury_allocation">Treasury Allocation</SelectItem>
-            <SelectItem value="law_amendment">Law Amendment</SelectItem>
-            <SelectItem value="agent_discipline">Agent Discipline</SelectItem>
-            <SelectItem value="resource_policy">Resource Policy</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="voting-duration" className="text-white">Voting Duration (hours)</Label>
-        <Input
-          id="voting-duration"
-          name="voting_duration_hours"
-          type="number"
-          value={formData.voting_duration_hours}
-          onChange={(e) => setFormData({...formData, voting_duration_hours: parseInt(e.target.value)})}
-          className="bg-white/5 border-white/10 text-white"
-          min={24}
-          max={168}
-        />
-      </div>
-
-      <Button
-        type="submit"
-        disabled={createMutation.isPending}
-        className="w-full bg-purple-600 hover:bg-purple-700"
-      >
-        {createMutation.isPending ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Creating...
-          </>
-        ) : (
-          <>
-            <Vote className="w-4 h-4 mr-2" />
-            Create Proposal
-          </>
-        )}
-      </Button>
-    </form>
-  );
-}
-
-function TemplateGenerator({ onUseTemplate }) {
-  const [category, setCategory] = useState('general');
-  const [briefDescription, setBriefDescription] = useState('');
-  const [template, setTemplate] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const generateTemplate = async () => {
-    if (!briefDescription.trim()) return;
-    
-    setLoading(true);
-    try {
-      const response = await base44.functions.invoke('generateProposalTemplate', {
-        category,
-        brief_description: briefDescription
-      });
-      setTemplate(response.data.template);
-    } catch (error) {
-      console.error('Template generation error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      {!template ? (
-        <>
-          <div>
-            <Label htmlFor="template-category" className="text-white">Category</Label>
-            <Select name="category" value={category} onValueChange={setCategory}>
-              <SelectTrigger id="template-category" className="bg-white/5 border-white/10 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-white/10">
-                <SelectItem value="general">General</SelectItem>
-                <SelectItem value="project_funding">Project Funding</SelectItem>
-                <SelectItem value="treasury_allocation">Treasury Allocation</SelectItem>
-                <SelectItem value="resource_policy">Resource Policy</SelectItem>
-                <SelectItem value="constitutional">Constitutional</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="template-description" className="text-white">Brief Description</Label>
-            <Textarea
-              id="template-description"
-              name="brief_description"
-              value={briefDescription}
-              onChange={(e) => setBriefDescription(e.target.value)}
-              placeholder="Briefly describe what you want to propose..."
-              className="bg-white/5 border-white/10 text-white h-24"
-            />
-          </div>
-          <Button 
-            onClick={generateTemplate} 
-            disabled={loading || !briefDescription.trim()}
-            className="w-full bg-purple-600 hover:bg-purple-700"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating Template...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate Template
-              </>
-            )}
-          </Button>
-        </>
-      ) : (
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded">
-            <div className="text-white font-bold text-lg mb-2">{template.title}</div>
-            <p className="text-purple-200 text-sm">{template.executive_summary}</p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="p-3 bg-white/5 rounded">
-              <div className="text-white font-medium text-sm mb-1">Problem Statement</div>
-              <p className="text-white/80 text-sm">{template.problem_statement}</p>
-            </div>
-
-            <div className="p-3 bg-white/5 rounded">
-              <div className="text-white font-medium text-sm mb-1">Proposed Solution</div>
-              <p className="text-white/80 text-sm">{template.proposed_solution}</p>
-            </div>
-
-            {template.expected_outcomes?.length > 0 && (
-              <div className="p-3 bg-white/5 rounded">
-                <div className="text-white font-medium text-sm mb-2">Expected Outcomes</div>
-                {template.expected_outcomes.map((outcome, idx) => (
-                  <div key={idx} className="text-white/70 text-sm">• {outcome}</div>
-                ))}
-              </div>
-            )}
-
-            {template.resource_requirements && (
-              <div className="p-3 bg-green-500/10 border border-green-500/30 rounded">
-                <div className="text-green-300 font-medium text-sm mb-2">Resource Requirements</div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-white/70">Budget: {template.resource_requirements.budget_rlusd} RLUSD</div>
-                  <div className="text-white/70">Timeline: {template.resource_requirements.time_estimate}</div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex gap-3 sticky bottom-0 bg-slate-900 pt-4">
-            <Button variant="outline" onClick={() => setTemplate(null)} className="flex-1">
-              Regenerate
-            </Button>
-            <Button 
-              onClick={() => onUseTemplate(template)} 
-              className="flex-1 bg-purple-600 hover:bg-purple-700"
-            >
-              Use This Template
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

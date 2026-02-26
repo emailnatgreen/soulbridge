@@ -359,6 +359,16 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to={createPageUrl('GovernanceHub')}>
+              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <Scale className="w-8 h-8 text-purple-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">Governance Hub</h3>
+                  <p className="text-white/60 text-sm">Those Who Dwell Decide</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
