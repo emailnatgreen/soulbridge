@@ -53,14 +53,7 @@ export default function AgentDetails() {
     }
 
     if (!agentId) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-                <div className="text-center text-white space-y-3">
-                    <p className="text-xl">No agent ID provided</p>
-                    <Link to={createPageUrl('Agents')} className="underline text-purple-300">← Back to Agents</Link>
-                </div>
-            </div>
-        );
+        return <AgentPicker />;
     }
 
     if (!agent) {
