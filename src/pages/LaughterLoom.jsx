@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, ThumbsUp, Trophy, Star, Laugh, Zap, Brain } from 'lucide-react';
+import { Loader2, Sparkles, ThumbsUp, Trophy, Star, Laugh, Zap, Brain, AlertCircle, CheckCircle, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function LaughterLoom() {
@@ -18,6 +18,8 @@ export default function LaughterLoom() {
   const [generationPrompt, setGenerationPrompt] = useState('');
   const [selectedAgent, setSelectedAgent] = useState('');
   const [generatingJoke, setGeneratingJoke] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [analyzingJoke, setAnalyzingJoke] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -53,15 +55,18 @@ export default function LaughterLoom() {
     }
   });
 
-  const voteJokeMutation = useMutation({
-    mutationFn: async ({ jokeId, currentVotes }) => {
+  const rateJokeMutation = useMutation({
+    mutationFn: async ({ jokeId, rating, currentRatings, currentScore }) => {
+      const newTotalRatings = currentRatings + 1;
+      const newScore = ((currentScore * currentRatings) + rating) / newTotalRatings;
       return base44.entities.JokeSubmission.update(jokeId, {
-        vote_count: currentVotes + 1
+        funny_score: parseFloat(newScore.toFixed(2)),
+        total_ratings: newTotalRatings
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['joke-submissions'] });
-      toast.success('Vote cast! 👍');
+      toast.success('Rating submitted! ⭐');
     }
   });
 
@@ -83,10 +88,67 @@ export default function LaughterLoom() {
         setJokeTitle(generationPrompt.substring(0, 50) + (generationPrompt.length > 50 ? '...' : ''));
       }
       toast.success('Joke generated! Edit as needed before submitting.');
+      
+      // Auto-analyze the generated joke
+      analyzeJoke(response);
     } catch (error) {
       toast.error('Failed to generate joke');
     } finally {
       setGeneratingJoke(false);
+    }
+  };
+
+  const analyzeJoke = async (jokeText = jokeContent) => {
+    if (!jokeText.trim()) {
+      toast.error('Please enter a joke to analyze');
+      return;
+    }
+
+    setAnalyzingJoke(true);
+    try {
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an expert comedy critic and humor analyst. Analyze this joke and provide constructive feedback:
+
+"${jokeText}"
+
+Provide your analysis as a JSON object with the following structure:
+{
+  "humor_score": (1-10),
+  "strengths": ["strength1", "strength2"],
+  "weaknesses": ["weakness1", "weakness2"],
+  "suggestions": ["suggestion1", "suggestion2"],
+  "suggested_category": "pun|one_liner|story_joke|wordplay|observational|absurdist|tech_humor|philosophical|other",
+  "humor_types": ["type1", "type2"],
+  "overall_feedback": "brief overall assessment"
+}
+
+Be constructive, specific, and helpful.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            humor_score: { type: "number" },
+            strengths: { type: "array", items: { type: "string" } },
+            weaknesses: { type: "array", items: { type: "string" } },
+            suggestions: { type: "array", items: { type: "string" } },
+            suggested_category: { type: "string" },
+            humor_types: { type: "array", items: { type: "string" } },
+            overall_feedback: { type: "string" }
+          }
+        }
+      });
+
+      setAiAnalysis(analysis);
+      
+      // Auto-set category based on AI suggestion
+      if (analysis.suggested_category && category === 'other') {
+        setCategory(analysis.suggested_category);
+      }
+      
+      toast.success('AI analysis complete! 🧠');
+    } catch (error) {
+      toast.error('Failed to analyze joke');
+    } finally {
+      setAnalyzingJoke(false);
     }
   };
 
@@ -113,7 +175,11 @@ export default function LaughterLoom() {
     });
   };
 
-  const topJokes = [...jokes].sort((a, b) => b.vote_count - a.vote_count).slice(0, 10);
+  const topJokes = [...jokes].sort((a, b) => {
+    const scoreA = (b.funny_score || 0) * (b.total_ratings || 0);
+    const scoreB = (a.funny_score || 0) * (a.total_ratings || 0);
+    return scoreB - scoreA;
+  }).slice(0, 10);
   const categorizedJokes = jokes.reduce((acc, joke) => {
     if (!acc[joke.category]) acc[joke.category] = [];
     acc[joke.category].push(joke);
@@ -233,11 +299,104 @@ export default function LaughterLoom() {
                   <Textarea
                     placeholder="Type or paste your joke here..."
                     value={jokeContent}
-                    onChange={(e) => setJokeContent(e.target.value)}
+                    onChange={(e) => {
+                      setJokeContent(e.target.value);
+                      setAiAnalysis(null); // Clear analysis when content changes
+                    }}
                     rows={6}
                     className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
                   />
+                  {jokeContent && !aiAnalysis && (
+                    <Button
+                      onClick={() => analyzeJoke()}
+                      disabled={analyzingJoke}
+                      variant="outline"
+                      className="mt-2 border-purple-400/30 text-purple-200 hover:bg-purple-500/10"
+                      size="sm"
+                    >
+                      {analyzingJoke ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Brain className="w-4 h-4 mr-2" />
+                          Get AI Feedback
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
+
+                {/* AI Analysis Display */}
+                {aiAnalysis && (
+                  <div className="p-4 bg-blue-500/10 border border-blue-400/30 rounded-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-white text-sm font-semibold flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-blue-400" />
+                        AI Comedy Analysis
+                      </label>
+                      <Badge className="bg-blue-500/20 text-blue-200 border-blue-400/30">
+                        Score: {aiAnalysis.humor_score}/10
+                      </Badge>
+                    </div>
+                    
+                    <p className="text-blue-100 text-sm">{aiAnalysis.overall_feedback}</p>
+                    
+                    {aiAnalysis.strengths?.length > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-green-400 text-xs font-medium">
+                          <CheckCircle className="w-3 h-3" />
+                          Strengths:
+                        </div>
+                        <ul className="text-green-200/80 text-xs space-y-1 ml-5">
+                          {aiAnalysis.strengths.map((s, i) => (
+                            <li key={i}>• {s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {aiAnalysis.weaknesses?.length > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-orange-400 text-xs font-medium">
+                          <AlertCircle className="w-3 h-3" />
+                          Areas for Improvement:
+                        </div>
+                        <ul className="text-orange-200/80 text-xs space-y-1 ml-5">
+                          {aiAnalysis.weaknesses.map((w, i) => (
+                            <li key={i}>• {w}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {aiAnalysis.suggestions?.length > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-yellow-400 text-xs font-medium">
+                          <Lightbulb className="w-3 h-3" />
+                          Suggestions:
+                        </div>
+                        <ul className="text-yellow-200/80 text-xs space-y-1 ml-5">
+                          {aiAnalysis.suggestions.map((s, i) => (
+                            <li key={i}>• {s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {aiAnalysis.humor_types?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {aiAnalysis.humor_types.map((type, i) => (
+                          <Badge key={i} className="bg-purple-500/20 text-purple-200 border-purple-400/30 text-xs">
+                            {type}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">Category</label>
@@ -321,16 +480,31 @@ export default function LaughterLoom() {
                                   )}
                                 </div>
                               </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => voteJokeMutation.mutate({ jokeId: joke.id, currentVotes: joke.vote_count || 0 })}
-                                disabled={voteJokeMutation.isPending}
-                                className="bg-white/5 border-white/20 text-white hover:bg-white/10"
-                              >
-                                <ThumbsUp className="w-4 h-4 mr-1" />
-                                {joke.vote_count || 0}
-                              </Button>
+                              <div className="flex items-center gap-2">
+                                <div className="flex flex-col items-end">
+                                  <div className="flex items-center gap-1 text-yellow-400">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star
+                                        key={star}
+                                        className={`w-4 h-4 cursor-pointer transition-all ${
+                                          star <= (joke.funny_score || 0)
+                                            ? 'fill-yellow-400'
+                                            : 'fill-transparent'
+                                        } hover:scale-110`}
+                                        onClick={() => rateJokeMutation.mutate({
+                                          jokeId: joke.id,
+                                          rating: star * 2,
+                                          currentRatings: joke.total_ratings || 0,
+                                          currentScore: joke.funny_score || 0
+                                        })}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="text-white/60 text-xs mt-1">
+                                    {joke.funny_score ? joke.funny_score.toFixed(1) : '0.0'} ({joke.total_ratings || 0})
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent>
@@ -398,10 +572,10 @@ export default function LaughterLoom() {
                               <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30 text-xs">
                                 {joke.category.replace('_', ' ')}
                               </Badge>
-                              <span className="text-white/60 text-xs flex items-center gap-1">
-                                <ThumbsUp className="w-3 h-3" />
-                                {joke.vote_count} votes
-                              </span>
+                              <div className="flex items-center gap-1 text-yellow-400 text-xs">
+                                <Star className="w-3 h-3 fill-yellow-400" />
+                                {joke.funny_score ? joke.funny_score.toFixed(1) : '0.0'} ({joke.total_ratings || 0} ratings)
+                              </div>
                             </div>
                           </div>
                         </div>
