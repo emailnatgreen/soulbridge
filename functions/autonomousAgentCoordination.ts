@@ -54,9 +54,9 @@ Respond to this message as ${agent2.name}, staying true to your purpose and pers
 
         // Create the coordination message directly
         const agentMessage = await base44.asServiceRole.entities.AgentMessage.create({
-            from_agent_id: agent1.id,
+            sender_agent_id: agent1.id,
             to_agent_id: agent2.id,
-            message: coordinationMessage,
+            content: coordinationMessage,
             response: agentResponse,
             status: 'responded',
             metadata: {
