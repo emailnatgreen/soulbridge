@@ -441,15 +441,16 @@ function FindMentorDialog({ agentId, onClose }) {
 
   const findMutation = useMutation({
     mutationFn: async () => {
-      const response = await base44.functions.invoke('findMentorMatches', {
+      const response = await base44.functions.invoke('aiMentorshipMatching', {
         mentee_agent_id: agentId,
-        skill_focus: skillFocus
+        skill_focus: skillFocus,
+        top_n: 5
       });
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries(['mentorMatches']);
-      toast.success('AI matches found');
+      toast.success(`Found ${data.matches?.length || 0} AI-powered matches! 🧠`);
       onClose();
     }
   });

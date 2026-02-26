@@ -290,12 +290,12 @@ export default function Home() {
         <div className="mb-8 sm:mb-12">
           <h2 className="text-white text-xl font-semibold mb-4">Quick Access</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link to={createPageUrl('SkillDevelopment')}>
-              <Card className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer h-full">
+            <Link to={createPageUrl('MentorshipHub')}>
+              <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-pink-500/20 hover:border-pink-500/40 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Brain className="w-8 h-8 text-purple-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Skill Development</h3>
-                  <p className="text-white/60 text-sm">Train agents and track progress</p>
+                  <Users className="w-8 h-8 text-pink-400 mb-3" />
+                  <h3 className="text-white font-semibold mb-1">AI Mentorship Matching</h3>
+                  <p className="text-white/60 text-sm">Never alone, always growing together</p>
                 </CardContent>
               </Card>
             </Link>
