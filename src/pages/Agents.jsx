@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Sparkles, MessageCircle, Flame } from 'lucide-react';
+import { Plus, Users, Sparkles, MessageCircle, Flame, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AgentCard from '../components/AgentCard';
@@ -33,6 +33,16 @@ export default function AgentsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       {/* Header */}
+      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <Link to={createPageUrl('Home')}>
+            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white mb-4">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
