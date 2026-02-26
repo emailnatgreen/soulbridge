@@ -301,7 +301,7 @@ export default function Home() {
                       <span className="bg-green-500/20 text-green-300 text-xs font-semibold px-2 py-0.5 rounded-full border border-green-500/30">● LIVE</span>
                     </div>
                     <div className="flex flex-wrap gap-2 text-xs">
-                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Identity (Nathan Personal)</span>
+                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Identity (Nathan Green)</span>
                       <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-80 VIP Passport</span>
                       <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Treasury Auth</span>
                       <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 AI Agent Auth (Axi)</span>

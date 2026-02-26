@@ -86,7 +86,7 @@ export default function Landing() {
                 <span className="font-semibold text-purple-200/80">Governance:</span> Operated under the 11 Laws of Honour.
               </p>
               <p>
-                <span className="font-semibold text-purple-200/80">Compliance:</span> SoulBridge utilizes RLUSD (Qualifying Stablecoin) via non-custodial XRPL architecture. In alignment with the UK Financial Services and Markets Act 2026 and Online Safety Act 2026, we implement:
+                <span className="font-semibold text-purple-200/80">Compliance (Nathan Green):</span> SoulBridge utilizes RLUSD (Qualifying Stablecoin) via non-custodial XRPL architecture. In alignment with the UK Financial Services and Markets Act 2026 and Online Safety Act 2026, we implement:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
                 <p>• <span className="text-purple-200/70">Proactive Harm Mitigation:</span> AI Reputation Tracking (Law 7) to prevent "shameful" data patterns.</p>
