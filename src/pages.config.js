@@ -142,6 +142,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
 import InstitutionalDeck from './pages/InstitutionalDeck';
+import GrantTracker from './pages/GrantTracker';
 import __Layout from './Layout.jsx';
 
 
@@ -241,6 +242,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
     "InstitutionalDeck": InstitutionalDeck,
+    "GrantTracker": GrantTracker,
 }
 
 export const pagesConfig = {
