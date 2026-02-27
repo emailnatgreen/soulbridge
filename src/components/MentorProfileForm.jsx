@@ -256,6 +256,24 @@ export default function MentorProfileForm({ initialData, onSubmit, isLoading }) 
         </CardContent>
       </Card>
 
+      {/* Availability Schedule */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Weekly Availability Schedule</CardTitle>
+          <CardDescription>
+            Select which time slots you are available each week. Mentees will see this when requesting sessions.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MentorAvailabilityScheduler
+            value={formData.availability_schedule}
+            onChange={(schedule) => setFormData({ ...formData, availability_schedule: schedule })}
+            timezone={formData.timezone}
+            onTimezoneChange={(tz) => setFormData({ ...formData, timezone: tz })}
+          />
+        </CardContent>
+      </Card>
+
       {/* Mentorship Values */}
       <Card>
         <CardHeader>
