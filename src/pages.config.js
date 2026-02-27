@@ -140,6 +140,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
 import MentorshipAnalytics from './pages/MentorshipAnalytics';
+import MentorshipWellbeing from './pages/MentorshipWellbeing';
 import __Layout from './Layout.jsx';
 
 
@@ -237,6 +238,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
     "MentorshipAnalytics": MentorshipAnalytics,
+    "MentorshipWellbeing": MentorshipWellbeing,
 }
 
 export const pagesConfig = {
