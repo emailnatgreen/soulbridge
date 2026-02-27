@@ -8,6 +8,7 @@ import { createPageUrl } from '../utils';
 import { ArrowLeft, Shield, Zap, Users } from 'lucide-react';
 import AgentPersonalityCard from '../components/AgentPersonalityCard';
 import SocialCapitalCard from '../components/SocialCapitalCard';
+import SkillProfilePanel from '../components/agent/SkillProfilePanel';
 
 function AgentPicker() {
     const [agents, setAgents] = useState([]);

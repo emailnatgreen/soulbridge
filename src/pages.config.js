@@ -105,8 +105,10 @@ import Landing from './pages/Landing';
 import LaughterLoom from './pages/LaughterLoom';
 import MainnetMigration from './pages/MainnetMigration';
 import MemoryBrowser from './pages/MemoryBrowser';
+import MentorshipAnalytics from './pages/MentorshipAnalytics';
 import MentorshipHub from './pages/MentorshipHub';
 import MentorshipMatches from './pages/MentorshipMatches';
+import MentorshipWellbeing from './pages/MentorshipWellbeing';
 import Notifications from './pages/Notifications';
 import Privacy from './pages/Privacy';
 import ProductionHub from './pages/ProductionHub';
@@ -139,8 +141,6 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import MentorshipAnalytics from './pages/MentorshipAnalytics';
-import MentorshipWellbeing from './pages/MentorshipWellbeing';
 import __Layout from './Layout.jsx';
 
 
@@ -203,8 +203,10 @@ export const PAGES = {
     "LaughterLoom": LaughterLoom,
     "MainnetMigration": MainnetMigration,
     "MemoryBrowser": MemoryBrowser,
+    "MentorshipAnalytics": MentorshipAnalytics,
     "MentorshipHub": MentorshipHub,
     "MentorshipMatches": MentorshipMatches,
+    "MentorshipWellbeing": MentorshipWellbeing,
     "Notifications": Notifications,
     "Privacy": Privacy,
     "ProductionHub": ProductionHub,
@@ -237,8 +239,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "MentorshipAnalytics": MentorshipAnalytics,
-    "MentorshipWellbeing": MentorshipWellbeing,
 }
 
 export const pagesConfig = {
