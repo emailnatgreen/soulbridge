@@ -103,14 +103,21 @@ Deno.serve(async (req) => {
       // 7. STYLE SUCCESS RATE (5%)
       const styleBonus = styleSuccessRates[mentorProfile.mentorship_style] || 70;
 
+      // 8. GROWTH INSIGHTS ALIGNMENT (5%) — bonus when mentor suits the mentee's learning style & focus
+      const growthAlignmentScore = calculateGrowthInsightsAlignment(
+        mentorProfile, match?.mentorProfile, weightedGaps,
+        recommendedFocus, atRiskSkills, growthVelocity, learningStyle
+      );
+
       const matchQualityScore = Math.round(
-        (skillComplementarity * 0.30) +
-        (availabilityScore    * 0.10) +
-        (experienceGapScore   * 0.10) +
-        (personalityScore     * 0.15) +
-        (communicationScore   * 0.05) +
-        (effectivenessScore   * 0.25) +
-        (styleBonus           * 0.05)
+        (skillComplementarity  * 0.28) +
+        (availabilityScore     * 0.09) +
+        (experienceGapScore    * 0.09) +
+        (personalityScore      * 0.14) +
+        (communicationScore    * 0.05) +
+        (effectivenessScore    * 0.25) +
+        (styleBonus            * 0.05) +
+        (growthAlignmentScore  * 0.05)
       );
 
       if (matchQualityScore >= 40) {
