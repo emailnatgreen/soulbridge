@@ -133,7 +133,8 @@ Deno.serve(async (req) => {
             personalityScore,
             communicationScore,
             effectivenessScore,
-            styleBonus
+            styleBonus,
+            growthAlignmentScore
           }
         });
       }
