@@ -570,32 +570,16 @@ export default function DIDManager() {
                         </div>
 
                         <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
+                        <DidDocumentEditor
+                          wallet={wallet}
+                          didDocument={didDoc}
+                          trigger={
                             <Button size="sm" variant="outline" className="flex-1">
-                              <FileJson className="w-3 h-3 mr-2" />
-                              View DID Doc
+                              <Edit3 className="w-3 h-3 mr-2" />
+                              Edit DID Doc
                             </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle>DID Document</DialogTitle>
-                              <DialogDescription>
-                                Complete DID Document for {didAddress}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <pre className="bg-gray-50 p-4 rounded-md text-xs overflow-x-auto">
-                              {JSON.stringify(didDoc, null, 2)}
-                            </pre>
-                            <DialogFooter>
-                              <Button
-                                onClick={() => copyToClipboard(JSON.stringify(didDoc, null, 2), 'DID Document')}
-                              >
-                                Copy Document
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
+                          }
+                        />
                         
                         <Button
                           size="sm"
