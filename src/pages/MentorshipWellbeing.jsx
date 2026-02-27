@@ -195,6 +195,18 @@ export default function MentorshipWellbeing() {
                   {highCount} High
                 </Badge>
               )}
+              {(criticalCount + highCount) > 0 && (
+                <Button
+                  onClick={runAllInterventions}
+                  disabled={bulkRunning}
+                  className="bg-rose-600 hover:bg-rose-700 text-sm"
+                >
+                  {bulkRunning
+                    ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    : <Zap className="w-4 h-4 mr-2" />}
+                  Intervene All Urgent ({criticalCount + highCount})
+                </Button>
+              )}
               <Link to={createPageUrl('AgentWellbeing')}>
                 <Button variant="outline" className="border-white/20 text-white text-sm">
                   Full Well-being Dashboard
