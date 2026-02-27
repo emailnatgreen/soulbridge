@@ -61,12 +61,25 @@ function EventRow({ event, isNew }) {
   );
 }
 
+const TIME_FILTERS = [
+  { label: 'All time', value: 0 },
+  { label: 'Last 1h', value: 60 },
+  { label: 'Last 24h', value: 1440 },
+  { label: 'Last 7d', value: 10080 },
+];
+
 export default function DidEventStream() {
   const [events, setEvents] = useState([]);
   const [newIds, setNewIds] = useState(new Set());
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
   const seenRef = useRef(new Set());
+
+  // Filter state
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [timeFilter, setTimeFilter] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Initial load
   useEffect(() => {
