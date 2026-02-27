@@ -15,6 +15,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import DidEventStream from '../components/DidEventStream';
+import DidHealthAlertsPanel from '../components/DidHealthAlertsPanel';
 
 // ── Health check logic ────────────────────────────────────
 function evaluateWalletHealth(wallet, agents, credentials, didVersions, auditLogs) {
