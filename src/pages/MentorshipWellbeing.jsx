@@ -227,6 +227,17 @@ export default function MentorshipWellbeing() {
                   Intervene All Urgent ({criticalCount + highCount})
                 </Button>
               )}
+              <Button
+                variant="outline"
+                onClick={runProactiveScan}
+                disabled={scanning}
+                className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 text-sm"
+              >
+                {scanning
+                  ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  : <ScanSearch className="w-4 h-4 mr-2" />}
+                {scanning ? 'Scanning…' : 'Run Proactive Scan'}
+              </Button>
               <Link to={createPageUrl('AgentWellbeing')}>
                 <Button variant="outline" className="border-white/20 text-white text-sm">
                   Full Well-being Dashboard
