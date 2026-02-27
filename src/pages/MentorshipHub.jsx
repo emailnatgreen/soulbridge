@@ -450,21 +450,22 @@ function AIMatchCard({ match, agents, currentAgentId }) {
 
 function FindMentorDialog({ agentId, onClose }) {
   const [skillFocus, setSkillFocus] = useState('');
+  const [matchResult, setMatchResult] = useState(null);
   const queryClient = useQueryClient();
 
   const findMutation = useMutation({
     mutationFn: async () => {
       const response = await base44.functions.invoke('aiMentorshipMatching', {
-        mentee_agent_id: agentId,
+        menteeAgentId: agentId,
         skill_focus: skillFocus,
-        top_n: 5
+        limit: 5
       });
       return response.data;
     },
     onSuccess: (data) => {
+      setMatchResult(data);
       queryClient.invalidateQueries(['mentorMatches']);
-      toast.success(`Found ${data.matches?.length || 0} AI-powered matches! 🧠`);
-      onClose();
+      toast.success(`Found ${data.matches?.length || 0} AI-powered matches!`);
     }
   });
 
