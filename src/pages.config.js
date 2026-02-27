@@ -145,6 +145,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
 import DidCredentialManagement from './pages/DidCredentialManagement';
+import AgentRolePermissions from './pages/AgentRolePermissions';
 import __Layout from './Layout.jsx';
 
 
@@ -247,6 +248,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
     "DidCredentialManagement": DidCredentialManagement,
+    "AgentRolePermissions": AgentRolePermissions,
 }
 
 export const pagesConfig = {
