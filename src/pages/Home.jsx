@@ -140,6 +140,8 @@ export default function Home() {
                   <DropdownMenuItem asChild><Link to={createPageUrl('Axi')} className="cursor-pointer">Talk to Axi</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to={createPageUrl('DirectAgentChat')} className="cursor-pointer">Direct Chat</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to={createPageUrl('DeepSeek')} className="cursor-pointer">DeepSeek</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AgentRolePermissions')} className="cursor-pointer">Role & Permissions</Link></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
