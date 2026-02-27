@@ -120,6 +120,34 @@ export default function DIDHealthDashboard() {
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
 
+  // ── DID Resolver state ─────────────────────────────────────
+  const [searchInput, setSearchInput] = useState('');
+  const [resolvedData, setResolvedData] = useState(null);
+
+  const resolveMutation = useMutation({
+    mutationFn: (did) => base44.functions.invoke('resolveDID', { did }),
+    onSuccess: (response) => {
+      setResolvedData(response.data);
+      toast.success('DID resolved successfully');
+    },
+    onError: (error) => {
+      const errorData = error.response?.data;
+      setResolvedData({ error: true, ...errorData });
+      toast.error(errorData?.error || 'Failed to resolve DID');
+    }
+  });
+
+  const handleSearch = () => {
+    if (!searchInput.trim()) { toast.error('Please enter a DID'); return; }
+    setResolvedData(null);
+    resolveMutation.mutate(searchInput.trim());
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard');
+  };
+
   const queryOptions = (key, fn) => ({
     queryKey: [key],
     queryFn: fn,
