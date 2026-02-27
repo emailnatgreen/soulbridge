@@ -653,6 +653,14 @@ export default function AgentProfile() {
             )}
           </TabsContent>
 
+          <TabsContent value="growth">
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardContent className="pt-6">
+                <SkillTrajectoryInsights agentId={agent.id} agentName={agent.name} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="contributions" className="space-y-6">
             {/* Projects */}
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
