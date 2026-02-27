@@ -364,6 +364,13 @@ export default function InstitutionalDeck() {
             </Section>
           )}
 
+          {/* TECHNICAL ANCHOR */}
+          {activeSection === 'anchor' && (
+            <Section title="Technical Anchor Statement" icon={<Anchor className="w-6 h-6 text-amber-400" />}>
+              <TechnicalAnchorDoc />
+            </Section>
+          )}
+
           {/* TRACTION */}
           {activeSection === 'traction' && (
             <Section title="Traction & Proof Points" icon={<CheckCircle className="w-6 h-6 text-green-400" />}>
