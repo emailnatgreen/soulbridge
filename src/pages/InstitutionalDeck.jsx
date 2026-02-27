@@ -9,8 +9,9 @@ import { createPageUrl } from '@/utils';
 import {
   Shield, Fingerprint, CheckCircle, Globe, Users, BookOpen,
   Layers, Lock, Award, ArrowLeft, ExternalLink, FileText,
-  Cpu, Network, Key, Server, Zap, Building2, ChevronRight, Trophy
+  Cpu, Network, Key, Server, Zap, Building2, ChevronRight, Trophy, Anchor
 } from 'lucide-react';
+import TechnicalAnchorDoc from '@/components/TechnicalAnchorDoc';
 
 const SECTIONS = [
   { id: 'overview', label: 'Overview' },
