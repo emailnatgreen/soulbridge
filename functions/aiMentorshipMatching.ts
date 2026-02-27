@@ -226,6 +226,10 @@ Focus on: skill alignment, learning style compatibility, growth trajectory, prov
       urgentDeclines: weightedGaps.filter(g => g.skill_growth_trajectory === 'declining').map(g => g.skill_name),
       totalMatchesCreated: createdRelationships.length,
       styleSuccessRates,
+      growthInsightsUsed: !!growthInsightsRaw,
+      recommendedFocus,
+      learningStyle,
+      growthVelocity,
       recommendedNextStep: 'Review match suggestions and accept/decline mentorship invitations'
     });
 
