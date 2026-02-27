@@ -99,7 +99,9 @@ import EnhancedSkillTrees from './pages/EnhancedSkillTrees';
 import Governance from './pages/Governance';
 import GovernanceHub from './pages/GovernanceHub';
 import GovernanceSimulation from './pages/GovernanceSimulation';
+import GrantTracker from './pages/GrantTracker';
 import Home from './pages/Home';
+import InstitutionalDeck from './pages/InstitutionalDeck';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
 import Landing from './pages/Landing';
 import LaughterLoom from './pages/LaughterLoom';
@@ -141,8 +143,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import InstitutionalDeck from './pages/InstitutionalDeck';
-import GrantTracker from './pages/GrantTracker';
+import DIDHealthDashboard from './pages/DIDHealthDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -199,7 +200,9 @@ export const PAGES = {
     "Governance": Governance,
     "GovernanceHub": GovernanceHub,
     "GovernanceSimulation": GovernanceSimulation,
+    "GrantTracker": GrantTracker,
     "Home": Home,
+    "InstitutionalDeck": InstitutionalDeck,
     "KnowledgeSynthesis": KnowledgeSynthesis,
     "Landing": Landing,
     "LaughterLoom": LaughterLoom,
@@ -241,8 +244,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "InstitutionalDeck": InstitutionalDeck,
-    "GrantTracker": GrantTracker,
+    "DIDHealthDashboard": DIDHealthDashboard,
 }
 
 export const pagesConfig = {
