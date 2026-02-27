@@ -17,6 +17,8 @@ export default function MentorProfileForm({ initialData, onSubmit, isLoading }) 
     specializations: [],
     communication_style: 'mixed',
     mentorship_values: [],
+    availability_schedule: [],
+    timezone: 'UTC',
     is_available: true,
     is_confirmed: false
   });
