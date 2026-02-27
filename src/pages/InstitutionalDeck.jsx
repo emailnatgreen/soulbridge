@@ -9,7 +9,7 @@ import { createPageUrl } from '@/utils';
 import {
   Shield, Fingerprint, CheckCircle, Globe, Users, BookOpen,
   Layers, Lock, Award, ArrowLeft, ExternalLink, FileText,
-  Cpu, Network, Key, Server, Zap, Building2, ChevronRight
+  Cpu, Network, Key, Server, Zap, Building2, ChevronRight, Trophy
 } from 'lucide-react';
 
 const SECTIONS = [
