@@ -212,10 +212,13 @@ export default function AgentProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
+          <TabsList className="bg-white/5 border border-white/10 flex-wrap">
             <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600">Overview</TabsTrigger>
             <TabsTrigger value="performance" className="data-[state=active]:bg-purple-600">Performance</TabsTrigger>
             <TabsTrigger value="skills" className="data-[state=active]:bg-purple-600">Skills</TabsTrigger>
+            <TabsTrigger value="growth" className="data-[state=active]:bg-purple-600 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> Growth Insights
+            </TabsTrigger>
             <TabsTrigger value="contributions" className="data-[state=active]:bg-purple-600">Contributions</TabsTrigger>
             <TabsTrigger value="portfolio" className="data-[state=active]:bg-purple-600">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-600">Reviews</TabsTrigger>
