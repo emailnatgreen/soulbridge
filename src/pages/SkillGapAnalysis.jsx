@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 export default function SkillGapAnalysis() {
     const [analysisType, setAnalysisType] = useState('comprehensive');
     const [selectedRole, setSelectedRole] = useState('all');
+    const [runningAuto, setRunningAuto] = useState(false);
 
     const { data: analysisData, isLoading, refetch } = useQuery({
         queryKey: ['skillGapAnalysis', analysisType, selectedRole],
