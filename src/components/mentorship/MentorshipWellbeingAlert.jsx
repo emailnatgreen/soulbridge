@@ -104,6 +104,8 @@ export default function MentorshipWellbeingAlert({ alert, agentName, role }) {
             <Badge className="bg-green-500/20 text-green-400 text-xs flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" /> Dispatched
             </Badge>
+          ) : PROACTIVE_ALERT_TYPES.has(alert.alert_type) ? (
+            <ProactiveNudgeButton alert={alert} agentId={alert.agent_id} />
           ) : (
             <Button
               size="sm"
