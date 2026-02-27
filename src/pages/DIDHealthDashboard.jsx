@@ -437,6 +437,15 @@ export default function DIDHealthDashboard() {
           </div>
         </div>
 
+        {/* Navigation to Credential Management */}
+        <div className="text-center">
+          <Link to={createPageUrl('DidCredentialManagement')}>
+            <Button className="bg-indigo-600 hover:bg-indigo-700">
+              Manage Verifiable Credentials
+            </Button>
+          </Link>
+        </div>
+
       </div>
     </div>
   );
