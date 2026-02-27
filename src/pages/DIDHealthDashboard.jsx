@@ -415,6 +415,9 @@ export default function DIDHealthDashboard() {
           </div>
         )}
 
+        {/* DID Event Stream */}
+        <DidEventStream />
+
         {/* Legend */}
         <div className="bg-slate-800/30 border border-white/5 rounded-xl p-4">
           <div className="text-xs text-white/40 uppercase tracking-wider mb-3">Health Check Legend</div>
