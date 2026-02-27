@@ -76,6 +76,11 @@ export default function InstitutionalDeck() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Link to={createPageUrl('GrantTracker')}>
+            <Button variant="outline" size="sm" className="text-amber-400 border-amber-400/40 hover:bg-amber-400/10 text-xs">
+              <Trophy className="w-3 h-3 mr-1" /> Grant Tracker
+            </Button>
+          </Link>
           <Badge className="bg-indigo-600/80 text-white border-0 text-xs">XLS-80 Compliant</Badge>
           <Badge className="bg-green-600/80 text-white border-0 text-xs">Feb 2026</Badge>
         </div>
