@@ -169,13 +169,19 @@ You are an expert AI mentorship advisor. Write 2-3 sentences explaining why this
 
 Mentee focus areas (by urgency): ${focusAreas.join(', ')}
 ${decliningGaps ? `Declining skills needing urgent attention: ${decliningGaps}` : ''}
+${recommendedFocus ? `AI-recommended skill focus: ${recommendedFocus}` : ''}
+${learningStyle ? `Mentee learning style: ${learningStyle}` : ''}
+${skillSynergies.length ? `Mentee skill synergies: ${skillSynergies.join('; ')}` : ''}
+${growthVelocity ? `Mentee growth velocity: ${growthVelocity}` : ''}
+${mentorRecommendation ? `AI mentor recommendation context: ${mentorRecommendation}` : ''}
 Mentor expertise: ${match.mentorProfile.expertise_areas.map(e => e.skill_name || e).join(', ')}
 Mentor style: ${match.mentorProfile.mentorship_style}
 Mentor category strengths: ${topCategoryStrengths || 'broad'}
 Match quality score: ${match.matchQualityScore}/100
+Growth alignment score: ${match.scoreBreakdown.growthAlignmentScore}/100
 ${feedbackContext}
 
-Focus on: skill alignment, growth trajectory, proven impact. Be encouraging and specific.`;
+Focus on: skill alignment, learning style compatibility, growth trajectory, proven impact. Be encouraging and specific.`;
 
       const aiReasoningResponse = await base44.integrations.Core.InvokeLLM({ prompt: reasoningPrompt });
 
