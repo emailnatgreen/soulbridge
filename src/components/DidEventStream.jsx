@@ -154,13 +154,66 @@ export default function DidEventStream() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-white/30">{events.length} events</span>
+          <span className="text-xs text-white/30">{filteredEvents.length}/{events.length} events</span>
+          <Button size="sm" variant="ghost" onClick={() => setShowFilters(p => !p)}
+            className={`h-7 px-2 text-xs ${hasFilters ? 'text-indigo-400 hover:text-indigo-300' : 'text-white/50 hover:text-white'}`}>
+            <Filter className="w-3 h-3 mr-1" />Filter{hasFilters ? ` (${[search, typeFilter, timeFilter > 0].filter(Boolean).length})` : ''}
+          </Button>
           <Button size="sm" variant="ghost" onClick={handlePause}
             className="h-7 px-2 text-white/50 hover:text-white text-xs">
             {paused ? <><Play className="w-3 h-3 mr-1" />Resume</> : <><Pause className="w-3 h-3 mr-1" />Pause</>}
           </Button>
         </div>
       </div>
+
+      {/* Filter bar */}
+      {showFilters && (
+        <div className="px-5 py-3 border-b border-white/10 bg-slate-900/30 space-y-2">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30" />
+              <Input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search DID address, email, details…"
+                className="pl-7 h-7 text-xs bg-slate-900/60 border-white/15 text-white placeholder:text-white/25 focus:border-indigo-500"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white">
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {/* Type filter pills */}
+            <button
+              onClick={() => setTypeFilter('')}
+              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${!typeFilter ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-white/15 text-white/40 hover:text-white'}`}
+            >All types</button>
+            {Object.entries(EVENT_CONFIG).map(([k, cfg]) => (
+              <button key={k}
+                onClick={() => setTypeFilter(k === typeFilter ? '' : k)}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${typeFilter === k ? `${cfg.bg} ${cfg.color}` : 'border-white/10 text-white/40 hover:text-white'}`}
+              >{cfg.label}</button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            {TIME_FILTERS.map(tf => (
+              <button key={tf.value}
+                onClick={() => setTimeFilter(tf.value)}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${timeFilter === tf.value ? 'bg-cyan-700 border-cyan-500 text-white' : 'border-white/10 text-white/40 hover:text-white'}`}
+              >{tf.label}</button>
+            ))}
+            {hasFilters && (
+              <button onClick={() => { setSearch(''); setTypeFilter(''); setTimeFilter(0); }}
+                className="text-xs px-2.5 py-1 rounded-full border border-red-500/30 text-red-400 hover:bg-red-900/20 ml-auto">
+                Clear all
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Mini stats strip */}
       <div className="flex gap-1 px-5 py-2 border-b border-white/5 overflow-x-auto">
