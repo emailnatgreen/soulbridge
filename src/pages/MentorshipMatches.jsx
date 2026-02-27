@@ -257,6 +257,7 @@ function ActiveMentorshipCard({ relationship, userAgent }) {
   const isMentor = relationship.mentor_agent_id === userAgent.id;
   const otherAgentId = isMentor ? relationship.mentee_agent_id : relationship.mentor_agent_id;
   const [showBooking, setShowBooking] = useState(false);
+  const [showGoals, setShowGoals] = useState(false);
 
   const { data: otherAgent } = useQuery({
     queryKey: ['agent', otherAgentId],
