@@ -13,6 +13,7 @@ import {
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { differenceInDays, format, parseISO } from 'date-fns';
+import GrantComplianceCheck from '@/components/GrantComplianceCheck';
 
 const STATUS_CONFIG = {
   drafting:   { label: 'Drafting',   color: 'bg-slate-500', icon: FileText },
