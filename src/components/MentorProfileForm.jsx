@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertCircle, Loader2, Plus, X } from 'lucide-react';
+import MentorAvailabilityScheduler from '@/components/MentorAvailabilityScheduler';
 
 export default function MentorProfileForm({ initialData, onSubmit, isLoading }) {
   const [formData, setFormData] = useState(initialData || {
