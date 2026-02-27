@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Radio, FileJson, Shield, Trash2, RotateCcw, Eye,
-  Link2, UserPlus, CheckCircle, AlertTriangle, Pause, Play
+  Link2, UserPlus, CheckCircle, AlertTriangle, Pause, Play,
+  Search, X, Filter
 } from 'lucide-react';
 
 const EVENT_CONFIG = {
