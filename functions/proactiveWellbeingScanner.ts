@@ -251,6 +251,23 @@ Deno.serve(async (req) => {
           severity: signal.severity,
           alert_id: alertRecord.id
         });
+
+        // ── AUTO-DISPATCH proactive gentle nudge for low/medium alerts ──────
+        // High severity stays manual (requires human review via MentorshipWellbeing page)
+        if (signal.severity !== 'high') {
+          try {
+            await db.functions.invoke('proactiveIntervention', {
+              alert_id: alertRecord.id,
+              agent_id: agentId,
+              alert_type: signal.alert_type,
+              severity: signal.severity,
+              description: signal.description,
+              metadata: signal.data
+            });
+          } catch (nudgeErr) {
+            console.warn(`Nudge dispatch failed for ${agent.name}:`, nudgeErr.message);
+          }
+        }
       }
     }
 
