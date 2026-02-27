@@ -129,6 +129,31 @@ export default function MentorshipWellbeing() {
     return mentorshipAlerts;
   }, [relationships, sessions, mentorProfiles, agents, wellbeingRecords]);
 
+  // Bulk intervene on critical+high signals
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const runAllInterventions = async () => {
+    const urgent = signals.filter(s => s.severity === 'critical' || s.severity === 'high');
+    if (urgent.length === 0) return;
+    setBulkRunning(true);
+    try {
+      await Promise.all(urgent.map(sig =>
+        base44.functions.invoke('mentorshipIntervention', {
+          agent_id: sig.agent_id,
+          alert_type: sig.alert_type,
+          severity: sig.severity,
+          role: sig.role,
+          description: sig.description
+        })
+      ));
+      toast.success(`${urgent.length} intervention${urgent.length > 1 ? 's' : ''} dispatched`);
+      queryClient.invalidateQueries(['wellbeingAlerts']);
+    } catch (e) {
+      toast.error('Some interventions failed: ' + e.message);
+    } finally {
+      setBulkRunning(false);
+    }
+  };
+
   // Acknowledge a system-level WellbeingAlert
   const acknowledgeMutation = useMutation({
     mutationFn: (alertId) => base44.entities.WellbeingAlert.update(alertId, { status: 'acknowledged' }),
