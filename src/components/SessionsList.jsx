@@ -132,9 +132,35 @@ export default function SessionsList({ relationship, isMentor }) {
                 Complete
               </Button>
             )}
+
+            {/* Leave feedback on completed sessions */}
+            {session.status === 'completed' && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-xs flex-shrink-0 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                onClick={() => setFeedbackSession(session)}
+              >
+                {(isMentor ? session.session_quality : session.session_quality) ? (
+                  <><Star className="w-3 h-3 mr-1 fill-amber-400 text-amber-400" /> Rated</>
+                ) : (
+                  <><MessageSquarePlus className="w-3 h-3 mr-1" /> Feedback</>
+                )}
+              </Button>
+            )}
           </div>
         );
       })}
+
+      {feedbackSession && (
+        <SessionFeedbackModal
+          open={!!feedbackSession}
+          onClose={() => setFeedbackSession(null)}
+          session={feedbackSession}
+          relationship={relationship}
+          isMentor={isMentor}
+        />
+      )}
     </div>
   );
 }
