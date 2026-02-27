@@ -20,6 +20,7 @@ const SECTIONS = [
   { id: 'services', label: 'Live Services' },
   { id: 'governance', label: 'Governance' },
   { id: 'traction', label: 'Traction' },
+  { id: 'anchor', label: '⚓ Technical Anchor' },
 ];
 
 export default function InstitutionalDeck() {
