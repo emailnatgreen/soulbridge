@@ -14,6 +14,7 @@ import DidVersioningDialog from '../components/DidVersioningDialog';
 import AgentManagementDialog from '../components/AgentManagementDialog';
 import AuditLogViewer from '../components/AuditLogViewer';
 import DidResolverTool from '../components/DidResolverTool';
+import DidDocumentEditor from '../components/DidDocumentEditor';
 import {
   Dialog,
   DialogContent,
