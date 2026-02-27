@@ -303,6 +303,8 @@ export default function GrantTracker() {
                           {grant.notes}
                         </div>
                       )}
+
+                      <GrantComplianceCheck grant={grant} />
                     </CardContent>
                   )}
                 </Card>
