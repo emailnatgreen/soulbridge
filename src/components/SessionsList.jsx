@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sun, Sunset, Moon, Clock, CheckCircle2, X, Loader2 } from 'lucide-react';
+import { Sun, Sunset, Moon, Clock, CheckCircle2, X, Loader2, MessageSquarePlus, Star } from 'lucide-react';
+import SessionFeedbackModal from '@/components/SessionFeedbackModal';
 
 const SLOT_ICONS = { morning: Sun, afternoon: Sunset, evening: Moon };
 const STATUS_CONFIG = {
@@ -15,6 +16,7 @@ const STATUS_CONFIG = {
 
 export default function SessionsList({ relationship, isMentor }) {
   const queryClient = useQueryClient();
+  const [feedbackSession, setFeedbackSession] = useState(null);
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sessions', relationship.id],
