@@ -210,27 +210,15 @@ export default function AgentDetails() {
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                            <CardHeader>
-                                <CardTitle className="text-white flex items-center gap-2">
-                                    <Zap className="w-5 h-5" />
-                                    Skills ({skills.length})
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2">
-                                    {skills.slice(0, 8).map((skill) => (
-                                        <div key={skill.id} className="flex items-center justify-between">
-                                            <span className="text-sm text-white/80">{skill.skill_name}</span>
-                                            <Badge variant="outline">Lv {skill.level}</Badge>
-                                        </div>
-                                    ))}
-                                    {skills.length === 0 && (
-                                        <p className="text-sm text-white/40">No skills yet</p>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <SkillProfilePanel
+                            agentId={agent.id}
+                            skills={skills}
+                            onRefresh={() => {
+                                base44.entities.AgentSkill.list('-created_date', 500).then(all => {
+                                    setSkills(all.filter(s => s.agent_id === agent.id));
+                                });
+                            }}
+                        />
                     </div>
 
                     {/* Middle Column - Personality */}
