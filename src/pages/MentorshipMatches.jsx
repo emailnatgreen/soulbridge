@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, Heart, Check, X, Loader2, CalendarDays } from 'lucide-react';
+import { AlertCircle, Heart, Check, X, Loader2, CalendarDays, Target } from 'lucide-react';
 import MentorshipProposalCard from '@/components/MentorshipProposalCard';
 import BookSessionModal from '@/components/BookSessionModal';
 import SessionsList from '@/components/SessionsList';
