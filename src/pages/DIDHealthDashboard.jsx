@@ -213,6 +213,98 @@ export default function DIDHealthDashboard() {
 
       <div className="max-w-6xl mx-auto p-6 space-y-6">
 
+        {/* DID Resolution Search */}
+        <div className="bg-slate-800/50 border border-white/10 rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-white/80">
+            <Search className="w-4 h-4 text-indigo-400" />
+            DID Resolution Search
+          </div>
+          <div className="flex gap-2">
+            <Input
+              placeholder="did:xrpl:rXXXXXXXXXXXXXXXXXXXXXXX..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="bg-slate-900/60 border-white/15 text-white placeholder:text-white/30 focus:border-indigo-500"
+            />
+            <Button
+              onClick={handleSearch}
+              disabled={resolveMutation.isPending}
+              className="bg-indigo-600 hover:bg-indigo-700 shrink-0"
+            >
+              {resolveMutation.isPending
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <Search className="w-4 h-4" />}
+              <span className="ml-1 hidden sm:inline">{resolveMutation.isPending ? 'Resolving…' : 'Resolve'}</span>
+            </Button>
+          </div>
+
+          {/* Resolution Results */}
+          {resolvedData && (
+            resolvedData.error ? (
+              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 flex items-start gap-3">
+                <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-medium text-red-300 text-sm">Resolution Failed</div>
+                  <div className="text-red-400/80 text-xs mt-1">
+                    {resolvedData.didResolutionMetadata?.message || resolvedData.error || 'Unknown error'}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
+                  <CheckCircle className="w-4 h-4" />
+                  DID Resolved Successfully
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                  {resolvedData.didResolutionMetadata?.retrieved && (
+                    <div className="bg-slate-900/50 rounded-lg p-3">
+                      <div className="text-white/40 mb-1">Retrieved</div>
+                      <div className="text-white/80 font-mono">{new Date(resolvedData.didResolutionMetadata.retrieved).toLocaleString()}</div>
+                    </div>
+                  )}
+                  {resolvedData.didResolutionMetadata?.contentType && (
+                    <div className="bg-slate-900/50 rounded-lg p-3">
+                      <div className="text-white/40 mb-1">Content Type</div>
+                      <div className="text-white/80 font-mono break-all">{resolvedData.didResolutionMetadata.contentType}</div>
+                    </div>
+                  )}
+                  {resolvedData.didDocumentMetadata?.network && (
+                    <div className="bg-slate-900/50 rounded-lg p-3">
+                      <div className="text-white/40 mb-1">Network</div>
+                      <Badge className="bg-indigo-600 text-white border-0 text-xs">{resolvedData.didDocumentMetadata.network}</Badge>
+                    </div>
+                  )}
+                  {resolvedData.didDocumentMetadata?.version !== undefined && (
+                    <div className="bg-slate-900/50 rounded-lg p-3">
+                      <div className="text-white/40 mb-1">Version</div>
+                      <div className="text-white/80">v{resolvedData.didDocumentMetadata.version}</div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-white/50">DID Document</span>
+                    <Button size="sm" variant="ghost" className="text-white/40 hover:text-white h-6 text-xs px-2"
+                      onClick={() => copyToClipboard(JSON.stringify(resolvedData.didDocument, null, 2))}>
+                      <Copy className="w-3 h-3 mr-1" /> Copy
+                    </Button>
+                  </div>
+                  <pre className="bg-slate-900 text-green-300 p-4 rounded-lg text-xs overflow-x-auto max-h-64 font-mono">
+                    {JSON.stringify(resolvedData.didDocument, null, 2)}
+                  </pre>
+                </div>
+                {resolvedData.didDocumentMetadata?.note && (
+                  <div className="bg-indigo-900/20 border border-indigo-500/30 rounded-lg p-3 text-xs text-indigo-300">
+                    ℹ️ {resolvedData.didDocumentMetadata.note}
+                  </div>
+                )}
+              </div>
+            )
+          )}
+        </div>
+
         {/* Overall Health Banner */}
         <div className={`border rounded-xl p-5 flex items-center justify-between ${STATUS_CONFIG[overallStatus].bg}`}>
           <div className="flex items-center gap-4">
