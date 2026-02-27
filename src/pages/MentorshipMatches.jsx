@@ -343,6 +343,14 @@ function ActiveMentorshipCard({ relationship, userAgent }) {
         mentorAgent={mentorAgent}
         menteeAgent={menteeAgent}
       />
+
+      <GoalSetterModal
+        open={showGoals}
+        onClose={() => setShowGoals(false)}
+        relationship={relationship}
+        menteeAgentId={relationship.mentee_agent_id}
+        menteeName={menteeAgent?.name}
+      />
     </>
   );
 }
