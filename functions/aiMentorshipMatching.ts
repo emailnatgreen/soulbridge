@@ -11,7 +11,23 @@ Deno.serve(async (req) => {
     const menteeAgent = await base44.entities.Agent.read(menteeAgentId);
     if (!menteeAgent) return Response.json({ error: 'Mentee agent not found' }, { status: 404 });
 
-    const menteeSkills = await base44.entities.AgentSkill.filter({ agent_id: menteeAgentId });
+    const [menteeSkills, growthInsightsRaw] = await Promise.all([
+      base44.entities.AgentSkill.filter({ agent_id: menteeAgentId }),
+      // Best-effort: fetch growth insights; if it fails, proceed without
+      base44.asServiceRole.functions.invoke('generateSkillTrajectoryInsights', { agent_id: menteeAgentId })
+        .then(r => r?.insights || null)
+        .catch(() => null),
+    ]);
+
+    // Extract the enrichment fields from growth insights
+    const growthInsights = growthInsightsRaw || {};
+    const learningStyle      = growthInsights.learning_style_insight || null;
+    const skillSynergies     = growthInsights.skill_synergies || [];
+    const recommendedFocus   = growthInsights.recommended_focus || null;
+    const topGrowingSkills   = new Set(growthInsights.top_growing_skills || []);
+    const atRiskSkills       = new Set(growthInsights.at_risk_skills || []);
+    const growthVelocity     = growthInsights.growth_velocity || null; // fast|steady|slow|stagnant
+    const mentorRecommendation = growthInsights.mentor_recommendation || null;
 
     // ── 1. SMART GAP DETECTION ──────────────────────────────────────────────
     // Weight gaps by urgency: declining > stable at low proficiency > growing
