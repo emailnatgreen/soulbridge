@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
 
     // ── Fetch agent + supporting data ──────────────────────────────────────
     const [agent, mentorProfile, agentSkills, agentWellbeing] = await Promise.all([
-      db.entities.Agent.read(agent_id),
+      db.entities.Agent.filter({ id: agent_id }).then(r => r[0] || null),
       db.entities.MentorProfile.filter({ agent_id }).then(r => r[0] || null),
       db.entities.AgentSkill.filter({ agent_id }),
       db.entities.AgentWellbeing.filter({ agent_id }).then(r => r[0] || null)
