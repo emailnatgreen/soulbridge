@@ -289,6 +289,12 @@ export default function DIDManager() {
                 }
                 onSuccess={() => queryClient.invalidateQueries(['agents'])}
               />
+              <Link to={createPageUrl('DIDHealthDashboard')}>
+                <Button variant="outline">
+                  <Activity className="w-4 h-4 mr-2" />
+                  Health Dashboard
+                </Button>
+              </Link>
               <Link to={createPageUrl('CreateDID')}>
                 <Button>
                   <Fingerprint className="w-4 h-4 mr-2" />
