@@ -483,6 +483,60 @@ function calculateFeedbackEffectivenessScore(feedbackStats, mentorProfile) {
 }
 
 /**
+ * Growth Insights Alignment Score (0-100)
+ * Rewards mentors whose style, specializations, and expertise align with
+ * the AI-generated mentee growth insights (learning style, recommended focus, velocity).
+ */
+function calculateGrowthInsightsAlignment(mentorProfile, weightedGaps, recommendedFocus, atRiskSkills, growthVelocity, learningStyle) {
+  let score = 50; // neutral baseline
+
+  // +15 if mentor's expertise covers the AI-recommended focus skill
+  if (recommendedFocus) {
+    const focusMatch = mentorProfile.expertise_areas?.some(
+      e => (e.skill_name || e).toLowerCase().includes(recommendedFocus.toLowerCase())
+    );
+    if (focusMatch) score += 15;
+  }
+
+  // +10 if mentor covers any at-risk skill
+  if (atRiskSkills.size > 0) {
+    const coversAtRisk = mentorProfile.expertise_areas?.some(
+      e => atRiskSkills.has(e.skill_name || e)
+    );
+    if (coversAtRisk) score += 10;
+  }
+
+  // Velocity alignment: slow/stagnant mentees benefit from hands_on/directive styles
+  if (growthVelocity === 'slow' || growthVelocity === 'stagnant') {
+    if (['hands_on', 'directive'].includes(mentorProfile.mentorship_style)) score += 10;
+  }
+  // Fast/steady mentees benefit from coaching/socratic/collaborative
+  if (growthVelocity === 'fast' || growthVelocity === 'steady') {
+    if (['coaching', 'socratic', 'collaborative'].includes(mentorProfile.mentorship_style)) score += 10;
+  }
+
+  // Learning style keyword match against mentor's specializations / values
+  if (learningStyle) {
+    const learningLower = learningStyle.toLowerCase();
+    const mentorText = [
+      ...(mentorProfile.specializations || []),
+      ...(mentorProfile.mentorship_values || []),
+      mentorProfile.mentorship_style || ''
+    ].join(' ').toLowerCase();
+
+    const keywords = ['hands-on', 'practical', 'session', 'structured', 'flexible', 'collaborative', 'coaching'];
+    for (const kw of keywords) {
+      if (learningLower.includes(kw) && mentorText.includes(kw)) {
+        score += 7;
+        break;
+      }
+    }
+  }
+
+  return Math.min(100, score);
+}
+
+/**
  * Generate goals ordered by urgency — declining gaps get shorter target dates.
  */
 function generateWeightedGoals(weightedGaps) {
