@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, Flame, UserX, TrendingDown, Clock, Zap, CheckCircle2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import ProactiveNudgeButton from './ProactiveNudgeButton';
 
 const ALERT_ICONS = {
   burnout_risk: Flame,
