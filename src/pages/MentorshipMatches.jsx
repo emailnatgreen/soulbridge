@@ -9,6 +9,7 @@ import { AlertCircle, Heart, Check, X, Loader2, CalendarDays } from 'lucide-reac
 import MentorshipProposalCard from '@/components/MentorshipProposalCard';
 import BookSessionModal from '@/components/BookSessionModal';
 import SessionsList from '@/components/SessionsList';
+import GoalSetterModal from '@/components/mentorship/GoalSetterModal';
 
 export default function MentorshipMatches() {
   const queryClient = useQueryClient();
