@@ -487,14 +487,24 @@ function FindMentorDialog({ agentId, onClose }) {
               className="bg-white/5 border-white/10 text-white"
             />
           </div>
+          {matchResult?.styleSuccessRates && Object.keys(matchResult.styleSuccessRates).length > 0 && (
+            <MatchInsightsPanel styleSuccessRates={matchResult.styleSuccessRates} />
+          )}
+
           <Button
             onClick={() => findMutation.mutate()}
             disabled={findMutation.isPending}
             className="w-full bg-purple-600 hover:bg-purple-700"
           >
             {findMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Brain className="w-4 h-4 mr-2" />}
-            Find AI Matches
+            {matchResult ? 'Re-run Matching' : 'Find AI Matches'}
           </Button>
+
+          {matchResult && (
+            <p className="text-center text-xs text-white/40">
+              {matchResult.totalMatchesCreated} match{matchResult.totalMatchesCreated !== 1 ? 'es' : ''} created — check the <strong className="text-white/60">AI Matches</strong> tab
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
