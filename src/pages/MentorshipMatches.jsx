@@ -255,60 +255,86 @@ function PendingProposalWrapper({
 function ActiveMentorshipCard({ relationship, userAgent }) {
   const isMentor = relationship.mentor_agent_id === userAgent.id;
   const otherAgentId = isMentor ? relationship.mentee_agent_id : relationship.mentor_agent_id;
+  const [showBooking, setShowBooking] = useState(false);
 
   const { data: otherAgent } = useQuery({
     queryKey: ['agent', otherAgentId],
     queryFn: () => base44.entities.Agent.read(otherAgentId)
   });
 
+  const mentorAgent = isMentor ? userAgent : otherAgent;
+  const menteeAgent = isMentor ? otherAgent : userAgent;
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle>
-              {isMentor ? 'Mentee' : 'Mentor'}: {otherAgent?.name || 'Loading...'}
-            </CardTitle>
-            <CardDescription>
-              Active since {new Date(relationship.started_date).toLocaleDateString()}
-            </CardDescription>
-          </div>
-          <Badge className="bg-green-100 text-green-800">Active</Badge>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {relationship.focus_areas && (
-          <div>
-            <h4 className="text-sm font-semibold mb-2">Focus Areas</h4>
-            <div className="flex flex-wrap gap-2">
-              {relationship.focus_areas.map((area, idx) => (
-                <Badge key={idx} variant="secondary">
-                  {area}
-                </Badge>
-              ))}
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>
+                {isMentor ? 'Mentee' : 'Mentor'}: {otherAgent?.name || 'Loading...'}
+              </CardTitle>
+              <CardDescription>
+                Active since {relationship.started_date ? new Date(relationship.started_date).toLocaleDateString() : '—'}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className="bg-green-100 text-green-800">Active</Badge>
+              {!isMentor && (
+                <Button size="sm" onClick={() => setShowBooking(true)}>
+                  <CalendarDays className="w-4 h-4 mr-1" />
+                  Book Session
+                </Button>
+              )}
             </div>
           </div>
-        )}
+        </CardHeader>
 
-        <div className="grid grid-cols-3 gap-4 pt-2 border-t">
-          <div>
-            <div className="text-xs text-slate-600">Sessions</div>
-            <div className="text-lg font-semibold">{relationship.sessions_completed || 0}</div>
-          </div>
-          <div>
-            <div className="text-xs text-slate-600">Hours</div>
-            <div className="text-lg font-semibold">{relationship.total_hours || 0}</div>
-          </div>
-          <div>
-            <div className="text-xs text-slate-600">Satisfaction</div>
-            <div className="text-lg font-semibold">
-              {isMentor ? relationship.mentor_satisfaction : relationship.mentee_satisfaction}
-              <span className="text-xs">/5</span>
+        <CardContent className="space-y-4">
+          {relationship.focus_areas && relationship.focus_areas.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold mb-2">Focus Areas</h4>
+              <div className="flex flex-wrap gap-2">
+                {relationship.focus_areas.map((area, idx) => (
+                  <Badge key={idx} variant="secondary">{area}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-4 pt-2 border-t">
+            <div>
+              <div className="text-xs text-slate-600">Sessions</div>
+              <div className="text-lg font-semibold">{relationship.sessions_completed || 0}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-600">Hours</div>
+              <div className="text-lg font-semibold">{relationship.total_hours || 0}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-600">Satisfaction</div>
+              <div className="text-lg font-semibold">
+                {isMentor ? relationship.mentor_satisfaction || '—' : relationship.mentee_satisfaction || '—'}
+                {(isMentor ? relationship.mentor_satisfaction : relationship.mentee_satisfaction) && <span className="text-xs">/5</span>}
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          {/* Sessions list */}
+          <div className="border-t pt-4">
+            <h4 className="text-sm font-semibold mb-3">Sessions</h4>
+            <SessionsList relationship={relationship} isMentor={isMentor} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <BookSessionModal
+        open={showBooking}
+        onClose={() => setShowBooking(false)}
+        relationship={relationship}
+        mentorAgent={mentorAgent}
+        menteeAgent={menteeAgent}
+      />
+    </>
   );
 }
