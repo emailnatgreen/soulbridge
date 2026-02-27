@@ -6,12 +6,27 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import ProactiveNudgeButton from './ProactiveNudgeButton';
 
+// Proactive scanner alert types — get gentle nudge, not heavy intervention
+const PROACTIVE_ALERT_TYPES = new Set([
+  'skill_trajectory_decline', 'skill_stagnation_risk', 'session_quality_drift',
+  'engagement_drop', 'mentor_cancellation_spike', 'wellbeing_score_drift',
+  'compound_early_risk', 'mentor_capacity_warning'
+]);
+
 const ALERT_ICONS = {
   burnout_risk: Flame,
   workload_overload: Clock,
   low_satisfaction: TrendingDown,
   declining_performance: TrendingDown,
   social_isolation: UserX,
+  skill_trajectory_decline: TrendingDown,
+  skill_stagnation_risk: TrendingDown,
+  session_quality_drift: TrendingDown,
+  engagement_drop: UserX,
+  mentor_cancellation_spike: Clock,
+  wellbeing_score_drift: TrendingDown,
+  compound_early_risk: AlertTriangle,
+  mentor_capacity_warning: Clock,
   default: AlertTriangle
 };
 
