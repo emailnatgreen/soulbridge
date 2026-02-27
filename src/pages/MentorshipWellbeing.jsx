@@ -129,6 +129,26 @@ export default function MentorshipWellbeing() {
     return mentorshipAlerts;
   }, [relationships, sessions, mentorProfiles, agents, wellbeingRecords]);
 
+  // Manual proactive scan trigger
+  const [scanning, setScanning] = useState(false);
+  const runProactiveScan = async () => {
+    setScanning(true);
+    try {
+      const res = await base44.functions.invoke('proactiveWellbeingScanner', {});
+      const data = res.data;
+      if (data?.success) {
+        toast.success(`Scan complete — ${data.alerts_created} early alert(s) generated across ${data.agents_scanned} agents`);
+        queryClient.invalidateQueries(['wellbeingAlerts']);
+      } else {
+        toast.error(data?.error || 'Scan failed');
+      }
+    } catch (e) {
+      toast.error('Scan error: ' + e.message);
+    } finally {
+      setScanning(false);
+    }
+  };
+
   // Bulk intervene on critical+high signals
   const [bulkRunning, setBulkRunning] = useState(false);
   const runAllInterventions = async () => {
