@@ -76,6 +76,12 @@ export default function MentorshipHub() {
               </div>
             </div>
             <div className="flex gap-3">
+              <Link to={createPageUrl('MentorshipWellbeing')}>
+                <Button variant="outline" className="border-white/20 text-white">
+                  <Heart className="w-4 h-4 mr-2" />
+                  Well-being
+                </Button>
+              </Link>
               <Link to={createPageUrl('MentorshipAnalytics')}>
                 <Button variant="outline" className="border-white/20 text-white">
                   <BarChart3 className="w-4 h-4 mr-2" />
