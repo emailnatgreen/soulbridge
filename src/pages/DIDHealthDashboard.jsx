@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   Shield, Fingerprint, CheckCircle, AlertTriangle, XCircle,
   ArrowLeft, RefreshCw, Activity, Clock, FileText, Users,
-  Award, Lock, TrendingUp, Wifi, WifiOff, Loader2
+  Award, Lock, TrendingUp, Wifi, WifiOff, Loader2, Search, Copy
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
 
 // ── Health check logic ────────────────────────────────────
 function evaluateWalletHealth(wallet, agents, credentials, didVersions, auditLogs) {

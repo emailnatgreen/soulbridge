@@ -72,6 +72,7 @@ import CovenantEchoes from './pages/CovenantEchoes';
 import CreateDID from './pages/CreateDID';
 import CreateManualWallet from './pages/CreateManualWallet';
 import DIDAnalytics from './pages/DIDAnalytics';
+import DIDHealthDashboard from './pages/DIDHealthDashboard';
 import DIDManager from './pages/DIDManager';
 import DIDRegistry from './pages/DIDRegistry';
 import DeepSeek from './pages/DeepSeek';
@@ -143,7 +144,6 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import DIDHealthDashboard from './pages/DIDHealthDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -173,6 +173,7 @@ export const PAGES = {
     "CreateDID": CreateDID,
     "CreateManualWallet": CreateManualWallet,
     "DIDAnalytics": DIDAnalytics,
+    "DIDHealthDashboard": DIDHealthDashboard,
     "DIDManager": DIDManager,
     "DIDRegistry": DIDRegistry,
     "DeepSeek": DeepSeek,
@@ -244,7 +245,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "DIDHealthDashboard": DIDHealthDashboard,
 }
 
 export const pagesConfig = {
