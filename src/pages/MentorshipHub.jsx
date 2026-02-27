@@ -76,6 +76,12 @@ export default function MentorshipHub() {
               </div>
             </div>
             <div className="flex gap-3">
+              <Link to={createPageUrl('MentorshipAnalytics')}>
+                <Button variant="outline" className="border-white/20 text-white">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
+                </Button>
+              </Link>
               <Button 
                 onClick={() => setShowFindMentor(true)}
                 className="bg-purple-600 hover:bg-purple-700"
