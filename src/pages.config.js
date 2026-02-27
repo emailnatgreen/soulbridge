@@ -65,6 +65,7 @@ import AgentTrainingModule from './pages/AgentTrainingModule';
 import AgentWellbeing from './pages/AgentWellbeing';
 import Agents from './pages/Agents';
 import Axi from './pages/Axi';
+import BecomeMentor from './pages/BecomeMentor';
 import CollaborationHub from './pages/CollaborationHub';
 import CollaborationSuite from './pages/CollaborationSuite';
 import CovenantEchoes from './pages/CovenantEchoes';
@@ -105,6 +106,7 @@ import LaughterLoom from './pages/LaughterLoom';
 import MainnetMigration from './pages/MainnetMigration';
 import MemoryBrowser from './pages/MemoryBrowser';
 import MentorshipHub from './pages/MentorshipHub';
+import MentorshipMatches from './pages/MentorshipMatches';
 import Notifications from './pages/Notifications';
 import Privacy from './pages/Privacy';
 import ProductionHub from './pages/ProductionHub';
@@ -137,8 +139,6 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import MentorshipMatches from './pages/MentorshipMatches';
-import BecomeMentor from './pages/BecomeMentor';
 import __Layout from './Layout.jsx';
 
 
@@ -161,6 +161,7 @@ export const PAGES = {
     "AgentWellbeing": AgentWellbeing,
     "Agents": Agents,
     "Axi": Axi,
+    "BecomeMentor": BecomeMentor,
     "CollaborationHub": CollaborationHub,
     "CollaborationSuite": CollaborationSuite,
     "CovenantEchoes": CovenantEchoes,
@@ -201,6 +202,7 @@ export const PAGES = {
     "MainnetMigration": MainnetMigration,
     "MemoryBrowser": MemoryBrowser,
     "MentorshipHub": MentorshipHub,
+    "MentorshipMatches": MentorshipMatches,
     "Notifications": Notifications,
     "Privacy": Privacy,
     "ProductionHub": ProductionHub,
@@ -233,8 +235,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "MentorshipMatches": MentorshipMatches,
-    "BecomeMentor": BecomeMentor,
 }
 
 export const pagesConfig = {
