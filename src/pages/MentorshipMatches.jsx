@@ -283,6 +283,12 @@ function ActiveMentorshipCard({ relationship, userAgent }) {
             <div className="flex items-center gap-2">
               <Badge className="bg-green-100 text-green-800">Active</Badge>
               {!isMentor && (
+                <Button size="sm" variant="outline" onClick={() => setShowGoals(true)}>
+                  <Target className="w-4 h-4 mr-1" />
+                  Set Goals
+                </Button>
+              )}
+              {!isMentor && (
                 <Button size="sm" onClick={() => setShowBooking(true)}>
                   <CalendarDays className="w-4 h-4 mr-1" />
                   Book Session
