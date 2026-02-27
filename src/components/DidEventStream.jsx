@@ -117,6 +117,28 @@ export default function DidEventStream() {
   const criticalTypes = ['did_revoked', 'permission_revoked', 'agent_unlinked'];
   const criticalCount = criticalTypes.reduce((sum, t) => sum + (typeCounts[t] || 0), 0);
 
+  // Filtered events
+  const filteredEvents = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const now = Date.now();
+    return events.filter(e => {
+      if (typeFilter && e.action_type !== typeFilter) return false;
+      if (timeFilter > 0 && now - new Date(e.created_date).getTime() > timeFilter * 60 * 1000) return false;
+      if (q) {
+        const haystack = [
+          e.action_type,
+          e.did_classic_address,
+          e.user_email,
+          JSON.stringify(e.action_details),
+        ].join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [events, search, typeFilter, timeFilter]);
+
+  const hasFilters = search || typeFilter || timeFilter > 0;
+
   return (
     <div className="bg-slate-800/40 border border-white/10 rounded-xl overflow-hidden">
       {/* Header */}
