@@ -416,8 +416,15 @@ export default function DIDHealthDashboard() {
           </div>
         )}
 
-        {/* DID Event Stream */}
-        <DidEventStream />
+        {/* DID Health Alerts & Event Stream */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <DidEventStream />
+          </div>
+          <div>
+            <DidHealthAlertsPanel />
+          </div>
+        </div>
 
         {/* Legend */}
         <div className="bg-slate-800/30 border border-white/5 rounded-xl p-4">
