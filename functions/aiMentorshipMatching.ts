@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
 
       // 8. GROWTH INSIGHTS ALIGNMENT (5%) — bonus when mentor suits the mentee's learning style & focus
       const growthAlignmentScore = calculateGrowthInsightsAlignment(
-        mentorProfile, match?.mentorProfile, weightedGaps,
+        mentorProfile, weightedGaps,
         recommendedFocus, atRiskSkills, growthVelocity, learningStyle
       );
 
