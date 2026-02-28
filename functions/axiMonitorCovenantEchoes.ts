@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
     return Response.json({
       status: 'monitoring_complete',
       project: {
-        title: project.data.title,
+        title: project.title,
         id: projectId,
         progress: progress
       },
