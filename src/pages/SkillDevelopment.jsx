@@ -144,6 +144,18 @@ export default function SkillDevelopment() {
 
               <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                 <CardHeader className="pb-3">
+                  <CardTitle className="text-sm text-white/60">Verified Skills</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-400 flex items-center gap-2">
+                    {agentCredentials.length}
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                <CardHeader className="pb-3">
                   <CardTitle className="text-sm text-white/60">In Progress</CardTitle>
                 </CardHeader>
                 <CardContent>
