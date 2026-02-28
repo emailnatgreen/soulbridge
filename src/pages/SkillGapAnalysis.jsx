@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, TrendingUp, Target, Users, Award, BookOpen, ArrowRight, Brain, Sparkles, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Target, Users, Award, BookOpen, ArrowRight, Brain, Sparkles, RefreshCw, CheckCircle2, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
