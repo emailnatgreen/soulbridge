@@ -92,13 +92,13 @@ Deno.serve(async (req) => {
     // Check for agents with no completed tasks yet - EARLY OBSERVATION
     const agentProgress = {};
     tasks.forEach(task => {
-      const agentId = task.data.assigned_agent_id;
+      const agentId = task.assigned_agent_id;
       if (!agentProgress[agentId]) {
         agentProgress[agentId] = { total: 0, completed: 0, in_progress: 0 };
       }
       agentProgress[agentId].total++;
-      if (task.data.status === 'completed') agentProgress[agentId].completed++;
-      if (task.data.status === 'in_progress') agentProgress[agentId].in_progress++;
+      if (task.status === 'completed') agentProgress[agentId].completed++;
+      if (task.status === 'in_progress') agentProgress[agentId].in_progress++;
     });
     
     // Log Axi's observation as a memory
