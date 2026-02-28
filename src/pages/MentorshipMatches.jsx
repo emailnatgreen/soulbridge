@@ -51,6 +51,18 @@ export default function MentorshipMatches() {
     enabled: !!userAgent
   });
 
+  // Get all agents for the matching panel
+  const { data: allAgentsList = [] } = useQuery({
+    queryKey: ['all-agents-list'],
+    queryFn: () => base44.entities.Agent.filter({ status: 'active' })
+  });
+
+  // Get active stagnation alerts for re-match hints
+  const { data: stagnationAlerts = [] } = useQuery({
+    queryKey: ['stagnation-alerts'],
+    queryFn: () => base44.entities.WellbeingAlert.filter({ alert_type: 'stagnant_relationship', status: 'active' })
+  });
+
   // Get active mentorship relationships
   const { data: activeRelationships = [] } = useQuery({
     queryKey: ['activeMentorships', userAgent?.id],
