@@ -49,10 +49,10 @@ Deno.serve(async (req) => {
       // Send notifications for blocked tasks
       for (const task of blockedTasks) {
         await base44.asServiceRole.entities.AgentNotification.create({
-          recipient_agent_id: task.data.assigned_agent_id,
+          recipient_agent_id: task.assigned_agent_id,
           notification_type: 'task_assigned',
           title: 'Task Blocked - Action Needed',
-          message: `Your task "${task.data.title}" is blocked. Axi is monitoring and ready to assist.`,
+          message: `Your task "${task.title}" is blocked. Axi is monitoring and ready to assist.`,
           priority: 'high',
           related_entity_type: 'ProjectTask',
           related_entity_id: task.id
