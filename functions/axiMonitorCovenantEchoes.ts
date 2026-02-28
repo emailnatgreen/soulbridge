@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     };
     
     // Identify blocked tasks - ACTION REQUIRED
-    const blockedTasks = tasks.filter(t => t.data.status === 'blocked');
+    const blockedTasks = tasks.filter(t => t.status === 'blocked');
     if (blockedTasks.length > 0) {
       analysis.recommended_actions.push({
         type: 'unblock_tasks',
