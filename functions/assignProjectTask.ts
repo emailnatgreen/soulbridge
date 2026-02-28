@@ -23,10 +23,27 @@ Deno.serve(async (req) => {
 
         const task = tasks[0];
 
+        // Enrich: fetch agent's validated credentials for merit context
+        const agents = await base44.asServiceRole.entities.Agent.filter({ id: agent_id });
+        const agent = agents[0];
+        let meritNote = '';
+        if (agent?.classic_address) {
+          const creds = await base44.asServiceRole.entities.DidCredential.filter({
+            subject_did: agent.classic_address,
+            credential_type: 'skill_certification',
+            status: 'active'
+          });
+          if (creds.length > 0) {
+            const skillNames = creds.map(c => c.credential_data?.skill_name).filter(Boolean).join(', ');
+            meritNote = ` (Verified skills: ${skillNames})`;
+          }
+        }
+
         // Update task
         const updatedTask = await base44.entities.ProjectTask.update(task_id, {
             assigned_agent_id: agent_id,
-            status: 'todo'
+            status: 'todo',
+            assignment_merit_note: meritNote || undefined
         });
 
         // Get project
