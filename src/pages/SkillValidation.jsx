@@ -23,6 +23,7 @@ export default function SkillValidation() {
     portfolio_descriptions: ''
   });
   const [testInProgress, setTestInProgress] = useState(null);
+  const [testAnswers, setTestAnswers] = useState({});
   const queryClient = useQueryClient();
 
   const { data: agents = [] } = useQuery({

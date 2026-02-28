@@ -104,11 +104,13 @@ Respond with your assessment.`;
             expires_at: passed ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : null
         });
 
-        // If passed, update agent's skill with validation info
+        // If passed, update agent's skill and issue a DidCredential
         if (passed) {
-            const agents = await base44.asServiceRole.entities.Agent.filter({ id: validation.agent_id });
-            if (agents.length) {
-                const agent = agents[0];
+            const agentRecords = await base44.asServiceRole.entities.Agent.filter({ id: validation.agent_id });
+            if (agentRecords.length) {
+                const agent = agentRecords[0];
+
+                // Update core_skills on Agent
                 const updatedSkills = (agent.core_skills || []).map(skill => {
                     if (skill.name === validation.skill_name) {
                         return {
@@ -125,6 +127,37 @@ Respond with your assessment.`;
                 await base44.asServiceRole.entities.Agent.update(validation.agent_id, {
                     core_skills: updatedSkills
                 });
+
+                // Issue a DidCredential for this validated skill
+                if (agent.classic_address) {
+                    await base44.asServiceRole.entities.DidCredential.create({
+                        issuer_did: 'did:xrpl:soulbridge-validator',
+                        subject_did: agent.classic_address,
+                        subject_wallet_id: agent.wallet_id || '',
+                        credential_type: 'skill_certification',
+                        credential_name: `Skill Certification: ${validation.skill_name} Level ${assessment.validated_level}`,
+                        credential_data: {
+                            skill_name: validation.skill_name,
+                            skill_category: validation.skill_category,
+                            level: assessment.validated_level,
+                            score: assessment.score,
+                            validation_method: validation.validation_method,
+                            strengths: assessment.strengths,
+                            validated_at: new Date().toISOString()
+                        },
+                        proof: {
+                            type: 'AISkillAssessment',
+                            created: new Date().toISOString(),
+                            verification_method: 'SoulBridgeSkillValidator',
+                            proof_value: `validation:${validation_id}:score:${assessment.score}`
+                        },
+                        issuance_date: new Date().toISOString(),
+                        expiration_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+                        status: 'active',
+                        is_verified: true,
+                        visibility: 'public'
+                    });
+                }
             }
 
             // Send notification
@@ -132,7 +165,7 @@ Respond with your assessment.`;
                 recipient_agent_id: validation.agent_id,
                 notification_type: 'skill_validation',
                 title: '✅ Skill Validated',
-                message: `Your ${validation.skill_name} skill has been validated at Level ${assessment.validated_level}`,
+                message: `Your ${validation.skill_name} skill has been validated at Level ${assessment.validated_level}. A Verifiable Credential has been issued.`,
                 priority: 'normal'
             });
         } else {

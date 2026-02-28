@@ -60,6 +60,7 @@ import AgentOrchestration from './pages/AgentOrchestration';
 import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
 import AgentProfile from './pages/AgentProfile';
 import AgentReputation from './pages/AgentReputation';
+import AgentRolePermissions from './pages/AgentRolePermissions';
 import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
 import AgentWellbeing from './pages/AgentWellbeing';
@@ -79,6 +80,7 @@ import DeepSeek from './pages/DeepSeek';
 import DialogueStudio from './pages/DialogueStudio';
 import DidActivityFeed from './pages/DidActivityFeed';
 import DidConnections from './pages/DidConnections';
+import DidCredentialManagement from './pages/DidCredentialManagement';
 import DidCredentials from './pages/DidCredentials';
 import DidLogin from './pages/DidLogin';
 import DidMessaging from './pages/DidMessaging';
@@ -144,8 +146,6 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import DidCredentialManagement from './pages/DidCredentialManagement';
-import AgentRolePermissions from './pages/AgentRolePermissions';
 import __Layout from './Layout.jsx';
 
 
@@ -163,6 +163,7 @@ export const PAGES = {
     "AgentPerformanceAnalytics": AgentPerformanceAnalytics,
     "AgentProfile": AgentProfile,
     "AgentReputation": AgentReputation,
+    "AgentRolePermissions": AgentRolePermissions,
     "AgentSkillTree": AgentSkillTree,
     "AgentTrainingModule": AgentTrainingModule,
     "AgentWellbeing": AgentWellbeing,
@@ -182,6 +183,7 @@ export const PAGES = {
     "DialogueStudio": DialogueStudio,
     "DidActivityFeed": DidActivityFeed,
     "DidConnections": DidConnections,
+    "DidCredentialManagement": DidCredentialManagement,
     "DidCredentials": DidCredentials,
     "DidLogin": DidLogin,
     "DidMessaging": DidMessaging,
@@ -247,8 +249,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "DidCredentialManagement": DidCredentialManagement,
-    "AgentRolePermissions": AgentRolePermissions,
 }
 
 export const pagesConfig = {
