@@ -13,6 +13,7 @@ import { ArrowLeft, Send, CheckCircle2, Circle, Loader2, MessageSquare, ListTodo
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AgentMatcher from '../components/AgentMatcher';
+import MeritTaskAssigner from '../components/MeritTaskAssigner';
 
 export default function AIProjectHub() {
   const [searchParams] = useSearchParams();
