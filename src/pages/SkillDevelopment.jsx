@@ -213,6 +213,13 @@ export default function SkillDevelopment() {
 
               {/* AI Growth Plan Tab */}
               <TabsContent value="ai-plan" className="space-y-6">
+                {/* Skill Gap Alerts for this agent */}
+                <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                  <CardContent className="pt-5">
+                    <SkillGapAlertsPanel agentId={selectedAgentId} />
+                  </CardContent>
+                </Card>
+
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-white font-medium">Personalised AI Growth Plan</h3>

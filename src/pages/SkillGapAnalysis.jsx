@@ -89,6 +89,11 @@ export default function SkillGapAnalysis() {
                     <p className="text-purple-300/60">AI-powered skill assessment and development recommendations</p>
                 </div>
 
+                {/* Live Skill Gap Alerts */}
+                <div className="mb-6">
+                    <SkillGapAlertsPanel />
+                </div>
+
                 {/* Filters */}
                 <Card className="bg-white/5 border-white/10 mb-6">
                     <CardContent className="pt-6">
