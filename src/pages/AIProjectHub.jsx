@@ -14,6 +14,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AgentMatcher from '../components/AgentMatcher';
 import MeritTaskAssigner from '../components/MeritTaskAssigner';
+import TeamMeritView from '../components/TeamMeritView';
 
 export default function AIProjectHub() {
   const [searchParams] = useSearchParams();
