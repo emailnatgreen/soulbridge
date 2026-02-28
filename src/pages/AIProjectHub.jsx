@@ -386,34 +386,24 @@ export default function AIProjectHub() {
                       
                       <div className="flex flex-wrap items-center gap-4 text-sm">
                         {task.assigned_agent_id ? (
-                          <span className="text-purple-300">
-                            Assigned: {agents.find(a => a.id === task.assigned_agent_id)?.name || 'Agent'}
-                          </span>
-                        ) : (
                           <div className="flex items-center gap-2">
-                            <AgentMatcher
-                              task={task}
-                              projectId={projectId}
-                              onAgentSelected={(agentId) => assignTaskMutation.mutate({ task_id: task.id, agent_id: agentId })}
-                            />
-                            <span className="text-white/40">or</span>
-                            <Select
-                              onValueChange={(agentId) => assignTaskMutation.mutate({ task_id: task.id, agent_id: agentId })}
+                            <span className="text-purple-300">
+                              Assigned: {agents.find(a => a.id === task.assigned_agent_id)?.name || 'Agent'}
+                            </span>
+                            <button
+                              onClick={() => updateTaskMutation.mutate({ taskId: task.id, updates: { assigned_agent_id: null } })}
+                              className="text-xs text-white/30 hover:text-red-400"
                             >
-                              <SelectTrigger className="w-48 h-8 bg-white/5 border-white/10 text-white text-xs">
-                                <SelectValue placeholder="Manual assign..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {agents
-                                  .filter(a => a.core_skills?.some(s => s.validated))
-                                  .map(agent => (
-                                    <SelectItem key={agent.id} value={agent.id}>
-                                      {agent.name}
-                                    </SelectItem>
-                                  ))}
-                              </SelectContent>
-                            </Select>
+                              ✕
+                            </button>
                           </div>
+                        ) : (
+                          <MeritTaskAssigner
+                            task={task}
+                            agents={agents}
+                            onAssign={(agentId) => assignTaskMutation.mutate({ task_id: task.id, agent_id: agentId })}
+                            isAssigning={assignTaskMutation.isPending}
+                          />
                         )}
                         
                         {task.estimated_hours && (
