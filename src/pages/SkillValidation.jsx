@@ -308,8 +308,24 @@ export default function SkillValidation() {
                   </CardContent>
                 </Card>
               ))}
-              <Button className="w-full bg-indigo-600">
-                Submit Test
+              <Button
+                className="w-full bg-indigo-600"
+                disabled={submitValidationMutation.isPending}
+                onClick={() => {
+                  submitValidationMutation.mutate({
+                    validation_id: testInProgress.validation_id,
+                    test_answers: testInProgress.questions?.map((q, idx) => ({
+                      question: q.question,
+                      answer: testAnswers[idx] || ''
+                    }))
+                  });
+                }}
+              >
+                {submitValidationMutation.isPending ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Evaluating...</>
+                ) : (
+                  <><Award className="w-4 h-4 mr-2" />Submit for AI Assessment</>
+                )}
               </Button>
             </div>
           </DialogContent>
