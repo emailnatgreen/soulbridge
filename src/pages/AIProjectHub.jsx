@@ -758,30 +758,7 @@ export default function AIProjectHub() {
 
           {/* Team Tab */}
           <TabsContent value="team" className="space-y-4">
-            {project.team_members?.map((member, idx) => {
-              const agent = agents.find(a => a.id === member.agent_id);
-              return (
-                <Card key={idx} className="bg-white/5 backdrop-blur-xl border-white/10">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-lg">
-                          {agent?.name?.charAt(0) || 'A'}
-                        </div>
-                        <div>
-                          <h3 className="text-white font-medium">{agent?.name || 'Agent'}</h3>
-                          <p className="text-white/60 text-sm">{member.role}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-white font-medium">{member.contribution_percentage}%</div>
-                        <div className="text-white/60 text-xs">Contribution</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            <TeamMeritView teamMembers={project.team_members || []} agents={agents} />
           </TabsContent>
         </Tabs>
       </div>
