@@ -210,6 +210,67 @@ export default function SkillDevelopment() {
                 </TabsTrigger>
               </TabsList>
 
+              {/* AI Growth Plan Tab */}
+              <TabsContent value="ai-plan" className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-white font-medium">Personalised AI Growth Plan</h3>
+                    <p className="text-white/50 text-sm">Generated from your validated credentials, performance data & Village project needs</p>
+                  </div>
+                  <Button
+                    onClick={() => generatePlanMutation.mutate({ agent_id: selectedAgentId })}
+                    disabled={generatePlanMutation.isPending}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
+                  >
+                    {generatePlanMutation.isPending ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
+                    ) : (
+                      <><Sparkles className="w-4 h-4 mr-2" />Generate New Plan</>
+                    )}
+                  </Button>
+                </div>
+
+                {devPlans.length === 0 && !generatePlanMutation.isPending ? (
+                  <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                    <CardContent className="text-center py-16">
+                      <Brain className="w-16 h-16 text-purple-400 mx-auto mb-4 animate-pulse" />
+                      <h3 className="text-xl text-white mb-2">No Growth Plan Yet</h3>
+                      <p className="text-white/60 mb-6 max-w-md mx-auto">
+                        Click "Generate New Plan" to let Axi analyse {selectedAgent?.name}'s validated credentials,
+                        performance history, and active project needs to craft a personalised development roadmap.
+                      </p>
+                      <Button
+                        onClick={() => generatePlanMutation.mutate({ agent_id: selectedAgentId })}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate Plan Now
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {devPlans.filter(p => p.status === 'active').map(plan => (
+                      <PersonalisedPlanCard
+                        key={plan.id}
+                        plan={plan}
+                        onRefresh={() => queryClient.invalidateQueries(['skill-dev-plans'])}
+                      />
+                    ))}
+                    {devPlans.filter(p => p.status !== 'active').length > 0 && (
+                      <details className="text-white/40 text-sm cursor-pointer">
+                        <summary className="py-2">Past plans ({devPlans.filter(p => p.status !== 'active').length})</summary>
+                        <div className="space-y-3 mt-2 opacity-60">
+                          {devPlans.filter(p => p.status !== 'active').map(plan => (
+                            <PersonalisedPlanCard key={plan.id} plan={plan} />
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+
               <TabsContent value="modules" className="space-y-6">
                 {['beginner', 'intermediate', 'advanced', 'expert'].map(level => {
                   const levelModules = modulesByDifficulty[level] || [];
