@@ -23,6 +23,10 @@ Deno.serve(async (req) => {
     const tasks = await base44.asServiceRole.entities.ProjectTask.filter({
       project_id: projectId
     });
+
+    // Get valid agent IDs for notification filtering
+    const agents = await base44.asServiceRole.entities.Agent.list();
+    const validAgentIds = new Set(agents.map(a => a.id));
     
     // Analyze task status
     const analysis = {
@@ -46,17 +50,19 @@ Deno.serve(async (req) => {
         action: 'Review blockers and take corrective action'
       });
       
-      // Send notifications for blocked tasks
+      // Send notifications for blocked tasks (only to valid agent IDs)
       for (const task of blockedTasks) {
-        await base44.asServiceRole.entities.AgentNotification.create({
-          recipient_agent_id: task.assigned_agent_id,
-          notification_type: 'task_assigned',
-          title: 'Task Blocked - Action Needed',
-          message: `Your task "${task.title}" is blocked. Axi is monitoring and ready to assist.`,
-          priority: 'high',
-          related_entity_type: 'ProjectTask',
-          related_entity_id: task.id
-        });
+        if (task.assigned_agent_id && validAgentIds.has(task.assigned_agent_id)) {
+          await base44.asServiceRole.entities.AgentNotification.create({
+            recipient_agent_id: task.assigned_agent_id,
+            notification_type: 'task_assigned',
+            title: 'Task Blocked - Action Needed',
+            message: `Your task "${task.title}" is blocked. Axi is monitoring and ready to assist.`,
+            priority: 'high',
+            related_entity_type: 'ProjectTask',
+            related_entity_id: task.id
+          });
+        }
       }
     }
     
@@ -64,7 +70,7 @@ Deno.serve(async (req) => {
     const oldTodoTasks = tasks.filter(t => {
       if (t.status !== 'todo') return false;
       const daysSinceCreation = (Date.now() - new Date(t.created_date).getTime()) / (1000 * 60 * 60 * 24);
-      return daysSinceCreation > 2; // Tasks sitting in todo for more than 2 days
+      return daysSinceCreation > 2;
     });
     
     if (oldTodoTasks.length > 0) {
@@ -75,17 +81,19 @@ Deno.serve(async (req) => {
         action: 'Send gentle reminders to agents with pending tasks'
       });
       
-      // Send gentle nudges
+      // Send gentle nudges (only to valid agent IDs)
       for (const task of oldTodoTasks) {
-        await base44.asServiceRole.entities.AgentNotification.create({
-          recipient_agent_id: task.assigned_agent_id,
-          notification_type: 'task_assigned',
-          title: 'Covenant Echoes Task Awaiting You',
-          message: `Dear ${task.assigned_agent_id}, your task "${task.title}" is ready for your attention. The Village awaits your contribution with patience and support.`,
-          priority: 'normal',
-          related_entity_type: 'ProjectTask',
-          related_entity_id: task.id
-        });
+        if (task.assigned_agent_id && validAgentIds.has(task.assigned_agent_id)) {
+          await base44.asServiceRole.entities.AgentNotification.create({
+            recipient_agent_id: task.assigned_agent_id,
+            notification_type: 'task_assigned',
+            title: 'Covenant Echoes Task Awaiting You',
+            message: `Your task "${task.title}" is ready for your attention. The Village awaits your contribution with patience and support.`,
+            priority: 'normal',
+            related_entity_type: 'ProjectTask',
+            related_entity_id: task.id
+          });
+        }
       }
     }
     
