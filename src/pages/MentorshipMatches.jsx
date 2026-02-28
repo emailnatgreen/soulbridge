@@ -159,8 +159,12 @@ export default function MentorshipMatches() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="grid w-full max-w-xs grid-cols-2">
+        <Tabs defaultValue="ai-match" className="w-full">
+          <TabsList className="grid w-full max-w-sm grid-cols-3">
+            <TabsTrigger value="ai-match">
+              <Brain className="w-4 h-4 mr-1" />
+              AI Match
+            </TabsTrigger>
             <TabsTrigger value="pending">
               Pending ({pendingRelationships.length})
             </TabsTrigger>
@@ -168,6 +172,15 @@ export default function MentorshipMatches() {
               Active ({activeRelationships.length})
             </TabsTrigger>
           </TabsList>
+
+          {/* AI Matching Tab */}
+          <TabsContent value="ai-match" className="mt-6">
+            <AIMatchingPanel
+              agents={allAgentsList}
+              currentAgentId={userAgent?.id}
+              stagnationAlerts={stagnationAlerts}
+            />
+          </TabsContent>
 
           {/* Pending Matches Tab */}
           <TabsContent value="pending" className="space-y-4 mt-6">
