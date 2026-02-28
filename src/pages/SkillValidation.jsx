@@ -304,6 +304,8 @@ export default function SkillValidation() {
                       placeholder="Your answer..."
                       className="bg-white/5 border-white/10 text-white"
                       rows={3}
+                      value={testAnswers[idx] || ''}
+                      onChange={(e) => setTestAnswers(prev => ({ ...prev, [idx]: e.target.value }))}
                     />
                   </CardContent>
                 </Card>
