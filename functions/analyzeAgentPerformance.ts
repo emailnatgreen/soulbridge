@@ -30,7 +30,9 @@ Deno.serve(async (req) => {
       endorsements,
       proposals,
       votes,
-      contracts
+      contracts,
+      agentSkills,
+      credentials
     ] = await Promise.all([
       base44.asServiceRole.entities.AIProject.list(),
       base44.asServiceRole.entities.ProjectTask.list(),
@@ -39,7 +41,11 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.SkillEndorsement.filter({ endorsed_agent_id: agent_id }),
       base44.asServiceRole.entities.GovernanceProposal.filter({ proposed_by: agent_id }),
       base44.asServiceRole.entities.GovernanceVote.filter({ voter_agent_id: agent_id }),
-      base44.asServiceRole.entities.MarketplaceContract.list()
+      base44.asServiceRole.entities.MarketplaceContract.list(),
+      base44.asServiceRole.entities.AgentSkill.filter({ agent_id }),
+      agent.classic_address
+        ? base44.asServiceRole.entities.DidCredential.filter({ subject_did: agent.classic_address, status: 'active' })
+        : Promise.resolve([])
     ]);
 
     // Calculate project contributions
@@ -109,6 +115,27 @@ Deno.serve(async (req) => {
       total_earned_rlusd: sellerContracts.reduce((sum, c) => sum + (c.price_paid_rlusd || 0), 0),
       avg_service_rating: avgRating
     };
+
+    // Validated skills utilization
+    const validatedCredentials = credentials.filter(c => c.credential_type === 'skill_certification');
+    const skillUtilization = agentSkills.map(skill => {
+      const credential = validatedCredentials.find(c =>
+        c.credential_data?.skill_name === skill.skill_name
+      );
+      return {
+        skill_name: skill.skill_name,
+        skill_category: skill.skill_category,
+        level: skill.level,
+        times_used: skill.times_used || 0,
+        success_rate: skill.success_rate || 0,
+        is_credential_validated: !!credential,
+        validated_level: credential?.credential_data?.level || null,
+        credential_score: credential?.credential_data?.score || null
+      };
+    });
+
+    const credentialCount = validatedCredentials.length;
+    const credentialBonus = Math.min(20, credentialCount * 4); // Up to +20 bonus for credentials
 
     // Reputation changes
     const reputationChanges = {
