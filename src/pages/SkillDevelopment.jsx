@@ -9,11 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   ArrowLeft, Target, BookOpen, Award, TrendingUp, Sparkles, 
-  CheckCircle, Play, Clock, Brain, Star, ChevronRight, Loader2
+  CheckCircle, Play, Clock, Brain, Star, ChevronRight, Loader2, ShieldCheck, Zap
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
+import PersonalisedPlanCard from '@/components/PersonalisedPlanCard';
 
 export default function SkillDevelopment() {
   const [selectedAgentId, setSelectedAgentId] = useState('');
@@ -40,6 +41,34 @@ export default function SkillDevelopment() {
     queryKey: ['agent-skills', selectedAgentId],
     queryFn: () => base44.entities.AgentSkill.filter({ agent_id: selectedAgentId }),
     enabled: !!selectedAgentId
+  });
+
+  const { data: devPlans = [] } = useQuery({
+    queryKey: ['skill-dev-plans', selectedAgentId],
+    queryFn: () => base44.entities.SkillDevelopmentPlan.filter({ agent_id: selectedAgentId }, '-created_date'),
+    enabled: !!selectedAgentId
+  });
+
+  const { data: agentCredentials = [] } = useQuery({
+    queryKey: ['agent-credentials', selectedAgentId],
+    queryFn: async () => {
+      const agent = agents.find(a => a.id === selectedAgentId);
+      if (!agent?.classic_address) return [];
+      return base44.entities.DidCredential.filter({
+        subject_did: agent.classic_address,
+        credential_type: 'skill_certification',
+        status: 'active'
+      });
+    },
+    enabled: !!selectedAgentId
+  });
+
+  const generatePlanMutation = useMutation({
+    mutationFn: (data) => base44.functions.invoke('generatePersonalisedPath', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['skill-dev-plans']);
+      toast.success('Personalised plan generated!');
+    }
   });
 
   const enrollMutation = useMutation({
