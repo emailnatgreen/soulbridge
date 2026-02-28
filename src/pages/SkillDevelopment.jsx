@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import PersonalisedPlanCard from '@/components/PersonalisedPlanCard';
+import SkillGapAlertsPanel from '@/components/SkillGapAlertsPanel';
 
 export default function SkillDevelopment() {
   const [selectedAgentId, setSelectedAgentId] = useState('');

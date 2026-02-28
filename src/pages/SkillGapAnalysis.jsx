@@ -10,8 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertTriangle, TrendingUp, Target, Users, Award, BookOpen, ArrowRight, Brain, Sparkles, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { useState as useToastState } from 'react';
 import { toast } from 'sonner';
+import SkillGapAlertsPanel from '@/components/SkillGapAlertsPanel';
 
 export default function SkillGapAnalysis() {
     const [analysisType, setAnalysisType] = useState('comprehensive');
