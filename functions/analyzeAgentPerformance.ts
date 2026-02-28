@@ -245,7 +245,10 @@ Provide:
         strengths: insights.strengths || [],
         growth_opportunities: insights.growth_opportunities || [],
         recommended_actions: insights.recommended_actions || [],
-        performance_trend: performanceTrend
+        performance_trend: performanceTrend,
+        skill_utilization: skillUtilization,
+        credential_count: credentialCount,
+        credential_bonus: credentialBonus
       }
     });
 
