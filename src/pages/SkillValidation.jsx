@@ -49,7 +49,7 @@ export default function SkillValidation() {
 
   const submitValidationMutation = useMutation({
     mutationFn: (data) => base44.functions.invoke('validateAgentSkill', data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries(['skill-validations']);
       setValidationForm({
         skill_name: '',
@@ -59,7 +59,13 @@ export default function SkillValidation() {
         portfolio_descriptions: ''
       });
       setTestInProgress(null);
-      toast.success('Validation submitted!');
+      setTestAnswers({});
+      const passed = response.data?.passed;
+      if (passed) {
+        toast.success('Skill Validated! A Verifiable Credential has been issued to the agent.');
+      } else {
+        toast.error('Validation not passed. Review the feedback and try again.');
+      }
     }
   });
 
