@@ -85,6 +85,12 @@ export default function SkillGapAnalysis() {
                             <Sparkles className="w-4 h-4 mr-2" />
                             Refresh Analysis
                         </Button>
+                        <Link to={createPageUrl('ProjectSkillForecast')}>
+                            <Button className="bg-blue-600 hover:bg-blue-700">
+                                <BarChart3 className="w-4 h-4 mr-2" />
+                                Skill Forecast
+                            </Button>
+                        </Link>
                     </div>
                     <p className="text-purple-300/60">AI-powered skill assessment and development recommendations</p>
                 </div>
