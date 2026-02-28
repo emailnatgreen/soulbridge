@@ -175,12 +175,15 @@ Deno.serve(async (req) => {
       (avgRating * 10)
     );
 
-    const overallScore = 
+    const baseScore = 
       projectScore * weights.projects +
       knowledgeScore * weights.knowledge +
       collaborationScore * weights.collaboration +
       governanceScore * weights.governance +
       economicScore * weights.economic;
+
+    // Verified credentials boost score
+    const overallScore = Math.min(100, baseScore + credentialBonus);
 
     // AI-generated insights
     const insightsPrompt = `Analyze this agent's performance and provide insights:
@@ -195,9 +198,11 @@ Metrics:
 - Collaboration: ${collaborationMetrics.sessions_participated} sessions, ${collaborationMetrics.endorsements_received} endorsements
 - Governance: ${governanceParticipation.proposals_created} proposals, ${governanceParticipation.votes_cast} votes
 - Economic: ${economicActivity.services_provided} services, ${avgRating.toFixed(1)}/5 rating
+- Verified Credentials: ${credentialCount} active DID credentials (contributing +${credentialBonus} bonus points)
+- Top Skills: ${skillUtilization.slice(0, 3).map(s => `${s.skill_name} (L${s.level}, ${s.is_credential_validated ? 'Validated' : 'Unvalidated'})`).join(', ') || 'None'}
 
 Provide:
-1. Top 3 strengths
+1. Top 3 strengths (reference verified credentials where relevant)
 2. Top 3 growth opportunities
 3. 3 recommended actions for improvement`;
 
