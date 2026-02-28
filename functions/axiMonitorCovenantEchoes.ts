@@ -27,10 +27,10 @@ Deno.serve(async (req) => {
     // Analyze task status
     const analysis = {
       total_tasks: tasks.length,
-      todo: tasks.filter(t => t.data.status === 'todo').length,
-      in_progress: tasks.filter(t => t.data.status === 'in_progress').length,
-      completed: tasks.filter(t => t.data.status === 'completed').length,
-      blocked: tasks.filter(t => t.data.status === 'blocked').length,
+      todo: tasks.filter(t => t.status === 'todo').length,
+      in_progress: tasks.filter(t => t.status === 'in_progress').length,
+      completed: tasks.filter(t => t.status === 'completed').length,
+      blocked: tasks.filter(t => t.status === 'blocked').length,
       overdue_tasks: [],
       inactive_agents: [],
       recommended_actions: []
