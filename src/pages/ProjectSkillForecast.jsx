@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { 
   Brain, Sparkles, Loader2, TrendingUp, TrendingDown, Minus,
-  AlertTriangle, Target, Users, Lightbulb, BarChart3, Layers, ArrowRight
+  AlertTriangle, Target, Users, Lightbulb, BarChart3, Layers, ArrowRight, Wand2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { InvestmentCard, RiskFlagCard, ProjectDemandCard } from '@/components/ForecastSkillCard';
