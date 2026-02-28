@@ -332,6 +332,42 @@ function PerformanceMetricCard({ metric, agent }) {
           </div>
         </div>
 
+        {/* Skill Utilization */}
+        {metric.skill_utilization?.length > 0 && (
+          <div>
+            <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+              <Award className="w-4 h-4 text-indigo-400" />
+              Skill Utilization
+              {metric.credential_bonus > 0 && (
+                <Badge className="bg-indigo-500/20 text-indigo-300 text-xs">
+                  +{metric.credential_bonus} credential bonus
+                </Badge>
+              )}
+            </h4>
+            <div className="space-y-2">
+              {metric.skill_utilization.map((skill, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-2 bg-white/5 rounded border border-white/10">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-white">{skill.skill_name}</span>
+                      {skill.is_credential_validated && (
+                        <Badge className="bg-green-500/20 text-green-300 text-xs">✓ Verified</Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-white/50">{skill.skill_category} · Used {skill.times_used}x</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-white">L{skill.level}</div>
+                    {skill.success_rate > 0 && (
+                      <div className="text-xs text-white/50">{skill.success_rate}%</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Recommended Actions */}
         {metric.recommended_actions?.length > 0 && (
           <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
