@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     
     // Identify stagnant todo tasks - ACTION REQUIRED
     const oldTodoTasks = tasks.filter(t => {
-      if (t.data.status !== 'todo') return false;
+      if (t.status !== 'todo') return false;
       const daysSinceCreation = (Date.now() - new Date(t.created_date).getTime()) / (1000 * 60 * 60 * 24);
       return daysSinceCreation > 2; // Tasks sitting in todo for more than 2 days
     });
