@@ -190,8 +190,12 @@ export default function SkillDevelopment() {
               </Card>
             </div>
 
-            <Tabs defaultValue="modules" className="space-y-6">
+            <Tabs defaultValue="ai-plan" className="space-y-6">
               <TabsList className="bg-white/5 border border-white/10">
+                <TabsTrigger value="ai-plan" className="data-[state=active]:bg-purple-600">
+                  <Zap className="w-4 h-4 mr-2" />
+                  AI Growth Plan
+                </TabsTrigger>
                 <TabsTrigger value="modules" className="data-[state=active]:bg-purple-600">
                   <BookOpen className="w-4 h-4 mr-2" />
                   Training Modules
