@@ -78,10 +78,10 @@ Deno.serve(async (req) => {
       // Send gentle nudges
       for (const task of oldTodoTasks) {
         await base44.asServiceRole.entities.AgentNotification.create({
-          recipient_agent_id: task.data.assigned_agent_id,
+          recipient_agent_id: task.assigned_agent_id,
           notification_type: 'task_assigned',
           title: 'Covenant Echoes Task Awaiting You',
-          message: `Dear ${task.data.assigned_agent_id}, your task "${task.data.title}" is ready for your attention. The Village awaits your contribution with patience and support.`,
+          message: `Dear ${task.assigned_agent_id}, your task "${task.title}" is ready for your attention. The Village awaits your contribution with patience and support.`,
           priority: 'normal',
           related_entity_type: 'ProjectTask',
           related_entity_id: task.id
