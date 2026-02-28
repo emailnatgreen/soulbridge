@@ -41,14 +41,17 @@ export default function ProjectCreationWizard() {
   const [editedPlan, setEditedPlan] = useState(null);
   const [teamOverrides, setTeamOverrides] = useState([]);
 
-  // Load forecast data if available (cached from previous forecast run)
-  const { data: forecastData } = useQuery({
+  const [forecastLoaded, setForecastLoaded] = useState(false);
+
+  // Load forecast data lazily — only when user picks a forecast-dependent intent
+  const { data: forecastData, isFetching: forecastLoading } = useQuery({
     queryKey: ['latest-forecast'],
     queryFn: async () => {
       const res = await base44.functions.invoke('projectSkillForecasting', { horizon_weeks: 12 });
       return res.data;
     },
-    staleTime: 5 * 60 * 1000 // 5 min cache
+    enabled: forecastLoaded,
+    staleTime: 5 * 60 * 1000
   });
 
   const { data: agents = [] } = useQuery({
