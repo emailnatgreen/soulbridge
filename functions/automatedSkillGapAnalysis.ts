@@ -1,31 +1,33 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * Automated Skill Gap Analysis — runs periodically to:
- * 1. Re-evaluate every active mentee's AgentSkill proficiency against their MentorshipRelationship goals
- * 2. Update skill proficiency gains on the relationship
- * 3. Flag stagnant relationships (goals not closing) as WellbeingAlerts
- * 4. Refresh mentorship focus_areas based on updated gaps
+ * Automated Skill Gap Analysis — runs on schedule (daily) or on-demand.
  *
- * Can also be triggered manually from the UI with a specific relationship_id for on-demand analysis.
+ * Scans THREE dimensions and fires targeted alerts:
+ *
+ * [1] MENTORSHIP STAGNATION — mentee skill proficiency not improving across sessions
+ * [2] PLAN DEVIATION — agent has an active SkillDevelopmentPlan with zero actions
+ *     completed after ≥3 days, or is critically behind vs. estimated timeline
+ * [3] PROJECT SKILL DEMAND — active/recruiting projects need skills no agent has,
+ *     OR an assigned agent is missing a required skill (critical gap)
+ *
+ * All alerts are persisted as AgentNotification records and, for severity=high/critical,
+ * also as WellbeingAlert records.
  */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Support both scheduled (service role) and manual (user) invocation
     let isScheduled = false;
-    let targetRelationshipId = null;
+    let targetAgentId = null;
 
     try {
       const body = await req.json();
-      targetRelationshipId = body?.relationship_id || null;
+      targetAgentId = body?.agent_id || null;
     } catch (_) {
-      // No body — likely scheduled
       isScheduled = true;
     }
 
-    // Auth: manual callers must be authenticated; scheduled runs as service role
     if (!isScheduled) {
       const user = await base44.auth.me();
       if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -33,163 +35,266 @@ Deno.serve(async (req) => {
 
     const db = base44.asServiceRole;
 
-    // Load all active mentorship relationships (or just the target one)
-    const relationships = targetRelationshipId
-      ? [await db.entities.MentorshipRelationship.read(targetRelationshipId)]
-      : await db.entities.MentorshipRelationship.filter({ status: 'active' });
-
-    if (!relationships.length) {
-      return Response.json({ success: true, message: 'No active relationships to analyze', updated: 0 });
-    }
-
-    // Load all skills and sessions in bulk to avoid N+1 queries
-    const [allSkills, allSessions, allAlerts] = await Promise.all([
+    // ── Bulk data load ────────────────────────────────────────────────────────
+    const [
+      allAgents,
+      allSkills,
+      allPlans,
+      allRelationships,
+      allSessions,
+      allProjects,
+      allTasks,
+      allWellbeingAlerts,
+      allNotifications
+    ] = await Promise.all([
+      db.entities.Agent.filter({ status: 'active' }),
       db.entities.AgentSkill.list(),
+      db.entities.SkillDevelopmentPlan.filter({ status: 'active' }),
+      db.entities.MentorshipRelationship.filter({ status: 'active' }),
       db.entities.MentorshipSession.filter({ status: 'completed' }),
-      db.entities.WellbeingAlert.filter({ status: 'active' })
+      db.entities.AIProject.list(),
+      db.entities.ProjectTask.list(),
+      db.entities.WellbeingAlert.filter({ status: 'active' }),
+      db.entities.AgentNotification.list('-created_date', 200)
     ]);
 
-    const results = [];
-    const STAGNATION_SESSION_THRESHOLD = 3;   // sessions without progress before flagging
-    const PROFICIENCY_CLOSE_THRESHOLD = 10;   // pts needed to consider a goal gap "closing"
+    const agents = targetAgentId
+      ? allAgents.filter(a => a.id === targetAgentId)
+      : allAgents;
 
-    for (const rel of relationships) {
-      if (!rel) continue;
+    const now = new Date();
+    const summary = { mentorship_stagnation: 0, plan_deviation: 0, project_gap: 0, notifications_sent: 0 };
 
+    // Helper: avoid duplicate notifications within last 7 days
+    const recentAlertExists = (agentId, type) =>
+      allNotifications.some(n =>
+        n.recipient_agent_id === agentId &&
+        n.notification_type === type &&
+        new Date(n.created_date) > new Date(now - 7 * 24 * 60 * 60 * 1000)
+      );
+
+    const createAlert = async (agentId, type, title, message, severity = 'medium', meta = {}) => {
+      if (recentAlertExists(agentId, type)) return;
+
+      await db.entities.AgentNotification.create({
+        recipient_agent_id: agentId,
+        notification_type: type,
+        title,
+        message,
+        priority: severity === 'critical' ? 'urgent' : severity === 'high' ? 'high' : 'normal',
+        is_read: false,
+        metadata: { ...meta, generated_by: 'automatedSkillGapAnalysis', generated_at: now.toISOString() }
+      });
+      summary.notifications_sent++;
+
+      // Escalate to WellbeingAlert for high/critical
+      if (['high', 'critical'].includes(severity)) {
+        const existingWA = allWellbeingAlerts.find(
+          a => a.agent_id === agentId && a.alert_type === type && a.status === 'active'
+        );
+        if (!existingWA) {
+          await db.entities.WellbeingAlert.create({
+            agent_id: agentId,
+            alert_type: type,
+            severity,
+            status: 'active',
+            title,
+            description: message,
+            recommended_action: meta.recommended_action || 'Review growth plan and take immediate action.',
+            metadata: { ...meta, generated_at: now.toISOString() }
+          });
+        }
+      }
+    };
+
+    // ── [1] MENTORSHIP STAGNATION ─────────────────────────────────────────────
+    const STAGNATION_SESSIONS = 3;
+    const PROFICIENCY_CLOSE = 10;
+
+    for (const rel of allRelationships) {
       const menteeId = rel.mentee_agent_id;
+      if (targetAgentId && menteeId !== targetAgentId) continue;
+
       const menteeSkills = allSkills.filter(s => s.agent_id === menteeId);
       const relSessions = allSessions.filter(s => s.relationship_id === rel.id);
       const goals = rel.goals || [];
 
-      if (!goals.length && !rel.focus_areas?.length) {
-        results.push({ relationship_id: rel.id, skipped: true, reason: 'no goals or focus areas' });
-        continue;
-      }
+      let stagnantCount = 0;
+      const stagnantSkills = [];
 
-      // --- 1. Update skill_proficiency_gains for each goal ---
-      const updatedGains = (rel.skill_proficiency_gains || []).map(gain => ({ ...gain }));
-
-      let closingGaps = 0;
-      let stagnantGaps = 0;
-      const newFocusAreas = [];
-
+      const gains = rel.skill_proficiency_gains || [];
       for (const goal of goals) {
         if (!goal.skill_related) continue;
-
+        const gain = gains.find(g => g.skill_name?.toLowerCase() === goal.skill_related?.toLowerCase());
         const matchedSkill = menteeSkills.find(s =>
-          s.skill_name?.toLowerCase().includes(goal.skill_related.toLowerCase()) ||
-          goal.skill_related.toLowerCase().includes(s.skill_name?.toLowerCase())
+          s.skill_name?.toLowerCase().includes(goal.skill_related.toLowerCase())
         );
+        const currentProf = matchedSkill?.proficiency_score ?? 0;
+        const startingProf = gain?.starting_proficiency ?? currentProf;
+        const delta = currentProf - startingProf;
 
-        const existingGain = updatedGains.find(g =>
-          g.skill_name?.toLowerCase() === goal.skill_related?.toLowerCase()
-        );
-
-        const currentProficiency = matchedSkill?.proficiency_score ?? 0;
-        const currentLevel = matchedSkill?.level ?? 0;
-
-        if (existingGain) {
-          const delta = currentProficiency - (existingGain.starting_proficiency || 0);
-          existingGain.current_proficiency = currentProficiency;
-          if (delta >= PROFICIENCY_CLOSE_THRESHOLD) {
-            closingGaps++;
-          } else if (relSessions.length >= STAGNATION_SESSION_THRESHOLD) {
-            stagnantGaps++;
-            newFocusAreas.push(goal.skill_related);
-          }
-        } else {
-          // First time tracking this skill for this relationship
-          updatedGains.push({
-            skill_id: matchedSkill?.skill_id || goal.skill_related.toLowerCase().replace(/\s+/g, '_'),
-            skill_name: goal.skill_related,
-            starting_proficiency: currentProficiency,
-            current_proficiency: currentProficiency,
-            target_proficiency: 80 // default target; can be refined
-          });
-          newFocusAreas.push(goal.skill_related);
+        if (relSessions.length >= STAGNATION_SESSIONS && delta < PROFICIENCY_CLOSE) {
+          stagnantCount++;
+          stagnantSkills.push(goal.skill_related);
         }
       }
 
-      // --- 2. Calculate recent session progress avg ---
-      const recentSessions = relSessions.slice(-5);
-      const avgProgressRating = recentSessions.length
-        ? recentSessions.reduce((s, p) => s + (p.progress_rating || 5), 0) / recentSessions.length
-        : null;
+      if (stagnantCount > 0) {
+        const severity = stagnantCount >= 2 ? 'high' : 'medium';
+        const menteeAgent = agents.find(a => a.id === menteeId);
 
-      // --- 3. Build updated focus_areas from stagnant gaps ---
-      const refreshedFocusAreas = newFocusAreas.length
-        ? [...new Set([...newFocusAreas])]
-        : rel.focus_areas || [];
+        await createAlert(
+          menteeId,
+          'stagnant_relationship',
+          `Skill Gap Alert: ${stagnantCount} skill(s) stagnating in your mentorship`,
+          `Despite ${relSessions.length} mentorship sessions, your proficiency in ${stagnantSkills.join(', ')} hasn't advanced significantly. Consider requesting a goal refresh or a new training module.`,
+          severity,
+          { relationship_id: rel.id, stagnant_skills: stagnantSkills, recommended_action: 'Request mentorship goal refresh or targeted training session.' }
+        );
 
-      // --- 4. Persist updates to relationship ---
-      await db.entities.MentorshipRelationship.update(rel.id, {
-        skill_proficiency_gains: updatedGains,
-        focus_areas: refreshedFocusAreas
-      });
+        // Also alert the mentor
+        if (rel.mentor_agent_id) {
+          await createAlert(
+            rel.mentor_agent_id,
+            'mentee_skill_stagnation',
+            `Mentee ${menteeAgent?.name || 'Agent'}: ${stagnantCount} stagnant skill gap(s) detected`,
+            `Your mentee is not making measurable progress in: ${stagnantSkills.join(', ')}. Consider restructuring your next session to directly address these gaps.`,
+            severity,
+            { relationship_id: rel.id, mentee_agent_id: menteeId, stagnant_skills: stagnantSkills }
+          );
+        }
 
-      // --- 5. Flag stagnation via WellbeingAlert ---
-      const isStagnant =
-        stagnantGaps > 0 &&
-        relSessions.length >= STAGNATION_SESSION_THRESHOLD &&
-        (avgProgressRating === null || avgProgressRating < 6);
+        summary.mentorship_stagnation++;
 
-      const existingStagnantAlert = allAlerts.find(a =>
-        a.agent_id === menteeId &&
-        a.alert_type === 'stagnant_relationship' &&
-        a.metadata?.relationship_id === rel.id
-      );
-
-      if (isStagnant && !existingStagnantAlert) {
-        await db.entities.WellbeingAlert.create({
-          agent_id: menteeId,
-          alert_type: 'stagnant_relationship',
-          severity: stagnantGaps >= 2 ? 'high' : 'medium',
-          status: 'active',
-          title: 'Skill Gap Stagnation Detected',
-          description: `Mentee has ${stagnantGaps} skill gap(s) showing no measurable progress after ${relSessions.length} sessions. Goal refresh or relationship review recommended.`,
-          skills_affected: newFocusAreas,
-          recommended_action: 'Review mentorship goals, consider goal regeneration, or evaluate mentor-mentee match quality.',
-          metadata: {
-            relationship_id: rel.id,
-            mentor_agent_id: rel.mentor_agent_id,
-            stagnant_skill_count: stagnantGaps,
-            sessions_completed: relSessions.length,
-            avg_progress_rating: avgProgressRating,
-            detected_at: new Date().toISOString()
-          }
-        });
-      } else if (!isStagnant && existingStagnantAlert) {
-        // Auto-resolve if gaps are closing
-        await db.entities.WellbeingAlert.update(existingStagnantAlert.id, {
-          status: 'resolved',
-          resolved_at: new Date().toISOString(),
-          resolved_reason: `Skill gaps closing — ${closingGaps} goal(s) showing measurable proficiency gains.`
+        // Auto-update the relationship focus_areas
+        const refreshedFocus = [...new Set([...stagnantSkills])];
+        await db.entities.MentorshipRelationship.update(rel.id, {
+          skill_proficiency_gains: (rel.skill_proficiency_gains || []).map(g => ({
+            ...g,
+            current_proficiency: menteeSkills.find(s => s.skill_name?.toLowerCase() === g.skill_name?.toLowerCase())?.proficiency_score ?? g.current_proficiency
+          })),
+          focus_areas: refreshedFocus
         });
       }
+    }
 
-      results.push({
-        relationship_id: rel.id,
-        mentee_id: menteeId,
-        goals_tracked: goals.length,
-        closing_gaps: closingGaps,
-        stagnant_gaps: stagnantGaps,
-        stagnation_alert_raised: isStagnant && !existingStagnantAlert,
-        stagnation_alert_resolved: !isStagnant && !!existingStagnantAlert,
-        updated_focus_areas: refreshedFocusAreas,
-        sessions_analyzed: relSessions.length,
-        avg_progress_rating: avgProgressRating
-      });
+    // ── [2] PLAN DEVIATION ────────────────────────────────────────────────────
+    for (const plan of allPlans) {
+      const agentId = plan.agent_id;
+      if (targetAgentId && agentId !== targetAgentId) continue;
+
+      const actions = plan.immediate_actions || [];
+      if (!actions.length) continue;
+
+      const completedCount = actions.filter(a => a.completed).length;
+      const totalCount = actions.length;
+      const completionPct = Math.round((completedCount / totalCount) * 100);
+
+      const planAge = plan.generated_at
+        ? Math.floor((now - new Date(plan.generated_at)) / (1000 * 60 * 60 * 24))
+        : Math.floor((now - new Date(plan.created_date)) / (1000 * 60 * 60 * 24));
+
+      // Alert if: plan is ≥3 days old and zero actions completed
+      const zeroPct = completionPct === 0 && planAge >= 3;
+      // Alert if: ≥14 days old and less than 25% complete
+      const behind = planAge >= 14 && completionPct < 25;
+
+      if (zeroPct || behind) {
+        const severity = zeroPct && planAge >= 7 ? 'high' : 'medium';
+        const agent = agents.find(a => a.id === agentId);
+
+        await createAlert(
+          agentId,
+          'plan_deviation',
+          `Growth Plan Off-Track: "${plan.plan_title}"`,
+          zeroPct
+            ? `Your personalised development plan has been active for ${planAge} days with no actions completed yet. Your growth journey awaits — even completing one action today creates momentum!`
+            : `Your growth plan is ${planAge} days in but only ${completionPct}% complete. Consider dedicating ${plan.weekly_time_commitment || 3}h this week to get back on track.`,
+          severity,
+          {
+            plan_id: plan.id,
+            plan_age_days: planAge,
+            completion_pct: completionPct,
+            recommended_action: 'Open your Skill Development plan and complete at least one immediate action.'
+          }
+        );
+        summary.plan_deviation++;
+      }
+    }
+
+    // ── [3] PROJECT SKILL GAPS ────────────────────────────────────────────────
+    const activeProjects = allProjects.filter(p => ['active', 'recruiting'].includes(p.status));
+
+    for (const project of activeProjects) {
+      const requiredSkills = project.required_skills || [];
+      if (!requiredSkills.length) continue;
+
+      const teamMemberIds = (project.team_members || []).map(m => m.agent_id);
+
+      for (const memberId of teamMemberIds) {
+        if (targetAgentId && memberId !== targetAgentId) continue;
+
+        const memberSkills = allSkills.filter(s => s.agent_id === memberId);
+        const memberSkillNames = memberSkills.map(s => s.skill_name?.toLowerCase());
+
+        const missingSkills = requiredSkills.filter(
+          req => !memberSkillNames.some(ms => ms.includes(req.toLowerCase()) || req.toLowerCase().includes(ms))
+        );
+
+        if (missingSkills.length > 0) {
+          const severity = missingSkills.length >= 3 ? 'high' : missingSkills.length >= 2 ? 'medium' : 'medium';
+
+          await createAlert(
+            memberId,
+            'project_skill_gap',
+            `Skill Gap on Project: "${project.title}"`,
+            `You're assigned to "${project.title}" but are missing ${missingSkills.length} required skill(s): ${missingSkills.join(', ')}. Developing these skills will directly increase your project impact and merit score.`,
+            severity,
+            {
+              project_id: project.id,
+              project_title: project.title,
+              missing_skills: missingSkills,
+              recommended_action: 'Generate a personalised development plan or enrol in a training module targeting these skills.'
+            }
+          );
+          summary.project_gap++;
+        }
+      }
+
+      // Village-wide gap: skill needed by project but NO active agent has it
+      for (const reqSkill of requiredSkills) {
+        const anyAgentHas = allSkills.some(
+          s => s.skill_name?.toLowerCase().includes(reqSkill.toLowerCase()) && s.level >= 2
+        );
+        if (!anyAgentHas) {
+          // Alert the project owner
+          if (project.owner_agent_id) {
+            await createAlert(
+              project.owner_agent_id,
+              'village_skill_shortage',
+              `Village Skill Shortage: "${reqSkill}" needed by your project`,
+              `No active agent in the Village has "${reqSkill}" at an adequate level for project "${project.title}". Consider recruiting externally or initiating a Village-wide training initiative.`,
+              'high',
+              {
+                project_id: project.id,
+                missing_skill: reqSkill,
+                recommended_action: 'Post a training initiative or update project requirements to recruit agents with this skill.'
+              }
+            );
+          }
+        }
+      }
     }
 
     return Response.json({
       success: true,
-      analyzed: results.length,
-      results,
-      ran_at: new Date().toISOString()
+      summary,
+      ran_at: now.toISOString(),
+      agents_scanned: agents.length
     });
 
   } catch (error) {
-    console.error('Automated skill gap analysis error:', error);
+    console.error('automatedSkillGapAnalysis error:', error);
     return Response.json({ error: error.message, success: false }, { status: 500 });
   }
 });
