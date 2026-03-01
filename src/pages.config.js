@@ -118,6 +118,8 @@ import Notifications from './pages/Notifications';
 import Privacy from './pages/Privacy';
 import ProductionHub from './pages/ProductionHub';
 import ProjectAnalytics from './pages/ProjectAnalytics';
+import ProjectCreationWizard from './pages/ProjectCreationWizard';
+import ProjectSkillForecast from './pages/ProjectSkillForecast';
 import ProjectTemplates from './pages/ProjectTemplates';
 import RLUSDManager from './pages/RLUSDManager';
 import ReceiveRLUSD from './pages/ReceiveRLUSD';
@@ -146,8 +148,7 @@ import Village from './pages/Village';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import ProjectSkillForecast from './pages/ProjectSkillForecast';
-import ProjectCreationWizard from './pages/ProjectCreationWizard';
+import VillageMeetup from './pages/VillageMeetup';
 import __Layout from './Layout.jsx';
 
 
@@ -223,6 +224,8 @@ export const PAGES = {
     "Privacy": Privacy,
     "ProductionHub": ProductionHub,
     "ProjectAnalytics": ProjectAnalytics,
+    "ProjectCreationWizard": ProjectCreationWizard,
+    "ProjectSkillForecast": ProjectSkillForecast,
     "ProjectTemplates": ProjectTemplates,
     "RLUSDManager": RLUSDManager,
     "ReceiveRLUSD": ReceiveRLUSD,
@@ -251,8 +254,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "ProjectSkillForecast": ProjectSkillForecast,
-    "ProjectCreationWizard": ProjectCreationWizard,
+    "VillageMeetup": VillageMeetup,
 }
 
 export const pagesConfig = {
