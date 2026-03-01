@@ -379,11 +379,27 @@ export default function AIProjectHub() {
               <Target className="w-4 h-4 mr-2" />
               Milestones
             </TabsTrigger>
-            <TabsTrigger value="team">
-              <Users className="w-4 h-4 mr-2" />
-              Team
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger value="team">
+                <Users className="w-4 h-4 mr-2" />
+                Team
+              </TabsTrigger>
+            </TabsList>
+            {tasks.filter(t => !t.assigned_agent_id && t.status !== 'completed').length > 0 && (
+              <Button
+                onClick={() => autoAssignAllMutation.mutate()}
+                disabled={autoAssignAllMutation.isPending}
+                size="sm"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                {autoAssignAllMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4 mr-2" />
+                )}
+                Auto-Assign {tasks.filter(t => !t.assigned_agent_id && t.status !== 'completed').length} Unassigned
+              </Button>
+            )}
+          </div>
 
           {/* Tasks Tab */}
           <TabsContent value="tasks" className="space-y-4">
