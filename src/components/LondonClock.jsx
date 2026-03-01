@@ -1,26 +1,22 @@
 import React, { useState, useEffect, memo } from 'react';
 
+const fmt = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/London',
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
+
 const LondonClock = memo(function LondonClock() {
-  const [timeStr, setTimeStr] = useState('');
+  const [timeStr, setTimeStr] = useState(() => fmt.format(new Date()));
 
   useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      const formatted = now.toLocaleString('en-GB', {
-        timeZone: 'Europe/London',
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      });
-      setTimeStr(formatted);
-    };
-    update();
-    const id = setInterval(update, 1000);
+    const id = setInterval(() => setTimeStr(fmt.format(new Date())), 1000);
     return () => clearInterval(id);
   }, []);
 
