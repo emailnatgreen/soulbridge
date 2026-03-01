@@ -85,7 +85,7 @@ export default function Layout({ children }) {
           size="sm"
           className={`gap-2 transition-all ${isOpen 
             ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-            : 'bg-white/10 hover:bg-white/20 text-purple-300 hover:text-white'
+            : 'bg-purple-100 hover:bg-purple-200 text-purple-700 hover:text-purple-900'
           }`}
         >
           <Sparkles className="w-4 h-4" />
