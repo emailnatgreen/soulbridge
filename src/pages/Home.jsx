@@ -63,7 +63,7 @@ export default function Home() {
                 <PrivacyQuickToggle />
                 <NotificationCenter agentId="axi_main_001" />
                 <Link to={createPageUrl('Send')}>
-                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25 transition-all duration-300">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/25 transition-all duration-300">
                     <Plus className="w-4 h-4 mr-2" />
                     Send XRP
                   </Button>
