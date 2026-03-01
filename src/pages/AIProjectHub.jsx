@@ -794,7 +794,7 @@ export default function AIProjectHub() {
             <TeamMeritView teamMembers={project.team_members || []} agents={agents} />
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
-  );
-}
+        </div>
+        </div>
+        );
+        }
