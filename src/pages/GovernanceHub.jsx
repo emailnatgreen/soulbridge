@@ -152,8 +152,9 @@ export default function GovernanceHub() {
     voting_deadline: p.voting_deadline || p.voting_period_end,
   });
 
-  const activeProposals = proposals.filter(p => p.status === 'active');
-  const completedProposals = proposals.filter(p => p.status !== 'active');
+  const normalisedProposals = proposals.map(normaliseProposal);
+  const activeProposals = normalisedProposals.filter(p => p.status === 'active');
+  const completedProposals = normalisedProposals.filter(p => p.status !== 'active');
 
   const governanceStats = {
     totalProposals: proposals.length,
