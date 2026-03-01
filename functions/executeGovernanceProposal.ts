@@ -89,10 +89,11 @@ Deno.serve(async (req) => {
             proposal_id: proposal_id 
         });
         
-        const notifiedAgents = new Set([proposal.proposer_agent_id]);
+        const proposerId = proposal.proposer_agent_id || proposal.proposed_by;
+        const notifiedAgents = new Set(proposerId ? [proposerId] : []);
         
         for (const vote of allVotes) {
-            notifiedAgents.add(vote.voter_agent_id);
+            if (vote.voter_agent_id) notifiedAgents.add(vote.voter_agent_id);
         }
 
         for (const agentId of notifiedAgents) {
