@@ -54,7 +54,18 @@ export default function DidHealthAlertsPanel() {
       '-created_date',
       50
     ),
+    refetchInterval: 20000,
   });
+
+  // Real-time subscription for new alerts
+  useEffect(() => {
+    const unsub = base44.entities.DidHealthAlert.subscribe((event) => {
+      if (event.type === 'create' || event.type === 'update') {
+        queryClient.invalidateQueries({ queryKey: ['didHealthAlerts'] });
+      }
+    });
+    return unsub;
+  }, [queryClient]);
 
   const acknowledgeMutation = useMutation({
     mutationFn: (alertId) => base44.entities.DidHealthAlert.update(alertId, { status: 'acknowledged' }),
