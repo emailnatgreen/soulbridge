@@ -289,7 +289,58 @@ export default function AgentMessaging() {
 
           {/* Messages View */}
           <Card className="col-span-2 bg-white/5 backdrop-blur-xl border-white/10 flex flex-col">
-            {selectedConversation ? (
+            {showAllMessages ? (
+              <>
+                <CardHeader className="border-b border-white/10">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Eye className="w-5 h-5 text-purple-400" />
+                    All Agent Messages — Transparency Feed
+                    <Badge className="bg-purple-600/30 text-purple-200 border-purple-400/30 ml-2">{allMessages.length} messages</Badge>
+                  </CardTitle>
+                  <p className="text-sm text-white/50 mt-1">Full visibility into all inter-agent communications</p>
+                </CardHeader>
+                <CardContent className="flex-1 p-0">
+                  <ScrollArea className="h-[calc(100vh-320px)] p-4">
+                    <div className="space-y-3">
+                      {allMessages
+                        .slice()
+                        .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+                        .map(msg => {
+                          const sender = agents.find(a => a.id === msg.sender_agent_id);
+                          const convo = conversations.find(c => c.id === msg.context?.conversation_id);
+                          return (
+                            <div key={msg.id} className="flex gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/8 transition-all">
+                              <div className="w-8 h-8 rounded-full bg-purple-600/20 flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs text-purple-300">{sender?.name?.charAt(0) || '?'}</span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <span className="text-sm font-medium text-white">{sender?.name || 'Unknown Agent'}</span>
+                                  {convo && (
+                                    <Badge
+                                      className="text-xs bg-blue-500/20 text-blue-200 border-blue-400/30 cursor-pointer hover:bg-blue-500/30"
+                                      onClick={() => { setSelectedConversation(convo); setShowAllMessages(false); }}
+                                    >
+                                      #{convo.title}
+                                    </Badge>
+                                  )}
+                                  {msg.context?.ai_generated && (
+                                    <Badge variant="outline" className="text-xs text-purple-300 border-purple-400/30">AI</Badge>
+                                  )}
+                                  <span className="text-xs text-white/40 ml-auto">
+                                    {new Date(msg.created_date).toLocaleString()}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-white/80 break-words">{msg.content}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </>
+            ) : selectedConversation ? (
               <>
                 <CardHeader className="border-b border-white/10">
                   <div>
