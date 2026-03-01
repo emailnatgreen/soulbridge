@@ -437,7 +437,15 @@ export default function AgentMessaging() {
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
                   <MessageCircle className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                  <p className="text-white/60">Select a conversation to view messages</p>
+                  <p className="text-white/60 mb-3">Select a conversation to view messages</p>
+                  <Button
+                    onClick={() => setShowAllMessages(true)}
+                    variant="outline"
+                    className="border-purple-400/30 text-purple-300 hover:bg-purple-500/10"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Or view all messages for transparency
+                  </Button>
                 </div>
               </div>
             )}
