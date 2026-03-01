@@ -5,17 +5,16 @@ const AXI_AGENT_ID = '6993271e7dc0fa2ab78762bf';
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
+        const body = await req.json();
+        const { task_id: directTaskId, event, data: eventData } = body;
+
         // Auth is optional — entity automations run without a user token
         let user = null;
         try { user = await base44.auth.me(); } catch (_) {}
         // For direct API calls, still require auth
-        const body2Check = body ?? {};
-        if (!body2Check.event && !user) {
+        if (!event && !user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
-
-        const body = await req.json();
-        const { task_id: directTaskId, event, data: eventData } = body;
 
         // Support entity automation trigger (create event)
         let task_id = directTaskId;
@@ -76,7 +75,6 @@ Deno.serve(async (req) => {
             task.task_type || ''
         ];
 
-        // Score each agent
         const taskTypeToSpecialization = {
             compliance: ['compliance', 'legal', 'audit', 'governance', 'regulatory'],
             scouting: ['scout', 'research', 'analysis', 'intelligence', 'exploration'],
@@ -90,7 +88,6 @@ Deno.serve(async (req) => {
         const scoredAgents = agents.map(agent => {
             let score = 0;
 
-            // 1. Specialization match (0-40 points)
             const agentSpecializations = (agent.specializations || []).map(s => s.toLowerCase());
             const agentPurpose = (agent.purpose || '').toLowerCase();
             const agentBio = (agent.bio || '').toLowerCase();
@@ -101,7 +98,6 @@ Deno.serve(async (req) => {
                 if (agentBio.includes(spec)) score += 2;
             }
 
-            // Also match task keywords against agent profile
             for (const kw of taskKeywords) {
                 if (kw.length < 4) continue;
                 if (agentSpecializations.some(s => s.includes(kw))) score += 3;
@@ -109,23 +105,21 @@ Deno.serve(async (req) => {
             }
             score = Math.min(score, 40);
 
-            // 2. Honor score (0-30 points)
+            // Honor score (0-30 points)
             const honor = agent.honor_score || 100;
             score += Math.round((honor / 100) * 30);
 
-            // 3. Workload penalty (0-20 points, lower workload = higher score)
+            // Workload penalty (0-20 points)
             const workload = workloadMap[agent.id] || 0;
-            const workloadScore = Math.max(0, 20 - workload * 4);
-            score += workloadScore;
+            score += Math.max(0, 20 - workload * 4);
 
-            // 4. Availability bonus (0-10 points)
+            // Availability bonus (0-10 points)
             if (agent.availability_status === 'available') score += 10;
             else if (agent.availability_status === 'busy') score += 3;
 
-            return { agent, score, workload };
+            return { agent, score, workload: workloadMap[agent.id] || 0 };
         });
 
-        // Sort by score descending
         scoredAgents.sort((a, b) => b.score - a.score);
         const best = scoredAgents[0];
 
@@ -133,12 +127,10 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Could not determine suitable agent' });
         }
 
-        // Assign the task
         await base44.asServiceRole.entities.ProjectTask.update(task_id, {
             assigned_agent_id: best.agent.id
         });
 
-        // Send notification to the assigned agent
         await base44.asServiceRole.entities.AgentNotification.create({
             recipient_agent_id: best.agent.id,
             notification_type: 'task_assigned',

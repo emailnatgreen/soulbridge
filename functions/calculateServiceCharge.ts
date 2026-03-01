@@ -5,18 +5,23 @@ const AXI_AGENT_ID = '6993271e7dc0fa2ab78762bf';
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-
-        // Support both direct calls (with user) and entity automation triggers (no user)
         const body = await req.json();
         const { task_id: directTaskId, event, data: eventData } = body;
 
-        // If called from entity automation, extract task_id from the event payload
+        // Auth optional — entity automations run without user token
+        let user = null;
+        try { user = await base44.auth.me(); } catch (_) {}
+        if (!event && !user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Support entity automation trigger (update event)
         let task_id = directTaskId;
         if (!task_id && event?.type === 'update' && event?.entity_id) {
             task_id = event.entity_id;
-            // Only process if the task is now 'completed'
-            const currentData = eventData || {};
-            if (currentData.status !== 'completed') {
+            // Only process if the task just became 'completed'
+            const currentStatus = eventData?.status;
+            if (currentStatus !== 'completed') {
                 return Response.json({ message: 'Task not completed yet, skipping' });
             }
         }
@@ -25,13 +30,8 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Missing task_id' }, { status: 400 });
         }
 
-        if (!task_id) {
-            return Response.json({ error: 'Missing task_id' }, { status: 400 });
-        }
-
         // Fetch the completed task
         const task = await base44.asServiceRole.entities.ProjectTask.get(task_id);
-        
         if (!task) {
             return Response.json({ error: 'Task not found' }, { status: 404 });
         }
@@ -41,15 +41,18 @@ Deno.serve(async (req) => {
         }
 
         if (task.service_charge_calculated) {
-            return Response.json({ 
+            return Response.json({
                 message: 'Service charge already calculated for this task',
-                service_charge_drops: task.service_charge_drops 
+                service_charge_drops: task.service_charge_drops
             });
         }
 
-        // Fetch the assigned agent
+        // Fetch the assigned agent (skip if no agent assigned)
+        if (!task.assigned_agent_id) {
+            return Response.json({ message: 'No agent assigned to this task, skipping service charge' });
+        }
+
         const agent = await base44.asServiceRole.entities.Agent.get(task.assigned_agent_id);
-        
         if (!agent) {
             return Response.json({ error: 'Assigned agent not found' }, { status: 404 });
         }
@@ -58,10 +61,8 @@ Deno.serve(async (req) => {
         let calculationReason = '';
         const valueMetrics = task.value_metrics || {};
 
-        // Calculate service charge based on task type
         switch (task.task_type) {
             case 'compliance':
-                // Compliance tasks: micro-drop scale
                 if (valueMetrics.risk_avoided_value_xrp) {
                     serviceChargeDrops = Math.min(10000, Math.floor(valueMetrics.risk_avoided_value_xrp * 10));
                     calculationReason = `Risk insurance value: ${valueMetrics.risk_avoided_value_xrp} XRP avoided`;
@@ -73,20 +74,16 @@ Deno.serve(async (req) => {
                     calculationReason = 'Basic compliance check completed';
                 }
                 break;
-
             case 'scouting':
-                // Scouting tasks: micro-drop scale
                 if (valueMetrics.savings_amount_xrp) {
                     serviceChargeDrops = Math.min(10000, Math.floor(valueMetrics.savings_amount_xrp * 2));
-                    calculationReason = `Scouting commission on ${valueMetrics.savings_amount_xrp} XRP savings (${valueMetrics.percentage_saved || 0}% saved)`;
+                    calculationReason = `Scouting commission on ${valueMetrics.savings_amount_xrp} XRP savings`;
                 } else {
                     serviceChargeDrops = 2000;
                     calculationReason = 'Scouting mission completed';
                 }
                 break;
-
             case 'storytelling':
-                // Storytelling tasks: micro-drop scale
                 if (valueMetrics.reputation_impact_score) {
                     serviceChargeDrops = Math.floor(valueMetrics.reputation_impact_score * 500);
                     calculationReason = `Reputation impact: ${valueMetrics.reputation_impact_score}/10 points`;
@@ -98,38 +95,33 @@ Deno.serve(async (req) => {
                     calculationReason = 'W3C-compliant tagged content created';
                 }
                 break;
-
-            case 'development':
-            case 'research':
-            case 'other':
             default:
-                // Standard task completion: use task reward_drops if tiny, else default 2000
                 serviceChargeDrops = (task.reward_drops && task.reward_drops <= 10000) ? task.reward_drops : 2000;
                 calculationReason = 'Standard task completion';
                 break;
         }
 
-        // Ensure within micro-drop range: 1,000–10,000 drops
+        // Clamp to 1,000–10,000 drops
         if (serviceChargeDrops < 1000) serviceChargeDrops = 1000;
         if (serviceChargeDrops > 10000) serviceChargeDrops = 10000;
 
-        // Update the task with calculated service charge
+        // Mark task as service-charge applied
         await base44.asServiceRole.entities.ProjectTask.update(task_id, {
             service_charge_drops: serviceChargeDrops,
             service_charge_calculated: true
         });
 
-        // Create EconomicActivity record for the agent earning
+        // EconomicActivity: agent earned
         await base44.asServiceRole.entities.EconomicActivity.create({
             agent_id: agent.id,
             activity_type: 'earned',
-            amount: serviceChargeDrops / 1000000, // Convert drops to XRP
+            amount: serviceChargeDrops / 1000000,
             description: `Service charge earned: ${task.title} - ${calculationReason}`,
             related_agent_id: null,
             status: 'completed'
         });
 
-        // Create EconomicActivity record for treasury deposit
+        // EconomicActivity: treasury deposit
         await base44.asServiceRole.entities.EconomicActivity.create({
             agent_id: agent.id,
             activity_type: 'treasury_deposit',
@@ -138,10 +130,9 @@ Deno.serve(async (req) => {
             status: 'completed'
         });
 
-        // Fetch current treasury
+        // Update Treasury
         const treasuryList = await base44.asServiceRole.entities.Treasury.list();
         let treasury;
-        
         if (treasuryList && treasuryList.length > 0) {
             treasury = treasuryList[0];
             await base44.asServiceRole.entities.Treasury.update(treasury.id, {
@@ -150,7 +141,6 @@ Deno.serve(async (req) => {
                 transaction_count: (treasury.transaction_count || 0) + 1
             });
         } else {
-            // Create treasury if it doesn't exist
             treasury = await base44.asServiceRole.entities.Treasury.create({
                 name: 'Village Treasury',
                 total_balance: serviceChargeDrops / 1000000,
@@ -163,21 +153,19 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Calculate honor score increase (1 point per 10 XRP contributed)
+        // Honor score increase
         const honorIncrease = Math.floor(serviceChargeDrops / 10000000);
-        
-        // Update agent's honor score
         await base44.asServiceRole.entities.Agent.update(agent.id, {
             honor_score: (agent.honor_score || 100) + honorIncrease
         });
 
-        // Create ReputationEvent for the contribution
+        // ReputationEvent
         await base44.asServiceRole.entities.ReputationEvent.create({
             agent_id: agent.id,
             event_type: 'project_completed',
             impact: honorIncrease,
             category: 'economic_contribution',
-            description: `Contributed ${(serviceChargeDrops / 1000000).toFixed(2)} XRP to Village Treasury through ${task.task_type} work: ${task.title}`,
+            description: `Contributed ${(serviceChargeDrops / 1000000).toFixed(6)} XRP to Village Treasury through ${task.task_type} work: ${task.title}`,
             related_entity_type: 'ProjectTask',
             related_entity_id: task_id,
             verified: true,
@@ -204,7 +192,7 @@ Deno.serve(async (req) => {
 
     } catch (error) {
         console.error('Service charge calculation error:', error);
-        return Response.json({ 
+        return Response.json({
             error: error.message || 'Failed to calculate service charge',
             details: error.toString()
         }, { status: 500 });
