@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { Sparkles, X, Send, Loader2, Maximize2, Minimize2 } from 'lucide-react';
-import { Textarea } from "@/components/ui/textarea";
-import { motion, AnimatePresence } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
-import MessageBubble from '@/components/MessageBubble';
+import { Sparkles } from 'lucide-react';
 import LondonClock from '@/components/LondonClock';
-import { useRef, useEffect, useCallback } from 'react';
+import AxiChat from '@/components/AxiChat';
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
