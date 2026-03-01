@@ -27,8 +27,9 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Check if voting period has ended
-        if (new Date(proposal.voting_deadline) > new Date()) {
+        // Check if voting period has ended (support both field name variants)
+        const deadline = proposal.voting_deadline || proposal.voting_period_end;
+        if (deadline && new Date(deadline) > new Date()) {
             return Response.json({ 
                 error: 'Voting period has not ended yet' 
             }, { status: 400 });
