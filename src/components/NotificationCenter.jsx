@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
@@ -10,21 +10,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { 
-  Bell, 
-  CheckCheck, 
-  MessageCircle, 
-  Briefcase, 
-  ShoppingCart, 
-  Wallet, 
-  Shield, 
-  Star,
-  Target,
-  TrendingUp,
-  AlertCircle
+  Bell, CheckCheck, MessageCircle, ShoppingCart, Wallet,
+  Star, Target, TrendingUp, AlertCircle, AlertTriangle,
+  Bot, Vote, Zap, Calendar
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function NotificationCenter({ agentId }) {
   const [open, setOpen] = useState(false);
@@ -58,51 +51,55 @@ export default function NotificationCenter({ agentId }) {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  const getIcon = (type) => {
+  // Real-time subscription
+  useEffect(() => {
+    if (!agentId) return;
+    const unsub = base44.entities.AgentNotification.subscribe((event) => {
+      if (event.type === 'create' && event.data?.recipient_agent_id === agentId) {
+        queryClient.invalidateQueries({ queryKey: ['notifications', agentId] });
+      }
+    });
+    return unsub;
+  }, [agentId, queryClient]);
+
+  const getIcon = (type, title = '', priority = '') => {
+    const t = (title || '').toLowerCase();
+    if (priority === 'urgent' || t.includes('fail') || t.includes('error')) return AlertTriangle;
+    if (t.includes('axi') || t.includes('auto')) return Bot;
+    if (t.includes('meetup') || t.includes('meeting')) return Calendar;
     switch (type) {
-      case 'message':
-      case 'mention':
-        return MessageCircle;
-      case 'task_assigned':
-      case 'project_invite':
-      case 'project_update':
-      case 'milestone_completed':
-        return Target;
-      case 'marketplace_purchase':
-      case 'marketplace_sale':
-        return ShoppingCart;
-      case 'payment_received':
-      case 'payment_sent':
-        return Wallet;
-      case 'governance_proposal':
-      case 'governance_vote_result':
-        return Shield;
-      case 'skill_validation':
-      case 'attestation_received':
-        return Star;
-      case 'honor_change':
-      case 'role_change':
-        return TrendingUp;
-      default:
-        return AlertCircle;
+      case 'message': case 'mention':                         return MessageCircle;
+      case 'task_assigned': case 'project_invite':
+      case 'project_update': case 'milestone_completed':      return Target;
+      case 'marketplace_purchase': case 'marketplace_sale':   return ShoppingCart;
+      case 'payment_received': case 'payment_sent':           return Wallet;
+      case 'governance_proposal': case 'governance_vote_result': return Vote;
+      case 'skill_validation': case 'attestation_received':   return Star;
+      case 'honor_change': case 'role_change':                return TrendingUp;
+      case 'system':                                          return Zap;
+      default:                                                return AlertCircle;
     }
   };
 
-  const getColor = (type, priority) => {
-    if (priority === 'urgent') return 'text-red-400 bg-red-500/10';
-    if (priority === 'high') return 'text-orange-400 bg-orange-500/10';
-    
+  const getColor = (type, priority, title = '') => {
+    const t = (title || '').toLowerCase();
+    if (priority === 'urgent' || t.includes('fail') || t.includes('error'))
+      return 'text-red-400 bg-red-500/10';
+    if (priority === 'high' || t.includes('block'))
+      return 'text-orange-400 bg-orange-500/10';
+    if (t.includes('axi') || t.includes('auto')) return 'text-cyan-400 bg-cyan-500/10';
+    if (t.includes('meetup')) return 'text-teal-400 bg-teal-500/10';
     switch (type) {
-      case 'payment_received':
-        return 'text-green-400 bg-green-500/10';
-      case 'marketplace_sale':
-        return 'text-emerald-400 bg-emerald-500/10';
+      case 'payment_received':       return 'text-green-400 bg-green-500/10';
+      case 'payment_sent':           return 'text-blue-400 bg-blue-500/10';
+      case 'marketplace_sale':       return 'text-emerald-400 bg-emerald-500/10';
       case 'governance_proposal':
-        return 'text-purple-400 bg-purple-500/10';
-      case 'honor_change':
-        return 'text-yellow-400 bg-yellow-500/10';
-      default:
-        return 'text-blue-400 bg-blue-500/10';
+      case 'governance_vote_result': return 'text-purple-400 bg-purple-500/10';
+      case 'honor_change':           return 'text-yellow-400 bg-yellow-500/10';
+      case 'task_assigned':
+      case 'project_update':         return 'text-indigo-400 bg-indigo-500/10';
+      case 'system':                 return 'text-slate-400 bg-slate-500/10';
+      default:                       return 'text-blue-400 bg-blue-500/10';
     }
   };
 
