@@ -78,7 +78,7 @@ export default function Layout({ children }) {
   return (
     <div className="relative">
       {/* Global Top Bar */}
-      <div className="fixed top-0 left-0 right-0 z-[60] bg-black/40 backdrop-blur-md border-b border-white/10 px-4 py-2 flex items-center justify-between">
+      <div className="fixed top-0 left-0 right-0 z-[60] bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
         <LondonClock />
         <Button
           onClick={() => setIsOpen(!isOpen)}
