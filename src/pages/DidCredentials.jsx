@@ -71,7 +71,13 @@ export default function DidCredentials() {
   });
 
   const userDID = wallets[0] ? `did:xrpl:${wallets[0].classic_address}` : null;
-  const userAddress = wallets[0]?.classic_address;
+
+  // All wallet addresses and IDs belonging to the user
+  const myAddresses = new Set(wallets.flatMap(w => [
+    w.classic_address,
+    w.id,
+    w.classic_address ? `did:xrpl:${w.classic_address}` : null
+  ].filter(Boolean)));
 
   // Fetch ALL credentials and filter client-side to handle all DID formats
   const { data: allCredentials = [], isLoading: credsLoading } = useQuery({
@@ -80,18 +86,14 @@ export default function DidCredentials() {
     refetchInterval: 30000,
   });
 
-  // Match credentials by DID format, classic address, or wallet ID
-  const isMyDID = (did) => {
-    if (!did) return false;
-    if (userDID && did === userDID) return true;
-    if (userAddress && (did.includes(userAddress) || did === userAddress)) return true;
-    if (wallets[0] && did === wallets[0].id) return true;
-    if (user && (did === user.email || did === user.id)) return true;
-    return false;
-  };
+  const isMyDID = (val) => !!val && myAddresses.has(val);
 
-  const issuedCredentials = allCredentials.filter(c => isMyDID(c.issuer_did) || isMyDID(c.issuer_wallet_id));
-  const receivedCredentials = allCredentials.filter(c => isMyDID(c.subject_did) || isMyDID(c.subject_wallet_id));
+  const issuedCredentials = allCredentials.filter(c =>
+    isMyDID(c.issuer_did) || isMyDID(c.issuer_wallet_id)
+  );
+  const receivedCredentials = allCredentials.filter(c =>
+    isMyDID(c.subject_did) || isMyDID(c.subject_wallet_id)
+  );
 
   const { data: allWallets = [] } = useQuery({
     queryKey: ['all-wallets'],
