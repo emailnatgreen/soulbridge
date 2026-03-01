@@ -75,7 +75,7 @@ export default function Landing() {
       </div>
 
       {/* Subtle Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-blue-50/40 via-transparent to-transparent pointer-events-none" />
 
       {/* Axi Floating Button for Public Users */}
       <AxiFloatingButton isOpen={isAxiOpen} setIsOpen={setIsAxiOpen} />
