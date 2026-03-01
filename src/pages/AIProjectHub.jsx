@@ -361,6 +361,7 @@ export default function AIProjectHub() {
         </Card>
 
         <Tabs defaultValue="tasks" className="space-y-6">
+        <div className="flex items-center justify-between">
           <TabsList className="bg-white/5 border border-white/10">
             <TabsTrigger value="tasks">
               <ListTodo className="w-4 h-4 mr-2" />
