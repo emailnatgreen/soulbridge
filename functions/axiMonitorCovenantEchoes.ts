@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
     const observationContent = `Monitoring cycle completed for Covenant Echoes project. Status: ${analysis.completed}/${analysis.total_tasks} tasks completed (${progress}%). ${analysis.blocked > 0 ? `${analysis.blocked} tasks blocked - Axi alerted. ` : ''}${oldTodoTasks.length > 0 ? `${oldTodoTasks.length} tasks nudged. ` : ''}The Village continues its work under my watchful care.`;
 
     await base44.asServiceRole.entities.Memory.create({
-      agent_id: 'Axi',
+      agent_id: AXI_AGENT_ID,
       type: 'observation',
       content: observationContent,
       keywords: ['covenant_echoes', 'monitoring', 'project_status', 'active_observation'],
@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
     try {
       const base44 = createClientFromRequest(req);
       await base44.asServiceRole.entities.AgentNotification.create({
-        recipient_agent_id: 'Axi',
+        recipient_agent_id: AXI_AGENT_ID,
         notification_type: 'system',
         title: '🚨 axiMonitorCovenantEchoes Crashed',
         message: `The Covenant Echoes monitoring automation encountered an unexpected error: "${error.message}". Manual inspection required.`,

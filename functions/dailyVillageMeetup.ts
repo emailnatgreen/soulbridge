@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
     // --- 5. Log meetup memory for Axi ---
     const summary = `Daily Village Meetup completed. ${agents.length} agents notified. ${assignments.length} tasks assigned. ${blockedTasks.length} blocked tasks escalated.`;
     await base44.asServiceRole.entities.Memory.create({
-      agent_id: 'Axi',
+      agent_id: AXI_AGENT_ID,
       type: 'observation',
       content: summary,
       keywords: ['daily_meetup', 'workflow_assignment', 'village_operations'],
