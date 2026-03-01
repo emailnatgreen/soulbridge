@@ -290,7 +290,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
         {/* Ripple Compliance Banner */}
         <div className="mb-6">
-          <Card className="bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 border-indigo-500/40 hover:border-indigo-400/60 transition-all">
+          <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-blue-300 hover:border-blue-400 transition-all">
             <CardContent className="pt-5 pb-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
