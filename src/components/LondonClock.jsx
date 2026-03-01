@@ -25,7 +25,7 @@ export default function LondonClock() {
   }, []);
 
   return (
-    <span className="text-xs font-mono text-purple-300/70 hidden lg:block whitespace-nowrap">
+    <span className="text-xs font-mono text-gray-700 hidden lg:block whitespace-nowrap">
       {timeStr}
     </span>
   );
