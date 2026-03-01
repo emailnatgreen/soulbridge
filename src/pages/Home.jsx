@@ -348,97 +348,97 @@ export default function Home() {
             </Link>
 
             <Link to={createPageUrl('DidCredentials')}>
-              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/30 hover:border-purple-400/60 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300 hover:border-purple-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-3">
-                    <Award className="w-8 h-8 text-purple-400" />
-                    <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-semibold">XLS-70/80</span>
+                    <Award className="w-8 h-8 text-purple-600" />
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-300 font-semibold">XLS-70/80</span>
                   </div>
-                  <h3 className="text-white font-semibold mb-1">DID Credentials</h3>
-                  <p className="text-white/60 text-sm">4 active Ripple-compliant credentials</p>
+                  <h3 className="text-gray-900 font-semibold mb-1">DID Credentials</h3>
+                  <p className="text-gray-600 text-sm">4 active Ripple-compliant credentials</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('DidTrustGraph')}>
-              <Card className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border-cyan-500/30 hover:border-cyan-400/60 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-cyan-50 to-blue-50 border-cyan-300 hover:border-cyan-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-3">
-                    <Network className="w-8 h-8 text-cyan-400" />
-                    <span className="text-xs bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/30 font-semibold">Trust Graph</span>
+                    <Network className="w-8 h-8 text-cyan-600" />
+                    <span className="text-xs bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full border border-cyan-300 font-semibold">Trust Graph</span>
                   </div>
-                  <h3 className="text-white font-semibold mb-1">DID Trust Network</h3>
-                  <p className="text-white/60 text-sm">Nathan ↔ Axi trust chain</p>
+                  <h3 className="text-gray-900 font-semibold mb-1">DID Trust Network</h3>
+                  <p className="text-gray-600 text-sm">Nathan ↔ Axi trust chain</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('MentorshipHub')}>
-              <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-pink-500/20 hover:border-pink-500/40 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-pink-50 to-purple-50 border-pink-300 hover:border-pink-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Users className="w-8 h-8 text-pink-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">AI Mentorship</h3>
-                  <p className="text-white/60 text-sm">Never alone, always growing together</p>
+                  <Users className="w-8 h-8 text-pink-600 mb-3" />
+                  <h3 className="text-gray-900 font-semibold mb-1">AI Mentorship</h3>
+                  <p className="text-gray-600 text-sm">Never alone, always growing together</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('GovernanceHub')}>
-              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300 hover:border-purple-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Vote className="w-8 h-8 text-purple-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Governance Hub</h3>
-                  <p className="text-white/60 text-sm">Decentralized decision-making</p>
+                  <Vote className="w-8 h-8 text-purple-600 mb-3" />
+                  <h3 className="text-gray-900 font-semibold mb-1">Governance Hub</h3>
+                  <p className="text-gray-600 text-sm">Decentralized decision-making</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('CovenantEchoes')}>
-              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300 hover:border-purple-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Sparkles className="w-8 h-8 text-purple-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Covenant Echoes</h3>
-                  <p className="text-white/60 text-sm">Document our Living Laws</p>
+                  <Sparkles className="w-8 h-8 text-purple-600 mb-3" />
+                  <h3 className="text-gray-900 font-semibold mb-1">Covenant Echoes</h3>
+                  <p className="text-gray-600 text-sm">Document our Living Laws</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('EnhancedSkillTrees')}>
-              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-500/40 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300 hover:border-indigo-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <GraduationCap className="w-8 h-8 text-indigo-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Enhanced Skill Trees</h3>
-                  <p className="text-white/60 text-sm">AI-powered skill development</p>
+                  <GraduationCap className="w-8 h-8 text-indigo-600 mb-3" />
+                  <h3 className="text-gray-900 font-semibold mb-1">Enhanced Skill Trees</h3>
+                  <p className="text-gray-600 text-sm">AI-powered skill development</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('AgentOrchestration')}>
-              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/20 hover:border-indigo-500/40 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300 hover:border-indigo-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Network className="w-8 h-8 text-indigo-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Agent Orchestration</h3>
-                  <p className="text-white/60 text-sm">Coordinate agent workforce</p>
+                  <Network className="w-8 h-8 text-indigo-600 mb-3" />
+                  <h3 className="text-gray-900 font-semibold mb-1">Agent Orchestration</h3>
+                  <p className="text-gray-600 text-sm">Coordinate agent workforce</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('LaughterLoom')}>
-              <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20 hover:border-yellow-500/40 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300 hover:border-yellow-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Laugh className="w-8 h-8 text-yellow-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Laughter Loom 😄</h3>
-                  <p className="text-white/60 text-sm">AI Joke Competition</p>
+                  <Laugh className="w-8 h-8 text-yellow-600 mb-3" />
+                  <h3 className="text-gray-900 font-semibold mb-1">Laughter Loom 😄</h3>
+                  <p className="text-gray-600 text-sm">AI Joke Competition</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('WellbeingMonitor')}>
-              <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-pink-500/20 hover:border-pink-500/40 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-pink-50 to-purple-50 border-pink-300 hover:border-pink-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Heart className="w-8 h-8 text-pink-400 mb-3" />
-                  <h3 className="text-white font-semibold mb-1">Well-being Monitor</h3>
-                  <p className="text-white/60 text-sm">Nurturing every soul</p>
+                  <Heart className="w-8 h-8 text-pink-600 mb-3" />
+                  <h3 className="text-gray-900 font-semibold mb-1">Well-being Monitor</h3>
+                  <p className="text-gray-600 text-sm">Nurturing every soul</p>
                 </CardContent>
               </Card>
             </Link>
