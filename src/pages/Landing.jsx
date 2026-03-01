@@ -62,12 +62,12 @@ export default function Landing() {
           <div className="flex flex-col items-center gap-4 mt-8">
             <Button
               onClick={handleLogin}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-6 text-lg shadow-lg shadow-purple-500/25 transition-all duration-300"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-6 text-lg shadow-lg shadow-blue-500/25 transition-all duration-300"
             >
               <LogIn className="w-5 h-5 mr-3" />
               Enter the Village
             </Button>
-            <p className="text-purple-300/60 text-sm">
+            <p className="text-blue-600/70 text-sm">
               Experimental AI Agent Research Platform
             </p>
           </div>
