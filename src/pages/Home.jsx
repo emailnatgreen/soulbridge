@@ -452,55 +452,55 @@ export default function Home() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all duration-300">
+          <Card className="bg-white border-gray-200 hover:shadow-md transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-purple-300/80">Total Volume</CardTitle>
-                <div className="p-2 bg-purple-500/10 rounded-lg">
-                  <Wallet className="w-4 h-4 text-purple-400" />
+                <CardTitle className="text-sm font-medium text-purple-600">Total Volume</CardTitle>
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Wallet className="w-4 h-4 text-purple-600" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-light text-white">
-                {stats.total.toFixed(2)} <span className="text-lg text-purple-300/60">XRP</span>
+              <p className="text-3xl font-light text-gray-900">
+                {stats.total.toFixed(2)} <span className="text-lg text-purple-600/70">XRP</span>
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all duration-300">
+          <Card className="bg-white border-gray-200 hover:shadow-md transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-green-300/80">Completed</CardTitle>
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <ArrowDownRight className="w-4 h-4 text-green-400" />
+                <CardTitle className="text-sm font-medium text-green-600">Completed</CardTitle>
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <ArrowDownRight className="w-4 h-4 text-green-600" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-light text-white">{stats.completed}</p>
+              <p className="text-3xl font-light text-gray-900">{stats.completed}</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all duration-300">
+          <Card className="bg-white border-gray-200 hover:shadow-md transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-yellow-300/80">Pending</CardTitle>
-                <div className="p-2 bg-yellow-500/10 rounded-lg">
-                  <Activity className="w-4 h-4 text-yellow-400" />
+                <CardTitle className="text-sm font-medium text-amber-600">Pending</CardTitle>
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <Activity className="w-4 h-4 text-amber-600" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-light text-white">{stats.pending}</p>
+              <p className="text-3xl font-light text-gray-900">{stats.pending}</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Transactions */}
-        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+        <Card className="bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-xl font-light text-white">Recent Transactions</CardTitle>
+            <CardTitle className="text-xl font-light text-gray-900">Recent Transactions</CardTitle>
           </CardHeader>
           <CardContent>
             <TransactionList transactions={transactions} isLoading={isLoading} />
