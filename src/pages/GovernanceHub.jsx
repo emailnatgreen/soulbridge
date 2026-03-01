@@ -142,8 +142,15 @@ export default function GovernanceHub() {
   };
 
   const hasAgentVoted = (proposalId, agentId) => {
-    return allVotes.some(v => v.proposal_id === proposalId && v.voter_agent_id === agentId);
+    return allVotes.some(v => (v.proposal_id === proposalId) && (v.voter_agent_id === agentId));
   };
+
+  // Normalise proposals to handle both field name variants from DB
+  const normaliseProposal = (p) => ({
+    ...p,
+    proposer_agent_id: p.proposer_agent_id || p.proposed_by,
+    voting_deadline: p.voting_deadline || p.voting_period_end,
+  });
 
   const activeProposals = proposals.filter(p => p.status === 'active');
   const completedProposals = proposals.filter(p => p.status !== 'active');
