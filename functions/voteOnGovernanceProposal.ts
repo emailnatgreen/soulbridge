@@ -87,9 +87,10 @@ Deno.serve(async (req) => {
 
         await base44.asServiceRole.entities.GovernanceProposal.update(proposal_id, updates);
 
-        // Notify proposer
-        await base44.asServiceRole.entities.AgentNotification.create({
-            recipient_agent_id: proposal.proposer_agent_id,
+        // Notify proposer (support both field name variants)
+        const proposerAgentId = proposal.proposer_agent_id || proposal.proposed_by;
+        if (proposerAgentId) await base44.asServiceRole.entities.AgentNotification.create({
+            recipient_agent_id: proposerAgentId,
             notification_type: 'governance_vote_result',
             title: `Vote Cast on Your Proposal`,
             message: `${voter.name} voted ${vote_choice} on "${proposal.title}"`,
