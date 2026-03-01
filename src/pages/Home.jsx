@@ -331,7 +331,7 @@ export default function Home() {
 
         {/* Featured Quick Access */}
         <div className="mb-8 sm:mb-12">
-          <h2 className="text-white text-xl font-semibold mb-4">Quick Access</h2>
+          <h2 className="text-gray-900 text-xl font-semibold mb-4">Quick Access</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
             <Link to={createPageUrl('DIDManager')}>
