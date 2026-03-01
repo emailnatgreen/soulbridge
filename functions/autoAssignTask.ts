@@ -5,8 +5,12 @@ const AXI_AGENT_ID = '6993271e7dc0fa2ab78762bf';
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-        if (!user) {
+        // Auth is optional — entity automations run without a user token
+        let user = null;
+        try { user = await base44.auth.me(); } catch (_) {}
+        // For direct API calls, still require auth
+        const body2Check = body ?? {};
+        if (!body2Check.event && !user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
