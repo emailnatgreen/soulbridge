@@ -85,7 +85,8 @@ export default function GovernanceHub() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
-      toast.success(`Proposal ${data.result}! ${data.voting_summary.approved ? '✅' : '❌'}`);
+      const approved = data?.voting_summary?.approved;
+      toast.success(`Proposal ${data?.result || 'processed'}! ${approved ? '✅' : '❌'}`);
     },
     onError: (error) => {
       toast.error('Failed to execute proposal: ' + error.message);
