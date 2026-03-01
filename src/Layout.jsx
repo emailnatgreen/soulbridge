@@ -22,7 +22,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="relative">
       {/* Global Top Bar - only on non-public pages */}
-      {!isPublicPage && (
+      {!isPublicPage && currentPageName && (
         <div className="fixed top-0 left-0 right-0 z-[60] bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-end">
           <Button
             onClick={handleToggle}
