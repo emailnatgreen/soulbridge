@@ -1,10 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 // Helper: Alert Axi when something critical happens
+const AXI_AGENT_ID = '6993271e7dc0fa2ab78762bf';
+
 async function alertAxi(base44, title, message, severity = 'high') {
   try {
     await base44.asServiceRole.entities.AgentNotification.create({
-      recipient_agent_id: 'Axi',
+      recipient_agent_id: AXI_AGENT_ID,
       notification_type: 'system',
       title: `🛡️ Automation Alert: ${title}`,
       message,
