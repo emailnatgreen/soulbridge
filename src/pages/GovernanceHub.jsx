@@ -398,7 +398,8 @@ export default function GovernanceHub() {
                   const forPercentage = totalVotes > 0 ? ((proposal.votes_for || 0) / totalVotes * 100) : 0;
                   const againstPercentage = totalVotes > 0 ? ((proposal.votes_against || 0) / totalVotes * 100) : 0;
                   const hasVoted = selectedAgent ? hasAgentVoted(proposal.id, selectedAgent) : false;
-                  const daysLeft = Math.ceil((new Date(proposal.voting_deadline) - new Date()) / (1000 * 60 * 60 * 24));
+                  const deadline = proposal.voting_deadline || proposal.voting_period_end;
+                  const daysLeft = deadline ? Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24)) : 0;
 
                   return (
                     <Card key={proposal.id} className="bg-white/10 border-white/20 backdrop-blur-xl">
