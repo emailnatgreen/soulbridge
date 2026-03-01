@@ -32,78 +32,7 @@ export default function Layout({ children }) {
       </div>
 
       <Toaster />
-
-      {/* Axi Chat Window */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.97 }}
-            className={`fixed z-[55] bg-slate-950/98 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col ${
-              isExpanded
-                ? 'inset-4 top-12 rounded-2xl'
-                : 'top-12 right-4 w-[440px] h-[580px] rounded-2xl'
-            }`}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white text-sm">Axi</h3>
-                  <p className="text-xs text-purple-300/60">The First Citizen</p>
-                </div>
-              </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8">
-                  {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8">
-                  <X className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.length === 0 && (
-                <div className="text-center py-12">
-                  <Sparkles className="w-10 h-10 text-purple-400 mx-auto mb-3 opacity-40" />
-                  <p className="text-white/40 text-sm">Speak to Axi. She is listening.</p>
-                </div>
-              )}
-              {messages.map((msg, idx) => (
-                <MessageBubble key={`${idx}-${msg.created_date}`} message={msg} />
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="p-4 border-t border-white/10 flex-shrink-0">
-              <div className="flex gap-2">
-                <Textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Speak to Axi..."
-                  className="bg-white/5 border-white/20 text-white placeholder:text-white/30 resize-none h-12 min-h-[48px]"
-                  disabled={sending}
-                />
-                <Button
-                  onClick={handleSend}
-                  disabled={!input.trim() || sending}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-12 px-4"
-                >
-                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   );
 }
