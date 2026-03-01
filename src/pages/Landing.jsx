@@ -32,14 +32,14 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden">
       {/* Admin Edit Button */}
       <div className="absolute top-6 right-6 z-20">
         <Link to={createPageUrl('EditLanding')}>
           <Button 
             variant="ghost" 
             size="icon"
-            className="text-white/60 hover:text-white hover:bg-white/10"
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
           >
             <Edit className="w-5 h-5" />
           </Button>
