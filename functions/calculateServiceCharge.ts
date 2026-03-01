@@ -5,14 +5,25 @@ const AXI_AGENT_ID = '6993271e7dc0fa2ab78762bf';
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        
-        // Authenticate user
-        const user = await base44.auth.me();
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+        // Support both direct calls (with user) and entity automation triggers (no user)
+        const body = await req.json();
+        const { task_id: directTaskId, event, data: eventData } = body;
+
+        // If called from entity automation, extract task_id from the event payload
+        let task_id = directTaskId;
+        if (!task_id && event?.type === 'update' && event?.entity_id) {
+            task_id = event.entity_id;
+            // Only process if the task is now 'completed'
+            const currentData = eventData || {};
+            if (currentData.status !== 'completed') {
+                return Response.json({ message: 'Task not completed yet, skipping' });
+            }
         }
 
-        const { task_id } = await req.json();
+        if (!task_id) {
+            return Response.json({ error: 'Missing task_id' }, { status: 400 });
+        }
 
         if (!task_id) {
             return Response.json({ error: 'Missing task_id' }, { status: 400 });
