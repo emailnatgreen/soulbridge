@@ -19,6 +19,7 @@ export default function AgentMessaging() {
   const [showNewConvo, setShowNewConvo] = useState(false);
   const [selectedAgents, setSelectedAgents] = useState([]);
   const [convoType, setConvoType] = useState('direct');
+  const [showAllMessages, setShowAllMessages] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
