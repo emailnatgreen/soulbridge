@@ -335,14 +335,14 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
             <Link to={createPageUrl('DIDManager')}>
-              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-600/10 border-indigo-500/30 hover:border-indigo-400/60 transition-all cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300 hover:border-blue-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-3">
-                    <Shield className="w-8 h-8 text-indigo-400" />
-                    <span className="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full border border-green-500/30 font-semibold">3 DIDs</span>
+                    <Shield className="w-8 h-8 text-blue-600" />
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-300 font-semibold">3 DIDs</span>
                   </div>
-                  <h3 className="text-white font-semibold mb-1">DID Manager</h3>
-                  <p className="text-white/60 text-sm">Manage your on-chain identities</p>
+                  <h3 className="text-gray-900 font-semibold mb-1">DID Manager</h3>
+                  <p className="text-gray-600 text-sm">Manage your on-chain identities</p>
                 </CardContent>
               </Card>
             </Link>
