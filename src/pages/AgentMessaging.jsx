@@ -37,8 +37,15 @@ export default function AgentMessaging() {
   const { data: messages = [] } = useQuery({
     queryKey: ['conversationMessages', selectedConversation?.id],
     queryFn: () => base44.entities.AgentMessage.list('-created_date', 100),
-    enabled: !!selectedConversation,
+    enabled: !!selectedConversation || showAllMessages,
     refetchInterval: 2000
+  });
+
+  const { data: allMessages = [] } = useQuery({
+    queryKey: ['allAgentMessages'],
+    queryFn: () => base44.entities.AgentMessage.list('-created_date', 200),
+    enabled: showAllMessages,
+    refetchInterval: 5000
   });
 
   const { data: notifications = [] } = useQuery({
