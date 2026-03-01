@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
             honor_increase: honorIncrease,
             agent_name: agent.name,
             task_title: task.title,
-            new_treasury_balance: treasury.balance,
+            new_treasury_balance: treasury.total_balance,
             message: 'Service charge calculated and applied successfully'
         });
 
