@@ -149,8 +149,8 @@ export default function NotificationCenter({ agentId }) {
           ) : (
             <div className="divide-y divide-white/5">
               {notifications.map((notif) => {
-                const Icon = getIcon(notif.notification_type);
-                const colorClass = getColor(notif.notification_type, notif.priority);
+                const Icon = getIcon(notif.notification_type, notif.title, notif.priority);
+                const colorClass = getColor(notif.notification_type, notif.priority, notif.title);
                 
                 const content = (
                   <div
@@ -168,13 +168,11 @@ export default function NotificationCenter({ agentId }) {
                         <p className="text-white/70 text-sm line-clamp-2">{notif.message}</p>
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-xs text-white/40">
-                            {new Date(notif.created_date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
+                            {formatDistanceToNow(new Date(notif.created_date), { addSuffix: true })}
                           </span>
+                          {notif.priority && notif.priority !== 'normal' && (
+                            <Badge className={`${colorClass} text-xs px-1.5 py-0 capitalize`}>{notif.priority}</Badge>
+                          )}
                           {!notif.is_read && (
                             <div className="w-2 h-2 rounded-full bg-purple-500" />
                           )}
