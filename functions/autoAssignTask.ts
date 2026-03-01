@@ -10,9 +10,22 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { task_id } = await req.json();
+        const body = await req.json();
+        const { task_id: directTaskId, event, data: eventData } = body;
+
+        // Support entity automation trigger (create event)
+        let task_id = directTaskId;
+        if (!task_id && event?.type === 'create' && event?.entity_id) {
+            task_id = event.entity_id;
+        }
+
         if (!task_id) {
             return Response.json({ error: 'Missing task_id' }, { status: 400 });
+        }
+
+        // If already assigned from eventData, skip
+        if (eventData?.assigned_agent_id) {
+            return Response.json({ message: 'Task already has an agent assigned', assigned_agent_id: eventData.assigned_agent_id });
         }
 
         // Fetch the task
