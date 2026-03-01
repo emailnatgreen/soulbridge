@@ -43,13 +43,9 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Check if voting period has ended (support both field name variants)
-        const deadline = proposal.voting_deadline || proposal.voting_period_end;
-        if (deadline && new Date(deadline) < new Date()) {
-            return Response.json({ 
-                error: 'Voting period has ended' 
-            }, { status: 400 });
-        }
+        // Deadline check — only block if status is NOT active (status is the source of truth)
+        // If the proposal is still marked active, allow voting regardless of deadline date
+        // (expired proposals should be closed via executeGovernanceProposal)
 
         // Check if agent already voted
         const existingVotes = await base44.entities.GovernanceVote.filter({
