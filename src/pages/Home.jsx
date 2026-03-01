@@ -257,7 +257,7 @@ export default function Home() {
               {/* Analytics */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <Button variant="ghost" className="text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700">
                     <BarChart3 className="w-4 h-4 mr-2" />
                     Analytics <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
