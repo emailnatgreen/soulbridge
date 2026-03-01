@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
     try {
       const base44 = createClientFromRequest(req);
       await base44.asServiceRole.entities.AgentNotification.create({
-        recipient_agent_id: 'Axi',
+        recipient_agent_id: AXI_AGENT_ID,
         notification_type: 'system',
         title: '🚨 dailyVillageMeetup Crashed',
         message: `The Daily Village Meetup automation encountered an unexpected error: "${error.message}". Manual inspection required.`,
