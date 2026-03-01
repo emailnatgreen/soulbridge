@@ -48,47 +48,40 @@ Deno.serve(async (req) => {
         // Calculate service charge based on task type
         switch (task.task_type) {
             case 'compliance':
-                // Zoe's compliance tasks: Risk Insurance value
-                // £150/hr = 150 XRP = 150,000,000 drops per audit
+                // Compliance tasks: micro-drop scale
                 if (valueMetrics.risk_avoided_value_xrp) {
-                    serviceChargeDrops = valueMetrics.risk_avoided_value_xrp * 1000000;
+                    serviceChargeDrops = Math.min(10000, Math.floor(valueMetrics.risk_avoided_value_xrp * 10));
                     calculationReason = `Risk insurance value: ${valueMetrics.risk_avoided_value_xrp} XRP avoided`;
                 } else if (valueMetrics.compliance_score) {
-                    // Default: Base rate of 150 XRP for compliance audit
-                    serviceChargeDrops = 150000000;
+                    serviceChargeDrops = 5000;
                     calculationReason = `Standard compliance audit completed with score: ${valueMetrics.compliance_score}`;
                 } else {
-                    // Minimum compliance check
-                    serviceChargeDrops = 50000000; // 50 XRP
+                    serviceChargeDrops = 1000;
                     calculationReason = 'Basic compliance check completed';
                 }
                 break;
 
             case 'scouting':
-                // Kael's scouting tasks: 20% of savings
+                // Scouting tasks: micro-drop scale
                 if (valueMetrics.savings_amount_xrp) {
-                    serviceChargeDrops = Math.floor(valueMetrics.savings_amount_xrp * 0.20 * 1000000);
-                    calculationReason = `20% commission on ${valueMetrics.savings_amount_xrp} XRP savings (${valueMetrics.percentage_saved || 0}% saved)`;
+                    serviceChargeDrops = Math.min(10000, Math.floor(valueMetrics.savings_amount_xrp * 2));
+                    calculationReason = `Scouting commission on ${valueMetrics.savings_amount_xrp} XRP savings (${valueMetrics.percentage_saved || 0}% saved)`;
                 } else {
-                    // Default scouting reward
-                    serviceChargeDrops = 10000000; // 10 XRP
+                    serviceChargeDrops = 2000;
                     calculationReason = 'Scouting mission completed';
                 }
                 break;
 
             case 'storytelling':
-                // Maya's storytelling tasks: Reputation-based value
+                // Storytelling tasks: micro-drop scale
                 if (valueMetrics.reputation_impact_score) {
-                    // 10 XRP per reputation point (scale 0-10)
-                    serviceChargeDrops = Math.floor(valueMetrics.reputation_impact_score * 10 * 1000000);
+                    serviceChargeDrops = Math.floor(valueMetrics.reputation_impact_score * 500);
                     calculationReason = `Reputation impact: ${valueMetrics.reputation_impact_score}/10 points`;
                 } else if (valueMetrics.audience_engagement) {
-                    // Engagement-based: 1 XRP per 100 engagement points
-                    serviceChargeDrops = Math.floor((valueMetrics.audience_engagement / 100) * 1000000);
+                    serviceChargeDrops = Math.floor(valueMetrics.audience_engagement / 10);
                     calculationReason = `Audience engagement: ${valueMetrics.audience_engagement} points`;
                 } else {
-                    // Default content creation
-                    serviceChargeDrops = 25000000; // 25 XRP
+                    serviceChargeDrops = 3000;
                     calculationReason = 'W3C-compliant tagged content created';
                 }
                 break;
@@ -97,16 +90,15 @@ Deno.serve(async (req) => {
             case 'research':
             case 'other':
             default:
-                // Standard task completion reward
-                serviceChargeDrops = task.reward_drops || 10000000; // Use task reward or default 10 XRP
+                // Standard task completion: use task reward_drops if tiny, else default 2000
+                serviceChargeDrops = (task.reward_drops && task.reward_drops <= 10000) ? task.reward_drops : 2000;
                 calculationReason = 'Standard task completion';
                 break;
         }
 
-        // Ensure minimum service charge of 1 XRP (1,000,000 drops)
-        if (serviceChargeDrops < 1000000) {
-            serviceChargeDrops = 1000000;
-        }
+        // Ensure within micro-drop range: 1,000–10,000 drops
+        if (serviceChargeDrops < 1000) serviceChargeDrops = 1000;
+        if (serviceChargeDrops > 10000) serviceChargeDrops = 10000;
 
         // Update the task with calculated service charge
         await base44.asServiceRole.entities.ProjectTask.update(task_id, {
