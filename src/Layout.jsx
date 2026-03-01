@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from 'lucide-react';
 import LondonClock from '@/components/LondonClock';
-import AxiChat from '@/components/AxiChat';
+
+const AxiChat = lazy(() => import('@/components/AxiChat'));
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [everOpened, setEverOpened] = useState(false);
+
+  const handleToggle = () => {
+    if (!everOpened) setEverOpened(true);
+    setIsOpen(prev => !prev);
+  };
 
   return (
     <div className="relative">
@@ -14,7 +21,7 @@ export default function Layout({ children }) {
       <div className="fixed top-0 left-0 right-0 z-[60] bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
         <LondonClock />
         <Button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleToggle}
           size="sm"
           className={`gap-2 transition-all ${isOpen 
             ? 'bg-purple-600 hover:bg-purple-700 text-white' 
@@ -32,7 +39,13 @@ export default function Layout({ children }) {
       </div>
 
       <Toaster />
-      <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} />
+
+      {/* Only mount AxiChat after first open */}
+      {everOpened && (
+        <Suspense fallback={null}>
+          <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} />
+        </Suspense>
+      )}
     </div>
   );
 }
