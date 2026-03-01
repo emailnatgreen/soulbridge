@@ -1,20 +1,53 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Helper: Alert Axi when something critical happens
+async function alertAxi(base44, title, message, severity = 'high') {
+  try {
+    await base44.asServiceRole.entities.AgentNotification.create({
+      recipient_agent_id: 'Axi',
+      notification_type: 'system',
+      title: `🛡️ Meetup Alert: ${title}`,
+      message,
+      priority: severity === 'critical' ? 'urgent' : 'high',
+      related_entity_type: 'AIProject',
+    });
+  } catch (e) {
+    console.error('Failed to alert Axi:', e.message);
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Fetch all active agents
+    // --- PRE-EXECUTION CHECK: Active agents ---
     const agents = await base44.asServiceRole.entities.Agent.filter({ status: 'active' });
+    if (!agents || agents.length === 0) {
+      await alertAxi(base44,
+        'No Active Agents for Daily Meetup',
+        'The Daily Village Meetup ran but found zero active agents. The meetup was skipped. Please check agent statuses immediately.',
+        'critical'
+      );
+      return Response.json({ status: 'skipped', reason: 'no_active_agents' });
+    }
 
-    // Fetch all projects and tasks
+    // --- PRE-EXECUTION CHECK: Active projects ---
     const projects = await base44.asServiceRole.entities.AIProject.filter({ status: 'active' });
-    const allTasks = await base44.asServiceRole.entities.ProjectTask.list();
+    if (!projects || projects.length === 0) {
+      await alertAxi(base44,
+        'No Active Projects for Daily Meetup',
+        'The Daily Village Meetup found no active projects. Task assignment skipped, but morning notifications will still be sent to agents.',
+        'high'
+      );
+    }
 
     const agentIds = agents.map(a => a.id);
     const validAgentIdSet = new Set(agentIds);
 
-    // --- 1. Send morning meetup notification to all active agents ---
+    // --- 1. Fetch all tasks ---
+    const allTasks = await base44.asServiceRole.entities.ProjectTask.list();
+
+    // --- 2. Send morning meetup notification to all active agents ---
     const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     for (const agent of agents) {
       await base44.asServiceRole.entities.AgentNotification.create({
@@ -27,7 +60,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // --- 2. Identify unassigned tasks and assign them ---
+    // --- 3. Identify unassigned tasks and assign them ---
     const unassignedTasks = allTasks.filter(t =>
       t.status === 'todo' && (!t.assigned_agent_id || !validAgentIdSet.has(t.assigned_agent_id))
     );
@@ -35,19 +68,18 @@ Deno.serve(async (req) => {
     const assignments = [];
     for (let i = 0; i < unassignedTasks.length; i++) {
       const task = unassignedTasks[i];
-      const assignedAgent = agents[i % agents.length]; // round-robin fallback
 
-      // Try to match by required skills if project has them
-      let bestAgent = assignedAgent;
+      // Dynamic skill-based matching, round-robin fallback
+      let bestAgent = agents[i % agents.length];
       if (task.project_id) {
-        const project = projects.find(p => p.id === task.project_id);
+        const project = (projects || []).find(p => p.id === task.project_id);
         if (project?.required_skills?.length > 0) {
           const agentSkills = await base44.asServiceRole.entities.AgentSkill.filter({
             skill_name: project.required_skills[0]
           });
           const matched = agentSkills.find(s => validAgentIdSet.has(s.agent_id));
           if (matched) {
-            bestAgent = agents.find(a => a.id === matched.agent_id) || assignedAgent;
+            bestAgent = agents.find(a => a.id === matched.agent_id) || bestAgent;
           }
         }
       }
@@ -57,7 +89,6 @@ Deno.serve(async (req) => {
         status: 'in_progress'
       });
 
-      // Notify assigned agent
       await base44.asServiceRole.entities.AgentNotification.create({
         recipient_agent_id: bestAgent.id,
         notification_type: 'task_assigned',
@@ -71,8 +102,16 @@ Deno.serve(async (req) => {
       assignments.push({ task_id: task.id, task_title: task.title, assigned_to: bestAgent.name });
     }
 
-    // --- 3. Identify blocked tasks and escalate ---
+    // --- 4. Identify blocked tasks, escalate, and alert Axi ---
     const blockedTasks = allTasks.filter(t => t.status === 'blocked');
+    if (blockedTasks.length > 0) {
+      await alertAxi(base44,
+        `${blockedTasks.length} Blocked Task(s) Detected`,
+        `During the Daily Village Meetup, ${blockedTasks.length} blocked task(s) were identified: ${blockedTasks.map(t => `"${t.title}"`).join(', ')}. These have been escalated to their assigned agents.`,
+        'high'
+      );
+    }
+
     for (const task of blockedTasks) {
       if (task.assigned_agent_id && validAgentIdSet.has(task.assigned_agent_id)) {
         await base44.asServiceRole.entities.AgentNotification.create({
@@ -87,7 +126,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // --- 4. Log meetup memory for Axi ---
+    // --- 5. Log meetup memory for Axi ---
     const summary = `Daily Village Meetup completed. ${agents.length} agents notified. ${assignments.length} tasks assigned. ${blockedTasks.length} blocked tasks escalated.`;
     await base44.asServiceRole.entities.Memory.create({
       agent_id: 'Axi',
@@ -109,6 +148,19 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Daily meetup error:', error);
+    // Best-effort crash alert to Axi
+    try {
+      const base44 = createClientFromRequest(req);
+      await base44.asServiceRole.entities.AgentNotification.create({
+        recipient_agent_id: 'Axi',
+        notification_type: 'system',
+        title: '🚨 dailyVillageMeetup Crashed',
+        message: `The Daily Village Meetup automation encountered an unexpected error: "${error.message}". Manual inspection required.`,
+        priority: 'urgent',
+        related_entity_type: 'AIProject',
+      });
+    } catch (_) { /* best effort */ }
+
     return Response.json({ status: 'error', error: error.message }, { status: 500 });
   }
 });
