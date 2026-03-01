@@ -80,7 +80,7 @@ export default function Home() {
               {/* Wallets & Payments */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300">
+                  <Button variant="ghost" className="text-green-600 hover:bg-green-100 hover:text-green-700">
                     <Wallet className="w-4 h-4 mr-2" />
                     Wallets <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
