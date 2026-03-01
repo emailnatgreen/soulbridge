@@ -29,6 +29,9 @@ export default function Layout({ children, currentPageName }) {
 
       <Toaster />
 
+      {/* Floating Axi Button for all pages */}
+      <AxiFloatingButton />
+
       {/* Only mount AxiChat on non-public pages and after first open */}
       {!isPublicPage && everOpened && (
         <Suspense fallback={null}>
