@@ -145,10 +145,10 @@ import TrainingSimulation from './pages/TrainingSimulation';
 import TransactionHistory from './pages/TransactionHistory';
 import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
+import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import VillageMeetup from './pages/VillageMeetup';
 import __Layout from './Layout.jsx';
 
 
@@ -251,10 +251,10 @@ export const PAGES = {
     "TransactionHistory": TransactionHistory,
     "TreasuryDashboard": TreasuryDashboard,
     "Village": Village,
+    "VillageMeetup": VillageMeetup,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "VillageMeetup": VillageMeetup,
 }
 
 export const pagesConfig = {
