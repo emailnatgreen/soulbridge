@@ -314,12 +314,12 @@ export default function Home() {
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <Link to={createPageUrl('DIDManager')}>
-                    <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                    <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
                       <Shield className="w-4 h-4" /> DID Manager
                     </button>
                   </Link>
                   <Link to={createPageUrl('DidCredentials')}>
-                    <button className="bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                    <button className="bg-gray-200 hover:bg-gray-300 text-gray-900 text-sm font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
                       <Award className="w-4 h-4" /> Credentials
                     </button>
                   </Link>
