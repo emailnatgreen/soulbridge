@@ -294,21 +294,21 @@ export default function Home() {
             <CardContent className="pt-5 pb-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-indigo-500/20 rounded-xl">
-                    <Shield className="w-7 h-7 text-indigo-300" />
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <Shield className="w-7 h-7 text-blue-600" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-white font-bold text-lg">Ripple Spring 2026 — Compliance Ready</h3>
-                      <span className="bg-green-500/20 text-green-300 text-xs font-semibold px-2 py-0.5 rounded-full border border-green-500/30">● LIVE</span>
+                      <h3 className="text-gray-900 font-bold text-lg">Ripple Spring 2026 — Compliance Ready</h3>
+                      <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full border border-green-300">● LIVE</span>
                     </div>
                     <div className="flex flex-wrap gap-2 text-xs">
-                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Identity (Nathan Green)</span>
-                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-80 VIP Passport</span>
-                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Treasury Auth</span>
-                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 AI Agent Auth (Axi)</span>
-                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> 3 DIDs On-Chain</span>
-                      <span className="flex items-center gap-1 text-indigo-300"><CheckCircle className="w-3 h-3 text-green-400" /> soulbridge.app Permissioned Domain</span>
+                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> XLS-70 Identity (Nathan Green)</span>
+                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> XLS-80 VIP Passport</span>
+                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> XLS-70 Treasury Auth</span>
+                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> XLS-70 AI Agent Auth (Axi)</span>
+                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> 3 DIDs On-Chain</span>
+                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> soulbridge.app Permissioned Domain</span>
                     </div>
                   </div>
                 </div>
