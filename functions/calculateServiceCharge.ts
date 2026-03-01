@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+const AXI_AGENT_ID = '6993271e7dc0fa2ab78762bf';
+
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
@@ -131,15 +133,22 @@ Deno.serve(async (req) => {
         
         if (treasuryList && treasuryList.length > 0) {
             treasury = treasuryList[0];
-            // Update treasury balance
             await base44.asServiceRole.entities.Treasury.update(treasury.id, {
-                balance: (treasury.balance || 0) + (serviceChargeDrops / 1000000)
+                total_balance: (treasury.total_balance || 0) + (serviceChargeDrops / 1000000),
+                total_deposits: (treasury.total_deposits || 0) + (serviceChargeDrops / 1000000),
+                transaction_count: (treasury.transaction_count || 0) + 1
             });
         } else {
             // Create treasury if it doesn't exist
             treasury = await base44.asServiceRole.entities.Treasury.create({
-                balance: serviceChargeDrops / 1000000,
-                description: 'Village Treasury'
+                name: 'Village Treasury',
+                total_balance: serviceChargeDrops / 1000000,
+                total_deposits: serviceChargeDrops / 1000000,
+                total_withdrawals: 0,
+                transaction_count: 1,
+                manager_agent_id: AXI_AGENT_ID,
+                purpose: 'Village shared fund from service charges',
+                access_level: 'managers'
             });
         }
 
