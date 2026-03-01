@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { LogIn, Edit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import AxiFloatingButton from '../components/AxiFloatingButton';
 
 export default function Landing() {
+  const [isAxiOpen, setIsAxiOpen] = useState(false);
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -73,6 +76,9 @@ export default function Landing() {
 
       {/* Subtle Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+      {/* Axi Floating Button for Public Users */}
+      <AxiFloatingButton isOpen={isAxiOpen} setIsOpen={setIsAxiOpen} />
 
       {/* Footer */}
       <footer className="absolute bottom-0 left-0 right-0 z-10 bg-black/60 backdrop-blur-md border-t border-white/10 py-6">
