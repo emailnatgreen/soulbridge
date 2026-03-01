@@ -147,16 +147,25 @@ export default function AgentMessaging() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                  <Bell className="w-5 h-5" />
-                </Button>
-                {unreadCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500">
-                    {unreadCount}
-                  </Badge>
-                )}
-              </div>
+            <Button
+              variant={showAllMessages ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setShowAllMessages(!showAllMessages)}
+              className={showAllMessages ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-white/80 hover:text-white border-white/20"}
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              {showAllMessages ? 'Viewing All' : 'View All Messages'}
+            </Button>
+            <div className="relative">
+              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+                <Bell className="w-5 h-5" />
+              </Button>
+              {unreadCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500">
+                  {unreadCount}
+                </Badge>
+              )}
+            </div>
               <Dialog open={showNewConvo} onOpenChange={setShowNewConvo}>
                 <DialogTrigger asChild>
                   <Button className="bg-purple-600 hover:bg-purple-700">
