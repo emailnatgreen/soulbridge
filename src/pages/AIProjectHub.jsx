@@ -92,6 +92,21 @@ export default function AIProjectHub() {
     }
   });
 
+  const autoAssignAllMutation = useMutation({
+    mutationFn: async () => {
+      const unassigned = tasks.filter(t => !t.assigned_agent_id && t.status !== 'completed');
+      const results = [];
+      for (const task of unassigned) {
+        const res = await base44.functions.invoke('autoAssignTask', { task_id: task.id });
+        results.push(res.data);
+      }
+      return results;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['project-tasks', projectId]);
+    }
+  });
+
   const updateMilestoneMutation = useMutation({
     mutationFn: async (data) => {
       await base44.functions.invoke('updateProjectMilestone', data);
