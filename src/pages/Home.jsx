@@ -29,7 +29,7 @@ export default function Home() {
 
   return (
     <>
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative pb-20 md:pb-0">
+    <div className="min-h-screen bg-white relative pb-20 md:pb-0">
       {/* Background Image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-10 pointer-events-none"
