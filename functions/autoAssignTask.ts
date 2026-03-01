@@ -33,6 +33,13 @@ Deno.serve(async (req) => {
         // Fetch all active agents
         const agents = await base44.asServiceRole.entities.Agent.filter({ status: 'active' });
         if (!agents || agents.length === 0) {
+            await base44.asServiceRole.entities.AgentNotification.create({
+                recipient_agent_id: AXI_AGENT_ID,
+                notification_type: 'system',
+                title: 'Auto-Assignment Failed: No Active Agents',
+                message: `Task "${task.title}" could not be auto-assigned because no active agents were found.`,
+                priority: 'high'
+            });
             return Response.json({ error: 'No active agents available' });
         }
 
