@@ -270,14 +270,14 @@ export default function Home() {
               </DropdownMenu>
 
               <Link to={createPageUrl('EditLanding')}>
-                <Button variant="ghost" className="text-white/80 hover:bg-white/10 hover:text-white">
+                <Button variant="ghost" className="text-gray-600 hover:bg-gray-100 hover:text-gray-900">
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Landing
                 </Button>
               </Link>
 
               <Link to={createPageUrl('Admin')}>
-                <Button variant="ghost" className="text-red-300/80 hover:bg-red-500/10 hover:text-red-300">
+                <Button variant="ghost" className="text-red-600 hover:bg-red-100 hover:text-red-700">
                   <Shield className="w-4 h-4 mr-2" />
                   Admin
                 </Button>
