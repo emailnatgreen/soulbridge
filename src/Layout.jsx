@@ -7,69 +7,6 @@ import AxiChat from '@/components/AxiChat';
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [conversation, setConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [sending, setSending] = useState(false);
-  const messagesEndRef = useRef(null);
-  const unsubscribeRef = useRef(null);
-
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
-
-  useEffect(() => {
-    if (messages.length > 0) scrollToBottom();
-  }, [messages.length, scrollToBottom]);
-
-  const initConversation = useCallback(async () => {
-    try {
-      const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-      const existing = conversations.find(c => c.metadata?.unified_axi_chat === true);
-      let convo;
-      if (existing) {
-        convo = await base44.agents.getConversation(existing.id);
-      } else {
-        convo = await base44.agents.createConversation({
-          agent_name: 'axi',
-          metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
-        });
-      }
-      setConversation(convo);
-      setMessages(convo.messages || []);
-      if (unsubscribeRef.current) unsubscribeRef.current();
-      unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
-        setMessages(data.messages);
-      });
-    } catch (error) {
-      console.error('Failed to init Axi conversation:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isOpen && !conversation) initConversation();
-    return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
-  }, [isOpen, conversation, initConversation]);
-
-  const handleSend = useCallback(async () => {
-    if (!input.trim() || !conversation || sending) return;
-    const msg = input;
-    setInput('');
-    setSending(true);
-    try {
-      await base44.agents.addMessage(conversation, { role: 'user', content: msg });
-    } catch (error) {
-      console.error('Failed to send:', error);
-      setInput(msg);
-    } finally {
-      setSending(false);
-    }
-  }, [input, conversation, sending]);
-
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  }, [handleSend]);
 
   return (
     <div className="relative">
