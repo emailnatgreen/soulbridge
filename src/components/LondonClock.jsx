@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 
-export default function LondonClock() {
+const LondonClock = memo(function LondonClock() {
   const [timeStr, setTimeStr] = useState('');
 
   useEffect(() => {
@@ -29,4 +29,6 @@ export default function LondonClock() {
       {timeStr}
     </span>
   );
-}
+});
+
+export default LondonClock;
