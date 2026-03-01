@@ -130,7 +130,7 @@ export default function Home() {
               {/* Agents */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-300">
+                  <Button variant="ghost" className="text-purple-600 hover:bg-purple-100 hover:text-purple-700">
                     <Users className="w-4 h-4 mr-2" />
                     Agents <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
