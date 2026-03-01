@@ -101,7 +101,7 @@ export default function Home() {
               {/* DID System */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-indigo-300/80 hover:bg-indigo-500/10 hover:text-indigo-300">
+                  <Button variant="ghost" className="text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700">
                     <Shield className="w-4 h-4 mr-2" />
                     DID <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
