@@ -155,6 +155,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
 import MentorFeedback from './pages/MentorFeedback';
+import VillageLeaderboard from './pages/VillageLeaderboard';
 import __Layout from './Layout.jsx';
 
 
@@ -267,6 +268,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
     "MentorFeedback": MentorFeedback,
+    "VillageLeaderboard": VillageLeaderboard,
 }
 
 export const pagesConfig = {
