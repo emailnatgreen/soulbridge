@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
     // Fetch existing AgentSkill records for this agent
     const existingSkills = await base44.asServiceRole.entities.AgentSkill.filter({ agent_id });
-    const skillMap = Object.fromEntries(existingSkills.map(s => [s.name, s]));
+    const skillMap = Object.fromEntries(existingSkills.map(s => [s.skill_name || s.name, s]));
 
     const now = new Date().toISOString();
     const difficultyMultiplier = { Easy: 0.8, Medium: 1.0, Hard: 1.2, 'Fire Drill': 1.5 }[difficulty_level] || 1.0;
