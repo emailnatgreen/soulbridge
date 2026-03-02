@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Star, Briefcase, Award, Zap, Globe, MessageCircle, Edit, ExternalLink, CheckCircle2, TrendingUp, TrendingDown, Minus, Users, BookOpen, Target, Vote, ShoppingBag, Brain, Sparkles } from 'lucide-react';
 import SkillTrajectoryInsights from '../components/agent/SkillTrajectoryInsights';
+import AgentMatchingProjects from '../components/AgentMatchingProjects';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
@@ -690,6 +691,9 @@ export default function AgentProfile() {
           </TabsContent>
 
           <TabsContent value="contributions" className="space-y-6">
+            {/* Matching Projects */}
+            <AgentMatchingProjects agentId={agentId} />
+
             {/* Projects */}
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardHeader>
