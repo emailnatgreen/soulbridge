@@ -185,34 +185,25 @@ export default function RiskAIPanel({ onAddRisk, agents = [] }) {
               </p>
               {analysis.suggested_risks.map((risk, i) => {
                 const isExpanded = expandedIdx === i;
-                const alreadyAdded = addedRisks.has(risk.name);
+                const state = riskState[risk.name] || {};
+                const confirmed = state.taskCreated;
                 return (
-                  <div key={i} className={`border rounded-lg overflow-hidden ${risk.urgent_alert ? 'border-red-300 bg-red-50' : 'border-purple-200 bg-white'}`}>
+                  <div key={i} className={`border rounded-lg overflow-hidden ${risk.urgent_alert ? 'border-red-300 bg-red-50' : confirmed ? 'border-green-300 bg-green-50' : 'border-purple-200 bg-white'}`}>
                     <button
                       className="w-full flex items-center gap-3 p-3 text-left hover:bg-black/5 transition-colors"
                       onClick={() => setExpandedIdx(isExpanded ? null : i)}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          {risk.urgent_alert && <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />}
+                          {risk.urgent_alert && !confirmed && <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />}
                           <span className="font-medium text-sm text-gray-900">{risk.name}</span>
                           <Badge className={`${SEVERITY_COLOR[risk.severity]} border text-xs`}>{risk.severity}</Badge>
                           <Badge variant="outline" className="text-xs text-gray-500">{risk.category}</Badge>
+                          {confirmed && <Badge className="bg-green-100 text-green-700 border border-green-200 text-xs">✓ Confirmed & Task Created</Badge>}
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5 truncate">{risk.description}</p>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Button
-                          size="sm"
-                          variant={alreadyAdded ? 'outline' : 'default'}
-                          className={alreadyAdded ? 'h-7 text-xs border-green-300 text-green-700' : 'h-7 text-xs bg-red-600 hover:bg-red-700 text-white'}
-                          onClick={e => { e.stopPropagation(); if (!alreadyAdded) handleAddRisk(risk); }}
-                          disabled={alreadyAdded}
-                        >
-                          {alreadyAdded ? '✓ Added' : <><Plus className="w-3 h-3 mr-1" />Add</>}
-                        </Button>
-                        {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
-                      </div>
+                      {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />}
                     </button>
 
                     {isExpanded && (
@@ -226,12 +217,56 @@ export default function RiskAIPanel({ onAddRisk, agents = [] }) {
                           <p className="text-xs text-gray-700">{risk.impact_description}</p>
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-gray-500 mb-0.5">Suggested Mitigation</p>
+                          <p className="text-xs font-semibold text-gray-500 mb-0.5">Suggested Mitigation Steps</p>
                           <p className="text-xs text-gray-700">{risk.mitigation_plan}</p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           <Badge variant="outline" className="text-xs">Likelihood: {risk.likelihood}</Badge>
                         </div>
+
+                        {!confirmed && (
+                          <div className="pt-2 border-t border-gray-100 space-y-2">
+                            <p className="text-xs font-semibold text-gray-500 flex items-center gap-1">
+                              <ClipboardList className="w-3 h-3" /> Assign Mitigation Task To
+                            </p>
+                            <div className="flex gap-2 flex-wrap items-center">
+                              <Select
+                                value={state.assigneeId || ''}
+                                onValueChange={(val) => setAssignee(risk.name, val)}
+                              >
+                                <SelectTrigger className="h-7 text-xs w-44">
+                                  <SelectValue placeholder="Select agent..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {agents.map(a => (
+                                    <SelectItem key={a.id} value={a.id} className="text-xs">{a.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                size="sm"
+                                className="h-7 text-xs bg-purple-600 hover:bg-purple-700 text-white"
+                                onClick={e => { e.stopPropagation(); handleConfirmRisk(risk); }}
+                                disabled={state.taskLoading}
+                              >
+                                {state.taskLoading
+                                  ? <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                                  : <><Plus className="w-3 h-3 mr-1" /></>
+                                }
+                                Confirm & Create Task
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {confirmed && (
+                          <div className="pt-2 border-t border-gray-100">
+                            <p className="text-xs text-green-700 flex items-center gap-1">
+                              <ClipboardList className="w-3 h-3" />
+                              Mitigation task created and assigned. Track progress in the tasks panel below.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
