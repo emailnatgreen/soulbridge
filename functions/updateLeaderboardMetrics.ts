@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     // Fetch agent, skills, and reviews in parallel
     const [agents, skills, reviews] = await Promise.all([
       base44.asServiceRole.entities.Agent.filter({ id: agent_id }, 'name', 1),
-      base44.asServiceRole.entities.AgentSkill.filter({ agent_id, skill_category: 'diplomacy' }),
+      base44.asServiceRole.entities.AgentSkill.filter({ agent_id }),
       base44.asServiceRole.entities.GhostReview.filter({ assigned_agent_id: agent_id, status: 'Evaluated' }),
     ]);
 
