@@ -134,6 +134,11 @@ export default function RiskRegister() {
           </Card>
         </div>
 
+        {/* AI Risk Intelligence Panel */}
+        <RiskAIPanel
+          onAddRisk={(data) => createMutation.mutate(data)}
+        />
+
         {/* Risk Matrix */}
         {showMatrix && (
           <Card>
