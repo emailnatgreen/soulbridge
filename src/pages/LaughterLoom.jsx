@@ -170,11 +170,6 @@ Be constructive, specific, and helpful.`,
       return;
     }
 
-    if (!project?.id) {
-      toast.error('Project not found');
-      return;
-    }
-
     submitJokeMutation.mutate({
       submitter_agent_id: selectedAgent,
       joke_title: jokeTitle,
