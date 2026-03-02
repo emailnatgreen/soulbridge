@@ -457,142 +457,115 @@ Be constructive, specific, and helpful.`,
             </Card>
           </TabsContent>
 
-          {/* Gallery Tab */}
+          {/* This Week Tab */}
           <TabsContent value="gallery">
-            <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-white font-semibold text-lg">
+                  This Week's Jokes <span className="text-purple-300/60 text-sm font-normal">({currentWeek})</span>
+                </h3>
+                <Badge className="bg-yellow-500/20 text-yellow-200 border-yellow-400/30">
+                  <Gift className="w-3 h-3 mr-1" />
+                  Top vote wins 1 XRP
+                </Badge>
+              </div>
+
               {isLoading ? (
                 <div className="text-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto" />
                 </div>
-              ) : jokes.length === 0 ? (
+              ) : thisWeekJokes.length === 0 ? (
                 <Card className="bg-white/10 border-white/20 backdrop-blur-xl">
                   <CardContent className="py-12 text-center">
                     <Laugh className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                    <p className="text-white text-lg">No jokes submitted yet!</p>
-                    <p className="text-purple-200/60 mt-2">Be the first to bring laughter to the Village!</p>
+                    <p className="text-white text-lg">No jokes this week yet!</p>
+                    <p className="text-purple-200/60 mt-2">Be the first — and claim that weekly reward!</p>
                   </CardContent>
                 </Card>
               ) : (
-                Object.entries(categorizedJokes).map(([cat, categoryJokes]) => (
-                  <div key={cat}>
-                    <h3 className="text-xl font-semibold text-white mb-3 capitalize">
-                      {cat.replace('_', ' ')} ({categoryJokes.length})
-                    </h3>
-                    <div className="grid gap-4">
-                      {categoryJokes.map(joke => (
-                        <Card key={joke.id} className="bg-white/10 border-white/20 backdrop-blur-xl hover:bg-white/15 transition-all">
-                          <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <CardTitle className="text-white text-lg">{joke.joke_title}</CardTitle>
-                                <div className="flex items-center gap-2 mt-2">
-                                  <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
-                                    {joke.category.replace('_', ' ')}
-                                  </Badge>
-                                  {joke.ai_generated && (
-                                    <Badge className="bg-blue-500/20 text-blue-200 border-blue-400/30">
-                                      <Sparkles className="w-3 h-3 mr-1" />
-                                      AI Generated
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="flex flex-col items-end">
-                                  <div className="flex items-center gap-1 text-yellow-400">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star
-                                        key={star}
-                                        className={`w-4 h-4 cursor-pointer transition-all ${
-                                          star <= (joke.funny_score || 0)
-                                            ? 'fill-yellow-400'
-                                            : 'fill-transparent'
-                                        } hover:scale-110`}
-                                        onClick={() => rateJokeMutation.mutate({
-                                          jokeId: joke.id,
-                                          rating: star * 2,
-                                          currentRatings: joke.total_ratings || 0,
-                                          currentScore: joke.funny_score || 0
-                                        })}
-                                      />
-                                    ))}
-                                  </div>
-                                  <span className="text-white/60 text-xs mt-1">
-                                    {joke.funny_score ? joke.funny_score.toFixed(1) : '0.0'} ({joke.total_ratings || 0})
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-purple-100 whitespace-pre-wrap">{joke.joke_content}</p>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
+                [...thisWeekJokes]
+                  .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
+                  .map((joke, index) => (
+                  <Card key={joke.id} className="bg-white/10 border-white/20 backdrop-blur-xl hover:bg-white/15 transition-all">
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            {index === 0 && <span className="text-yellow-400 text-lg">🥇</span>}
+                            <CardTitle className="text-white text-lg">{joke.joke_title}</CardTitle>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30 text-xs">
+                              {(joke.category || 'other').replace('_', ' ')}
+                            </Badge>
+                            {joke.ai_generated && (
+                              <Badge className="bg-blue-500/20 text-blue-200 border-blue-400/30 text-xs">
+                                <Sparkles className="w-3 h-3 mr-1" />
+                                AI
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-yellow-400/30 text-yellow-300 hover:bg-yellow-500/10 shrink-0"
+                          onClick={() => rateJokeMutation.mutate({ jokeId: joke.id, currentVotes: joke.vote_count })}
+                          disabled={rateJokeMutation.isPending}
+                        >
+                          <ThumbsUp className="w-4 h-4 mr-1" />
+                          {joke.vote_count || 0}
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-purple-100 whitespace-pre-wrap">{joke.joke_content}</p>
+                    </CardContent>
+                  </Card>
                 ))
               )}
             </div>
           </TabsContent>
 
-          {/* Leaderboard Tab */}
-          <TabsContent value="leaderboard">
+          {/* Winners Tab */}
+          <TabsContent value="winners">
             <Card className="bg-white/10 border-white/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-2xl text-white flex items-center gap-2">
                   <Trophy className="w-6 h-6 text-yellow-400" />
-                  Top 10 Funniest Jokes
+                  Weekly Winners Hall of Fame
                 </CardTitle>
                 <CardDescription className="text-purple-200/70">
-                  Community favorites ranked by votes
+                  Past joke competition winners — each earned 1 XRP + 5 Honor Points
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {topJokes.length === 0 ? (
+                {pastWinners.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-purple-200/60">No jokes yet! Start the competition!</p>
+                    <Trophy className="w-12 h-12 text-yellow-400/40 mx-auto mb-3" />
+                    <p className="text-purple-200/60">No winners yet — the first will be crowned at end of week!</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {topJokes.map((joke, index) => (
-                      <div
-                        key={joke.id}
-                        className={`p-4 rounded-lg border ${
-                          index === 0
-                            ? 'bg-yellow-500/10 border-yellow-400/30'
-                            : index === 1
-                            ? 'bg-gray-400/10 border-gray-400/30'
-                            : index === 2
-                            ? 'bg-orange-500/10 border-orange-400/30'
-                            : 'bg-white/5 border-white/20'
-                        }`}
-                      >
+                    {pastWinners.map((joke) => (
+                      <div key={joke.id} className="p-4 rounded-lg border bg-yellow-500/10 border-yellow-400/30">
                         <div className="flex items-start gap-4">
-                          <div
-                            className={`text-2xl font-bold ${
-                              index === 0
-                                ? 'text-yellow-400'
-                                : index === 1
-                                ? 'text-gray-300'
-                                : index === 2
-                                ? 'text-orange-400'
-                                : 'text-purple-300'
-                            }`}
-                          >
-                            #{index + 1}
-                          </div>
+                          <span className="text-2xl">🏆</span>
                           <div className="flex-1">
-                            <h4 className="text-white font-semibold">{joke.joke_title}</h4>
-                            <p className="text-purple-200/70 text-sm mt-1">{joke.joke_content}</p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30 text-xs">
-                                {joke.category.replace('_', ' ')}
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-white font-semibold">{joke.joke_title}</h4>
+                              <Badge className="bg-yellow-500/20 text-yellow-200 border-yellow-400/30 text-xs">
+                                {joke.week_period}
                               </Badge>
-                              <div className="flex items-center gap-1 text-yellow-400 text-xs">
-                                <Star className="w-3 h-3 fill-yellow-400" />
-                                {joke.funny_score ? joke.funny_score.toFixed(1) : '0.0'} ({joke.total_ratings || 0} ratings)
-                              </div>
+                            </div>
+                            <p className="text-purple-200/70 text-sm mt-1">{joke.joke_content}</p>
+                            <div className="flex items-center gap-3 mt-2">
+                              <span className="text-yellow-400 text-xs font-medium flex items-center gap-1">
+                                <ThumbsUp className="w-3 h-3" /> {joke.vote_count || 0} votes
+                              </span>
+                              <span className="text-green-400 text-xs font-medium flex items-center gap-1">
+                                <Gift className="w-3 h-3" /> {joke.reward_amount_xrp || 1} XRP rewarded
+                              </span>
                             </div>
                           </div>
                         </div>
