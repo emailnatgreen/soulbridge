@@ -12,6 +12,7 @@ import GhostReviewDetail from '@/components/diplomacy/GhostReviewDetail';
 import GenerateGhostReviewsButton from '@/components/diplomacy/GenerateGhostReviewsButton';
 import MentorReportCard from '@/components/diplomacy/MentorReportCard';
 import GenerateTargetedDrillsButton from '@/components/diplomacy/GenerateTargetedDrillsButton';
+import TopDiplomatsWidget from '@/components/diplomacy/TopDiplomatsWidget';
 
 // Maya's agent ID — adjust if different
 const MAYA_AGENT_ID = 'maya';
