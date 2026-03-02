@@ -29,10 +29,12 @@ Deno.serve(async (req) => {
     if (!agent) return Response.json({ error: 'Agent not found' }, { status: 404 });
 
     // --- Calculate dimension scores from AgentSkill records ---
+    // updateDiplomacySkills stores skills by full label name (e.g. "Empathy & Acknowledgement")
     const dimScores = {};
     for (const dim of DIMS) {
-      const skill = skills.find(s => s.skill_focus === dim || s.skill_name === dim);
-      dimScores[dim] = skill?.proficiency_score ?? skill?.current_level ?? null;
+      const fullLabel = DIM_MAP[dim];
+      const skill = skills.find(s => s.name === fullLabel || s.skill_name === fullLabel);
+      dimScores[dim] = skill?.level ?? null;
     }
 
     // Overall diplomacy score: average of available dimension scores
