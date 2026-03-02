@@ -140,12 +140,13 @@ export default function MayaDiplomacyTraining() {
                 </CardHeader>
                 <CardContent>
                   <GhostReviewDetail
-                    key={selectedReview.id}
-                    review={selectedReview}
-                    onEvaluated={() => setSelected({ ...selectedReview, status: 'Evaluated' })}
-                    onEscalated={(newReviewId, chainId) => {
-                      window.location.href = createPageUrl(`EscalationChainView?chain_id=${chainId}`);
-                    }}
+                   key={selectedReview.id}
+                   review={selectedReview}
+                   agentSkills={agentSkills}
+                   onEvaluated={() => setSelected({ ...selectedReview, status: 'Evaluated' })}
+                   onEscalated={(newReviewId, chainId) => {
+                     window.location.href = createPageUrl(`EscalationChainView?chain_id=${chainId}`);
+                   }}
                   />
                 </CardContent>
               </Card>
