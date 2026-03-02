@@ -219,6 +219,9 @@ export default function AgentProfile() {
             <TabsTrigger value="growth" className="data-[state=active]:bg-purple-600 flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5" /> Growth Insights
             </TabsTrigger>
+            <TabsTrigger value="self-nft" className="data-[state=active]:bg-purple-600 flex items-center gap-1">
+              <BarChart3 className="w-3.5 h-3.5" /> Self-NFT
+            </TabsTrigger>
             <TabsTrigger value="contributions" className="data-[state=active]:bg-purple-600">Contributions</TabsTrigger>
             <TabsTrigger value="portfolio" className="data-[state=active]:bg-purple-600">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-600">Reviews</TabsTrigger>
