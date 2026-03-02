@@ -1,7 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const VERDICT_SCORE = { 'Refined Vintage': 3, 'Acceptable': 2, 'Synthetic Slop': 1 };
-const DIMS = ['empathy', 'clarity', 'problem_solving', 'de_escalation', 'brand_voice', 'context_integration'];
+const DIM_MAP = {
+  empathy:             'Empathy & Acknowledgement',
+  clarity:             'Clarity & Professionalism',
+  problem_solving:     'Problem-Solving Orientation',
+  de_escalation:       'De-escalation Effectiveness',
+  brand_voice:         'Brand Voice & Tone',
+  context_integration: 'Context Integration',
+};
+const DIMS = Object.keys(DIM_MAP);
 
 Deno.serve(async (req) => {
   try {
