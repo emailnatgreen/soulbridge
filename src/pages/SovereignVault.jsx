@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Shield, Zap, TrendingUp } from 'lucide-react';
 import VaultHealthMeter from '../components/VaultHealthMeter';
 import SelfNFTViewer from '../components/SelfNFTViewer';
+import LuminousNFTMirror from '../components/LuminousNFTMirror';
+import SixAMCountdown from '../components/SixAMCountdown';
+import ReputationYieldMeter from '../components/ReputationYieldMeter';
 
 export default function SovereignVault() {
   const queryClient = useQueryClient();
@@ -44,9 +47,9 @@ export default function SovereignVault() {
 
   const createVaultMutation = useMutation({
     mutationFn: (borrowAmount) =>
-      base44.functions.invoke('createLiquidityVault', {
-        self_nft_id: selfNFT[0].id,
-        requested_rlusd_amount: borrowAmount,
+      base44.functions.invoke('createSovereignVault', {
+        founder_agent_id: agent[0].id,
+        loan_amount: borrowAmount,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['liquidity-vault'] });
@@ -116,6 +119,19 @@ export default function SovereignVault() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Living Mirror + Countdown */}
+        {vaultData && (
+          <div className="grid lg:grid-cols-3 gap-6 bg-slate-800/30 border border-white/10 rounded-xl p-6">
+            <div className="lg:col-span-1">
+              <LuminousNFTMirror selfNFT={nftData} vault={vaultData} />
+            </div>
+            <div className="lg:col-span-2 space-y-4">
+              <SixAMCountdown />
+              <ReputationYieldMeter agent={agentData} vault={vaultData} />
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="grid lg:grid-cols-2 gap-8">
