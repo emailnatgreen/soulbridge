@@ -62,10 +62,11 @@ Deno.serve(async (req) => {
         // Create new skill record
         const created = await base44.asServiceRole.entities.AgentSkill.create({
           agent_id,
-          name: dim.label,
-          category: dim.category,
+          skill_id: dim.key,
+          skill_name: dim.label,
+          skill_category: dim.category,
           level: weightedScore,
-          description: `Maya's ${dim.label} skill, tracked via Ghost Review diplomacy drills.`,
+          skill_description: `${dim.label} skill, tracked via Ghost Review diplomacy drills.`,
           metadata: {
             attempts: 1,
             peak_score: weightedScore,
