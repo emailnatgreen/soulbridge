@@ -664,6 +664,31 @@ export default function AgentProfile() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="self-nft" className="space-y-6">
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-purple-400" />
+                    Self-NFT Skill Dashboard
+                    <span className="text-xs font-normal text-white/60 ml-2">Living Capabilities Record</span>
+                  </CardTitle>
+                  <Link to={createPageUrl(`AgentSkillDashboard?agent_id=${agent.id}`)}>
+                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      View Full Dashboard
+                    </Button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-white/80 text-center py-8">
+                  Access {agent.name}'s complete Self-NFT skill profile with real-time growth tracking and automated skill updates.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="contributions" className="space-y-6">
             {/* Projects */}
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
