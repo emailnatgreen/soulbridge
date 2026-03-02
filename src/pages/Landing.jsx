@@ -26,7 +26,11 @@ export default function Landing() {
   };
 
   // Wait for auth check before rendering
-  if (isLoading) return null;
+  if (isLoading) return (
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   // If user is authenticated, redirect to Home
   if (user) {

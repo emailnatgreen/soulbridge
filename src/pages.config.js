@@ -100,6 +100,7 @@ import EditAgent from './pages/EditAgent';
 import EditAgentProfile from './pages/EditAgentProfile';
 import EditLanding from './pages/EditLanding';
 import EnhancedSkillTrees from './pages/EnhancedSkillTrees';
+import EscalationChainView from './pages/EscalationChainView';
 import Governance from './pages/Governance';
 import GovernanceHub from './pages/GovernanceHub';
 import GovernanceSimulation from './pages/GovernanceSimulation';
@@ -111,6 +112,7 @@ import Landing from './pages/Landing';
 import LaughterLoom from './pages/LaughterLoom';
 import MainnetMigration from './pages/MainnetMigration';
 import MayaDiplomacyTraining from './pages/MayaDiplomacyTraining';
+import MayaSkillDashboard from './pages/MayaSkillDashboard';
 import MemoryBrowser from './pages/MemoryBrowser';
 import MentorshipAnalytics from './pages/MentorshipAnalytics';
 import MentorshipHub from './pages/MentorshipHub';
@@ -152,8 +154,6 @@ import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import EscalationChainView from './pages/EscalationChainView';
-import MayaSkillDashboard from './pages/MayaSkillDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -211,6 +211,7 @@ export const PAGES = {
     "EditAgentProfile": EditAgentProfile,
     "EditLanding": EditLanding,
     "EnhancedSkillTrees": EnhancedSkillTrees,
+    "EscalationChainView": EscalationChainView,
     "Governance": Governance,
     "GovernanceHub": GovernanceHub,
     "GovernanceSimulation": GovernanceSimulation,
@@ -222,6 +223,7 @@ export const PAGES = {
     "LaughterLoom": LaughterLoom,
     "MainnetMigration": MainnetMigration,
     "MayaDiplomacyTraining": MayaDiplomacyTraining,
+    "MayaSkillDashboard": MayaSkillDashboard,
     "MemoryBrowser": MemoryBrowser,
     "MentorshipAnalytics": MentorshipAnalytics,
     "MentorshipHub": MentorshipHub,
@@ -263,8 +265,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "EscalationChainView": EscalationChainView,
-    "MayaSkillDashboard": MayaSkillDashboard,
 }
 
 export const pagesConfig = {
