@@ -145,7 +145,7 @@ Return a JSON object with these exact keys:
       ai_improvements: result.improvements || [],
     });
 
-    // Fire-and-forget skill tracking update (don't block response)
+    // Fire-and-forget skill tracking + leaderboard update (non-blocking)
     if (review.assigned_agent_id && result.dimension_scores) {
       base44.asServiceRole.functions.invoke('updateDiplomacySkills', {
         agent_id: review.assigned_agent_id,
@@ -154,7 +154,11 @@ Return a JSON object with these exact keys:
         ghost_review_id,
         difficulty_level: review.difficulty_level,
         verdict: result.vintage_verdict,
-      }).catch(() => {}); // silent fail — skill tracking is non-blocking
+      }).catch(() => {});
+
+      base44.asServiceRole.functions.invoke('updateLeaderboardMetrics', {
+        agent_id: review.assigned_agent_id,
+      }).catch(() => {});
     }
 
     return Response.json({
