@@ -21,11 +21,12 @@ const VERDICT_STYLE = {
 };
 
 const DIM_LABEL = {
-  empathy:         'Empathy',
-  clarity:         'Clarity',
-  problem_solving: 'Problem Solving',
-  de_escalation:   'De-escalation',
-  brand_voice:     'Brand Voice',
+  empathy:             'Empathy',
+  clarity:             'Clarity',
+  problem_solving:     'Problem Solving',
+  de_escalation:       'De-escalation',
+  brand_voice:         'Brand Voice',
+  context_integration: 'Context Integration',
 };
 
 function EvaluationResult({ evaluation, attemptNumber }) {
