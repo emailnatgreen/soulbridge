@@ -114,6 +114,7 @@ import MainnetMigration from './pages/MainnetMigration';
 import MayaDiplomacyTraining from './pages/MayaDiplomacyTraining';
 import MayaSkillDashboard from './pages/MayaSkillDashboard';
 import MemoryBrowser from './pages/MemoryBrowser';
+import MentorFeedback from './pages/MentorFeedback';
 import MentorshipAnalytics from './pages/MentorshipAnalytics';
 import MentorshipHub from './pages/MentorshipHub';
 import MentorshipMatches from './pages/MentorshipMatches';
@@ -150,12 +151,12 @@ import TrainingSimulation from './pages/TrainingSimulation';
 import TransactionHistory from './pages/TransactionHistory';
 import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
+import VillageLeaderboard from './pages/VillageLeaderboard';
 import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import MentorFeedback from './pages/MentorFeedback';
-import VillageLeaderboard from './pages/VillageLeaderboard';
+import AgentSkillDashboard from './pages/AgentSkillDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -227,6 +228,7 @@ export const PAGES = {
     "MayaDiplomacyTraining": MayaDiplomacyTraining,
     "MayaSkillDashboard": MayaSkillDashboard,
     "MemoryBrowser": MemoryBrowser,
+    "MentorFeedback": MentorFeedback,
     "MentorshipAnalytics": MentorshipAnalytics,
     "MentorshipHub": MentorshipHub,
     "MentorshipMatches": MentorshipMatches,
@@ -263,12 +265,12 @@ export const PAGES = {
     "TransactionHistory": TransactionHistory,
     "TreasuryDashboard": TreasuryDashboard,
     "Village": Village,
+    "VillageLeaderboard": VillageLeaderboard,
     "VillageMeetup": VillageMeetup,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "MentorFeedback": MentorFeedback,
-    "VillageLeaderboard": VillageLeaderboard,
+    "AgentSkillDashboard": AgentSkillDashboard,
 }
 
 export const pagesConfig = {
