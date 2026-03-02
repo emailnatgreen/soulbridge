@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import GhostReviewContextPanel from './GhostReviewContextPanel';
 import EscalationTrigger from './EscalationTrigger';
+import RealTimeCoach from './RealTimeCoach';
 
 const VERDICT_STYLE = {
   'Refined Vintage': 'bg-green-100 text-green-800 border-green-300',
