@@ -151,6 +151,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
 import RiskRegister from './pages/RiskRegister';
+import MayaDiplomacyTraining from './pages/MayaDiplomacyTraining';
 import __Layout from './Layout.jsx';
 
 
@@ -259,6 +260,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
     "RiskRegister": RiskRegister,
+    "MayaDiplomacyTraining": MayaDiplomacyTraining,
 }
 
 export const pagesConfig = {
