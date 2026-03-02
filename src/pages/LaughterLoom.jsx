@@ -47,6 +47,10 @@ export default function LaughterLoom() {
     queryFn: () => base44.entities.JokeSubmission.list('-created_date', 100),
   });
 
+  // This week's jokes
+  const thisWeekJokes = jokes.filter(j => j.week_period === currentWeek);
+  const pastWinners = jokes.filter(j => j.status === 'winner');
+
   const { data: agents = [] } = useQuery({
     queryKey: ['agents'],
     queryFn: () => base44.entities.Agent.list(),
