@@ -302,6 +302,11 @@ export default function GhostReviewDetail({ review, chainId, onEvaluated, onEsca
             rows={6}
             className="resize-none text-sm"
           />
+          <RealTimeCoach
+            draftText={response}
+            reviewId={review.id}
+            weakDimensions={weakDimensions}
+          />
           {attemptCount >= 3 && (
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
               💡 Tip after {attemptCount} attempts: Focus on opening with genuine empathy before jumping to solutions. Acknowledge the specific frustration {review.simulated_customer_name} described.
