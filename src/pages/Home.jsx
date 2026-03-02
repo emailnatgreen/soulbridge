@@ -157,6 +157,8 @@ export default function Home() {
                   <DropdownMenuItem asChild><Link to={createPageUrl('GovernanceHub')} className="cursor-pointer">Governance Hub</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to={createPageUrl('GovernanceSimulation')} className="cursor-pointer">Gov Simulation</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to={createPageUrl('CovenantEchoes')} className="cursor-pointer">Covenant Echoes</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('RiskRegister')} className="cursor-pointer">⚠️ Risk Register</Link></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
