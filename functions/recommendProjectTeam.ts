@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     }
 
     // Fetch project
-    const project = await base44.asServiceRole.entities.AIProject.read(project_id);
+    const project = await base44.asServiceRole.entities.AIProject.get(project_id);
     if (!project) {
       return Response.json({ error: 'Project not found' }, { status: 404 });
     }
