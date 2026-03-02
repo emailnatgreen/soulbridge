@@ -70,7 +70,7 @@ export default function MayaDiplomacyTraining() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link to={createPageUrl('MayaSkillDashboard')}>
+            <Link to={createPageUrl(`AgentSkillDashboard?agent_id=${mayaId}`)}>
               <Button variant="outline" size="sm" className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 h-8">
                 <BarChart3 className="w-3 h-3 mr-1" /> Skill Dashboard
               </Button>
