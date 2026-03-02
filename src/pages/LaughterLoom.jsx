@@ -227,15 +227,15 @@ Be constructive, specific, and helpful.`,
           <TabsList className="grid w-full grid-cols-3 bg-white/10">
             <TabsTrigger value="submit" className="data-[state=active]:bg-purple-500/30">
               <Zap className="w-4 h-4 mr-2" />
-              Submit Joke
+              Submit
             </TabsTrigger>
             <TabsTrigger value="gallery" className="data-[state=active]:bg-purple-500/30">
               <Star className="w-4 h-4 mr-2" />
-              Joke Gallery
+              This Week
             </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="data-[state=active]:bg-purple-500/30">
+            <TabsTrigger value="winners" className="data-[state=active]:bg-yellow-500/30">
               <Trophy className="w-4 h-4 mr-2" />
-              Top Jokes
+              Winners
             </TabsTrigger>
           </TabsList>
 
