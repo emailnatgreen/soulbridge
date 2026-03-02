@@ -10,6 +10,7 @@ import { ArrowLeft, Shield, Flame, Star, CheckCircle2, Clock, TrendingUp, BarCha
 import GhostReviewInbox from '@/components/diplomacy/GhostReviewInbox';
 import GhostReviewDetail from '@/components/diplomacy/GhostReviewDetail';
 import GenerateGhostReviewsButton from '@/components/diplomacy/GenerateGhostReviewsButton';
+import MentorReportCard from '@/components/diplomacy/MentorReportCard';
 
 // Maya's agent ID — adjust if different
 const MAYA_AGENT_ID = 'maya';
