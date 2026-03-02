@@ -10,7 +10,7 @@ import AxiFloatingButton from '../components/AxiFloatingButton';
 export default function Landing() {
   const [isAxiOpen, setIsAxiOpen] = useState(false);
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
       try {
@@ -24,6 +24,9 @@ export default function Landing() {
   const handleLogin = () => {
     base44.auth.redirectToLogin(createPageUrl('Home'));
   };
+
+  // Wait for auth check before rendering
+  if (isLoading) return null;
 
   // If user is authenticated, redirect to Home
   if (user) {
