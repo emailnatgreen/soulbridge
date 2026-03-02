@@ -12,6 +12,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import GhostReviewContextPanel from './GhostReviewContextPanel';
 
 const VERDICT_STYLE = {
   'Refined Vintage': 'bg-green-100 text-green-800 border-green-300',
