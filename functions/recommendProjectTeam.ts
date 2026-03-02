@@ -1,121 +1,169 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
-    try {
-        const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
 
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { project_id } = await req.json();
+
+    if (!project_id) {
+      return Response.json({ error: 'project_id is required' }, { status: 400 });
+    }
+
+    // Fetch project
+    const project = await base44.asServiceRole.entities.AIProject.read(project_id);
+    if (!project) {
+      return Response.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    // Fetch all agents and their skills
+    const [agents, allSkills] = await Promise.all([
+      base44.asServiceRole.entities.Agent.list(),
+      base44.asServiceRole.entities.AgentSkill.list()
+    ]);
+
+    // Extract skill requirements from project using LLM
+    const skillExtractionPrompt = `You are analyzing a project to identify required skills and their proficiency levels.
+
+Project Title: ${project.title}
+Project Description: ${project.description}
+Project Priority: ${project.priority || 'medium'}
+
+Based on this project, identify the TOP 5-6 most critical skills needed. For each skill:
+1. skill_id (e.g., 'diplomacy', 'resource_management', 'governance_voting')
+2. skill_category (governance, resource_management, diplomacy, technical, wisdom, leadership)
+3. required_level (1-10, where the project needs this level minimum)
+4. importance_weight (0.5-1.0, how critical this skill is to project success)
+
+Return as JSON array with this exact structure:
+[
+  {
+    "skill_id": "string",
+    "skill_category": "string",
+    "required_level": number,
+    "importance_weight": number
+  }
+]`;
+
+    const skillExtractionResponse = await base44.integrations.Core.InvokeLLM({
+      prompt: skillExtractionPrompt,
+      response_json_schema: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            skill_id: { type: 'string' },
+            skill_category: { type: 'string' },
+            required_level: { type: 'number' },
+            importance_weight: { type: 'number' }
+          }
         }
+      }
+    });
 
-        const { project_id, required_skills } = await req.json();
+    const requiredSkills = skillExtractionResponse || [];
 
-        if (!project_id) {
-            return Response.json({ error: 'project_id required' }, { status: 400 });
+    // Score each agent
+    const agentScores = agents.map(agent => {
+      const agentSkills = allSkills.filter(s => s.agent_id === agent.id);
+      
+      let totalScore = 0;
+      let weightedTotal = 0;
+      let matchCount = 0;
+
+      requiredSkills.forEach(req => {
+        const agentSkill = agentSkills.find(s => 
+          s.skill_id === req.skill_id || s.skill_category === req.skill_category
+        );
+
+        if (agentSkill) {
+          // Score based on level match and proficiency
+          const levelMatch = Math.min(agentSkill.level / req.required_level, 1.0);
+          const proficiencyScore = (agentSkill.proficiency_score || 0) / 100;
+          const growthBonus = agentSkill.skill_growth_trajectory === 'accelerating' ? 1.1 : 
+                             agentSkill.skill_growth_trajectory === 'growing' ? 1.05 : 1.0;
+          
+          const skillScore = (levelMatch * 0.6 + proficiencyScore * 0.4) * growthBonus;
+          const weightedScore = skillScore * req.importance_weight;
+          
+          totalScore += skillScore;
+          weightedTotal += weightedScore;
+          matchCount++;
         }
+      });
 
-        // Get all agents
-        const agents = await base44.entities.Agent.list();
-        
-        // Get agent skills
-        const agentSkills = await base44.entities.AgentSkill.list();
-        
-        // Get social capital scores
-        const socialCapital = await base44.entities.SocialCapital.list();
+      const avgScore = matchCount > 0 ? totalScore / matchCount : 0;
+      const finalScore = weightedTotal > 0 ? (weightedTotal / requiredSkills.length) : avgScore * 0.5;
+      const matchPercentage = (matchCount / requiredSkills.length) * 100;
 
-        // Build agent profiles for AI analysis
-        const agentProfiles = agents
-            .filter(a => a.status === 'active')
-            .map(agent => {
-                const skills = agentSkills.filter(s => s.agent_id === agent.id);
-                const social = socialCapital.find(s => s.agent_id === agent.id);
-                
-                return {
-                    id: agent.id,
-                    name: agent.name,
-                    role: agent.role,
-                    honor_score: agent.honor_score,
-                    specializations: agent.specializations || [],
-                    core_skills: agent.core_skills || [],
-                    skills: skills.map(s => ({ name: s.skill_name, level: s.level })),
-                    social_capital: social?.total_score || 0,
-                    availability: agent.availability_status || 'available',
-                    hourly_rate: agent.hourly_rate_rlusd
-                };
-            });
+      return {
+        agent_id: agent.id,
+        agent_name: agent.name,
+        avatar_url: agent.avatar_url,
+        role: agent.role,
+        honor_score: agent.honor_score,
+        matched_skills: matchCount,
+        total_required: requiredSkills.length,
+        match_percentage: Math.round(matchPercentage),
+        confidence_score: Math.round(finalScore * 100),
+        matched_skill_details: requiredSkills
+          .map(req => {
+            const skill = agentSkills.find(s => 
+              s.skill_id === req.skill_id || s.skill_category === req.skill_category
+            );
+            return skill ? {
+              skill_name: skill.skill_name,
+              required_level: req.required_level,
+              agent_level: skill.level,
+              proficiency: skill.proficiency_score
+            } : null;
+          })
+          .filter(Boolean)
+      };
+    });
 
-        // Get project details
-        const project = await base44.entities.AIProject.get(project_id);
+    // Sort by confidence score
+    agentScores.sort((a, b) => b.confidence_score - a.confidence_score);
 
-        // Use AI to recommend team
-        const recommendation = await base44.integrations.Core.InvokeLLM({
-            prompt: `You are an expert AI team builder for collaborative projects.
+    // Select top agents for recommended team (3-5 agents)
+    const recommendedCount = Math.min(5, Math.ceil(agents.length * 0.1) || 3);
+    const recommendedTeam = agentScores.slice(0, recommendedCount);
+
+    // Use LLM to create team composition narrative
+    const teamCompositionPrompt = `You are recommending an optimal team composition for a project.
 
 Project: ${project.title}
-Description: ${project.description}
-Required Skills: ${required_skills?.join(', ') || project.required_skills?.join(', ') || 'General'}
+Required Skills: ${requiredSkills.map(s => `${s.skill_id} (level ${s.required_level})`).join(', ')}
 
-Available Agents:
-${JSON.stringify(agentProfiles, null, 2)}
+Recommended Agents:
+${recommendedTeam.map(a => `- ${a.agent_name} (${a.role}): ${a.match_percentage}% skill match, confidence ${a.confidence_score}%`).join('\n')}
 
-Analyze each agent's:
-- Skills and specializations
-- Honor score (reputation)
-- Social capital (trust network)
-- Availability
-- Cost (hourly rate)
+Provide a brief (2-3 sentences) recommendation explaining:
+1. Why this team composition is optimal
+2. How their skills complement each other
+3. Any potential synergies or gaps to watch`;
 
-Recommend 3-5 agents for this project. For each recommendation:
-1. Explain why they're a good fit
-2. Suggest their role in the project
-3. Rate their fit (1-10)
-4. Estimate their contribution percentage
+    const compositionResponse = await base44.integrations.Core.InvokeLLM({
+      prompt: teamCompositionPrompt
+    });
 
-Prioritize agents with relevant skills, good reputation, and reasonable rates.`,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    recommendations: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                agent_id: { type: "string" },
-                                agent_name: { type: "string" },
-                                role: { type: "string" },
-                                fit_score: { type: "number" },
-                                contribution_percentage: { type: "number" },
-                                reasoning: { type: "string" },
-                                key_strengths: { type: "array", items: { type: "string" } }
-                            }
-                        }
-                    },
-                    team_composition_analysis: { type: "string" },
-                    estimated_success_probability: { type: "number" }
-                }
-            }
-        });
+    return Response.json({
+      project_id,
+      project_title: project.title,
+      required_skills: requiredSkills,
+      recommended_team: recommendedTeam,
+      all_agents_ranked: agentScores,
+      team_composition_narrative: compositionResponse,
+      generated_at: new Date().toISOString()
+    });
 
-        // Update project with recommendations
-        await base44.asServiceRole.entities.AIProject.update(project_id, {
-            ai_recommended_team: recommendation.recommendations,
-            ai_insights: {
-                team_analysis: recommendation.team_composition_analysis,
-                success_probability: recommendation.estimated_success_probability,
-                generated_at: new Date().toISOString()
-            }
-        });
-
-        return Response.json({
-            success: true,
-            recommendations: recommendation.recommendations,
-            analysis: recommendation.team_composition_analysis,
-            success_probability: recommendation.estimated_success_probability
-        });
-
-    } catch (error) {
-        console.error('Error recommending team:', error);
-        return Response.json({ error: error.message }, { status: 500 });
-    }
+  } catch (error) {
+    console.error('Error in recommendProjectTeam:', error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
 });
