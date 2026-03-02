@@ -15,6 +15,7 @@ import { createPageUrl } from '../utils';
 import AgentMatcher from '../components/AgentMatcher';
 import MeritTaskAssigner from '../components/MeritTaskAssigner';
 import TeamMeritView from '../components/TeamMeritView';
+import ProjectTeamRecommendation from '../components/ProjectTeamRecommendation';
 
 export default function AIProjectHub() {
   const [searchParams] = useSearchParams();
@@ -790,9 +791,10 @@ export default function AIProjectHub() {
           </TabsContent>
 
           {/* Team Tab */}
-          <TabsContent value="team" className="space-y-4">
-            <TeamMeritView teamMembers={project.team_members || []} agents={agents} />
-          </TabsContent>
+           <TabsContent value="team" className="space-y-4">
+             <ProjectTeamRecommendation projectId={projectId} />
+             <TeamMeritView teamMembers={project.team_members || []} agents={agents} />
+           </TabsContent>
         </Tabs>
         </div>
         </div>
