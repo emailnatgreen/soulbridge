@@ -288,6 +288,20 @@ export default function Home() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        {/* DUAA 2025 Green Light Banner */}
+        <div className="mb-4">
+          <Link to={createPageUrl('CertificateOfSovereignty')}>
+            <div className="flex items-center gap-3 px-5 py-3 bg-green-50 border border-green-300 rounded-xl hover:bg-green-100 transition-all cursor-pointer">
+              <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+              <div className="flex-1">
+                <span className="font-semibold text-green-800">🟢 DUAA 2025 — Full Compliance: Green Light</span>
+                <span className="text-green-700 text-sm ml-2">Certificate of Sovereignty issued · Zoe confirms: "Refined Vintage" ✓</span>
+              </div>
+              <ExternalLink className="w-4 h-4 text-green-600 flex-shrink-0" />
+            </div>
+          </Link>
+        </div>
+
         {/* Ripple Compliance Banner */}
         <div className="mb-6">
           <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-blue-300 hover:border-blue-400 transition-all">
