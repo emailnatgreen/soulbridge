@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import {
   Brain, Loader2, AlertTriangle, ShieldAlert, Sparkles,
-  Plus, ChevronDown, ChevronUp, Zap, RefreshCw
+  Plus, ChevronDown, ChevronUp, Zap, RefreshCw, ClipboardList
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
 const SEVERITY_COLOR = {
