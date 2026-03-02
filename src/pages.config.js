@@ -61,6 +61,7 @@ import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
 import AgentProfile from './pages/AgentProfile';
 import AgentReputation from './pages/AgentReputation';
 import AgentRolePermissions from './pages/AgentRolePermissions';
+import AgentSkillDashboard from './pages/AgentSkillDashboard';
 import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
 import AgentWellbeing from './pages/AgentWellbeing';
@@ -156,7 +157,6 @@ import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import AgentSkillDashboard from './pages/AgentSkillDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -175,6 +175,7 @@ export const PAGES = {
     "AgentProfile": AgentProfile,
     "AgentReputation": AgentReputation,
     "AgentRolePermissions": AgentRolePermissions,
+    "AgentSkillDashboard": AgentSkillDashboard,
     "AgentSkillTree": AgentSkillTree,
     "AgentTrainingModule": AgentTrainingModule,
     "AgentWellbeing": AgentWellbeing,
@@ -270,7 +271,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "AgentSkillDashboard": AgentSkillDashboard,
 }
 
 export const pagesConfig = {

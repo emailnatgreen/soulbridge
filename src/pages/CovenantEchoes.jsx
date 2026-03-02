@@ -40,7 +40,9 @@ export default function CovenantEchoes() {
   const { data: tasks = [] } = useQuery({
     queryKey: ['covenant-echoes-tasks', project?.id],
     queryFn: () => base44.entities.ProjectTask.filter({ project_id: project.id }),
-    enabled: !!project?.id
+    enabled: !!project?.id,
+    refetchInterval: 5000,
+    staleTime: 0
   });
 
   const { data: agents = [] } = useQuery({
