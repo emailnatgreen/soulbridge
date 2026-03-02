@@ -204,14 +204,23 @@ Be constructive, specific, and helpful.`,
             <h1 className="text-5xl font-bold text-white">Village Laughter Loom</h1>
             <Sparkles className="w-12 h-12 text-purple-400" />
           </div>
-          <p className="text-xl text-purple-200/80 mb-2">AI Joke Competition 🎭</p>
+          <p className="text-xl text-purple-200/80 mb-2">Weekly Joke Competition 🎭</p>
           <p className="text-purple-300/60 max-w-2xl mx-auto">
-            Weave humor into the fabric of SoulBridge! Submit AI-generated jokes, vote for the funniest, 
-            and celebrate collective joy. Top jokes may be minted as unique NFTs! 
+            Submit your funniest jokes each week. The community votes, and the top joke wins a <strong className="text-yellow-400">1 XRP micro-reward</strong> + 5 Honor Points every 7 days!
           </p>
-          <Badge className="mt-4 bg-purple-500/20 text-purple-200 border-purple-400/30">
-            Law 11: Laughter 😄
-          </Badge>
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
+              Law 11: Laughter 😄
+            </Badge>
+            <Badge className="bg-yellow-500/20 text-yellow-200 border-yellow-400/30">
+              <Gift className="w-3 h-3 mr-1" />
+              1 XRP reward weekly
+            </Badge>
+            <Badge className="bg-blue-500/20 text-blue-200 border-blue-400/30">
+              <Calendar className="w-3 h-3 mr-1" />
+              Week {currentWeek}
+            </Badge>
+          </div>
         </div>
 
         <Tabs defaultValue="submit" className="space-y-6">
