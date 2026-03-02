@@ -110,6 +110,7 @@ import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
 import Landing from './pages/Landing';
 import LaughterLoom from './pages/LaughterLoom';
 import MainnetMigration from './pages/MainnetMigration';
+import MayaDiplomacyTraining from './pages/MayaDiplomacyTraining';
 import MemoryBrowser from './pages/MemoryBrowser';
 import MentorshipAnalytics from './pages/MentorshipAnalytics';
 import MentorshipHub from './pages/MentorshipHub';
@@ -128,6 +129,7 @@ import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceDynamics from './pages/ResourceDynamics';
 import ResourceManagement from './pages/ResourceManagement';
 import ResourceMarketplace from './pages/ResourceMarketplace';
+import RiskRegister from './pages/RiskRegister';
 import Send from './pages/Send';
 import SendRLUSD from './pages/SendRLUSD';
 import SharedDidView from './pages/SharedDidView';
@@ -150,8 +152,7 @@ import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import RiskRegister from './pages/RiskRegister';
-import MayaDiplomacyTraining from './pages/MayaDiplomacyTraining';
+import EscalationChainView from './pages/EscalationChainView';
 import __Layout from './Layout.jsx';
 
 
@@ -219,6 +220,7 @@ export const PAGES = {
     "Landing": Landing,
     "LaughterLoom": LaughterLoom,
     "MainnetMigration": MainnetMigration,
+    "MayaDiplomacyTraining": MayaDiplomacyTraining,
     "MemoryBrowser": MemoryBrowser,
     "MentorshipAnalytics": MentorshipAnalytics,
     "MentorshipHub": MentorshipHub,
@@ -237,6 +239,7 @@ export const PAGES = {
     "ResourceDynamics": ResourceDynamics,
     "ResourceManagement": ResourceManagement,
     "ResourceMarketplace": ResourceMarketplace,
+    "RiskRegister": RiskRegister,
     "Send": Send,
     "SendRLUSD": SendRLUSD,
     "SharedDidView": SharedDidView,
@@ -259,8 +262,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "RiskRegister": RiskRegister,
-    "MayaDiplomacyTraining": MayaDiplomacyTraining,
+    "EscalationChainView": EscalationChainView,
 }
 
 export const pagesConfig = {
