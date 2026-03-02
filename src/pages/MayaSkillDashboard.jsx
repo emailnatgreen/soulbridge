@@ -129,7 +129,7 @@ export default function MayaSkillDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <MayaSkillTimeline progressRecords={progressRecords} />
+                  <MayaSkillTimeline skills={diplomacySkills} />
                 </CardContent>
               </Card>
             </div>

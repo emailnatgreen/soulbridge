@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine
@@ -38,35 +38,35 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function MayaSkillTimeline({ progressRecords }) {
+export default function MayaSkillTimeline({ skills }) {
   const [hidden, setHidden] = useState({});
 
-  if (!progressRecords?.length) {
+  // Build timeline from score_history stored on each AgentSkill
+  const chartData = useMemo(() => {
+    if (!skills?.length) return [];
+    // Collect all timestamps across all dims
+    const allTs = new Set();
+    for (const sk of skills) {
+      for (const h of sk.metadata?.score_history || []) allTs.add(h.ts);
+    }
+    const sorted = [...allTs].sort();
+    return sorted.map((ts, i) => {
+      const row = { attempt: i + 1, ts };
+      for (const sk of skills) {
+        const entry = (sk.metadata?.score_history || []).find(h => h.ts === ts);
+        if (entry) row[sk.name] = entry.score;
+      }
+      return row;
+    });
+  }, [skills]);
+
+  if (!chartData.length) {
     return (
       <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
         No timeline data yet — scores will appear after each drill attempt.
       </div>
     );
   }
-
-  // Group by ghost_review_id then by dimension, build time series
-  const byDim = {};
-  for (const rec of progressRecords) {
-    const dim = rec.skill_name;
-    if (!byDim[dim]) byDim[dim] = [];
-    byDim[dim].push(rec);
-  }
-
-  // Build unified time-series: one row per unique recorded_at (attempt)
-  const timestamps = [...new Set(progressRecords.map(r => r.recorded_at))].sort();
-  const chartData = timestamps.map((ts, i) => {
-    const row = { attempt: i + 1, ts };
-    for (const dim of DIMS) {
-      const rec = (byDim[dim] || []).find(r => r.recorded_at === ts);
-      if (rec) row[dim] = rec.score;
-    }
-    return row;
-  });
 
   const toggle = (dim) => setHidden(h => ({ ...h, [dim]: !h[dim] }));
 
