@@ -13,6 +13,7 @@ import RiskCard from '@/components/risk/RiskCard';
 import RiskForm from '@/components/risk/RiskForm';
 import RiskMatrix from '@/components/risk/RiskMatrix';
 import RiskAIPanel from '@/components/risk/RiskAIPanel';
+import RiskMitigationTasks from '@/components/risk/RiskMitigationTasks';
 
 const SEVERITY_SCORE = { Low: 1, Medium: 2, High: 3, Critical: 4 };
 const LIKELIHOOD_SCORE = { Rare: 1, Unlikely: 2, Possible: 3, Likely: 4, 'Almost Certain': 5 };
