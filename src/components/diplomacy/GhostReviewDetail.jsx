@@ -177,11 +177,21 @@ function ResponseHistory({ history }) {
   );
 }
 
-export default function GhostReviewDetail({ review, chainId, onEvaluated, onEscalated }) {
+export default function GhostReviewDetail({ review, chainId, onEvaluated, onEscalated, agentSkills }) {
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const [latestEval, setLatestEval] = useState(null);
   const qc = useQueryClient();
+
+  // Derive Maya's weakest diplomacy dimensions from skill data
+  const weakDimensions = React.useMemo(() => {
+    if (!agentSkills?.length) return [];
+    const dimKeys = ['empathy','clarity','problem_solving','de_escalation','brand_voice','context_integration'];
+    const scored = agentSkills
+      .filter(s => dimKeys.includes(s.skill_id))
+      .sort((a, b) => (a.proficiency_score || 0) - (b.proficiency_score || 0));
+    return scored.slice(0, 2).map(s => s.skill_id);
+  }, [agentSkills]);
 
   const isComplete = review.status === 'Evaluated';
   const attemptCount = review.attempt_count || 0;
