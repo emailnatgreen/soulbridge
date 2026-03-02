@@ -115,9 +115,14 @@ export default function MayaDiplomacyTraining() {
           </Card>
         </div>
 
-        {/* Mentor Report Card */}
-        <div className="mb-6">
-          <MentorReportCard agentId={mayaId} />
+        {/* Mentor Report + Top Diplomats */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-2">
+            <MentorReportCard agentId={mayaId} />
+          </div>
+          <div>
+            <TopDiplomatsWidget />
+          </div>
         </div>
 
         {/* Main layout */}
