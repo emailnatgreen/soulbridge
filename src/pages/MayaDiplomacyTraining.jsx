@@ -79,6 +79,7 @@ export default function MayaDiplomacyTraining() {
                 <TrendingUp className="w-3 h-3 mr-1" /> Escalation Chains
               </Button>
             </Link>
+            <GenerateTargetedDrillsButton agentId={mayaId} />
             <GenerateGhostReviewsButton assignedAgentId={mayaId} />
           </div>
         </div>
