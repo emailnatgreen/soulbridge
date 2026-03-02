@@ -29,6 +29,12 @@ export default function MayaDiplomacyTraining() {
     queryFn: () => base44.entities.GhostReview.list('-created_date', 100),
   });
 
+  const { data: agentSkills = [] } = useQuery({
+    queryKey: ['maya-agent-skills', mayaId],
+    queryFn: () => base44.entities.AgentSkill.filter({ agent_id: mayaId, skill_category: 'diplomacy' }),
+    enabled: !!mayaId,
+  });
+
   const myReviews = reviews.filter(r => !r.assigned_agent_id || r.assigned_agent_id === mayaId);
 
   const pending  = myReviews.filter(r => r.status === 'Pending Response').length;
