@@ -208,6 +208,20 @@ export default function GhostReviewDetail({ review, onEvaluated }) {
 
   return (
     <div className="space-y-5">
+      {/* Context Pack */}
+      {review.context_pack && (
+        <details className="group">
+          <summary className="cursor-pointer text-sm font-semibold text-blue-700 flex items-center gap-2 select-none list-none">
+            <span className="bg-blue-100 border border-blue-200 rounded px-2 py-1 text-xs flex items-center gap-1">
+              📋 Internal Resources available — click to expand
+            </span>
+          </summary>
+          <div className="mt-2">
+            <GhostReviewContextPanel contextPack={review.context_pack} />
+          </div>
+        </details>
+      )}
+
       {/* Review card */}
       <Card className="border-red-200 bg-red-50/40">
         <CardContent className="pt-4 pb-4 space-y-3">
