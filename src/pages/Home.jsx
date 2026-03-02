@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock, ChevronDown, Laugh, Vote, CheckCircle, ExternalLink } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock, ChevronDown, Laugh, Vote, CheckCircle, ExternalLink, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TransactionList from '../components/TransactionList';
@@ -157,8 +157,6 @@ export default function Home() {
                   <DropdownMenuItem asChild><Link to={createPageUrl('GovernanceHub')} className="cursor-pointer">Governance Hub</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to={createPageUrl('GovernanceSimulation')} className="cursor-pointer">Gov Simulation</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to={createPageUrl('CovenantEchoes')} className="cursor-pointer">Covenant Echoes</Link></DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem asChild><Link to={createPageUrl('RiskRegister')} className="cursor-pointer">⚠️ Risk Register</Link></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -462,7 +460,7 @@ export default function Home() {
             <Link to={createPageUrl('RiskRegister')}>
               <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-red-300 hover:border-red-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Shield className="w-8 h-8 text-red-600 mb-3" />
+                  <ShieldAlert className="w-8 h-8 text-red-600 mb-3" />
                   <h3 className="text-gray-900 font-semibold mb-1">Risk Register</h3>
                   <p className="text-gray-600 text-sm">Track & mitigate Village risks</p>
                 </CardContent>
