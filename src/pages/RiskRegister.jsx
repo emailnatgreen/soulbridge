@@ -51,6 +51,14 @@ export default function RiskRegister() {
     onSuccess: () => { qc.invalidateQueries(['risks']); setShowForm(false); },
   });
 
+  // Returns the created risk for task linking
+  const handleAddRiskFromAI = async (data) => {
+    const score = (SEVERITY_SCORE[data.severity] || 1) * (LIKELIHOOD_SCORE[data.likelihood] || 1);
+    const created = await base44.entities.RiskRegister.create({ ...data, risk_score: score, last_reviewed_date: new Date().toISOString().split('T')[0] });
+    qc.invalidateQueries(['risks']);
+    return created;
+  };
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => {
       const score = (SEVERITY_SCORE[data.severity] || 1) * (LIKELIHOOD_SCORE[data.likelihood] || 1);
