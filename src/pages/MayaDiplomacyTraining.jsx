@@ -112,6 +112,11 @@ export default function MayaDiplomacyTraining() {
           </Card>
         </div>
 
+        {/* Mentor Report Card */}
+        <div className="mb-6">
+          <MentorReportCard agentId={mayaId} />
+        </div>
+
         {/* Main layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Inbox */}
