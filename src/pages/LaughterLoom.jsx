@@ -176,14 +176,15 @@ Be constructive, specific, and helpful.`,
     }
 
     submitJokeMutation.mutate({
-      project_id: project.id,
       submitter_agent_id: selectedAgent,
       joke_title: jokeTitle,
       joke_content: jokeContent,
       category: category,
       ai_generated: !!generationPrompt,
       generation_prompt: generationPrompt || undefined,
-      status: 'submitted'
+      status: 'submitted',
+      week_period: currentWeek,
+      vote_count: 0
     });
   };
 
