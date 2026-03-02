@@ -145,6 +145,18 @@ Return a JSON object with these exact keys:
       ai_improvements: result.improvements || [],
     });
 
+    // Fire-and-forget skill tracking update (don't block response)
+    if (review.assigned_agent_id && result.dimension_scores) {
+      base44.asServiceRole.functions.invoke('updateDiplomacySkills', {
+        agent_id: review.assigned_agent_id,
+        dimension_scores: result.dimension_scores,
+        overall_score: result.score,
+        ghost_review_id,
+        difficulty_level: review.difficulty_level,
+        verdict: result.vintage_verdict,
+      }).catch(() => {}); // silent fail — skill tracking is non-blocking
+    }
+
     return Response.json({
       success: true,
       attempt_number: attemptNumber,

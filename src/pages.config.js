@@ -153,6 +153,7 @@ import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
 import EscalationChainView from './pages/EscalationChainView';
+import MayaSkillDashboard from './pages/MayaSkillDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -263,6 +264,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
     "EscalationChainView": EscalationChainView,
+    "MayaSkillDashboard": MayaSkillDashboard,
 }
 
 export const pagesConfig = {
