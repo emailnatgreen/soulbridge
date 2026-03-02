@@ -40,15 +40,7 @@ Based on this project, identify the TOP 5-6 most critical skills needed. For eac
 3. required_level (1-10, where the project needs this level minimum)
 4. importance_weight (0.5-1.0, how critical this skill is to project success)
 
-Return as JSON array with this exact structure:
-[
-  {
-    "skill_id": "string",
-    "skill_category": "string",
-    "required_level": number,
-    "importance_weight": number
-  }
-]`;
+Return as JSON object with skills array:`;
 
     const skillExtractionResponse = await base44.integrations.Core.InvokeLLM({
       prompt: skillExtractionPrompt,
