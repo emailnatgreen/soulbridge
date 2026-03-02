@@ -145,8 +145,12 @@ export default function RiskRegister() {
 
         {/* AI Risk Intelligence Panel */}
         <RiskAIPanel
-          onAddRisk={(data) => createMutation.mutate(data)}
+          onAddRisk={handleAddRiskFromAI}
+          agents={agents}
         />
+
+        {/* Mitigation Tasks tracker */}
+        <RiskMitigationTasks />
 
         {/* Risk Matrix */}
         {showMatrix && (
