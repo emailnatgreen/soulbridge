@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ArrowLeft, Shield, Flame, Star, CheckCircle2, Clock } from 'lucide-react';
+import { ArrowLeft, Shield, Flame, Star, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
 import GhostReviewInbox from '@/components/diplomacy/GhostReviewInbox';
 import GhostReviewDetail from '@/components/diplomacy/GhostReviewDetail';
 import GenerateGhostReviewsButton from '@/components/diplomacy/GenerateGhostReviewsButton';
@@ -60,7 +60,14 @@ export default function MayaDiplomacyTraining() {
               <p className="text-sm text-gray-500">Fire Drill · Level 5 Diplomacy · Refined Vintage Standards</p>
             </div>
           </div>
-          <GenerateGhostReviewsButton assignedAgentId={mayaId} />
+          <div className="flex items-center gap-2">
+            <Link to={createPageUrl('EscalationChainView')}>
+              <Button variant="outline" size="sm" className="text-xs border-amber-300 text-amber-700 hover:bg-amber-50 h-8">
+                <TrendingUp className="w-3 h-3 mr-1" /> Escalation Chains
+              </Button>
+            </Link>
+            <GenerateGhostReviewsButton assignedAgentId={mayaId} />
+          </div>
         </div>
       </div>
 
@@ -125,6 +132,9 @@ export default function MayaDiplomacyTraining() {
                     key={selectedReview.id}
                     review={selectedReview}
                     onEvaluated={() => setSelected({ ...selectedReview, status: 'Evaluated' })}
+                    onEscalated={(newReviewId, chainId) => {
+                      window.location.href = createPageUrl(`EscalationChainView?chain_id=${chainId}`);
+                    }}
                   />
                 </CardContent>
               </Card>

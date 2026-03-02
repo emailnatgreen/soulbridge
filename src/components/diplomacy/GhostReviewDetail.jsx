@@ -13,6 +13,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import GhostReviewContextPanel from './GhostReviewContextPanel';
+import EscalationTrigger from './EscalationTrigger';
 
 const VERDICT_STYLE = {
   'Refined Vintage': 'bg-green-100 text-green-800 border-green-300',
@@ -175,7 +176,7 @@ function ResponseHistory({ history }) {
   );
 }
 
-export default function GhostReviewDetail({ review, onEvaluated }) {
+export default function GhostReviewDetail({ review, chainId, onEvaluated, onEscalated }) {
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const [latestEval, setLatestEval] = useState(null);
@@ -326,6 +327,13 @@ export default function GhostReviewDetail({ review, onEvaluated }) {
           )}
         </div>
       )}
+
+      {/* Escalation trigger — shown after Acceptable verdict */}
+      <EscalationTrigger
+        review={review}
+        chainId={chainId}
+        onEscalated={onEscalated}
+      />
 
       {/* Response history — always visible */}
       {history.length > 0 && <ResponseHistory history={history} />}
