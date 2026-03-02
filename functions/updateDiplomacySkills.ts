@@ -77,19 +77,27 @@ Deno.serve(async (req) => {
         results.push({ dim: dim.key, skill_id: created.id, level: weightedScore });
       }
 
-      // Always create a SkillProgress record for time-series tracking
-      await base44.asServiceRole.entities.SkillProgress.create({
-        agent_id,
-        skill_name: dim.label,
-        score: normScore,
-        weighted_score: weightedScore,
-        difficulty_level,
-        verdict,
-        overall_score,
-        ghost_review_id,
-        recorded_at: now,
-        metadata: { dimension_key: dim.key }
-      });
+      // Append to time-series history stored on the AgentSkill metadata
+      // We use a lightweight array on the skill record to avoid SkillProgress schema constraints
+      const skillId = existing ? existing.id : results[results.length - 1]?.skill_id;
+      if (skillId) {
+        // Re-fetch updated skill to get latest history
+        const freshSkill = await base44.asServiceRole.entities.AgentSkill.get(skillId);
+        const history = freshSkill?.metadata?.score_history || [];
+        history.push({
+          ts: now,
+          score: normScore,
+          weighted_score: weightedScore,
+          difficulty_level,
+          verdict,
+          ghost_review_id,
+        });
+        // Keep last 50 data points
+        const trimmed = history.slice(-50);
+        await base44.asServiceRole.entities.AgentSkill.update(skillId, {
+          metadata: { ...freshSkill.metadata, score_history: trimmed }
+        });
+      }
     }
 
     return Response.json({ success: true, skills_updated: results.length, results });
