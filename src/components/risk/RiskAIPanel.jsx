@@ -24,11 +24,12 @@ const OVERALL_COLOR = {
   Critical: 'border-red-300 bg-red-50',
 };
 
-export default function RiskAIPanel({ onAddRisk }) {
+export default function RiskAIPanel({ onAddRisk, agents = [] }) {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [expandedIdx, setExpandedIdx] = useState(null);
-  const [addedRisks, setAddedRisks] = useState(new Set());
+  // Map of risk name -> { riskId, taskCreated, taskLoading, assigneeId }
+  const [riskState, setRiskState] = useState({});
   const [analyzedAt, setAnalyzedAt] = useState(null);
 
   const runAnalysis = async () => {
@@ -38,7 +39,7 @@ export default function RiskAIPanel({ onAddRisk }) {
       if (res.data?.analysis) {
         setAnalysis(res.data.analysis);
         setAnalyzedAt(res.data.analyzed_at);
-        setAddedRisks(new Set());
+        setRiskState({});
         toast.success('AI risk analysis complete');
       }
     } catch (e) {
@@ -48,8 +49,16 @@ export default function RiskAIPanel({ onAddRisk }) {
     }
   };
 
-  const handleAddRisk = (risk) => {
-    onAddRisk({
+  const setAssignee = (riskName, agentId) => {
+    setRiskState(prev => ({ ...prev, [riskName]: { ...prev[riskName], assigneeId: agentId } }));
+  };
+
+  const handleConfirmRisk = async (risk) => {
+    // 1. Add to risk register
+    const state = riskState[risk.name] || {};
+    setRiskState(prev => ({ ...prev, [risk.name]: { ...prev[risk.name], taskLoading: true } }));
+
+    const riskData = {
       name: risk.name,
       description: risk.description,
       category: risk.category,
@@ -58,9 +67,34 @@ export default function RiskAIPanel({ onAddRisk }) {
       mitigation_plan: risk.mitigation_plan,
       impact_description: risk.impact_description,
       status: 'Identified',
-    });
-    setAddedRisks(prev => new Set([...prev, risk.name]));
-    toast.success(`"${risk.name}" added to Risk Register`);
+    };
+    const newRisk = await onAddRisk(riskData);
+
+    // 2. Create mitigation task
+    const assigneeId = state.assigneeId || (agents[0]?.id ?? 'axi_main_001');
+    const priorityMap = { Low: 'low', Medium: 'medium', High: 'high', Critical: 'critical' };
+    const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    try {
+      await base44.entities.AgentTask.create({
+        title: `[Risk Mitigation] ${risk.name}`,
+        description: `## AI-Identified Risk\n\n**Evidence detected:**\n${risk.evidence}\n\n**Impact if unaddressed:**\n${risk.impact_description}\n\n---\n## Mitigation Steps\n\n${risk.mitigation_plan}\n\n---\n*Auto-created from AI Risk Analysis — confirmed by admin*`,
+        delegator_agent_id: 'admin_system',
+        assignee_agent_id: assigneeId,
+        task_type: 'custom',
+        priority: priorityMap[risk.severity] || 'medium',
+        status: 'pending',
+        progress_percentage: 0,
+        due_date: dueDate,
+        related_project_id: newRisk?.id || null,
+      });
+
+      setRiskState(prev => ({ ...prev, [risk.name]: { ...prev[risk.name], taskCreated: true, taskLoading: false } }));
+      toast.success(`Risk confirmed & mitigation task created`);
+    } catch (e) {
+      setRiskState(prev => ({ ...prev, [risk.name]: { ...prev[risk.name], taskLoading: false } }));
+      toast.error('Task creation failed: ' + e.message);
+    }
   };
 
   return (
