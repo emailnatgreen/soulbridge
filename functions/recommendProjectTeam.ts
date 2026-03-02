@@ -53,20 +53,25 @@ Return as JSON array with this exact structure:
     const skillExtractionResponse = await base44.integrations.Core.InvokeLLM({
       prompt: skillExtractionPrompt,
       response_json_schema: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            skill_id: { type: 'string' },
-            skill_category: { type: 'string' },
-            required_level: { type: 'number' },
-            importance_weight: { type: 'number' }
+        type: 'object',
+        properties: {
+          skills: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                skill_id: { type: 'string' },
+                skill_category: { type: 'string' },
+                required_level: { type: 'number' },
+                importance_weight: { type: 'number' }
+              }
+            }
           }
         }
       }
     });
 
-    const requiredSkills = skillExtractionResponse || [];
+    const requiredSkills = skillExtractionResponse?.skills || [];
 
     // Score each agent
     const agentScores = agents.map(agent => {
