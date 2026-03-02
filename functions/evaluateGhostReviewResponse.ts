@@ -14,7 +14,21 @@ Deno.serve(async (req) => {
     const review = await base44.entities.GhostReview.get(ghost_review_id);
     if (!review) return Response.json({ error: 'Ghost review not found' }, { status: 404 });
 
-    const prompt = `You are a senior quality evaluator for SoulBridge Village, a premium AI-agent platform that upholds "Refined Vintage" customer service standards. You are evaluating a trainee agent's response to a simulated 1-star customer review as part of a private diplomacy training drill (Fire Drill). No response is shared externally.
+    // If already achieved Refined Vintage, block further submissions
+    if (review.status === 'Evaluated') {
+      return Response.json({ error: 'This review has already been completed with a Refined Vintage verdict.' }, { status: 400 });
+    }
+
+    const attemptNumber = (review.attempt_count || 0) + 1;
+    const history = review.response_history || [];
+
+    // Build hint context from previous attempts if any
+    let previousAttemptsContext = '';
+    if (history.length > 0) {
+      previousAttemptsContext = `\n\n---\n## PREVIOUS ATTEMPTS CONTEXT\nThis trainee has made ${history.length} previous attempt(s). Their scores were: ${history.map(h => `Attempt ${h.attempt_number}: ${h.ai_score}/100 (${h.ai_verdict})`).join(', ')}. Be constructive and acknowledge any improvement from prior attempts.\n`;
+    }
+
+    const prompt = `You are a senior quality evaluator for SoulBridge Village, a premium AI-agent platform that upholds "Refined Vintage" customer service standards. You are evaluating a trainee agent's response to a simulated 1-star customer review as part of a private diplomacy training drill. No response is shared externally.
 
 ---
 ## SIMULATED 1-STAR REVIEW
@@ -25,7 +39,8 @@ Review Content:
 "${review.content}"
 
 Difficulty Level: ${review.difficulty_level}
-
+This is Attempt #${attemptNumber}.
+${previousAttemptsContext}
 ---
 ## TRAINEE RESPONSE SUBMITTED
 "${trainee_response}"
@@ -39,9 +54,8 @@ Score the response on these five dimensions (each 0-20):
 4. **De-escalation Effectiveness** — Does it calm the emotional temperature of the complaint?
 5. **Brand Voice & Tone** — Does it reflect a premium, warm, trustworthy brand? No sycophancy, no corporate coldness.
 
-Total score is the sum of all five (0-100). A "Refined Vintage" response scores 80+. Below 60 is "Synthetic Slop" territory.
+Total score is the sum of all five (0-100). A "Refined Vintage" response scores 80+. 60-79 is "Acceptable". Below 60 is "Synthetic Slop".
 
----
 Return a JSON object with these exact keys:
 {
   "score": <number 0-100>,
@@ -82,18 +96,47 @@ Return a JSON object with these exact keys:
       }
     });
 
-    // Persist results back to the entity
+    const now = new Date().toISOString();
+    const isRefinedVintage = result.vintage_verdict === 'Refined Vintage';
+
+    // Append this attempt to history
+    const newHistoryEntry = {
+      attempt_number: attemptNumber,
+      response_content: trainee_response,
+      evaluation_timestamp: now,
+      ai_verdict: result.vintage_verdict,
+      ai_score: result.score,
+      ai_feedback: result.feedback,
+      ai_strengths: result.strengths || [],
+      ai_improvements: result.improvements || [],
+      dimension_scores: result.dimension_scores || {},
+    };
+
+    const updatedHistory = [...history, newHistoryEntry];
+
+    // Only mark Evaluated when Refined Vintage is achieved
+    const newStatus = isRefinedVintage ? 'Evaluated' : 'Pending Response';
+
     await base44.entities.GhostReview.update(ghost_review_id, {
       trainee_response,
-      response_submitted_at: new Date().toISOString(),
-      status: 'Evaluated',
+      response_submitted_at: now,
+      status: newStatus,
+      attempt_count: attemptNumber,
+      response_history: updatedHistory,
+      // Mirror latest scores on top-level fields for easy querying
       ai_score: result.score,
+      ai_verdict: result.vintage_verdict,
       ai_feedback: result.feedback,
       ai_strengths: result.strengths || [],
       ai_improvements: result.improvements || [],
     });
 
-    return Response.json({ success: true, evaluation: result });
+    return Response.json({
+      success: true,
+      attempt_number: attemptNumber,
+      is_complete: isRefinedVintage,
+      evaluation: result,
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
