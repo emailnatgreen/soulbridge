@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
     const serviceChargeDrops = Math.floor(rewardDrops * 0.01); // 1% service charge
 
     // Fetch Treasury for Village contribution
-    const treasury = await base44.asServiceRole.entities.Treasury.filter({ name: 'Village Treasury' }, '', 1).then(results => results[0]);
+    const treasury = await base44.asServiceRole.entities.Treasury.filter({ name: 'SoulBridge Main Treasury' }, '', 1).then(results => results[0]);
     if (!treasury) {
       return Response.json({ error: 'Village Treasury not found' }, { status: 404 });
     }
