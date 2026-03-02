@@ -71,17 +71,14 @@ export default function LaughterLoom() {
   });
 
   const rateJokeMutation = useMutation({
-    mutationFn: async ({ jokeId, rating, currentRatings, currentScore }) => {
-      const newTotalRatings = currentRatings + 1;
-      const newScore = ((currentScore * currentRatings) + rating) / newTotalRatings;
+    mutationFn: async ({ jokeId, currentVotes }) => {
       return base44.entities.JokeSubmission.update(jokeId, {
-        funny_score: parseFloat(newScore.toFixed(2)),
-        total_ratings: newTotalRatings
+        vote_count: (currentVotes || 0) + 1
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['joke-submissions'] });
-      toast.success('Rating submitted! ⭐');
+      toast.success('Voted! 👍');
     }
   });
 
