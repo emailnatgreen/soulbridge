@@ -16,16 +16,7 @@ import DidAuthStatus from '../components/DidAuthStatus';
 import ShieldedWalletBalance from '../components/ShieldedWalletBalance';
 
 export default function Home() {
-  const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ['transactions'],
-    queryFn: () => base44.entities.Transaction.list('-created_date', 50),
-  });
 
-  const stats = {
-    total: transactions.reduce((sum, t) => sum + (t.amount || 0), 0),
-    completed: transactions.filter(t => t.status === 'completed').length,
-    pending: transactions.filter(t => t.status === 'pending').length,
-  };
 
   return (
     <>
