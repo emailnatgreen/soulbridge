@@ -513,6 +513,11 @@ export default function DIDManager() {
                       </div>
                       )}
 
+                          {/* QR Codes */}
+                          <div className="border-t pt-4">
+                            <WalletQRCode wallet={wallet} currentUser={user} />
+                          </div>
+
                           {/* Verification Status */}
                           {getVerificationBadge(wallet.id) && (
                           <div className="border-t pt-4">
