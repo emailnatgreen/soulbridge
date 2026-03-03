@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock, ChevronDown, Laugh, Vote, CheckCircle, ExternalLink, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import TransactionList from '../components/TransactionList';
+import HomeRecentTransactions from '../components/HomeRecentTransactions';
 import NotificationCenter from '../components/NotificationCenter';
 import PrivacyQuickToggle from '../components/PrivacyQuickToggle';
 import MobileNav from '../components/MobileNav';
