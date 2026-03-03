@@ -144,6 +144,7 @@ Deno.serve(async (req) => {
                 issuer: RLUSD_CONFIG.issuer,
                 value: RLUSD_CONFIG.limit
             },
+            Flags: 131072, // tfSetNoRipple
             Fee: "12"
         };
         

@@ -54,7 +54,8 @@ Deno.serve(async (req) => {
                 currency: currency,
                 issuer: issuer,
                 value: limit
-            }
+            },
+            Flags: 131072 // tfSetNoRipple
         };
 
         // Submit transaction

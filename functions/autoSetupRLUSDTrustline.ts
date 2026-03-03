@@ -88,6 +88,7 @@ Deno.serve(async (req) => {
         TransactionType: 'TrustSet',
         Account: address,
         LimitAmount: { currency: RLUSD_CONFIG.currency, issuer: RLUSD_CONFIG.issuer, value: RLUSD_CONFIG.limit },
+        Flags: 131072, // tfSetNoRipple
         Fee: '12'
       };
       const prepared = await client.autofill(trustlineTx);

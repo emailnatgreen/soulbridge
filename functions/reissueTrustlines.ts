@@ -144,6 +144,7 @@ async function reissueTrustlineForWallet(walletRecord, client, base44, maxRetrie
                     issuer: RLUSD_CONFIG.issuer,
                     value: RLUSD_CONFIG.limit
                 },
+                Flags: 131072, // tfSetNoRipple
                 Fee: "12"
             };
             
