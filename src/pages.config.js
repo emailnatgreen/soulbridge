@@ -144,6 +144,7 @@ import SkillGapAnalysis from './pages/SkillGapAnalysis';
 import SkillValidation from './pages/SkillValidation';
 import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
 import SocialNetwork from './pages/SocialNetwork';
+import SovereignVault from './pages/SovereignVault';
 import Support from './pages/Support';
 import SystemDashboard from './pages/SystemDashboard';
 import TaskDelegation from './pages/TaskDelegation';
@@ -157,7 +158,6 @@ import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import SovereignVault from './pages/SovereignVault';
 import __Layout from './Layout.jsx';
 
 
@@ -259,6 +259,7 @@ export const PAGES = {
     "SkillValidation": SkillValidation,
     "SocialCapitalDashboard": SocialCapitalDashboard,
     "SocialNetwork": SocialNetwork,
+    "SovereignVault": SovereignVault,
     "Support": Support,
     "SystemDashboard": SystemDashboard,
     "TaskDelegation": TaskDelegation,
@@ -272,7 +273,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "SovereignVault": SovereignVault,
 }
 
 export const pagesConfig = {
