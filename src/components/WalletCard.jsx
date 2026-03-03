@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Wallet, Copy, RefreshCw, Eye, EyeOff, History, UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import WalletTransactionHistory from './WalletTransactionHistory';
+import WalletQRCode from './WalletQRCode';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
