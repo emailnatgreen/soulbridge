@@ -133,6 +133,7 @@ import RelationshipNetwork from './pages/RelationshipNetwork';
 import ResourceDynamics from './pages/ResourceDynamics';
 import ResourceManagement from './pages/ResourceManagement';
 import ResourceMarketplace from './pages/ResourceMarketplace';
+import RippleDashboard from './pages/RippleDashboard';
 import RiskRegister from './pages/RiskRegister';
 import Send from './pages/Send';
 import SendRLUSD from './pages/SendRLUSD';
@@ -158,7 +159,6 @@ import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import RippleDashboard from './pages/RippleDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -249,6 +249,7 @@ export const PAGES = {
     "ResourceDynamics": ResourceDynamics,
     "ResourceManagement": ResourceManagement,
     "ResourceMarketplace": ResourceMarketplace,
+    "RippleDashboard": RippleDashboard,
     "RiskRegister": RiskRegister,
     "Send": Send,
     "SendRLUSD": SendRLUSD,
@@ -274,7 +275,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "RippleDashboard": RippleDashboard,
 }
 
 export const pagesConfig = {
