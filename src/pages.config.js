@@ -158,6 +158,7 @@ import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
+import RippleDashboard from './pages/RippleDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -273,6 +274,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
+    "RippleDashboard": RippleDashboard,
 }
 
 export const pagesConfig = {
