@@ -267,6 +267,13 @@ export default function Home() {
                 </Button>
               </Link>
 
+              <Link to={createPageUrl('ArbitrageDashboard')}>
+                <Button variant="ghost" className="text-amber-600 hover:bg-amber-100 hover:text-amber-700">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Arbitrage Dashboard
+                </Button>
+              </Link>
+
               <Link to={createPageUrl('EditLanding')}>
                 <Button variant="ghost" className="text-gray-600 hover:bg-gray-100 hover:text-gray-900">
                   <Edit className="w-4 h-4 mr-2" />
