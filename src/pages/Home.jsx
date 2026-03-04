@@ -260,6 +260,13 @@ export default function Home() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              <Link to={createPageUrl('RippleDashboard')}>
+                <Button variant="ghost" className="text-blue-600 hover:bg-blue-100 hover:text-blue-700">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Ripple Dashboard
+                </Button>
+              </Link>
+
               <Link to={createPageUrl('EditLanding')}>
                 <Button variant="ghost" className="text-gray-600 hover:bg-gray-100 hover:text-gray-900">
                   <Edit className="w-4 h-4 mr-2" />
