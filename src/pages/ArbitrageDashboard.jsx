@@ -193,16 +193,27 @@ export default function ArbitrageDashboard() {
     }
   }, [multiPricesData]);
 
-  // Project data
+  // Project data — both trader agent projects
   const { data: project } = useQuery({
     queryKey: ['arbitrage-project'],
     queryFn: () => base44.entities.AIProject.filter({ title: 'Arbitrage Trading Agent Validation' }),
     select: d => d?.[0]
   });
 
+  const { data: projectMulti } = useQuery({
+    queryKey: ['multi-market-project'],
+    queryFn: () => base44.entities.AIProject.filter({ title: 'Multi-Market AI Trading Expansion' }),
+    select: d => d?.[0]
+  });
+
   const { data: tasks = [] } = useQuery({
     queryKey: ['arbitrage-tasks'],
     queryFn: () => base44.entities.ProjectTask.filter({ project_id: '69a8a57c27aa45496716e07b' })
+  });
+
+  const { data: tasksMulti = [] } = useQuery({
+    queryKey: ['multi-market-tasks'],
+    queryFn: () => base44.entities.ProjectTask.filter({ project_id: '69a92b67cf6876bc880ca331' })
   });
 
   // Track price history
