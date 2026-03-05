@@ -705,6 +705,24 @@ export default function ArbitrageDashboard() {
             </Card>
           </TabsContent>
 
+          {/* Cross-Market Heatmap Tab */}
+          <TabsContent value="heatmap">
+            <CrossMarketHeatmap
+              xrpPrice={xrpPrice}
+              multiPrices={multiPrices}
+              priceHistory={priceHistory}
+              multiPriceHistory={multiPriceHistory}
+            />
+          </TabsContent>
+
+          {/* Portfolio Rebalancer Tab */}
+          <TabsContent value="rebalancer">
+            <PortfolioRebalancer
+              xrpPrice={xrpPrice}
+              multiPrices={multiPrices}
+            />
+          </TabsContent>
+
           {/* Project Status Tab */}
           <TabsContent value="project" className="space-y-4">
             {/* Priority Order Banner */}
