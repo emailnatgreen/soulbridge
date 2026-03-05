@@ -11,6 +11,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import moment from 'moment';
+import PerformanceStandardsPanel from '@/components/arbitrage/PerformanceStandardsPanel';
+import ExecutionQualityPanel from '@/components/arbitrage/ExecutionQualityPanel';
+import StatisticalValidationPanel from '@/components/arbitrage/StatisticalValidationPanel';
+import AuditLogPanel from '@/components/arbitrage/AuditLogPanel';
 
 // XRPL DEX pairs to monitor for arbitrage
 const MONITORED_PAIRS = [
