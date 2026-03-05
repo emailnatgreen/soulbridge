@@ -299,6 +299,7 @@ export default function ArbitrageDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <EmergencyStopControl />
             <span className="text-xs text-gray-500">Updated {moment(lastRefresh).format('HH:mm:ss')}</span>
             <Button onClick={handleRefresh} variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:text-white hover:bg-gray-800">
               <RefreshCw className="h-4 w-4 mr-2" />
