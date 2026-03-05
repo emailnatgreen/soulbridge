@@ -137,6 +137,58 @@ export default function ArbitrageDashboard() {
     staleTime: 20000,
   });
 
+  // Multi-market live prices
+  const { data: multiPricesData } = useQuery({
+    queryKey: ['multi-market-prices', lastRefresh],
+    queryFn: fetchMultiMarketPrices,
+    refetchInterval: 20000,
+    staleTime: 15000,
+  });
+
+  // Update multi prices + history on new data
+  useEffect(() => {
+    if (multiPricesData && Object.keys(multiPricesData).length > 0) {
+      setMultiPrices(multiPricesData);
+      const ts = moment().format('HH:mm:ss');
+      setMultiPriceHistory(prev => {
+        const updated = { ...prev };
+        Object.entries(multiPricesData).forEach(([key, val]) => {
+          if (val) {
+            updated[key] = [...(prev[key] || []), { time: ts, price: val }].slice(-30);
+          }
+        });
+        return updated;
+      });
+      // Generate multi-market signals
+      setMultiPriceHistory(prev => {
+        Object.entries(multiPricesData).forEach(([key, val]) => {
+          const hist = prev[key] || [];
+          if (hist.length >= 3 && val) {
+            const older = hist[hist.length - 3]?.price;
+            if (older) {
+              const changePct = ((val - older) / older) * 100;
+              const market = MULTI_MARKETS.find(m => m.id === key);
+              if (Math.abs(changePct) > 0.1 && market) {
+                setSignals(s => [{
+                  id: `${key}-${Date.now()}`,
+                  type: changePct > 0 ? 'buy' : 'sell',
+                  pair: market.label,
+                  strategy: market.strategy,
+                  priceDiff: Math.abs(changePct).toFixed(3),
+                  price: val,
+                  time: moment().format('HH:mm:ss'),
+                  strength: Math.abs(changePct) > 0.4 ? 'strong' : 'moderate',
+                  category: market.category,
+                }, ...s].slice(0, 30));
+              }
+            }
+          }
+        });
+        return prev;
+      });
+    }
+  }, [multiPricesData]);
+
   // Project data
   const { data: project } = useQuery({
     queryKey: ['arbitrage-project'],
