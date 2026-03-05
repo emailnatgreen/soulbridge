@@ -559,6 +559,9 @@ export default function ArbitrageDashboard() {
                           </div>
                         </div>
                         <div className="text-right flex items-center gap-2">
+                          {signal.category && (
+                            <Badge className="bg-gray-700/40 text-gray-300 border-gray-600/50 text-xs">{signal.category}</Badge>
+                          )}
                           <Badge className={signal.strength === 'strong'
                             ? 'bg-yellow-800/40 text-yellow-300 border-yellow-700/50'
                             : 'bg-gray-700/40 text-gray-300 border-gray-600/50'
