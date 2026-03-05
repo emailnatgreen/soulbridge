@@ -627,6 +627,26 @@ export default function ArbitrageDashboard() {
             </Card>
           </TabsContent>
 
+          {/* CR-01/2026 Performance Standards Tab */}
+          <TabsContent value="performance">
+            <PerformanceStandardsPanel />
+          </TabsContent>
+
+          {/* CR-01/2026 Execution Quality Tab */}
+          <TabsContent value="execution">
+            <ExecutionQualityPanel />
+          </TabsContent>
+
+          {/* CR-01/2026 Statistical Validation Tab */}
+          <TabsContent value="statistics">
+            <StatisticalValidationPanel />
+          </TabsContent>
+
+          {/* CR-01/2026 Audit Log & Risk Disclosures Tab */}
+          <TabsContent value="audit">
+            <AuditLogPanel />
+          </TabsContent>
+
           {/* Orderbook Tab */}
           <TabsContent value="orderbook" className="space-y-4">
             <Card className="bg-gray-900/60 border-gray-700/50">
