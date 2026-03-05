@@ -111,6 +111,8 @@ Deno.serve(async (req) => {
             service_charge_calculated: true
         });
 
+        const txHash = `SERVICE_CHARGE_${task_id}_${Date.now()}`;
+
         // EconomicActivity: agent earned
         await base44.asServiceRole.entities.EconomicActivity.create({
             agent_id: agent.id,
@@ -118,6 +120,7 @@ Deno.serve(async (req) => {
             amount: serviceChargeDrops / 1000000,
             description: `Service charge earned: ${task.title} - ${calculationReason}`,
             related_agent_id: null,
+            transaction_hash: txHash,
             status: 'completed'
         });
 
@@ -127,7 +130,18 @@ Deno.serve(async (req) => {
             activity_type: 'treasury_deposit',
             amount: serviceChargeDrops / 1000000,
             description: `Treasury contribution from task: ${task.title}`,
+            transaction_hash: txHash,
             status: 'completed'
+        });
+
+        // Transaction record for full audit trail
+        await base44.asServiceRole.entities.Transaction.create({
+            recipient_name: agent.name,
+            recipient_address: agent.classic_address || agent.id,
+            amount: serviceChargeDrops / 1000000,
+            note: `[Service Charge] ${task.title} - ${calculationReason}`,
+            status: 'completed',
+            hash: txHash
         });
 
         // Update Treasury

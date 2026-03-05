@@ -76,8 +76,8 @@ Deno.serve(async (req) => {
     const agentTransaction = await base44.asServiceRole.entities.Transaction.create({
       recipient_name: agent.name,
       recipient_address: wallet.classic_address,
-      amount: rewardDrops,
-      note: `Task Reward: ${task.title}${project ? ` for Project ${project.title}` : ''}`,
+      amount: rewardDrops / 1000000,
+      note: `[Task Reward] ${task.title}${project ? ` for Project ${project.title}` : ''}`,
       status: 'completed',
       hash: `TASK_${taskId}_AGENT_${Date.now()}`
     });
