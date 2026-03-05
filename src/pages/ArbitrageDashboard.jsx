@@ -555,7 +555,7 @@ export default function ArbitrageDashboard() {
                           }
                           <div>
                             <div className="text-white font-medium capitalize">{signal.type} Signal — {signal.pair}</div>
-                            <div className="text-gray-400 text-xs">{signal.time} · Price: ${signal.price?.toFixed(5)}</div>
+                            <div className="text-gray-400 text-xs">{signal.time} · {signal.strategy || 'Arbitrage'} · ${signal.price?.toFixed(signal.price < 0.01 ? 6 : 4)}</div>
                           </div>
                         </div>
                         <div className="text-right flex items-center gap-2">
