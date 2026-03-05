@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
     try {
@@ -17,6 +17,10 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Agent not found' }, { status: 404 });
         }
 
+        // Get agent wallet for address
+        const wallets = await base44.asServiceRole.entities.Wallet.filter({ owner_id: agent_id }, '', 1);
+        const wallet = wallets[0];
+
         // Create economic activity record
         const activity = await base44.asServiceRole.entities.EconomicActivity.create({
             agent_id,
@@ -24,6 +28,17 @@ Deno.serve(async (req) => {
             amount,
             description: reason,
             status: 'completed'
+        });
+
+        // Create Transaction record so it shows in Transaction History
+        const txHash = `AGENT_REWARD_${agent_id}_${Date.now()}`;
+        await base44.asServiceRole.entities.Transaction.create({
+            recipient_name: agent.name,
+            recipient_address: wallet?.classic_address || agent.classic_address || agent_id,
+            amount,
+            note: `[${source}] ${reason}`,
+            status: 'completed',
+            hash: txHash
         });
 
         // Create memory of the earning
@@ -41,6 +56,7 @@ Deno.serve(async (req) => {
         return Response.json({
             success: true,
             activity,
+            transaction_hash: txHash,
             message: `${agent.name} earned ${amount} XRP for ${reason}`
         });
 
