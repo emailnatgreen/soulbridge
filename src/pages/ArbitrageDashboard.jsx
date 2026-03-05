@@ -110,6 +110,8 @@ export default function ArbitrageDashboard() {
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [priceHistory, setPriceHistory] = useState([]);
   const [signals, setSignals] = useState([]);
+  const [multiPrices, setMultiPrices] = useState({});
+  const [multiPriceHistory, setMultiPriceHistory] = useState({});
 
   // Live XRP price
   const { data: xrpPrice, refetch: refetchPrice } = useQuery({
