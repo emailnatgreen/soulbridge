@@ -701,76 +701,101 @@ export default function ArbitrageDashboard() {
 
           {/* Project Status Tab */}
           <TabsContent value="project" className="space-y-4">
-            <Card className="bg-gray-900/60 border-gray-700/50">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Target className="h-5 w-5 text-indigo-400" />
-                  Arbitrage Agent Validation — Project Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                {project ? (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-white font-semibold text-lg">{project.title}</div>
-                        <div className="text-gray-400 text-sm mt-1">{project.description}</div>
-                      </div>
-                      <Badge className={`${
-                        project.status === 'active' ? 'bg-green-800/40 text-green-300 border-green-700/50' :
-                        'bg-blue-800/40 text-blue-300 border-blue-700/50'
-                      } capitalize`}>{project.status}</Badge>
-                    </div>
+            {/* Priority Order Banner */}
+            <div className="p-4 bg-indigo-900/20 border border-indigo-700/40 rounded-lg">
+              <div className="text-indigo-300 font-semibold text-sm mb-1 flex items-center gap-2">
+                <Shield className="h-4 w-4" /> Governor's Strategic Order — CR-01/2026
+              </div>
+              <div className="grid grid-cols-3 gap-3 mt-2 text-xs">
+                <div className="bg-red-900/30 border border-red-700/40 rounded p-2">
+                  <div className="text-red-300 font-bold">① Critical</div>
+                  <div className="text-gray-300">Automated Performance Alerting</div>
+                  <div className="text-gray-500 mt-0.5">First line of defense — emergency stop</div>
+                </div>
+                <div className="bg-yellow-900/30 border border-yellow-700/40 rounded p-2">
+                  <div className="text-yellow-300 font-bold">② High</div>
+                  <div className="text-gray-300">Historical Performance Analytics</div>
+                  <div className="text-gray-500 mt-0.5">Audit evidence & strategy refinement</div>
+                </div>
+                <div className="bg-gray-800/50 border border-gray-700/40 rounded p-2">
+                  <div className="text-gray-400 font-bold">③ Final Stage</div>
+                  <div className="text-gray-300">Live Trade Execution</div>
+                  <div className="text-gray-500 mt-0.5">Requires full CR-01/2026 + Council approval</div>
+                </div>
+              </div>
+            </div>
 
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-400">Overall Progress</span>
-                        <span className="text-white">{progressPct.toFixed(0)}%</span>
-                      </div>
-                      <Progress value={progressPct} className="h-2 bg-gray-700" />
-                    </div>
-
-                    {/* Milestones */}
-                    <div className="space-y-2">
-                      <div className="text-gray-400 text-sm font-medium">Milestones</div>
-                      {(project.milestones || []).map((m, i) => (
-                        <div key={i} className="flex items-start gap-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700/30">
-                          {m.completed
-                            ? <CheckCircle2 className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
-                            : <Clock className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                          }
-                          <div className="flex-1">
-                            <div className="text-white text-sm font-medium">{m.title}</div>
-                            <div className="text-gray-400 text-xs mt-0.5">{m.description}</div>
-                            <div className="text-gray-500 text-xs mt-1">Target: {moment(m.target_date).format('DD MMM YYYY')}</div>
-                          </div>
+            {[
+              { proj: project, taskList: tasks, label: 'Arbitrage Trading Agent Validation', completedCount: tasks.filter(t => t.status === 'completed').length },
+              { proj: projectMulti, taskList: tasksMulti, label: 'Multi-Market AI Trading Expansion', completedCount: tasksMulti.filter(t => t.status === 'completed').length },
+            ].map(({ proj, taskList, label, completedCount }) => {
+              const pct = taskList.length > 0 ? (completedCount / taskList.length) * 100 : 0;
+              const PRIORITY_ORDER = ['critical', 'high', 'medium', 'low'];
+              const sortedTasks = [...taskList].sort((a, b) => PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority));
+              return (
+                <Card key={label} className="bg-gray-900/60 border-gray-700/50">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2 text-base">
+                      <Target className="h-5 w-5 text-indigo-400" />
+                      {label}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {proj ? (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <div className="text-gray-400 text-sm">{proj.description}</div>
+                          <Badge className={`ml-3 shrink-0 ${proj.status === 'active' ? 'bg-green-800/40 text-green-300 border-green-700/50' : 'bg-blue-800/40 text-blue-300 border-blue-700/50'} capitalize`}>{proj.status}</Badge>
                         </div>
-                      ))}
-                    </div>
-
-                    {/* Tasks */}
-                    <div className="space-y-2">
-                      <div className="text-gray-400 text-sm font-medium">Tasks ({tasks.length})</div>
-                      {tasks.map((task) => (
-                        <div key={task.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700/30">
-                          <div>
-                            <div className="text-white text-sm">{task.title}</div>
-                            <div className="text-gray-400 text-xs">{task.estimated_hours}h estimated</div>
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-gray-400">Progress</span>
+                            <span className="text-white">{completedCount}/{taskList.length} tasks · {pct.toFixed(0)}%</span>
                           </div>
-                          <Badge className={`${
-                            task.status === 'completed' ? 'bg-green-800/40 text-green-300' :
-                            task.status === 'in_progress' ? 'bg-blue-800/40 text-blue-300' :
-                            'bg-gray-700/40 text-gray-300'
-                          } capitalize border-0`}>{task.status.replace('_', ' ')}</Badge>
+                          <Progress value={pct} className="h-1.5 bg-gray-700" />
                         </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">Loading project data...</div>
-                )}
-              </CardContent>
-            </Card>
+                        {(proj.milestones || []).length > 0 && (
+                          <div className="space-y-1">
+                            <div className="text-gray-500 text-xs font-medium uppercase tracking-wider">Milestones</div>
+                            {proj.milestones.map((m, i) => (
+                              <div key={i} className="flex items-center gap-2 text-xs p-2 bg-gray-800/40 rounded border border-gray-700/30">
+                                {m.completed ? <CheckCircle2 className="h-3.5 w-3.5 text-green-400 flex-shrink-0" /> : <Clock className="h-3.5 w-3.5 text-gray-600 flex-shrink-0" />}
+                                <span className={m.completed ? 'text-gray-400 line-through' : 'text-gray-300'}>{m.title}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="space-y-1.5">
+                          <div className="text-gray-500 text-xs font-medium uppercase tracking-wider">Tasks — sorted by priority</div>
+                          {sortedTasks.map((task) => (
+                            <div key={task.id} className="flex items-center justify-between p-2.5 bg-gray-800/50 rounded-lg border border-gray-700/30">
+                              <div className="flex-1 min-w-0 mr-3">
+                                <div className="text-white text-xs font-medium truncate">{task.title}</div>
+                                <div className="text-gray-500 text-xs">{task.estimated_hours}h · {task.reward_drops ? `${(task.reward_drops / 1000000).toFixed(1)} XRP reward` : 'no reward set'}</div>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <Badge className={`text-xs py-0 ${
+                                  task.priority === 'critical' ? 'bg-red-800/40 text-red-300 border-red-700/50' :
+                                  task.priority === 'high' ? 'bg-yellow-800/40 text-yellow-300 border-yellow-700/50' :
+                                  'bg-gray-700/40 text-gray-400'
+                                }`}>{task.priority}</Badge>
+                                <Badge className={`text-xs py-0 border-0 ${
+                                  task.status === 'completed' ? 'bg-green-800/40 text-green-300' :
+                                  task.status === 'in_progress' ? 'bg-blue-800/40 text-blue-300' :
+                                  'bg-gray-700/40 text-gray-400'
+                                } capitalize`}>{task.status.replace('_', ' ')}</Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-6 text-gray-500 text-sm">Loading project data...</div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </TabsContent>
         </Tabs>
       </div>
