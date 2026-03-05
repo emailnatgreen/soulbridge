@@ -19,6 +19,38 @@ const MONITORED_PAIRS = [
   { base: 'XRP', quote: 'BTC', issuer: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B', label: 'XRP/BTC' },
 ];
 
+// Multi-market config
+const MULTI_MARKETS = [
+  { id: 'xrp', label: 'XRP/USD', color: '#3b82f6', strategy: 'Arbitrage', category: 'Crypto' },
+  { id: 'doge', label: 'DOGE/USDT', color: '#f59e0b', strategy: 'T-Wave + Sniping', category: 'Crypto' },
+  { id: 'vet', label: 'VET/USDT', color: '#10b981', strategy: 'T-Wave', category: 'Crypto' },
+  { id: 'gbpusd', label: 'GBP/USD', color: '#8b5cf6', strategy: 'Sniping', category: 'FX' },
+  { id: 'eurusd', label: 'EUR/USD', color: '#6366f1', strategy: 'T-Wave + Sniping', category: 'FX' },
+  { id: 'xauusd', label: 'XAU/USD (Gold)', color: '#d97706', strategy: 'T-Wave', category: 'Commodity' },
+];
+
+// Fetch multi-market prices from CoinGecko (free, no key)
+async function fetchMultiMarketPrices() {
+  try {
+    const [cryptoRes, fxRes] = await Promise.all([
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple,dogecoin,vechain&vs_currencies=usd'),
+      fetch('https://api.exchangerate-api.com/v4/latest/USD'),
+    ]);
+    const crypto = await cryptoRes.json();
+    const fx = await fxRes.json();
+    return {
+      xrp: crypto?.ripple?.usd || null,
+      doge: crypto?.dogecoin?.usd || null,
+      vet: crypto?.vechain?.usd || null,
+      gbpusd: fx?.rates?.GBP ? (1 / fx.rates.GBP) : null,
+      eurusd: fx?.rates?.EUR ? (1 / fx.rates.EUR) : null,
+      xauusd: null, // Gold requires premium API; show as pending
+    };
+  } catch {
+    return {};
+  }
+}
+
 // Fetch live XRPL DEX orderbook for a pair
 async function fetchXRPLOrderbook(base, quote, issuer) {
   try {
