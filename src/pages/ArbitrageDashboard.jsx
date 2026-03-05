@@ -361,13 +361,91 @@ export default function ArbitrageDashboard() {
         </div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="live" className="space-y-4">
-          <TabsList className="bg-gray-900 border border-gray-700">
-            <TabsTrigger value="live" className="data-[state=active]:bg-blue-600">Live Feed</TabsTrigger>
+        <Tabs defaultValue="markets" className="space-y-4">
+          <TabsList className="bg-gray-900 border border-gray-700 flex-wrap h-auto">
+            <TabsTrigger value="markets" className="data-[state=active]:bg-blue-600">Multi-Market</TabsTrigger>
+            <TabsTrigger value="live" className="data-[state=active]:bg-blue-600">XRP Live Feed</TabsTrigger>
             <TabsTrigger value="signals" className="data-[state=active]:bg-blue-600">Signals</TabsTrigger>
             <TabsTrigger value="orderbook" className="data-[state=active]:bg-blue-600">Orderbook</TabsTrigger>
             <TabsTrigger value="project" className="data-[state=active]:bg-blue-600">Project Status</TabsTrigger>
           </TabsList>
+
+          {/* Multi-Market Overview Tab */}
+          <TabsContent value="markets" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {MULTI_MARKETS.map(market => {
+                const price = market.id === 'xrp' ? xrpPrice : multiPrices[market.id];
+                const hist = market.id === 'xrp' ? priceHistory : (multiPriceHistory[market.id] || []);
+                const change = hist.length >= 2
+                  ? ((hist[hist.length - 1]?.price - hist[0]?.price) / hist[0]?.price) * 100
+                  : 0;
+                const isUp = change >= 0;
+                const marketSignals = signals.filter(s => s.pair === market.label);
+                return (
+                  <Card key={market.id} className="bg-gray-900/60 border-gray-700/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span style={{ color: market.color }} className="font-bold">{market.label}</span>
+                          <Badge className="text-xs bg-gray-700/50 text-gray-300 border-gray-600/50">{market.category}</Badge>
+                        </div>
+                        <Badge className="text-xs bg-indigo-800/40 text-indigo-300 border-indigo-700/50">{market.strategy}</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <div className="text-2xl font-bold text-white">
+                            {price
+                              ? (price < 0.01 ? `$${price.toFixed(6)}` : price > 1000 ? `$${price.toFixed(2)}` : `$${price.toFixed(4)}`)
+                              : <span className="text-gray-500 text-lg">Pending API</span>}
+                          </div>
+                          <div className={`flex items-center gap-1 text-sm mt-1 ${isUp ? 'text-green-400' : 'text-red-400'}`}>
+                            {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                            {isUp ? '+' : ''}{change.toFixed(3)}% session
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Signals</div>
+                          <div className="text-xl font-bold" style={{ color: market.color }}>{marketSignals.length}</div>
+                        </div>
+                      </div>
+                      {hist.length > 1 ? (
+                        <ResponsiveContainer width="100%" height={80}>
+                          <AreaChart data={hist}>
+                            <defs>
+                              <linearGradient id={`grad-${market.id}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={market.color} stopOpacity={0.3} />
+                                <stop offset="95%" stopColor={market.color} stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <Area type="monotone" dataKey="price" stroke={market.color} fill={`url(#grad-${market.id})`} strokeWidth={1.5} dot={false} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#111827', border: `1px solid ${market.color}30`, borderRadius: 6, fontSize: 11 }}
+                              formatter={v => [`$${typeof v === 'number' ? v.toFixed(v < 0.01 ? 6 : v > 1000 ? 2 : 4) : v}`, 'Price']}
+                              labelFormatter={() => ''}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="h-20 flex items-center justify-center text-gray-600 text-xs">Accumulating data...</div>
+                      )}
+                      {marketSignals.length > 0 && (
+                        <div className="text-xs space-y-1">
+                          {marketSignals.slice(0, 2).map(sig => (
+                            <div key={sig.id} className={`flex items-center justify-between px-2 py-1 rounded ${sig.type === 'buy' ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'}`}>
+                              <span className="capitalize">{sig.type} · {sig.time}</span>
+                              <span>{sig.priceDiff}% · {sig.strength}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
 
           {/* Live Price Chart */}
           <TabsContent value="live" className="space-y-4">
