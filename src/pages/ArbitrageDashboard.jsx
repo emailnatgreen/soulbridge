@@ -371,6 +371,10 @@ export default function ArbitrageDashboard() {
             <TabsTrigger value="live" className="data-[state=active]:bg-blue-600">XRP Live Feed</TabsTrigger>
             <TabsTrigger value="signals" className="data-[state=active]:bg-blue-600">Signals</TabsTrigger>
             <TabsTrigger value="orderbook" className="data-[state=active]:bg-blue-600">Orderbook</TabsTrigger>
+            <TabsTrigger value="performance" className="data-[state=active]:bg-indigo-600">Performance</TabsTrigger>
+            <TabsTrigger value="execution" className="data-[state=active]:bg-yellow-600">Execution</TabsTrigger>
+            <TabsTrigger value="statistics" className="data-[state=active]:bg-blue-700">Statistics</TabsTrigger>
+            <TabsTrigger value="audit" className="data-[state=active]:bg-purple-600">Audit & Risk</TabsTrigger>
             <TabsTrigger value="project" className="data-[state=active]:bg-blue-600">Project Status</TabsTrigger>
           </TabsList>
 
