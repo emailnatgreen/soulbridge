@@ -279,7 +279,7 @@ export default function ArbitrageDashboard() {
                   <span className="text-xs text-green-400 font-semibold">LIVE DATA</span>
                 </div>
               </div>
-              <p className="text-gray-400 text-sm">XRPL DEX · Real-time arbitrage signal detection · Truth Weaver Audit</p>
+              <p className="text-gray-400 text-sm">XRPL DEX · XRP · DOGE · VET · FX · Gold · T-Wave · Sniping · Truth Weaver Audit</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
