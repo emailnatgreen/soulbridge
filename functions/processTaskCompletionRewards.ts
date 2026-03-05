@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -86,8 +86,8 @@ Deno.serve(async (req) => {
     const treasuryTransaction = await base44.asServiceRole.entities.Transaction.create({
       recipient_name: 'Village Treasury',
       recipient_address: treasury.classic_address,
-      amount: serviceChargeDrops,
-      note: `Service Charge: ${task.title}${project ? ` for Project ${project.title}` : ''}`,
+      amount: serviceChargeDrops / 1000000,
+      note: `[Service Charge] ${task.title}${project ? ` for Project ${project.title}` : ''}`,
       status: 'completed',
       hash: `TASK_${taskId}_TREASURY_${Date.now()}`
     });
