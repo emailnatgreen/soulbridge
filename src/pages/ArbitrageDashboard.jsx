@@ -15,6 +15,7 @@ import PerformanceStandardsPanel from '@/components/arbitrage/PerformanceStandar
 import ExecutionQualityPanel from '@/components/arbitrage/ExecutionQualityPanel';
 import StatisticalValidationPanel from '@/components/arbitrage/StatisticalValidationPanel';
 import AuditLogPanel from '@/components/arbitrage/AuditLogPanel';
+import EmergencyStopControl from '@/components/arbitrage/EmergencyStopControl';
 
 // XRPL DEX pairs to monitor for arbitrage
 const MONITORED_PAIRS = [
