@@ -1,5 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { Client, Wallet } from 'npm:xrpl@4.2.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { Client } from 'npm:xrpl@4.2.4';
 
 Deno.serve(async (req) => {
     try {
@@ -47,32 +47,33 @@ Deno.serve(async (req) => {
         // Parse transactions
         const transactions = response.result.transactions.map(tx => {
             const meta = tx.meta;
-            const txData = tx.tx;
+            // Support both tx_json (newer API) and tx (older API)
+            const txData = tx.tx_json || tx.tx;
             const isSuccess = meta.TransactionResult === 'tesSUCCESS';
+            const txHash = tx.hash || txData?.hash;
+            const txDate = tx.close_time_iso 
+                ? new Date(tx.close_time_iso).toISOString() 
+                : (txData?.date ? new Date((txData.date + 946684800) * 1000).toISOString() : null);
             
-            // Determine transaction type and details
-            let type = txData.TransactionType;
+            let type = txData?.TransactionType || 'Unknown';
             let amount = '0';
             let currency = 'XRP';
             let counterparty = '';
             let direction = 'unknown';
 
-            if (txData.TransactionType === 'Payment') {
+            if (txData?.TransactionType === 'Payment') {
                 const isSender = txData.Account === wallet.classic_address;
                 direction = isSender ? 'sent' : 'received';
                 counterparty = isSender ? txData.Destination : txData.Account;
 
-                // Check if it's XRP or token payment
                 if (typeof txData.Amount === 'string') {
-                    // XRP payment
                     amount = (parseInt(txData.Amount) / 1000000).toString();
                     currency = 'XRP';
                 } else if (typeof txData.Amount === 'object') {
-                    // Token payment (RLUSD)
                     amount = txData.Amount.value;
                     currency = txData.Amount.currency;
                 }
-            } else if (txData.TransactionType === 'TrustSet') {
+            } else if (txData?.TransactionType === 'TrustSet') {
                 type = 'TrustLine';
                 if (txData.LimitAmount) {
                     currency = txData.LimitAmount.currency;
@@ -81,30 +82,20 @@ Deno.serve(async (req) => {
             }
 
             return {
-                hash: txData.hash,
+                hash: txHash,
                 type,
                 direction,
-                date: txData.date ? new Date((txData.date + 946684800) * 1000).toISOString() : null,
+                date: txDate,
                 amount,
                 currency,
                 counterparty,
                 status: isSuccess ? 'success' : 'failed',
                 ledger_index: tx.ledger_index,
-                fee: txData.Fee ? (parseInt(txData.Fee) / 1000000).toString() : '0'
+                fee: txData?.Fee ? (parseInt(txData.Fee) / 1000000).toString() : '0'
             };
         });
 
         await client.disconnect();
-
-        // Log access
-        await base44.asServiceRole.entities.WalletAccessLog.create({
-            wallet_id: wallet.id,
-            user_id: user.id,
-            user_email: user.email,
-            action: 'view',
-            success: true,
-            metadata: { transactions_fetched: transactions.length }
-        });
 
         return Response.json({
             success: true,
