@@ -291,56 +291,71 @@ export default function ArbitrageDashboard() {
           </div>
         </div>
 
-        {/* Live Price Hero */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-gradient-to-br from-blue-900/60 to-indigo-900/60 border-blue-700/50 col-span-1 md:col-span-1">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-blue-300 text-sm font-medium">XRP / USD</span>
-                <LivePulse />
-              </div>
-              <div className="text-4xl font-bold text-white mb-1">
-                {xrpPrice ? `$${xrpPrice.toFixed(4)}` : <span className="text-gray-500 animate-pulse">Loading...</span>}
-              </div>
-              <div className={`flex items-center gap-1 text-sm ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {priceChange >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                <span>{priceChange >= 0 ? '+' : ''}{priceChange.toFixed(3)}% this session</span>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Multi-Market Price Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {MULTI_MARKETS.map(market => {
+            const price = market.id === 'xrp' ? xrpPrice : multiPrices[market.id];
+            const hist = market.id === 'xrp' ? priceHistory : (multiPriceHistory[market.id] || []);
+            const change = hist.length >= 2
+              ? ((hist[hist.length - 1]?.price - hist[0]?.price) / hist[0]?.price) * 100
+              : 0;
+            const isUp = change >= 0;
+            return (
+              <Card key={market.id} className="bg-gray-900/70 border-gray-700/50">
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold" style={{ color: market.color }}>{market.label}</span>
+                    <LivePulse />
+                  </div>
+                  <div className="text-lg font-bold text-white">
+                    {price
+                      ? (price < 0.01 ? `$${price.toFixed(6)}` : price > 1000 ? `$${price.toFixed(0)}` : `$${price.toFixed(4)}`)
+                      : <span className="text-gray-600 text-sm">Pending</span>}
+                  </div>
+                  <div className={`flex items-center gap-1 text-xs ${isUp ? 'text-green-400' : 'text-red-400'}`}>
+                    {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    <span>{isUp ? '+' : ''}{change.toFixed(2)}%</span>
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">{market.strategy}</div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
+        {/* KPI Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="bg-gray-900/60 border-gray-700/50">
-            <CardContent className="pt-6">
-              <div className="text-gray-400 text-sm mb-2">DEX Spread (XRP/RLUSD)</div>
-              <div className="text-3xl font-bold text-white mb-1">
-                {spreadPct ? `${spreadPct.toFixed(4)}%` : <span className="text-gray-500">—</span>}
-              </div>
-              <div className="text-xs text-gray-500">
-                {spread ? `${spread.toFixed(6)} raw spread` : 'Fetching orderbook...'}
-              </div>
-              <div className="mt-2">
-                <Badge className={spreadPct && spreadPct > 0.1 ? 'bg-amber-600/30 text-amber-300 border-amber-600/50' : 'bg-green-600/30 text-green-300 border-green-600/50'}>
-                  {spreadPct && spreadPct > 0.1 ? '⚡ Potential Signal' : '✓ Tight Spread'}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-900/60 border-gray-700/50">
-            <CardContent className="pt-6">
-              <div className="text-gray-400 text-sm mb-2">Signals Detected (Session)</div>
-              <div className="text-3xl font-bold text-white mb-1">{signals.length}</div>
+            <CardContent className="pt-5">
+              <div className="text-gray-400 text-sm mb-1">Signals Detected</div>
+              <div className="text-3xl font-bold text-white">{signals.length}</div>
               <div className="flex gap-2 mt-2">
-                <Badge className="bg-green-800/40 text-green-300 border-green-700/50">
-                  {signals.filter(s => s.type === 'buy').length} Buy
-                </Badge>
-                <Badge className="bg-red-800/40 text-red-300 border-red-700/50">
-                  {signals.filter(s => s.type === 'sell').length} Sell
-                </Badge>
-                <Badge className="bg-purple-800/40 text-purple-300 border-purple-700/50">
-                  {signals.filter(s => s.strength === 'strong').length} Strong
-                </Badge>
+                <Badge className="bg-green-800/40 text-green-300 text-xs">{signals.filter(s => s.type === 'buy').length} Buy</Badge>
+                <Badge className="bg-red-800/40 text-red-300 text-xs">{signals.filter(s => s.type === 'sell').length} Sell</Badge>
               </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-gray-900/60 border-gray-700/50">
+            <CardContent className="pt-5">
+              <div className="text-gray-400 text-sm mb-1">Markets Active</div>
+              <div className="text-3xl font-bold text-white">{Object.values(multiPrices).filter(Boolean).length + (xrpPrice ? 1 : 0)}</div>
+              <div className="text-xs text-gray-500 mt-1">of {MULTI_MARKETS.length} configured</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-gray-900/60 border-gray-700/50">
+            <CardContent className="pt-5">
+              <div className="text-gray-400 text-sm mb-1">DEX Spread</div>
+              <div className="text-3xl font-bold text-white">{spreadPct ? `${spreadPct.toFixed(3)}%` : '—'}</div>
+              <Badge className={`mt-2 text-xs ${spreadPct && spreadPct > 0.1 ? 'bg-amber-600/30 text-amber-300' : 'bg-green-600/30 text-green-300'}`}>
+                {spreadPct && spreadPct > 0.1 ? '⚡ Signal' : '✓ Tight'}
+              </Badge>
+            </CardContent>
+          </Card>
+          <Card className="bg-gray-900/60 border-gray-700/50">
+            <CardContent className="pt-5">
+              <div className="text-gray-400 text-sm mb-1">Strong Signals</div>
+              <div className="text-3xl font-bold text-yellow-400">{signals.filter(s => s.strength === 'strong').length}</div>
+              <div className="text-xs text-gray-500 mt-1">high-confidence only</div>
             </CardContent>
           </Card>
         </div>
