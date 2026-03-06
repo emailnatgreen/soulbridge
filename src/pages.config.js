@@ -66,6 +66,7 @@ import AgentSkillTree from './pages/AgentSkillTree';
 import AgentTrainingModule from './pages/AgentTrainingModule';
 import AgentWellbeing from './pages/AgentWellbeing';
 import Agents from './pages/Agents';
+import AlignmentDashboard from './pages/AlignmentDashboard';
 import ArbitrageDashboard from './pages/ArbitrageDashboard';
 import Axi from './pages/Axi';
 import BecomeMentor from './pages/BecomeMentor';
@@ -162,7 +163,6 @@ import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import AlignmentDashboard from './pages/AlignmentDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -186,6 +186,7 @@ export const PAGES = {
     "AgentTrainingModule": AgentTrainingModule,
     "AgentWellbeing": AgentWellbeing,
     "Agents": Agents,
+    "AlignmentDashboard": AlignmentDashboard,
     "ArbitrageDashboard": ArbitrageDashboard,
     "Axi": Axi,
     "BecomeMentor": BecomeMentor,
@@ -282,7 +283,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "AlignmentDashboard": AlignmentDashboard,
 }
 
 export const pagesConfig = {
