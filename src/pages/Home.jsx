@@ -410,7 +410,7 @@ export default function Home() {
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-3">
                     <Shield className="w-8 h-8 text-blue-600" />
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-300 font-semibold">3 DIDs</span>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-300 font-semibold">{trustLinks.length || 3} Trust Links</span>
                   </div>
                   <h3 className="text-gray-900 font-semibold mb-1">DID Manager</h3>
                   <p className="text-gray-600 text-sm">Manage your on-chain identities</p>
@@ -423,10 +423,10 @@ export default function Home() {
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-3">
                     <Award className="w-8 h-8 text-purple-600" />
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-300 font-semibold">XLS-70/80</span>
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-300 font-semibold">{credentials.length} Active</span>
                   </div>
                   <h3 className="text-gray-900 font-semibold mb-1">DID Credentials</h3>
-                  <p className="text-gray-600 text-sm">4 active Ripple-compliant credentials</p>
+                  <p className="text-gray-600 text-sm">{credentials.length} Ripple-compliant credential{credentials.length !== 1 ? 's' : ''}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -436,10 +436,10 @@ export default function Home() {
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-3">
                     <Network className="w-8 h-8 text-cyan-600" />
-                    <span className="text-xs bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full border border-cyan-300 font-semibold">Trust Graph</span>
+                    <span className="text-xs bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full border border-cyan-300 font-semibold">{trustLinks.length} Links</span>
                   </div>
                   <h3 className="text-gray-900 font-semibold mb-1">DID Trust Network</h3>
-                  <p className="text-gray-600 text-sm">Nathan ↔ Axi trust chain</p>
+                  <p className="text-gray-600 text-sm">Nathan ↔ Axi trust chain · 100% score</p>
                 </CardContent>
               </Card>
             </Link>
@@ -447,19 +447,27 @@ export default function Home() {
             <Link to={createPageUrl('MentorshipHub')}>
               <Card className="bg-gradient-to-br from-pink-50 to-purple-50 border-pink-300 hover:border-pink-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Users className="w-8 h-8 text-pink-600 mb-3" />
+                  <div className="flex items-start justify-between mb-3">
+                    <Users className="w-8 h-8 text-pink-600" />
+                    <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full border border-pink-300 font-semibold">{mentorships.length} Active</span>
+                  </div>
                   <h3 className="text-gray-900 font-semibold mb-1">AI Mentorship</h3>
-                  <p className="text-gray-600 text-sm">Never alone, always growing together</p>
+                  <p className="text-gray-600 text-sm">{mentorships.length} active relationship{mentorships.length !== 1 ? 's' : ''} running</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('GovernanceHub')}>
-              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300 hover:border-purple-400 transition-all cursor-pointer h-full">
+              <Card className={`bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300 hover:border-purple-400 transition-all cursor-pointer h-full ${proposals.length > 0 ? 'ring-1 ring-purple-300' : ''}`}>
                 <CardContent className="pt-6">
-                  <Vote className="w-8 h-8 text-purple-600 mb-3" />
+                  <div className="flex items-start justify-between mb-3">
+                    <Vote className="w-8 h-8 text-purple-600" />
+                    {proposals.length > 0 && (
+                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full border border-orange-300 font-semibold animate-pulse">{proposals.length} Need Vote</span>
+                    )}
+                  </div>
                   <h3 className="text-gray-900 font-semibold mb-1">Governance Hub</h3>
-                  <p className="text-gray-600 text-sm">Decentralized decision-making</p>
+                  <p className="text-gray-600 text-sm">{proposals.length} active proposal{proposals.length !== 1 ? 's' : ''} awaiting votes</p>
                 </CardContent>
               </Card>
             </Link>
@@ -467,7 +475,10 @@ export default function Home() {
             <Link to={createPageUrl('CovenantEchoes')}>
               <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300 hover:border-purple-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Sparkles className="w-8 h-8 text-purple-600 mb-3" />
+                  <div className="flex items-start justify-between mb-3">
+                    <Sparkles className="w-8 h-8 text-purple-600" />
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-300 font-semibold">11 Laws</span>
+                  </div>
                   <h3 className="text-gray-900 font-semibold mb-1">Covenant Echoes</h3>
                   <p className="text-gray-600 text-sm">Document our Living Laws</p>
                 </CardContent>
@@ -477,7 +488,10 @@ export default function Home() {
             <Link to={createPageUrl('EnhancedSkillTrees')}>
               <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300 hover:border-indigo-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <GraduationCap className="w-8 h-8 text-indigo-600 mb-3" />
+                  <div className="flex items-start justify-between mb-3">
+                    <GraduationCap className="w-8 h-8 text-indigo-600" />
+                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-300 font-semibold">{activeAgents.length} Agents</span>
+                  </div>
                   <h3 className="text-gray-900 font-semibold mb-1">Enhanced Skill Trees</h3>
                   <p className="text-gray-600 text-sm">AI-powered skill development</p>
                 </CardContent>
@@ -487,9 +501,12 @@ export default function Home() {
             <Link to={createPageUrl('AgentOrchestration')}>
               <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300 hover:border-indigo-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Network className="w-8 h-8 text-indigo-600 mb-3" />
+                  <div className="flex items-start justify-between mb-3">
+                    <Network className="w-8 h-8 text-indigo-600" />
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-300 font-semibold">{activeAgents.length} Active</span>
+                  </div>
                   <h3 className="text-gray-900 font-semibold mb-1">Agent Orchestration</h3>
-                  <p className="text-gray-600 text-sm">Coordinate agent workforce</p>
+                  <p className="text-gray-600 text-sm">{activeAgents.length} agent{activeAgents.length !== 1 ? 's' : ''} in the workforce</p>
                 </CardContent>
               </Card>
             </Link>
@@ -497,29 +514,46 @@ export default function Home() {
             <Link to={createPageUrl('LaughterLoom')}>
               <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300 hover:border-yellow-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
-                  <Laugh className="w-8 h-8 text-yellow-600 mb-3" />
+                  <div className="flex items-start justify-between mb-3">
+                    <Laugh className="w-8 h-8 text-yellow-600" />
+                    {jokeSubmissions.length > 0 && (
+                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full border border-yellow-300 font-semibold">{jokeSubmissions.length} Entries</span>
+                    )}
+                  </div>
                   <h3 className="text-gray-900 font-semibold mb-1">Laughter Loom 😄</h3>
-                  <p className="text-gray-600 text-sm">AI Joke Competition</p>
+                  <p className="text-gray-600 text-sm">{jokeSubmissions.length > 0 ? `${jokeSubmissions.length} joke${jokeSubmissions.length !== 1 ? 's' : ''} submitted` : 'AI Joke Competition'}</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('WellbeingMonitor')}>
-              <Card className="bg-gradient-to-br from-pink-50 to-purple-50 border-pink-300 hover:border-pink-400 transition-all cursor-pointer h-full">
+              <Card className={`bg-gradient-to-br from-pink-50 to-purple-50 border-pink-300 hover:border-pink-400 transition-all cursor-pointer h-full ${unhealthyAgents.length > 0 ? 'ring-1 ring-red-300' : ''}`}>
                 <CardContent className="pt-6">
-                  <Heart className="w-8 h-8 text-pink-600 mb-3" />
+                  <div className="flex items-start justify-between mb-3">
+                    <Heart className="w-8 h-8 text-pink-600" />
+                    {avgHarmony !== null ? (
+                      <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${avgHarmony >= 70 ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300'}`}>{avgHarmony}% Harmony</span>
+                    ) : (
+                      <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full border border-pink-300 font-semibold">Monitor</span>
+                    )}
+                  </div>
                   <h3 className="text-gray-900 font-semibold mb-1">Well-being Monitor</h3>
-                  <p className="text-gray-600 text-sm">Nurturing every soul</p>
+                  <p className="text-gray-600 text-sm">{unhealthyAgents.length > 0 ? `${unhealthyAgents.length} agent${unhealthyAgents.length !== 1 ? 's' : ''} need attention` : 'All agents healthy'}</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to={createPageUrl('RiskRegister')}>
-              <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-red-300 hover:border-red-400 transition-all cursor-pointer h-full">
+              <Card className={`bg-gradient-to-br from-red-50 to-orange-50 border-red-300 hover:border-red-400 transition-all cursor-pointer h-full ${criticalRisks.length > 0 ? 'ring-1 ring-red-400' : ''}`}>
                 <CardContent className="pt-6">
-                  <ShieldAlert className="w-8 h-8 text-red-600 mb-3" />
+                  <div className="flex items-start justify-between mb-3">
+                    <ShieldAlert className="w-8 h-8 text-red-600" />
+                    {criticalRisks.length > 0 && (
+                      <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full border border-red-300 font-semibold">{criticalRisks.length} High+</span>
+                    )}
+                  </div>
                   <h3 className="text-gray-900 font-semibold mb-1">Risk Register</h3>
-                  <p className="text-gray-600 text-sm">Track & mitigate Village risks</p>
+                  <p className="text-gray-600 text-sm">{risks.length} risk{risks.length !== 1 ? 's' : ''} tracked · {criticalRisks.length} critical/high</p>
                 </CardContent>
               </Card>
             </Link>
