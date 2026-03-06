@@ -558,6 +558,19 @@ export default function Home() {
               </Card>
             </Link>
 
+            <Link to={createPageUrl('AxiIntelligenceFeed')}>
+              <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300 hover:border-indigo-400 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Globe className="w-8 h-8 text-indigo-600" />
+                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-300 font-semibold">IET · Live</span>
+                  </div>
+                  <h3 className="text-gray-900 font-semibold mb-1">Axi Intelligence</h3>
+                  <p className="text-gray-600 text-sm">AI ecosystem · regulatory monitoring</p>
+                </CardContent>
+              </Card>
+            </Link>
+
             <Link to={createPageUrl('VillageReportingDashboard')}>
               <Card className="bg-gradient-to-br from-blue-50 to-green-50 border-blue-300 hover:border-blue-400 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
