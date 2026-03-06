@@ -476,6 +476,19 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to={createPageUrl('AlignmentDashboard')}>
+              <Card className="bg-gradient-to-br from-indigo-50 to-slate-50 border-indigo-400 hover:border-indigo-500 transition-all cursor-pointer h-full ring-1 ring-indigo-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Scale className="w-8 h-8 text-indigo-600" />
+                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-300 font-semibold">Triple-Lock</span>
+                  </div>
+                  <h3 className="text-gray-900 font-semibold mb-1">Alignment & Safety</h3>
+                  <p className="text-gray-600 text-sm">Harmony Agent · Anti-Sycophancy · Drift Detection</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
