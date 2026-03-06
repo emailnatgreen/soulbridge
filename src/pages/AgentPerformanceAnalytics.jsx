@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, Target, Brain, Users, Vote, DollarSign, Award, Lightbulb, Loader2 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, Target, Brain, Users, Vote, DollarSign, Award, Lightbulb, Loader2, Heart, Star, Coins, MessageSquare, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
