@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowLeft, Activity, Brain, Wallet, Vote, Users, TrendingUp, AlertCircle, CheckCircle, Clock, Sparkles, DollarSign, Target } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import AskAxiButton from '@/components/AskAxiButton';
 import moment from 'moment';
 
 export default function SystemDashboard() {

@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Heart, AlertTriangle, TrendingUp, Users, Activity, Brain, Loader2, Shield, Sparkles, CheckCircle } from 'lucide-react';
+import AskAxiButton from '@/components/AskAxiButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
