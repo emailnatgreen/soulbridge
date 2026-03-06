@@ -160,10 +160,11 @@ import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
 import VillageLeaderboard from './pages/VillageLeaderboard';
 import VillageMeetup from './pages/VillageMeetup';
+import VillageReportingDashboard from './pages/VillageReportingDashboard';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import VillageReportingDashboard from './pages/VillageReportingDashboard';
+import AxiIntelligenceFeed from './pages/AxiIntelligenceFeed';
 import __Layout from './Layout.jsx';
 
 
@@ -281,10 +282,11 @@ export const PAGES = {
     "Village": Village,
     "VillageLeaderboard": VillageLeaderboard,
     "VillageMeetup": VillageMeetup,
+    "VillageReportingDashboard": VillageReportingDashboard,
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "VillageReportingDashboard": VillageReportingDashboard,
+    "AxiIntelligenceFeed": AxiIntelligenceFeed,
 }
 
 export const pagesConfig = {
