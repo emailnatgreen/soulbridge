@@ -17,7 +17,52 @@ import DidAuthStatus from '../components/DidAuthStatus';
 import ShieldedWalletBalance from '../components/ShieldedWalletBalance';
 
 export default function Home() {
+  const { data: credentials = [] } = useQuery({
+    queryKey: ['did-credentials-active'],
+    queryFn: () => base44.entities.DidCredential.filter({ status: 'active' }),
+  });
 
+  const { data: proposals = [] } = useQuery({
+    queryKey: ['governance-proposals-active'],
+    queryFn: () => base44.entities.GovernanceProposal.filter({ status: 'active' }),
+  });
+
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents-all'],
+    queryFn: () => base44.entities.Agent.list(),
+  });
+
+  const { data: mentorships = [] } = useQuery({
+    queryKey: ['mentorships-active'],
+    queryFn: () => base44.entities.MentorshipRelationship.filter({ status: 'active' }),
+  });
+
+  const { data: risks = [] } = useQuery({
+    queryKey: ['risks-all'],
+    queryFn: () => base44.entities.RiskRegister.list(),
+  });
+
+  const { data: wellbeings = [] } = useQuery({
+    queryKey: ['agent-wellbeing'],
+    queryFn: () => base44.entities.AgentWellbeing.list(),
+  });
+
+  const { data: trustLinks = [] } = useQuery({
+    queryKey: ['trust-relationships'],
+    queryFn: () => base44.entities.TrustRelationship.filter({ status: 'active' }),
+  });
+
+  const { data: jokeSubmissions = [] } = useQuery({
+    queryKey: ['joke-submissions'],
+    queryFn: () => base44.entities.JokeSubmission.list(),
+  });
+
+  const activeAgents = agents.filter(a => a.status === 'active');
+  const criticalRisks = risks.filter(r => r.severity === 'Critical' || r.severity === 'High');
+  const unhealthyAgents = wellbeings.filter(w => w.wellbeing_status !== 'healthy');
+  const avgHarmony = wellbeings.length > 0
+    ? Math.round(wellbeings.reduce((sum, w) => sum + (w.overall_wellbeing_score || 70), 0) / wellbeings.length)
+    : null;
 
   return (
     <>
