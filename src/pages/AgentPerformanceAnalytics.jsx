@@ -267,37 +267,66 @@ function PerformanceMetricCard({ metric, agent }) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Category Scores */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <MetricPill 
-            icon={Target} 
-            label="Projects" 
-            value={metric.project_contributions?.tasks_completed || 0}
-            color="text-blue-400"
-          />
-          <MetricPill 
-            icon={Brain} 
-            label="Knowledge" 
-            value={metric.knowledge_sharing?.contributions_created || 0}
-            color="text-purple-400"
-          />
-          <MetricPill 
-            icon={Users} 
-            label="Collaboration" 
-            value={metric.collaboration_metrics?.sessions_participated || 0}
-            color="text-green-400"
-          />
-          <MetricPill 
-            icon={Vote} 
-            label="Governance" 
-            value={metric.governance_participation?.votes_cast || 0}
-            color="text-indigo-400"
-          />
-          <MetricPill 
-            icon={DollarSign} 
-            label="Economic" 
-            value={metric.economic_activity?.services_provided || 0}
-            color="text-yellow-400"
-          />
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <MetricPill icon={Target} label="Tasks Done" value={metric.project_contributions?.tasks_completed || 0} color="text-blue-400" />
+          <MetricPill icon={Brain} label="Knowledge" value={metric.knowledge_sharing?.contributions_created || 0} color="text-purple-400" />
+          <MetricPill icon={Users} label="Sessions" value={metric.collaboration_metrics?.sessions_participated || 0} color="text-green-400" />
+          <MetricPill icon={Vote} label="Votes" value={metric.governance_participation?.votes_cast || 0} color="text-indigo-400" />
+          <MetricPill icon={Coins} label="XRP Earned" value={(metric.economic_activity?.total_earned_xrp || 0).toFixed(2)} color="text-yellow-400" />
+          <MetricPill icon={MessageSquare} label="Messages" value={metric.collaboration_metrics?.messages_sent || 0} color="text-cyan-400" />
+          <MetricPill icon={Heart} label="Wellbeing" value={`${metric.wellbeing_signals?.energy_level || 80}%`} color="text-pink-400" />
+        </div>
+
+        {/* Economic Pipeline */}
+        {(metric.economic_activity?.total_earned_xrp > 0 || metric.economic_activity?.treasury_contributions_xrp > 0) && (
+          <div className="grid grid-cols-3 gap-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+            <div className="text-center">
+              <div className="text-xs text-white/50 mb-1">Total Earned</div>
+              <div className="text-sm font-bold text-yellow-300">{(metric.economic_activity?.total_earned_xrp || 0).toFixed(4)} XRP</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xs text-white/50 mb-1">Treasury Contribution</div>
+              <div className="text-sm font-bold text-green-300">{(metric.economic_activity?.treasury_contributions_xrp || 0).toFixed(6)} XRP</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xs text-white/50 mb-1">Transactions</div>
+              <div className="text-sm font-bold text-white">{metric.economic_activity?.total_transactions || 0}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Reputation & Wellbeing */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-amber-400" />
+              <span className="text-xs text-white/60 font-medium">Reputation</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-white/60">Honor Score</span>
+              <span className="text-amber-300 font-bold">{metric.reputation_changes?.honor_current || 100}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-white/60">Period Delta</span>
+              <span className={`font-bold ${(metric.reputation_changes?.honor_delta_period || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {(metric.reputation_changes?.honor_delta_period || 0) >= 0 ? '+' : ''}{metric.reputation_changes?.honor_delta_period || 0}
+              </span>
+            </div>
+          </div>
+          <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+            <div className="flex items-center gap-2 mb-2">
+              <Heart className="w-4 h-4 text-pink-400" />
+              <span className="text-xs text-white/60 font-medium">Wellbeing</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-white/60">Energy</span>
+              <span className="text-pink-300 font-bold">{metric.wellbeing_signals?.energy_level || 80}%</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-white/60">Mood</span>
+              <span className="text-white capitalize">{metric.wellbeing_signals?.mood || 'calm'}</span>
+            </div>
+          </div>
         </div>
 
         {/* Strengths & Opportunities */}
