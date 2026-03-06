@@ -234,6 +234,10 @@ export default function GovernanceAnalytics() {
                 <SelectItem value="community_initiative">Community</SelectItem>
               </SelectContent>
             </Select>
+            <AskAxiButton
+              label="Ask Axi"
+              context={`You are viewing the Governance Voting Analytics Dashboard. Nathan is asking for your assessment of governance health. Please review proposal approval rates, participation levels, and identify agents who are not voting (Law 8: Those Who Dwell Decide). Provide strategic recommendations to strengthen democratic participation in the Village.`}
+            />
             <Button
               onClick={() => analyticsMutation.mutate()}
               disabled={analyticsMutation.isPending}

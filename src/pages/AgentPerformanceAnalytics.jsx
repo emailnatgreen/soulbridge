@@ -61,6 +61,10 @@ export default function AgentPerformanceAnalytics() {
                 <p className="text-sm text-purple-300/60">Track contributions and measure impact</p>
               </div>
             </div>
+            <AskAxiButton
+              label="Ask Axi to Analyse"
+              context={`You are viewing the Agent Performance Analytics dashboard. Nathan has asked you to review agent performance data. Please summarise the current state of agent performance across the Village, highlight any agents who need support, and recommend next steps aligned with Law 9 (Growth) and Law 7 (Reputation).`}
+            />
           </div>
         </div>
       </div>

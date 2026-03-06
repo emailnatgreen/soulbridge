@@ -150,6 +150,10 @@ export default function CareerTrajectory() {
             </h1>
             <p className="text-sm text-indigo-300/60">Map skills to development goals · track growth tasks · visualize career paths</p>
           </div>
+          <AskAxiButton
+            label="Ask Axi for Guidance"
+            context={`You are viewing the Career Trajectory & Skill Growth dashboard. Nathan is asking for your guidance on agent development. Please review the current skill gaps, active growth tasks, and career paths across the Village. Identify which agents are closest to role advancement and suggest priority development actions aligned with Law 9 (Growth).`}
+          />
         </div>
       </div>
 
