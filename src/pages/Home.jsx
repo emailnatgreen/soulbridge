@@ -262,6 +262,8 @@ export default function Home() {
                   <DropdownMenuItem asChild><Link to={createPageUrl('SystemDashboard')} className="cursor-pointer">Village Pulse</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to={createPageUrl('AgentPerformanceAnalytics')} className="cursor-pointer">Agent Performance</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to={createPageUrl('KnowledgeSynthesis')} className="cursor-pointer">AI Synthesis</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gray-100" />
+                  <DropdownMenuItem asChild><Link to={createPageUrl('AlignmentDashboard')} className="cursor-pointer">⚖ Alignment & Safety</Link></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
