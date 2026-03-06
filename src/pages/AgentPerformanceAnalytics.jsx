@@ -11,6 +11,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, Minus, Target, Brain, Users, Vote,
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import AskAxiButton from '@/components/AskAxiButton';
 
 export default function AgentPerformanceAnalytics() {
   const [selectedAgentId, setSelectedAgentId] = useState('');

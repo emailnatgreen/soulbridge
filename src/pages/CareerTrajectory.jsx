@@ -15,6 +15,7 @@ import {
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
+import AskAxiButton from '@/components/AskAxiButton';
 
 // Role progression paths in the Village
 const ROLE_PATHS = {
