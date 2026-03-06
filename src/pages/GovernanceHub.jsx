@@ -186,6 +186,12 @@ export default function GovernanceHub() {
                 <p className="text-purple-200/70">Law 8: Those Who Dwell Decide</p>
               </div>
             </div>
+            <Link to={createPageUrl('GovernanceAnalytics')}>
+              <Button variant="outline" className="border-purple-400/30 text-purple-200 hover:bg-purple-500/10">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </Button>
+            </Link>
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
