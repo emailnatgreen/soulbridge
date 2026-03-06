@@ -41,8 +41,12 @@ Deno.serve(async (req) => {
         // Find recipient agent name for context
         let recipientName = 'Unknown Agent';
         if (notification.recipient_agent_id) {
-            const recipients = await base44.asServiceRole.entities.Agent.filter({ id: notification.recipient_agent_id });
-            if (recipients[0]) recipientName = recipients[0].name;
+            try {
+                const recipient = await base44.asServiceRole.entities.Agent.get(notification.recipient_agent_id);
+                if (recipient) recipientName = recipient.name;
+            } catch (_) {
+                // recipient_agent_id may be a non-DB identifier (e.g. 'axi_main_001'), ignore
+            }
         }
 
         // Build context message for Axi to review
