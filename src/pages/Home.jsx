@@ -8,6 +8,7 @@ import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Us
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import HomeRecentTransactions from '../components/HomeRecentTransactions';
+import AskAxiButton from '../components/AskAxiButton';
 import NotificationCenter from '../components/NotificationCenter';
 import PrivacyQuickToggle from '../components/PrivacyQuickToggle';
 import MobileNav from '../components/MobileNav';
