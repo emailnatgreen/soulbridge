@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Progress } from "@/components/ui/progress";
+import AskAxiButton from '@/components/AskAxiButton';
 
 export default function GovernanceHub() {
   const [selectedAgent, setSelectedAgent] = useState('');

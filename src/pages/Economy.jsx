@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3 } from 'lucide-react';
 import TreasuryPanel from '../components/TreasuryPanel';
+import AskAxiButton from '@/components/AskAxiButton';
 
 export default function EconomyPage() {
     const { data: agents = [] } = useQuery({

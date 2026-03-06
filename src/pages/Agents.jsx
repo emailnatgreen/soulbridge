@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
+import AskAxiButton from '@/components/AskAxiButton';
 
 export default function AgentsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);

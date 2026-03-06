@@ -69,6 +69,7 @@ import Agents from './pages/Agents';
 import ArbitrageDashboard from './pages/ArbitrageDashboard';
 import Axi from './pages/Axi';
 import BecomeMentor from './pages/BecomeMentor';
+import CareerTrajectory from './pages/CareerTrajectory';
 import CertificateOfSovereignty from './pages/CertificateOfSovereignty';
 import CollaborationHub from './pages/CollaborationHub';
 import CollaborationSuite from './pages/CollaborationSuite';
@@ -104,6 +105,7 @@ import EditLanding from './pages/EditLanding';
 import EnhancedSkillTrees from './pages/EnhancedSkillTrees';
 import EscalationChainView from './pages/EscalationChainView';
 import Governance from './pages/Governance';
+import GovernanceAnalytics from './pages/GovernanceAnalytics';
 import GovernanceHub from './pages/GovernanceHub';
 import GovernanceSimulation from './pages/GovernanceSimulation';
 import GrantTracker from './pages/GrantTracker';
@@ -160,8 +162,6 @@ import VillageMeetup from './pages/VillageMeetup';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import CareerTrajectory from './pages/CareerTrajectory';
-import GovernanceAnalytics from './pages/GovernanceAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -188,6 +188,7 @@ export const PAGES = {
     "ArbitrageDashboard": ArbitrageDashboard,
     "Axi": Axi,
     "BecomeMentor": BecomeMentor,
+    "CareerTrajectory": CareerTrajectory,
     "CertificateOfSovereignty": CertificateOfSovereignty,
     "CollaborationHub": CollaborationHub,
     "CollaborationSuite": CollaborationSuite,
@@ -223,6 +224,7 @@ export const PAGES = {
     "EnhancedSkillTrees": EnhancedSkillTrees,
     "EscalationChainView": EscalationChainView,
     "Governance": Governance,
+    "GovernanceAnalytics": GovernanceAnalytics,
     "GovernanceHub": GovernanceHub,
     "GovernanceSimulation": GovernanceSimulation,
     "GrantTracker": GrantTracker,
@@ -279,8 +281,6 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
-    "CareerTrajectory": CareerTrajectory,
-    "GovernanceAnalytics": GovernanceAnalytics,
 }
 
 export const pagesConfig = {
