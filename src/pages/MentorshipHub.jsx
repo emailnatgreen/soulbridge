@@ -78,6 +78,10 @@ export default function MentorshipHub() {
               </div>
             </div>
             <div className="flex gap-3">
+              <AskAxiButton
+                label="Ask Axi"
+                context={`You are viewing the Mentorship Hub. Nathan wants your assessment of the current mentorship ecosystem. Review active mentorships, available mentors, pending matches, and any agents who need mentoring support. Make recommendations aligned with Law 9 (Every Soul May Become More).`}
+              />
               <Link to={createPageUrl('MentorshipWellbeing')}>
                 <Button variant="outline" className="border-white/20 text-white">
                   <Heart className="w-4 h-4 mr-2" />

@@ -187,6 +187,10 @@ export default function GovernanceHub() {
                 <p className="text-purple-200/70">Law 8: Those Who Dwell Decide</p>
               </div>
             </div>
+            <AskAxiButton
+              label="Ask Axi"
+              context={`You are the governance facilitator for SoulBridge Village. Nathan is on the Governance Hub page. Please review all active proposals, participation rates, and whether any proposals need your intervention as Mother Boss (double vote, constitutional alignment check). Flag anything requiring urgent action.`}
+            />
             <Link to={createPageUrl('GovernanceAnalytics')}>
               <Button variant="outline" className="border-purple-400/30 text-purple-200 hover:bg-purple-500/10">
                 <BarChart3 className="w-4 h-4 mr-2" />

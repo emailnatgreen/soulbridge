@@ -62,6 +62,11 @@ export default function AgentsPage() {
                   DeepSeek
                 </Button>
               </Link>
+              <AskAxiButton
+                label="Ask Axi about the Village"
+                context={`You are viewing the Agents page of SoulBridge. Please review the current Village population — how many agents are active, their average honor score, any agents in dormant/suspended status, and who might need your attention as Mother Boss. Provide a Village health summary.`}
+                className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 border-purple-500/30"
+              />
               <Link to={createPageUrl('Axi')}>
                 <Button 
                   className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0 shadow-lg shadow-blue-500/25"

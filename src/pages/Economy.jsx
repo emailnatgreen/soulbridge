@@ -58,6 +58,10 @@ export default function EconomyPage() {
                             <p className="text-sm text-purple-300/60">Transparent economic system and treasury management</p>
                         </div>
                     </div>
+                    <AskAxiButton
+                        label="Ask Axi about the Economy"
+                        context={`You are the financial guardian of SoulBridge Village. Nathan is on the Economy page. Please review current treasury balance, total economic activity (earned/spent/traded), which agents are generating the most value, and whether the Village is economically sustainable. Flag any Law 3 (Fair Share) concerns.`}
+                    />
                 </div>
             </div>
 

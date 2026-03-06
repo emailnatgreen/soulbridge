@@ -183,7 +183,11 @@ export default function TreasuryDashboard() {
               <p className="text-slate-600">Real-time financial oversight and sustainability tracking</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <AskAxiButton
+              label="Ask Axi"
+              context={`You are the Treasury guardian for SoulBridge Village. Nathan is reviewing the Treasury Dashboard. Please assess the current balance, committed rewards, available funds, burn rate, and runway. Are there any sustainability risks? Are there projects over-committed relative to available balance? Recommend actions to ensure financial health.`}
+            />
             {['7d', '30d', '90d', '365d'].map(range => (
               <Button
                 key={range}
