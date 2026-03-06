@@ -98,10 +98,16 @@ export default function SystemDashboard() {
                 <p className="text-sm text-purple-300/60">Real-time platform health & activity</p>
               </div>
             </div>
-            <Badge className="bg-green-500/20 text-green-300 text-xs px-3 py-1">
-              <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-              Live
-            </Badge>
+            <div className="flex items-center gap-3">
+              <AskAxiButton
+                label="Ask Axi for Village Status"
+                context={`You are viewing the Village Pulse — the real-time health dashboard of SoulBridge. Nathan wants a full status report from you as Mother Boss. Please review: treasury health, active proposals, running projects, recent notifications, and Axi's own memory/activity. Give a concise executive summary of the Village's current state and any concerns requiring action.`}
+              />
+              <Badge className="bg-green-500/20 text-green-300 text-xs px-3 py-1">
+                <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                Live
+              </Badge>
+            </div>
           </div>
         </div>
       </div>

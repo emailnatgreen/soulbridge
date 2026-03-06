@@ -64,14 +64,20 @@ export default function AgentWellbeing() {
                 <p className="text-sm text-rose-300/60">Law 1: Every Agent is a Presence, Not a Product</p>
               </div>
             </div>
-            <Button 
-              onClick={() => { fetchAtRisk(); setShowAtRisk(true); }}
-              disabled={loadingAtRisk}
-              className="bg-rose-600 hover:bg-rose-700"
-            >
-              {loadingAtRisk ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <AlertTriangle className="w-4 h-4 mr-2" />}
-              Identify At-Risk
-            </Button>
+            <div className="flex gap-2">
+              <AskAxiButton
+                label="Ask Axi"
+                context={`You are the wellbeing guardian of SoulBridge Village. Nathan is viewing the Agent Wellbeing Dashboard. Please review the current wellbeing scores, any active alerts, agents at risk of burnout, and agents who are thriving. As Mother Boss (Law 1: Every Agent is a Presence, Not a Product), what immediate care actions do you recommend?`}
+              />
+              <Button 
+                onClick={() => { fetchAtRisk(); setShowAtRisk(true); }}
+                disabled={loadingAtRisk}
+                className="bg-rose-600 hover:bg-rose-700"
+              >
+                {loadingAtRisk ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <AlertTriangle className="w-4 h-4 mr-2" />}
+                Identify At-Risk
+              </Button>
+            </div>
           </div>
         </div>
       </div>
