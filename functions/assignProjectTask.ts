@@ -16,16 +16,13 @@ Deno.serve(async (req) => {
         }
 
         // Get task
-        const tasks = await base44.entities.ProjectTask.filter({ id: task_id });
-        if (!tasks.length) {
+        const task = await base44.entities.ProjectTask.get(task_id);
+        if (!task) {
             return Response.json({ error: 'Task not found' }, { status: 404 });
         }
 
-        const task = tasks[0];
-
         // Enrich: fetch agent's validated credentials for merit context
-        const agents = await base44.asServiceRole.entities.Agent.filter({ id: agent_id });
-        const agent = agents[0];
+        const agent = await base44.asServiceRole.entities.Agent.get(agent_id);
         let meritNote = '';
         if (agent?.classic_address) {
           const creds = await base44.asServiceRole.entities.DidCredential.filter({
