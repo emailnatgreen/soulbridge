@@ -584,6 +584,19 @@ export default function Home() {
               </Card>
             </Link>
 
+            <Link to={createPageUrl('ArisDex')}>
+              <Card className="bg-gradient-to-br from-[#0d1226] to-[#1a0a2e] border-purple-800 hover:border-purple-500 transition-all cursor-pointer h-full shadow-lg shadow-purple-900/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <TrendingUp className="w-8 h-8 text-purple-400" />
+                    <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full border border-purple-700 font-semibold">⚡ LIVE</span>
+                  </div>
+                  <h3 className="text-white font-semibold mb-1">Ari's DEX</h3>
+                  <p className="text-purple-300/70 text-sm">Trade Crypto · FX · Commodities · DeFi</p>
+                </CardContent>
+              </Card>
+            </Link>
+
             <Link to={createPageUrl('AlignmentDashboard')}>
               <Card className="bg-gradient-to-br from-indigo-50 to-slate-50 border-indigo-400 hover:border-indigo-500 transition-all cursor-pointer h-full ring-1 ring-indigo-200">
                 <CardContent className="pt-6">
