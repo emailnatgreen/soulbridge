@@ -69,6 +69,7 @@ import AgentWellbeing from './pages/AgentWellbeing';
 import Agents from './pages/Agents';
 import AlignmentDashboard from './pages/AlignmentDashboard';
 import ArbitrageDashboard from './pages/ArbitrageDashboard';
+import ArisDex from './pages/ArisDex';
 import Axi from './pages/Axi';
 import AxiIntelligenceFeed from './pages/AxiIntelligenceFeed';
 import BecomeMentor from './pages/BecomeMentor';
@@ -163,10 +164,9 @@ import Village from './pages/Village';
 import VillageLeaderboard from './pages/VillageLeaderboard';
 import VillageMeetup from './pages/VillageMeetup';
 import VillageReportingDashboard from './pages/VillageReportingDashboard';
-import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
+import VillageSimulation from './pages/VillageSimulation';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import ArisDex from './pages/ArisDex';
 import __Layout from './Layout.jsx';
 
 
@@ -193,6 +193,7 @@ export const PAGES = {
     "Agents": Agents,
     "AlignmentDashboard": AlignmentDashboard,
     "ArbitrageDashboard": ArbitrageDashboard,
+    "ArisDex": ArisDex,
     "Axi": Axi,
     "AxiIntelligenceFeed": AxiIntelligenceFeed,
     "BecomeMentor": BecomeMentor,
@@ -287,10 +288,9 @@ export const PAGES = {
     "VillageLeaderboard": VillageLeaderboard,
     "VillageMeetup": VillageMeetup,
     "VillageReportingDashboard": VillageReportingDashboard,
-    "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
+    "VillageSimulation": VillageSimulation,
     "WellbeingMonitor": WellbeingMonitor,
-    "ArisDex": ArisDex,
 }
 
 export const pagesConfig = {
