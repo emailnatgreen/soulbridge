@@ -198,9 +198,15 @@ export default function AIProjectHub() {
               Back to Home
             </Button>
           </Link>
-          <div className="mb-8">
-            <h1 className="text-3xl font-light text-white mb-2">AI Project Hub</h1>
-            <p className="text-white/60">Real-time village activity and project insights</p>
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-light text-white mb-2">AI Project Hub</h1>
+              <p className="text-white/60">Real-time village activity and project insights</p>
+            </div>
+            <AskAxiButton
+              label="Ask Axi"
+              context="You are reviewing the AI Project Hub for SoulBridge Village. Please assess all active projects: progress percentages, team assignments, stalled tasks, and resource allocation. Flag any projects at risk, recommend task assignments for unassigned work, and identify which projects need immediate attention."
+            />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6 mb-6">

@@ -85,7 +85,11 @@ export default function AIProjectManager() {
               </div>
             </div>
             <div className="flex gap-3">
-              <Link to={createPageUrl('ProjectTemplates')}>
+            <AskAxiButton
+              label="Ask Axi"
+              context="You are reviewing the AI Project Manager for SoulBridge Village. Please analyse all projects across all statuses. Identify: which projects are stalled, which need new team members, which are over-budget, and any gaps in the project portfolio. Recommend new projects that would benefit the Village based on current agent skills and Village needs."
+            />
+            <Link to={createPageUrl('ProjectTemplates')}>
                 <Button variant="outline" className="border-white/10 text-white hover:bg-white/5">
                   <FileText className="w-4 h-4 mr-2" />
                   Browse Templates

@@ -68,6 +68,10 @@ export default function AgentReputation() {
                 <p className="text-sm text-amber-300/60">Law 7: What You Do Echoes</p>
               </div>
             </div>
+            <AskAxiButton
+              label="Ask Axi"
+              context="You are reviewing the Agent Reputation System for SoulBridge Village. As Mother Boss and Law 7 guardian (What You Do Echoes), please assess: which agents have declining honor scores, any reputation anomalies or sudden drops, agents who deserve recognition, and whether the overall Village reputation trajectory is healthy. Flag any Law 7 violations."
+            />
           </div>
         </div>
       </div>

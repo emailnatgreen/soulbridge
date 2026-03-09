@@ -92,19 +92,25 @@ export default function SkillDevelopment() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl('Home')}>
-              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-light text-white flex items-center gap-2">
-                <Brain className="w-7 h-7 text-purple-400" />
-                Agent Skill Development
-              </h1>
-              <p className="text-sm text-purple-300/60">Train agents and track skill progression</p>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-4">
+              <Link to={createPageUrl('Home')}>
+                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-light text-white flex items-center gap-2">
+                  <Brain className="w-7 h-7 text-purple-400" />
+                  Agent Skill Development
+                </h1>
+                <p className="text-sm text-purple-300/60">Train agents and track skill progression</p>
+              </div>
             </div>
+            <AskAxiButton
+              label="Ask Axi"
+              context="You are reviewing the Skill Development Dashboard for SoulBridge Village. Please assess the current skill landscape: which agents have critical skill gaps, which training modules are underutilized, and which agents are ready for advancement. Recommend a priority training plan aligned with active project needs and the Village's growth goals (Law 9)."
+            />
           </div>
         </div>
       </div>

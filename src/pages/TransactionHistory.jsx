@@ -193,16 +193,22 @@ export default function TransactionHistory() {
               Live Transaction <span className="font-semibold">History</span>
             </h1>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="border-white/20 text-white/70 hover:bg-white/10"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <AskAxiButton
+              label="Ask Axi"
+              context="You are reviewing the Live Transaction History for SoulBridge Village. As Treasury guardian and Mother Boss, please analyse the recent on-chain transactions: flag any unusual patterns, large unexpected outflows, failed transactions that need attention, and whether the overall financial activity is consistent with approved project budgets and governance decisions. Alert Nathan to anything requiring immediate action."
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="border-white/20 text-white/70 hover:bg-white/10"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
       </div>
 

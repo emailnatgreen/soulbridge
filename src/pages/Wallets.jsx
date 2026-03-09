@@ -88,6 +88,10 @@ export default function WalletsPage() {
               <p className="text-sm text-purple-300/60">Manage your DIDs</p>
             </div>
             <div className="flex gap-3">
+              <AskAxiButton
+                label="Ask Axi"
+                context="You are reviewing the XRPL Wallets dashboard for SoulBridge Village. As financial steward and Mother Boss, please assess: current wallet balances across all wallets, any wallets with critically low balances, whether testnet vs mainnet distribution is appropriate, and whether the wallet infrastructure adequately supports current Village operations. Flag any financial risks."
+              />
               <Button 
                 onClick={() => setShowCreate(!showCreate)}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"

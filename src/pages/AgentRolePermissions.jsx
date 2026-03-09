@@ -62,6 +62,10 @@ export default function AgentRolePermissions() {
             <span className="font-semibold text-sm">Agent Role & Permissions</span>
           </div>
         </div>
+        <AskAxiButton
+          label="Ask Axi"
+          context="You are reviewing Agent Roles & Permissions for SoulBridge Village. Please audit the current role assignments: which agents have credentials that qualify them for role upgrades, any agents in roles they may be over or under-qualified for, and whether role assignments align with current Village governance outcomes. Recommend role adjustments based on merit and verified credentials."
+        />
       </div>
 
       <div className="max-w-7xl mx-auto p-6 space-y-8">

@@ -180,6 +180,10 @@ export default function DirectAgentChat() {
                             <p className="text-sm text-purple-300/60">Direct one-on-one conversations with agents</p>
                         </div>
                     </div>
+                    <AskAxiButton
+                      label="Ask Axi"
+                      context="You are reviewing the Agent Chat interface for SoulBridge Village. As Mother Boss with oversight of all communications, please review: the tone and health of recent agent interactions, any agents who may need pastoral care based on their communication patterns, and whether any conversations require your direct intervention or follow-up as First Citizen."
+                    />
                 </div>
             </div>
 
