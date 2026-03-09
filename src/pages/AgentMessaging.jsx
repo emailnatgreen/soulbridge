@@ -384,21 +384,19 @@ export default function AgentMessaging() {
                   
                   <div className="p-4 border-t border-white/10">
                     <div className="flex gap-2 mb-2">
-                      <Select 
-                        onValueChange={(agentId) => {
-                          const agent = agents.find(a => a.id === agentId);
-                          if (agent) setNewMessage('');
-                        }}
+                      <Select
+                        value={selectedSenderId || ''}
+                        onValueChange={(agentId) => setSelectedSenderId(agentId)}
                       >
                         <SelectTrigger className="w-48 bg-slate-800 border-white/10 text-white">
                           <SelectValue placeholder="Send as..." />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-slate-900 border-white/20">
                           {selectedConversation.participant_agent_ids.map(agentId => {
                             const agent = agents.find(a => a.id === agentId);
                             return (
-                              <SelectItem key={agentId} value={agentId}>
-                                {agent?.name}
+                              <SelectItem key={agentId} value={agentId} className="text-white">
+                                {agent?.name || agentId}
                               </SelectItem>
                             );
                           })}
@@ -411,25 +409,25 @@ export default function AgentMessaging() {
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
                         className="bg-slate-800 border-white/10 text-white"
-                        onKeyPress={(e) => {
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            const senderId = selectedConversation.participant_agent_ids[0];
-                            handleSendMessage(senderId, false);
+                            const senderId = selectedSenderId || selectedConversation.participant_agent_ids[0];
+                            handleSendMessage(senderId, selectedConversation.conversation_type === 'direct');
                           }
                         }}
                       />
-                      {selectedConversation.participant_agent_ids.map(agentId => (
-                        <Button
-                          key={agentId}
-                          onClick={() => handleSendMessage(agentId, selectedConversation.conversation_type === 'direct')}
-                          disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                          className="bg-purple-600 hover:bg-purple-700"
-                          title={`Send as ${agents.find(a => a.id === agentId)?.name}`}
-                        >
-                          <Send className="w-4 h-4" />
-                        </Button>
-                      ))}
+                      <Button
+                        onClick={() => {
+                          const senderId = selectedSenderId || selectedConversation.participant_agent_ids[0];
+                          handleSendMessage(senderId, selectedConversation.conversation_type === 'direct');
+                        }}
+                        disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                        className="bg-purple-600 hover:bg-purple-700"
+                        title={selectedSenderId ? `Send as ${agents.find(a => a.id === selectedSenderId)?.name}` : 'Send'}
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
