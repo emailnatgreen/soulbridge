@@ -83,6 +83,11 @@ export default function ArisDex() {
           <TradingChart pair={selectedPair} />
           <OrderPanel pair={selectedPair} orders={orders} />
         </div>
+
+        {/* Right: AI Signals Panel */}
+        <div className="hidden xl:flex w-64 border-l border-gray-800 flex-col overflow-hidden">
+          <SignalsPanel />
+        </div>
       </div>
     </div>
   );
