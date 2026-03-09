@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Shield, Users, Lock, CheckCircle2, Search } from 'lucide-react';
 import RoleCredentialMapper, { ROLE_CREDENTIAL_MAP } from '../components/RoleCredentialMapper';
+import AskAxiButton from '@/components/AskAxiButton';
 import AgentRoleAssignment from '../components/AgentRoleAssignment';
 
 export default function AgentRolePermissions() {

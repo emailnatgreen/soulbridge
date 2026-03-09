@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Search, ExternalLink, Loader2, Copy, RefreshCw, ArrowUpRight, ArrowDownLeft, ArrowLeftRight, Link2 } from 'lucide-react';
+import AskAxiButton from '@/components/AskAxiButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { format, subDays, isAfter, isBefore, parseISO } from 'date-fns';

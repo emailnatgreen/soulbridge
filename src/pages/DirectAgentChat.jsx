@@ -11,6 +11,7 @@ import { ArrowLeft, Send, Loader2, MessageCircle, Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from 'sonner';
 import DraftResponseSuggestion from '../components/DraftResponseSuggestion';
+import AskAxiButton from '@/components/AskAxiButton';
 
 export default function DirectAgentChat() {
     const [selectedAgentId, setSelectedAgentId] = useState(null);

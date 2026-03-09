@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Award, TrendingUp, TrendingDown, Shield, Users, Star, Target, Brain, Loader2, Trophy, Medal } from 'lucide-react';
+import AskAxiButton from '@/components/AskAxiButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
