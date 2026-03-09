@@ -166,6 +166,7 @@ import VillageReportingDashboard from './pages/VillageReportingDashboard';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
+import ArisDex from './pages/ArisDex';
 import __Layout from './Layout.jsx';
 
 
@@ -289,6 +290,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
+    "ArisDex": ArisDex,
 }
 
 export const pagesConfig = {
