@@ -81,6 +81,8 @@ export default function HomeRecentTransactions() {
     return `${parseFloat(tx.amount).toLocaleString(undefined, { maximumFractionDigits: 4 })} ${curr}`;
   };
 
+  const showFallback = !loading && txData.length === 0 && dbTransactions.length > 0;
+
   return (
     <div>
       {/* Live Stats */}
