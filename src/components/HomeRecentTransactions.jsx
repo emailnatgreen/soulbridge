@@ -33,6 +33,12 @@ export default function HomeRecentTransactions() {
     enabled: !!user,
   });
 
+  // Fallback: local DB transactions
+  const { data: dbTransactions = [] } = useQuery({
+    queryKey: ['transactions-local'],
+    queryFn: () => base44.entities.Transaction.list('-created_date', 20),
+  });
+
   const fetchLiveTxs = useCallback(async () => {
     if (!wallets.length) return;
     setLoading(true);
