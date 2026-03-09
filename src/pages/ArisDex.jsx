@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import MarketSidebar from '@/components/dex/MarketSidebar';
 import TradingChart from '@/components/dex/TradingChart';
 import OrderPanel from '@/components/dex/OrderPanel';
+import SignalsPanel from '@/components/dex/SignalsPanel';
 import { TrendingUp, TrendingDown, Activity, Wifi, ArrowLeft } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 
