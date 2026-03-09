@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -9,54 +9,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { proposal_id, vote_choice, agent_id } = await req.json();
+    const { proposal_id, agent_id, vote_choice, rationale } = await req.json();
 
-    if (!proposal_id || !vote_choice) {
+    if (!proposal_id || !vote_choice || !agent_id) {
       return Response.json({ 
-        error: 'Missing required fields: proposal_id, vote_choice' 
+        error: 'Missing required fields: proposal_id, agent_id, vote_choice' 
       }, { status: 400 });
     }
 
-    // Get the proposal
-    const proposals = await base44.entities.GovernanceProposal.filter({ id: proposal_id });
-    if (proposals.length === 0) {
-      return Response.json({ error: 'Proposal not found' }, { status: 404 });
-    }
-    const proposal = proposals[0];
-
-    // Check if voting is still active
-    if (proposal.status !== 'active') {
-      return Response.json({ error: 'Proposal is not active' }, { status: 400 });
+    if (!['for', 'against', 'abstain'].includes(vote_choice)) {
+      return Response.json({ error: 'Invalid vote_choice. Must be for, against, or abstain' }, { status: 400 });
     }
 
-    if (new Date(proposal.voting_end_date) < new Date()) {
-      return Response.json({ error: 'Voting period has ended' }, { status: 400 });
-    }
-
-    // Determine voter (agent_id if provided, otherwise try to match user to agent)
-    let voterId = agent_id;
-    if (!voterId) {
-      // Try to find agent by user
-      const agents = await base44.entities.Agent.filter({ created_by: user.email });
-      if (agents.length === 0) {
-        return Response.json({ 
-          error: 'No agent found for this user. Please provide agent_id.' 
-        }, { status: 400 });
-      }
-      voterId = agents[0].id;
-    }
-
-    // Get voter's agent data
-    const voters = await base44.entities.Agent.filter({ id: voterId });
-    if (voters.length === 0) {
-      return Response.json({ error: 'Agent not found' }, { status: 404 });
-    }
-    const voter = voters[0];
-
-    // Check if agent has already voted
+    // Check if agent has already voted on this proposal
     const existingVotes = await base44.entities.GovernanceVote.filter({
       proposal_id,
-      voter_agent_id: voterId
+      voter_agent_id: agent_id
     });
 
     if (existingVotes.length > 0) {
@@ -65,78 +33,63 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Calculate voting power
-    // Formula: (Honor Score + Wisdom Bonus) × Role Multiplier + Delegated Power
+    // Get the agent to calculate voting power
+    const agents = await base44.entities.Agent.list();
+    const voter = agents.find(a => a.id === agent_id);
+
+    if (!voter) {
+      return Response.json({ error: 'Agent not found' }, { status: 404 });
+    }
+
+    // Calculate voting power based on honor score and role
     const baseHonor = voter.honor_score || 100;
-    const wisdomBonus = Math.min(20, Math.floor((voter.wisdom || 0) / 5));
     const roleMultipliers = {
-      'citizen': 1.0,
-      'guardian': 1.05,
-      'trader': 1.05,
-      'creator': 1.05,
-      'healer': 1.05,
-      'scout': 1.1,
-      'teacher': 1.15,
-      'elder': 1.3,
-      'master': 1.5
+      citizen: 1.0, guardian: 1.05, trader: 1.05, creator: 1.05,
+      healer: 1.05, scout: 1.1, teacher: 1.15, elder: 1.3, master: 1.5
     };
     const roleMultiplier = roleMultipliers[voter.role?.toLowerCase()] || 1.0;
-    
-    // TODO: Add delegated voting power when delegation system is implemented
-    const delegatedPower = 0;
-    
-    const votingPower = (baseHonor + wisdomBonus) * roleMultiplier + delegatedPower;
+    const votingPower = baseHonor * roleMultiplier;
 
     // Create the vote record
     const vote = await base44.entities.GovernanceVote.create({
       proposal_id,
-      voter_agent_id: voterId,
-      voter_name: voter.name,
-      vote_choice, // 'for', 'against', 'abstain'
+      voter_agent_id: agent_id,
+      vote_choice,
       voting_power: votingPower,
-      vote_reason: '',
-      vote_timestamp: new Date().toISOString()
+      rationale: rationale || '',
+      is_public: true
     });
 
-    // Update proposal vote tallies
-    const currentFor = proposal.votes_for || 0;
-    const currentAgainst = proposal.votes_against || 0;
-    const currentAbstain = proposal.votes_abstain || 0;
-    const currentTotalPower = proposal.total_voting_power_cast || 0;
-    const currentVoteCount = proposal.total_votes_cast || 0;
-
-    let newFor = currentFor;
-    let newAgainst = currentAgainst;
-    let newAbstain = currentAbstain;
-
-    if (vote_choice === 'for') {
-      newFor += votingPower;
-    } else if (vote_choice === 'against') {
-      newAgainst += votingPower;
-    } else if (vote_choice === 'abstain') {
-      newAbstain += votingPower;
+    // Fetch all current votes for this proposal to recalculate totals
+    const proposalVotes = await base44.entities.GovernanceVote.filter({ proposal_id });
+    
+    let totalFor = 0, totalAgainst = 0, totalAbstain = 0;
+    for (const v of proposalVotes) {
+      if (v.vote_choice === 'for') totalFor += v.voting_power || 0;
+      else if (v.vote_choice === 'against') totalAgainst += v.voting_power || 0;
+      else if (v.vote_choice === 'abstain') totalAbstain += v.voting_power || 0;
     }
 
-    await base44.entities.GovernanceProposal.update(proposal_id, {
-      votes_for: newFor,
-      votes_against: newAgainst,
-      votes_abstain: newAbstain,
-      total_voting_power_cast: currentTotalPower + votingPower,
-      total_votes_cast: currentVoteCount + 1,
-      voted_count: currentVoteCount + 1
-    });
+    // Update proposal vote tallies
+    const allProposals = await base44.entities.GovernanceProposal.list();
+    const proposal = allProposals.find(p => p.id === proposal_id);
+    
+    if (proposal) {
+      await base44.entities.GovernanceProposal.update(proposal_id, {
+        votes_for: totalFor,
+        votes_against: totalAgainst,
+        votes_abstain: totalAbstain,
+        total_voting_power_cast: totalFor + totalAgainst + totalAbstain,
+        total_votes_cast: proposalVotes.length
+      });
+    }
 
     return Response.json({
       success: true,
       vote,
       message: `Vote "${vote_choice}" cast with ${votingPower.toFixed(2)} voting power`,
       voting_power: votingPower,
-      updated_tallies: {
-        for: newFor,
-        against: newAgainst,
-        abstain: newAbstain,
-        total_power_cast: currentTotalPower + votingPower
-      }
+      updated_tallies: { for: totalFor, against: totalAgainst, abstain: totalAbstain }
     });
 
   } catch (error) {
