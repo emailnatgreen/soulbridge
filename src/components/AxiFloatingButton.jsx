@@ -47,6 +47,28 @@ export default function AxiFloatingButton() {
     }
   }, []);
 
+  // Listen for AskAxiButton events to open with a pre-seeded conversation
+  useEffect(() => {
+    const handleAxiOpen = async (e) => {
+      const { conversationId } = e.detail || {};
+      if (!conversationId) return;
+      try {
+        const convo = await base44.agents.getConversation(conversationId);
+        if (unsubscribeRef.current) unsubscribeRef.current();
+        setConversation(convo);
+        setMessages(convo.messages || []);
+        unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
+          setMessages(data.messages);
+        });
+        setIsOpen(true);
+      } catch (err) {
+        console.error('Failed to load Axi conversation:', err);
+      }
+    };
+    window.addEventListener('axi:open-conversation', handleAxiOpen);
+    return () => window.removeEventListener('axi:open-conversation', handleAxiOpen);
+  }, []);
+
   useEffect(() => {
     if (isOpen && !conversation) {
       initConversation();
