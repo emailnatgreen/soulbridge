@@ -6,7 +6,8 @@ import TradingChart from '@/components/dex/TradingChart';
 import OrderPanel from '@/components/dex/OrderPanel';
 import SignalsPanel from '@/components/dex/SignalsPanel';
 import OrderBook from '@/components/dex/OrderBook';
-import { TrendingUp, TrendingDown, Activity, Wifi, ArrowLeft, Zap, BookOpen, RefreshCw } from 'lucide-react';
+import PortfolioPanel from '@/components/dex/PortfolioPanel';
+import { TrendingUp, TrendingDown, Activity, Wifi, ArrowLeft, Zap, BookOpen, RefreshCw, PieChart } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 
