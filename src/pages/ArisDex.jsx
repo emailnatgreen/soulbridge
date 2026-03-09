@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import MarketSidebar from '@/components/dex/MarketSidebar';
-import TradingChart from '@/components/dex/TradingChart.jsx';
+import TradingChart from '@/components/dex/TradingChart';
 import OrderPanel from '@/components/dex/OrderPanel';
 import SignalsPanel from '@/components/dex/SignalsPanel';
 import OrderBook from '@/components/dex/OrderBook';
