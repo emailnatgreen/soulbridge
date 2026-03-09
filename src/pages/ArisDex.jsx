@@ -15,7 +15,7 @@ const REFRESH_INTERVAL = 3 * 60 * 1000; // 3 min auto-refresh prices
 
 export default function ArisDex() {
   const [selectedPairId, setSelectedPairId] = useState(null);
-  const [rightTab, setRightTab] = useState('book'); // 'book' | 'signals'
+  const [rightTab, setRightTab] = useState('book'); // 'book' | 'signals' | 'portfolio'
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
 
