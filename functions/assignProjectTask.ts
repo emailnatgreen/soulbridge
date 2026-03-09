@@ -44,8 +44,7 @@ Deno.serve(async (req) => {
         });
 
         // Get project
-        const projects = await base44.entities.AIProject.filter({ id: task.project_id });
-        const project = projects[0];
+        const project = await base44.entities.AIProject.get(task.project_id);
 
         // Send notification to assigned agent
         await base44.asServiceRole.functions.invoke('sendNotification', {
