@@ -129,9 +129,62 @@ export default function HomeRecentTransactions() {
               <Loader2 className="w-6 h-6 text-purple-400 animate-spin mr-2" />
               <span className="text-gray-500 text-sm">Fetching live data from XRPL...</span>
             </div>
-          ) : txData.length === 0 ? (
-            <div className="text-center py-12 text-gray-400 text-sm">No transactions found on-chain.</div>
+          ) : txData.length === 0 && dbTransactions.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 text-sm">No transactions found.</div>
+          ) : showFallback ? (
+            // Fallback: show local DB transactions
+            <div className="overflow-x-auto">
+              <div className="px-4 py-2 text-xs text-amber-600 bg-amber-50 border-b border-amber-100 flex items-center gap-1">
+                ⚡ Showing saved transactions — connect a wallet to see live XRPL data
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left py-3 px-4 text-gray-400 font-medium text-xs">Date</th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-medium text-xs">Type</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-medium text-xs">Amount</th>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium text-xs">Status</th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-medium text-xs">Hash</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dbTransactions.map((tx, i) => (
+                    <tr key={tx.id || i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4 text-gray-400 text-xs whitespace-nowrap">
+                        {tx.created_date ? format(parseISO(tx.created_date), 'MMM d, HH:mm') : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-gray-600 text-xs capitalize">{tx.transaction_type || tx.type || '—'}</td>
+                      <td className="py-3 px-4 text-right font-mono text-gray-800 text-xs">
+                        {tx.amount ? `${parseFloat(tx.amount).toLocaleString(undefined, { maximumFractionDigits: 4 })} ${tx.currency || 'XRP'}` : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <Badge className={
+                          tx.status === 'success' || tx.status === 'completed'
+                            ? 'bg-green-100 text-green-700 border-green-200 text-xs'
+                            : tx.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-700 border-yellow-200 text-xs'
+                            : 'bg-red-100 text-red-600 border-red-200 text-xs'
+                        }>
+                          {tx.status || 'unknown'}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        {tx.hash || tx.transaction_hash ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-gray-400 font-mono">{(tx.hash || tx.transaction_hash).slice(0, 8)}…</span>
+                            <button onClick={() => { navigator.clipboard.writeText(tx.hash || tx.transaction_hash); toast.success('Copied'); }} className="p-1 hover:bg-gray-100 rounded">
+                              <Copy className="w-3 h-3 text-gray-400" />
+                            </button>
+                          </div>
+                        ) : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
+            // Live XRPL transactions
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
