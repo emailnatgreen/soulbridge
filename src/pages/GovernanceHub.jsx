@@ -63,7 +63,7 @@ export default function GovernanceHub() {
 
   const voteMutation = useMutation({
     mutationFn: async (voteData) => {
-      const response = await base44.functions.invoke('voteOnGovernanceProposal', voteData);
+      const response = await base44.functions.invoke('castGovernanceVote', voteData);
       return response.data;
     },
     onSuccess: () => {
