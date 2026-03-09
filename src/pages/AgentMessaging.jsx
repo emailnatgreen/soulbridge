@@ -250,6 +250,7 @@ export default function AgentMessaging() {
                         key={convo.id}
                         onClick={() => {
                           setSelectedConversation(convo);
+                          setSelectedSenderId(null);
                           handleMarkAsRead(convo.id);
                         }}
                         className={`p-3 rounded-lg cursor-pointer transition-all ${
