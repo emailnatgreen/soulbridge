@@ -143,31 +143,25 @@ export default function ArisDex() {
         <div className="hidden xl:flex w-64 border-l border-gray-800 flex-col overflow-hidden">
           {/* Tab switcher */}
           <div className="flex border-b border-gray-800 shrink-0">
-            <button
-              onClick={() => setRightTab('book')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs transition-colors ${
-                rightTab === 'book' ? 'text-white border-b-2 border-purple-500 bg-gray-900/40' : 'text-gray-500 hover:text-gray-300'
-              }`}
-            >
+            <button onClick={() => setRightTab('book')}
+              className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs transition-colors ${rightTab === 'book' ? 'text-white border-b-2 border-purple-500 bg-gray-900/40' : 'text-gray-500 hover:text-gray-300'}`}>
               <BookOpen className="w-3 h-3" /> Book
             </button>
-            <button
-              onClick={() => setRightTab('signals')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs transition-colors ${
-                rightTab === 'signals' ? 'text-white border-b-2 border-yellow-500 bg-gray-900/40' : 'text-gray-500 hover:text-gray-300'
-              }`}
-            >
+            <button onClick={() => setRightTab('signals')}
+              className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs transition-colors ${rightTab === 'signals' ? 'text-white border-b-2 border-yellow-500 bg-gray-900/40' : 'text-gray-500 hover:text-gray-300'}`}>
               <Zap className="w-3 h-3" /> Signals
+            </button>
+            <button onClick={() => setRightTab('portfolio')}
+              className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs transition-colors ${rightTab === 'portfolio' ? 'text-white border-b-2 border-cyan-500 bg-gray-900/40' : 'text-gray-500 hover:text-gray-300'}`}>
+              <PieChart className="w-3 h-3" /> P&L
             </button>
           </div>
 
           {/* Panel content */}
           <div className="flex-1 overflow-hidden">
-            {rightTab === 'book' ? (
-              <OrderBook pair={selectedPair} />
-            ) : (
-              <SignalsPanel />
-            )}
+            {rightTab === 'book' && <OrderBook pair={selectedPair} />}
+            {rightTab === 'signals' && <SignalsPanel />}
+            {rightTab === 'portfolio' && <PortfolioPanel pairs={pairs} />}
           </div>
         </div>
       </div>
