@@ -80,6 +80,17 @@ export default function Home() {
     ? Math.round(wellbeings.reduce((sum, w) => sum + (w.overall_wellbeing_score || 70), 0) / wellbeings.length)
     : null;
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading SoulBridge...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
     <TreasuryMonitor />
