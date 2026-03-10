@@ -21,14 +21,16 @@ Deno.serve(async (req) => {
       const { address, name, profileUrl, instruction } = params;
 
       const payload = {
-        TransactionType: "Payment",
-        Account: address,
-        Destination: address,
-        Amount: "1",
-        Fee: "12"
+        txjson: {
+          TransactionType: "Payment",
+          Account: address,
+          Destination: address,
+          Amount: "1",
+          Fee: "12"
+        }
       };
 
-      const response = await xumm.payload.post(payload);
+      const response = await xumm.payload(payload);
       
       if (!response.uuid) {
         return Response.json({ error: 'Failed to create payload' }, { status: 500 });
@@ -46,7 +48,7 @@ Deno.serve(async (req) => {
 
     } else if (tool === 'check_status') {
       const { uuid } = params;
-      const status = await xumm.payload.get(uuid);
+      const status = await xumm.payload({ uuid });
 
       return Response.json({
         success: true,
