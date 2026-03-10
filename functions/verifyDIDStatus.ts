@@ -37,20 +37,37 @@ Deno.serve(async (req) => {
     };
 
     try {
-      // Check account info
-      const accountResponse = await fetch(xrplUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          method: 'account_info',
-          params: [{
-            account: wallet.classic_address,
-            ledger_index: 'validated'
-          }]
-        })
-      });
+      // Check account info with retry logic
+      let accountResult = null;
+      let retries = 3;
+      let delay = 1000; // Start with 1 second delay
+      
+      while (retries > 0) {
+        const accountResponse = await fetch(xrplUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            method: 'account_info',
+            params: [{
+              account: wallet.classic_address,
+              ledger_index: 'validated'
+            }]
+          })
+        });
 
-      const accountResult = await accountResponse.json();
+        accountResult = await accountResponse.json();
+        
+        // Check for rate limit error
+        if (accountResult.error?.message?.includes('rate limit') || accountResponse.status === 429) {
+          retries--;
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2; // Exponential backoff
+            continue;
+          }
+        }
+        break;
+      }
 
       if (accountResult.result && accountResult.result.account_data) {
         verification.account_exists = true;
