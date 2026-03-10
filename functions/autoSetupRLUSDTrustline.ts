@@ -53,11 +53,20 @@ Deno.serve(async (req) => {
     if (walletRecord.metadata?.has_rlusd_trustline) {
       return Response.json({ skipped: true, reason: 'RLUSD trustline already recorded in metadata' });
     }
+    // Prevent re-triggering loop: if we already attempted, skip until manually cleared
+    if (walletRecord.metadata?.rlusd_setup_attempted) {
+      return Response.json({ skipped: true, reason: 'Already attempted — check wallet manually' });
+    }
     if (!walletRecord.encrypted_seed || !walletRecord.encryption_iv || !walletRecord.encryption_salt) {
       return Response.json({ skipped: true, reason: 'Wallet missing encryption fields — tracking-only wallet' });
     }
 
     console.log(`🤖 Setting up RLUSD trustline for wallet ${wallet_id} (${walletRecord.classic_address})`);
+
+    // Mark as attempted FIRST to prevent re-triggering on subsequent wallet updates
+    await base44.asServiceRole.entities.Wallet.update(wallet_id, {
+      metadata: { ...walletRecord.metadata, rlusd_setup_attempted: true }
+    });
 
     // Decrypt seed
     let seed;
