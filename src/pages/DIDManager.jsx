@@ -7,10 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info, UserPlus, Edit3, History, Search, Activity, Send } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, FileJson, AlertTriangle, Shield, Clock, Info, UserPlus, Edit3, History, Search, Activity } from 'lucide-react';
 import { toast } from 'sonner';
-import DidPermissionsDialog from '../components/DidPermissionsDialog';
-import DidVersioningDialog from '../components/DidVersioningDialog';
 import AgentManagementDialog from '../components/AgentManagementDialog';
 import AuditLogViewer from '../components/AuditLogViewer';
 import DidResolverTool from '../components/DidResolverTool';
@@ -708,20 +706,7 @@ export default function DIDManager() {
                           </div>
                           )}
 
-                          {/* Actions */}
-                          <div className="border-t pt-4">
-                      <Button
-                        className="w-full bg-green-600 hover:bg-green-700"
-                        onClick={() => handleReverseRevocation(wallet)}
-                        disabled={reversalMutation.isPending}
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        {reversalMutation.isPending ? 'Reversing...' : 'Reverse Revocation'}
-                      </Button>
-                      <p className="text-xs text-gray-500 mt-2 text-center">
-                        This will recreate the DID on XRPL
-                        </p>
-                        </div>
+
                         </CardContent>
                         </Card>
                         );
