@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { QrCode, ShieldAlert, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import QRCode from 'qrcode.react';
 
 export default function WalletQRCode({ wallet, currentUser }) {
     const [decryptedSeed, setDecryptedSeed] = useState(null);
