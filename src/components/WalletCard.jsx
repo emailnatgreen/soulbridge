@@ -7,6 +7,7 @@ import { Wallet, Copy, RefreshCw, Eye, EyeOff, History, UserPlus, Loader2 } from
 import { toast } from "sonner";
 import WalletTransactionHistory from './WalletTransactionHistory';
 import WalletQRCode from './WalletQRCode';
+import WalletTrustlines from './WalletTrustlines';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
