@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: true, reason: 'No seed available (tracking-only wallet)' });
     }
 
-    const wallet_id = event.entity_id;
+    const wallet_id = event?.entity_id || data.id;
     console.log(`🤖 Auto-setting up RLUSD trustline for wallet ${wallet_id}`);
 
     // Fetch full wallet record for encryption fields
