@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Progress } from "@/components/ui/progress";
 import AskAxiButton from '@/components/AskAxiButton';
+import DidActivationProposalsPanel from '@/components/DidActivationProposalsPanel';
 
 export default function GovernanceHub() {
   const [selectedAgent, setSelectedAgent] = useState('');
@@ -302,6 +303,11 @@ export default function GovernanceHub() {
               </DialogContent>
             </Dialog>
           </div>
+        </div>
+
+        {/* DID Activation Proposals */}
+        <div className="mb-8">
+          <DidActivationProposalsPanel />
         </div>
 
         {/* Stats */}
