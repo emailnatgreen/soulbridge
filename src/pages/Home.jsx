@@ -19,6 +19,18 @@ import TreasuryMonitor from '../components/TreasuryMonitor';
 import DidActivationPipeline from '../components/DidActivationPipeline';
 
 export default function Home() {
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    window.addEventListener('error', (e) => {
+      setError(e.error?.message || 'An error occurred');
+    });
+  }, []);
+
+  if (error) {
+    return <div className="min-h-screen bg-white flex items-center justify-center p-4"><div className="text-red-600 max-w-lg"><h2 className="text-xl font-bold mb-2">Error Loading Page</h2><p>{error}</p></div></div>;
+  }
+
   const { data: credentials = [] } = useQuery({
     queryKey: ['did-credentials-active'],
     queryFn: () => base44.entities.DidCredential.filter({ status: 'active' }),
