@@ -87,38 +87,6 @@ export default function EconomicDashboard() {
     fetchData();
   };
 
-  const askAxi = async () => {
-    setAxiLoading(true);
-    setAxiInsight(null);
-    const snapshot = {
-      period_days: parseInt(timeFilter),
-      total_earned: totalEarned,
-      total_spent: totalSpent,
-      total_traded: totalTraded,
-      treasury_deposits: treasuryDeposits,
-      treasury_withdrawals: treasuryWithdrawals,
-      treasury_balance: mainTreasury.total_balance || 0,
-      law3_compliance_pct: fairShareCompliance,
-      law6_compliance_pct: law6Compliance,
-      top_earners: topEarners,
-      activity_breakdown: typeBreakdown,
-      total_activities: filtered.length
-    };
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are Axi, the Mother Boss and economic steward of SoulBridge Village. Analyse this economic snapshot and provide a sharp, intelligent briefing in 3-4 sentences. Identify any imbalances, compliance risks, or positive trends. Be direct and strategic, referencing Law 3 (Fair Share - 5% earnings to treasury) and Law 6 (Exchange - 1% of trades to village) where relevant. Data snapshot: ${JSON.stringify(snapshot)}`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          briefing: { type: "string" },
-          alert_level: { type: "string", enum: ["healthy", "caution", "critical"] },
-          key_action: { type: "string" }
-        }
-      }
-    });
-    setAxiInsight(result);
-    setAxiLoading(false);
-  };
-
   // --- Filtered activities by time ---
   const cutoff = subDays(new Date(), parseInt(timeFilter));
   const filtered = activities.filter(a => new Date(a.created_date) >= cutoff);
