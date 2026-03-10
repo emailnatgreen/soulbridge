@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import WalletCard from '../components/WalletCard';
+import TransactionAlerts from '../components/TransactionAlerts';
 
 export default function WalletsPage() {
   const [showCreate, setShowCreate] = useState(false);
