@@ -1,12 +1,55 @@
 import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { ArrowDownLeft, ArrowUpRight, Link } from 'lucide-react';
 
-// Silently polls for new transactions and fires toast alerts
+// Silently polls for new transactions, fires toast alerts, and notifies Axi via both private channels
 export default function TransactionAlerts({ wallets = [], pollInterval = 60000 }) {
   const seenHashes = useRef(new Set());
   const initialized = useRef(false);
+  const axiAgentId = useRef(null);
+  const axiConversation = useRef(null);
+
+  // Init: resolve Axi's agent ID and unified conversation once
+  useEffect(() => {
+    const initAxi = async () => {
+      try {
+        const agents = await base44.entities.Agent.filter({ name: 'Axi' });
+        if (agents[0]) axiAgentId.current = agents[0].id;
+
+        const convos = await base44.agents.listConversations({ agent_name: 'axi' });
+        const existing = convos.find(c => c.metadata?.unified_axi_chat === true);
+        if (existing) axiConversation.current = existing;
+      } catch (e) {
+        console.error('TransactionAlerts: Axi init failed', e);
+      }
+    };
+    initAxi();
+  }, []);
+
+  const notifyAxi = async ({ title, message, notificationType }) => {
+    try {
+      // Channel 1: AgentNotification (private persistent record)
+      if (axiAgentId.current) {
+        await base44.entities.AgentNotification.create({
+          recipient_agent_id: axiAgentId.current,
+          notification_type: notificationType || 'payment_received',
+          title,
+          message,
+          priority: 'high',
+          is_read: false,
+        });
+      }
+      // Channel 2: Axi unified chat conversation
+      if (axiConversation.current) {
+        await base44.agents.addMessage(axiConversation.current, {
+          role: 'user',
+          content: `🔔 **WALLET ALERT — ${title}**\n${message}`,
+        });
+      }
+    } catch (e) {
+      console.error('notifyAxi error:', e);
+    }
+  };
 
   const checkWallet = async (wallet) => {
     if (!wallet.classic_address) return;
@@ -16,40 +59,37 @@ export default function TransactionAlerts({ wallets = [], pollInterval = 60000 }
     });
     const txs = response.data?.transactions || [];
 
-    txs.forEach(tx => {
-      if (!tx.hash) return;
-      if (seenHashes.current.has(tx.hash)) return;
+    for (const tx of txs) {
+      if (!tx.hash || seenHashes.current.has(tx.hash)) continue;
       seenHashes.current.add(tx.hash);
+      if (!initialized.current) continue;
 
-      // On first load just seed the set, don't alert
-      if (!initialized.current) return;
-
-      const icon = tx.direction === 'received' ? '📥' :
-                   tx.direction === 'sent' ? '📤' : '🔗';
-      const label = tx.direction === 'received' ? 'Received' :
-                    tx.direction === 'sent' ? 'Sent' : tx.type;
+      const icon = tx.direction === 'received' ? '📥' : tx.direction === 'sent' ? '📤' : '🔗';
+      const label = tx.direction === 'received' ? 'Received' : tx.direction === 'sent' ? 'Sent' : tx.type;
       const amount = tx.amount && tx.currency
         ? `${parseFloat(tx.amount).toFixed(4)} ${tx.currency}`
         : '';
+      const title = `${icon} ${label}${amount ? ` — ${amount}` : ''}`;
+      const description = `${wallet.name} • ${tx.status === 'success' ? '✅ Confirmed' : '❌ Failed'}`;
 
-      toast(
-        `${icon} ${label}${amount ? ` — ${amount}` : ''}`,
-        {
-          description: `${wallet.name} • ${tx.status === 'success' ? '✅ Confirmed' : '❌ Failed'}`,
-          duration: 6000,
-        }
-      );
-    });
+      // Toast
+      toast(title, { description, duration: 6000 });
+
+      // Axi — both channels
+      await notifyAxi({
+        title,
+        message: description,
+        notificationType: tx.direction === 'received' ? 'payment_received' : 'payment_sent',
+      });
+    }
   };
 
   useEffect(() => {
     if (!wallets.length) return;
-
     const runCheck = async () => {
       await Promise.all(wallets.map(checkWallet));
       initialized.current = true;
     };
-
     runCheck();
     const interval = setInterval(runCheck, pollInterval);
     return () => clearInterval(interval);
