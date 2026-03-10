@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Sparkles, Send, Loader2, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus } from 'lucide-react';
 import MessageBubble from '@/components/MessageBubble';
 import { motion, AnimatePresence } from 'framer-motion';
+import AddAgentModal from '@/components/AddAgentModal';
 
 const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
