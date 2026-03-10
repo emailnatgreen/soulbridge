@@ -102,6 +102,15 @@ export default function AxiPage() {
     setInput(e.target.value);
   }, []);
 
+  const handleAddAgent = useCallback(async (agent) => {
+    setActiveAgents(prev => [...prev, agent]);
+    setShowAddAgent(false);
+    await base44.agents.addMessage(conversation, {
+      role: 'user',
+      content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
+    });
+  }, [conversation]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex flex-col">
       {/* Header */}
