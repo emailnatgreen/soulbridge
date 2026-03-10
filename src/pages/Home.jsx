@@ -16,6 +16,7 @@ import MobileBottomNav from '../components/MobileBottomNav';
 import DidAuthStatus from '../components/DidAuthStatus';
 import ShieldedWalletBalance from '../components/ShieldedWalletBalance';
 import TreasuryMonitor from '../components/TreasuryMonitor';
+import DidActivationPipeline from '../components/DidActivationPipeline';
 
 export default function Home() {
   const { data: credentials = [] } = useQuery({
@@ -612,6 +613,11 @@ export default function Home() {
               </Card>
             </Link>
           </div>
+        </div>
+
+        {/* DID Activation Pipeline */}
+        <div className="mb-8 sm:mb-12">
+          <DidActivationPipeline />
         </div>
 
         {/* Shielded Wallet Balance */}
