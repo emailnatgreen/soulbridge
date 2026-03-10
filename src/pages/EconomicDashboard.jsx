@@ -215,8 +215,52 @@ export default function EconomicDashboard() {
           <Button variant="outline" size="icon" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </Button>
+          <div className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-full border ${liveConnected ? "border-green-300 bg-green-50 text-green-700" : "border-gray-200 bg-gray-50 text-gray-400"}`}>
+            {liveConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+            {liveConnected ? `Live${lastLiveUpdate ? " · " + format(lastLiveUpdate, "HH:mm:ss") : ""}` : "Connecting..."}
+          </div>
         </div>
       </div>
+
+      {/* Axi Intelligence Panel */}
+      <Card className="mb-6 border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <CardContent className="pt-4">
+          <div className="flex flex-col md:flex-row md:items-start gap-3">
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-bold text-blue-800">Axi Economic Intelligence</span>
+            </div>
+            <div className="flex-1">
+              {axiInsight ? (
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge className={axiInsight.alert_level === "healthy" ? "bg-green-100 text-green-800" : axiInsight.alert_level === "caution" ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}>
+                      {axiInsight.alert_level === "healthy" ? "✓ Healthy" : axiInsight.alert_level === "caution" ? "⚠ Caution" : "🔴 Critical"}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-700 mb-1">{axiInsight.briefing}</p>
+                  {axiInsight.key_action && <p className="text-xs font-semibold text-blue-700">→ {axiInsight.key_action}</p>}
+                </div>
+              ) : (
+                <p className="text-sm text-blue-600 italic">
+                  {axiLoading ? "Axi is analysing the Village economy..." : "Request an economic briefing from Axi to gain strategic insights on Village performance."}
+                </p>
+              )}
+            </div>
+            <Button
+              size="sm"
+              onClick={askAxi}
+              disabled={axiLoading || loading}
+              className="bg-blue-600 hover:bg-blue-700 shrink-0"
+            >
+              {axiLoading ? <RefreshCw className="w-3 h-3 animate-spin mr-1" /> : <Sparkles className="w-3 h-3 mr-1" />}
+              {axiLoading ? "Analysing..." : "Ask Axi"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
