@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
 
     if (tool === 'create_did') {
       // Import XUMM SDK for Xaman integration
-      const { XummSdk } = await import('npm:xumm-sdk@1.9.0');
+      const { Xumm } = await import('npm:xumm-sdk@1.9.0');
       
       const apiKey = Deno.env.get('XUMM_API_KEY');
       const apiSecret = Deno.env.get('XUMM_API_SECRET');
@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
       }
 
-      const xummSdk = new XummSdk(apiKey, apiSecret);
+      const xumm = new Xumm(apiKey, apiSecret);
 
       const { address, name, profileUrl, instruction } = params;
 
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       };
 
       // Send to Xaman for signing
-      const xamanResponse = await xummSdk.payload.post(payload);
+      const xamanResponse = await xumm.payload.post(payload);
 
       return Response.json({
         success: true,
