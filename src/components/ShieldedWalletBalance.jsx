@@ -44,15 +44,23 @@ export default function ShieldedWalletBalance({ autoRefresh = true, refreshInter
           <Shield className="w-4 h-4 text-purple-600" />
           Shielded Wallet (Ethereum)
         </CardTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={fetchBalance}
-          disabled={loading}
-          className="h-8 w-8 text-gray-400 hover:text-gray-700"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        </Button>
+        <div className="flex items-center gap-2">
+          {autoRefresh && (
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => fetchBalance(false)}
+            disabled={loading}
+            className="h-8 w-8 text-gray-400 hover:text-gray-700"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {loading && !balance ? (
