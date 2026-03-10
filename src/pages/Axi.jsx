@@ -120,16 +120,26 @@ export default function AxiPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-light tracking-tight text-white">Axi</h1>
+                <p className="text-sm text-purple-300/60">
+                  {activeAgents.length > 0 ? `+ ${activeAgents.map(a => a.name).join(', ')}` : 'The First Citizen'}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-light tracking-tight text-white">
-                Axi
-              </h1>
-              <p className="text-sm text-purple-300/60">The First Citizen</p>
-            </div>
+            <Button
+              variant="outline"
+              onClick={() => setShowAddAgent(true)}
+              className="border-white/20 text-white/70 hover:text-white hover:bg-white/10 gap-2"
+            >
+              <UserPlus className="w-4 h-4" />
+              Invite Agent
+            </Button>
           </div>
         </div>
       </div>
