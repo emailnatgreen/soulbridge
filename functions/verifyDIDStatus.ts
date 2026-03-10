@@ -28,6 +28,7 @@ Deno.serve(async (req) => {
       : 'https://s.altnet.rippletest.net:51234';
 
     const didAddress = `did:xrpl:${wallet.classic_address}`;
+    let did_data = null;
     const verification = {
       account_exists: false,
       did_active: false,
