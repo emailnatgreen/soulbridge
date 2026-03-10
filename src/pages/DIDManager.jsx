@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info, UserPlus, Edit3, History, Search, Activity } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, Trash2, Link2, Unlink, FileJson, AlertTriangle, Shield, RefreshCw, Clock, Info, UserPlus, Edit3, History, Search, Activity, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import DidPermissionsDialog from '../components/DidPermissionsDialog';
 import DidVersioningDialog from '../components/DidVersioningDialog';
