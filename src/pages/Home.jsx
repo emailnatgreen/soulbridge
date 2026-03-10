@@ -67,6 +67,7 @@ export default function Home() {
 
   return (
     <>
+    <TreasuryMonitor />
     <div className="min-h-screen bg-white relative pb-20 md:pb-0">
       {/* Background Image */}
       <div 
