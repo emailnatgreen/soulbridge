@@ -47,9 +47,12 @@ Deno.serve(async (req) => {
         TransactionType: "DIDSet",
         Account: address,
         URI: didDocHex,
-        Data: dataHex,
         Fee: "12"
       };
+      
+      if (dataHex) {
+        payload.Data = dataHex;
+      }
 
       // Create XUMM payload via HTTP call to XUMM API
       const apiKey = Deno.env.get('XUMM_API_KEY');
