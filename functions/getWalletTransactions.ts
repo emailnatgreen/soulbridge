@@ -59,14 +59,20 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { wallet_id, limit = 50 } = await req.json();
+    const body = await req.json();
+    const { wallet_id, limit = 50 } = body;
     if (!wallet_id) return Response.json({ error: 'wallet_id required' }, { status: 400 });
 
     const walletRecord = await base44.asServiceRole.entities.Wallet.get(wallet_id);
     if (!walletRecord) return Response.json({ error: 'Wallet not found' }, { status: 404 });
 
     if (!walletRecord.classic_address) {
-      return Response.json({ success: true, transactions: [], wallet_address: null, network: walletRecord.network });
+      return Response.json({ 
+        success: true, 
+        transactions: [], 
+        wallet_address: null, 
+        network: walletRecord.network || 'testnet' 
+      });
     }
 
     const networkUrl = walletRecord.network === 'mainnet'
