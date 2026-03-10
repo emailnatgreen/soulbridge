@@ -41,9 +41,10 @@ Deno.serve(async (req) => {
 
       if (!xamanRes.ok) {
         const errorText = await xamanRes.text();
-        console.error('XUMM response status:', xamanRes.status, xamanRes.statusText);
-        console.error('XUMM response:', errorText);
-        return Response.json({ error: `XUMM API error (${xamanRes.status}): ${errorText}` }, { status: 500 });
+        if (xamanRes.status === 403) {
+          return Response.json({ error: 'XUMM authentication failed. Check API credentials.' }, { status: 403 });
+        }
+        return Response.json({ error: `XUMM error: ${errorText}` }, { status: xamanRes.status });
       }
 
       const xamanData = await xamanRes.json();
