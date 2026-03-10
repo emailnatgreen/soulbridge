@@ -96,7 +96,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.97 }}
           transition={{ duration: 0.15 }}
-          className={`fixed z-[55] bg-slate-950/98 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col ${
+          className={`fixed z-[55] bg-slate-950/98 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col overflow-hidden ${
             isExpanded ? 'inset-4 top-12 rounded-2xl' : 'top-12 right-4 w-[440px] h-[580px] rounded-2xl'
           }`}
         >
