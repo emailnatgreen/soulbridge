@@ -14,6 +14,7 @@ import AuditLogViewer from '../components/AuditLogViewer';
 import DidResolverTool from '../components/DidResolverTool';
 import DidDocumentEditor from '../components/DidDocumentEditor';
 import WalletQRCode from '../components/WalletQRCode';
+import DidReputationScore from '../components/DidReputationScore';
 import {
   Dialog,
   DialogContent,
@@ -351,6 +352,13 @@ export default function DIDManager() {
                         </Button>
                       </div>
                       </div>
+
+                      {/* Reputation Score */}
+                      {agent && (
+                        <div className="border-t pt-4">
+                          <DidReputationScore agentId={agent.id} compact={false} />
+                        </div>
+                      )}
 
                       {/* Agent Profile */}
                       {agent ? (
