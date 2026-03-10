@@ -80,28 +80,33 @@ Deno.serve(async (req) => {
       : 'wss://s.altnet.rippletest.net:51233';
 
     const client = new Client(networkUrl);
-    await client.connect();
-
     let transactions = [];
+    
     try {
-      const response = await client.request({
-        command: 'account_tx',
-        account: walletRecord.classic_address,
-        limit: Math.min(limit, 200),
-        ledger_index_min: -1,
-        ledger_index_max: -1,
-        forward: false,
-      });
+      await client.connect();
+      
+      try {
+        const response = await client.request({
+          command: 'account_tx',
+          account: walletRecord.classic_address,
+          limit: Math.min(limit, 200),
+          ledger_index_min: -1,
+          ledger_index_max: -1,
+          forward: false,
+        });
 
-      transactions = (response.result.transactions || []).map(tx =>
-        parseTransaction(tx, walletRecord.classic_address)
-      );
-    } catch (err) {
-      // Account not activated yet — return empty
-      console.log('account_tx failed:', err.message);
+        transactions = (response.result.transactions || []).map(tx =>
+          parseTransaction(tx, walletRecord.classic_address)
+        );
+      } catch (err) {
+        // Account not activated yet — return empty
+        console.log('account_tx failed:', err.message);
+      }
+      
+      await client.disconnect();
+    } catch (connectErr) {
+      console.error('Client connection error:', connectErr.message);
     }
-
-    await client.disconnect();
 
     return Response.json({
       success: true,
