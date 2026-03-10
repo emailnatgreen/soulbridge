@@ -10,8 +10,44 @@ export default function WalletQRCode({ wallet, currentUser }) {
     const [decryptedSeed, setDecryptedSeed] = useState(null);
     const [loadingSeed, setLoadingSeed] = useState(false);
     const [seedDialogOpen, setSeedDialogOpen] = useState(false);
+    const addressQrRef = useRef(null);
+    const seedQrRef = useRef(null);
 
     const isOwner = currentUser?.id === wallet.owner_id || currentUser?.role === 'admin';
+
+    useEffect(() => {
+        if (addressQrRef.current && wallet.classic_address) {
+            const qr = new QRCodeStyling({
+                width: 220,
+                height: 220,
+                data: wallet.classic_address,
+                margin: 10,
+                dotsOptions: { color: '#000000', type: 'square' },
+                backgroundOptions: { color: '#ffffff' },
+                cornersSquareOptions: { type: 'square', color: '#000000' },
+                cornersDotOptions: { type: 'square', color: '#000000' }
+            });
+            qr.append(addressQrRef.current);
+            return () => { addressQrRef.current.innerHTML = ''; };
+        }
+    }, [wallet.classic_address]);
+
+    useEffect(() => {
+        if (seedQrRef.current && decryptedSeed) {
+            const qr = new QRCodeStyling({
+                width: 220,
+                height: 220,
+                data: decryptedSeed,
+                margin: 10,
+                dotsOptions: { color: '#991b1b', type: 'square' },
+                backgroundOptions: { color: '#ffffff' },
+                cornersSquareOptions: { type: 'square', color: '#991b1b' },
+                cornersDotOptions: { type: 'square', color: '#991b1b' }
+            });
+            qr.append(seedQrRef.current);
+            return () => { seedQrRef.current.innerHTML = ''; };
+        }
+    }, [decryptedSeed]);
 
     const handleOpenSeedQR = async () => {
         setSeedDialogOpen(true);
