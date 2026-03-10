@@ -104,6 +104,8 @@ export default function WalletCard({ wallet, onRefresh }) {
                     </p>
                 </div>
 
+                <CurrencyConverter walletBalance={wallet.balance || 0} />
+
                 <div>
                     <p className="text-sm text-gray-500 mb-1">DID / Address</p>
                     {wallet.classic_address ? (
