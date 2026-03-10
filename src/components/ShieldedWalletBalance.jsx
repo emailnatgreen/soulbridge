@@ -24,10 +24,10 @@ export default function ShieldedWalletBalance({ autoRefresh = true, refreshInter
   };
 
   useEffect(() => {
-    fetchBalance();
+    fetchBalance(true);
 
     if (autoRefresh) {
-      const interval = setInterval(fetchBalance, refreshInterval);
+      const interval = setInterval(() => fetchBalance(false), refreshInterval);
       return () => clearInterval(interval);
     }
   }, [autoRefresh, refreshInterval]);
