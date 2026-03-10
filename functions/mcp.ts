@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       });
 
     } else if (tool === 'check_status') {
-      const { XummSdk } = await import('npm:xumm-sdk@1.9.0');
+      const { Xumm } = await import('npm:xumm-sdk@1.9.0');
       
       const apiKey = Deno.env.get('XUMM_API_KEY');
       const apiSecret = Deno.env.get('XUMM_API_SECRET');
@@ -86,10 +86,10 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
       }
 
-      const xummSdk = new XummSdk(apiKey, apiSecret);
+      const xumm = new Xumm(apiKey, apiSecret);
       const { uuid } = params;
 
-      const status = await xummSdk.payload.get(uuid);
+      const status = await xumm.payload.get(uuid);
 
       return Response.json({
         success: true,
