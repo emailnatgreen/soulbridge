@@ -54,12 +54,14 @@ export default function WalletQRCode({ wallet, currentUser }) {
                         <div className="flex flex-col items-center gap-4 py-4">
                             <p className="text-sm text-gray-500 font-medium">{wallet.name}</p>
                             <div className="p-4 bg-white rounded-xl border shadow-sm">
-                                <div className="w-[220px] h-[220px] bg-white border border-gray-300 flex items-center justify-center">
-                                    <div className="text-center p-4">
-                                        <p className="text-xs text-gray-600 font-mono break-all">{wallet.classic_address}</p>
-                                        <p className="text-xs text-gray-500 mt-2">(QR placeholder)</p>
-                                    </div>
-                                </div>
+                                <QRCode 
+                                    value={wallet.classic_address} 
+                                    size={220} 
+                                    level="H" 
+                                    includeMargin={true}
+                                    fgColor="#000000"
+                                    bgColor="#ffffff"
+                                />
                             </div>
                             <code className="text-xs bg-gray-100 px-3 py-2 rounded w-full text-center break-all">
                                 {wallet.classic_address}
