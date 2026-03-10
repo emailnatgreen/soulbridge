@@ -14,7 +14,7 @@ export default function WalletTransactionHistory({ wallet }) {
     queryFn: async () => {
       const response = await base44.functions.invoke('getWalletTransactions', {
         wallet_id: wallet.id,
-        limit: 100
+        limit: 10
       });
       return response.data;
     },
