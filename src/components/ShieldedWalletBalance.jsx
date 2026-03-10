@@ -10,16 +10,16 @@ export default function ShieldedWalletBalance({ autoRefresh = true, refreshInter
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
 
-  const fetchBalance = async () => {
+  const fetchBalance = async (initial = false) => {
     try {
-      setLoading(true);
+      if (initial) setLoading(true);
       const response = await base44.functions.invoke('checkShieldedBalance', {});
       setBalance(response.data);
       setLastUpdate(new Date());
     } catch (error) {
       console.error('Failed to fetch shielded balance:', error);
     } finally {
-      setLoading(false);
+      if (initial) setLoading(false);
     }
   };
 
