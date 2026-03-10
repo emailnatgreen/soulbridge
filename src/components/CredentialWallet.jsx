@@ -159,6 +159,7 @@ function CredentialDetails({ cred, open, onOpenChange }) {
             </div>
           )}
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );
