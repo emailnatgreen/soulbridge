@@ -11,28 +11,10 @@ Deno.serve(async (req) => {
     if (tool === 'create_did') {
       const { address, name, profileUrl, instruction } = params;
 
-      // Create DID document
-      const didDocument = {
-        "@context": "https://www.w3.org/ns/did/v1",
-        "id": `did:xrpl:${address}`,
-        "alsoKnownAs": [name || address],
-        "verificationMethod": [{
-          "id": `did:xrpl:${address}#keys-1`,
-          "type": "EcdsaSecp256k1VerificationKey2019",
-          "controller": `did:xrpl:${address}`,
-          "publicKeyBase58": address
-        }],
-        "service": [{
-          "id": `did:xrpl:${address}#soulbridge`,
-          "type": "SoulBridgeProfile",
-          "serviceEndpoint": profileUrl || "https://soulbridge.base44.app",
-          "description": instruction || "SoulBridge Village Citizen"
-        }]
-      };
-
-      // Create transaction payload for Xaman
+      // Create simple URI field with DID identifier
       const encoder = new TextEncoder();
-      const didDocHex = Array.from(encoder.encode(JSON.stringify(didDocument)))
+      const uriString = `did:xrpl:${address}:${name || 'soulbridge'}`;
+      const didDocHex = Array.from(encoder.encode(uriString))
         .map(b => b.toString(16).padStart(2, '0'))
         .join('')
         .toUpperCase();
