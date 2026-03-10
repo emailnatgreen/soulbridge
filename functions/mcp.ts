@@ -19,10 +19,12 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
       }
 
-      // Simple AccountSet transaction to mark DID creation
+      // Simple transaction—just a Payment to self to mark DID
       const payload = {
-        TransactionType: "AccountSet",
+        TransactionType: "Payment",
         Account: address,
+        Destination: address,
+        Amount: "1",
         Fee: "12"
       };
 
