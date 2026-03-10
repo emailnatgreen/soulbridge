@@ -434,7 +434,7 @@ export default function DIDManager() {
                                   <SelectValue placeholder="Select an agent" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {getUnlinkedAgents().map((a) => (
+                                  {agents.filter(a => a.status === 'active').map((a) => (
                                     <SelectItem key={a.id} value={a.id}>
                                       {a.name} ({a.role})
                                     </SelectItem>

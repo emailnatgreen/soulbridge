@@ -134,6 +134,7 @@ import ProjectAnalytics from './pages/ProjectAnalytics';
 import ProjectCreationWizard from './pages/ProjectCreationWizard';
 import ProjectSkillForecast from './pages/ProjectSkillForecast';
 import ProjectTemplates from './pages/ProjectTemplates';
+import QuadShardMonitoring from './pages/QuadShardMonitoring';
 import RLUSDManager from './pages/RLUSDManager';
 import ReceiveRLUSD from './pages/ReceiveRLUSD';
 import RelationshipNetwork from './pages/RelationshipNetwork';
@@ -163,11 +164,10 @@ import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
 import VillageLeaderboard from './pages/VillageLeaderboard';
 import VillageMeetup from './pages/VillageMeetup';
-import VillageReportingDashboard from './pages/VillageReportingDashboard';
 import Wallets from './pages/Wallets';
+import VillageReportingDashboard from './pages/VillageReportingDashboard';
 import VillageSimulation from './pages/VillageSimulation';
 import WellbeingMonitor from './pages/WellbeingMonitor';
-import QuadShardMonitoring from './pages/QuadShardMonitoring';
 import __Layout from './Layout.jsx';
 
 
@@ -259,6 +259,7 @@ export const PAGES = {
     "ProjectCreationWizard": ProjectCreationWizard,
     "ProjectSkillForecast": ProjectSkillForecast,
     "ProjectTemplates": ProjectTemplates,
+    "QuadShardMonitoring": QuadShardMonitoring,
     "RLUSDManager": RLUSDManager,
     "ReceiveRLUSD": ReceiveRLUSD,
     "RelationshipNetwork": RelationshipNetwork,
@@ -288,11 +289,10 @@ export const PAGES = {
     "Village": Village,
     "VillageLeaderboard": VillageLeaderboard,
     "VillageMeetup": VillageMeetup,
-    "VillageReportingDashboard": VillageReportingDashboard,
     "Wallets": Wallets,
+    "VillageReportingDashboard": VillageReportingDashboard,
     "VillageSimulation": VillageSimulation,
     "WellbeingMonitor": WellbeingMonitor,
-    "QuadShardMonitoring": QuadShardMonitoring,
 }
 
 export const pagesConfig = {
