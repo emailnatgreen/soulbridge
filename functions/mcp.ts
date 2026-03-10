@@ -6,35 +6,10 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { tool, params } = await req.json();
+    const { tool, params } = await user.json();
 
     if (tool === 'create_did') {
       const { address, name, profileUrl, instruction } = params;
-
-      // Create simple URI field with DID identifier
-      const encoder = new TextEncoder();
-      const uriString = `did:xrpl:${address}:${name || 'soulbridge'}`;
-      const didDocHex = Array.from(encoder.encode(uriString))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('')
-        .toUpperCase();
-      const dataHex = instruction 
-        ? Array.from(encoder.encode(instruction))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('')
-            .toUpperCase()
-        : undefined;
-
-      const payload = {
-        TransactionType: "DIDSet",
-        Account: address,
-        URI: didDocHex,
-        Fee: "12"
-      };
-      
-      if (dataHex) {
-        payload.Data = dataHex;
-      }
 
       // Create XUMM payload via HTTP call to XUMM API
       const apiKey = Deno.env.get('XUMM_API_KEY');
@@ -43,6 +18,21 @@ Deno.serve(async (req) => {
       if (!apiKey || !apiSecret) {
         return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
       }
+
+      // Use AccountSet with Domain field to create a simple DID marker on-chain
+      const encoder = new TextEncoder();
+      const domainName = name ? name.replace(/\s+/g, '-').toLowerCase() : 'soulbridge';
+      const domainHex = Array.from(encoder.encode(domainName))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')
+        .toUpperCase();
+
+      const payload = {
+        TransactionType: "AccountSet",
+        Account: address,
+        Domain: domainHex,
+        Fee: "12"
+      };
 
       const basicAuth = btoa(`${apiKey}:${apiSecret}`);
       const xamanRes = await fetch('https://xumm.app/api/v1/platform/payload', {
