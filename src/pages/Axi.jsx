@@ -16,6 +16,8 @@ export default function AxiPage() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [showAddAgent, setShowAddAgent] = useState(false);
+  const [activeAgents, setActiveAgents] = useState([]);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
