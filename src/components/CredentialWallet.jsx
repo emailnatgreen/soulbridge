@@ -88,10 +88,11 @@ function CredentialDetails({ cred, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-slate-900 border-white/20 text-white max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl bg-slate-900 border-white/20 text-white max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{cred.credential_name}</DialogTitle>
+          <DialogTitle className="text-white">{cred?.credential_name || 'Credential Details'}</DialogTitle>
         </DialogHeader>
+        {cred && (
         <div className="space-y-4 text-sm">
           <div>
             <div className="text-white/50 mb-1">Credential Type</div>
