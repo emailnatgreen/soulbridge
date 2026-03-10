@@ -77,6 +77,17 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
+  const handleAddAgent = useCallback(async (agent) => {
+    if (!conversation) return;
+    setActiveAgents(prev => [...prev, agent]);
+    setShowAddAgent(false);
+    // Post a system message announcing the agent has joined
+    await base44.agents.addMessage(conversation, {
+      role: 'user',
+      content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
+    });
+  }, [conversation]);
+
   return (
     <AnimatePresence>
       {isOpen && (
