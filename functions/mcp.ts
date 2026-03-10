@@ -19,18 +19,10 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
       }
 
-      // Use AccountSet with Domain field to create a simple DID marker on-chain
-      const encoder = new TextEncoder();
-      const domainName = name ? name.replace(/\s+/g, '-').toLowerCase() : 'soulbridge';
-      const domainHex = Array.from(encoder.encode(domainName))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('')
-        .toUpperCase();
-
+      // Simple AccountSet transaction to mark DID creation
       const payload = {
         TransactionType: "AccountSet",
         Account: address,
-        Domain: domainHex,
         Fee: "12"
       };
 
