@@ -15,6 +15,7 @@ import MobileNav from '../components/MobileNav';
 import MobileBottomNav from '../components/MobileBottomNav';
 import DidAuthStatus from '../components/DidAuthStatus';
 import ShieldedWalletBalance from '../components/ShieldedWalletBalance';
+import TreasuryMonitor from '../components/TreasuryMonitor';
 
 export default function Home() {
   const { data: credentials = [] } = useQuery({
