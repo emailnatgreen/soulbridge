@@ -43,11 +43,23 @@ Deno.serve(async (req) => {
       };
 
       // Create transaction payload for Xaman
+      const encoder = new TextEncoder();
+      const didDocHex = Array.from(encoder.encode(JSON.stringify(didDocument)))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')
+        .toUpperCase();
+      const dataHex = instruction 
+        ? Array.from(encoder.encode(instruction))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('')
+            .toUpperCase()
+        : undefined;
+
       const payload = {
         TransactionType: "DIDSet",
         Account: address,
-        URI: Buffer.from(JSON.stringify(didDocument)).toString('hex').toUpperCase(),
-        Data: Buffer.from(instruction || "").toString('hex').toUpperCase() || undefined,
+        URI: didDocHex,
+        Data: dataHex,
         Fee: "12"
       };
 
