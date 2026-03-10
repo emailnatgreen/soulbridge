@@ -40,6 +40,10 @@ export default function EconomicDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [timeFilter, setTimeFilter] = useState("7");
+  const [liveConnected, setLiveConnected] = useState(false);
+  const [axiInsight, setAxiInsight] = useState(null);
+  const [axiLoading, setAxiLoading] = useState(false);
+  const [lastLiveUpdate, setLastLiveUpdate] = useState(null);
 
   const fetchData = async () => {
     const [acts, ags, treas] = await Promise.all([
@@ -54,7 +58,29 @@ export default function EconomicDashboard() {
     setRefreshing(false);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  // Live subscription to EconomicActivity
+  useEffect(() => {
+    fetchData();
+    const unsub = base44.entities.EconomicActivity.subscribe((event) => {
+      setLiveConnected(true);
+      setLastLiveUpdate(new Date());
+      if (event.type === "create") {
+        setActivities(prev => [event.data, ...prev].slice(0, 200));
+      } else if (event.type === "update") {
+        setActivities(prev => prev.map(a => a.id === event.id ? event.data : a));
+      } else if (event.type === "delete") {
+        setActivities(prev => prev.filter(a => a.id !== event.id));
+      }
+    });
+    // Also subscribe to Treasury for live balance updates
+    const unsubTreasury = base44.entities.Treasury.subscribe((event) => {
+      setLiveConnected(true);
+      if (event.type === "update") {
+        setTreasury(prev => prev.map(t => t.id === event.id ? event.data : t));
+      }
+    });
+    return () => { unsub(); unsubTreasury(); };
+  }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
