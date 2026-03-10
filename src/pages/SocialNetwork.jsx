@@ -12,6 +12,7 @@ import { createPageUrl } from '../utils';
 import { ArrowLeft, Heart, Users, Award, TrendingUp, Plus, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import SocialCapitalCard from '../components/SocialCapitalCard';
+import DidReputationScore from '../components/DidReputationScore';
 
 export default function SocialNetwork() {
     const [selectedAgent, setSelectedAgent] = useState(null);
@@ -148,29 +149,28 @@ export default function SocialNetwork() {
                                                 onClick={() => setSelectedAgent(agent)}
                                             >
                                                 <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                                                            <span className="text-white font-semibold">
-                                                                {agent.name.charAt(0).toUpperCase()}
-                                                            </span>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-white font-medium">{agent.name}</p>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <Badge variant="outline" className="text-xs">
-                                                                    {agent.role}
-                                                                </Badge>
-                                                                <span className="text-xs text-white/60">
-                                                                    {sc.trust_network_size} connections
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                                                                <span className="text-white font-semibold">
+                                                                    {agent.name.charAt(0).toUpperCase()}
                                                                 </span>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-white font-medium">{agent.name}</p>
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    <Badge variant="outline" className="text-xs">
+                                                                        {agent.role}
+                                                                    </Badge>
+                                                                    <span className="text-xs text-white/60">
+                                                                        {sc.trust_network_size} connections
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <p className="text-2xl font-light text-green-400">
-                                                            {sc.total_score}
-                                                        </p>
-                                                        <p className="text-xs text-white/60">{sc.influence_multiplier}x influence</p>
+                                                    <div className="w-32 flex-shrink-0">
+                                                        <DidReputationScore agentId={agent.id} compact={true} />
                                                     </div>
                                                 </div>
                                             </div>
@@ -231,15 +231,21 @@ export default function SocialNetwork() {
                     </div>
 
                     {/* Selected Agent Detail */}
-                    <div>
+                    <div className="space-y-6">
                         {selectedAgent ? (
-                            <SocialCapitalCard agentId={selectedAgent.id} />
+                            <>
+                                <div>
+                                    <h3 className="text-white font-semibold mb-3">Reputation Score</h3>
+                                    <DidReputationScore agentId={selectedAgent.id} compact={false} />
+                                </div>
+                                <SocialCapitalCard agentId={selectedAgent.id} />
+                            </>
                         ) : (
                             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                                 <CardContent className="py-12 text-center">
                                     <Users className="w-12 h-12 text-purple-400 mx-auto mb-4" />
                                     <p className="text-white/60">
-                                        Select an agent to view their social capital details
+                                        Select an agent to view their reputation and social capital details
                                     </p>
                                 </CardContent>
                             </Card>
