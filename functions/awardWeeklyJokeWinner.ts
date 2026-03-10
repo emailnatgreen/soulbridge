@@ -19,8 +19,11 @@ function getPreviousWeek() {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (user?.role !== 'admin') {
+
+    // Allow scheduled automation (no user session); block non-admin manual calls
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (user && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
