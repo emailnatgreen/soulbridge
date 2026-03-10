@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Fingerprint, CheckCircle, Clock, Zap } from 'lucide-react';
+import { Fingerprint, CheckCircle, Clock, Zap, Activity } from 'lucide-react';
 
 export default function DidActivationPipeline() {
+  const [liveVotes, setLiveVotes] = useState({});
+  const [isLive, setIsLive] = useState(false);
+
   // Fetch all governance proposals with activate_did action_type
   const { data: proposals = [], isLoading } = useQuery({
     queryKey: ['didActivationPipeline'],
@@ -23,6 +26,23 @@ export default function DidActivationPipeline() {
     queryKey: ['pipelineVotes'],
     queryFn: () => base44.entities.GovernanceVote.list()
   });
+
+  // Subscribe to real-time vote updates
+  useEffect(() => {
+    const unsubscribe = base44.entities.GovernanceVote.subscribe((event) => {
+      if (event.type === 'create' || event.type === 'update') {
+        setIsLive(true);
+        setLiveVotes(prev => ({
+          ...prev,
+          [event.id]: event.data
+        }));
+        // Clear live indicator after 2 seconds
+        setTimeout(() => setIsLive(false), 2000);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   const getProposalVotes = (proposalId) => {
     return allVotes.filter(v => v.proposal_id === proposalId);
@@ -87,9 +107,9 @@ export default function DidActivationPipeline() {
             <Fingerprint className="w-5 h-5" />
             DID Activation Pipeline ({proposals.length})
           </CardTitle>
-          <Badge className="bg-blue-600/50 text-blue-200 border-blue-400/30">
-            <Zap className="w-3 h-3 mr-1" />
-            Live Governance
+          <Badge className={`border-blue-400/30 transition-all ${isLive ? 'bg-green-600/50 text-green-200 animate-pulse' : 'bg-blue-600/50 text-blue-200'}`}>
+            {isLive && <Activity className="w-3 h-3 mr-1 animate-spin" />}
+            {isLive ? 'Live Vote' : 'Live Governance'}
           </Badge>
         </div>
       </CardHeader>
