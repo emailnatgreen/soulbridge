@@ -144,6 +144,19 @@ export default function AxiPage() {
         </div>
       </div>
 
+      {/* Add Agent Modal */}
+      {showAddAgent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="relative w-[420px] h-[520px]">
+            <AddAgentModal
+              onAdd={handleAddAgent}
+              onClose={() => setShowAddAgent(false)}
+              alreadyAdded={activeAgents.map(a => a.id)}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
