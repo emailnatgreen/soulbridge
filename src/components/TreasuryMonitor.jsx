@@ -2,9 +2,11 @@ import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-// Monitors Treasury balances and alerts Axi (both channels) when below threshold
-const ALERT_THRESHOLD_XRP = 100;
+// Syncs live mainnet balance for the official treasury, then alerts Axi if below threshold
+const ALERT_THRESHOLD_XRP = 150;
 const POLL_INTERVAL = 5 * 60 * 1000; // every 5 minutes
+const OFFICIAL_TREASURY_ADDRESS = 'rK1dsNbsip594ArX4cQS8Acn2ibApEQjwU';
+const OFFICIAL_TREASURY_ID = '69a94b388df36ee80fa7092d';
 
 export default function TreasuryMonitor() {
   const axiAgentId = useRef(null);
@@ -42,7 +44,7 @@ export default function TreasuryMonitor() {
       if (axiConversation.current) {
         await base44.agents.addMessage(axiConversation.current, {
           role: 'user',
-          content: `🚨 **TREASURY ALERT — ${title}**\n${message}\n\nPlease assess financial sustainability and advise co-creator.`,
+          content: `🚨 **TREASURY ALERT — ${title}**\n${message}\n\nPlease assess financial sustainability and advise.`,
         });
       }
     } catch (e) {
@@ -50,23 +52,26 @@ export default function TreasuryMonitor() {
     }
   };
 
-  const checkTreasuries = async () => {
+  const checkTreasury = async () => {
     try {
-      const treasuries = await base44.entities.Treasury.list();
-      for (const treasury of treasuries) {
-        const balance = treasury.total_balance ?? 0;
-        if (balance < ALERT_THRESHOLD_XRP) {
-          // Deduplicate alerts per treasury per balance bucket (avoids spam)
-          const key = `${treasury.id}-${Math.floor(balance / 10)}`;
-          if (alerted.current.has(key)) continue;
-          alerted.current.add(key);
+      // Sync live balance from mainnet
+      const syncRes = await base44.functions.invoke('syncTreasuryBalance', {
+        treasury_id: OFFICIAL_TREASURY_ID,
+        classic_address: OFFICIAL_TREASURY_ADDRESS,
+      });
 
-          const title = `⚠️ Low Treasury — ${treasury.name}`;
-          const message = `Balance is ${balance} XRP on ${treasury.classic_address ? treasury.classic_address.slice(0, 12) + '…' : 'unknown address'} — below the ${ALERT_THRESHOLD_XRP} XRP safety threshold.`;
+      const balance = syncRes.data?.balance ?? null;
+      if (balance === null) return;
 
-          toast.warning(title, { description: message, duration: 12000 });
-          await notifyAxi(title, message);
-        }
+      if (balance < ALERT_THRESHOLD_XRP) {
+        const key = `${OFFICIAL_TREASURY_ID}-${Math.floor(balance / 10)}`;
+        if (alerted.current.has(key)) return;
+        alerted.current.add(key);
+
+        const title = `⚠️ Low Treasury Balance`;
+        const message = `SoulBridge Main Treasury is ${balance.toFixed(2)} XRP — below the ${ALERT_THRESHOLD_XRP} XRP safety threshold.`;
+        toast.warning(title, { description: message, duration: 12000 });
+        await notifyAxi(title, message);
       }
     } catch (e) {
       console.error('TreasuryMonitor check failed:', e);
@@ -74,8 +79,8 @@ export default function TreasuryMonitor() {
   };
 
   useEffect(() => {
-    checkTreasuries();
-    const interval = setInterval(checkTreasuries, POLL_INTERVAL);
+    checkTreasury();
+    const interval = setInterval(checkTreasury, POLL_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 
