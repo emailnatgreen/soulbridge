@@ -53,11 +53,16 @@ Deno.serve(async (req) => {
     // Fetch full wallet record for encryption fields
     const walletRecord = await base44.asServiceRole.entities.Wallet.get(wallet_id);
 
+    if (!walletRecord.encrypted_seed || !walletRecord.encryption_iv || !walletRecord.encryption_salt) {
+      return Response.json({ skipped: true, reason: 'Wallet is missing encryption fields, cannot decrypt seed' });
+    }
+
     let seed;
     try {
       seed = await decryptSeed(walletRecord.encrypted_seed, walletRecord.encryption_iv, walletRecord.encryption_salt);
-    } catch (_e) {
-      return Response.json({ success: false, error: 'Cannot decrypt wallet seed' }, { status: 500 });
+    } catch (decryptErr) {
+      console.error('Decrypt error:', decryptErr.message);
+      return Response.json({ success: false, error: `Cannot decrypt wallet seed: ${decryptErr.message}` }, { status: 500 });
     }
 
     const address = walletRecord.classic_address;
