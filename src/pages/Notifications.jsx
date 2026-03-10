@@ -9,7 +9,7 @@ import {
   Bell, CheckCheck, MessageCircle, Target, ShoppingCart, Wallet,
   Shield, Star, TrendingUp, AlertCircle, ArrowLeft, Trash2,
   Vote, Bot, Zap, Users, Calendar, AlertTriangle, XCircle,
-  Activity, RefreshCw, Search, Filter, CheckCircle2, Loader2
+  Activity, RefreshCw, Search, Filter, CheckCircle2, Loader2, Archive
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -124,7 +124,7 @@ function getColor(type, priority, title = '') {
 }
 
 // ── NotificationRow ──────────────────────────────────────────
-function NotificationRow({ notif, onMarkRead, onDelete }) {
+function NotificationRow({ notif, onMarkRead, onDelete, onArchive }) {
   const Icon = getIcon(notif.notification_type, notif.title, notif.priority);
   const colorClass = getColor(notif.notification_type, notif.priority, notif.title);
   const isError = notif.priority === 'urgent' || notif.priority === 'high' ||
@@ -171,12 +171,18 @@ function NotificationRow({ notif, onMarkRead, onDelete }) {
               </div>
               <div className="flex gap-1 shrink-0">
                 {!notif.is_read && (
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-white/40 hover:text-green-400"
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-white/40 hover:text-green-400" title="Mark as read"
                     onClick={e => { e.preventDefault(); e.stopPropagation(); onMarkRead(notif.id); }}>
                     <CheckCheck className="w-3.5 h-3.5" />
                   </Button>
                 )}
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-white/40 hover:text-red-400"
+                {!notif.is_archived && (
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-white/40 hover:text-yellow-400" title="Archive"
+                    onClick={e => { e.preventDefault(); e.stopPropagation(); onArchive(notif.id); }}>
+                    <Archive className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-white/40 hover:text-red-400" title="Delete"
                   onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete(notif.id); }}>
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -248,6 +254,11 @@ export default function Notifications() {
     },
   });
 
+  const archiveMutation = useMutation({
+    mutationFn: (id) => base44.entities.AgentNotification.update(id, { is_archived: true }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications-all', agentId] }),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.AgentNotification.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications-all', agentId] }),
@@ -264,6 +275,7 @@ export default function Notifications() {
   });
 
   const filtered = notifications
+    .filter(n => !n.is_archived)
     .filter(n => matchesCategory(n, category))
     .filter(n => {
       if (!search.trim()) return true;
@@ -455,6 +467,7 @@ export default function Notifications() {
                       key={notif.id}
                       notif={notif}
                       onMarkRead={id => markReadMutation.mutate(id)}
+                      onArchive={id => archiveMutation.mutate(id)}
                       onDelete={id => deleteMutation.mutate(id)}
                     />
                   ))}
