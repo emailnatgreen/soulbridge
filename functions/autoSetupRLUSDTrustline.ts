@@ -31,7 +31,17 @@ async function decryptSeed(encryptedData, iv, salt) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { event, data } = await req.json();
+    const body = await req.json();
+    const { event, payload_too_large } = body;
+    let data = body.data;
+
+    // If payload was too large, fetch the wallet record directly
+    if (payload_too_large || !data) {
+      if (!event?.entity_id) return Response.json({ skipped: true, reason: 'No entity_id' });
+      data = await base44.asServiceRole.entities.Wallet.get(event.entity_id);
+    }
+
+    if (!data) return Response.json({ skipped: true, reason: 'Could not load wallet data' });
 
     // Only process mainnet wallets with an address and sufficient balance
     if (data.network !== 'mainnet') {
