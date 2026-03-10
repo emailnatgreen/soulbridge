@@ -31,15 +31,6 @@ export default function AxiPage() {
     }
   }, [messages.length, scrollToBottom]);
 
-  useEffect(() => {
-    initConversation();
-    return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
-    };
-  }, []);
-
   const initConversation = useCallback(async () => {
     try {
       // Find or create the UNIFIED Axi conversation with a specific identifier
