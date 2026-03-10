@@ -120,10 +120,25 @@ export default function WalletTrustlines({ wallet }) {
                             <div className="text-gray-400 truncate">
                                 Issuer: <span className="font-mono text-gray-600">{tl.issuer}</span>
                             </div>
-                            <div className="flex gap-3 text-gray-500">
-                                <span>Limit: <span className="text-gray-700">{tl.limit.toLocaleString()}</span></span>
-                                {tl.freeze && <Badge variant="destructive" className="text-xs py-0">Frozen</Badge>}
-                                {tl.no_ripple && <Badge variant="outline" className="text-xs py-0">No Ripple</Badge>}
+                            <div className="flex items-center justify-between gap-3 text-gray-500">
+                                <div className="flex gap-3 items-center">
+                                    <span>Limit: <span className="text-gray-700">{tl.limit.toLocaleString()}</span></span>
+                                    {tl.freeze && <Badge variant="destructive" className="text-xs py-0">Frozen</Badge>}
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <span className={`text-xs ${tl.no_ripple ? 'text-orange-500 font-medium' : 'text-green-600 font-medium'}`}>
+                                        {tl.no_ripple ? 'No Ripple' : 'Rippling'}
+                                    </span>
+                                    {togglingRipple[`${tl.currency}-${tl.issuer}`] ? (
+                                        <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
+                                    ) : (
+                                        <Switch
+                                            checked={!tl.no_ripple}
+                                            onCheckedChange={(checked) => handleNoRippleToggle(tl, !checked)}
+                                            className="scale-75 origin-right"
+                                        />
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}
