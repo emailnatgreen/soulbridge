@@ -189,12 +189,14 @@ export default function WalletsPage() {
             </CardContent>
           </Card>
         ) : (
-          <TransactionAlerts wallets={wallets} pollInterval={60000} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {wallets.map(wallet => (
-              <WalletCard key={wallet.id} wallet={wallet} onRefresh={refreshBalance} />
-            ))}
-          </div>
+          <>
+            <TransactionAlerts wallets={wallets} pollInterval={60000} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {wallets.map(wallet => (
+                <WalletCard key={wallet.id} wallet={wallet} onRefresh={refreshBalance} />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
