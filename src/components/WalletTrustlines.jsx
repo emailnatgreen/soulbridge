@@ -16,7 +16,9 @@ export default function WalletTrustlines({ wallet }) {
         setError(null);
         try {
             const res = await base44.functions.invoke('getWalletTrustlines', {
-                address: wallet.classic_address
+                wallet_id: wallet.id,
+                address: wallet.classic_address,
+                network: wallet.network
             });
             setData(res.data);
             setExpanded(true);
