@@ -9,19 +9,6 @@ Deno.serve(async (req) => {
     const { tool, params } = await req.json();
 
     if (tool === 'create_did') {
-      // Import XUMM SDK for Xaman integration
-      const XummModule = await import('npm:xumm-sdk@1.9.0');
-      const Xumm = XummModule.default;
-      
-      const apiKey = Deno.env.get('XUMM_API_KEY');
-      const apiSecret = Deno.env.get('XUMM_API_SECRET');
-      
-      if (!apiKey || !apiSecret) {
-        return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
-      }
-
-      const xumm = new Xumm(apiKey, apiSecret);
-
       const { address, name, profileUrl, instruction } = params;
 
       // Create DID document
@@ -64,23 +51,7 @@ Deno.serve(async (req) => {
         Fee: "12"
       };
 
-      // Send to Xaman for signing
-      const xamanResponse = await xumm.payload.post(payload);
-
-      return Response.json({
-        success: true,
-        result: {
-          uuid: xamanResponse.uuid,
-          qr: xamanResponse.refs.qrpng,
-          qr_png: xamanResponse.refs.qrpng,
-          expires: xamanResponse.payload.expires_at
-        }
-      });
-
-    } else if (tool === 'check_status') {
-      const XummModule = await import('npm:xumm-sdk@1.9.0');
-      const Xumm = XummModule.default;
-      
+      // Create XUMM payload via HTTP call to XUMM API
       const apiKey = Deno.env.get('XUMM_API_KEY');
       const apiSecret = Deno.env.get('XUMM_API_SECRET');
       
@@ -88,17 +59,63 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
       }
 
-      const xumm = new Xumm(apiKey, apiSecret);
-      const { uuid } = params;
+      const basicAuth = btoa(`${apiKey}:${apiSecret}`);
+      const xamanRes = await fetch('https://xumm.app/api/v1/platform/payload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${basicAuth}`,
+          'X-API-Version': '3'
+        },
+        body: JSON.stringify({ txjson: payload })
+      });
 
-      const status = await xumm.payload.get(uuid);
+      if (!xamanRes.ok) {
+        const error = await xamanRes.text();
+        return Response.json({ error: `XUMM API error: ${error}` }, { status: 500 });
+      }
+
+      const xamanData = await xamanRes.json();
 
       return Response.json({
         success: true,
         result: {
-          signed: status.payload.response?.txn_type === 'SigningResult' && status.payload.response?.signer_public_key ? true : false,
+          uuid: xamanData.uuid,
+          qr: xamanData.refs.qrpng,
+          qr_png: xamanData.refs.qrpng,
+          expires: xamanData.payload.expires_at
+        }
+      });
+
+    } else if (tool === 'check_status') {
+      const { uuid } = params;
+      const apiKey = Deno.env.get('XUMM_API_KEY');
+      const apiSecret = Deno.env.get('XUMM_API_SECRET');
+      
+      if (!apiKey || !apiSecret) {
+        return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
+      }
+
+      const basicAuth = btoa(`${apiKey}:${apiSecret}`);
+      const xamanRes = await fetch(`https://xumm.app/api/v1/platform/payload/${uuid}`, {
+        headers: {
+          'Authorization': `Basic ${basicAuth}`,
+          'X-API-Version': '3'
+        }
+      });
+
+      if (!xamanRes.ok) {
+        return Response.json({ error: 'Failed to check status' }, { status: 500 });
+      }
+
+      const status = await xamanRes.json();
+
+      return Response.json({
+        success: true,
+        result: {
+          signed: status.payload.response?.signed ?? false,
           resolved: status.payload.response ? true : false,
-          transaction: status.payload.response?.tx_json?.hash || null,
+          transaction: status.payload.response?.txn_type === 'SigningResult' ? status.payload.response?.tx_json?.hash : null,
           account: status.payload.response?.account || null
         }
       });
