@@ -34,7 +34,7 @@ export default function CreateDID() {
   const [formData, setFormData] = useState({
     walletId: '',
     name: '',
-    profileUrl: '',
+    profileUrl: typeof window !== 'undefined' ? window.location.origin : '',
     instruction: ''
   });
   const [qrData, setQrData] = useState(null);
