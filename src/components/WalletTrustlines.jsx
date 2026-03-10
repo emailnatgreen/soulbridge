@@ -31,6 +31,34 @@ export default function WalletTrustlines({ wallet }) {
         }
     };
 
+    const [togglingRipple, setTogglingRipple] = useState({}); // key: `${currency}-${issuer}`
+
+    const handleNoRippleToggle = async (tl, newNoRipple) => {
+        const key = `${tl.currency}-${tl.issuer}`;
+        setTogglingRipple(prev => ({ ...prev, [key]: true }));
+        try {
+            const res = await base44.functions.invoke('updateTrustlineNoRipple', {
+                wallet_id: wallet.id,
+                currency: tl.currency,
+                issuer: tl.issuer,
+                limit: tl.limit?.toString(),
+                no_ripple: newNoRipple
+            });
+            if (res.data?.success) {
+                toast.success(`NoRipple ${newNoRipple ? 'enabled' : 'disabled'} for ${tl.currency_display}`);
+                // Refresh trustlines to reflect on-chain state
+                await fetchTrustlines();
+                setExpanded(true);
+            } else {
+                toast.error(res.data?.error || 'Transaction failed');
+            }
+        } catch (e) {
+            toast.error(e?.response?.data?.error || e.message || 'Failed to update trustline');
+        } finally {
+            setTogglingRipple(prev => ({ ...prev, [key]: false }));
+        }
+    };
+
     const toggle = () => {
         if (!data) {
             fetchTrustlines();
