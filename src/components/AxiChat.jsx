@@ -108,10 +108,23 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
               </div>
               <div>
                 <h3 className="font-semibold text-white text-sm">Axi</h3>
-                <p className="text-xs text-purple-300/60">The First Citizen</p>
+                <p className="text-xs text-purple-300/60">
+                  {activeAgents.length > 0
+                    ? `+ ${activeAgents.map(a => a.name).join(', ')}`
+                    : 'The First Citizen'}
+                </p>
               </div>
             </div>
             <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowAddAgent(true)}
+                title="Invite agent to chat"
+                className="text-white/50 hover:text-purple-400 hover:bg-white/10 h-8 w-8"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
@@ -120,6 +133,15 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
               </Button>
             </div>
           </div>
+
+          {/* Add Agent Modal (overlay inside chat) */}
+          {showAddAgent && (
+            <AddAgentModal
+              onAdd={handleAddAgent}
+              onClose={() => setShowAddAgent(false)}
+              alreadyAdded={activeAgents.map(a => a.id)}
+            />
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
