@@ -62,6 +62,15 @@ export default function AxiPage() {
     }
   }, []);
 
+  useEffect(() => {
+    initConversation();
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, [initConversation]);
+
   const handleSend = useCallback(async () => {
     if (!input.trim() || !conversation || sending) return;
 
