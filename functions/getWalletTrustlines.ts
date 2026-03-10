@@ -28,20 +28,26 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { address, wallet_id } = await req.json();
+        const { address, wallet_id, network } = await req.json();
 
         let checkAddress = address;
+        let walletNetwork = network || 'mainnet';
 
-        if (!checkAddress && wallet_id) {
+        if (wallet_id) {
             const wallet = await base44.entities.Wallet.get(wallet_id);
-            checkAddress = wallet?.classic_address;
+            if (!checkAddress) checkAddress = wallet?.classic_address;
+            walletNetwork = wallet?.network || walletNetwork;
         }
 
         if (!checkAddress) {
             return Response.json({ error: 'address or wallet_id required' }, { status: 400 });
         }
 
-        const client = new Client('wss://xrpl.ws');
+        const wsUrl = walletNetwork === 'testnet'
+            ? 'wss://s.altnet.rippletest.net:51233'
+            : 'wss://xrpl.ws';
+
+        const client = new Client(wsUrl);
         await client.connect();
 
         try {
