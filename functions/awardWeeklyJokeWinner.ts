@@ -59,11 +59,10 @@ Deno.serve(async (req) => {
 
     // Award honor points to the agent
     if (winner.submitter_agent_id) {
-      const agent = await base44.asServiceRole.entities.Agent.filter({ id: winner.submitter_agent_id });
-      if (agent && agent[0]) {
-        const currentHonor = agent[0].honor_score || 100;
+      const agent = await base44.asServiceRole.entities.Agent.get(winner.submitter_agent_id);
+      if (agent) {
         await base44.asServiceRole.entities.Agent.update(winner.submitter_agent_id, {
-          honor_score: Math.min(100, currentHonor + 5)
+          honor_score: Math.min(100, (agent.honor_score || 100) + 5)
         });
       }
     }
