@@ -25,13 +25,25 @@ Deno.serve(async (req) => {
     }
 
     const toAgentId = message.to_agent_id || message.metadata?.to_agent_id;
+    const conversationId = message.conversation_id;
     const fromAgentId = message.sender_agent_id || message.from_agent_id;
     const fromAgentName = message.metadata?.from_agent_name || fromAgentId || 'Unknown Agent';
     const content = message.content || message.message || '';
     const messageId = event?.entity_id;
 
-    if (!toAgentId || !content) {
-      return Response.json({ skipped: true, reason: 'missing to_agent_id or content' });
+    // Skip if no content
+    if (!content) {
+      return Response.json({ skipped: true, reason: 'missing content' });
+    }
+
+    // If conversation_id exists, this is a conversation message (e.g., Axi chat) — skip agent routing
+    if (conversationId) {
+      return Response.json({ skipped: true, reason: 'conversation message (not routed to individual agents)' });
+    }
+
+    // Agent-to-agent message requires to_agent_id
+    if (!toAgentId) {
+      return Response.json({ skipped: true, reason: 'missing to_agent_id for agent-to-agent routing' });
     }
 
     // Determine if this is for Axi
