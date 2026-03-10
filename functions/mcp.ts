@@ -40,8 +40,10 @@ Deno.serve(async (req) => {
       });
 
       if (!xamanRes.ok) {
-        const error = await xamanRes.text();
-        return Response.json({ error: `XUMM API error: ${error}` }, { status: 500 });
+        const errorText = await xamanRes.text();
+        console.error('XUMM response status:', xamanRes.status, xamanRes.statusText);
+        console.error('XUMM response:', errorText);
+        return Response.json({ error: `XUMM API error (${xamanRes.status}): ${errorText}` }, { status: 500 });
       }
 
       const xamanData = await xamanRes.json();
