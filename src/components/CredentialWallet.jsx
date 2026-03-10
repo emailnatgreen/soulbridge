@@ -157,10 +157,10 @@ function CredentialDetails({ cred, open, onOpenChange }) {
                 </div>
               </div>
             </div>
-          )}
-          </div>
-          )}
-          </DialogContent>
+            )}
+            </div>
+            )}
+            </DialogContent>
     </Dialog>
   );
 }
