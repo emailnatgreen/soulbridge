@@ -33,6 +33,9 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { event, payload_too_large } = body;
 
+    // PAUSED: Automatic trustline setup disabled to reduce integration credits
+    return Response.json({ skipped: true, reason: 'Automatic RLUSD trustline setup is paused' });
+
     // Always fetch fresh wallet record directly from DB to avoid stale payload data
     const wallet_id = event?.entity_id;
     if (!wallet_id) return Response.json({ skipped: true, reason: 'No entity_id in event' });
