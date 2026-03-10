@@ -22,13 +22,8 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: true, reason: 'no notification data' });
     }
 
-    // Get the current user to retrieve their email
-    const user = await base44.auth.me();
-    if (!user || !user.email) {
-      return Response.json({ skipped: true, reason: 'user not authenticated or no email' });
-    }
-
-    const userEmail = user.email;
+    // Use the configured email address
+    const userEmail = 'emailnatgreen@gmail.com';
 
     // Construct email subject and body
     const subject = `SoulBridge Update: ${notification.title || 'New Notification'}`;
