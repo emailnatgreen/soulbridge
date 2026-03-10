@@ -206,7 +206,9 @@ export default function DIDManager() {
       toast.success('DID verification complete');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to verify DID');
+      const message = error?.response?.data?.message || error?.message || error?.error || 'Failed to verify DID';
+      toast.error(message);
+      console.error('Verification error:', error);
     }
   });
 
