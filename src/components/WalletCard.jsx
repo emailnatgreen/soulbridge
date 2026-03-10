@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import WalletTransactionHistory from './WalletTransactionHistory';
 import WalletQRCode from './WalletQRCode';
 import WalletTrustlines from './WalletTrustlines';
+import CurrencyConverter from './CurrencyConverter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
