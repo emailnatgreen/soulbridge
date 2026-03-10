@@ -594,28 +594,96 @@ export default function DIDManager() {
                           />
                         </div>
 
-                        <div className="flex gap-2">
-                        <DidDocumentEditor
-                          wallet={wallet}
-                          didDocument={didDoc}
-                          trigger={
-                            <Button size="sm" variant="outline" className="flex-1">
-                              <Edit3 className="w-3 h-3 mr-2" />
-                              Edit DID Doc
-                            </Button>
-                          }
-                        />
-                        
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleRevoke(wallet)}
-                          disabled={revokeMutation.isPending}
-                        >
-                          <Trash2 className="w-3 h-3 mr-2" />
-                          Revoke
-                          </Button>
-                          </div>
+                        <div className="flex flex-col gap-2">
+                         <div className="flex gap-2">
+                           <DidDocumentEditor
+                             wallet={wallet}
+                             didDocument={didDoc}
+                             trigger={
+                               <Button size="sm" variant="outline" className="flex-1">
+                                 <Edit3 className="w-3 h-3 mr-2" />
+                                 Edit DID Doc
+                               </Button>
+                             }
+                           />
+
+                           <Button
+                             size="sm"
+                             variant="destructive"
+                             onClick={() => handleRevoke(wallet)}
+                             disabled={revokeMutation.isPending}
+                           >
+                             <Trash2 className="w-3 h-3 mr-2" />
+                             Revoke
+                             </Button>
+                           </div>
+
+                           <Dialog open={requestDialogOpen && selectedWalletForRequest?.id === wallet.id} 
+                                   onOpenChange={(open) => {
+                                     setRequestDialogOpen(open);
+                                     if (!open) setSelectedWalletForRequest(null);
+                                   }}>
+                             <DialogTrigger asChild>
+                               <Button 
+                                 size="sm" 
+                                 variant="outline"
+                                 className="w-full"
+                                 onClick={() => setSelectedWalletForRequest(wallet)}
+                               >
+                                 📋 Request Activation
+                               </Button>
+                             </DialogTrigger>
+                             <DialogContent>
+                               <DialogHeader>
+                                 <DialogTitle>Request DID Activation</DialogTitle>
+                                 <DialogDescription>
+                                   Submit a governance proposal for DID activation. Quad members will vote on your request.
+                                 </DialogDescription>
+                               </DialogHeader>
+                               <div className="space-y-4 py-4">
+                                 <div>
+                                   <div className="text-sm font-medium text-gray-700">DID Address</div>
+                                   <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded mt-1">
+                                     did:xrpl:{wallet.classic_address}
+                                   </div>
+                                 </div>
+                                 {agent && (
+                                   <div>
+                                     <div className="text-sm font-medium text-gray-700">Associated Agent</div>
+                                     <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded mt-1">
+                                       {agent.name} ({agent.role})
+                                     </div>
+                                   </div>
+                                 )}
+                                 <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800">
+                                   <p className="font-medium mb-1">What happens next:</p>
+                                   <ul className="list-disc ml-4 space-y-1 text-xs">
+                                     <li>Proposal created and sent to governance</li>
+                                     <li>Quad members review and vote</li>
+                                     <li>On approval, DID activates automatically on-chain</li>
+                                   </ul>
+                                 </div>
+                               </div>
+                               <DialogFooter>
+                                 <Button 
+                                   variant="outline"
+                                   onClick={() => setRequestDialogOpen(false)}
+                                 >
+                                   Cancel
+                                 </Button>
+                                 <Button
+                                   onClick={() => requestActivationMutation.mutate({
+                                     wallet_id: wallet.id,
+                                     agent_id: agent?.id
+                                   })}
+                                   disabled={requestActivationMutation.isPending}
+                                 >
+                                   {requestActivationMutation.isPending ? 'Submitting...' : 'Submit Proposal'}
+                                 </Button>
+                               </DialogFooter>
+                             </DialogContent>
+                           </Dialog>
+                           </div>
                           </div>
 
                           {/* Metadata */}
