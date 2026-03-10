@@ -351,7 +351,7 @@ function AgentWellbeingDetail({ agentId, onClose }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
 
-  const { data: agent } = useQuery({
+  const { data: agent, isLoading: agentLoading } = useQuery({
     queryKey: ['agent', agentId],
     queryFn: () => base44.entities.Agent.get(agentId)
   });
@@ -398,11 +398,11 @@ function AgentWellbeingDetail({ agentId, onClose }) {
           <div className="flex gap-2">
             <Button 
               onClick={runAnalysis}
-              disabled={analyzing}
+              disabled={analyzing || !agent || agentLoading}
               className="bg-rose-600 hover:bg-rose-700"
             >
               {analyzing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Brain className="w-4 h-4 mr-2" />}
-              Run AI Analysis
+              {agentLoading ? 'Loading...' : 'Run AI Analysis'}
             </Button>
           </div>
 
