@@ -167,6 +167,7 @@ import VillageReportingDashboard from './pages/VillageReportingDashboard';
 import Wallets from './pages/Wallets';
 import VillageSimulation from './pages/VillageSimulation';
 import WellbeingMonitor from './pages/WellbeingMonitor';
+import QuadShardMonitoring from './pages/QuadShardMonitoring';
 import __Layout from './Layout.jsx';
 
 
@@ -291,6 +292,7 @@ export const PAGES = {
     "Wallets": Wallets,
     "VillageSimulation": VillageSimulation,
     "WellbeingMonitor": WellbeingMonitor,
+    "QuadShardMonitoring": QuadShardMonitoring,
 }
 
 export const pagesConfig = {
