@@ -84,7 +84,6 @@ Deno.serve(async (req) => {
       }
 
       // Try to fetch DID document if account exists
-      let did_data = null;
       if (verification.account_exists) {
         try {
           const didDocResponse = await fetch(xrplUrl, {
