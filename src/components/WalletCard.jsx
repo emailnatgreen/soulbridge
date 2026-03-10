@@ -172,6 +172,8 @@ export default function WalletCard({ wallet, onRefresh }) {
 
                 <WalletQRCode wallet={wallet} currentUser={currentUser} />
 
+                <WalletTrustlines wallet={wallet} />
+
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" className="w-full">
