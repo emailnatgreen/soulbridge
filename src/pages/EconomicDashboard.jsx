@@ -8,7 +8,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts";
-import { TrendingUp, TrendingDown, Coins, ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Shield, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Coins, ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Shield, Activity, Sparkles, Wifi, WifiOff } from "lucide-react";
 import { format, subDays } from "date-fns";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
