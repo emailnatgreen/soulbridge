@@ -78,7 +78,8 @@ Deno.serve(async (req) => {
       });
 
     } else if (tool === 'check_status') {
-      const { Xumm } = await import('npm:xumm-sdk@1.9.0');
+      const XummModule = await import('npm:xumm-sdk@1.9.0');
+      const Xumm = XummModule.default;
       
       const apiKey = Deno.env.get('XUMM_API_KEY');
       const apiSecret = Deno.env.get('XUMM_API_SECRET');
