@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Loader2, Coins, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { toast } from "sonner";
 
 export default function WalletTrustlines({ wallet }) {
     const [loading, setLoading] = useState(false);
