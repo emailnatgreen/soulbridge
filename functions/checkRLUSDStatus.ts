@@ -1,5 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { Client, dropsToXrp } from 'npm:xrpl@4.0.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { Client, dropsToXrp } from 'npm:xrpl@3.0.0';
 
 const RLUSD_CONFIG = {
   currency: "524C555344000000000000000000000000000000",
