@@ -6,8 +6,8 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const apiKey = Deno.env.get('XUMM_API_KEY');
-    const apiSecret = Deno.env.get('XUMM_API_SECRET');
+    const apiKey = Deno.env.get('xumm_api_key');
+    const apiSecret = Deno.env.get('xume_secret_key');
     
     if (!apiKey || !apiSecret) {
       return Response.json({ error: 'XUMM credentials not configured' }, { status: 500 });
