@@ -38,13 +38,9 @@ export default function DIDManager() {
   const [selectedDID, setSelectedDID] = useState(null);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState('');
-  const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
-  const [walletToRevoke, setWalletToRevoke] = useState(null);
   const [verificationResults, setVerificationResults] = useState({});
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [currentVerification, setCurrentVerification] = useState(null);
-  const [reversalDialogOpen, setReversalDialogOpen] = useState(false);
-  const [walletToReverse, setWalletToReverse] = useState(null);
   const [activeTab, setActiveTab] = useState('active');
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [selectedWalletForRequest, setSelectedWalletForRequest] = useState(null);
@@ -70,31 +66,7 @@ export default function DIDManager() {
     queryFn: () => base44.entities.Agent.list()
   });
 
-  const revokeMutation = useMutation({
-    mutationFn: (walletId) => base44.functions.invoke('revokeDID', { wallet_id: walletId }),
-    onSuccess: () => {
-      toast.success('DID successfully revoked on XRPL');
-      queryClient.invalidateQueries(['wallets']);
-      setRevokeDialogOpen(false);
-      setWalletToRevoke(null);
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to revoke DID');
-    }
-  });
-
-  const reversalMutation = useMutation({
-    mutationFn: (walletId) => base44.functions.invoke('reverseDIDRevocation', { wallet_id: walletId }),
-    onSuccess: () => {
-      toast.success('DID revocation reversed successfully');
-      queryClient.invalidateQueries(['wallets']);
-      setReversalDialogOpen(false);
-      setWalletToReverse(null);
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to reverse revocation');
-    }
-  });
+  // NOTE: Revoke/Reverse functions don't exist - DIDs are managed via governance proposals
 
   const linkMutation = useMutation({
     mutationFn: ({ agent_id, wallet_id }) => 
@@ -110,17 +82,7 @@ export default function DIDManager() {
     }
   });
 
-  const unlinkMutation = useMutation({
-    mutationFn: (agentId) => 
-      base44.functions.invoke('linkAgentToDID', { agent_id: agentId, wallet_id: null }),
-    onSuccess: () => {
-      toast.success('Agent unlinked from DID');
-      queryClient.invalidateQueries(['agents']);
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to unlink agent');
-    }
-  });
+  // NOTE: Agents cannot be unlinked from wallets - wallet_id is required in Agent schema
 
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
@@ -164,31 +126,7 @@ export default function DIDManager() {
     };
   };
 
-  const handleRevoke = (wallet) => {
-    setWalletToRevoke(wallet);
-    setRevokeDialogOpen(true);
-  };
 
-  const confirmRevoke = () => {
-    if (walletToRevoke) {
-      const reason = document.getElementById('revocation-reason')?.value || 'No reason provided';
-      revokeMutation.mutate({ 
-        walletId: walletToRevoke.id,
-        reason: reason 
-      });
-    }
-  };
-
-  const handleReverseRevocation = (wallet) => {
-    setWalletToReverse(wallet);
-    setReversalDialogOpen(true);
-  };
-
-  const confirmReversal = () => {
-    if (walletToReverse) {
-      reversalMutation.mutate(walletToReverse.id);
-    }
-  };
 
   const handleLinkAgent = (walletId) => {
     if (selectedAgent) {
@@ -344,18 +282,19 @@ export default function DIDManager() {
           </TabsList>
 
           {/* Active DIDs Tab */}
-          <TabsContent value="active" className="mt-6">
-            {activeWallets.length === 0 ? (
-              <Card className="bg-gray-50">
-                <CardContent className="py-12 text-center">
-                  <Fingerprint className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No active DIDs found</p>
-                  <Link to={createPageUrl('CreateDID')} className="mt-4 inline-block">
-                    <Button>Create Your First DID</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ) : (
+           <TabsContent value="active" className="mt-6">
+             {activeWallets.length === 0 ? (
+               <Card className="bg-gray-50">
+                 <CardContent className="py-12 text-center">
+                   <Fingerprint className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                   <p className="text-gray-600">No active DIDs found</p>
+                   <p className="text-sm text-gray-500 mt-2">DIDs are created via governance activation with an associated agent.</p>
+                   <Link to={createPageUrl('CreateDID')} className="mt-4 inline-block">
+                     <Button>Create New DID</Button>
+                   </Link>
+                 </CardContent>
+               </Card>
+             ) : (
               <div className="grid gap-6 md:grid-cols-2">
                 {activeWallets.map((wallet) => {
                   const agent = getAgentForWallet(wallet.id);
@@ -434,14 +373,7 @@ export default function DIDManager() {
                               }
                               onSuccess={() => queryClient.invalidateQueries(['agents'])}
                             />
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => unlinkMutation.mutate(agent.id)}
-                              disabled={unlinkMutation.isPending}
-                            >
-                              <Unlink className="w-3 h-3" />
-                            </Button>
+
                           </div>
                         </div>
                         <div className="bg-indigo-50 p-3 rounded-md space-y-2">
@@ -563,60 +495,29 @@ export default function DIDManager() {
                         {verifyMutation.isPending ? 'Verifying...' : 'Verify on XRPL'}
                         </Button>
 
-                        <div className="grid grid-cols-3 gap-2">
-                          <DidPermissionsDialog 
-                            wallet={wallet}
-                            trigger={
-                              <Button size="sm" variant="outline" className="w-full">
-                                <Shield className="w-3 h-3 mr-2" />
-                                Permissions
-                              </Button>
-                            }
-                          />
-                          <DidVersioningDialog 
-                            wallet={wallet}
-                            didDocument={didDoc}
-                            trigger={
-                              <Button size="sm" variant="outline" className="w-full">
-                                <Clock className="w-3 h-3 mr-2" />
-                                Versions
-                              </Button>
-                            }
-                          />
-                          <AuditLogViewer 
-                            wallet={wallet}
-                            trigger={
-                              <Button size="sm" variant="outline" className="w-full">
-                                <History className="w-3 h-3 mr-2" />
-                                Audit Log
-                              </Button>
-                            }
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                         <div className="flex gap-2">
+                        <div className="grid grid-cols-2 gap-2">
+                           <AuditLogViewer 
+                             wallet={wallet}
+                             trigger={
+                               <Button size="sm" variant="outline" className="w-full">
+                                 <History className="w-3 h-3 mr-2" />
+                                 Audit Log
+                               </Button>
+                             }
+                           />
                            <DidDocumentEditor
                              wallet={wallet}
                              didDocument={didDoc}
                              trigger={
-                               <Button size="sm" variant="outline" className="flex-1">
-                                 <Edit3 className="w-3 h-3 mr-2" />
-                                 Edit DID Doc
+                               <Button size="sm" variant="outline" className="w-full">
+                                 <FileJson className="w-3 h-3 mr-2" />
+                                 View Doc
                                </Button>
                              }
                            />
+                         </div>
 
-                           <Button
-                             size="sm"
-                             variant="destructive"
-                             onClick={() => handleRevoke(wallet)}
-                             disabled={revokeMutation.isPending}
-                           >
-                             <Trash2 className="w-3 h-3 mr-2" />
-                             Revoke
-                             </Button>
-                           </div>
+                        <div className="flex flex-col gap-2">
 
                            <Dialog open={requestDialogOpen && selectedWalletForRequest?.id === wallet.id} 
                                    onOpenChange={(open) => {
@@ -830,112 +731,7 @@ export default function DIDManager() {
                         </TabsContent>
                         </Tabs>
 
-        {/* Revoke Confirmation Dialog */}
-        <Dialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-red-600">
-                <AlertTriangle className="w-5 h-5" />
-                Revoke DID
-              </DialogTitle>
-              <DialogDescription>
-                This will delete the DID from XRPL. You can reverse this later to recreate the DID.
-              </DialogDescription>
-            </DialogHeader>
-            {walletToRevoke && (
-              <div className="py-4 space-y-4">
-                <div className="text-sm">
-                  <span className="font-medium">DID:</span>
-                  <code className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
-                    did:xrpl:{walletToRevoke.classic_address}
-                  </code>
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">Wallet:</span> {walletToRevoke.name || 'Unnamed'}
-                </div>
-                
-                <div>
-                  <label htmlFor="revocation-reason" className="text-sm font-medium text-gray-700 block mb-2">
-                    Reason for Revocation (Optional)
-                  </label>
-                  <textarea
-                    id="revocation-reason"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    placeholder="e.g., Security concerns, wallet compromise, testing..."
-                    rows={3}
-                  />
-                </div>
-              </div>
-            )}
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setRevokeDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={confirmRevoke}
-                disabled={revokeMutation.isPending}
-              >
-                {revokeMutation.isPending ? 'Revoking...' : 'Revoke DID'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
-        {/* Reversal Confirmation Dialog */}
-        <Dialog open={reversalDialogOpen} onOpenChange={setReversalDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-green-600">
-                <RefreshCw className="w-5 h-5" />
-                Reverse DID Revocation
-              </DialogTitle>
-              <DialogDescription>
-                This will recreate the DID on XRPL and restore it to active status.
-              </DialogDescription>
-            </DialogHeader>
-            {walletToReverse && (
-              <div className="py-4 space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex gap-3">
-                    <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                    <div className="text-sm text-blue-800">
-                      <p className="font-medium mb-1">What happens:</p>
-                      <ul className="list-disc ml-4 space-y-1">
-                        <li>A new DIDSet transaction will be submitted to XRPL</li>
-                        <li>The DID will be recreated with the same address</li>
-                        <li>Status will change from "Revoked" to "Active"</li>
-                        <li>Revocation history will be preserved for records</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-sm">
-                  <span className="font-medium">DID:</span>
-                  <code className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
-                    did:xrpl:{walletToReverse.classic_address}
-                  </code>
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">Wallet:</span> {walletToReverse.name || 'Unnamed'}
-                </div>
-              </div>
-            )}
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setReversalDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                className="bg-green-600 hover:bg-green-700"
-                onClick={confirmReversal}
-                disabled={reversalMutation.isPending}
-              >
-                {reversalMutation.isPending ? 'Reversing...' : 'Reverse Revocation'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         {/* Verification Results Dialog */}
         <Dialog open={verifyDialogOpen} onOpenChange={setVerifyDialogOpen}>
