@@ -46,6 +46,8 @@ export default function DIDManager() {
   const [reversalDialogOpen, setReversalDialogOpen] = useState(false);
   const [walletToReverse, setWalletToReverse] = useState(null);
   const [activeTab, setActiveTab] = useState('active');
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [selectedWalletForRequest, setSelectedWalletForRequest] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -209,6 +211,21 @@ export default function DIDManager() {
       const message = error?.response?.data?.message || error?.message || error?.error || 'Failed to verify DID';
       toast.error(message);
       console.error('Verification error:', error);
+    }
+  });
+
+  const requestActivationMutation = useMutation({
+    mutationFn: ({ wallet_id, agent_id }) => 
+      base44.functions.invoke('createDidActivationProposal', { wallet_id, agent_id }),
+    onSuccess: (response) => {
+      toast.success('DID activation proposal submitted to governance');
+      setRequestDialogOpen(false);
+      setSelectedWalletForRequest(null);
+      queryClient.invalidateQueries(['wallets']);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to submit activation proposal');
+      console.error('Proposal error:', error);
     }
   });
 
