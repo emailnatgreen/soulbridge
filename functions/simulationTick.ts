@@ -101,13 +101,11 @@ Deno.serve(async (req) => {
         const agentStates = await base44.asServiceRole.entities.AgentState.list();
         const agentStateMap = new Map(agentStates.map(s => [s.agent_id, s]));
 
-        const events = [];
-
-        for (const agent of agents) {
+        // Process all agents in parallel to avoid TIME_LIMIT
+        const agentResults = await Promise.all(agents.map(async (agent) => {
             const currentState = agentStateMap.get(agent.id);
 
             if (!currentState) {
-                // Create initial agent state
                 await base44.asServiceRole.entities.AgentState.create({
                     agent_id: agent.id,
                     current_activity: 'idle',
@@ -117,33 +115,22 @@ Deno.serve(async (req) => {
                     experience: 0,
                     relationships: {}
                 });
-                continue;
+                return null;
             }
 
             // Advance agent energy
             let agentEnergy = currentState.energy || 80;
-            if (isNight) {
-                agentEnergy = clamp(agentEnergy + 5, 0, 100); // Resting at night restores energy
-            } else {
-                agentEnergy = clamp(agentEnergy - 1, 10, 100);
-            }
+            agentEnergy = isNight ? clamp(agentEnergy + 5, 0, 100) : clamp(agentEnergy - 1, 10, 100);
 
             // Decide activity
             let activity = currentState.current_activity;
-            if (Math.random() < 0.2) {
-                activity = isNight ? 'resting' : randomChoice(ACTIVITIES);
-            }
+            if (Math.random() < 0.2) activity = isNight ? 'resting' : randomChoice(ACTIVITIES);
             if (agentEnergy < 20) activity = 'resting';
 
-            // Gain wisdom and experience slowly
             const newWisdom = (currentState.wisdom || 10) + (Math.random() < 0.3 ? 0.1 : 0);
             const newExperience = (currentState.experience || 0) + (activity !== 'resting' ? 1 : 0);
-
-            // Mood influenced by village mood and energy
             let agentMood = currentState.mood || 'peaceful';
-            if (Math.random() < 0.15) {
-                agentMood = newMood; // Sync with village mood occasionally
-            }
+            if (Math.random() < 0.15) agentMood = newMood;
 
             await base44.asServiceRole.entities.AgentState.update(currentState.id, {
                 current_activity: activity,
@@ -163,19 +150,17 @@ Deno.serve(async (req) => {
                     interaction: `${agent.name} engaged with the Village community`,
                     growth: `${agent.name} gained wisdom (${Math.round(newWisdom * 10) / 10})`
                 };
-                events.push({
-                    tick: newTick,
-                    agent_id: agent.id,
-                    event_type: eventType,
-                    description: descriptions[eventType]
-                });
+                return { tick: newTick, agent_id: agent.id, event_type: eventType, description: descriptions[eventType] };
             }
-        }
+            return null;
+        }));
 
-        // Record simulation events (batch, limit to a few per tick)
-        for (const evt of events.slice(0, 5)) {
-            await base44.asServiceRole.entities.SimulationEvent.create(evt);
-        }
+        const events = agentResults.filter(Boolean);
+
+        // Record simulation events in parallel (limit to 5 per tick)
+        await Promise.all(events.slice(0, 5).map(evt =>
+            base44.asServiceRole.entities.SimulationEvent.create(evt)
+        ));
 
         // Day rollover event
         if (dayAdvanced) {
