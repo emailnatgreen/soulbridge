@@ -71,6 +71,13 @@ export default function Home() {
     queryFn: () => base44.entities.JokeSubmission.list(),
   });
 
+  const { data: wallets = [] } = useQuery({
+    queryKey: ['wallets-home'],
+    queryFn: () => base44.entities.Wallet.list(),
+  });
+
+  const sendableWallets = wallets.filter(w => w.classic_address && w.network === 'mainnet');
+
   const isLoading = loadingCredentials || loadingProposals || loadingAgents || loadingMentorships || loadingRisks || loadingWellbeings || loadingTrustLinks || loadingJokes;
 
   const activeAgents = agents.filter(a => a.status === 'active');
