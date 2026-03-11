@@ -84,7 +84,6 @@ Deno.serve(async (req) => {
     
     try {
       await client.connect();
-      
       try {
         const response = await client.request({
           command: 'account_tx',
@@ -94,16 +93,15 @@ Deno.serve(async (req) => {
           ledger_index_max: -1,
           forward: false,
         });
-
         transactions = (response.result.transactions || []).map(tx =>
           parseTransaction(tx, walletRecord.classic_address)
         );
       } catch (err) {
-        // Account not activated yet — return empty
+        // Account not found / not activated / malformed — return empty
         console.log('account_tx failed:', err.message);
+      } finally {
+        try { await client.disconnect(); } catch (_) { /* ignore disconnect errors */ }
       }
-      
-      await client.disconnect();
     } catch (connectErr) {
       console.error('Client connection error:', connectErr.message);
     }
