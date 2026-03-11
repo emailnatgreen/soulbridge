@@ -51,6 +51,23 @@ export default function WalletCard({ wallet, onRefresh }) {
         }
     });
 
+    const handleRevealSeed = async () => {
+        if (showSeed) {
+            setShowSeed(false);
+            setDecryptedSeed(null);
+            return;
+        }
+        setDecrypting(true);
+        try {
+            const response = await base44.functions.invoke('decryptWalletSeed', { wallet_id: wallet.id, reason: 'Viewing seed from wallet card' });
+            setDecryptedSeed(response.data.seed);
+            setShowSeed(true);
+        } catch (err) {
+            toast.error('Failed to decrypt seed: ' + (err?.response?.data?.error || err.message));
+        }
+        setDecrypting(false);
+    };
+
     const handleReassign = () => {
         if (currentUser?.id) {
             reassignWallet.mutate({ wallet_id: wallet.id, new_owner_id: currentUser.id });
