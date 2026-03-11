@@ -1,0 +1,122 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { Client, Wallet, xrpToDrops } from 'npm:xrpl@3.0.0';
+
+async function decryptSeed(encryptedData, iv, salt) {
+    const masterKey = Deno.env.get('WALLET_ENCRYPTION_KEY');
+    if (!masterKey) throw new Error('WALLET_ENCRYPTION_KEY not configured');
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const encryptedBytes = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+    const ivBytes = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
+    const saltBytes = Uint8Array.from(atob(salt), c => c.charCodeAt(0));
+
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw', encoder.encode(masterKey), 'PBKDF2', false, ['deriveBits', 'deriveKey']
+    );
+    const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+    );
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ivBytes }, key, encryptedBytes);
+    return decoder.decode(decrypted);
+}
+
+Deno.serve(async (req) => {
+    try {
+        const base44 = createClientFromRequest(req);
+        const user = await base44.auth.me();
+        if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const { transaction_id } = await req.json();
+        if (!transaction_id) return Response.json({ error: 'transaction_id is required' }, { status: 400 });
+
+        const tx = await base44.asServiceRole.entities.Transaction.get(transaction_id);
+        if (!tx) return Response.json({ error: 'Transaction not found' }, { status: 404 });
+        if (!tx.from_wallet_id) return Response.json({ error: 'No from_wallet_id on transaction' }, { status: 400 });
+
+        const fromWalletRecord = await base44.asServiceRole.entities.Wallet.get(tx.from_wallet_id);
+        if (!fromWalletRecord) return Response.json({ error: 'From wallet not found' }, { status: 404 });
+        if (!fromWalletRecord.classic_address) return Response.json({ error: 'From wallet has no XRPL address' }, { status: 400 });
+
+        // Get seed - try encrypted first, then fall back to env vars for treasury wallets
+        let seed;
+        if (fromWalletRecord.encrypted_seed && fromWalletRecord.encryption_iv && fromWalletRecord.encryption_salt) {
+            seed = await decryptSeed(
+                fromWalletRecord.encrypted_seed,
+                fromWalletRecord.encryption_iv,
+                fromWalletRecord.encryption_salt
+            );
+        } else {
+            // Treasury or special wallets use env var seeds
+            const treasurySeed = Deno.env.get('XRPL_TREASURY_SEED');
+            if (treasurySeed) {
+                seed = treasurySeed;
+            } else {
+                return Response.json({ error: 'No seed available for this wallet. Please ensure it has an encrypted seed or is a treasury wallet.' }, { status: 400 });
+            }
+        }
+
+        const networkUrl = fromWalletRecord.network === 'mainnet'
+            ? 'wss://xrplcluster.com'
+            : 'wss://s.altnet.rippletest.net:51233';
+
+        const client = new Client(networkUrl);
+        await client.connect();
+
+        const senderWallet = Wallet.fromSeed(seed);
+
+        // Verify the seed matches the stored address
+        if (senderWallet.address !== fromWalletRecord.classic_address) {
+            await client.disconnect();
+            return Response.json({ error: `Seed mismatch: seed generates ${senderWallet.address} but wallet has ${fromWalletRecord.classic_address}` }, { status: 400 });
+        }
+
+        const payment = {
+            TransactionType: 'Payment',
+            Account: senderWallet.address,
+            Destination: tx.recipient_address,
+            Amount: xrpToDrops(tx.amount.toString()),
+        };
+
+        if (tx.destination_tag) {
+            payment.DestinationTag = parseInt(tx.destination_tag);
+        }
+
+        const { result } = await client.submitAndWait(payment, { wallet: senderWallet });
+        await client.disconnect();
+
+        const success = result.meta.TransactionResult === 'tesSUCCESS';
+        const hash = result.hash;
+
+        await base44.asServiceRole.entities.Transaction.update(transaction_id, {
+            status: success ? 'completed' : 'failed',
+            hash: hash,
+        });
+
+        // Log the activity
+        await base44.asServiceRole.entities.AutomationLog.create({
+            automation_name: 'XRP Send',
+            function_name: 'sendXRP',
+            status: success ? 'success' : 'error',
+            message: `${success ? 'Sent' : 'Failed'} ${tx.amount} XRP from ${fromWalletRecord.name} to ${tx.recipient_name || tx.recipient_address}`,
+            details: { hash, from: fromWalletRecord.classic_address, to: tx.recipient_address, amount: tx.amount, network: fromWalletRecord.network },
+            run_at: new Date().toISOString(),
+            triggered_by: 'manual'
+        });
+
+        if (!success) {
+            return Response.json({ error: `Transaction failed: ${result.meta.TransactionResult}`, hash }, { status: 400 });
+        }
+
+        return Response.json({ success: true, hash, result: result.meta.TransactionResult });
+
+    } catch (error) {
+        console.error('sendXRP error:', error.message);
+        return Response.json({ error: error.message }, { status: 500 });
+    }
+});
