@@ -179,6 +179,15 @@ export default function WalletCard({ wallet, onRefresh }) {
 
                 <WalletTrustlines wallet={wallet} />
 
+                {wallet.classic_address && (
+                    <Link to={createPageUrl('Send') + `?from_wallet_id=${wallet.id}`} className="block">
+                        <Button variant="outline" className="w-full bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 text-purple-700 hover:from-purple-100 hover:to-pink-100">
+                            <Send className="w-4 h-4 mr-2" />
+                            Send XRP
+                        </Button>
+                    </Link>
+                )}
+
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" className="w-full">
