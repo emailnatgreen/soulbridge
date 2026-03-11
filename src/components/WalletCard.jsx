@@ -16,6 +16,8 @@ import { base44 } from '@/api/base44Client';
 
 export default function WalletCard({ wallet, onRefresh }) {
     const [showSeed, setShowSeed] = useState(false);
+    const [decryptedSeed, setDecryptedSeed] = useState(null);
+    const [decrypting, setDecrypting] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const queryClient = useQueryClient();
 
