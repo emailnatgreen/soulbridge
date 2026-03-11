@@ -53,10 +53,16 @@ export default function TransactionAlerts({ wallets = [], pollInterval = 60000 }
 
   const checkWallet = async (wallet) => {
     if (!wallet.classic_address) return;
-    const response = await base44.functions.invoke('getWalletTransactions', {
-      wallet_id: wallet.id,
-      limit: 10,
-    });
+    let response;
+    try {
+      response = await base44.functions.invoke('getWalletTransactions', {
+        wallet_id: wallet.id,
+        limit: 10,
+      });
+    } catch (e) {
+      console.warn(`TransactionAlerts: skipping wallet ${wallet.name}`, e.message);
+      return;
+    }
     const txs = response.data?.transactions || [];
 
     for (const tx of txs) {
