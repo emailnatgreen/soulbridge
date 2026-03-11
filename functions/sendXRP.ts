@@ -64,6 +64,11 @@ Deno.serve(async (req) => {
         // Always trim the seed to remove any accidental whitespace/newlines
         seed = seed.trim();
 
+        // Validate seed format before connecting
+        if (!seed || seed.length < 10) {
+            return Response.json({ error: 'Invalid seed: seed is empty or too short. Please check your XRPL_SENDER_SEED secret.' }, { status: 400 });
+        }
+
         const networkUrl = fromWalletRecord.network === 'mainnet'
             ? 'wss://xrplcluster.com'
             : 'wss://s.altnet.rippletest.net:51233';
@@ -71,7 +76,20 @@ Deno.serve(async (req) => {
         const client = new Client(networkUrl);
         await client.connect();
 
-        const senderWallet = Wallet.fromSeed(seed);
+        // Try fromSeed (family seed starting with 's'), fallback to fromPrivateKey (hex)
+        let senderWallet;
+        try {
+            senderWallet = Wallet.fromSeed(seed);
+        } catch (seedErr) {
+            try {
+                senderWallet = Wallet.fromPrivateKey(seed);
+            } catch (pkErr) {
+                await client.disconnect();
+                return Response.json({ 
+                    error: `Invalid wallet seed format. The seed must be a valid XRPL family seed (starts with 's') or a hex private key. Please re-enter XRPL_SENDER_SEED in your app secrets. Details: ${seedErr.message}` 
+                }, { status: 400 });
+            }
+        }
 
         // Verify the seed matches the stored address
         if (senderWallet.address !== fromWalletRecord.classic_address) {
