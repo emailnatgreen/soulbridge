@@ -57,9 +57,12 @@ Deno.serve(async (req) => {
             if (treasurySeed) {
                 seed = treasurySeed;
             } else {
-                return Response.json({ error: 'No seed available for this wallet. Please ensure it has an encrypted seed or is a treasury wallet.' }, { status: 400 });
+                return Response.json({ error: 'No seed available for this wallet. Please set XRPL_SENDER_SEED in your environment secrets.' }, { status: 400 });
             }
         }
+
+        // Always trim the seed to remove any accidental whitespace/newlines
+        seed = seed.trim();
 
         const networkUrl = fromWalletRecord.network === 'mainnet'
             ? 'wss://xrplcluster.com'
