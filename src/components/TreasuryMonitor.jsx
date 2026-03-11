@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 // Syncs live mainnet balance for the official treasury, then alerts Axi if below threshold
 const ALERT_THRESHOLD_XRP = 150;
-const POLL_INTERVAL = 1 * 60 * 1000; // every 1 minute
+const POLL_INTERVAL = 5 * 60 * 1000; // every 5 minutes
 const OFFICIAL_TREASURY_ADDRESS = 'rK1dsNbsip594ArX4cQS8Acn2ibApEQjwU';
 const OFFICIAL_TREASURY_ID = '69a94b388df36ee80fa7092d';
 
