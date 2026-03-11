@@ -52,8 +52,8 @@ Deno.serve(async (req) => {
                 fromWalletRecord.encryption_salt
             );
         } else {
-            // Treasury or special wallets use env var seeds
-            const treasurySeed = Deno.env.get('XRPL_TREASURY_SEED');
+            // Treasury or special wallets use env var seeds - try multiple possible secret names
+            const treasurySeed = Deno.env.get('XRPL_TREASURY_SEED') || Deno.env.get('XRPL_SENDER_SEED');
             if (treasurySeed) {
                 seed = treasurySeed;
             } else {
