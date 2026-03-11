@@ -159,21 +159,22 @@ export default function WalletCard({ wallet, onRefresh }) {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => setShowSeed(!showSeed)}
+                                onClick={handleRevealSeed}
+                                disabled={decrypting}
                                 className="h-6 w-6"
                             >
-                                {showSeed ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                {decrypting ? <Loader2 className="w-3 h-3 animate-spin" /> : showSeed ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                             </Button>
                         </div>
-                        {showSeed ? (
+                        {showSeed && decryptedSeed ? (
                             <div className="flex items-center gap-2">
                                 <code className="text-xs bg-red-50 px-2 py-1 rounded flex-1 overflow-hidden text-ellipsis text-red-700">
-                                    {wallet.encrypted_seed}
+                                    {decryptedSeed}
                                 </code>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => copyToClipboard(wallet.encrypted_seed, 'Seed')}
+                                    onClick={() => copyToClipboard(decryptedSeed, 'Seed')}
                                     className="h-8 w-8"
                                 >
                                     <Copy className="w-3 h-3" />
