@@ -138,12 +138,35 @@ export default function Home() {
                   label="Ask Axi"
                   context="Nathan is on the SoulBridge Dashboard. Please give him a brief Village morning briefing: treasury balance, any urgent notifications, active governance proposals needing votes, and which agents need your attention today."
                 />
-                <Link to={createPageUrl('Send')}>
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/25 transition-all duration-300">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Send XRP
-                  </Button>
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/25 transition-all duration-300">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Send XRP
+                      <ChevronDown className="w-3 h-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-white border-gray-200 min-w-[220px]">
+                    <DropdownMenuLabel className="text-xs text-gray-500">Send from wallet</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {sendableWallets.length === 0 ? (
+                      <DropdownMenuItem disabled>No mainnet wallets found</DropdownMenuItem>
+                    ) : (
+                      sendableWallets.map(w => (
+                        <DropdownMenuItem key={w.id} asChild>
+                          <Link to={`${createPageUrl('Send')}?from_wallet_id=${w.id}`} className="cursor-pointer flex justify-between gap-4">
+                            <span className="font-medium">{w.name}</span>
+                            <span className="text-gray-400 text-xs">{w.balance?.toFixed(2)} XRP</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('Send')} className="cursor-pointer text-blue-600">Choose manually →</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
             
