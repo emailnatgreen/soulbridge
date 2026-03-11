@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCw, Shield } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
-export default function ShieldedWalletBalance({ autoRefresh = true, refreshInterval = 30000 }) {
+export default function ShieldedWalletBalance({ autoRefresh = true, refreshInterval = 60000 }) {
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
