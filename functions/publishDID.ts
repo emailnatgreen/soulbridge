@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
       .toUpperCase();
 
     // Create XUMM DIDSet payload
+    const isTestnet = wallet.network === 'testnet';
     const payload = {
       txjson: {
         TransactionType: 'DIDSet',
@@ -54,6 +55,11 @@ Deno.serve(async (req) => {
       options: {
         submit: true,
         expire: 10, // 10 minutes
+        ...(isTestnet ? {
+          multisign: false,
+          signers: [],
+          force_network: 'TESTNET',
+        } : {}),
       },
       custom_meta: {
         instruction: `Publish DID for ${wallet.name || wallet.classic_address} on XRPL ${wallet.network}`,
