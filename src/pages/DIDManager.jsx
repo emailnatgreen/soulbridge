@@ -776,36 +776,48 @@ export default function DIDManager() {
                   )}
                 </div>
 
-                {/* DID Data */}
-                {currentVerification.did_data && (
-                  <div>
-                    <div className="text-sm font-medium text-gray-700 mb-2">On-Chain DID Data:</div>
-                    <div className="bg-gray-50 p-3 rounded-md space-y-2">
-                      {currentVerification.did_data.document && (
-                        <div>
-                          <div className="text-xs text-gray-600 mb-1">Document:</div>
-                          <pre className="text-xs bg-white p-2 rounded overflow-x-auto">
-                            {JSON.stringify(currentVerification.did_data.document, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                      {currentVerification.did_data.uri && (
-                        <div>
-                          <div className="text-xs text-gray-600 mb-1">URI:</div>
-                          <div className="text-xs bg-white p-2 rounded">
-                            {currentVerification.did_data.uri}
-                          </div>
-                        </div>
-                      )}
-                      {currentVerification.did_data.data && (
-                        <div>
-                          <div className="text-xs text-gray-600 mb-1">Data:</div>
-                          <div className="text-xs bg-white p-2 rounded">
-                            {currentVerification.did_data.data}
-                          </div>
-                        </div>
-                      )}
+                {/* DID On-Chain Data */}
+                {currentVerification.did_data ? (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-green-800 font-medium text-sm">
+                      <CheckCircle className="w-4 h-4" />
+                      DID Object Found On-Chain
                     </div>
+                    {currentVerification.did_data.uri && (
+                      <div>
+                        <div className="text-xs text-gray-600 mb-1 font-medium">URI:</div>
+                        <div className="text-xs bg-white p-2 rounded border border-green-200 break-all">
+                          {currentVerification.did_data.uri}
+                        </div>
+                      </div>
+                    )}
+                    {currentVerification.did_data.document && (
+                      <div>
+                        <div className="text-xs text-gray-600 mb-1 font-medium">DID Document:</div>
+                        <pre className="text-xs bg-white p-2 rounded border border-green-200 overflow-x-auto max-h-48">
+                          {currentVerification.did_data.document}
+                        </pre>
+                      </div>
+                    )}
+                    {currentVerification.did_data.data && (
+                      <div>
+                        <div className="text-xs text-gray-600 mb-1 font-medium">Data:</div>
+                        <div className="text-xs bg-white p-2 rounded border border-green-200 break-all">
+                          {currentVerification.did_data.data}
+                        </div>
+                      </div>
+                    )}
+                    {!currentVerification.did_data.uri && !currentVerification.did_data.document && !currentVerification.did_data.data && (
+                      <div className="text-xs text-green-700">DID object exists on-chain (empty fields — object anchor confirmed).</div>
+                    )}
+                  </div>
+                ) : currentVerification.verification.account_exists && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-yellow-800 font-medium text-sm mb-1">
+                      <AlertTriangle className="w-4 h-4" />
+                      No DID Object Published
+                    </div>
+                    <p className="text-xs text-yellow-700">This XRPL account exists but has no DID document published on-chain. Use the DID Editor to publish it.</p>
                   </div>
                 )}
 
