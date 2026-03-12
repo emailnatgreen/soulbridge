@@ -86,7 +86,12 @@ export default function TransactionAlerts({ wallets = [], pollInterval = 60000 }
         ? `${parseFloat(tx.amount).toFixed(4)} ${tx.currency}`
         : '';
       const title = `${icon} ${label}${txAmount ? ` — ${txAmount}` : ''}`;
-      const description = `${wallet.name} • ${tx.status === 'success' ? '✅ Confirmed' : '❌ Failed'} • Balance: ${parseFloat(freshBalance).toFixed(6)} XRP`;
+      const description = [
+        wallet.name,
+        txAmount ? `Amount: ${txAmount}` : null,
+        tx.status === 'success' ? '✅ Confirmed' : '❌ Failed',
+        `Balance: ${parseFloat(freshBalance).toFixed(6)} XRP`,
+      ].filter(Boolean).join(' • ');
 
       // Toast
       toast(title, { description, duration: 6000 });
