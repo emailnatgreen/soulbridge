@@ -832,12 +832,23 @@ export default function DIDManager() {
                     )}
                   </div>
                 ) : currentVerification.verification.account_exists && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
                     <div className="flex items-center gap-2 text-yellow-800 font-medium text-sm mb-1">
                       <AlertTriangle className="w-4 h-4" />
                       No DID Object Published
                     </div>
-                    <p className="text-xs text-yellow-700">This XRPL account exists but has no DID document published on-chain. Use the DID Editor to publish it.</p>
+                    <p className="text-xs text-yellow-700">This XRPL account exists but has no DID document published on-chain.</p>
+                    <Button
+                      size="sm"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                      onClick={() => {
+                        const wallet = activeWallets.find(w => `did:xrpl:${w.classic_address}` === currentVerification.did);
+                        if (wallet) { setSelectedWalletForPublish(wallet); setPublishDialogOpen(true); setVerifyDialogOpen(false); }
+                      }}
+                    >
+                      <Upload className="w-3 h-3 mr-2" />
+                      Publish DID via Xaman Now
+                    </Button>
                   </div>
                 )}
 
