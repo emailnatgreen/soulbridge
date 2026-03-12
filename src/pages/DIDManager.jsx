@@ -15,6 +15,7 @@ import DidResolverTool from '../components/DidResolverTool';
 import DidDocumentEditor from '../components/DidDocumentEditor';
 import WalletQRCode from '../components/WalletQRCode';
 import DidReputationScore from '../components/DidReputationScore';
+import PublishDIDDialog from '../components/PublishDIDDialog';
 import {
   Dialog,
   DialogContent,
