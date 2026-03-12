@@ -65,18 +65,28 @@ export default function TransactionAlerts({ wallets = [], pollInterval = 60000 }
     }
     const txs = response.data?.transactions || [];
 
-    for (const tx of txs) {
-      if (!tx.hash || seenHashes.current.has(tx.hash)) continue;
-      seenHashes.current.add(tx.hash);
-      if (!initialized.current) continue;
+    const newTxs = txs.filter(tx => tx.hash && !seenHashes.current.has(tx.hash));
+    newTxs.forEach(tx => seenHashes.current.add(tx.hash));
 
+    if (!initialized.current || newTxs.length === 0) return;
+
+    // Fetch the real on-chain balance after new transactions are detected
+    let freshBalance = wallet.balance;
+    try {
+      const balRes = await base44.functions.invoke('getBalance', { wallet_id: wallet.id });
+      if (balRes.data?.balance !== undefined) freshBalance = balRes.data.balance;
+    } catch (e) {
+      console.warn(`TransactionAlerts: balance refresh failed for ${wallet.name}`, e.message);
+    }
+
+    for (const tx of newTxs) {
       const icon = tx.direction === 'received' ? '📥' : tx.direction === 'sent' ? '📤' : '🔗';
       const label = tx.direction === 'received' ? 'Received' : tx.direction === 'sent' ? 'Sent' : tx.type;
-      const amount = tx.amount && tx.currency
+      const txAmount = tx.amount && tx.currency
         ? `${parseFloat(tx.amount).toFixed(4)} ${tx.currency}`
         : '';
-      const title = `${icon} ${label}${amount ? ` — ${amount}` : ''}`;
-      const description = `${wallet.name} • ${tx.status === 'success' ? '✅ Confirmed' : '❌ Failed'}`;
+      const title = `${icon} ${label}${txAmount ? ` — ${txAmount}` : ''}`;
+      const description = `${wallet.name} • ${tx.status === 'success' ? '✅ Confirmed' : '❌ Failed'} • Balance: ${parseFloat(freshBalance).toFixed(6)} XRP`;
 
       // Toast
       toast(title, { description, duration: 6000 });
