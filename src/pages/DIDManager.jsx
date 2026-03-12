@@ -142,7 +142,15 @@ export default function DIDManager() {
       }));
       setCurrentVerification(response.data);
       setVerifyDialogOpen(true);
-      toast.success('DID verification complete');
+      
+      const v = response.data?.verification;
+      if (!v?.account_exists) {
+        toast.error('Account not found on XRPL');
+      } else if (v?.did_active) {
+        toast.success('✅ DID is published on XRPL');
+      } else {
+        toast.warning('⚠️ Account exists but DID is not published on-chain');
+      }
     },
     onError: (error) => {
       const message = error?.response?.data?.message || error?.message || error?.error || 'Failed to verify DID';
