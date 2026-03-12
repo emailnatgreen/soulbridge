@@ -512,6 +512,15 @@ export default function DIDManager() {
                         {verifyMutation.isPending ? 'Verifying...' : 'Verify on XRPL'}
                         </Button>
 
+                        <Button
+                          size="sm"
+                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                          onClick={() => { setSelectedWalletForPublish(wallet); setPublishDialogOpen(true); }}
+                        >
+                          <Upload className="w-3 h-3 mr-2" />
+                          Publish DID On-Chain
+                        </Button>
+
                         <div className="grid grid-cols-2 gap-2">
                            <AuditLogViewer 
                              wallet={wallet}
