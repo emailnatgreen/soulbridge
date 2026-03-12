@@ -44,6 +44,8 @@ export default function DIDManager() {
   const [activeTab, setActiveTab] = useState('active');
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [selectedWalletForRequest, setSelectedWalletForRequest] = useState(null);
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const [selectedWalletForPublish, setSelectedWalletForPublish] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
