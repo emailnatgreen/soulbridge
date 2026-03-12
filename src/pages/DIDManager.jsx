@@ -271,6 +271,11 @@ export default function DIDManager() {
                   Health Dashboard
                 </Button>
               </Link>
+              <AskAxiButton
+                label="Ask Axi"
+                context={`You are the Axi assistant on the DID Manager page of SoulBridge. The user has ${wallets.length} total DIDs (${activeWallets.length} active, ${revokedWallets.length} revoked) on the XRPL. Help them manage, verify, publish, or understand their Decentralized Identifiers. You can help with DID publishing via Xaman, governance activation proposals, linking agents to DIDs, and understanding on-chain DID status.`}
+                className="border-purple-300 text-purple-700 hover:bg-purple-50 hover:text-purple-800"
+              />
               <Link to={createPageUrl('CreateDID')}>
                 <Button>
                   <Fingerprint className="w-4 h-4 mr-2" />
