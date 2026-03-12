@@ -46,6 +46,7 @@ export default function DIDManager() {
   const [selectedWalletForRequest, setSelectedWalletForRequest] = useState(null);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [selectedWalletForPublish, setSelectedWalletForPublish] = useState(null);
+  const [verifyingWalletId, setVerifyingWalletId] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
