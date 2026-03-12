@@ -68,12 +68,16 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
         const status = statusRes.data;
 
         if (status.signed) {
-          clearInterval(interval);
-          setPollingInterval(null);
-          setResult({ success: true, txid: status.txid, account: status.account });
-          setStep('done');
-          toast.success('✅ DID published on XRPL!');
-          if (onSuccess) onSuccess();
+          if (status.txid) {
+            // We have the txid, complete immediately
+            clearInterval(interval);
+            setPollingInterval(null);
+            setResult({ success: true, txid: status.txid, account: status.account });
+            setStep('done');
+            toast.success('✅ DID published on XRPL!');
+            if (onSuccess) onSuccess();
+          }
+          // If signed but no txid yet, keep polling — Xaman may not have submitted yet
         } else if (status.resolved && !status.signed) {
           clearInterval(interval);
           setPollingInterval(null);

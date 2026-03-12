@@ -22,11 +22,13 @@ Deno.serve(async (req) => {
         }
       });
       const statusData = await statusRes.json();
+      const txid = statusData.response?.txid || statusData.response?.tx_id || statusData.response?.hash || null;
       return Response.json({
         signed: statusData.meta?.signed ?? false,
         resolved: statusData.meta?.resolved ?? false,
         account: statusData.response?.account,
-        txid: statusData.response?.txid,
+        txid,
+        raw_response: statusData.response,
       });
     }
 
