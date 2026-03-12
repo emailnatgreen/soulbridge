@@ -746,6 +746,17 @@ export default function DIDManager() {
 
 
 
+        {/* Publish DID Dialog */}
+        <PublishDIDDialog
+          wallet={selectedWalletForPublish}
+          open={publishDialogOpen}
+          onOpenChange={setPublishDialogOpen}
+          onSuccess={() => {
+            setPublishDialogOpen(false);
+            queryClient.invalidateQueries(['wallets']);
+          }}
+        />
+
         {/* Verification Results Dialog */}
         <Dialog open={verifyDialogOpen} onOpenChange={setVerifyDialogOpen}>
           <DialogContent className="max-w-2xl">
