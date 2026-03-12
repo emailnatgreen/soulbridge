@@ -72,41 +72,46 @@ Deno.serve(async (req) => {
 
       if (accountResult.result && accountResult.result.account_data) {
         verification.account_exists = true;
-        verification.balance = parseInt(accountResult.result.account_data.Balance) / 1000000; // Convert drops to XRP
-        
-        // Check if DID data is set on account
-        const accountData = accountResult.result.account_data;
-        if (accountData.Domain || accountData.SigningPubKey) {
-          verification.did_active = true;
-        }
+        verification.balance = parseInt(accountResult.result.account_data.Balance) / 1000000;
       } else {
         verification.message = accountResult.error?.message || 'Account not found on XRPL';
       }
 
-      // Try to fetch DID document if account exists
+      // Fetch the actual DID ledger object (XRPL DID standard)
       if (verification.account_exists) {
         try {
-          const didDocResponse = await fetch(xrplUrl, {
+          const didObjResponse = await fetch(xrplUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              method: 'account_offers',
+              method: 'account_objects',
               params: [{
                 account: wallet.classic_address,
+                type: 'did',
                 ledger_index: 'validated'
               }]
             })
           });
 
-          const didDocResult = await didDocResponse.json();
-          if (didDocResult.result) {
+          const didObjResult = await didObjResponse.json();
+          const didObjects = didObjResult.result?.account_objects || [];
+
+          if (didObjects.length > 0) {
+            verification.did_active = true;
+            const didObj = didObjects[0];
             did_data = {
-              document: didDocResult.result.account_offers || null,
-              verified: true
+              verified: true,
+              uri: didObj.URI ? Buffer.from(didObj.URI, 'hex').toString('utf8') : null,
+              data: didObj.Data ? Buffer.from(didObj.Data, 'hex').toString('utf8') : null,
+              document: didObj.DIDDocument ? Buffer.from(didObj.DIDDocument, 'hex').toString('utf8') : null,
+              raw: didObj
             };
+          } else {
+            verification.did_active = false;
+            verification.message = 'Account exists on XRPL but no DID object found. Publish the DID document on-chain to activate.';
           }
         } catch (e) {
-          // DID document fetch is optional
+          // DID object fetch is optional
         }
       }
 
