@@ -16,6 +16,7 @@ import DidDocumentEditor from '../components/DidDocumentEditor';
 import WalletQRCode from '../components/WalletQRCode';
 import DidReputationScore from '../components/DidReputationScore';
 import PublishDIDDialog from '../components/PublishDIDDialog';
+import AskAxiButton from '../components/AskAxiButton';
 import {
   Dialog,
   DialogContent,
