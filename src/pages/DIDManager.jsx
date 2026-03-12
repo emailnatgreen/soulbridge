@@ -176,12 +176,12 @@ export default function DIDManager() {
 
     const verification = result.verification;
     if (!verification.account_exists) {
-      return <Badge variant="outline" className="text-red-600">Not on Chain</Badge>;
+      return <Badge variant="outline" className="text-red-600">❌ Not on Chain</Badge>;
     }
     if (!verification.did_active) {
-      return <Badge variant="outline" className="text-yellow-600">No DID Data</Badge>;
+      return <Badge variant="outline" className="text-yellow-600">⚠️ Not Published</Badge>;
     }
-    return <Badge className="bg-green-600">Verified Active</Badge>;
+    return <Badge className="bg-green-600">✅ Published on XRPL</Badge>;
   };
 
   // Separate wallets into active and revoked - only include wallets with a classic_address (proper DIDs)
