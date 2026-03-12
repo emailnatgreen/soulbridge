@@ -512,10 +512,10 @@ export default function DIDManager() {
                         variant="outline"
                         className="w-full"
                         onClick={() => handleVerifyDID(wallet.id)}
-                        disabled={verifyMutation.isPending}
-                      >
+                        disabled={verifyingWalletId === wallet.id}
+                        >
                         <Shield className="w-3 h-3 mr-2" />
-                        {verifyMutation.isPending ? 'Verifying...' : 'Verify on XRPL'}
+                        {verifyingWalletId === wallet.id ? 'Verifying...' : 'Verify on XRPL'}
                         </Button>
 
                         <Button
