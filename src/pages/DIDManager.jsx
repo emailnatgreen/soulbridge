@@ -761,11 +761,11 @@ export default function DIDManager() {
                     )}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">DID Active:</span>
+                    <span className="text-sm font-medium">DID Published:</span>
                     {currentVerification.verification.did_active ? (
-                      <Badge className="bg-green-600">Active</Badge>
+                      <Badge className="bg-green-600">✅ Published on XRPL</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-yellow-600">Not Set</Badge>
+                      <Badge variant="outline" className="text-yellow-600">⚠️ Not Published</Badge>
                     )}
                   </div>
                   {currentVerification.verification.balance && (
