@@ -35,14 +35,22 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
 
   const handlePublish = async () => {
     setStep('loading');
-    const response = await base44.functions.invoke('publishDID', {
-      wallet_id: wallet.id,
-      did_uri: didUri
-    });
+    let data;
+    try {
+      const response = await base44.functions.invoke('publishDID', {
+        wallet_id: wallet.id,
+        did_uri: didUri
+      });
+      data = response.data;
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.response?.data?.details || err.message || 'Failed to create signing request';
+      toast.error(msg);
+      setStep('form');
+      return;
+    }
 
-    const data = response.data;
-    if (!data.success) {
-      toast.error(data.error || 'Failed to create signing request');
+    if (!data?.success) {
+      toast.error(data?.error || 'Failed to create signing request');
       setStep('form');
       return;
     }
