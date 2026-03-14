@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Sparkles, Loader2, ArrowLeft, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import MessageBubble from '../components/MessageBubble';
 import AddAgentModal from '../components/AddAgentModal';
 
