@@ -14,6 +14,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showAddAgent, setShowAddAgent] = useState(false);

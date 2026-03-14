@@ -14,6 +14,7 @@ const PAGE_SIZE = 30;
 export default function AxiPage() {
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showAddAgent, setShowAddAgent] = useState(false);
