@@ -1,10 +1,20 @@
 import React from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Vote, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { Vote, Clock, AlertTriangle, UserX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
+
+const typeColors = {
+  project_funding:      "bg-blue-100 text-blue-700",
+  role_adjustment:      "bg-purple-100 text-purple-700",
+  treasury_allocation:  "bg-amber-100 text-amber-700",
+  law_amendment:        "bg-red-100 text-red-700",
+  agent_discipline:     "bg-orange-100 text-orange-700",
+  resource_policy:      "bg-teal-100 text-teal-700",
+  general:              "bg-slate-100 text-slate-600",
+};
 
 export default function GovernanceRiskPanel() {
   const { data: proposals = [] } = useQuery({
@@ -13,10 +23,24 @@ export default function GovernanceRiskPanel() {
     refetchInterval: 30000,
   });
 
+  const { data: agents = [] } = useQuery({
+    queryKey: ["axi-agents-gov"],
+    queryFn: () => base44.entities.Agent.filter({ status: "active" }, "-created_date", 100),
+    refetchInterval: 60000,
+  });
+
+  const { data: votes = [] } = useQuery({
+    queryKey: ["axi-votes-recent"],
+    queryFn: () => base44.entities.GovernanceVote.list("-created_date", 200),
+    refetchInterval: 30000,
+  });
+
+  const totalEligible = agents.length;
+
   const getParticipationRate = (p) => {
-    const total = (p.votes_for ?? 0) + (p.votes_against ?? 0) + (p.votes_abstain ?? 0);
-    if (total === 0) return 0;
-    return Math.min(100, Math.round((total / Math.max(p.quorum_required ?? 50, 1)) * 100));
+    const cast = p.total_votes_cast ?? 0;
+    if (totalEligible === 0) return 0;
+    return Math.min(100, Math.round((cast / totalEligible) * 100));
   };
 
   const getApprovalRate = (p) => {
@@ -27,17 +51,29 @@ export default function GovernanceRiskPanel() {
 
   const isExpiringSoon = (p) => {
     if (!p.voting_period_end) return false;
-    const end = new Date(p.voting_period_end);
-    const diff = end - new Date();
-    return diff > 0 && diff < 1000 * 60 * 60 * 24; // less than 24h
+    const diff = new Date(p.voting_period_end) - new Date();
+    return diff > 0 && diff < 1000 * 60 * 60 * 24;
   };
 
+  // Dormant voters: agents who haven't voted on any active proposal
+  const activeProposalIds = proposals.map(p => p.id);
+  const voterIds = new Set(votes.filter(v => activeProposalIds.includes(v.proposal_id)).map(v => v.voter_agent_id));
+  const dormantCount = agents.filter(a => !voterIds.has(a.id)).length;
+
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-3">
-        <Vote className="w-4 h-4 text-violet-500" />
-        <span className="text-sm font-semibold text-slate-700">Active Proposals ({proposals.length})</span>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Vote className="w-4 h-4 text-violet-500" />
+          <span className="text-sm font-semibold text-slate-700">Active Proposals ({proposals.length})</span>
+        </div>
+        {dormantCount > 0 && proposals.length > 0 && (
+          <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1 text-xs">
+            <UserX className="w-3 h-3" /> {dormantCount} dormant
+          </Badge>
+        )}
       </div>
+
       {proposals.length === 0 ? (
         <p className="text-xs text-slate-400">No active governance proposals</p>
       ) : (
@@ -46,32 +82,47 @@ export default function GovernanceRiskPanel() {
             const participation = getParticipationRate(p);
             const approval = getApprovalRate(p);
             const expiring = isExpiringSoon(p);
+            const quorumRisk = participation < 30;
+            const thresholdRisk = approval !== null && approval < (p.pass_threshold ?? 60);
 
             return (
-              <div key={p.id} className={`rounded-lg border p-3 ${expiring ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50"}`}>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <p className="text-xs font-medium text-slate-800 line-clamp-2">{p.title}</p>
-                  {expiring && (
-                    <Badge className="bg-amber-100 text-amber-700 text-xs flex-shrink-0 flex items-center gap-1">
-                      <Clock className="w-2.5 h-2.5" /> Closing
-                    </Badge>
+              <div key={p.id} className={`rounded-lg border p-3 ${expiring || quorumRisk ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50"}`}>
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <p className="text-xs font-medium text-slate-800 line-clamp-2 flex-1">{p.title}</p>
+                  <div className="flex gap-1 flex-shrink-0">
+                    {expiring && (
+                      <Badge className="bg-amber-100 text-amber-700 text-xs flex items-center gap-0.5">
+                        <Clock className="w-2.5 h-2.5" /> Soon
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge className={`text-xs ${typeColors[p.proposal_type] || typeColors.general}`}>
+                    {(p.proposal_type || "general").replace(/_/g, " ")}
+                  </Badge>
+                  {p.voting_period_end && (
+                    <span className="text-xs text-slate-400">
+                      ends {formatDistanceToNow(new Date(p.voting_period_end), { addSuffix: true })}
+                    </span>
                   )}
                 </div>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span>Participation</span>
-                    <span className={participation < 30 ? "text-red-600 font-semibold" : "text-slate-600"}>{participation}%</span>
+                    <span>Participation ({p.total_votes_cast ?? 0}/{totalEligible})</span>
+                    <span className={quorumRisk ? "text-red-600 font-semibold" : "text-slate-600"}>{participation}%</span>
                   </div>
                   <Progress value={participation} className="h-1" />
                   {approval !== null && (
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Approval</span>
-                      <span className={`font-semibold ${approval >= 60 ? "text-emerald-600" : "text-red-600"}`}>{approval}%</span>
+                      <span className="text-slate-500">Approval (need {p.pass_threshold ?? 60}%)</span>
+                      <span className={`font-semibold ${thresholdRisk ? "text-red-600" : "text-emerald-600"}`}>{approval}%</span>
                     </div>
                   )}
-                  {participation < 30 && (
+                  {(quorumRisk || thresholdRisk) && (
                     <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
-                      <AlertTriangle className="w-3 h-3" /> Low participation — Law 8 risk
+                      <AlertTriangle className="w-3 h-3" />
+                      {quorumRisk ? "Low participation — quorum at risk" : "Approval below threshold"}
                     </p>
                   )}
                 </div>
