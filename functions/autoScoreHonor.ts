@@ -11,6 +11,7 @@ const TASK_HONOR = {
 const GOVERNANCE_HONOR = 2;
 
 Deno.serve(async (req) => {
+  try {
   const base44 = createClientFromRequest(req);
 
   let body;
@@ -105,4 +106,8 @@ Deno.serve(async (req) => {
     delta: honorDelta,
     reason
   });
+  } catch (err) {
+    console.error('autoScoreHonor error:', err.message, err.stack);
+    return Response.json({ error: err.message }, { status: 500 });
+  }
 });
