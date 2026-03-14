@@ -13,7 +13,14 @@ const GOVERNANCE_HONOR = 2;
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
-  const { event, data } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch (e) {
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const { event, data } = body;
 
   if (!event || !data) {
     return Response.json({ error: 'Invalid payload' }, { status: 400 });
