@@ -9,6 +9,7 @@ import HonorRiskPanel from "@/components/axi/HonorRiskPanel";
 import AutomationHealthPanel from "@/components/axi/AutomationHealthPanel";
 import GovernanceRiskPanel from "@/components/axi/GovernanceRiskPanel";
 import TreasuryStatusPanel from "@/components/axi/TreasuryStatusPanel";
+import WellbeingPanel from "@/components/axi/WellbeingPanel";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
