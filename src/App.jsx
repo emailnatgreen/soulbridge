@@ -1,12 +1,9 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
-import AgentLeaderboard from './pages/AgentLeaderboard';
-import ReputationHistoryLog from './pages/ReputationHistoryLog';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -60,8 +57,7 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
-      <Route path="/AgentLeaderboard" element={<LayoutWrapper currentPageName="AgentLeaderboard"><AgentLeaderboard /></LayoutWrapper>} />
-      <Route path="/ReputationHistoryLog" element={<LayoutWrapper currentPageName="ReputationHistoryLog"><ReputationHistoryLog /></LayoutWrapper>} />
+      <Route path="/AxiCommandDashboard" element={<LayoutWrapper currentPageName="AxiCommandDashboard"><AxiCommandDashboard /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -74,7 +70,6 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <NavigationTracker />
           <AuthenticatedApp />
         </Router>
         <Toaster />
