@@ -84,16 +84,22 @@ Deno.serve(async (req) => {
   });
 
   // Log reputation event
+  const eventTypeMap = {
+    task_completion: 'project_completed',
+    governance_participation: 'vote_cast'
+  };
+
   await base44.asServiceRole.entities.ReputationEvent.create({
     agent_id: agentId,
-    event_type: category,
-    score_before: currentScore,
-    score_after: newScore,
-    delta: honorDelta,
-    reason,
-    source_entity_type: entityName,
-    source_entity_id: event.entity_id,
-    recorded_at: new Date().toISOString()
+    event_type: eventTypeMap[category] || 'milestone_achieved',
+    impact: honorDelta,
+    category,
+    description: reason,
+    related_entity_type: entityName,
+    related_entity_id: event.entity_id,
+    verified: true,
+    verified_by: 'autoScoreHonor',
+    is_public: true
   });
 
   console.log(`[autoScoreHonor] ${agent.name}: ${currentScore} → ${newScore} (+${honorDelta}) | ${reason}`);
