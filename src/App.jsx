@@ -58,6 +58,8 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/AgentLeaderboard" element={<LayoutWrapper currentPageName="AgentLeaderboard"><AgentLeaderboard /></LayoutWrapper>} />
+      <Route path="/ReputationHistoryLog" element={<LayoutWrapper currentPageName="ReputationHistoryLog"><ReputationHistoryLog /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
