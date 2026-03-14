@@ -90,6 +90,11 @@ export default function AxiCommandDashboard() {
           <GovernanceRiskPanel />
         </div>
 
+        {/* MIDDLE — Wellbeing */}
+        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
+          <WellbeingPanel />
+        </div>
+
       </div>
 
       {/* Footer */}
