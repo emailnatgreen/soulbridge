@@ -66,20 +66,26 @@ As Axi, please:
 4. Reply briefly confirming what action (if any) you took and why`;
 
         // Create an Axi conversation to process this notification
-        const conversation = await base44.asServiceRole.agents.createConversation({
-            agent_name: 'axi',
-            metadata: {
-                name: `Notification Review: ${notification.title || notification.notification_type}`,
-                notification_id: notification.id,
-                auto_triggered: true
-            }
-        });
+        let conversation;
+        try {
+            conversation = await base44.asServiceRole.agents.createConversation({
+                agent_name: 'axi',
+                metadata: {
+                    name: `Notification Review: ${notification.title || notification.notification_type}`,
+                    notification_id: notification.id,
+                    auto_triggered: true
+                }
+            });
 
-        // Send the context to Axi so she can reason and act
-        await base44.asServiceRole.agents.addMessage(conversation, {
-            role: 'user',
-            content: contextMessage
-        });
+            // Send the context to Axi so she can reason and act
+            await base44.asServiceRole.agents.addMessage(conversation, {
+                role: 'user',
+                content: contextMessage
+            });
+        } catch (convError) {
+            console.error('axiReviewNotification: conversation error (non-fatal):', convError.message);
+            // Continue — memory will still be created even if conversation fails
+        }
 
         // Store a memory that Axi reviewed this
         await base44.asServiceRole.entities.Memory.create({
@@ -94,8 +100,8 @@ As Axi, please:
 
         return Response.json({ 
             success: true, 
-            axi_conversation_id: conversation.id,
-            message: `Axi is reviewing this ${notification.priority} notification`
+            axi_conversation_id: conversation?.id || null,
+            message: `Axi reviewed this ${notification.priority} notification`
         });
 
     } catch (error) {

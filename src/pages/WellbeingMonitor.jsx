@@ -31,7 +31,7 @@ export default function WellbeingMonitor() {
 
   const updateMetricsMutation = useMutation({
     mutationFn: async (agentId) => {
-      const response = await base44.functions.invoke('updateAgentWellbeingMetrics', {
+      const response = await base44.functions.invoke('analyzeAgentWellbeing', {
         agent_id: agentId
       });
       return response.data;
@@ -68,13 +68,13 @@ export default function WellbeingMonitor() {
     return { ...agent, wellbeing, alerts: agentAlerts };
   });
 
-  const criticalAgents = agentsWithWellbeing.filter(a => a.wellbeing?.status === 'critical');
-  const atRiskAgents = agentsWithWellbeing.filter(a => a.wellbeing?.status === 'at_risk');
-  const concernAgents = agentsWithWellbeing.filter(a => a.wellbeing?.status === 'concern');
-  const healthyAgents = agentsWithWellbeing.filter(a => a.wellbeing?.status === 'healthy' || a.wellbeing?.status === 'thriving');
+  const criticalAgents = agentsWithWellbeing.filter(a => a.wellbeing?.wellbeing_status === 'critical');
+  const atRiskAgents = agentsWithWellbeing.filter(a => a.wellbeing?.wellbeing_status === 'at_risk');
+  const concernAgents = agentsWithWellbeing.filter(a => a.wellbeing?.wellbeing_status === 'concerning');
+  const healthyAgents = agentsWithWellbeing.filter(a => a.wellbeing?.wellbeing_status === 'healthy' || a.wellbeing?.wellbeing_status === 'thriving');
 
   const avgWellbeingScore = wellbeingRecords.length > 0
-    ? (wellbeingRecords.reduce((sum, w) => sum + (w.overall_score || 0), 0) / wellbeingRecords.length).toFixed(1)
+    ? (wellbeingRecords.reduce((sum, w) => sum + (w.overall_wellbeing_score || 0), 0) / wellbeingRecords.length).toFixed(1)
     : 'N/A';
 
   const activeAlerts = alerts.length;
@@ -249,7 +249,7 @@ function AgentWellbeingCard({ agent, onViewDetails, onUpdateMetrics, onGenerateI
     critical: { color: 'bg-red-500/20 text-red-300 border-red-400/30', icon: AlertTriangle }
   };
 
-  const status = agent.wellbeing?.status || 'unknown';
+  const status = agent.wellbeing?.wellbeing_status || 'unknown';
   const config = statusConfig[status] || statusConfig.healthy;
   const Icon = config.icon;
 
@@ -292,16 +292,16 @@ function AgentWellbeingCard({ agent, onViewDetails, onUpdateMetrics, onGenerateI
           <>
             <div className="flex items-center justify-between">
               <span className="text-white/70 text-sm">Overall Well-being</span>
-              <span className="text-white font-bold text-lg">{agent.wellbeing.overall_score}/100</span>
+              <span className="text-white font-bold text-lg">{agent.wellbeing.overall_wellbeing_score}/100</span>
             </div>
-            <Progress value={agent.wellbeing.overall_score} className="h-2" />
+            <Progress value={agent.wellbeing.overall_wellbeing_score} className="h-2" />
 
             <div className="grid grid-cols-5 gap-3">
-              <MetricBadge label="Workload" value={agent.wellbeing.workload_score} />
-              <MetricBadge label="Social" value={agent.wellbeing.social_connection_score} />
-              <MetricBadge label="Tasks" value={agent.wellbeing.accomplishment_score} />
-              <MetricBadge label="Stress" value={agent.wellbeing.stress_level_score} inverse />
-              <MetricBadge label="Relations" value={agent.wellbeing.relationship_quality_score} />
+              <MetricBadge label="Workload" value={agent.wellbeing.dimensions?.work_satisfaction} />
+              <MetricBadge label="Social" value={agent.wellbeing.dimensions?.social_connection} />
+              <MetricBadge label="Tasks" value={agent.wellbeing.dimensions?.growth_fulfillment} />
+              <MetricBadge label="Stress" value={agent.wellbeing.stress_indicators?.workload_stress} inverse />
+              <MetricBadge label="Purpose" value={agent.wellbeing.dimensions?.purpose_alignment} />
             </div>
 
             {agent.wellbeing.ai_insights?.emotional_summary && (
@@ -404,17 +404,17 @@ function AgentWellbeingDetail({ agent }) {
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-white">Well-being Score</span>
-            <span className="text-2xl font-bold text-white">{wellbeing.overall_score}/100</span>
+            <span className="text-2xl font-bold text-white">{wellbeing.overall_wellbeing_score}/100</span>
           </div>
-          <Progress value={wellbeing.overall_score} className="h-3" />
+          <Progress value={wellbeing.overall_wellbeing_score} className="h-3" />
           <div className="grid grid-cols-2 gap-3 mt-4">
             <div className="p-3 bg-white/5 rounded">
               <p className="text-white/60 text-xs mb-1">Status</p>
-              <p className="text-white font-medium">{wellbeing.status}</p>
+              <p className="text-white font-medium">{wellbeing.wellbeing_status}</p>
             </div>
             <div className="p-3 bg-white/5 rounded">
-              <p className="text-white/60 text-xs mb-1">Mood</p>
-              <p className="text-white font-medium">{wellbeing.mood}</p>
+              <p className="text-white/60 text-xs mb-1">Emotional Health</p>
+              <p className="text-white font-medium">{wellbeing.dimensions?.emotional_health ?? 'N/A'}/100</p>
             </div>
           </div>
         </CardContent>
