@@ -61,7 +61,8 @@ Deno.serve(async (req) => {
   }
 
   // Fetch current agent
-  const agent = await base44.asServiceRole.entities.Agent.get(agentId);
+  const agents = await base44.asServiceRole.entities.Agent.filter({ id: agentId });
+  const agent = agents?.[0];
   if (!agent) {
     return Response.json({ error: `Agent ${agentId} not found` }, { status: 404 });
   }
