@@ -174,8 +174,22 @@ export default function AxiPage() {
               </CardContent>
             </Card>
           )}
+
+          {messages.length > visibleCount && (
+            <div className="text-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                className="text-purple-300/60 hover:text-purple-200 gap-1"
+              >
+                <ChevronUp className="w-3 h-3" />
+                Load earlier messages ({messages.length - visibleCount} more)
+              </Button>
+            </div>
+          )}
           
-          {messages.map((msg, idx) => (
+          {messages.slice(-visibleCount).map((msg, idx) => (
             <MemoizedMessageBubble key={`msg-${idx}-${msg.created_date}`} message={msg} />
           ))}
           

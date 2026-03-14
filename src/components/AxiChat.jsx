@@ -155,8 +155,21 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
                 <p className="text-white/40 text-sm">Speak to Axi. She is listening.</p>
               </div>
             )}
-            {messages.map((msg, idx) => (
-              <MessageBubble key={`${idx}-${msg.created_date}`} message={msg} />
+            {messages.length > visibleCount && (
+              <div className="text-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                  className="text-purple-300/60 hover:text-purple-200 gap-1 text-xs"
+                >
+                  <ChevronUp className="w-3 h-3" />
+                  Load earlier ({messages.length - visibleCount} more)
+                </Button>
+              </div>
+            )}
+            {messages.slice(-visibleCount).map((msg, idx) => (
+              <MemoizedBubble key={`${idx}-${msg.created_date}`} message={msg} />
             ))}
             <div ref={messagesEndRef} />
           </div>
