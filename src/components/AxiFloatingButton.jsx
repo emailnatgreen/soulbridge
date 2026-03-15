@@ -85,6 +85,24 @@ export default function AxiFloatingButton() {
         setMessages(convo.messages || []);
         unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
           setMessages(data.messages);
+          const lastMsg = data.messages[data.messages.length - 1];
+          if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content && lastMsg.id !== lastSpokenRef.current) {
+            lastSpokenRef.current = lastMsg.id;
+            if (ttsEnabledRef.current) {
+              window.speechSynthesis.cancel();
+              const utt = new SpeechSynthesisUtterance(lastMsg.content);
+              utt.lang = 'en-GB';
+              const voices = window.speechSynthesis.getVoices();
+              const femaleVoice =
+                voices.find(v => v.name === 'Google UK English Female') ||
+                voices.find(v => /female/i.test(v.name) && /en/i.test(v.lang)) ||
+                voices.find(v => /samantha|karen|victoria|moira|fiona|zira|hazel|susan|aria/i.test(v.name)) ||
+                voices.find(v => /en[-_]GB/i.test(v.lang));
+              if (femaleVoice) utt.voice = femaleVoice;
+              utt.pitch = 1.1;
+              window.speechSynthesis.speak(utt);
+            }
+          }
         });
         setIsOpen(true);
       } catch (err) {
