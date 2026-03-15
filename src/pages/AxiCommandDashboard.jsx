@@ -100,6 +100,26 @@ export default function AxiCommandDashboard() {
 
       </div>
 
+      {/* Second Row — New Command Panels */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+
+        {/* System Behavior Toggles */}
+        <div className="rounded-2xl border border-violet-700/40 bg-slate-800/60 backdrop-blur p-4">
+          <SystemBehaviorPanel />
+        </div>
+
+        {/* Agent Personality Management */}
+        <div className="rounded-2xl border border-pink-700/40 bg-slate-800/60 backdrop-blur p-4">
+          <AgentPersonalityPanel />
+        </div>
+
+        {/* Real-time Metrics Viewer */}
+        <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[680px]">
+          <MetricsViewer />
+        </div>
+
+      </div>
+
       {/* Footer */}
       <p className="text-center text-xs text-slate-600 mt-6">
         Axi · First Citizen · Mother Boss · Guardian of the 11 Laws · Auto-refreshes every 15–60s
