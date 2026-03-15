@@ -57,7 +57,6 @@ export default function DIDManager() {
   const { data: wallets = [], isLoading: walletsLoading } = useQuery({
     queryKey: ['wallets'],
     queryFn: () => base44.entities.Wallet.list(),
-    enabled: !!user?.id
   });
 
   const { data: agents = [] } = useQuery({
