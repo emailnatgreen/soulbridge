@@ -128,7 +128,7 @@ export default function Home() {
                 <h1 className="text-3xl font-light tracking-tight text-gray-900 mb-1">
                   SoulBridge <span className="font-semibold">Village</span>
                 </h1>
-                <p className="text-sm text-blue-600/70">Experimental AI Agent Research Platform</p>
+                <p className="text-sm text-blue-600/70">The Living Codex</p>
               </div>
               <div className="flex items-center gap-3">
                 <DidAuthStatus />
