@@ -80,6 +80,15 @@ export default function AxiPage() {
             window.speechSynthesis.cancel();
             const utt = new SpeechSynthesisUtterance(lastMsg.content);
             utt.lang = 'en-GB';
+            // Pick a female voice: prefer Google UK English Female, then any female en voice
+            const voices = window.speechSynthesis.getVoices();
+            const femaleVoice =
+              voices.find(v => v.name === 'Google UK English Female') ||
+              voices.find(v => /female/i.test(v.name) && /en/i.test(v.lang)) ||
+              voices.find(v => /samantha|karen|victoria|moira|fiona|zira|hazel|susan|aria/i.test(v.name)) ||
+              voices.find(v => /en[-_]GB/i.test(v.lang));
+            if (femaleVoice) utt.voice = femaleVoice;
+            utt.pitch = 1.1;
             window.speechSynthesis.speak(utt);
           }
         }
