@@ -167,6 +167,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/Home" replace />} />
+      {/* Default page: Home */}
 
 
       <Route path="/Home" element={<W name="Home"><Home /></W>} />
