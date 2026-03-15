@@ -168,6 +168,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/" element={<Navigate to="/Home" replace />} />
 
+
       <Route path="/Home" element={<W name="Home"><Home /></W>} />
       <Route path="/Landing" element={<W name="Landing"><Landing /></W>} />
       <Route path="/Axi" element={<W name="Axi"><Axi /></W>} />
