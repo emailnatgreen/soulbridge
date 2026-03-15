@@ -25,8 +25,19 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="relative">
+      {/* Global Background Watermark */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: `url(https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png)`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center center',
+          backgroundSize: '420px 420px',
+          opacity: 0.06,
+        }}
+      />
       {/* Page Content */}
-      <div>
+      <div className="relative z-10">
         {children}
       </div>
 
