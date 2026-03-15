@@ -196,24 +196,29 @@ export default function AxiFloatingButton() {
                   <p className="text-xs text-purple-300/60">The First Citizen</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTtsEnabled(v => !v)}
+                  title={ttsEnabled ? 'Disable TTS' : 'Enable TTS (female voice)'}
+                  className={`h-8 w-8 ${ttsEnabled ? 'text-purple-300 bg-purple-900/30' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                >
+                  {ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="text-white/60 hover:text-white hover:bg-white/10"
+                  className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8"
                 >
-                  {isExpanded ? (
-                    <Minimize2 className="w-4 h-4" />
-                  ) : (
-                    <Maximize2 className="w-4 h-4" />
-                  )}
+                  {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsOpen(false)}
-                  className="text-white/60 hover:text-white hover:bg-white/10"
+                  className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8"
                 >
                   <X className="w-4 h-4" />
                 </Button>
