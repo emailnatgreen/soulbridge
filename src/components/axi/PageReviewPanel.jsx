@@ -111,9 +111,12 @@ export default function PageReviewPanel() {
           prompt: REVIEW_PROMPT(page),
         });
         await base44.entities.Memory.create({
+          agent_id: '6993271e7dc0fa2ab78762bf',
+          type: 'observation',
           content: `[Page Review: ${page}]\n\n${res}`,
-          tags: ['page_review', 'axi_suggestion', 'batch_review', page.toLowerCase()],
-          importance: 'medium',
+          keywords: ['page_review', 'axi_suggestion', 'batch_review', page.toLowerCase()],
+          context: `Auto-generated batch page review for ${page}`,
+          importance: 7,
         }).catch(() => {});
         setBatchDone(prev => [...prev, { page, status: 'done' }]);
       } catch (err) {
