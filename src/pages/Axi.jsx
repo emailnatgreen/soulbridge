@@ -159,14 +159,25 @@ export default function AxiPage() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowAddAgent(true)}
-              className="border-white/20 text-white/70 hover:text-white hover:bg-white/10 gap-2"
-            >
-              <UserPlus className="w-4 h-4" />
-              Invite Agent
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setTtsEnabled(v => !v)}
+                title={ttsEnabled ? 'Disable text-to-speech' : 'Enable text-to-speech'}
+                className={`border-white/20 hover:bg-white/10 gap-2 ${ttsEnabled ? 'text-purple-300 border-purple-400/50 bg-purple-900/20' : 'text-white/70 hover:text-white'}`}
+              >
+                {ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                {ttsEnabled ? 'TTS On' : 'TTS Off'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowAddAgent(true)}
+                className="border-white/20 text-white/70 hover:text-white hover:bg-white/10 gap-2"
+              >
+                <UserPlus className="w-4 h-4" />
+                Invite Agent
+              </Button>
+            </div>
           </div>
         </div>
       </div>
