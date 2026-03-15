@@ -20,9 +20,16 @@ export default function AxiPage() {
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [activeAgents, setActiveAgents] = useState([]);
   const [ttsEnabled, setTtsEnabled] = useState(false);
+  const ttsEnabledRef = useRef(false);
   const lastSpokenRef = useRef(null);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    ttsEnabledRef.current = ttsEnabled;
+    if (!ttsEnabled) window.speechSynthesis?.cancel();
+  }, [ttsEnabled]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
