@@ -173,7 +173,7 @@ export default function Home() {
             {/* Navigation Menu - Desktop Only */}
             <nav className="hidden md:flex flex-wrap gap-2">
               <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" className="text-white hover:bg-white/10">Dashboard</Button>
+                <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 font-semibold">🏠 Dashboard</Button>
               </Link>
               
               {/* Wallets & Payments */}
