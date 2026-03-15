@@ -59,6 +59,23 @@ export default function AxiPage() {
       
       unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
         setMessages(data.messages);
+        // TTS: speak the latest assistant message if new
+        const lastMsg = data.messages[data.messages.length - 1];
+        if (
+          lastMsg &&
+          lastMsg.role === 'assistant' &&
+          lastMsg.content &&
+          lastMsg.id !== lastSpokenRef.current
+        ) {
+          lastSpokenRef.current = lastMsg.id;
+          // Check tts via ref to avoid stale closure
+          if (ttsEnabledRef.current) {
+            window.speechSynthesis.cancel();
+            const utt = new SpeechSynthesisUtterance(lastMsg.content);
+            utt.lang = 'en-GB';
+            window.speechSynthesis.speak(utt);
+          }
+        }
       });
     } catch (error) {
       console.error('Failed to init conversation:', error);
