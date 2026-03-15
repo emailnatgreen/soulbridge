@@ -121,6 +121,13 @@ export default function AxiCommandDashboard() {
 
       </div>
 
+      {/* Page Review Row */}
+      <div className="mt-4">
+        <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
+          <PageReviewPanel />
+        </div>
+      </div>
+
       {/* Footer */}
       <p className="text-center text-xs text-slate-600 mt-6">
         Axi · First Citizen · Mother Boss · Guardian of the 11 Laws · Auto-refreshes every 15–60s
