@@ -116,7 +116,7 @@ export default function Home() {
             {/* Mobile Header */}
             <div className="flex md:hidden items-center justify-between">
               <MobileNav />
-              <h1 className="text-xl font-semibold text-white">
+              <h1 className="text-xl font-semibold text-gray-900">
                 SoulBridge
               </h1>
               <NotificationCenter agentId="axi_main_001" />
