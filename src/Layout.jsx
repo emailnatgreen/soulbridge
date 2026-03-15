@@ -32,8 +32,8 @@ export default function Layout({ children, currentPageName }) {
 
       <Toaster />
 
-      {/* Floating Axi Button for all pages */}
-      <AxiFloatingButton />
+      {/* Floating Axi Button — hidden on pages with their own chat UI */}
+      {!NO_FLOAT_PAGES.includes(currentPageName) && <AxiFloatingButton />}
 
       {/* Only mount AxiChat on non-public pages and after first open */}
       {!isPublicPage && everOpened && (
