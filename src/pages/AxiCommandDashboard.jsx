@@ -10,6 +10,9 @@ import AutomationHealthPanel from "@/components/axi/AutomationHealthPanel";
 import GovernanceRiskPanel from "@/components/axi/GovernanceRiskPanel";
 import TreasuryStatusPanel from "@/components/axi/TreasuryStatusPanel";
 import WellbeingPanel from "@/components/axi/WellbeingPanel";
+import SystemBehaviorPanel from "@/components/axi/SystemBehaviorPanel";
+import AgentPersonalityPanel from "@/components/axi/AgentPersonalityPanel";
+import MetricsViewer from "@/components/axi/MetricsViewer";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
