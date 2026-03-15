@@ -13,8 +13,16 @@ export default function AxiFloatingButton() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+  const ttsEnabledRef = useRef(false);
+  const lastSpokenRef = useRef(null);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
+
+  useEffect(() => {
+    ttsEnabledRef.current = ttsEnabled;
+    if (!ttsEnabled) window.speechSynthesis?.cancel();
+  }, [ttsEnabled]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
