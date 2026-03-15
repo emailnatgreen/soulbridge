@@ -13,6 +13,7 @@ import WellbeingPanel from "@/components/axi/WellbeingPanel";
 import SystemBehaviorPanel from "@/components/axi/SystemBehaviorPanel";
 import AgentPersonalityPanel from "@/components/axi/AgentPersonalityPanel";
 import MetricsViewer from "@/components/axi/MetricsViewer";
+import PageReviewPanel from "@/components/axi/PageReviewPanel";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
