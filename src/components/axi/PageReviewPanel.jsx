@@ -72,6 +72,8 @@ export default function PageReviewPanel() {
   const [batchCurrent, setBatchCurrent] = useState('');
   const [batchDone, setBatchDone] = useState([]);
   const [batchErrors, setBatchErrors] = useState([]);
+  const [batchStartIndex, setBatchStartIndex] = useState(0);
+  const [batchSize, setBatchSize] = useState(10);
   const stopRef = useRef(false);
 
   // --- Single review ---
@@ -145,14 +147,19 @@ export default function PageReviewPanel() {
   };
 
   // --- Batch review ---
-  const handleStartBatch = async (startFrom = batchStartIndex) => {
+  const handleStartBatch = async (startFrom = 0, isResume = false) => {
     setBatchRunning(true);
+    if (!isResume) {
+      setBatchDone([]);
+      setBatchErrors([]);
+      setBatchProgress(0);
+    }
     setBatchCurrent('');
     stopRef.current = false;
 
-    const endIndex = Math.min(startFrom + batchSize, ALL_PAGES.length);
+    const end = Math.min(startFrom + batchSize, ALL_PAGES.length);
 
-    for (let i = startFrom; i < endIndex; i++) {
+    for (let i = startFrom; i < end; i++) {
       if (stopRef.current) {
         setBatchStartIndex(i);
         break;
@@ -176,30 +183,23 @@ export default function PageReviewPanel() {
         setBatchErrors(prev => [...prev, page]);
         setBatchDone(prev => [...prev, { page, status: 'error' }]);
       }
-      setBatchProgress(Math.round(((batchDone.length + (i - startFrom + 1)) / ALL_PAGES.length) * 100));
+      setBatchProgress(Math.round(((i + 1) / ALL_PAGES.length) * 100));
       // Small delay between calls to avoid rate limits
-      await new Promise(r => setTimeout(r, 500));
+      if (i < end - 1) await new Promise(r => setTimeout(r, 500));
     }
 
-    if (!stopRef.current) {
-      setBatchStartIndex(endIndex);
-    }
+    if (!stopRef.current) setBatchStartIndex(end);
     setBatchRunning(false);
     setBatchCurrent('');
+    queryClient.invalidateQueries({ queryKey: ['page-review-memories'] });
   };
 
   const handleStop = () => { stopRef.current = true; };
-
-  const handleResetBatch = () => {
-    setBatchDone([]);
-    setBatchErrors([]);
-    setBatchStartIndex(0);
-    setBatchProgress(0);
-  };
+  const handleContinue = () => handleStartBatch(batchStartIndex, true);
+  const handleRestart = () => { setBatchStartIndex(0); handleStartBatch(0, false); };
 
   const completed = batchDone.length;
   const total = ALL_PAGES.length;
-  const hasMore = batchStartIndex < total && completed > 0;
 
   return (
     <div className="space-y-4">
@@ -303,20 +303,22 @@ export default function PageReviewPanel() {
       {mode === 'batch' && (
         <div className="space-y-4">
           <div className="bg-slate-900/40 rounded-xl border border-amber-700/30 p-4 text-xs text-slate-400 space-y-2">
-            <p className="text-amber-300 font-medium">Batch Review — {total} pages</p>
-            <p>Axi reviews pages in chunks and auto-saves each to Memory. Pick your chunk size below.</p>
+            <p className="text-amber-300 font-medium">Batch Review — {total} pages total</p>
+            <p>Axi reviews pages in chunks and saves each to Memory. Use Continue to pick up where you left off.</p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-slate-400">Chunk size:</span>
-              {[5, 10, 20].map(n => (
-                <button key={n} onClick={() => setBatchSize(n)}
-                  className={`text-xs px-2 py-0.5 rounded ${batchSize === n ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
-                  {n}
-                </button>
-              ))}
+              <label className="text-slate-400">Chunk size:</label>
+              <select
+                value={batchSize}
+                onChange={e => setBatchSize(Number(e.target.value))}
+                className="bg-slate-800 border border-slate-600/50 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none"
+              >
+                <option value={5}>5 pages</option>
+                <option value={10}>10 pages</option>
+                <option value={20}>20 pages</option>
+                <option value={total}>All ({total})</option>
+              </select>
+              <span className="text-slate-500">Starting at page {batchStartIndex + 1}</span>
             </div>
-            {batchStartIndex > 0 && !batchRunning && (
-              <p className="text-amber-300">Resuming from page {batchStartIndex + 1} of {total}</p>
-            )}
           </div>
 
           {/* Progress */}
@@ -351,15 +353,15 @@ export default function PageReviewPanel() {
           <div className="flex gap-2 flex-wrap">
             {!batchRunning ? (
               <>
-                <Button onClick={() => handleStartBatch(batchStartIndex)} className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs h-8">
-                  <PlayCircle className="w-3.5 h-3.5 mr-1.5" />
-                  {hasMore ? `Continue (next ${batchSize})` : completed > 0 ? `Next ${batchSize} pages` : 'Start Batch Review'}
-                </Button>
-                {completed > 0 && (
-                  <Button onClick={handleResetBatch} variant="outline" className="text-xs h-8 border-slate-600 text-slate-400 hover:text-white">
-                    Reset
+                {batchStartIndex > 0 && batchStartIndex < total && (
+                  <Button onClick={handleContinue} className="flex-1 bg-violet-700 hover:bg-violet-800 text-white text-xs h-8">
+                    <PlayCircle className="w-3.5 h-3.5 mr-1.5" />Continue (page {batchStartIndex + 1})
                   </Button>
                 )}
+                <Button onClick={handleRestart} className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs h-8">
+                  <PlayCircle className="w-3.5 h-3.5 mr-1.5" />
+                  {batchStartIndex === 0 ? 'Start Batch Review' : 'Restart from Beginning'}
+                </Button>
               </>
             ) : (
               <Button onClick={handleStop} className="flex-1 bg-red-700 hover:bg-red-800 text-white text-xs h-8">
