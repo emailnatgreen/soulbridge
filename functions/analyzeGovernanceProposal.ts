@@ -5,12 +5,13 @@ Deno.serve(async (req) => {
         const base44 = createClientFromRequest(req);
 
         const body = await req.json();
-        const { event } = body;
-
-        // Extract proposal ID from entity automation payload (event.entity_id is the record ID)
-        const proposalId = event?.entity_id;
+        
+        // Extract proposal ID from entity automation payload
+        // Payload structure: {event: {type, entity_name, entity_id}, data: {...}, old_data: {...}}
+        const proposalId = body.event?.entity_id || body.entity_id;
         if (!proposalId) {
-            return Response.json({ error: 'proposal_id required' }, { status: 400 });
+            console.error('Invalid payload structure:', JSON.stringify(body));
+            return Response.json({ error: 'Missing entity_id in automation payload' }, { status: 400 });
         }
 
         // Fetch the proposal
