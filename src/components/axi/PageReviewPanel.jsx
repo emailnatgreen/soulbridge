@@ -89,15 +89,21 @@ export default function PageReviewPanel() {
 
   const handleSaveToMemory = async () => {
     if (!result) return;
-    await base44.entities.Memory.create({
-      agent_id: '6993271e7dc0fa2ab78762bf',
-      type: 'observation',
-      content: `[Page Review: ${selectedPage}]\n\n${result}`,
-      keywords: ['page_review', 'axi_suggestion', selectedPage.toLowerCase()],
-      context: `Auto-generated page review for ${selectedPage}`,
-      importance: 7,
-    }).catch(() => {});
-    setSaved(true);
+    setSaveError(null);
+    try {
+      await base44.entities.Memory.create({
+        agent_id: '6993271e7dc0fa2ab78762bf',
+        type: 'observation',
+        content: `[Page Review: ${selectedPage}]\n\n${result}`,
+        keywords: ['page_review', 'axi_suggestion', selectedPage.toLowerCase()],
+        context: `Auto-generated page review for ${selectedPage}`,
+        importance: 7,
+      });
+      setSaved(true);
+      queryClient.invalidateQueries({ queryKey: ['page-review-memories'] });
+    } catch (err) {
+      setSaveError(err?.message || 'Failed to save');
+    }
   };
 
   const handleSendToAxiChat = async () => {
