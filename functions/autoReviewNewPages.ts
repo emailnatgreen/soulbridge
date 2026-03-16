@@ -20,44 +20,71 @@ Key functionality that should be here.
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { page_name } = await req.json();
+    const AXI_ID = '6993271e7dc0fa2ab78762bf';
 
-    if (!page_name) {
-      return Response.json({ error: 'page_name is required' }, { status: 400 });
+    // Fetch recent page review memories to know which pages have been reviewed
+    const reviewedPages = await base44.asServiceRole.entities.Memory.list();
+    const reviewedPageNames = new Set(
+      reviewedPages
+        .filter(m => m.keywords && m.keywords.includes('page_review'))
+        .map(m => m.content.match(/\[Page Review: (.+?)\]/)?.[1])
+        .filter(Boolean)
+    );
+
+    // List of pages to review (sample of critical/recent pages)
+    const pagesToReview = [
+      'AxiCommandDashboard', 'Governance', 'AIProjectHub', 'Agents', 
+      'TreasuryDashboard', 'AgentProfile', 'DIDManager', 'Home'
+    ];
+
+    const pagesToProcess = pagesToReview.filter(p => !reviewedPageNames.has(p)).slice(0, 2);
+
+    if (pagesToProcess.length === 0) {
+      return Response.json({
+        success: true,
+        message: 'All monitored pages have been reviewed.',
+        reviewed_count: 0
+      });
     }
 
-    // Generate review
-    const review = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: REVIEW_PROMPT(page_name),
-    });
+    let reviewed = 0;
+    for (const page_name of pagesToProcess) {
+      // Generate review with faster model to avoid timeout
+      const review = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: REVIEW_PROMPT(page_name),
+        model: 'gpt_5_mini' // Faster model to avoid 502 timeouts
+      });
 
-    // Save to Memory
-    const memory = await base44.asServiceRole.entities.Memory.create({
-      agent_id: '6993271e7dc0fa2ab78762bf', // Axi's ID
-      type: 'observation',
-      content: `[Page Review: ${page_name}]\n\n${review}`,
-      keywords: ['page_review', 'axi_suggestion', 'auto_review', page_name.toLowerCase()],
-      context: `Auto-generated review for new page: ${page_name}`,
-      importance: 8,
-    });
+      // Save to Memory
+      const memory = await base44.asServiceRole.entities.Memory.create({
+        agent_id: AXI_ID,
+        type: 'observation',
+        content: `[Page Review: ${page_name}]\n\n${review}`,
+        keywords: ['page_review', 'axi_suggestion', 'auto_review', page_name.toLowerCase()],
+        context: `Auto-generated review for page: ${page_name}`,
+        importance: 7,
+      });
 
-    // Create notification for Axi
-    await base44.asServiceRole.entities.AgentNotification.create({
-      recipient_agent_id: '6993271e7dc0fa2ab78762bf',
-      notification_type: 'system',
-      title: `New Page Review: ${page_name}`,
-      message: `A new page "${page_name}" has been created. Auto-review generated and saved to your Memory.`,
-      priority: 'high',
-      related_entity_type: 'Memory',
-      related_entity_id: memory.id,
-      metadata: { page_name, review_type: 'auto' }
-    });
+      // Create notification for Axi
+      await base44.asServiceRole.entities.AgentNotification.create({
+        recipient_agent_id: AXI_ID,
+        notification_type: 'system',
+        title: `Page Review: ${page_name}`,
+        message: `Auto-review generated for "${page_name}". Check Memory for details.`,
+        priority: 'normal',
+        related_entity_type: 'Memory',
+        related_entity_id: memory.id,
+        metadata: { page_name, review_type: 'auto' }
+      });
+
+      reviewed++;
+    }
 
     return Response.json({
       success: true,
-      page_name,
-      memory_id: memory.id,
-      message: `Page "${page_name}" reviewed and Axi alerted.`
+      reviewed_count: reviewed,
+      pages_reviewed: pagesToProcess,
+      message: `Reviewed ${reviewed} page(s) and alerted Axi.`
     });
 
   } catch (error) {
