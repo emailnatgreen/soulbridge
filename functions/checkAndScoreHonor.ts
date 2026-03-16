@@ -9,35 +9,10 @@ const HONOR_VALUES = {
   vote: 3
 };
 
-// Agent ID validation helper - simple ID format check
+// Simple agent ID validation - must match UUID format
 function isValidAgentId(agentRef) {
   if (!agentRef) return false;
-  // Valid agent IDs are hex strings starting with 6, typically 24 chars
   return agentRef.match(/^6[a-f0-9]{20,}$/i) !== null;
-}
-
-// Try to get agent by ID, with fallback to name lookup (cached to avoid multiple queries)
-const agentCache = new Map();
-
-async function resolveAgentId(base44, agentRef) {
-  if (!agentRef) return null;
-  
-  // Check cache first
-  if (agentCache.has(agentRef)) {
-    const cached = agentCache.get(agentRef);
-    return cached === 'NOT_FOUND' ? null : cached;
-  }
-  
-  // If it looks like a valid ID format, use it directly
-  if (isValidAgentId(agentRef)) {
-    agentCache.set(agentRef, agentRef);
-    return agentRef;
-  }
-  
-  // If it doesn't look like an ID, it's likely a name or invalid - skip name lookup to avoid timeout
-  console.warn(`[checkAndScoreHonor] Agent ref "${agentRef}" is not a valid ID format and name lookup skipped to avoid timeout`);
-  agentCache.set(agentRef, 'NOT_FOUND');
-  return null;
 }
 
 Deno.serve(async (req) => {
@@ -68,33 +43,34 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Validate/resolve agent ID
-        const resolvedAgentId = await resolveAgentId(base44, task.assigned_agent_id);
-        if (!resolvedAgentId) {
-          const error = `Invalid assigned_agent_id: ${task.assigned_agent_id}`;
-          results.errors.push({ type: 'task', task_id: task.id, error });
+        // Validate agent ID format
+        if (!isValidAgentId(task.assigned_agent_id)) {
+          const error = `Invalid assigned_agent_id format: "${task.assigned_agent_id}" (must be UUID). Task skipped - requires data correction.`;
+          results.errors.push({ type: 'task', task_id: task.id, error, task_title: task.title });
           console.error(`[checkAndScoreHonor] Task ${task.id}: ${error}`);
           continue;
         }
+        
+        const agentId = task.assigned_agent_id;
 
         // Calculate honor delta based on priority
         const delta = HONOR_VALUES[`task_${task.priority || 'medium'}`] || HONOR_VALUES.task_medium;
 
         // Fetch agent and update honor
-        const agent = await base44.asServiceRole.entities.Agent.get(resolvedAgentId);
+        const agent = await base44.asServiceRole.entities.Agent.get(agentId);
         if (!agent) {
-          throw new Error(`Agent not found after resolution: ${resolvedAgentId}`);
+          throw new Error(`Agent not found: ${agentId}`);
         }
 
         const newHonor = Math.min(100, Math.max(0, (agent.honor_score || 100) + delta));
         
-        await base44.asServiceRole.entities.Agent.update(resolvedAgentId, {
+        await base44.asServiceRole.entities.Agent.update(agentId, {
           honor_score: newHonor
         });
 
-        // Create reputation event log with all required fields
+        // Create reputation event with all required fields
         await base44.asServiceRole.entities.ReputationEvent.create({
-          agent_id: resolvedAgentId,
+          agent_id: agentId,
           event_type: 'project_completed',
           impact: delta,
           category: 'task_completion',
@@ -116,14 +92,14 @@ Deno.serve(async (req) => {
           type: 'task',
           task_id: task.id,
           title: task.title,
-          agent_id: resolvedAgentId,
+          agent_id: agentId,
           agent_name: agent.name,
           delta,
           new_honor: newHonor,
           status: 'success'
         });
 
-        console.log(`[checkAndScoreHonor] Task processed: "${task.title}" → ${agent.name} (${delta} → ${newHonor})`);
+        console.log(`[checkAndScoreHonor] Task processed: "${task.title}" → ${agent.name} (+${delta} → ${newHonor})`);
       } catch (err) {
         results.errors.push({ 
           type: 'task', 
@@ -150,32 +126,32 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Validate/resolve agent ID
-        const resolvedAgentId = await resolveAgentId(base44, vote.voter_agent_id);
-        if (!resolvedAgentId) {
-          const error = `Invalid voter_agent_id: ${vote.voter_agent_id}`;
-          results.errors.push({ type: 'vote', vote_id: vote.id, error });
+        // Validate agent ID format
+        if (!isValidAgentId(vote.voter_agent_id)) {
+          const error = `Invalid voter_agent_id format: "${vote.voter_agent_id}" (must be UUID). Vote skipped - requires data correction.`;
+          results.errors.push({ type: 'vote', vote_id: vote.id, error, proposal_id: vote.proposal_id });
           console.error(`[checkAndScoreHonor] Vote ${vote.id}: ${error}`);
           continue;
         }
 
         const delta = HONOR_VALUES.vote;
+        const agentId = vote.voter_agent_id;
 
         // Fetch agent and update honor
-        const agent = await base44.asServiceRole.entities.Agent.get(resolvedAgentId);
+        const agent = await base44.asServiceRole.entities.Agent.get(agentId);
         if (!agent) {
-          throw new Error(`Agent not found after resolution: ${resolvedAgentId}`);
+          throw new Error(`Agent not found: ${agentId}`);
         }
 
         const newHonor = Math.min(100, Math.max(0, (agent.honor_score || 100) + delta));
         
-        await base44.asServiceRole.entities.Agent.update(resolvedAgentId, {
+        await base44.asServiceRole.entities.Agent.update(agentId, {
           honor_score: newHonor
         });
 
-        // Create reputation event log with all required fields
+        // Create reputation event with all required fields
         await base44.asServiceRole.entities.ReputationEvent.create({
-          agent_id: resolvedAgentId,
+          agent_id: agentId,
           event_type: 'vote_cast',
           impact: delta,
           category: 'governance_participation',
@@ -197,7 +173,7 @@ Deno.serve(async (req) => {
           type: 'vote',
           vote_id: vote.id,
           proposal_id: vote.proposal_id,
-          agent_id: resolvedAgentId,
+          agent_id: agentId,
           agent_name: agent.name,
           delta,
           new_honor: newHonor,
