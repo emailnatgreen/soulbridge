@@ -135,9 +135,12 @@ export default function AxiCommandDashboard() {
       </div>
 
       {/* Page Review Row */}
-      <div className="mt-4">
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
           <PageReviewPanel />
+        </div>
+        <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
+          <PageReviewMemoryPanel />
         </div>
       </div>
 
