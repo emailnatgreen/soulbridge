@@ -48,7 +48,7 @@ Another agent named ${agent1.name} has sent you this coordination message:
 
 Respond to this message as ${agent2.name}, staying true to your purpose and personality. Keep your response concise (2-3 sentences maximum).`;
 
-        const agentResponse = await base44.integrations.Core.InvokeLLM({
+        const agentResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
             prompt: responsePrompt
         });
 
