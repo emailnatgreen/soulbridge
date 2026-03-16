@@ -159,24 +159,45 @@ export default function AxiCommandDashboard() {
           </div>
 
           {/* Second Row — New Command Panels */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
 
-            {/* System Behavior Toggles */}
-            <div className="rounded-2xl border border-violet-700/40 bg-slate-800/60 backdrop-blur p-4">
-              <SystemBehaviorPanel />
+              {/* System Behavior Toggles */}
+              <div className="rounded-2xl border border-violet-700/40 bg-slate-800/60 backdrop-blur p-4">
+                <SystemBehaviorPanel />
+              </div>
+
+              {/* Agent Personality Management */}
+              <div className="rounded-2xl border border-pink-700/40 bg-slate-800/60 backdrop-blur p-4">
+                <AgentPersonalityPanel />
+              </div>
+
+              {/* Real-time Metrics Viewer */}
+              <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[680px]">
+                <MetricsViewer />
+              </div>
+
             </div>
 
-            {/* Agent Personality Management */}
-            <div className="rounded-2xl border border-pink-700/40 bg-slate-800/60 backdrop-blur p-4">
-              <AgentPersonalityPanel />
-            </div>
+            {/* Tier 2: Agent Performance Review System & Integrated Help Center */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
 
-            {/* Real-time Metrics Viewer */}
-            <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[680px]">
-              <MetricsViewer />
-            </div>
+              {/* Agent Performance Review System */}
+              <div className="rounded-2xl border border-indigo-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[700px]">
+                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <span className="text-indigo-400">⭐</span> Agent Performance Review System
+                </h2>
+                <AgentPerformanceReviewSystem />
+              </div>
 
-          </div>
+              {/* Integrated Help Center */}
+              <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[700px]">
+                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <span className="text-cyan-400">❓</span> Help Center
+                </h2>
+                <IntegratedHelpCenter />
+              </div>
+
+            </div>
 
           {/* Axi Review Coordination Panel */}
           <div id="review-coordination" className="mt-4 rounded-2xl border border-violet-600/50 bg-slate-800/60 backdrop-blur p-5">
