@@ -72,6 +72,8 @@ export default function PageReviewPanel() {
   const [batchCurrent, setBatchCurrent] = useState('');
   const [batchDone, setBatchDone] = useState([]);
   const [batchErrors, setBatchErrors] = useState([]);
+  const [batchStartIndex, setBatchStartIndex] = useState(0);
+  const [batchSize, setBatchSize] = useState(10);
   const stopRef = useRef(false);
 
   // --- Single review ---
@@ -145,14 +147,19 @@ export default function PageReviewPanel() {
   };
 
   // --- Batch review ---
-  const handleStartBatch = async (startFrom = batchStartIndex) => {
+  const handleStartBatch = async (startFrom = 0, isResume = false) => {
     setBatchRunning(true);
+    if (!isResume) {
+      setBatchDone([]);
+      setBatchErrors([]);
+      setBatchProgress(0);
+    }
     setBatchCurrent('');
     stopRef.current = false;
 
-    const endIndex = Math.min(startFrom + batchSize, ALL_PAGES.length);
+    const end = Math.min(startFrom + batchSize, ALL_PAGES.length);
 
-    for (let i = startFrom; i < endIndex; i++) {
+    for (let i = startFrom; i < end; i++) {
       if (stopRef.current) {
         setBatchStartIndex(i);
         break;
@@ -176,30 +183,23 @@ export default function PageReviewPanel() {
         setBatchErrors(prev => [...prev, page]);
         setBatchDone(prev => [...prev, { page, status: 'error' }]);
       }
-      setBatchProgress(Math.round(((batchDone.length + (i - startFrom + 1)) / ALL_PAGES.length) * 100));
+      setBatchProgress(Math.round(((i + 1) / ALL_PAGES.length) * 100));
       // Small delay between calls to avoid rate limits
-      await new Promise(r => setTimeout(r, 500));
+      if (i < end - 1) await new Promise(r => setTimeout(r, 500));
     }
 
-    if (!stopRef.current) {
-      setBatchStartIndex(endIndex);
-    }
+    if (!stopRef.current) setBatchStartIndex(end);
     setBatchRunning(false);
     setBatchCurrent('');
+    queryClient.invalidateQueries({ queryKey: ['page-review-memories'] });
   };
 
   const handleStop = () => { stopRef.current = true; };
-
-  const handleResetBatch = () => {
-    setBatchDone([]);
-    setBatchErrors([]);
-    setBatchStartIndex(0);
-    setBatchProgress(0);
-  };
+  const handleContinue = () => handleStartBatch(batchStartIndex, true);
+  const handleRestart = () => { setBatchStartIndex(0); handleStartBatch(0, false); };
 
   const completed = batchDone.length;
   const total = ALL_PAGES.length;
-  const hasMore = batchStartIndex < total && completed > 0;
 
   return (
     <div className="space-y-4">
