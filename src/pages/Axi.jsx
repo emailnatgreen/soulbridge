@@ -269,11 +269,11 @@ export default function AxiPage() {
               onKeyDown={handleKeyDown}
               placeholder="Speak to Axi..."
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none h-12 min-h-[48px]"
-              disabled={sending}
+              disabled={sending || loading || !!error}
             />
             <Button
               onClick={handleSend}
-              disabled={!input.trim() || sending}
+              disabled={!input.trim() || sending || loading || !!error}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-12"
             >
               {sending ? (
