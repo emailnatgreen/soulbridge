@@ -72,8 +72,6 @@ export default function PageReviewPanel() {
   const [batchCurrent, setBatchCurrent] = useState('');
   const [batchDone, setBatchDone] = useState([]);
   const [batchErrors, setBatchErrors] = useState([]);
-  const [batchStartIndex, setBatchStartIndex] = useState(0);
-  const [batchSize, setBatchSize] = useState(10);
   const stopRef = useRef(false);
 
   // --- Single review ---
@@ -147,19 +145,14 @@ export default function PageReviewPanel() {
   };
 
   // --- Batch review ---
-  const handleStartBatch = async (startFrom = 0, isResume = false) => {
+  const handleStartBatch = async (startFrom = batchStartIndex) => {
     setBatchRunning(true);
-    if (!isResume) {
-      setBatchDone([]);
-      setBatchErrors([]);
-      setBatchProgress(0);
-    }
     setBatchCurrent('');
     stopRef.current = false;
 
-    const end = Math.min(startFrom + batchSize, ALL_PAGES.length);
+    const endIndex = Math.min(startFrom + batchSize, ALL_PAGES.length);
 
-    for (let i = startFrom; i < end; i++) {
+    for (let i = startFrom; i < endIndex; i++) {
       if (stopRef.current) {
         setBatchStartIndex(i);
         break;
@@ -183,23 +176,30 @@ export default function PageReviewPanel() {
         setBatchErrors(prev => [...prev, page]);
         setBatchDone(prev => [...prev, { page, status: 'error' }]);
       }
-      setBatchProgress(Math.round(((i + 1) / ALL_PAGES.length) * 100));
+      setBatchProgress(Math.round(((batchDone.length + (i - startFrom + 1)) / ALL_PAGES.length) * 100));
       // Small delay between calls to avoid rate limits
-      if (i < end - 1) await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 500));
     }
 
-    if (!stopRef.current) setBatchStartIndex(end);
+    if (!stopRef.current) {
+      setBatchStartIndex(endIndex);
+    }
     setBatchRunning(false);
     setBatchCurrent('');
-    queryClient.invalidateQueries({ queryKey: ['page-review-memories'] });
   };
 
   const handleStop = () => { stopRef.current = true; };
-  const handleContinue = () => handleStartBatch(batchStartIndex, true);
-  const handleRestart = () => { setBatchStartIndex(0); handleStartBatch(0, false); };
+
+  const handleResetBatch = () => {
+    setBatchDone([]);
+    setBatchErrors([]);
+    setBatchStartIndex(0);
+    setBatchProgress(0);
+  };
 
   const completed = batchDone.length;
   const total = ALL_PAGES.length;
+  const hasMore = batchStartIndex < total && completed > 0;
 
   return (
     <div className="space-y-4">
@@ -302,9 +302,21 @@ export default function PageReviewPanel() {
       {/* ── BATCH MODE ── */}
       {mode === 'batch' && (
         <div className="space-y-4">
-          <div className="bg-slate-900/40 rounded-xl border border-amber-700/30 p-4 text-xs text-slate-400">
-            <p className="text-amber-300 font-medium mb-1">Batch Review — {total} pages</p>
-            <p>Axi will review every page one by one and auto-save each review to Memory. This may take 10–15 minutes to complete all pages.</p>
+          <div className="bg-slate-900/40 rounded-xl border border-amber-700/30 p-4 text-xs text-slate-400 space-y-2">
+            <p className="text-amber-300 font-medium">Batch Review — {total} pages</p>
+            <p>Axi reviews pages in chunks and auto-saves each to Memory. Pick your chunk size below.</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-slate-400">Chunk size:</span>
+              {[5, 10, 20].map(n => (
+                <button key={n} onClick={() => setBatchSize(n)}
+                  className={`text-xs px-2 py-0.5 rounded ${batchSize === n ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
+                  {n}
+                </button>
+              ))}
+            </div>
+            {batchStartIndex > 0 && !batchRunning && (
+              <p className="text-amber-300">Resuming from page {batchStartIndex + 1} of {total}</p>
+            )}
           </div>
 
           {/* Progress */}
