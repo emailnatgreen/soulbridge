@@ -5,10 +5,10 @@ Deno.serve(async (req) => {
         const base44 = createClientFromRequest(req);
 
         const body = await req.json();
-        const { entity_id, event } = body;
+        const { entity_id, event, data } = body;
 
-        // Support both direct calls and entity automation payloads
-        const proposalId = entity_id || body.proposal_id;
+        // Extract proposal ID from entity automation payload structure
+        const proposalId = event?.entity_id || entity_id || body.proposal_id;
         if (!proposalId) {
             return Response.json({ error: 'proposal_id required' }, { status: 400 });
         }
