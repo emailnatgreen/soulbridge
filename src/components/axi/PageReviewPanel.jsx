@@ -238,6 +238,12 @@ export default function PageReviewPanel() {
               : <><Sparkles className="w-3.5 h-3.5 mr-1.5" />Review with Axi</>}
           </Button>
 
+          {saveError && !result && (
+            <div className="flex items-center gap-1.5 text-xs text-red-400 bg-red-900/20 border border-red-700/40 rounded-lg px-3 py-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />{saveError}
+            </div>
+          )}
+
           {result && (
             <div className="bg-slate-900/60 rounded-xl border border-slate-700/40 p-4 max-h-[500px] overflow-y-auto">
               <ReactMarkdown className="text-xs text-slate-300 prose prose-sm prose-invert max-w-none [&>h2]:text-amber-300 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-1 [&>p]:my-1 [&>ul]:my-1 [&>ul]:ml-4 [&>li]:my-0.5">
