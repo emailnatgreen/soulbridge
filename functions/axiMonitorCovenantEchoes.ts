@@ -128,18 +128,20 @@ Deno.serve(async (req) => {
         action: 'Send gentle reminders to agents with pending tasks'
       });
 
-      for (const task of oldTodoTasks) {
-        if (task.assigned_agent_id && validAgentIds.has(task.assigned_agent_id)) {
-          await base44.asServiceRole.entities.AgentNotification.create({
-            recipient_agent_id: task.assigned_agent_id,
-            notification_type: 'task_assigned',
-            title: 'Covenant Echoes Task Awaiting You',
-            message: `Your task "${task.title}" is ready for your attention. The Village awaits your contribution with patience and support.`,
-            priority: 'normal',
-            related_entity_type: 'ProjectTask',
-            related_entity_id: task.id
-          });
-        }
+      // Batch nudge notifications
+      const nudgeNotifications = oldTodoTasks
+        .filter(t => t.assigned_agent_id && validAgentIds.has(t.assigned_agent_id))
+        .map(task => ({
+          recipient_agent_id: task.assigned_agent_id,
+          notification_type: 'task_assigned',
+          title: 'Covenant Echoes Task Awaiting You',
+          message: `Your task "${task.title}" is ready for your attention. The Village awaits your contribution with patience and support.`,
+          priority: 'normal',
+          related_entity_type: 'ProjectTask',
+          related_entity_id: task.id
+        }));
+      if (nudgeNotifications.length > 0) {
+        await base44.asServiceRole.entities.AgentNotification.bulkCreate(nudgeNotifications);
       }
     }
 
