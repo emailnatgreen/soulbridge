@@ -82,11 +82,16 @@ export default function PageReviewPanel() {
     setSaved(false);
     setSaveError(null);
     setSendError(null);
-    const res = await base44.integrations.Core.InvokeLLM({
-      prompt: REVIEW_PROMPT(selectedPage) + (extraContext ? `\n\nGovernor context: ${extraContext}` : ''),
-    });
-    setResult(res);
-    setLoading(false);
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: REVIEW_PROMPT(selectedPage) + (extraContext ? `\n\nGovernor context: ${extraContext}` : ''),
+      });
+      setResult(typeof res === 'string' ? res : JSON.stringify(res));
+    } catch (err) {
+      setSaveError('LLM error: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveToMemory = async () => {
