@@ -28,56 +28,56 @@ Deno.serve(async (req) => {
     };
 
     try {
-        const body = await req.json().catch(() => ({}));
-        const { treasury_id, classic_address } = body;
-
-        if (!classic_address) {
-            logEntry.status = 'error';
-            logEntry.message = 'classic_address is required';
-            logEntry.error_detail = 'No classic_address provided in request body';
+        // Fetch all treasuries to sync
+        const treasuries = await base44.asServiceRole.entities.Treasury.list();
+        if (!treasuries || treasuries.length === 0) {
+            logEntry.status = 'success';
+            logEntry.message = 'No treasuries to sync';
+            logEntry.duration_ms = Date.now() - startTime;
             await base44.asServiceRole.entities.AutomationLog.create(logEntry);
-            return Response.json({ error: 'classic_address is required' }, { status: 400 });
+            return Response.json({ success: true, synced_count: 0 });
         }
 
         const client = new Client('wss://xrpl.ws');
         await client.connect();
 
-        let balance = 0;
-        try {
-            const accountInfo = await client.request({
-                command: 'account_info',
-                account: classic_address,
-                ledger_index: 'validated',
-            });
-            balance = parseFloat(dropsToXrp(accountInfo.result.account_data.Balance));
-        } catch (err) {
-            console.log('account_info failed:', err.message);
-            logEntry.status = 'error';
-            logEntry.message = `XRPL account_info failed: ${err.message}`;
-            logEntry.error_detail = err.message;
-            await client.disconnect();
-            logEntry.duration_ms = Date.now() - startTime;
-            await base44.asServiceRole.entities.AutomationLog.create(logEntry);
-            return Response.json({ error: err.message }, { status: 500 });
-        }
+        let syncedCount = 0;
+        const results = [];
 
+        // Sync each treasury in parallel
+        const syncPromises = treasuries.map(async (treasury) => {
+            if (!treasury.classic_address) return null;
+            try {
+                const accountInfo = await client.request({
+                    command: 'account_info',
+                    account: treasury.classic_address,
+                    ledger_index: 'validated',
+                });
+                const balance = parseFloat(dropsToXrp(accountInfo.result.account_data.Balance));
+                
+                // Update treasury balance
+                await base44.asServiceRole.entities.Treasury.update(treasury.id, {
+                    total_balance: balance,
+                });
+                syncedCount++;
+                results.push({ treasury_id: treasury.id, balance, address: treasury.classic_address });
+            } catch (err) {
+                console.error(`Failed to sync treasury ${treasury.id}:`, err.message);
+                results.push({ treasury_id: treasury.id, error: err.message });
+            }
+        });
+
+        await Promise.all(syncPromises);
         await client.disconnect();
-
-        // Update the Treasury record if we have an ID
-        if (treasury_id) {
-            await base44.asServiceRole.entities.Treasury.update(treasury_id, {
-                total_balance: balance,
-            });
-        }
 
         // Write success log
         logEntry.status = 'success';
-        logEntry.message = `Treasury synced: ${balance.toFixed(6)} XRP at ${classic_address}`;
-        logEntry.details = { balance, classic_address, treasury_id: treasury_id || null };
+        logEntry.message = `Synced ${syncedCount}/${treasuries.length} treasuries`;
+        logEntry.details = { synced_count: syncedCount, total_treasuries: treasuries.length, results };
         logEntry.duration_ms = Date.now() - startTime;
         await base44.asServiceRole.entities.AutomationLog.create(logEntry);
 
-        return Response.json({ success: true, balance, classic_address });
+        return Response.json({ success: true, synced_count: syncedCount, total: treasuries.length });
 
     } catch (error) {
         console.error('syncTreasuryBalance error:', error.message);
