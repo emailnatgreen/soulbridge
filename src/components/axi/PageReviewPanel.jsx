@@ -109,8 +109,8 @@ export default function PageReviewPanel() {
   const handleSendToAxiChat = async () => {
     if (!result) return;
     setSendingToAxi(true);
+    setSendError(null);
     try {
-      // Find or create the unified Axi conversation
       const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
       const unifiedConvo = conversations.find(c => c.metadata?.unified_axi_chat === true);
       let convo = unifiedConvo
@@ -126,7 +126,7 @@ export default function PageReviewPanel() {
       });
       navigate('/Axi');
     } catch (err) {
-      console.error('Failed to send to Axi:', err);
+      setSendError(err?.message || 'Failed to send to Axi');
     } finally {
       setSendingToAxi(false);
     }
