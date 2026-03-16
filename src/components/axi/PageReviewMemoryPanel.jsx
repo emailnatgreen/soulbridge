@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { BookOpen, Brain, Trash2, RefreshCw, ChevronDown, ChevronUp, Search, MessageSquare, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
-import { useNavigate } from 'react-router-dom';
 
 export default function PageReviewMemoryPanel() {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ export default function PageReviewMemoryPanel() {
       });
       navigate('/Axi');
     } catch (err) {
-      setSendError(err?.message || 'Failed to send');
+      setSendError(err?.message || 'Failed to send to Axi');
     } finally {
       setSendingId(null);
     }
@@ -55,7 +55,6 @@ export default function PageReviewMemoryPanel() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['page-review-memories'] }),
   });
 
-  // Filter to only page reviews and apply search
   const pageReviews = memories.filter(m =>
     m.keywords?.includes('page_review') &&
     (search === '' ||
@@ -63,7 +62,6 @@ export default function PageReviewMemoryPanel() {
       m.keywords?.some(k => k.toLowerCase().includes(search.toLowerCase())))
   );
 
-  // Extract page name from content "[Page Review: PageName]"
   const getPageName = (content) => {
     const match = content.match(/\[Page Review: ([^\]]+)\]/);
     return match ? match[1] : 'Unknown';
@@ -90,10 +88,7 @@ export default function PageReviewMemoryPanel() {
         <Brain className="w-4 h-4 text-amber-400" />
         <h3 className="text-sm font-semibold text-white">Page Review Memory</h3>
         <span className="ml-1 text-xs text-slate-500">{pageReviews.length} saved</span>
-        <button
-          onClick={() => refetch()}
-          className="ml-auto text-slate-500 hover:text-slate-300 transition-colors"
-        >
+        <button onClick={() => refetch()} className="ml-auto text-slate-500 hover:text-slate-300 transition-colors">
           <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -120,14 +115,10 @@ export default function PageReviewMemoryPanel() {
           pageReviews.map(memory => {
             const pageName = getPageName(memory.content);
             const isExpanded = expanded === memory.id;
-            // Strip the header line for display
             const bodyContent = memory.content.replace(/\[Page Review: [^\]]+\]\n\n/, '');
 
             return (
-              <div
-                key={memory.id}
-                className={`rounded-xl border ${getPriorityColor(memory.content)} transition-all`}
-              >
+              <div key={memory.id} className={`rounded-xl border ${getPriorityColor(memory.content)} transition-all`}>
                 {/* Row header */}
                 <div
                   className="flex items-center gap-2 px-3 py-2.5 cursor-pointer"
@@ -139,9 +130,7 @@ export default function PageReviewMemoryPanel() {
                   <span className="text-[10px] text-slate-500">
                     {new Date(memory.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </span>
-                  {isExpanded
-                    ? <ChevronUp className="w-3 h-3 text-slate-400" />
-                    : <ChevronDown className="w-3 h-3 text-slate-400" />}
+                  {isExpanded ? <ChevronUp className="w-3 h-3 text-slate-400" /> : <ChevronDown className="w-3 h-3 text-slate-400" />}
                 </div>
 
                 {/* Expanded content */}
@@ -152,11 +141,13 @@ export default function PageReviewMemoryPanel() {
                         {bodyContent}
                       </ReactMarkdown>
                     </div>
+
                     {sendError && sendingId === null && (
                       <div className="flex items-center gap-1 text-[10px] text-red-400 mt-1">
                         <AlertCircle className="w-3 h-3" />{sendError}
                       </div>
                     )}
+
                     <div className="flex justify-between mt-2 pt-2 border-t border-slate-700/30">
                       <Button
                         size="sm"
