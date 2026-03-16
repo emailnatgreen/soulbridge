@@ -123,9 +123,15 @@ export default function AxiPage() {
         role: 'user',
         content: messageToSend
       });
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      setInput(messageToSend);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      // Don't restore input - the message was received, Axi just hit a tool error
+      // Show a subtle retry hint instead
+      setMessages(prev => [...prev, {
+        role: 'system_error',
+        content: '⚠️ Axi encountered an issue processing that. Please try again or rephrase.',
+        created_date: new Date().toISOString()
+      }]);
     } finally {
       setSending(false);
     }
