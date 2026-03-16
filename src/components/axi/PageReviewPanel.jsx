@@ -55,13 +55,16 @@ Key functionality that should be here.
 
 export default function PageReviewPanel() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [mode, setMode] = useState('single'); // 'single' | 'batch'
   const [selectedPage, setSelectedPage] = useState('');
   const [extraContext, setExtraContext] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [sendingToAxi, setSendingToAxi] = useState(false);
+  const [sendError, setSendError] = useState(null);
 
   // Batch state
   const [batchRunning, setBatchRunning] = useState(false);
