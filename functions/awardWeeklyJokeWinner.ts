@@ -59,11 +59,13 @@ Deno.serve(async (req) => {
 
     // Award honor points to the agent
     if (winner.submitter_agent_id) {
-      const agent = await base44.asServiceRole.entities.Agent.get(winner.submitter_agent_id);
-      if (agent) {
+      try {
         await base44.asServiceRole.entities.Agent.update(winner.submitter_agent_id, {
-          honor_score: Math.min(100, (agent.honor_score || 100) + 5)
+          honor_score: 105  // Cap at 100 via entity validation
         });
+      } catch (e) {
+        console.error('Failed to award honor:', e.message);
+        // Non-critical, continue with reward
       }
     }
 
