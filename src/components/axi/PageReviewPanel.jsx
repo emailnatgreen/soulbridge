@@ -118,14 +118,23 @@ export default function PageReviewPanel() {
     setSendingToAxi(true);
     setSendError(null);
     try {
-      const convo = await base44.agents.createConversation({
-        agent_name: 'axi',
-        metadata: { name: `Page Review: ${selectedPage}` }
-      });
+      // Find the unified Axi conversation (same one the Axi page uses)
+      const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+      const unifiedConvo = conversations.find(c => c.metadata?.unified_axi_chat === true);
+
+      let convo;
+      if (unifiedConvo) {
+        convo = await base44.agents.getConversation(unifiedConvo.id);
+      } else {
+        convo = await base44.agents.createConversation({
+          agent_name: 'axi',
+          metadata: { name: 'Unified Conversation with Axi - Mother Boss', unified_axi_chat: true }
+        });
+      }
 
       await base44.agents.addMessage(convo, {
         role: 'user',
-        content: `I have just saved a page review for **${selectedPage}** to your Memory (type: observation, keywords: page_review, axi_suggestion, ${selectedPage.toLowerCase()}). Please retrieve it from your Memory and share your thoughts, action priorities, and any recommended next steps for the Village.`
+        content: `I have just saved a page review for **${selectedPage}** to your Memory (type: observation, keywords: page_review, axi_suggestion, ${selectedPage.toLowerCase()}). Please retrieve it from your Memory and share your thoughts, action priorities, and any recommended next steps for the Village.\n\nReview summary:\n${result}`
       });
       navigate('/Axi');
     } catch (err) {
