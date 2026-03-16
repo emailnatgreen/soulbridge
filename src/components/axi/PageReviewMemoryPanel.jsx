@@ -103,9 +103,26 @@ export default function PageReviewMemoryPanel() {
         <Brain className="w-4 h-4 text-amber-400" />
         <h3 className="text-sm font-semibold text-white">Page Review Memory</h3>
         <span className="ml-1 text-xs text-slate-500">{pageReviews.length} saved</span>
-        <button onClick={() => refetch()} className="ml-auto text-slate-500 hover:text-slate-300 transition-colors">
-          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          {pageReviews.length > 0 && (
+            !confirmDeleteAll ? (
+              <button onClick={() => setConfirmDeleteAll(true)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors">
+                <Trash2 className="w-3 h-3" />Delete All
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-red-400">Delete all {pageReviews.length}?</span>
+                <button onClick={handleDeleteAll} disabled={deletingAll} className="text-red-400 hover:text-red-300 font-semibold">
+                  {deletingAll ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes'}
+                </button>
+                <button onClick={() => setConfirmDeleteAll(false)} className="text-slate-400 hover:text-white">No</button>
+              </div>
+            )
+          )}
+          <button onClick={() => refetch()} className="text-slate-500 hover:text-slate-300 transition-colors">
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Search */}
