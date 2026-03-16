@@ -26,6 +26,8 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="relative">
+      <GlobalNav />
+      
       {/* Global Background Watermark */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
@@ -37,10 +39,6 @@ export default function Layout({ children, currentPageName }) {
           opacity: 0.06,
         }}
       />
-      
-      {/* Global Navigation */}
-      <GlobalNav />
-
       {/* Page Content */}
       <div className="relative z-10 lg:ml-64">
         {children}
