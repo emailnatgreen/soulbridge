@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Brain, Trash2, RefreshCw, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { BookOpen, Brain, Trash2, RefreshCw, ChevronDown, ChevronUp, Search, MessageSquare, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
+import { useNavigate } from 'react-router-dom';
 
 export default function PageReviewMemoryPanel() {
   const navigate = useNavigate();
