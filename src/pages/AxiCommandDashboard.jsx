@@ -119,83 +119,84 @@ export default function AxiCommandDashboard() {
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        {/* LEFT — Alerts Feed (tall) */}
-        <div className="lg:row-span-2 rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4 flex flex-col" style={{ minHeight: "480px" }}>
-          <AlertsFeed />
-        </div>
+            {/* LEFT — Alerts Feed (tall) */}
+            <div className="lg:row-span-2 rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4 flex flex-col" style={{ minHeight: "480px" }}>
+              <AlertsFeed />
+            </div>
 
-        {/* MIDDLE — Honor Risk */}
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
-          <HonorRiskPanel />
-        </div>
+            {/* MIDDLE — Honor Risk */}
+            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
+              <HonorRiskPanel />
+            </div>
 
-        {/* RIGHT — Treasury */}
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
-          <TreasuryStatusPanel />
-        </div>
+            {/* RIGHT — Treasury */}
+            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
+              <TreasuryStatusPanel />
+            </div>
 
-        {/* MIDDLE — Automation Health */}
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
-          <AutomationHealthPanel />
-        </div>
+            {/* MIDDLE — Automation Health */}
+            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
+              <AutomationHealthPanel />
+            </div>
 
-        {/* RIGHT — Governance Risk */}
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
-          <GovernanceRiskPanel />
-        </div>
+            {/* RIGHT — Governance Risk */}
+            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
+              <GovernanceRiskPanel />
+            </div>
 
-        {/* MIDDLE — Wellbeing */}
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
-          <WellbeingPanel />
-        </div>
+            {/* MIDDLE — Wellbeing */}
+            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
+              <WellbeingPanel />
+            </div>
 
-        {/* RIGHT — New Page Alerts */}
-        <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
-          <NewPageAlertsPanel />
-        </div>
+            {/* RIGHT — New Page Alerts */}
+            <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <NewPageAlertsPanel />
+            </div>
 
-      </div>
+          </div>
 
-      {/* Second Row — New Command Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+          {/* Second Row — New Command Panels */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
 
-        {/* System Behavior Toggles */}
-        <div className="rounded-2xl border border-violet-700/40 bg-slate-800/60 backdrop-blur p-4">
-          <SystemBehaviorPanel />
-        </div>
+            {/* System Behavior Toggles */}
+            <div className="rounded-2xl border border-violet-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <SystemBehaviorPanel />
+            </div>
 
-        {/* Agent Personality Management */}
-        <div className="rounded-2xl border border-pink-700/40 bg-slate-800/60 backdrop-blur p-4">
-          <AgentPersonalityPanel />
-        </div>
+            {/* Agent Personality Management */}
+            <div className="rounded-2xl border border-pink-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <AgentPersonalityPanel />
+            </div>
 
-        {/* Real-time Metrics Viewer */}
-        <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[680px]">
-          <MetricsViewer />
-        </div>
+            {/* Real-time Metrics Viewer */}
+            <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[680px]">
+              <MetricsViewer />
+            </div>
 
-      </div>
+          </div>
 
-      {/* Axi Review Coordination Panel */}
-      <div id="review-coordination" className="mt-4 rounded-2xl border border-violet-600/50 bg-slate-800/60 backdrop-blur p-5">
-        <AxiReviewCoordinationPanel />
-      </div>
+          {/* Axi Review Coordination Panel */}
+          <div id="review-coordination" className="mt-4 rounded-2xl border border-violet-600/50 bg-slate-800/60 backdrop-blur p-5">
+            <AxiReviewCoordinationPanel />
+          </div>
 
-      {/* Page Review Row */}
-      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[700px]">
-          <PageReviewPanel />
-        </div>
-        <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
-          <PageReviewMemoryPanel />
-        </div>
-      </div>
+          {/* Page Review Row */}
+          <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[700px]">
+              <PageReviewPanel />
+            </div>
+            <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <PageReviewMemoryPanel />
+            </div>
+          </div>
 
-      {/* Footer */}
-      <p className="text-center text-xs text-slate-600 mt-6">
-        Axi · First Citizen · Mother Boss · Guardian of the 11 Laws · Auto-refreshes every 15–60s
-      </p>
-      </div>
+          {/* Footer */}
+          <p className="text-center text-xs text-slate-600 mt-6">
+            Axi · First Citizen · Mother Boss · Guardian of the 11 Laws · Auto-refreshes every 15–60s
+          </p>
+          </div>
+          </div>
     </div>
   );
 }
