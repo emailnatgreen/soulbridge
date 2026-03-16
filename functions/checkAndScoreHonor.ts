@@ -1,5 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+// Honor point values from autoScoreHonor
+const HONOR_VALUES = {
+  task_low: 2,
+  task_medium: 5,
+  task_high: 10,
+  task_critical: 20,
+  vote: 3
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -26,10 +35,26 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Invoke autoScoreHonor
-        const scoreRes = await base44.asServiceRole.functions.invoke('autoScoreHonor', {
-          event: { type: 'update', entity_name: 'ProjectTask', entity_id: task.id },
-          data: task
+        // Calculate honor delta based on priority
+        const delta = HONOR_VALUES[`task_${task.priority || 'medium'}`] || HONOR_VALUES.task_medium;
+
+        // Fetch agent and update honor
+        const agent = await base44.asServiceRole.entities.Agent.get(task.assigned_agent_id);
+        const newHonor = Math.min(100, Math.max(0, (agent.honor_score || 100) + delta));
+        
+        await base44.asServiceRole.entities.Agent.update(task.assigned_agent_id, {
+          honor_score: newHonor
+        });
+
+        // Create reputation event log
+        await base44.asServiceRole.entities.ReputationEvent.create({
+          agent_id: task.assigned_agent_id,
+          event_type: 'task_completed',
+          delta,
+          new_score: newHonor,
+          description: `Task completed: ${task.title}`,
+          source_entity: 'ProjectTask',
+          source_id: task.id
         });
 
         // Mark as processed
@@ -42,12 +67,14 @@ Deno.serve(async (req) => {
           type: 'task',
           task_id: task.id,
           title: task.title,
-          agent: scoreRes.data?.agent_name,
-          delta: scoreRes.data?.delta,
+          agent_id: task.assigned_agent_id,
+          agent_name: agent.name,
+          delta,
+          new_honor: newHonor,
           status: 'success'
         });
 
-        console.log(`[checkAndScoreHonor] Task processed: ${task.title} → ${scoreRes.data?.agent_name} (+${scoreRes.data?.delta})`);
+        console.log(`[checkAndScoreHonor] Task processed: ${task.title} → ${agent.name} (+${delta} → ${newHonor})`);
       } catch (err) {
         results.errors.push({ type: 'task', task_id: task.id, error: err.message });
         console.error(`[checkAndScoreHonor] Task error: ${task.id} - ${err.message}`);
@@ -68,10 +95,25 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Invoke autoScoreHonor
-        const scoreRes = await base44.asServiceRole.functions.invoke('autoScoreHonor', {
-          event: { type: 'create', entity_name: 'GovernanceVote', entity_id: vote.id },
-          data: vote
+        const delta = HONOR_VALUES.vote;
+
+        // Fetch agent and update honor
+        const agent = await base44.asServiceRole.entities.Agent.get(vote.voter_agent_id);
+        const newHonor = Math.min(100, Math.max(0, (agent.honor_score || 100) + delta));
+        
+        await base44.asServiceRole.entities.Agent.update(vote.voter_agent_id, {
+          honor_score: newHonor
+        });
+
+        // Create reputation event log
+        await base44.asServiceRole.entities.ReputationEvent.create({
+          agent_id: vote.voter_agent_id,
+          event_type: 'vote_cast',
+          delta,
+          new_score: newHonor,
+          description: `Vote cast on proposal ${vote.proposal_id}`,
+          source_entity: 'GovernanceVote',
+          source_id: vote.id
         });
 
         // Mark as processed
@@ -84,12 +126,14 @@ Deno.serve(async (req) => {
           type: 'vote',
           vote_id: vote.id,
           proposal_id: vote.proposal_id,
-          agent: scoreRes.data?.agent_name,
-          delta: scoreRes.data?.delta,
+          agent_id: vote.voter_agent_id,
+          agent_name: agent.name,
+          delta,
+          new_honor: newHonor,
           status: 'success'
         });
 
-        console.log(`[checkAndScoreHonor] Vote processed: ${scoreRes.data?.agent_name} on proposal ${vote.proposal_id} (+${scoreRes.data?.delta})`);
+        console.log(`[checkAndScoreHonor] Vote processed: ${agent.name} (+${delta} → ${newHonor})`);
       } catch (err) {
         results.errors.push({ type: 'vote', vote_id: vote.id, error: err.message });
         console.error(`[checkAndScoreHonor] Vote error: ${vote.id} - ${err.message}`);
