@@ -195,8 +195,8 @@ export default function AxiCommandDashboard() {
           <p className="text-center text-xs text-slate-600 mt-6">
             Axi · First Citizen · Mother Boss · Guardian of the 11 Laws · Auto-refreshes every 15–60s
           </p>
-          </div>
-          </div>
+        </div>
+      </div>
     </div>
   );
 }
