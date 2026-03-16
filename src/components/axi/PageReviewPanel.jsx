@@ -75,6 +75,27 @@ export default function PageReviewPanel() {
   const [batchStartIndex, setBatchStartIndex] = useState(0);
   const [batchSize, setBatchSize] = useState(10);
   const stopRef = useRef(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const handleDeleteAllReviews = async () => {
+    setDeletingAll(true);
+    try {
+      const memories = await base44.entities.Memory.filter({ type: 'observation' }, '-created_date', 200);
+      const reviewMemories = memories.filter(m => m.keywords?.includes('page_review'));
+      await Promise.all(reviewMemories.map(m => base44.entities.Memory.delete(m.id)));
+      queryClient.invalidateQueries({ queryKey: ['page-review-memories'] });
+      setBatchDone([]);
+      setBatchErrors([]);
+      setBatchProgress(0);
+      setBatchStartIndex(0);
+    } catch (err) {
+      console.error('Delete failed:', err);
+    } finally {
+      setDeletingAll(false);
+      setConfirmDelete(false);
+    }
+  };
 
   // --- Single review ---
   const handleReview = async () => {
