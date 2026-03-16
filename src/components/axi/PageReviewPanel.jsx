@@ -53,12 +53,14 @@ Key functionality that should be here.
 🔴 Critical Fix Needed | 🟡 Improvements Recommended | 🟢 Looks Solid`;
 
 export default function PageReviewPanel() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState('single'); // 'single' | 'batch'
   const [selectedPage, setSelectedPage] = useState('');
   const [extraContext, setExtraContext] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [sendingToAxi, setSendingToAxi] = useState(false);
 
   // Batch state
   const [batchRunning, setBatchRunning] = useState(false);

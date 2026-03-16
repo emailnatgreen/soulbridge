@@ -39,6 +39,18 @@ export default function AxiCommandDashboard() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Link to="/Home">
+            <Button variant="outline" size="sm" className="border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs">
+              <Home className="w-3.5 h-3.5 mr-1.5" />
+              Home
+            </Button>
+          </Link>
+          <Link to="/Axi">
+            <Button variant="outline" size="sm" className="border-violet-700/60 bg-violet-900/30 text-violet-300 hover:bg-violet-800/40 text-xs">
+              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+              Talk to Axi
+            </Button>
+          </Link>
           <Button
             variant="outline"
             size="sm"
