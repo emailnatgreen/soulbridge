@@ -101,6 +101,14 @@ export default function AxiCommandDashboard() {
       {/* Village Stats */}
       <VillageStatsBar />
 
+      {/* Comprehensive Analytics Dashboard */}
+      <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-5 mb-6">
+        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <span className="text-cyan-400">📊</span> Strategic Analytics & KPIs
+        </h2>
+        <ComprehensiveAnalyticsDashboard />
+      </div>
+
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
