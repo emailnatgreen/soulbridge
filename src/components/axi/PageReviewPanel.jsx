@@ -118,21 +118,10 @@ export default function PageReviewPanel() {
     setSendingToAxi(true);
     setSendError(null);
     try {
-      // List all conversations for the axi agent (no filter param)
-      const conversations = await base44.agents.listConversations('axi');
-      const unifiedConvo = Array.isArray(conversations)
-        ? conversations.find(c => c.metadata?.unified_axi_chat === true)
-        : null;
-
-      let convo;
-      if (unifiedConvo) {
-        convo = await base44.agents.getConversation(unifiedConvo.id);
-      } else {
-        convo = await base44.agents.createConversation({
-          agent_name: 'axi',
-          metadata: { name: 'Unified Conversation with Axi - Mother Boss', unified_axi_chat: true }
-        });
-      }
+      const convo = await base44.agents.createConversation({
+        agent_name: 'axi',
+        metadata: { name: `Page Review: ${selectedPage}` }
+      });
 
       await base44.agents.addMessage(convo, {
         role: 'user',
