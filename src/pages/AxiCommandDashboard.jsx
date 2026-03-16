@@ -74,6 +74,12 @@ export default function AxiCommandDashboard() {
               Rep Log
             </Button>
           </Link>
+          <a href="#review-coordination">
+            <Button variant="outline" size="sm" className="border-violet-600/60 bg-violet-900/30 text-violet-300 hover:bg-violet-800/40 text-xs">
+              <ClipboardList className="w-3.5 h-3.5 mr-1.5" />
+              Review Coordination
+            </Button>
+          </a>
         </div>
       </div>
 
