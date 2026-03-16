@@ -44,8 +44,9 @@ export default function AxiPage() {
   }, [messages.length, scrollToBottom]);
 
   const initConversation = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      // Find or create the UNIFIED Axi conversation with a specific identifier
       const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
       const unifiedConvo = conversations.find(c => c.metadata?.unified_axi_chat === true);
       
@@ -53,7 +54,6 @@ export default function AxiPage() {
       if (unifiedConvo) {
         convo = await base44.agents.getConversation(unifiedConvo.id);
       } else {
-        // Create the unified Axi conversation
         convo = await base44.agents.createConversation({
           agent_name: 'axi',
           metadata: { 
@@ -66,23 +66,16 @@ export default function AxiPage() {
       setConversation(convo);
       setMessages(convo.messages || []);
       
+      if (unsubscribeRef.current) unsubscribeRef.current();
       unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
         setMessages(data.messages);
-        // TTS: speak the latest assistant message if new
         const lastMsg = data.messages[data.messages.length - 1];
-        if (
-          lastMsg &&
-          lastMsg.role === 'assistant' &&
-          lastMsg.content &&
-          lastMsg.id !== lastSpokenRef.current
-        ) {
+        if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content && lastMsg.id !== lastSpokenRef.current) {
           lastSpokenRef.current = lastMsg.id;
-          // Check tts via ref to avoid stale closure
           if (ttsEnabledRef.current) {
             window.speechSynthesis.cancel();
             const utt = new SpeechSynthesisUtterance(lastMsg.content);
             utt.lang = 'en-GB';
-            // Pick a female voice: prefer Google UK English Female, then any female en voice
             const voices = window.speechSynthesis.getVoices();
             const femaleVoice =
               voices.find(v => v.name === 'Google UK English Female') ||
@@ -95,8 +88,11 @@ export default function AxiPage() {
           }
         }
       });
-    } catch (error) {
-      console.error('Failed to init conversation:', error);
+    } catch (err) {
+      console.error('Failed to init conversation:', err);
+      setError('Could not connect to Axi. Please try again.');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
