@@ -102,10 +102,10 @@ export default function AxiCommandDashboard() {
               Review Coordination
             </Button>
           </a>
-        </div>
-      </div>
+          </div>
+          </div>
 
-      {/* Village Stats */}
+          {/* Village Stats */}
       <VillageStatsBar />
 
       {/* Comprehensive Analytics Dashboard */}
