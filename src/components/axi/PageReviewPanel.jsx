@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, Loader2, BookOpen, Save, CheckCircle2, ChevronDown, PlayCircle, StopCircle, List } from 'lucide-react';
+import { Sparkles, Loader2, BookOpen, Save, CheckCircle2, ChevronDown, PlayCircle, StopCircle, List, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 
 const ALL_PAGES = [

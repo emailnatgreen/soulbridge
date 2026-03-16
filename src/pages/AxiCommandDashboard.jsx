@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Brain, RefreshCw, ExternalLink } from "lucide-react";
+import { Brain, RefreshCw, ExternalLink, Home, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
