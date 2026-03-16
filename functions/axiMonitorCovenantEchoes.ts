@@ -1,8 +1,8 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-// Helper: Alert Axi when something critical happens
 const AXI_AGENT_ID = '6993271e7dc0fa2ab78762bf';
 
+// Batch alert creation to avoid excessive API calls
 async function alertAxi(base44, title, message, severity = 'high') {
   try {
     await base44.asServiceRole.entities.AgentNotification.create({
