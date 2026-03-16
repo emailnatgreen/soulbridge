@@ -98,6 +98,7 @@ export default function AxiPage() {
       setError('Could not connect to Axi. Please try again.');
     } finally {
       setLoading(false);
+      initializingRef.current = false;
     }
   }, []);
 
