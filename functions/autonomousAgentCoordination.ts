@@ -31,7 +31,7 @@ The message should be 1-2 sentences and focus on collaborative potential or info
 Be concise and direct.`;
 
         // Use LLM to generate the coordination message
-        const llmResponse = await base44.integrations.Core.InvokeLLM({
+        const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
             prompt: coordinationPrompt
         });
 
