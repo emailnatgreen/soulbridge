@@ -16,6 +16,7 @@ import MetricsViewer from "@/components/axi/MetricsViewer";
 import PageReviewPanel from "@/components/axi/PageReviewPanel";
 import PageReviewMemoryPanel from "@/components/axi/PageReviewMemoryPanel";
 import AxiReviewCoordinationPanel from "@/components/axi/AxiReviewCoordinationPanel";
+import NewPageAlertsPanel from "@/components/axi/NewPageAlertsPanel";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
@@ -123,6 +124,11 @@ export default function AxiCommandDashboard() {
         {/* MIDDLE — Wellbeing */}
         <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
           <WellbeingPanel />
+        </div>
+
+        {/* RIGHT — New Page Alerts */}
+        <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
+          <NewPageAlertsPanel />
         </div>
 
       </div>
