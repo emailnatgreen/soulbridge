@@ -245,6 +245,16 @@ export default function PageReviewPanel() {
                   <Sparkles className="w-3 h-3 mr-1" />Re-review
                 </Button>
               </div>
+              {saveError && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-red-400">
+                  <AlertCircle className="w-3 h-3 shrink-0" />{saveError}
+                </div>
+              )}
+              {sendError && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-red-400">
+                  <AlertCircle className="w-3 h-3 shrink-0" />{sendError}
+                </div>
+              )}
             </div>
           )}
         </>
