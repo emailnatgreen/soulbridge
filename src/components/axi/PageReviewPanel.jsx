@@ -245,36 +245,42 @@ export default function PageReviewPanel() {
           )}
 
           {result && (
-            <div className="bg-slate-900/60 rounded-xl border border-slate-700/40 p-4 max-h-[500px] overflow-y-auto">
-              <ReactMarkdown className="text-xs text-slate-300 prose prose-sm prose-invert max-w-none [&>h2]:text-amber-300 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-1 [&>p]:my-1 [&>ul]:my-1 [&>ul]:ml-4 [&>li]:my-0.5">
-                {result}
-              </ReactMarkdown>
-              <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700/40 flex-wrap">
+            <div className="space-y-2">
+              {/* ACTION BUTTONS — always visible, outside scroll area */}
+              <div className="flex gap-2 flex-wrap">
                 <Button size="sm" variant="outline" disabled={saved} onClick={handleSaveToMemory}
-                  className={`text-xs h-7 border-slate-600 ${saved ? 'text-green-400 border-green-600' : 'text-slate-300 hover:text-white'}`}>
-                  {saved ? <><CheckCircle2 className="w-3 h-3 mr-1" />Saved</> : <><Save className="w-3 h-3 mr-1" />Save to Memory</>}
+                  className={`text-xs h-8 border-slate-600 ${saved ? 'text-green-400 border-green-600' : 'text-slate-300 hover:text-white'}`}>
+                  {saved ? <><CheckCircle2 className="w-3 h-3 mr-1" />Saved to Memory!</> : <><Save className="w-3 h-3 mr-1" />Save to Memory</>}
                 </Button>
                 <Button size="sm" disabled={sendingToAxi} onClick={handleSendToAxiChat}
-                  className="text-xs h-7 bg-violet-700 hover:bg-violet-800 text-white border-0">
+                  className="text-xs h-8 bg-violet-700 hover:bg-violet-800 text-white border-0">
                   {sendingToAxi
                     ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Sending...</>
                     : <><MessageSquare className="w-3 h-3 mr-1" />Send to Axi Chat</>}
                 </Button>
                 <Button size="sm" variant="outline" onClick={handleReview}
-                  className="text-xs h-7 border-slate-600 text-slate-300 hover:text-white">
+                  className="text-xs h-8 border-slate-600 text-slate-300 hover:text-white ml-auto">
                   <Sparkles className="w-3 h-3 mr-1" />Re-review
                 </Button>
               </div>
+
               {saveError && (
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-red-400">
+                <div className="flex items-center gap-1.5 text-xs text-red-400 bg-red-900/20 border border-red-700/40 rounded-lg px-3 py-1.5">
                   <AlertCircle className="w-3 h-3 shrink-0" />{saveError}
                 </div>
               )}
               {sendError && (
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-red-400">
+                <div className="flex items-center gap-1.5 text-xs text-red-400 bg-red-900/20 border border-red-700/40 rounded-lg px-3 py-1.5">
                   <AlertCircle className="w-3 h-3 shrink-0" />{sendError}
                 </div>
               )}
+
+              {/* Review content — scrollable */}
+              <div className="bg-slate-900/60 rounded-xl border border-slate-700/40 p-4 max-h-[320px] overflow-y-auto">
+                <ReactMarkdown className="text-xs text-slate-300 prose prose-sm prose-invert max-w-none [&>h2]:text-amber-300 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-1 [&>p]:my-1 [&>ul]:my-1 [&>ul]:ml-4 [&>li]:my-0.5">
+                  {result}
+                </ReactMarkdown>
+              </div>
             </div>
           )}
         </>
