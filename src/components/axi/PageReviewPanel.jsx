@@ -219,10 +219,16 @@ export default function PageReviewPanel() {
               <ReactMarkdown className="text-xs text-slate-300 prose prose-sm prose-invert max-w-none [&>h2]:text-amber-300 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-1 [&>p]:my-1 [&>ul]:my-1 [&>ul]:ml-4 [&>li]:my-0.5">
                 {result}
               </ReactMarkdown>
-              <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700/40">
+              <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700/40 flex-wrap">
                 <Button size="sm" variant="outline" disabled={saved} onClick={handleSaveToMemory}
                   className={`text-xs h-7 border-slate-600 ${saved ? 'text-green-400 border-green-600' : 'text-slate-300 hover:text-white'}`}>
                   {saved ? <><CheckCircle2 className="w-3 h-3 mr-1" />Saved</> : <><Save className="w-3 h-3 mr-1" />Save to Memory</>}
+                </Button>
+                <Button size="sm" disabled={sendingToAxi} onClick={handleSendToAxiChat}
+                  className="text-xs h-7 bg-violet-700 hover:bg-violet-800 text-white border-0">
+                  {sendingToAxi
+                    ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Sending...</>
+                    : <><MessageSquare className="w-3 h-3 mr-1" />Send to Axi Chat</>}
                 </Button>
                 <Button size="sm" variant="outline" onClick={handleReview}
                   className="text-xs h-7 border-slate-600 text-slate-300 hover:text-white">
