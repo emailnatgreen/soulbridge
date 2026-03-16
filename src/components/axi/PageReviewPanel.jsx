@@ -362,6 +362,43 @@ export default function PageReviewPanel() {
                   <PlayCircle className="w-3.5 h-3.5 mr-1.5" />
                   {batchStartIndex === 0 ? 'Start Batch Review' : 'Restart from Beginning'}
                 </Button>
+                {completed > 0 && (
+                  <Button
+                    disabled={sendingToAxi}
+                    onClick={async () => {
+                      setSendingToAxi(true);
+                      setSendError(null);
+                      try {
+                        const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+                        const unifiedConvo = conversations.find(c => c.metadata?.unified_axi_chat === true);
+                        let convo;
+                        if (unifiedConvo) {
+                          convo = await base44.agents.getConversation(unifiedConvo.id);
+                        } else {
+                          convo = await base44.agents.createConversation({
+                            agent_name: 'axi',
+                            metadata: { name: 'Unified Conversation with Axi - Mother Boss', unified_axi_chat: true }
+                          });
+                        }
+                        const donePages = batchDone.filter(d => d.status === 'done').map(d => d.page).join(', ');
+                        await base44.agents.addMessage(convo, {
+                          role: 'user',
+                          content: `I just completed a batch page review. ${batchDone.filter(d => d.status === 'done').length} pages were reviewed and saved to your Memory: ${donePages}. Please retrieve these reviews from your Memory, identify the most critical issues across all pages, and give me a prioritised action plan for improving SoulBridge Village.`
+                        });
+                        navigate('/Axi');
+                      } catch (err) {
+                        setSendError(err?.message || 'Failed to send to Axi');
+                      } finally {
+                        setSendingToAxi(false);
+                      }
+                    }}
+                    className="w-full bg-violet-700 hover:bg-violet-800 text-white text-xs h-8"
+                  >
+                    {sendingToAxi
+                      ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Sending...</>
+                      : <><MessageSquare className="w-3.5 h-3.5 mr-1.5" />Send Batch Summary to Axi</>}
+                  </Button>
+                )}
               </>
             ) : (
               <Button onClick={handleStop} className="flex-1 bg-red-700 hover:bg-red-800 text-white text-xs h-8">
@@ -369,6 +406,11 @@ export default function PageReviewPanel() {
               </Button>
             )}
           </div>
+          {sendError && (
+            <div className="flex items-center gap-1.5 text-xs text-red-400 bg-red-900/20 border border-red-700/40 rounded-lg px-3 py-1.5">
+              <AlertCircle className="w-3 h-3 shrink-0" />{sendError}
+            </div>
+          )}
         </div>
       )}
     </div>
