@@ -96,11 +96,22 @@ const FunctionDisplay = ({ toolCall }) => {
 
 export default function MessageBubble({ message }) {
     const isUser = message.role === 'user';
-    
+    const isSystemError = message.role === 'system_error';
+
     const handleCopyMessage = () => {
         navigator.clipboard.writeText(message.content);
         toast.success('Message copied');
     };
+
+    if (isSystemError) {
+        return (
+            <div className="flex justify-center">
+                <div className="bg-red-900/30 border border-red-500/30 rounded-xl px-4 py-2 text-red-300 text-xs">
+                    {message.content}
+                </div>
+            </div>
+        );
+    }
     
     return (
         <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
