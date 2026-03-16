@@ -19,6 +19,8 @@ import AxiReviewCoordinationPanel from "@/components/axi/AxiReviewCoordinationPa
 import NewPageAlertsPanel from "@/components/axi/NewPageAlertsPanel";
 import DashboardCustomizer from "@/components/axi/DashboardCustomizer";
 import ComprehensiveAnalyticsDashboard from "@/components/axi/ComprehensiveAnalyticsDashboard";
+import IntuitiveNavigation from "@/components/axi/IntuitiveNavigation";
+import RealTimeNotificationCenter from "@/components/axi/RealTimeNotificationCenter";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
