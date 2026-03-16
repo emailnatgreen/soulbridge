@@ -31,7 +31,7 @@ export default function GlobalNav() {
       </div>
 
       {/* Desktop Nav */}
-      <nav className="hidden lg:fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 p-6 z-40 overflow-y-auto">
+      <nav className="fixed lg:block hidden left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 p-6 z-40 overflow-y-auto">
         <div className="mb-8">
           <h2 className="text-lg font-bold text-white">SoulBridge</h2>
           <p className="text-xs text-slate-500">Village Command</p>
