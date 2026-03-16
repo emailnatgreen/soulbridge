@@ -72,6 +72,8 @@ export default function PageReviewPanel() {
   const [batchCurrent, setBatchCurrent] = useState('');
   const [batchDone, setBatchDone] = useState([]);
   const [batchErrors, setBatchErrors] = useState([]);
+  const [batchStartIndex, setBatchStartIndex] = useState(0);
+  const [batchSize, setBatchSize] = useState(10);
   const stopRef = useRef(false);
 
   // --- Single review ---
