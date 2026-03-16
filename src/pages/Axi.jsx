@@ -148,7 +148,7 @@ export default function AxiPage() {
   }, [conversation]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl flex-shrink-0">
         <div className="max-w-4xl mx-auto px-6 py-6">
