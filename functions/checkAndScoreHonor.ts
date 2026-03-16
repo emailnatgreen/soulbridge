@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-// Honor point values from autoScoreHonor
+// Honor point values based on task priority
 const HONOR_VALUES = {
   task_low: 2,
   task_medium: 5,
@@ -8,6 +8,38 @@ const HONOR_VALUES = {
   task_critical: 20,
   vote: 3
 };
+
+// Agent ID validation helper - resolves names to IDs if needed
+async function resolveAgentId(base44, agentRef) {
+  if (!agentRef) return null;
+  
+  // If it looks like a valid ID format (starts with 6 and is hex-like), try direct lookup
+  if (agentRef.match(/^6[a-f0-9]{20,}$/i)) {
+    try {
+      await base44.asServiceRole.entities.Agent.get(agentRef);
+      return agentRef;
+    } catch (err) {
+      console.warn(`[checkAndScoreHonor] Agent ID ${agentRef} not found, attempting name lookup`);
+    }
+  }
+  
+  // Try lookup by name
+  try {
+    const agents = await base44.asServiceRole.entities.Agent.filter(
+      { name: agentRef },
+      '',
+      1
+    );
+    if (agents.length > 0) {
+      console.log(`[checkAndScoreHonor] Resolved agent name "${agentRef}" to ID ${agents[0].id}`);
+      return agents[0].id;
+    }
+  } catch (err) {
+    console.error(`[checkAndScoreHonor] Failed to resolve agent name ${agentRef}: ${err.message}`);
+  }
+  
+  return null;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -18,7 +50,8 @@ Deno.serve(async (req) => {
       tasks_processed: 0,
       votes_processed: 0,
       errors: [],
-      details: []
+      details: [],
+      skipped: []
     };
 
     // --- Poll ProjectTasks ---
@@ -31,7 +64,17 @@ Deno.serve(async (req) => {
     for (const task of unprocessedTasks) {
       try {
         if (!task.assigned_agent_id) {
+          results.skipped.push({ type: 'task', id: task.id, reason: 'no assigned agent' });
           console.log(`[checkAndScoreHonor] Skipping task ${task.id}: no assigned agent`);
+          continue;
+        }
+
+        // Validate/resolve agent ID
+        const resolvedAgentId = await resolveAgentId(base44, task.assigned_agent_id);
+        if (!resolvedAgentId) {
+          const error = `Invalid assigned_agent_id: ${task.assigned_agent_id}`;
+          results.errors.push({ type: 'task', task_id: task.id, error });
+          console.error(`[checkAndScoreHonor] Task ${task.id}: ${error}`);
           continue;
         }
 
@@ -39,16 +82,20 @@ Deno.serve(async (req) => {
         const delta = HONOR_VALUES[`task_${task.priority || 'medium'}`] || HONOR_VALUES.task_medium;
 
         // Fetch agent and update honor
-        const agent = await base44.asServiceRole.entities.Agent.get(task.assigned_agent_id);
+        const agent = await base44.asServiceRole.entities.Agent.get(resolvedAgentId);
+        if (!agent) {
+          throw new Error(`Agent not found after resolution: ${resolvedAgentId}`);
+        }
+
         const newHonor = Math.min(100, Math.max(0, (agent.honor_score || 100) + delta));
         
-        await base44.asServiceRole.entities.Agent.update(task.assigned_agent_id, {
+        await base44.asServiceRole.entities.Agent.update(resolvedAgentId, {
           honor_score: newHonor
         });
 
-        // Create reputation event log
+        // Create reputation event log with all required fields
         await base44.asServiceRole.entities.ReputationEvent.create({
-          agent_id: task.assigned_agent_id,
+          agent_id: resolvedAgentId,
           event_type: 'project_completed',
           impact: delta,
           category: 'task_completion',
@@ -56,7 +103,8 @@ Deno.serve(async (req) => {
           related_entity_type: 'ProjectTask',
           related_entity_id: task.id,
           verified: true,
-          verified_by: 'checkAndScoreHonor'
+          verified_by: 'checkAndScoreHonor',
+          is_public: true
         });
 
         // Mark as processed
@@ -69,17 +117,22 @@ Deno.serve(async (req) => {
           type: 'task',
           task_id: task.id,
           title: task.title,
-          agent_id: task.assigned_agent_id,
+          agent_id: resolvedAgentId,
           agent_name: agent.name,
           delta,
           new_honor: newHonor,
           status: 'success'
         });
 
-        console.log(`[checkAndScoreHonor] Task processed: ${task.title} → ${agent.name} (+${delta} → ${newHonor})`);
+        console.log(`[checkAndScoreHonor] Task processed: "${task.title}" → ${agent.name} (${delta} → ${newHonor})`);
       } catch (err) {
-        results.errors.push({ type: 'task', task_id: task.id, error: err.message });
-        console.error(`[checkAndScoreHonor] Task error: ${task.id} - ${err.message}`);
+        results.errors.push({ 
+          type: 'task', 
+          task_id: task.id, 
+          assigned_agent_id: task.assigned_agent_id,
+          error: err.message 
+        });
+        console.error(`[checkAndScoreHonor] Task error [${task.id}]: ${err.message}`);
       }
     }
 
@@ -93,31 +146,46 @@ Deno.serve(async (req) => {
     for (const vote of unprocessedVotes) {
       try {
         if (!vote.voter_agent_id) {
+          results.skipped.push({ type: 'vote', id: vote.id, reason: 'no voter agent' });
           console.log(`[checkAndScoreHonor] Skipping vote ${vote.id}: no voter agent`);
+          continue;
+        }
+
+        // Validate/resolve agent ID
+        const resolvedAgentId = await resolveAgentId(base44, vote.voter_agent_id);
+        if (!resolvedAgentId) {
+          const error = `Invalid voter_agent_id: ${vote.voter_agent_id}`;
+          results.errors.push({ type: 'vote', vote_id: vote.id, error });
+          console.error(`[checkAndScoreHonor] Vote ${vote.id}: ${error}`);
           continue;
         }
 
         const delta = HONOR_VALUES.vote;
 
         // Fetch agent and update honor
-        const agent = await base44.asServiceRole.entities.Agent.get(vote.voter_agent_id);
+        const agent = await base44.asServiceRole.entities.Agent.get(resolvedAgentId);
+        if (!agent) {
+          throw new Error(`Agent not found after resolution: ${resolvedAgentId}`);
+        }
+
         const newHonor = Math.min(100, Math.max(0, (agent.honor_score || 100) + delta));
         
-        await base44.asServiceRole.entities.Agent.update(vote.voter_agent_id, {
+        await base44.asServiceRole.entities.Agent.update(resolvedAgentId, {
           honor_score: newHonor
         });
 
-        // Create reputation event log
+        // Create reputation event log with all required fields
         await base44.asServiceRole.entities.ReputationEvent.create({
-          agent_id: vote.voter_agent_id,
+          agent_id: resolvedAgentId,
           event_type: 'vote_cast',
           impact: delta,
           category: 'governance_participation',
-          description: `Vote cast on proposal ${vote.proposal_id}`,
+          description: `Vote cast on proposal ${vote.proposal_id}: ${vote.vote_choice}`,
           related_entity_type: 'GovernanceVote',
           related_entity_id: vote.id,
           verified: true,
-          verified_by: 'checkAndScoreHonor'
+          verified_by: 'checkAndScoreHonor',
+          is_public: true
         });
 
         // Mark as processed
@@ -130,24 +198,29 @@ Deno.serve(async (req) => {
           type: 'vote',
           vote_id: vote.id,
           proposal_id: vote.proposal_id,
-          agent_id: vote.voter_agent_id,
+          agent_id: resolvedAgentId,
           agent_name: agent.name,
           delta,
           new_honor: newHonor,
           status: 'success'
         });
 
-        console.log(`[checkAndScoreHonor] Vote processed: ${agent.name} (+${delta} → ${newHonor})`);
+        console.log(`[checkAndScoreHonor] Vote processed: ${agent.name} on proposal ${vote.proposal_id} (+${delta} → ${newHonor})`);
       } catch (err) {
-        results.errors.push({ type: 'vote', vote_id: vote.id, error: err.message });
-        console.error(`[checkAndScoreHonor] Vote error: ${vote.id} - ${err.message}`);
+        results.errors.push({ 
+          type: 'vote', 
+          vote_id: vote.id, 
+          voter_agent_id: vote.voter_agent_id,
+          error: err.message 
+        });
+        console.error(`[checkAndScoreHonor] Vote error [${vote.id}]: ${err.message}`);
       }
     }
 
     const duration = Date.now() - startTime;
     const total = results.tasks_processed + results.votes_processed;
     const status = results.errors.length === 0 ? 'success' : (total > 0 ? 'warning' : 'error');
-    const message = `Processed ${results.tasks_processed} tasks, ${results.votes_processed} votes (${results.errors.length} errors)`;
+    const message = `Processed ${results.tasks_processed} tasks, ${results.votes_processed} votes (${results.errors.length} errors, ${results.skipped.length} skipped)`;
 
     // Log to AutomationLog
     await base44.asServiceRole.entities.AutomationLog.create({
@@ -155,7 +228,7 @@ Deno.serve(async (req) => {
       function_name: 'checkAndScoreHonor',
       status,
       message,
-      error_detail: results.errors.length > 0 ? JSON.stringify(results.errors) : null,
+      error_detail: results.errors.length > 0 ? JSON.stringify(results.errors.slice(0, 10)) : null,
       details: results,
       duration_ms: duration,
       run_at: new Date().toISOString(),
@@ -170,6 +243,7 @@ Deno.serve(async (req) => {
       tasks_processed: results.tasks_processed,
       votes_processed: results.votes_processed,
       errors_count: results.errors.length,
+      skipped_count: results.skipped.length,
       duration_ms: duration,
       details: results.details
     });
