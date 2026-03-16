@@ -96,18 +96,20 @@ Deno.serve(async (req) => {
         'high'
       );
 
-      for (const task of blockedTasks) {
-        if (task.assigned_agent_id && validAgentIds.has(task.assigned_agent_id)) {
-          await base44.asServiceRole.entities.AgentNotification.create({
-            recipient_agent_id: task.assigned_agent_id,
-            notification_type: 'task_assigned',
-            title: 'Task Blocked - Action Needed',
-            message: `Your task "${task.title}" is blocked. Axi is monitoring and ready to assist.`,
-            priority: 'high',
-            related_entity_type: 'ProjectTask',
-            related_entity_id: task.id
-          });
-        }
+      // Batch blocked task notifications
+      const blockedNotifications = blockedTasks
+        .filter(t => t.assigned_agent_id && validAgentIds.has(t.assigned_agent_id))
+        .map(task => ({
+          recipient_agent_id: task.assigned_agent_id,
+          notification_type: 'task_assigned',
+          title: 'Task Blocked - Action Needed',
+          message: `Your task "${task.title}" is blocked. Axi is monitoring and ready to assist.`,
+          priority: 'high',
+          related_entity_type: 'ProjectTask',
+          related_entity_id: task.id
+        }));
+      if (blockedNotifications.length > 0) {
+        await base44.asServiceRole.entities.AgentNotification.bulkCreate(blockedNotifications);
       }
     }
 
