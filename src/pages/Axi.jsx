@@ -126,13 +126,7 @@ export default function AxiPage() {
       });
     } catch (err) {
       console.error('Failed to send message:', err);
-      // Don't restore input - the message was received, Axi just hit a tool error
-      // Show a subtle retry hint instead
-      setMessages(prev => [...prev, {
-        role: 'system_error',
-        content: '⚠️ Axi encountered an issue processing that. Please try again or rephrase.',
-        created_date: new Date().toISOString()
-      }]);
+      toast.error('Axi hit a snag processing that. Please try again.');
     } finally {
       setSending(false);
     }
