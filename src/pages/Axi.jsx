@@ -205,7 +205,25 @@ export default function AxiPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-          {messages.length === 0 && (
+          {loading && (
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardContent className="text-center py-12">
+                <Loader2 className="w-10 h-10 text-purple-400 mx-auto mb-4 animate-spin" />
+                <p className="text-white/60 text-sm">Connecting to Axi...</p>
+              </CardContent>
+            </Card>
+          )}
+          {error && !loading && (
+            <Card className="bg-red-900/20 backdrop-blur-xl border-red-500/30">
+              <CardContent className="text-center py-12">
+                <p className="text-red-300 text-sm mb-4">{error}</p>
+                <Button onClick={initConversation} className="bg-purple-600 hover:bg-purple-700 text-white text-sm">
+                  Retry
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+          {!loading && !error && messages.length === 0 && (
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardContent className="text-center py-12">
                 <Sparkles className="w-12 h-12 text-purple-400 mx-auto mb-4" />
