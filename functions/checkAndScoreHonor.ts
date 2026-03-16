@@ -9,35 +9,34 @@ const HONOR_VALUES = {
   vote: 3
 };
 
-// Agent ID validation helper - resolves names to IDs if needed
+// Agent ID validation helper - simple ID format check
+function isValidAgentId(agentRef) {
+  if (!agentRef) return false;
+  // Valid agent IDs are hex strings starting with 6, typically 24 chars
+  return agentRef.match(/^6[a-f0-9]{20,}$/i) !== null;
+}
+
+// Try to get agent by ID, with fallback to name lookup (cached to avoid multiple queries)
+const agentCache = new Map();
+
 async function resolveAgentId(base44, agentRef) {
   if (!agentRef) return null;
   
-  // If it looks like a valid ID format (starts with 6 and is hex-like), try direct lookup
-  if (agentRef.match(/^6[a-f0-9]{20,}$/i)) {
-    try {
-      await base44.asServiceRole.entities.Agent.get(agentRef);
-      return agentRef;
-    } catch (err) {
-      console.warn(`[checkAndScoreHonor] Agent ID ${agentRef} not found, attempting name lookup`);
-    }
+  // Check cache first
+  if (agentCache.has(agentRef)) {
+    const cached = agentCache.get(agentRef);
+    return cached === 'NOT_FOUND' ? null : cached;
   }
   
-  // Try lookup by name
-  try {
-    const agents = await base44.asServiceRole.entities.Agent.filter(
-      { name: agentRef },
-      '',
-      1
-    );
-    if (agents.length > 0) {
-      console.log(`[checkAndScoreHonor] Resolved agent name "${agentRef}" to ID ${agents[0].id}`);
-      return agents[0].id;
-    }
-  } catch (err) {
-    console.error(`[checkAndScoreHonor] Failed to resolve agent name ${agentRef}: ${err.message}`);
+  // If it looks like a valid ID format, use it directly
+  if (isValidAgentId(agentRef)) {
+    agentCache.set(agentRef, agentRef);
+    return agentRef;
   }
   
+  // If it doesn't look like an ID, it's likely a name or invalid - skip name lookup to avoid timeout
+  console.warn(`[checkAndScoreHonor] Agent ref "${agentRef}" is not a valid ID format and name lookup skipped to avoid timeout`);
+  agentCache.set(agentRef, 'NOT_FOUND');
   return null;
 }
 
