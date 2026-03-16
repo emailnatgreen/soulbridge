@@ -11,10 +11,11 @@ export default function PageReviewMemoryPanel() {
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(null);
 
-  const { data: memories = [], isFetching } = useQuery({
+  const { data: memories = [], isFetching, refetch } = useQuery({
     queryKey: ['page-review-memories'],
     queryFn: () => base44.entities.Memory.filter({ type: 'observation' }, '-created_date', 50),
-    refetchInterval: 30000,
+    refetchInterval: false,
+    staleTime: 60000,
   });
 
   const deleteMutation = useMutation({
