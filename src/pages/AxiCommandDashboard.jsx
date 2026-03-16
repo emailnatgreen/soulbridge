@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Brain, RefreshCw, ExternalLink, Home, Sparkles, ClipboardList } from "lucide-react";
+import { Brain, RefreshCw, ExternalLink, Home, Sparkles, ClipboardList, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,7 +30,7 @@ export default function AxiCommandDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-900/40">
             <Brain className="w-5 h-5 text-white" />
@@ -40,7 +40,7 @@ export default function AxiCommandDashboard() {
             <p className="text-xs text-slate-400">Mother Boss · SoulBridge Oversight Dashboard</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link to="/Home">
             <Button variant="outline" size="sm" className="border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs">
               <Home className="w-3.5 h-3.5 mr-1.5" />
@@ -51,6 +51,12 @@ export default function AxiCommandDashboard() {
             <Button variant="outline" size="sm" className="border-violet-700/60 bg-violet-900/30 text-violet-300 hover:bg-violet-800/40 text-xs">
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
               Talk to Axi
+            </Button>
+          </Link>
+          <Link to="/VillageCalendar">
+            <Button variant="outline" size="sm" className="border-emerald-600/60 bg-emerald-900/30 text-emerald-300 hover:bg-emerald-800/40 text-xs">
+              <Calendar className="w-3.5 h-3.5 mr-1.5" />
+              Village Calendar
             </Button>
           </Link>
           <Button
