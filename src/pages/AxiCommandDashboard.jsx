@@ -141,6 +141,11 @@ export default function AxiCommandDashboard() {
 
       </div>
 
+      {/* Axi Review Coordination Panel */}
+      <div id="review-coordination" className="mt-4 rounded-2xl border border-violet-600/50 bg-slate-800/60 backdrop-blur p-5">
+        <AxiReviewCoordinationPanel />
+      </div>
+
       {/* Page Review Row */}
       <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4 overflow-y-auto max-h-[700px]">
