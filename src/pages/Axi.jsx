@@ -17,6 +17,8 @@ export default function AxiPage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [activeAgents, setActiveAgents] = useState([]);
   const [ttsEnabled, setTtsEnabled] = useState(false);
