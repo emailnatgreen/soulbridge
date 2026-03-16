@@ -17,15 +17,22 @@ import PageReviewPanel from "@/components/axi/PageReviewPanel";
 import PageReviewMemoryPanel from "@/components/axi/PageReviewMemoryPanel";
 import AxiReviewCoordinationPanel from "@/components/axi/AxiReviewCoordinationPanel";
 import NewPageAlertsPanel from "@/components/axi/NewPageAlertsPanel";
+import DashboardCustomizer from "@/components/axi/DashboardCustomizer";
+import ComprehensiveAnalyticsDashboard from "@/components/axi/ComprehensiveAnalyticsDashboard";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const [layout, setLayout] = useState(null);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await queryClient.invalidateQueries();
     setTimeout(() => setRefreshing(false), 800);
+  };
+
+  const handleLayoutChange = (newLayout) => {
+    setLayout(newLayout);
   };
 
   return (
