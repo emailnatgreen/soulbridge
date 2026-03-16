@@ -59,7 +59,7 @@ export default function PageReviewMemoryPanel() {
         <h3 className="text-sm font-semibold text-white">Page Review Memory</h3>
         <span className="ml-1 text-xs text-slate-500">{pageReviews.length} saved</span>
         <button
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['page-review-memories'] })}
+          onClick={() => refetch()}
           className="ml-auto text-slate-500 hover:text-slate-300 transition-colors"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
