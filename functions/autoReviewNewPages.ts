@@ -47,44 +47,45 @@ Deno.serve(async (req) => {
       });
     }
 
-    let reviewed = 0;
-    for (const page_name of pagesToProcess) {
-      // Generate review with faster model to avoid timeout
-      const review = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: REVIEW_PROMPT(page_name),
-        model: 'gpt_5_mini' // Faster model to avoid 502 timeouts
-      });
+    // Batch LLM calls for all pages in parallel to avoid timeout
+    const reviews = await Promise.all(
+      pagesToProcess.map(page_name =>
+        base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: REVIEW_PROMPT(page_name),
+          model: 'gpt_5_mini'
+        })
+      )
+    );
 
-      // Save to Memory
-      const memory = await base44.asServiceRole.entities.Memory.create({
-        agent_id: AXI_ID,
-        type: 'observation',
-        content: `[Page Review: ${page_name}]\n\n${review}`,
-        keywords: ['page_review', 'axi_suggestion', 'auto_review', page_name.toLowerCase()],
-        context: `Auto-generated review for page: ${page_name}`,
-        importance: 7,
-      });
-
-      // Create notification for Axi
-      await base44.asServiceRole.entities.AgentNotification.create({
-        recipient_agent_id: AXI_ID,
-        notification_type: 'system',
-        title: `Page Review: ${page_name}`,
-        message: `Auto-review generated for "${page_name}". Check Memory for details.`,
-        priority: 'normal',
-        related_entity_type: 'Memory',
-        related_entity_id: memory.id,
-        metadata: { page_name, review_type: 'auto' }
-      });
-
-      reviewed++;
-    }
+    // Batch create memories and notifications
+    const results = await Promise.all(
+      pagesToProcess.map((page_name, idx) =>
+        base44.asServiceRole.entities.Memory.create({
+          agent_id: AXI_ID,
+          type: 'observation',
+          content: `[Page Review: ${page_name}]\n\n${reviews[idx]}`,
+          keywords: ['page_review', 'axi_suggestion', 'auto_review', page_name.toLowerCase()],
+          context: `Auto-generated review for page: ${page_name}`,
+          importance: 7
+        }).then(memory =>
+          base44.asServiceRole.entities.AgentNotification.create({
+            recipient_agent_id: AXI_ID,
+            notification_type: 'system',
+            title: `Page Review: ${page_name}`,
+            message: `Auto-review generated for "${page_name}". Check Memory for details.`,
+            priority: 'normal',
+            related_entity_type: 'Memory',
+            related_entity_id: memory.id
+          }).then(() => ({ page: page_name, success: true }))
+        )
+      )
+    );
 
     return Response.json({
       success: true,
-      reviewed_count: reviewed,
+      reviewed_count: pagesToProcess.length,
       pages_reviewed: pagesToProcess,
-      message: `Reviewed ${reviewed} page(s) and alerted Axi.`
+      message: `Reviewed ${pagesToProcess.length} page(s) and alerted Axi.`
     });
 
   } catch (error) {
