@@ -45,11 +45,15 @@ export default function AxiPage() {
   }, [messages.length, scrollToBottom]);
 
   const initConversation = useCallback(async () => {
+    if (initializingRef.current) return;
+    initializingRef.current = true;
     setLoading(true);
     setError(null);
     try {
       const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-      const unifiedConvo = conversations.find(c => c.metadata?.unified_axi_chat === true);
+      // Find all unified conversations, pick the oldest (first created) to avoid duplication
+      const unified = conversations.filter(c => c.metadata?.unified_axi_chat === true);
+      const unifiedConvo = unified.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
       
       let convo;
       if (unifiedConvo) {
