@@ -14,6 +14,21 @@ export default function PageReviewMemoryPanel() {
   const [expanded, setExpanded] = useState(null);
   const [sendingId, setSendingId] = useState(null);
   const [sendError, setSendError] = useState(null);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+
+  const handleDeleteAll = async () => {
+    setDeletingAll(true);
+    try {
+      const all = await base44.entities.Memory.filter({ type: 'observation' }, '-created_date', 200);
+      const reviews = all.filter(m => m.keywords?.includes('page_review'));
+      await Promise.all(reviews.map(m => base44.entities.Memory.delete(m.id)));
+      queryClient.invalidateQueries({ queryKey: ['page-review-memories'] });
+    } finally {
+      setDeletingAll(false);
+      setConfirmDeleteAll(false);
+    }
+  };
 
   const handleSendToAxiChat = async (memory, pageName, bodyContent) => {
     setSendingId(memory.id);
