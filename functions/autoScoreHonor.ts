@@ -13,7 +13,7 @@ const GOVERNANCE_HONOR = 2;
 Deno.serve(async (req) => {
   try {
   const base44 = createClientFromRequest(req);
-
+ 
   let body;
   try {
     body = await req.json();
