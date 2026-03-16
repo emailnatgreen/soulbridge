@@ -14,6 +14,7 @@ import SystemBehaviorPanel from "@/components/axi/SystemBehaviorPanel";
 import AgentPersonalityPanel from "@/components/axi/AgentPersonalityPanel";
 import MetricsViewer from "@/components/axi/MetricsViewer";
 import PageReviewPanel from "@/components/axi/PageReviewPanel";
+import PageReviewMemoryPanel from "@/components/axi/PageReviewMemoryPanel";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
