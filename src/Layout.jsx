@@ -37,8 +37,12 @@ export default function Layout({ children, currentPageName }) {
           opacity: 0.06,
         }}
       />
+      
+      {/* Global Navigation */}
+      <GlobalNav />
+
       {/* Page Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 lg:ml-64">
         {children}
       </div>
 
