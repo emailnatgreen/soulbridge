@@ -72,8 +72,6 @@ export default function PageReviewPanel() {
   const [batchCurrent, setBatchCurrent] = useState('');
   const [batchDone, setBatchDone] = useState([]);
   const [batchErrors, setBatchErrors] = useState([]);
-  const [batchStartIndex, setBatchStartIndex] = useState(0);
-  const [batchSize, setBatchSize] = useState(10);
   const stopRef = useRef(false);
 
   // --- Single review ---
@@ -147,16 +145,18 @@ export default function PageReviewPanel() {
   };
 
   // --- Batch review ---
-  const handleStartBatch = async () => {
+  const handleStartBatch = async (startFrom = batchStartIndex) => {
     setBatchRunning(true);
-    setBatchProgress(0);
-    setBatchDone([]);
-    setBatchErrors([]);
     setBatchCurrent('');
     stopRef.current = false;
 
-    for (let i = 0; i < ALL_PAGES.length; i++) {
-      if (stopRef.current) break;
+    const endIndex = Math.min(startFrom + batchSize, ALL_PAGES.length);
+
+    for (let i = startFrom; i < endIndex; i++) {
+      if (stopRef.current) {
+        setBatchStartIndex(i);
+        break;
+      }
       const page = ALL_PAGES[i];
       setBatchCurrent(page);
       try {
@@ -176,17 +176,30 @@ export default function PageReviewPanel() {
         setBatchErrors(prev => [...prev, page]);
         setBatchDone(prev => [...prev, { page, status: 'error' }]);
       }
-      setBatchProgress(Math.round(((i + 1) / ALL_PAGES.length) * 100));
+      setBatchProgress(Math.round(((batchDone.length + (i - startFrom + 1)) / ALL_PAGES.length) * 100));
+      // Small delay between calls to avoid rate limits
+      await new Promise(r => setTimeout(r, 500));
     }
 
+    if (!stopRef.current) {
+      setBatchStartIndex(endIndex);
+    }
     setBatchRunning(false);
     setBatchCurrent('');
   };
 
   const handleStop = () => { stopRef.current = true; };
 
+  const handleResetBatch = () => {
+    setBatchDone([]);
+    setBatchErrors([]);
+    setBatchStartIndex(0);
+    setBatchProgress(0);
+  };
+
   const completed = batchDone.length;
   const total = ALL_PAGES.length;
+  const hasMore = batchStartIndex < total && completed > 0;
 
   return (
     <div className="space-y-4">

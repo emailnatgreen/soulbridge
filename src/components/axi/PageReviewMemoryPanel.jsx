@@ -1,16 +1,45 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Brain, Trash2, RefreshCw, ChevronDown, ChevronUp, Search, MessageSquare, Loader2, AlertCircle } from 'lucide-react';
+import { BookOpen, Brain, Trash2, RefreshCw, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
-import { useNavigate } from 'react-router-dom';
 
 export default function PageReviewMemoryPanel() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(null);
+  const [sendingToAxi, setSendingToAxi] = useState(null); // memory.id being sent
+  const [sendError, setSendError] = useState(null);
+
+  const handleSendToAxiChat = async (memory, pageName, bodyContent) => {
+    setSendingToAxi(memory.id);
+    setSendError(null);
+    try {
+      const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+      const unifiedConvo = conversations.find(c => c.metadata?.unified_axi_chat === true);
+      let convo;
+      if (unifiedConvo) {
+        convo = await base44.agents.getConversation(unifiedConvo.id);
+      } else {
+        convo = await base44.agents.createConversation({
+          agent_name: 'axi',
+          metadata: { name: 'Unified Conversation with Axi - Mother Boss', unified_axi_chat: true }
+        });
+      }
+      await base44.agents.addMessage(convo, {
+        role: 'user',
+        content: `I have a saved page review for **${pageName}** in your Memory (type: observation, keywords: page_review, axi_suggestion, ${pageName.toLowerCase()}). Please retrieve it and share your thoughts, action priorities, and recommended next steps for the Village.\n\nReview summary:\n${bodyContent}`
+      });
+      navigate('/Axi');
+    } catch (err) {
+      setSendError(err?.message || 'Failed to send to Axi');
+    } finally {
+      setSendingToAxi(null);
+    }
+  };
 
   const { data: memories = [], isFetching, refetch } = useQuery({
     queryKey: ['page-review-memories'],
