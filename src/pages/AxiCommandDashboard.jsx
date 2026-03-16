@@ -21,6 +21,8 @@ import DashboardCustomizer from "@/components/axi/DashboardCustomizer";
 import ComprehensiveAnalyticsDashboard from "@/components/axi/ComprehensiveAnalyticsDashboard";
 import IntuitiveNavigation from "@/components/axi/IntuitiveNavigation";
 import RealTimeNotificationCenter from "@/components/axi/RealTimeNotificationCenter";
+import AgentPerformanceReviewSystem from "@/components/axi/AgentPerformanceReviewSystem";
+import IntegratedHelpCenter from "@/components/axi/IntegratedHelpCenter";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
