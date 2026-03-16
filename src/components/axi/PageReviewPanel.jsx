@@ -125,7 +125,7 @@ export default function PageReviewPanel() {
 
       await base44.agents.addMessage(convo, {
         role: 'user',
-        content: `Here is my page review for **${selectedPage}**:\n\n${result}\n\nPlease share your thoughts and any action priorities.`
+        content: `I have just saved a page review for **${selectedPage}** to your Memory (type: observation, keywords: page_review, axi_suggestion, ${selectedPage.toLowerCase()}). Please retrieve it from your Memory and share your thoughts, action priorities, and any recommended next steps for the Village.`
       });
       navigate('/Axi');
     } catch (err) {
