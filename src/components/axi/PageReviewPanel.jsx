@@ -21,7 +21,7 @@ const ALL_PAGES = [
   'DidTrustGraph', 'DidActivityFeed', 'DidConnections', 'QuadShardMonitoring',
   'Governance', 'GovernanceHub', 'GovernanceAnalytics', 'GovernanceSimulation',
   'AIProjectHub', 'AIProjectManager', 'ProjectCreationWizard', 'ProjectAnalytics', 'TaskDelegation',
-  'Village', 'VillageLeaderboard', 'VillageMeetup', 'VillageSimulation', 'SimulationLab',
+  'Village', 'VillageLeaderboard', 'VillageMeetup', 'VillageSimulation', 'SimulationLab', 'VillageCalendar',
   'Economy', 'EconomicDashboard', 'ResourceManagement', 'ResourceMarketplace', 'ProductionHub',
   'CollaborationHub', 'CollaborationSuite', 'DirectAgentChat', 'KnowledgeSynthesis', 'SocialNetwork',
   'MentorshipHub', 'MentorshipMatches', 'MentorshipAnalytics', 'BecomeMentor',
