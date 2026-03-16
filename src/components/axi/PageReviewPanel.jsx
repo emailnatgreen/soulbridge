@@ -80,6 +80,8 @@ export default function PageReviewPanel() {
     setLoading(true);
     setResult(null);
     setSaved(false);
+    setSaveError(null);
+    setSendError(null);
     const res = await base44.integrations.Core.InvokeLLM({
       prompt: REVIEW_PROMPT(selectedPage) + (extraContext ? `\n\nGovernor context: ${extraContext}` : ''),
     });
