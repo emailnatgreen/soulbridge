@@ -49,6 +49,7 @@ export default function AxiCommandDashboard() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <DashboardCustomizer onLayoutChange={handleLayoutChange} />
           <Link to="/Home">
             <Button variant="outline" size="sm" className="border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs">
               <Home className="w-3.5 h-3.5 mr-1.5" />
