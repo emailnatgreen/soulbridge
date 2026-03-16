@@ -49,12 +49,14 @@ Deno.serve(async (req) => {
         // Create reputation event log
         await base44.asServiceRole.entities.ReputationEvent.create({
           agent_id: task.assigned_agent_id,
-          event_type: 'task_completed',
-          delta,
-          new_score: newHonor,
+          event_type: 'project_completed',
+          impact: delta,
+          category: 'task_completion',
           description: `Task completed: ${task.title}`,
-          source_entity: 'ProjectTask',
-          source_id: task.id
+          related_entity_type: 'ProjectTask',
+          related_entity_id: task.id,
+          verified: true,
+          verified_by: 'checkAndScoreHonor'
         });
 
         // Mark as processed
@@ -109,11 +111,13 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.ReputationEvent.create({
           agent_id: vote.voter_agent_id,
           event_type: 'vote_cast',
-          delta,
-          new_score: newHonor,
+          impact: delta,
+          category: 'governance_participation',
           description: `Vote cast on proposal ${vote.proposal_id}`,
-          source_entity: 'GovernanceVote',
-          source_id: vote.id
+          related_entity_type: 'GovernanceVote',
+          related_entity_id: vote.id,
+          verified: true,
+          verified_by: 'checkAndScoreHonor'
         });
 
         // Mark as processed
