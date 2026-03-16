@@ -37,6 +37,14 @@ Deno.serve(async (req) => {
 
     for (const task of unprocessedTasks) {
       try {
+        // Pre-flight validation: confirm task still exists
+        const existingTask = await base44.asServiceRole.entities.ProjectTask.get(task.id);
+        if (!existingTask) {
+          results.skipped.push({ type: 'task', id: task.id, reason: 'phantom reference - task no longer exists' });
+          console.log(`[checkAndScoreHonor] Skipping task ${task.id}: phantom reference detected (entity deleted)`);
+          continue;
+        }
+
         if (!task.assigned_agent_id) {
           results.skipped.push({ type: 'task', id: task.id, reason: 'no assigned agent' });
           console.log(`[checkAndScoreHonor] Skipping task ${task.id}: no assigned agent`);
