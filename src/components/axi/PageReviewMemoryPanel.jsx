@@ -12,11 +12,11 @@ export default function PageReviewMemoryPanel() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(null);
-  const [sendingToAxi, setSendingToAxi] = useState(null); // memory.id being sent
+  const [sendingId, setSendingId] = useState(null);
   const [sendError, setSendError] = useState(null);
 
   const handleSendToAxiChat = async (memory, pageName, bodyContent) => {
-    setSendingToAxi(memory.id);
+    setSendingId(memory.id);
     setSendError(null);
     try {
       const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
@@ -32,13 +32,13 @@ export default function PageReviewMemoryPanel() {
       }
       await base44.agents.addMessage(convo, {
         role: 'user',
-        content: `I have a saved page review for **${pageName}** in your Memory (type: observation, keywords: page_review, axi_suggestion, ${pageName.toLowerCase()}). Please retrieve it and share your thoughts, action priorities, and recommended next steps for the Village.\n\nReview summary:\n${bodyContent}`
+        content: `I'd like to discuss the saved page review for **${pageName}**. Please share your thoughts, action priorities, and recommended next steps for the Village.\n\nReview:\n${bodyContent}`
       });
       navigate('/Axi');
     } catch (err) {
-      setSendError(err?.message || 'Failed to send to Axi');
+      setSendError(err?.message || 'Failed to send');
     } finally {
-      setSendingToAxi(null);
+      setSendingId(null);
     }
   };
 
@@ -152,22 +152,7 @@ export default function PageReviewMemoryPanel() {
                         {bodyContent}
                       </ReactMarkdown>
                     </div>
-                    {sendError && sendingToAxi === null && (
-                      <div className="flex items-center gap-1 text-[10px] text-red-400 mt-1">
-                        <AlertCircle className="w-3 h-3" />{sendError}
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-700/30">
-                      <Button
-                        size="sm"
-                        disabled={sendingToAxi === memory.id}
-                        onClick={() => handleSendToAxiChat(memory, pageName, bodyContent)}
-                        className="text-[10px] h-6 bg-violet-700 hover:bg-violet-800 text-white border-0 px-2"
-                      >
-                        {sendingToAxi === memory.id
-                          ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Sending...</>
-                          : <><MessageSquare className="w-3 h-3 mr-1" />Send to Axi Chat</>}
-                      </Button>
+                    <div className="flex justify-end mt-2 pt-2 border-t border-slate-700/30">
                       <Button
                         size="sm"
                         variant="ghost"
