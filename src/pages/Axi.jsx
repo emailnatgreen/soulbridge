@@ -26,6 +26,7 @@ export default function AxiPage() {
   const lastSpokenRef = useRef(null);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
+  const initializingRef = useRef(false);
 
   // Keep ref in sync with state
   useEffect(() => {
