@@ -324,7 +324,22 @@ export default function PageReviewPanel() {
       {mode === 'batch' && (
         <div className="space-y-4">
           <div className="bg-slate-900/40 rounded-xl border border-amber-700/30 p-4 text-xs text-slate-400 space-y-2">
-            <p className="text-amber-300 font-medium">Batch Review — {total} pages total</p>
+            <div className="flex items-center justify-between">
+              <p className="text-amber-300 font-medium">Batch Review — {total} pages total</p>
+              {!confirmDelete ? (
+                <button onClick={() => setConfirmDelete(true)} className="flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors">
+                  <Trash2 className="w-3 h-3" />Clear All
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-red-400">Sure?</span>
+                  <button onClick={handleDeleteAllReviews} disabled={deletingAll} className="text-red-400 hover:text-red-300 font-medium">
+                    {deletingAll ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes'}
+                  </button>
+                  <button onClick={() => setConfirmDelete(false)} className="text-slate-400 hover:text-white">No</button>
+                </div>
+              )}
+            </div>
             <p>Axi reviews pages in chunks and saves each to Memory. Use Continue to pick up where you left off.</p>
             <div className="flex items-center gap-2 mt-1">
               <label className="text-slate-400">Chunk size:</label>
