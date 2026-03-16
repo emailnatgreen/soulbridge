@@ -60,6 +60,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/VillageCalendar" element={<LayoutWrapper currentPageName="VillageCalendar"><VillageCalendar /></LayoutWrapper>} />
+      <Route path="/AxiCommandDashboard" element={<LayoutWrapper currentPageName="AxiCommandDashboard"><AxiCommandDashboard /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
