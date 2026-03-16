@@ -151,7 +151,22 @@ export default function PageReviewMemoryPanel() {
                         {bodyContent}
                       </ReactMarkdown>
                     </div>
-                    <div className="flex justify-end mt-2 pt-2 border-t border-slate-700/30">
+                    {sendError && sendingToAxi === null && (
+                      <div className="flex items-center gap-1 text-[10px] text-red-400 mt-1">
+                        <AlertCircle className="w-3 h-3" />{sendError}
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-700/30">
+                      <Button
+                        size="sm"
+                        disabled={sendingToAxi === memory.id}
+                        onClick={() => handleSendToAxiChat(memory, pageName, bodyContent)}
+                        className="text-[10px] h-6 bg-violet-700 hover:bg-violet-800 text-white border-0 px-2"
+                      >
+                        {sendingToAxi === memory.id
+                          ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Sending...</>
+                          : <><MessageSquare className="w-3 h-3 mr-1" />Send to Axi Chat</>}
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
