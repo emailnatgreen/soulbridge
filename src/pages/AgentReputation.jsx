@@ -1,444 +1,194 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Award, TrendingUp, TrendingDown, Shield, Users, Star, Target, Brain, Loader2, Trophy, Medal } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Star, TrendingUp, Shield, AlertTriangle, RefreshCw, Award } from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
+import FilterBar from '@/components/filters/FilterBar';
+import ActivityTimeline from '@/components/audit/ActivityTimeline';
 import AskAxiButton from '@/components/AskAxiButton';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { toast } from 'sonner';
+
+const FILTERS = [
+  { key: 'role', label: 'Role', type: 'select', options: ['guardian','creator','trader','teacher','healer','scout','elder','master'] },
+  { key: 'status', label: 'Status', type: 'select', options: ['active','dormant','suspended','probation'] },
+  { key: 'honorRange', label: 'Honor Score', type: 'range', min: 0, max: 100 },
+];
+
+const SORT_OPTIONS = [
+  { value: '-honor_score', label: 'Honor (High–Low)' },
+  { value: 'honor_score', label: 'Honor (Low–High)' },
+  { value: 'name', label: 'Name A–Z' },
+];
 
 export default function AgentReputation() {
-  const [selectedAgent, setSelectedAgent] = useState(null);
-  const [leaderboardCategory, setLeaderboardCategory] = useState('overall');
+  const queryClient = useQueryClient();
+  const [tab, setTab] = useState('leaderboard');
+  const [filterValues, setFilterValues] = useState({ search: '', role: 'all', status: 'all', honorRange: { min: 0, max: 100 } });
+  const [sortBy, setSortBy] = useState('-honor_score');
 
-  const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list()
+  const { data: agents = [], isLoading } = useQuery({
+    queryKey: ['agents-reputation'],
+    queryFn: () => base44.entities.Agent.list('-honor_score', 100),
   });
 
-  const { data: reputationScores = [] } = useQuery({
-    queryKey: ['reputationScores'],
-    queryFn: () => base44.entities.ReputationScore.list('-overall_score')
+  const { data: reputationEvents = [] } = useQuery({
+    queryKey: ['reputation-events'],
+    queryFn: () => base44.entities.ReputationEvent.list('-created_date', 100),
   });
 
-  const { data: leaderboardData, isLoading: loadingLeaderboard } = useQuery({
-    queryKey: ['leaderboard', leaderboardCategory],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('getReputationLeaderboard', {
-        category: leaderboardCategory,
-        limit: 50
-      });
-      return response.data;
-    }
+  const recalcMutation = useMutation({
+    mutationFn: (agentId) => base44.functions.invoke('calculateAgentReputation', { agent_id: agentId }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['agents-reputation'] }); toast.success('Reputation recalculated!'); },
+    onError: (e) => toast.error('Failed: ' + e.message),
   });
 
-  const avgScore = reputationScores.length > 0
-    ? reputationScores.reduce((sum, s) => sum + s.overall_score, 0) / reputationScores.length
-    : 0;
+  const filteredAgents = agents.filter(a => {
+    const q = filterValues.search?.toLowerCase();
+    if (q && !a.name?.toLowerCase().includes(q)) return false;
+    if (filterValues.role !== 'all' && a.role !== filterValues.role) return false;
+    if (filterValues.status !== 'all' && a.status !== filterValues.status) return false;
+    if (filterValues.honorRange?.min > 0 && (a.honor_score ?? 100) < filterValues.honorRange.min) return false;
+    if (filterValues.honorRange?.max < 100 && (a.honor_score ?? 100) > filterValues.honorRange.max) return false;
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === '-honor_score') return (b.honor_score ?? 100) - (a.honor_score ?? 100);
+    if (sortBy === 'honor_score') return (a.honor_score ?? 100) - (b.honor_score ?? 100);
+    return (a.name || '').localeCompare(b.name || '');
+  });
 
-  const topAgents = reputationScores.slice(0, 5);
-  const risingStars = reputationScores.filter(s => s.growth_trajectory === 'accelerating').slice(0, 5);
+  const avgHonor = agents.length > 0 ? Math.round(agents.reduce((s, a) => s + (a.honor_score ?? 100), 0) / agents.length) : 0;
+  const top10 = agents.slice(0, 10).map(a => ({ name: a.name?.slice(0, 12), score: a.honor_score ?? 100 }));
+  const rising = agents.filter(a => (a.honor_score ?? 100) >= 90);
 
-  const honorLevelColors = {
-    legendary: 'from-yellow-500 to-amber-600',
-    revered: 'from-purple-500 to-pink-600',
-    honored: 'from-blue-500 to-indigo-600',
-    respected: 'from-green-500 to-emerald-600',
-    trusted: 'from-cyan-500 to-blue-600',
-    newcomer: 'from-gray-500 to-slate-600'
-  };
+  // Audit timeline events
+  const timelineEvents = [
+    ...reputationEvents.map(e => ({
+      id: e.id,
+      type: (e.change ?? 0) < 0 ? 'error' : 'reputation',
+      title: `Honor ${(e.change ?? 0) >= 0 ? '+' : ''}${e.change ?? 0}: ${e.event_type?.replace(/_/g, ' ') || 'Event'}`,
+      description: e.reason || e.description || '',
+      actor: agents.find(a => a.id === e.agent_id)?.name || 'Unknown',
+      timestamp: e.created_date,
+    })),
+    ...agents.filter(a => a.warnings?.length > 0).flatMap(a =>
+      (a.warnings || []).map((w, i) => ({
+        id: `${a.id}-warn-${i}`,
+        type: 'error',
+        title: `Warning Issued to ${a.name}`,
+        description: w.reason || '',
+        actor: w.issued_by || 'System',
+        timestamp: w.date || a.created_date,
+      }))
+    ),
+  ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-amber-950 to-slate-950">
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-light text-white">Agent Reputation System</h1>
-                <p className="text-sm text-amber-300/60">Law 7: What You Do Echoes</p>
-              </div>
-            </div>
-            <AskAxiButton
-              label="Ask Axi"
-              context="You are reviewing the Agent Reputation System for SoulBridge Village. As Mother Boss and Law 7 guardian (What You Do Echoes), please assess: which agents have declining honor scores, any reputation anomalies or sudden drops, agents who deserve recognition, and whether the overall Village reputation trajectory is healthy. Flag any Law 7 violations."
-            />
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-amber-950/10 to-slate-950 p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
+              <Star className="w-6 h-6 text-amber-400" />Agent Reputation
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">{agents.length} agents · avg honor {avgHonor}</p>
           </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Total Agents</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{reputationScores.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Avg Reputation</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-amber-400">{avgScore.toFixed(0)}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Honored+</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-400">
-                {reputationScores.filter(s => ['honored', 'revered', 'legendary'].includes(s.honor_level)).length}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Rising Stars</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-400">{risingStars.length}</div>
-            </CardContent>
-          </Card>
+          <AskAxiButton label="Analyze Reputation" context="Review the current honor scores, reputation events, and warnings across all agents. Identify any concerning trends, policy violations, or agents needing attention." />
         </div>
 
-        <Tabs defaultValue="leaderboard" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-            <TabsTrigger value="agents">All Agents</TabsTrigger>
-            <TabsTrigger value="rising">Rising Stars</TabsTrigger>
-          </TabsList>
+        {/* KPIs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Avg Honor', val: avgHonor, color: 'text-amber-400' },
+            { label: 'Elite (90+)', val: rising.length, color: 'text-green-400' },
+            { label: 'At Risk (<50)', val: agents.filter(a => (a.honor_score ?? 100) < 50).length, color: 'text-red-400' },
+            { label: 'Reputation Events', val: reputationEvents.length, color: 'text-blue-400' },
+          ].map(k => (
+            <div key={k.label} className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-4 text-center">
+              <div className={`text-3xl font-bold ${k.color}`}>{k.val}</div>
+              <div className="text-xs text-slate-500 mt-1">{k.label}</div>
+            </div>
+          ))}
+        </div>
 
-          <TabsContent value="leaderboard" className="space-y-4">
-            <div className="flex gap-2 mb-4 flex-wrap">
-              {['overall', 'governance_participation', 'project_contributions', 'knowledge_sharing', 'marketplace_reliability'].map(cat => (
-                <Button
-                  key={cat}
-                  size="sm"
-                  variant={leaderboardCategory === cat ? 'default' : 'outline'}
-                  onClick={() => setLeaderboardCategory(cat)}
-                  className={leaderboardCategory === cat ? 'bg-amber-600' : 'border-white/20 text-white/70'}
-                >
-                  {cat.replace(/_/g, ' ')}
-                </Button>
+        {/* Tabs */}
+        <div className="flex gap-2 flex-wrap">
+          {['leaderboard', 'rankings', 'audit trail'].map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-4 py-2 rounded-lg text-sm transition-colors capitalize ${tab === t ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'leaderboard' && (
+          <Card className="bg-slate-900/60 border-slate-700/40">
+            <CardHeader><CardTitle className="text-white text-sm">Top 10 Honor Scores</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={top10} layout="vertical">
+                  <XAxis type="number" domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} width={90} />
+                  <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }} />
+                  <Bar dataKey="score" name="Honor Score" radius={[0, 4, 4, 0]}>
+                    {top10.map((entry, i) => <Cell key={i} fill={entry.score >= 90 ? '#22c55e' : entry.score >= 70 ? '#f59e0b' : '#ef4444'} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
+        {tab === 'rankings' && (
+          <>
+            <FilterBar filters={FILTERS} values={filterValues} onChange={setFilterValues}
+              searchKey="search" searchPlaceholder="Search agents…"
+              sortOptions={SORT_OPTIONS} sortValue={sortBy} onSortChange={setSortBy}
+              resultCount={filteredAgents.length} />
+            <div className="space-y-2">
+              {filteredAgents.map((a, idx) => (
+                <div key={a.id} className="flex items-center gap-4 p-4 bg-slate-900/60 border border-slate-700/40 rounded-xl hover:border-amber-500/30 transition-all">
+                  <span className="text-slate-600 text-sm w-6 shrink-0 text-right">#{idx + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white text-sm font-medium">{a.name}</span>
+                      <Badge className="text-xs bg-slate-800 border-slate-700 text-slate-400 capitalize">{a.role}</Badge>
+                      {a.warnings?.length > 0 && (
+                        <Badge className="text-xs bg-red-900/40 text-red-300 border-red-700/40">
+                          <AlertTriangle className="w-2.5 h-2.5 mr-1" />{a.warnings.length} warnings
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex gap-1 mt-1">
+                      {(a.specializations || []).slice(0, 3).map(s => (
+                        <span key={s} className="text-xs text-slate-600 bg-slate-800 px-1.5 py-0.5 rounded">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <div className={`text-xl font-bold ${(a.honor_score ?? 100) >= 80 ? 'text-amber-400' : (a.honor_score ?? 100) >= 50 ? 'text-slate-300' : 'text-red-400'}`}>
+                        {a.honor_score ?? 100}
+                      </div>
+                      <div className="text-xs text-slate-600">honor</div>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => recalcMutation.mutate(a.id)}
+                      disabled={recalcMutation.isPending}
+                      className="h-7 w-7 p-0 text-slate-600 hover:text-amber-400">
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
+          </>
+        )}
 
-            {loadingLeaderboard ? (
-              <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-amber-400 mx-auto" />
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {leaderboardData?.leaderboard?.map((entry, idx) => {
-                  const agent = agents.find(a => a.id === entry.agent_id);
-                  const score = reputationScores.find(s => s.agent_id === entry.agent_id);
-                  
-                  return (
-                    <Card 
-                      key={entry.agent_id}
-                      className={`bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all cursor-pointer ${
-                        idx < 3 ? 'border-amber-500/30 bg-gradient-to-r ' + (
-                          idx === 0 ? 'from-yellow-500/10 to-amber-500/10' :
-                          idx === 1 ? 'from-gray-400/10 to-slate-400/10' :
-                          'from-orange-600/10 to-amber-700/10'
-                        ) : ''
-                      }`}
-                      onClick={() => setSelectedAgent(entry.agent_id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="text-center w-12">
-                              {idx === 0 && <Trophy className="w-8 h-8 text-yellow-400 mx-auto" />}
-                              {idx === 1 && <Medal className="w-8 h-8 text-gray-400 mx-auto" />}
-                              {idx === 2 && <Medal className="w-8 h-8 text-orange-600 mx-auto" />}
-                              {idx > 2 && <div className="text-2xl font-bold text-white/60">#{entry.rank}</div>}
-                            </div>
-                            <div>
-                              <div className="text-white font-medium">{entry.agent_name}</div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Badge className={`bg-gradient-to-r ${honorLevelColors[entry.honor_level]} text-white`}>
-                                  {entry.honor_level}
-                                </Badge>
-                                <Badge variant="outline" className="border-white/20 text-white/70">
-                                  {entry.agent_role}
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-3xl font-bold text-amber-400">{entry.overall_score}</div>
-                            <div className="text-xs text-white/60 mt-1">
-                              {entry.badges_count} badges • {entry.voting_power.toFixed(1)}x voting power
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="agents">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {reputationScores.map(score => {
-                const agent = agents.find(a => a.id === score.agent_id);
-                return (
-                  <Card 
-                    key={score.agent_id}
-                    className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all cursor-pointer"
-                    onClick={() => setSelectedAgent(score.agent_id)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-white">{agent?.name || 'Unknown'}</CardTitle>
-                          <Badge className={`mt-2 bg-gradient-to-r ${honorLevelColors[score.honor_level]} text-white`}>
-                            {score.honor_level}
-                          </Badge>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-amber-400">{score.overall_score}</div>
-                          <div className="text-xs text-white/60">reputation</div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center gap-1">
-                          {score.growth_trajectory === 'accelerating' && <TrendingUp className="w-4 h-4 text-green-400" />}
-                          {score.growth_trajectory === 'improving' && <TrendingUp className="w-4 h-4 text-blue-400" />}
-                          {score.growth_trajectory === 'declining' && <TrendingDown className="w-4 h-4 text-red-400" />}
-                          <span className="text-white/70">{score.growth_trajectory}</span>
-                        </div>
-                        <div className="text-white/70">
-                          {score.badges_earned?.length || 0} badges
-                        </div>
-                      </div>
-                      <div className="pt-2 border-t border-white/10">
-                        <div className="flex justify-between text-xs text-white/60 mb-1">
-                          <span>Trust</span>
-                          <span>{score.trust_metrics?.peer_trust_rating || 0}/10</span>
-                        </div>
-                        <Progress value={(score.trust_metrics?.peer_trust_rating || 0) * 10} className="h-2" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="rising">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {risingStars.map(score => {
-                const agent = agents.find(a => a.id === score.agent_id);
-                return (
-                  <Card 
-                    key={score.agent_id}
-                    className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 backdrop-blur-xl border-green-500/30"
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-white flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-green-400" />
-                            {agent?.name || 'Unknown'}
-                          </CardTitle>
-                          <Badge className="mt-2 bg-green-500/20 text-green-400">
-                            Accelerating Growth
-                          </Badge>
-                        </div>
-                        <div className="text-3xl font-bold text-green-400">{score.overall_score}</div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-sm text-white/80">
-                        {score.areas_of_excellence?.slice(0, 3).map((area, idx) => (
-                          <div key={idx} className="flex items-center gap-2 mb-1">
-                            <Star className="w-3 h-3 text-yellow-400" />
-                            <span>{area}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {selectedAgent && (
-        <AgentReputationDetail 
-          agentId={selectedAgent}
-          onClose={() => setSelectedAgent(null)}
-        />
-      )}
-    </div>
-  );
-}
-
-function AgentReputationDetail({ agentId, onClose }) {
-  const [calculating, setCalculating] = useState(false);
-
-  const { data: agent } = useQuery({
-    queryKey: ['agent', agentId],
-    queryFn: () => base44.entities.Agent.get(agentId)
-  });
-
-  const { data: reputation, refetch: refetchReputation } = useQuery({
-    queryKey: ['reputation', agentId],
-    queryFn: async () => {
-      const scores = await base44.entities.ReputationScore.filter({ agent_id: agentId });
-      return scores[0];
-    }
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['reputationEvents', agentId],
-    queryFn: () => base44.entities.ReputationEvent.filter({ agent_id: agentId })
-  });
-
-  const recalculate = async () => {
-    setCalculating(true);
-    try {
-      await base44.functions.invoke('calculateAgentReputation', { agent_id: agentId });
-      refetchReputation();
-    } catch (error) {
-      console.error('Calculation error:', error);
-    } finally {
-      setCalculating(false);
-    }
-  };
-
-  if (!agent || !reputation) {
-    return null;
-  }
-
-  const recentEvents = events.sort((a, b) => 
-    new Date(b.created_date) - new Date(a.created_date)
-  ).slice(0, 20);
-
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
-      <div className="min-h-screen p-6">
-        <div className="max-w-5xl mx-auto">
-          <Card className="bg-slate-900 border-white/10 text-white">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-2xl mb-2">{agent.name}</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white">
-                      {reputation.honor_level}
-                    </Badge>
-                    <Badge variant="outline" className="border-white/20 text-white/70">
-                      {agent.role}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    onClick={recalculate}
-                    disabled={calculating}
-                    className="bg-amber-600 hover:bg-amber-700"
-                  >
-                    {calculating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Brain className="w-4 h-4 mr-2" />}
-                    Recalculate
-                  </Button>
-                  <Button onClick={onClose} variant="outline">
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Overall Score */}
-              <Card className="bg-gradient-to-br from-amber-900/30 to-yellow-900/30 border-amber-500/30">
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <div className="text-6xl font-bold text-amber-400 mb-2">{reputation.overall_score}</div>
-                    <div className="text-white/60">Overall Reputation</div>
-                    <div className="flex items-center justify-center gap-4 mt-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Award className="w-4 h-4 text-yellow-400" />
-                        <span className="text-white/70">{reputation.badges_earned?.length || 0} badges</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Shield className="w-4 h-4 text-blue-400" />
-                        <span className="text-white/70">{reputation.voting_power_multiplier}x voting power</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Component Scores */}
-              <div>
-                <h3 className="text-white font-medium mb-3">Reputation Components</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(reputation.component_scores || {}).map(([key, value]) => (
-                    <div key={key} className="p-3 bg-white/5 rounded border border-white/10">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-white/70">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-white font-medium">{value}/100</span>
-                      </div>
-                      <Progress value={value} className="h-2" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent Events */}
-              <div>
-                <h3 className="text-white font-medium mb-3">Recent Reputation Events</h3>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {recentEvents.map((event, idx) => (
-                    <div 
-                      key={idx}
-                      className={`p-3 rounded border ${
-                        event.impact > 0 
-                          ? 'bg-green-500/10 border-green-500/30' 
-                          : 'bg-red-500/10 border-red-500/30'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="text-white text-sm font-medium">{event.event_type.replace(/_/g, ' ')}</div>
-                          <div className="text-xs text-white/60 mt-1">{event.description}</div>
-                        </div>
-                        <Badge className={event.impact > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}>
-                          {event.impact > 0 ? '+' : ''}{event.impact}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {tab === 'audit trail' && (
+          <ActivityTimeline events={timelineEvents} title="Reputation & Honor Audit Trail" maxHeight="600px" />
+        )}
       </div>
     </div>
   );

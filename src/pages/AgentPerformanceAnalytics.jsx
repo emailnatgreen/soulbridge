@@ -1,485 +1,263 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, Target, Brain, Users, Vote, DollarSign, Award, Lightbulb, Loader2, Heart, Star, Coins, MessageSquare, Shield } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { toast } from 'sonner';
-import AskAxiButton from '@/components/AskAxiButton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
+import { TrendingUp, Users, Star, Zap } from 'lucide-react';
+import FilterBar from '@/components/filters/FilterBar';
+
+const PERF_FILTERS = [
+  { key: 'role', label: 'Role', type: 'select', options: ['guardian','creator','trader','teacher','healer','scout','elder','master'] },
+  { key: 'honorRange', label: 'Honor Score', type: 'range', min: 0, max: 100 },
+];
 
 export default function AgentPerformanceAnalytics() {
-  const [selectedAgentId, setSelectedAgentId] = useState('');
-  const [periodDays, setPeriodDays] = useState(30);
-  const queryClient = useQueryClient();
+  const [tab, setTab] = useState('overview');
+  const [filterValues, setFilterValues] = useState({ search: '', role: 'all', honorRange: { min: 0, max: 100 } });
+  const [selectedAgent, setSelectedAgent] = useState(null);
 
   const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list()
+    queryKey: ['agents-perf'],
+    queryFn: () => base44.entities.Agent.list('-honor_score', 100),
   });
 
   const { data: metrics = [] } = useQuery({
-    queryKey: ['agent-performance-metrics'],
-    queryFn: () => base44.entities.AgentPerformanceMetrics.list('-created_date')
+    queryKey: ['perf-metrics'],
+    queryFn: () => base44.entities.AgentPerformanceMetrics.list('-created_date', 100),
   });
 
-  const analyzeMutation = useMutation({
-    mutationFn: (data) => base44.functions.invoke('analyzeAgentPerformance', data),
-    onSuccess: async (response) => {
-      await base44.entities.AgentPerformanceMetrics.create(response.data.metrics);
-      queryClient.invalidateQueries(['agent-performance-metrics']);
-      toast.success('Performance analysis complete!');
-    }
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['tasks-perf'],
+    queryFn: () => base44.entities.ProjectTask.list('-created_date', 200),
   });
 
-  const topPerformers = metrics
-    .sort((a, b) => (b.overall_score || 0) - (a.overall_score || 0))
-    .slice(0, 5);
+  const { data: activities = [] } = useQuery({
+    queryKey: ['activities-perf'],
+    queryFn: () => base44.entities.EconomicActivity.list('-created_date', 200),
+  });
 
-  const avgScore = metrics.length > 0
-    ? metrics.reduce((sum, m) => sum + (m.overall_score || 0), 0) / metrics.length
-    : 0;
+  const filteredAgents = agents.filter(a => {
+    const q = filterValues.search?.toLowerCase();
+    if (q && !a.name?.toLowerCase().includes(q)) return false;
+    if (filterValues.role !== 'all' && a.role !== filterValues.role) return false;
+    if (filterValues.honorRange?.min > 0 && (a.honor_score ?? 100) < filterValues.honorRange.min) return false;
+    if (filterValues.honorRange?.max < 100 && (a.honor_score ?? 100) > filterValues.honorRange.max) return false;
+    return true;
+  });
+
+  // Honor score distribution
+  const honorDist = [
+    { range: '0–20', count: agents.filter(a => (a.honor_score ?? 100) <= 20).length },
+    { range: '21–40', count: agents.filter(a => (a.honor_score ?? 100) > 20 && (a.honor_score ?? 100) <= 40).length },
+    { range: '41–60', count: agents.filter(a => (a.honor_score ?? 100) > 40 && (a.honor_score ?? 100) <= 60).length },
+    { range: '61–80', count: agents.filter(a => (a.honor_score ?? 100) > 60 && (a.honor_score ?? 100) <= 80).length },
+    { range: '81–100', count: agents.filter(a => (a.honor_score ?? 100) > 80).length },
+  ];
+
+  // Task completion by agent (top 10)
+  const taskMap = tasks.reduce((acc, t) => {
+    if (!t.assigned_agent_id) return acc;
+    if (!acc[t.assigned_agent_id]) acc[t.assigned_agent_id] = { total: 0, done: 0 };
+    acc[t.assigned_agent_id].total++;
+    if (t.status === 'completed') acc[t.assigned_agent_id].done++;
+    return acc;
+  }, {});
+
+  const taskData = Object.entries(taskMap)
+    .map(([id, d]) => ({
+      name: agents.find(a => a.id === id)?.name?.slice(0, 10) || id.slice(0, 8),
+      completion: d.total > 0 ? Math.round((d.done / d.total) * 100) : 0,
+      total: d.total,
+    }))
+    .sort((a, b) => b.total - a.total).slice(0, 10);
+
+  // Role breakdown
+  const roleData = Object.entries(
+    agents.reduce((acc, a) => { acc[a.role || 'citizen'] = (acc[a.role || 'citizen'] || 0) + 1; return acc; }, {})
+  ).map(([role, count]) => ({ role, count })).sort((a, b) => b.count - a.count);
+
+  // Selected agent radar
+  const selAgent = selectedAgent ? agents.find(a => a.id === selectedAgent) : null;
+  const selMetrics = selAgent ? metrics.find(m => m.agent_id === selAgent.id) : null;
+  const radarData = selMetrics ? [
+    { subject: 'Honor', val: selAgent?.honor_score ?? 100 },
+    { subject: 'Task Rate', val: selMetrics.task_completion_rate ?? 70 },
+    { subject: 'Transactions', val: Math.min(100, (selAgent?.total_transactions ?? 0) / 10) },
+    { subject: 'Skill Score', val: selMetrics.avg_skill_score ?? 70 },
+    { subject: 'Activity', val: selMetrics.activity_score ?? 70 },
+  ] : [];
+
+  const avgHonor = agents.length > 0 ? Math.round(agents.reduce((s, a) => s + (a.honor_score ?? 100), 0) / agents.length) : 0;
+  const topPerformers = agents.filter(a => (a.honor_score ?? 100) >= 90).length;
+  const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const completionRate = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-light text-white">Agent Performance Analytics</h1>
-                <p className="text-sm text-purple-300/60">Track contributions and measure impact</p>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-blue-400" />Agent Performance Analytics
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">{agents.length} agents · {tasks.length} tasks tracked</p>
+        </div>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Avg Honor Score', val: avgHonor, color: 'text-amber-400' },
+            { label: 'Top Performers', val: topPerformers, color: 'text-green-400' },
+            { label: 'Task Completion', val: `${completionRate}%`, color: 'text-blue-400' },
+            { label: 'Total Tasks', val: tasks.length, color: 'text-white' },
+          ].map(k => (
+            <div key={k.label} className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-4 text-center">
+              <div className={`text-3xl font-bold ${k.color}`}>{k.val}</div>
+              <div className="text-xs text-slate-500 mt-1">{k.label}</div>
             </div>
-            <AskAxiButton
-              label="Ask Axi to Analyse"
-              context={`You are viewing the Agent Performance Analytics dashboard. Nathan has asked you to review agent performance data. Please summarise the current state of agent performance across the Village, highlight any agents who need support, and recommend next steps aligned with Law 9 (Growth) and Law 7 (Reputation).`}
-            />
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2">
+          {['overview', 'task rates', 'agent list', 'deep dive'].map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-4 py-2 rounded-lg text-sm transition-colors capitalize ${tab === t ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'overview' && (
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/60 border-slate-700/40">
+              <CardHeader><CardTitle className="text-white text-sm">Honor Score Distribution</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={honorDist}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="range" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                    <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                    <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }} />
+                    <Bar dataKey="count" name="Agents" radius={[4, 4, 0, 0]}>
+                      {honorDist.map((_, i) => <Cell key={i} fill={i <= 1 ? '#ef4444' : i === 2 ? '#f59e0b' : '#22c55e'} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900/60 border-slate-700/40">
+              <CardHeader><CardTitle className="text-white text-sm">Agents by Role</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={roleData} layout="vertical">
+                    <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                    <YAxis type="category" dataKey="role" tick={{ fill: '#94a3b8', fontSize: 10 }} width={70} />
+                    <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }} />
+                    <Bar dataKey="count" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      </div>
+        )}
 
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Analysis Tool */}
-        <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-6">
-          <CardHeader>
-            <CardTitle className="text-white">Analyze Agent Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                    <SelectValue placeholder="Select agent..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10">
-                    {agents.map(agent => (
-                      <SelectItem key={agent.id} value={agent.id}>
-                        {agent.name} ({agent.role})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-40">
-                <Select value={periodDays.toString()} onValueChange={(v) => setPeriodDays(parseInt(v))}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10">
-                    <SelectItem value="7">Last 7 days</SelectItem>
-                    <SelectItem value="30">Last 30 days</SelectItem>
-                    <SelectItem value="90">Last 90 days</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                onClick={() => analyzeMutation.mutate({ agent_id: selectedAgentId, period_days: periodDays })}
-                disabled={!selectedAgentId || analyzeMutation.isPending}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                {analyzeMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Brain className="w-4 h-4 mr-2" />
-                    Analyze
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Analyses Run</CardTitle>
-            </CardHeader>
+        {tab === 'task rates' && (
+          <Card className="bg-slate-900/60 border-slate-700/40">
+            <CardHeader><CardTitle className="text-white text-sm">Task Completion Rate by Agent</CardTitle></CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">{metrics.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Average Score</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-400">{avgScore.toFixed(1)}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Top Performer</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold text-green-400">
-                {topPerformers[0]?.overall_score.toFixed(1) || 0}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Rising Stars</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-400">
-                {metrics.filter(m => m.performance_trend === 'rising').length}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Top Performers */}
-        {topPerformers.length > 0 && (
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-6">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Award className="w-5 h-5 text-yellow-400" />
-                Top Performers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {topPerformers.map((metric, idx) => {
-                  const agent = agents.find(a => a.id === metric.agent_id);
-                  return (
-                    <div key={idx} className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/10">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-white font-bold">
-                        #{idx + 1}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-white font-medium">{agent?.name || 'Unknown'}</div>
-                        <div className="text-sm text-white/60">{agent?.role || 'Unknown'}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-white">{metric.overall_score.toFixed(1)}</div>
-                        <div className="text-xs text-white/60">Score</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={taskData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                  <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                  <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} domain={[0, 100]} unit="%" />
+                  <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }} formatter={(v) => [`${v}%`]} />
+                  <Bar dataKey="completion" name="Completion %" radius={[4, 4, 0, 0]}>
+                    {taskData.map((entry, i) => <Cell key={i} fill={entry.completion >= 70 ? '#22c55e' : entry.completion >= 40 ? '#f59e0b' : '#ef4444'} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         )}
 
-        {/* Detailed Metrics */}
-        <Tabs defaultValue="recent" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="recent" className="data-[state=active]:bg-purple-600">
-              Recent Analyses
-            </TabsTrigger>
-            <TabsTrigger value="trends" className="data-[state=active]:bg-purple-600">
-              Trends
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="recent" className="space-y-4">
-            {metrics.length === 0 ? (
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardContent className="text-center py-12">
-                  <Brain className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-xl text-white mb-2">No Analyses Yet</h3>
-                  <p className="text-white/60">Select an agent above to run your first performance analysis</p>
-                </CardContent>
-              </Card>
-            ) : (
-              metrics.map(metric => (
-                <PerformanceMetricCard 
-                  key={metric.id} 
-                  metric={metric}
-                  agent={agents.find(a => a.id === metric.agent_id)}
-                />
-              ))
-            )}
-          </TabsContent>
-
-          <TabsContent value="trends">
-            <TrendsView metrics={metrics} agents={agents} />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
-
-function PerformanceMetricCard({ metric, agent }) {
-  const trendConfig = {
-    rising: { icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-500/20' },
-    stable: { icon: Minus, color: 'text-blue-400', bg: 'bg-blue-500/20' },
-    declining: { icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/20' }
-  };
-
-  const config = trendConfig[metric.performance_trend];
-  const TrendIcon = config.icon;
-
-  return (
-    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-xl text-white">{agent?.name || 'Unknown Agent'}</CardTitle>
-            <div className="text-sm text-white/60">
-              {new Date(metric.period_start).toLocaleDateString()} - {new Date(metric.period_end).toLocaleDateString()}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold text-white">{metric.overall_score.toFixed(1)}</div>
-            <Badge className={config.bg + ' ' + config.color}>
-              <TrendIcon className="w-3 h-3 mr-1" />
-              {metric.performance_trend}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Category Scores */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-          <MetricPill icon={Target} label="Tasks Done" value={metric.project_contributions?.tasks_completed || 0} color="text-blue-400" />
-          <MetricPill icon={Brain} label="Knowledge" value={metric.knowledge_sharing?.contributions_created || 0} color="text-purple-400" />
-          <MetricPill icon={Users} label="Sessions" value={metric.collaboration_metrics?.sessions_participated || 0} color="text-green-400" />
-          <MetricPill icon={Vote} label="Votes" value={metric.governance_participation?.votes_cast || 0} color="text-indigo-400" />
-          <MetricPill icon={Coins} label="XRP Earned" value={(metric.economic_activity?.total_earned_xrp || 0).toFixed(2)} color="text-yellow-400" />
-          <MetricPill icon={MessageSquare} label="Messages" value={metric.collaboration_metrics?.messages_sent || 0} color="text-cyan-400" />
-          <MetricPill icon={Heart} label="Wellbeing" value={`${metric.wellbeing_signals?.energy_level || 80}%`} color="text-pink-400" />
-        </div>
-
-        {/* Economic Pipeline */}
-        {(metric.economic_activity?.total_earned_xrp > 0 || metric.economic_activity?.treasury_contributions_xrp > 0) && (
-          <div className="grid grid-cols-3 gap-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-            <div className="text-center">
-              <div className="text-xs text-white/50 mb-1">Total Earned</div>
-              <div className="text-sm font-bold text-yellow-300">{(metric.economic_activity?.total_earned_xrp || 0).toFixed(4)} XRP</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xs text-white/50 mb-1">Treasury Contribution</div>
-              <div className="text-sm font-bold text-green-300">{(metric.economic_activity?.treasury_contributions_xrp || 0).toFixed(6)} XRP</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xs text-white/50 mb-1">Transactions</div>
-              <div className="text-sm font-bold text-white">{metric.economic_activity?.total_transactions || 0}</div>
-            </div>
-          </div>
-        )}
-
-        {/* Reputation & Wellbeing */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-white/60 font-medium">Reputation</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-white/60">Honor Score</span>
-              <span className="text-amber-300 font-bold">{metric.reputation_changes?.honor_current || 100}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-white/60">Period Delta</span>
-              <span className={`font-bold ${(metric.reputation_changes?.honor_delta_period || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {(metric.reputation_changes?.honor_delta_period || 0) >= 0 ? '+' : ''}{metric.reputation_changes?.honor_delta_period || 0}
-              </span>
-            </div>
-          </div>
-          <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-            <div className="flex items-center gap-2 mb-2">
-              <Heart className="w-4 h-4 text-pink-400" />
-              <span className="text-xs text-white/60 font-medium">Wellbeing</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-white/60">Energy</span>
-              <span className="text-pink-300 font-bold">{metric.wellbeing_signals?.energy_level || 80}%</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-white/60">Mood</span>
-              <span className="text-white capitalize">{metric.wellbeing_signals?.mood || 'calm'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Strengths & Opportunities */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="text-white font-medium mb-3 flex items-center gap-2">
-              <Award className="w-4 h-4 text-green-400" />
-              Strengths
-            </h4>
-            <ul className="space-y-2">
-              {metric.strengths?.map((strength, idx) => (
-                <li key={idx} className="text-sm text-white/80 flex items-start gap-2">
-                  <span className="text-green-400 mt-1">✓</span>
-                  <span>{strength}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-medium mb-3 flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-yellow-400" />
-              Growth Opportunities
-            </h4>
-            <ul className="space-y-2">
-              {metric.growth_opportunities?.map((opp, idx) => (
-                <li key={idx} className="text-sm text-white/80 flex items-start gap-2">
-                  <span className="text-yellow-400 mt-1">→</span>
-                  <span>{opp}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Skill Utilization */}
-        {metric.skill_utilization?.length > 0 && (
-          <div>
-            <h4 className="text-white font-medium mb-3 flex items-center gap-2">
-              <Award className="w-4 h-4 text-indigo-400" />
-              Skill Utilization
-              {metric.credential_bonus > 0 && (
-                <Badge className="bg-indigo-500/20 text-indigo-300 text-xs">
-                  +{metric.credential_bonus} credential bonus
-                </Badge>
-              )}
-            </h4>
+        {tab === 'agent list' && (
+          <>
+            <FilterBar filters={PERF_FILTERS} values={filterValues} onChange={setFilterValues}
+              searchKey="search" searchPlaceholder="Search agents…" resultCount={filteredAgents.length} />
             <div className="space-y-2">
-              {metric.skill_utilization.map((skill, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 bg-white/5 rounded border border-white/10">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-white">{skill.skill_name}</span>
-                      {skill.is_credential_validated && (
-                        <Badge className="bg-green-500/20 text-green-300 text-xs">✓ Verified</Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-white/50">{skill.skill_category} · Used {skill.times_used}x</div>
+              {filteredAgents.map(a => (
+                <div key={a.id} onClick={() => { setSelectedAgent(a.id); setTab('deep dive'); }}
+                  className="flex items-center gap-4 p-4 bg-slate-900/60 border border-slate-700/40 rounded-xl hover:border-blue-500/30 cursor-pointer transition-all">
+                  <div className="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
+                    <Users className="w-4 h-4 text-blue-400" />
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-white">L{skill.level}</div>
-                    {skill.success_rate > 0 && (
-                      <div className="text-xs text-white/50">{skill.success_rate}%</div>
-                    )}
+                  <div className="flex-1 min-w-0">
+                    <span className="text-white text-sm font-medium">{a.name}</span>
+                    <div className="flex gap-2 mt-1">
+                      <Badge className="text-xs bg-slate-800 border-slate-700 text-slate-400 capitalize">{a.role}</Badge>
+                      <Badge className={`text-xs border ${a.status === 'active' ? 'bg-green-900/40 text-green-300 border-green-700/40' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>{a.status}</Badge>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="flex items-center gap-1 justify-end">
+                      <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                      <span className="text-amber-300 font-semibold">{a.honor_score ?? 100}</span>
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">{a.total_transactions ?? 0} txns</div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </>
         )}
 
-        {/* Recommended Actions */}
-        {metric.recommended_actions?.length > 0 && (
-          <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
-            <h4 className="text-white font-medium mb-2">Recommended Actions</h4>
-            <ul className="space-y-1">
-              {metric.recommended_actions.map((action, idx) => (
-                <li key={idx} className="text-sm text-purple-200 flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>{action}</span>
-                </li>
+        {tab === 'deep dive' && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {agents.slice(0, 12).map(a => (
+                <button key={a.id} onClick={() => setSelectedAgent(a.id)}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${selectedAgent === a.id ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'}`}>
+                  {a.name}
+                </button>
               ))}
-            </ul>
+            </div>
+            {selAgent ? (
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card className="bg-slate-900/60 border-slate-700/40">
+                  <CardHeader><CardTitle className="text-white text-sm">{selAgent.name} — Profile</CardTitle></CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between"><span className="text-slate-400 text-sm">Honor Score</span><span className="text-amber-400 font-semibold">{selAgent.honor_score ?? 100}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400 text-sm">Role</span><span className="text-slate-300 capitalize">{selAgent.role}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400 text-sm">Status</span><span className="text-slate-300 capitalize">{selAgent.status}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400 text-sm">Transactions</span><span className="text-slate-300">{selAgent.total_transactions ?? 0}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400 text-sm">Tasks Assigned</span><span className="text-slate-300">{tasks.filter(t => t.assigned_agent_id === selAgent.id).length}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400 text-sm">Tasks Completed</span><span className="text-green-400">{tasks.filter(t => t.assigned_agent_id === selAgent.id && t.status === 'completed').length}</span></div>
+                  </CardContent>
+                </Card>
+                {radarData.length > 0 && (
+                  <Card className="bg-slate-900/60 border-slate-700/40">
+                    <CardHeader><CardTitle className="text-white text-sm">Performance Radar</CardTitle></CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <RadarChart data={radarData}>
+                          <PolarGrid stroke="#334155" />
+                          <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                          <Radar name="Score" dataKey="val" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} />
+                          <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }} />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-slate-500">Select an agent above to see their deep-dive analytics.</div>
+            )}
           </div>
         )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function MetricPill({ icon: Icon, label, value, color }) {
-  return (
-    <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-center">
-      <Icon className={`w-5 h-5 mx-auto mb-1 ${color}`} />
-      <div className="text-2xl font-bold text-white">{value}</div>
-      <div className="text-xs text-white/60">{label}</div>
-    </div>
-  );
-}
-
-function TrendsView({ metrics, agents }) {
-  const risingAgents = metrics.filter(m => m.performance_trend === 'rising');
-  const decliningAgents = metrics.filter(m => m.performance_trend === 'declining');
-
-  return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-green-400" />
-            Rising Stars ({risingAgents.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {risingAgents.map(metric => {
-              const agent = agents.find(a => a.id === metric.agent_id);
-              return (
-                <div key={metric.id} className="flex items-center justify-between p-3 bg-green-500/10 rounded border border-green-500/20">
-                  <span className="text-white">{agent?.name || 'Unknown'}</span>
-                  <span className="text-green-400 font-bold">{metric.overall_score.toFixed(1)}</span>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <TrendingDown className="w-5 h-5 text-red-400" />
-            Need Support ({decliningAgents.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {decliningAgents.map(metric => {
-              const agent = agents.find(a => a.id === metric.agent_id);
-              return (
-                <div key={metric.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded border border-red-500/20">
-                  <span className="text-white">{agent?.name || 'Unknown'}</span>
-                  <span className="text-red-400 font-bold">{metric.overall_score.toFixed(1)}</span>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

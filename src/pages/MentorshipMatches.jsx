@@ -1,382 +1,195 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, Heart, Check, X, Loader2, CalendarDays, Target, Brain } from 'lucide-react';
-import MentorshipProposalCard from '@/components/MentorshipProposalCard';
-import BookSessionModal from '@/components/BookSessionModal';
-import SessionsList from '@/components/SessionsList';
-import GoalSetterModal from '@/components/mentorship/GoalSetterModal';
-import AIMatchingPanel from '@/components/AIMatchingPanel';
+import { Button } from '@/components/ui/button';
+import { Users, Star, Brain, CheckCircle2, Clock, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { toast } from 'sonner';
+import FilterBar from '@/components/filters/FilterBar';
+
+const MATCH_FILTERS = [
+  { key: 'status', label: 'Status', type: 'select', options: ['pending','active','completed','cancelled'] },
+  { key: 'style', label: 'Mentorship Style', type: 'select', options: ['coaching','teaching','collaborative','advisory'] },
+  { key: 'minScore', label: 'Min Match Score', type: 'range', min: 0, max: 100 },
+];
+
+const SORT_OPTIONS = [
+  { value: '-match_score', label: 'Best Match' },
+  { value: '-created_date', label: 'Newest' },
+  { value: 'status', label: 'Status' },
+];
+
+const STATUS_CFG = {
+  pending:   'bg-amber-900/40 text-amber-300 border-amber-700/40',
+  active:    'bg-green-900/40 text-green-300 border-green-700/40',
+  completed: 'bg-blue-900/40 text-blue-300 border-blue-700/40',
+  cancelled: 'bg-red-900/40 text-red-300 border-red-700/40',
+};
 
 export default function MentorshipMatches() {
   const queryClient = useQueryClient();
-  const [userAgent, setUserAgent] = useState(null);
+  const [filterValues, setFilterValues] = useState({ search: '', status: 'all', style: 'all', minScore: { min: 0, max: 100 } });
+  const [sortBy, setSortBy] = useState('-match_score');
 
-  // Get current user's agent
-  const { data: agents, isLoading: loadingAgents } = useQuery({
-    queryKey: ['agents'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      if (!user) return [];
-      const allAgents = await base44.entities.Agent.list();
-      const userAgent = allAgents.find(a => a.created_by === user.email);
-      if (userAgent) setUserAgent(userAgent);
-      return allAgents;
-    }
+  const { data: matches = [], isLoading } = useQuery({
+    queryKey: ['mentorship-matches'],
+    queryFn: () => base44.entities.MentorshipMatch.list('-created_date', 100),
   });
 
-  // Get pending mentorship relationships for current user
-  const { data: pendingRelationships = [], isLoading: loadingRelationships } = useQuery({
-    queryKey: ['pendingMentorships', userAgent?.id],
-    queryFn: async () => {
-      if (!userAgent) return [];
-      
-      // Get relationships where user is mentor or mentee with 'requested' status
-      const asMentor = await base44.entities.MentorshipRelationship.filter({
-        mentor_agent_id: userAgent.id,
-        status: 'requested'
-      });
-      
-      const asMentee = await base44.entities.MentorshipRelationship.filter({
-        mentee_agent_id: userAgent.id,
-        status: 'requested'
-      });
-
-      return [...asMentor, ...asMentee];
-    },
-    enabled: !!userAgent
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents-mentor-matches'],
+    queryFn: () => base44.entities.Agent.list(),
   });
 
-  // Get all agents for the matching panel
-  const { data: allAgentsList = [] } = useQuery({
-    queryKey: ['all-agents-list'],
-    queryFn: () => base44.entities.Agent.filter({ status: 'active' })
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['mentor-profiles'],
+    queryFn: () => base44.entities.MentorProfile.list(),
   });
 
-  // Get active stagnation alerts for re-match hints
-  const { data: stagnationAlerts = [] } = useQuery({
-    queryKey: ['stagnation-alerts'],
-    queryFn: () => base44.entities.WellbeingAlert.filter({ alert_type: 'stagnant_relationship', status: 'active' })
-  });
-
-  // Get active mentorship relationships
-  const { data: activeRelationships = [] } = useQuery({
-    queryKey: ['activeMentorships', userAgent?.id],
-    queryFn: async () => {
-      if (!userAgent) return [];
-      
-      const asMentor = await base44.entities.MentorshipRelationship.filter({
-        mentor_agent_id: userAgent.id,
-        status: 'active'
-      });
-      
-      const asMentee = await base44.entities.MentorshipRelationship.filter({
-        mentee_agent_id: userAgent.id,
-        status: 'active'
-      });
-
-      return [...asMentor, ...asMentee];
-    },
-    enabled: !!userAgent
-  });
-
-  // Accept relationship mutation
   const acceptMutation = useMutation({
-    mutationFn: async (relationshipId) => {
-      return base44.entities.MentorshipRelationship.update(relationshipId, {
-        status: 'active',
-        started_date: new Date().toISOString()
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingMentorships'] });
-      queryClient.invalidateQueries({ queryKey: ['activeMentorships'] });
-    }
+    mutationFn: (id) => base44.entities.MentorshipMatch.update(id, { status: 'active' }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['mentorship-matches'] }); toast.success('Match accepted!'); },
   });
 
-  // Decline relationship mutation
   const declineMutation = useMutation({
-    mutationFn: async (relationshipId) => {
-      return base44.entities.MentorshipRelationship.update(relationshipId, {
-        status: 'declined'
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingMentorships'] });
-    }
+    mutationFn: (id) => base44.entities.MentorshipMatch.update(id, { status: 'cancelled' }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['mentorship-matches'] }); toast.success('Match declined.'); },
   });
 
-  // Fetch agent details
-  const fetchAgent = async (agentId) => {
-    try {
-      return await base44.entities.Agent.read(agentId);
-    } catch {
-      return null;
-    }
-  };
+  const getAgent = (id) => agents.find(a => a.id === id);
 
-  if (loadingAgents) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  const filtered = matches.filter(m => {
+    const mentorAgent = getAgent(m.mentor_id || m.mentor_agent_id);
+    const menteeAgent = getAgent(m.mentee_id || m.mentee_agent_id);
+    const q = filterValues.search?.toLowerCase();
+    if (q && !`${mentorAgent?.name} ${menteeAgent?.name} ${m.focus_area}`.toLowerCase().includes(q)) return false;
+    if (filterValues.status !== 'all' && m.status !== filterValues.status) return false;
+    if (filterValues.style !== 'all' && m.mentorship_style !== filterValues.style) return false;
+    if (filterValues.minScore?.min > 0 && (m.match_score ?? 0) < filterValues.minScore.min) return false;
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === '-match_score') return (b.match_score ?? 0) - (a.match_score ?? 0);
+    if (sortBy === '-created_date') return new Date(b.created_date) - new Date(a.created_date);
+    return 0;
+  });
 
-  if (!userAgent) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-        <Card className="max-w-md mx-auto mt-10">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
-              No Agent Found
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-slate-600">
-              You need to create or be associated with an Agent to participate in mentorships.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const activeCount = matches.filter(m => m.status === 'active').length;
+  const pendingCount = matches.filter(m => m.status === 'pending').length;
+  const avgScore = matches.length > 0 ? Math.round(matches.reduce((s, m) => s + (m.match_score ?? 70), 0) / matches.length) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Mentorship Matches</h1>
-          <p className="text-slate-600">
-            Discover guided learning paths and meaningful mentor-mentee connections tailored to your growth.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-pink-950/20 to-slate-950 p-6">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
+              <Users className="w-6 h-6 text-pink-400" />Mentorship Matches
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">{matches.length} total matches</p>
+          </div>
+          <Link to={createPageUrl('BecomeMentor')}>
+            <Button className="bg-pink-600 hover:bg-pink-700 text-white border-0">Become a Mentor</Button>
+          </Link>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="ai-match" className="w-full">
-          <TabsList className="grid w-full max-w-sm grid-cols-3">
-            <TabsTrigger value="ai-match">
-              <Brain className="w-4 h-4 mr-1" />
-              AI Match
-            </TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending ({pendingRelationships.length})
-            </TabsTrigger>
-            <TabsTrigger value="active">
-              Active ({activeRelationships.length})
-            </TabsTrigger>
-          </TabsList>
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: 'Active Matches', val: activeCount, color: 'text-green-400' },
+            { label: 'Pending', val: pendingCount, color: 'text-amber-400' },
+            { label: 'Avg Match Score', val: `${avgScore}%`, color: 'text-pink-400' },
+          ].map(s => (
+            <div key={s.label} className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-4 text-center">
+              <div className={`text-2xl font-bold ${s.color}`}>{s.val}</div>
+              <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+            </div>
+          ))}
+        </div>
 
-          {/* AI Matching Tab */}
-          <TabsContent value="ai-match" className="mt-6">
-            <AIMatchingPanel
-              agents={allAgentsList}
-              currentAgentId={userAgent?.id}
-              stagnationAlerts={stagnationAlerts}
-            />
-          </TabsContent>
+        <FilterBar
+          filters={MATCH_FILTERS}
+          values={filterValues}
+          onChange={setFilterValues}
+          searchKey="search"
+          searchPlaceholder="Search mentors, mentees, focus areas…"
+          sortOptions={SORT_OPTIONS}
+          sortValue={sortBy}
+          onSortChange={setSortBy}
+          resultCount={filtered.length}
+        />
 
-          {/* Pending Matches Tab */}
-          <TabsContent value="pending" className="space-y-4 mt-6">
-            {loadingRelationships ? (
-              <div className="flex items-center justify-center p-12">
-                <Loader2 className="w-6 h-6 animate-spin" />
-              </div>
-            ) : pendingRelationships.length === 0 ? (
-              <Card>
-                <CardContent className="pt-8 text-center">
-                  <Heart className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-600">No pending mentorship matches yet.</p>
-                  <p className="text-sm text-slate-500 mt-2">
-                    Run the mentorship matching algorithm to discover your ideal matches.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4">
-                {pendingRelationships.map(async (relationship) => {
-                  const otherAgentId = relationship.mentor_agent_id === userAgent.id
-                    ? relationship.mentee_agent_id
-                    : relationship.mentor_agent_id;
-                  const isMentor = relationship.mentor_agent_id === userAgent.id;
+        {isLoading ? (
+          <div className="text-center py-16 text-slate-500">Loading matches…</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 text-slate-500">No matches found.</div>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map(match => {
+              const mentor = getAgent(match.mentor_id || match.mentor_agent_id);
+              const mentee = getAgent(match.mentee_id || match.mentee_agent_id);
+              const statusCls = STATUS_CFG[match.status] || STATUS_CFG.pending;
+              return (
+                <Card key={match.id} className="bg-slate-900/60 border-slate-700/40 hover:border-pink-500/30 transition-all">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Mentor → Mentee */}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="text-center min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-purple-600/20 border border-purple-500/30 flex items-center justify-center mx-auto">
+                            <Star className="w-4 h-4 text-purple-400" />
+                          </div>
+                          <div className="text-xs text-slate-300 mt-1 truncate max-w-24">{mentor?.name || 'Mentor'}</div>
+                          <div className="text-xs text-slate-600 capitalize">{mentor?.role}</div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-slate-600 shrink-0" />
+                        <div className="text-center min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-pink-600/20 border border-pink-500/30 flex items-center justify-center mx-auto">
+                            <Brain className="w-4 h-4 text-pink-400" />
+                          </div>
+                          <div className="text-xs text-slate-300 mt-1 truncate max-w-24">{mentee?.name || 'Mentee'}</div>
+                          <div className="text-xs text-slate-600 capitalize">{mentee?.role}</div>
+                        </div>
+                      </div>
 
-                  return (
-                    <PendingProposalWrapper
-                      key={relationship.id}
-                      relationship={relationship}
-                      otherAgentId={otherAgentId}
-                      isMentor={isMentor}
-                      onAccept={() => acceptMutation.mutate(relationship.id)}
-                      onDecline={() => declineMutation.mutate(relationship.id)}
-                      isLoading={acceptMutation.isPending || declineMutation.isPending}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        {match.focus_area && <p className="text-sm text-slate-300 truncate">{match.focus_area}</p>}
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <Badge className={`text-xs border ${statusCls} capitalize`}>{match.status}</Badge>
+                          {match.mentorship_style && (
+                            <Badge className="text-xs bg-slate-800 border-slate-700 text-slate-400 capitalize">{match.mentorship_style}</Badge>
+                          )}
+                        </div>
+                      </div>
 
-          {/* Active Matches Tab */}
-          <TabsContent value="active" className="space-y-4 mt-6">
-            {activeRelationships.length === 0 ? (
-              <Card>
-                <CardContent className="pt-8 text-center">
-                  <Check className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-600">No active mentorships yet.</p>
-                  <p className="text-sm text-slate-500 mt-2">
-                    Accept a pending mentorship invitation to begin your learning journey.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4">
-                {activeRelationships.map((relationship) => (
-                  <ActiveMentorshipCard
-                    key={relationship.id}
-                    relationship={relationship}
-                    userAgent={userAgent}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                      {/* Score + Actions */}
+                      <div className="text-right shrink-0 space-y-2">
+                        {match.match_score !== undefined && (
+                          <div>
+                            <div className="text-xl font-bold text-pink-400">{match.match_score}%</div>
+                            <div className="text-xs text-slate-500">match</div>
+                          </div>
+                        )}
+                        {match.status === 'pending' && (
+                          <div className="flex gap-1.5">
+                            <Button size="sm" onClick={() => acceptMutation.mutate(match.id)}
+                              className="h-7 text-xs bg-green-600 hover:bg-green-700 border-0">Accept</Button>
+                            <Button size="sm" variant="outline" onClick={() => declineMutation.mutate(match.id)}
+                              className="h-7 text-xs border-red-700 text-red-400 hover:text-red-300">Decline</Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
-  );
-}
-
-// Async wrapper to load agent details
-function PendingProposalWrapper({
-  relationship,
-  otherAgentId,
-  isMentor,
-  onAccept,
-  onDecline,
-  isLoading
-}) {
-  const { data: otherAgent } = useQuery({
-    queryKey: ['agent', otherAgentId],
-    queryFn: () => base44.entities.Agent.read(otherAgentId)
-  });
-
-  return (
-    <MentorshipProposalCard
-      relationship={relationship}
-      otherAgent={otherAgent}
-      isMentor={isMentor}
-      onAccept={onAccept}
-      onDecline={onDecline}
-      isLoading={isLoading}
-    />
-  );
-}
-
-// Active mentorship display card
-function ActiveMentorshipCard({ relationship, userAgent }) {
-  const isMentor = relationship.mentor_agent_id === userAgent.id;
-  const otherAgentId = isMentor ? relationship.mentee_agent_id : relationship.mentor_agent_id;
-  const [showBooking, setShowBooking] = useState(false);
-  const [showGoals, setShowGoals] = useState(false);
-
-  const { data: otherAgent } = useQuery({
-    queryKey: ['agent', otherAgentId],
-    queryFn: () => base44.entities.Agent.read(otherAgentId)
-  });
-
-  const mentorAgent = isMentor ? userAgent : otherAgent;
-  const menteeAgent = isMentor ? otherAgent : userAgent;
-
-  return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>
-                {isMentor ? 'Mentee' : 'Mentor'}: {otherAgent?.name || 'Loading...'}
-              </CardTitle>
-              <CardDescription>
-                Active since {relationship.started_date ? new Date(relationship.started_date).toLocaleDateString() : '—'}
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge className="bg-green-100 text-green-800">Active</Badge>
-              {!isMentor && (
-                <Button size="sm" variant="outline" onClick={() => setShowGoals(true)}>
-                  <Target className="w-4 h-4 mr-1" />
-                  Set Goals
-                </Button>
-              )}
-              {!isMentor && (
-                <Button size="sm" onClick={() => setShowBooking(true)}>
-                  <CalendarDays className="w-4 h-4 mr-1" />
-                  Book Session
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {relationship.focus_areas && relationship.focus_areas.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold mb-2">Focus Areas</h4>
-              <div className="flex flex-wrap gap-2">
-                {relationship.focus_areas.map((area, idx) => (
-                  <Badge key={idx} variant="secondary">{area}</Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-3 gap-4 pt-2 border-t">
-            <div>
-              <div className="text-xs text-slate-600">Sessions</div>
-              <div className="text-lg font-semibold">{relationship.sessions_completed || 0}</div>
-            </div>
-            <div>
-              <div className="text-xs text-slate-600">Hours</div>
-              <div className="text-lg font-semibold">{relationship.total_hours || 0}</div>
-            </div>
-            <div>
-              <div className="text-xs text-slate-600">Satisfaction</div>
-              <div className="text-lg font-semibold">
-                {isMentor ? relationship.mentor_satisfaction || '—' : relationship.mentee_satisfaction || '—'}
-                {(isMentor ? relationship.mentor_satisfaction : relationship.mentee_satisfaction) && <span className="text-xs">/5</span>}
-              </div>
-            </div>
-          </div>
-
-          {/* Sessions list */}
-          <div className="border-t pt-4">
-            <h4 className="text-sm font-semibold mb-3">Sessions</h4>
-            <SessionsList relationship={relationship} isMentor={isMentor} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <BookSessionModal
-        open={showBooking}
-        onClose={() => setShowBooking(false)}
-        relationship={relationship}
-        mentorAgent={mentorAgent}
-        menteeAgent={menteeAgent}
-      />
-
-      <GoalSetterModal
-        open={showGoals}
-        onClose={() => setShowGoals(false)}
-        relationship={relationship}
-        menteeAgentId={relationship.mentee_agent_id}
-        menteeName={menteeAgent?.name}
-      />
-    </>
   );
 }
