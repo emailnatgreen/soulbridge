@@ -12,6 +12,7 @@ import { Sparkles, User, Target, Brain, Award, Users, BookOpen, ArrowRight, Chec
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import GuidedTour from '../components/onboarding/GuidedTour';
 
 export default function AgentOnboarding() {
     const [step, setStep] = useState(1);

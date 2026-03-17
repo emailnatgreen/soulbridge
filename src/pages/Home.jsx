@@ -17,6 +17,7 @@ import DidAuthStatus from '../components/DidAuthStatus';
 import ShieldedWalletBalance from '../components/ShieldedWalletBalance';
 import TreasuryMonitor from '../components/TreasuryMonitor';
 import DidActivationPipeline from '../components/DidActivationPipeline';
+import GuidedTour from '../components/onboarding/GuidedTour';
 
 export default function Home() {
   const [error, setError] = React.useState(null);

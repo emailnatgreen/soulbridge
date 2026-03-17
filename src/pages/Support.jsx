@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, MessageCircle, FileQuestion, Book, ArrowLeft } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import FeedbackWidget from '@/components/feedback/FeedbackWidget';
 
 export default function Support() {
   const navigate = useNavigate();

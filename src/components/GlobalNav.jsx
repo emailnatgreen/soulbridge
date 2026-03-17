@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Home, Menu, X, BarChart3, Users, Vote, Briefcase, Vault, Calendar, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import GlobalSearchBar from '@/components/search/GlobalSearchBar';
 
 const NAV_LINKS = [
   { label: 'Home', path: '/Home', icon: Home },

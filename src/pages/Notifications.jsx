@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import FeedbackWidget from '../components/feedback/FeedbackWidget';
 
 // ── Category definitions ─────────────────────────────────────
 const CATEGORIES = [
