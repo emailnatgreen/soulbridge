@@ -42,7 +42,7 @@ export default function AgentInbox() {
   const { data: axiNotifs = [], refetch: refetchNotifs } = useQuery({
     queryKey: ['axi-notifs-inbox'],
     queryFn: () => base44.entities.AgentNotification.filter(
-      { notification_type: 'agent_message', recipient_agent_id: AXI_ID },
+      { notification_type: 'message', recipient_agent_id: AXI_ID },
       '-created_date', 30
     ),
   });
