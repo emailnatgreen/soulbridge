@@ -76,8 +76,7 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
                 setAdding(false);
               }
             }}
-            disabled={adding}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 transition-all text-left group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 transition-all text-left group cursor-pointer"
           >
             {agent.avatar_url ? (
               <img src={agent.avatar_url} alt={agent.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
