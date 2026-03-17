@@ -164,40 +164,62 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   };
 
   const handleAddAgent = useCallback(async (agent) => {
+    console.log('[AxiChat] handleAddAgent called for agent:', agent.name, agent.id);
+    console.log('[AxiChat] Current conversation:', conversation?.id);
+    
     if (!conversation) {
-      console.error('Cannot add agent: no active conversation');
-      throw new Error('No active conversation');
+      const error = 'No active conversation';
+      console.error('[AxiChat] CRITICAL ERROR:', error);
+      throw new Error(error);
     }
 
-    // Fetch current AgentConversation to get existing participants
-    const agentConvos = await base44.entities.AgentConversation.filter({ id: conversation.id }, '', 1);
-    let currentParticipants = [];
-    if (agentConvos && agentConvos.length > 0) {
-      currentParticipants = agentConvos[0].participant_agent_ids || [];
+    try {
+      console.log('[AxiChat] Fetching AgentConversation for:', conversation.id);
+      const agentConvos = await base44.entities.AgentConversation.filter({ id: conversation.id }, '', 1);
+      console.log('[AxiChat] AgentConversation query result:', agentConvos);
+      
+      let currentParticipants = [];
+      if (agentConvos && agentConvos.length > 0) {
+        currentParticipants = agentConvos[0].participant_agent_ids || [];
+      }
+      console.log('[AxiChat] Current participants:', currentParticipants);
+
+      const updatedParticipants = Array.from(new Set([...currentParticipants, agent.id]));
+      console.log('[AxiChat] Updated participants:', updatedParticipants);
+
+      console.log('[AxiChat] Persisting to backend...');
+      await base44.entities.AgentConversation.update(conversation.id, {
+        participant_agent_ids: updatedParticipants
+      });
+      console.log('[AxiChat] Backend update successful');
+
+      console.log('[AxiChat] Updating local state...');
+      setActiveAgents(prev => {
+        const exists = prev.some(a => a.id === agent.id);
+        const newList = exists ? prev : [...prev, agent];
+        console.log('[AxiChat] ActiveAgents updated:', newList.map(a => a.name));
+        return newList;
+      });
+
+      console.log('[AxiChat] Posting system message...');
+      await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
+      });
+      console.log('[AxiChat] System message posted');
+
+      console.log('[AxiChat] Closing modal...');
+      setShowAddAgent(false);
+      console.log('[AxiChat] handleAddAgent completed successfully');
+    } catch (err) {
+      console.error('[AxiChat] ERROR in handleAddAgent:', {
+        agentId: agent.id,
+        agentName: agent.name,
+        error: err?.message || err,
+        stack: err?.stack
+      });
+      throw err;
     }
-
-    // Add new agent ID if not already present
-    const updatedParticipants = Array.from(new Set([...currentParticipants, agent.id]));
-
-    // Persist to backend
-    await base44.entities.AgentConversation.update(conversation.id, {
-      participant_agent_ids: updatedParticipants
-    });
-
-    // Update local state after successful persistence
-    setActiveAgents(prev => {
-      const exists = prev.some(a => a.id === agent.id);
-      return exists ? prev : [...prev, agent];
-    });
-
-    // Post a system message announcing the agent has joined
-    await base44.agents.addMessage(conversation, {
-      role: 'user',
-      content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
-    });
-
-    // Close modal only after successful persistence
-    setShowAddAgent(false);
   }, [conversation]);
 
   return (
