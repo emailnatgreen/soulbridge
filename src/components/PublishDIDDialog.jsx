@@ -74,9 +74,17 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
             // We have the txid, complete immediately
             clearInterval(interval);
             setPollingInterval(null);
+            // Save publication status to wallet for persistence
+            base44.entities.Wallet.update(wallet.id, {
+              is_published: true,
+              published_at: new Date().toISOString(),
+              published_txid: status.txid
+            });
+
             setResult({ success: true, txid: status.txid, account: status.account });
             setStep('done');
             toast.success('✅ DID published on XRPL!');
+            queryClient.invalidateQueries(['wallets']);
             if (onSuccess) onSuccess();
           }
           // If signed but no txid yet, keep polling — Xaman may not have submitted yet
