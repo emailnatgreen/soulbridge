@@ -77,31 +77,36 @@ Deno.serve(async (req) => {
 
     let transactions = [];
 
-    try {
-      const response = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          method: 'account_tx',
-          params: [{
-            account: walletRecord.classic_address,
-            limit: Math.min(limit, 200),
-            ledger_index_min: -1,
-            ledger_index_max: -1,
-            forward: false,
-          }]
-        }),
-        signal: AbortSignal.timeout(10000),
-      });
+    const payload = JSON.stringify({
+      method: 'account_tx',
+      params: [{
+        account: walletRecord.classic_address,
+        limit: Math.min(limit, 200),
+        ledger_index_min: -1,
+        ledger_index_max: -1,
+        forward: false,
+      }]
+    });
 
-      const data = await response.json();
-      if (data?.result?.transactions) {
-        transactions = data.result.transactions.map(tx =>
-          parseTransaction(tx, walletRecord.classic_address)
-        );
+    for (const rpcUrl of rpcUrls) {
+      try {
+        const response = await fetch(rpcUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          signal: AbortSignal.timeout(10000),
+        });
+        const text = await response.text();
+        const data = JSON.parse(text);
+        if (data?.result?.transactions) {
+          transactions = data.result.transactions.map(tx =>
+            parseTransaction(tx, walletRecord.classic_address)
+          );
+          break; // success, stop trying
+        }
+      } catch (err) {
+        console.log('account_tx fetch failed:', err.message);
       }
-    } catch (err) {
-      console.log('account_tx fetch failed:', err.message);
     }
 
     return Response.json({
