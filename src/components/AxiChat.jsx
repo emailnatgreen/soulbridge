@@ -165,73 +165,13 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
 
         await initAgentConvo();
 
-        // Subscribe to real-time agent conversation updates
-        // Use a stable reference to convo.id to avoid stale closure issues
-        const currentConvoId = convo.id;
-        const unsubscribeAgents = base44.entities.AgentConversation.subscribe((event) => {
-          // Refresh agents whenever ANY AgentConversation changes
-          // (in case metadata isn't properly set or comparison fails)
-          initAgentConvo();
-        });
-
         if (unsubscribeRef.current) unsubscribeRef.current();
         unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
-          console.log('[Subscription:Agent] Fired at', new Date().toISOString(), '- messages:', data.messages?.length);
           setMessages([...data.messages]);
         });
 
-        // Also subscribe to AgentConversation entity changes to auto-sync active agents
-        const unsubscribeAgentConvo = base44.entities.AgentConversation.subscribe((event) => {
-          console.log('[Subscription:AgentConversation] Event fired:', {
-            type: event.type,
-            eventId: event.id,
-            agentConvoId: currentConvoId,
-            match: event.id === currentConvoId,
-            participants: event.data?.participant_agent_ids,
-            timestamp: new Date().toISOString()
-          });
-          
-          if (event.id === currentConvoId && event.data?.participant_agent_ids) {
-            console.log('[Subscription:AgentConversation] Syncing activeAgents from subscription:', {
-              participants: event.data.participant_agent_ids,
-              timestamp: new Date().toISOString()
-            });
-            // Fetch fresh agent objects when participants change
-            Promise.all(
-              event.data.participant_agent_ids.map(id => 
-                base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0])
-              )
-            ).then(agents => {
-              const validAgents = agents.filter(Boolean);
-              console.log('[Subscription:AgentConversation] Loaded agents:', validAgents.map(a => a.name));
-              console.log('[Subscription:AgentConversation] About to call setActiveAgents with:', {
-                count: validAgents.length,
-                agents: validAgents.map(a => ({ id: a.id, name: a.name }))
-              });
-              
-              // DIAGNOSTIC 2 & 3: Check reference identity before setState
-              console.log('[Identity Check] New data:', validAgents);
-              console.log('[Identity Check] Current activeAgents:', activeAgents);
-              console.log('[Identity Check] Same reference?', activeAgents === validAgents);
-              console.log('[Identity Check] Length match?', activeAgents.length === validAgents.length);
-              
-              setActiveAgents(validAgents);
-              console.log('[Subscription:AgentConversation] setState called, next render will show new value');
-            }).catch(err => {
-              console.error('[Subscription:AgentConversation] Error loading agents:', err);
-            });
-          }
-        });
-
         return () => {
           if (unsubscribeRef.current) unsubscribeRef.current();
-          unsubscribeAgentConvo();
-        };
-
-        // Cleanup both subscriptions on unmount
-        return () => {
-          if (unsubscribeRef.current) unsubscribeRef.current();
-          unsubscribeAgents();
         };
       } catch (err) {
         console.error('Axi init error:', err);
