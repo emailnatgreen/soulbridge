@@ -92,7 +92,8 @@ Deno.serve(async (req) => {
     let trustlines = [];
     if (linesResponse) {
       const linesData = await linesResponse.json();
-      trustlines = (linesData.result?.lines || []).map(line => ({
+      const linesResult = linesData.result ?? linesData;
+      trustlines = (linesResult?.lines || []).map(line => ({
         currency_code: line.currency,
         currency_display: decodeCurrency(line.currency),
         issuer: line.account,
