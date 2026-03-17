@@ -79,12 +79,12 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
               is_published: true,
               published_at: new Date().toISOString(),
               published_txid: status.txid
-            });
+            }).catch(err => console.error('Failed to save publication status:', err));
 
             setResult({ success: true, txid: status.txid, account: status.account });
             setStep('done');
             toast.success('✅ DID published on XRPL!');
-            queryClient.invalidateQueries(['wallets']);
+            setTimeout(() => queryClient.invalidateQueries({ queryKey: ['wallets'] }), 500);
             if (onSuccess) onSuccess();
           }
           // If signed but no txid yet, keep polling — Xaman may not have submitted yet
