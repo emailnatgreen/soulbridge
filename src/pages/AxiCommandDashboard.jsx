@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import React, { useState } from "react";
 import { Brain, RefreshCw, ExternalLink, Home, Sparkles, ClipboardList, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -23,6 +24,7 @@ import IntuitiveNavigation from "@/components/axi/IntuitiveNavigation";
 import RealTimeNotificationCenter from "@/components/axi/RealTimeNotificationCenter";
 import AgentPerformanceReviewSystem from "@/components/axi/AgentPerformanceReviewSystem";
 import IntegratedHelpCenter from "@/components/axi/IntegratedHelpCenter";
+import DidHealthPanel from "@/components/axi/DidHealthPanel";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
@@ -156,7 +158,12 @@ export default function AxiCommandDashboard() {
               <NewPageAlertsPanel />
             </div>
 
-          </div>
+            {/* RIGHT — DID Health */}
+            <div className="rounded-2xl border border-indigo-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <DidHealthPanel />
+            </div>
+
+            </div>
 
           {/* Second Row — New Command Panels */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
