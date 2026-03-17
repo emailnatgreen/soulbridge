@@ -57,9 +57,9 @@ export default function FloatingConnectButton() {
         agent_name: agent.id,
         metadata: { agent_id: agent.id, agent_name: agent.name }
       });
-      // Dispatch event to AxiChat to open with this agent
+      // Open Axi chat and trigger agent conversation
       window.dispatchEvent(
-        new CustomEvent('agent:open-chat', {
+        new CustomEvent('open-axi-with-agent', {
           detail: { 
             conversationId: convo.id, 
             agentId: agent.id,
