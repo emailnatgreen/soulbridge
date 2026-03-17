@@ -64,7 +64,13 @@ function TooltipBox({ step, stepIndex, totalSteps, onNext, onPrev, onSkip }) {
     const tooltipWidth = 320;
     let left = rect.left + rect.width / 2 - tooltipWidth / 2;
     left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
-    const top = rect.top + rect.height + 12;
+    const mobileNavHeight = window.innerWidth < 768 ? 72 : 0;
+    const tooltipHeight = 220;
+    let top = rect.top + rect.height + 12;
+    // If tooltip would go below visible area (above mobile nav), flip it above the element
+    if (top + tooltipHeight > window.innerHeight - mobileNavHeight) {
+      top = Math.max(8, rect.top - tooltipHeight - 12);
+    }
     setPos({ top: `${top}px`, left: `${left}px`, transform: 'none' });
   }, [step, isCentered]);
 
