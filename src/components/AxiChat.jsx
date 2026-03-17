@@ -25,12 +25,25 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   const [agentConvoId, setAgentConvoId] = useState(null);
   const [userAgentId, setUserAgentId] = useState(null);
 
-  // DIAGNOSTIC 1: Trace state origin
-  console.log('[State Origin] setActiveAgents type:', typeof setActiveAgents);
-  console.log('[State Origin] activeAgents type:', typeof activeAgents, 'length:', activeAgents.length);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
   const initialized = useRef(false);
+
+  // Fetch user and assign agent ID on mount
+  useEffect(() => {
+    const assignUserAgent = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user) {
+          const agentId = user.role === 'admin' ? 'admin-agent' : 'user-agent';
+          setUserAgentId(agentId);
+        }
+      } catch (err) {
+        console.error('Failed to fetch user:', err);
+      }
+    };
+    assignUserAgent();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
