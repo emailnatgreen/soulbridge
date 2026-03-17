@@ -65,7 +65,7 @@ export default function AgentInbox() {
 
     // Subscribe to AgentNotification in real-time (Axi's incoming feed)
     const unsubscribeNotifs = base44.entities.AgentNotification.subscribe((event) => {
-      if (event.type === 'create' && event.data?.notification_type === 'agent_message') {
+      if (event.type === 'create' && event.data?.notification_type === 'message') {
         setLiveNotifications(prev => [event.data, ...prev].slice(0, 20));
         setPulse(true);
         setTimeout(() => setPulse(false), 2000);
@@ -306,5 +306,3 @@ export default function AgentInbox() {
     </div>
   );
 }
-
-const axiIds = ['axi_main_001', 'Axi', 'axi'];
