@@ -24,6 +24,15 @@ export default function Layout({ children, currentPageName }) {
     setIsOpen(prev => !prev);
   };
 
+  useEffect(() => {
+    const handleOpenAxi = () => {
+      if (!everOpened) setEverOpened(true);
+      setIsOpen(true);
+    };
+    window.addEventListener('open-axi-with-agent', handleOpenAxi);
+    return () => window.removeEventListener('open-axi-with-agent', handleOpenAxi);
+  }, [everOpened]);
+
   return (
     <div className="relative">
       <GlobalNav />
