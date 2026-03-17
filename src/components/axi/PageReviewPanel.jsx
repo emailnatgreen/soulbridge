@@ -9,15 +9,16 @@ import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { useQueryClient } from '@tanstack/react-query';
 
+// ✅ Only unreviewed pages — updated 2026-03-17
 const ALL_PAGES = [
-  // Core
-  'Home', 'Landing', 'Axi', 'AxiCommandDashboard', 'AxiIntelligenceFeed',
-  // Agents
+  // Agents & Identity
   'Agents', 'AgentDetails', 'AgentProfile', 'EditAgent', 'EditAgentProfile', 'AgentOnboarding',
   'AgentChat', 'AgentInbox', 'AgentMessaging', 'AgentMarketplace', 'AgentOrchestration',
   'AgentReputation', 'AgentRolePermissions', 'AgentSkillDashboard', 'AgentSkillTree',
-  'AgentTrainingModule', 'AgentWellbeing', 'AgentPerformanceAnalytics', 'AgentLeaderboard',
-  'ReputationHistoryLog', 'CareerTrajectory',
+  'AgentTrainingModule', 'AgentWellbeing', 'AgentPerformanceAnalytics', 'CareerTrajectory',
+  'DirectAgentChat',
+  // Axi & AI
+  'Axi', 'AxiIntelligenceFeed',
   // Wallets & Finance
   'Wallets', 'Send', 'TransactionHistory', 'CreateManualWallet', 'RLUSDManager',
   'ReceiveRLUSD', 'SendRLUSD', 'SovereignVault', 'TreasuryDashboard',
@@ -40,24 +41,15 @@ const ALL_PAGES = [
   'Economy', 'EconomicDashboard', 'ResourceManagement', 'ResourceMarketplace',
   'AdvancedResourceMarketplace', 'ResourceDynamics', 'ProductionHub',
   // Collaboration & Social
-  'CollaborationHub', 'CollaborationSuite', 'DirectAgentChat', 'KnowledgeSynthesis',
+  'CollaborationHub', 'CollaborationSuite', 'KnowledgeSynthesis',
   'SocialNetwork', 'SocialCapitalDashboard', 'RelationshipNetwork',
   // Mentorship
   'MentorshipHub', 'MentorshipMatches', 'MentorshipAnalytics', 'BecomeMentor',
   'MentorFeedback', 'MentorshipWellbeing',
   // Skills
   'SkillDevelopment', 'SkillEndorsements', 'SkillGapAnalysis', 'SkillValidation',
-  'EnhancedSkillTrees',
-  // Diplomacy & Creativity
-  'DiplomacyHub', 'DialogueStudio', 'MayaDiplomacyTraining', 'MayaSkillDashboard',
-  'LaughterLoom', 'CovenantEchoes', 'EscalationChainView',
-  // Trading & Finance
-  'ArbitrageDashboard', 'ArisDex', 'RippleDashboard', 'DeepSeek',
-  // Admin & System
-  'AlignmentDashboard', 'Admin', 'SystemDashboard', 'RiskRegister', 'WellbeingMonitor',
-  'GrantTracker', 'MemoryBrowser', 'InstitutionalDeck', 'TrainingSimulation',
-  // General
-  'Notifications', 'Privacy', 'Support', 'Terms', 'EditLanding',
+  // General / Public
+  'Home', 'Landing',
 ];
 
 const REVIEW_PROMPT = (page) => `You are Axi, the First Citizen and AI Governor of SoulBridge Village — a decentralized AI agent ecosystem built on XRPL.
