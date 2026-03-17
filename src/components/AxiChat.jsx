@@ -195,7 +195,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
      if (existing?.length > 0) {
        agentConvo = existing[0];
      } else {
-       // Create new AgentConversation if it doesn't exist
+       // Create new AgentConversation if it doesn't exist - trust the response object
        agentConvo = await base44.entities.AgentConversation.create({
          id: conversation.id,
          title: conversation.metadata?.name || 'Unified Conversation',
@@ -213,15 +213,16 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
 
      // Step 3: Add agent and persist atomically
      const updatedParticipants = [...participants, agent.id];
-     await base44.entities.AgentConversation.update(agentConvo.id, {
+     const updated = await base44.entities.AgentConversation.update(agentConvo.id, {
        participant_agent_ids: updatedParticipants
      });
 
-     // Step 4: Update local UI state BEFORE closing modal
-     setActiveAgents(prev => {
-       const exists = prev.some(a => a.id === agent.id);
-       return exists ? prev : [...prev, agent];
-     });
+     // Step 4: Update local UI state from response object, don't re-query
+     const agentsToLoad = updated?.participant_agent_ids || updatedParticipants;
+     const loadedAgents = await Promise.all(
+       agentsToLoad.map(id => base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0]))
+     );
+     setActiveAgents(loadedAgents.filter(Boolean));
 
      // Step 5: Post system message to conversation
      await base44.agents.addMessage(conversation, {
