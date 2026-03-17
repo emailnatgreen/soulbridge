@@ -22,6 +22,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   const [retryKey, setRetryKey] = useState(0);
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [activeAgents, setActiveAgents] = useState([]);
+  const [agentConvoId, setAgentConvoId] = useState(null);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
   const initialized = useRef(false);
@@ -106,32 +107,50 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
         setConversation(convo);
         setMessages(convo.messages || []);
         
-        // Load persisted agent participants and subscribe to changes
-        const loadAgentConvo = async () => {
+        // Load or create AgentConversation and store its ID
+        const initAgentConvo = async () => {
           try {
-            const agentConvo = await base44.entities.AgentConversation.filter({ id: convo.id }, '', 1);
-            if (agentConvo?.length > 0 && agentConvo[0].participant_agent_ids?.length > 0) {
-              const agents = await Promise.all(
-                agentConvo[0].participant_agent_ids.map(id => 
-                  base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0])
-                )
-              );
-              setActiveAgents(agents.filter(Boolean));
+            // Query by conversation metadata to find linked AgentConversation
+            const existing = await base44.entities.AgentConversation.filter(
+              { metadata: { conversation_id: convo.id } },
+              '',
+              1
+            );
+
+            if (existing?.length > 0) {
+              const agentConvo = existing[0];
+              setAgentConvoId(agentConvo.id);
+              if (agentConvo.participant_agent_ids?.length > 0) {
+                const agents = await Promise.all(
+                  agentConvo.participant_agent_ids.map(id => 
+                    base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0])
+                  )
+                );
+                setActiveAgents(agents.filter(Boolean));
+              }
             } else {
+              // Create new AgentConversation with metadata link
+              const newConvo = await base44.entities.AgentConversation.create({
+                title: convo.metadata?.name || 'Agent Conversation',
+                conversation_type: 'group',
+                participant_agent_ids: [],
+                metadata: { conversation_id: convo.id }
+              });
+              setAgentConvoId(newConvo.id);
               setActiveAgents([]);
             }
           } catch (err) {
-            console.error('Failed to load agent participants:', err);
+            console.error('Failed to init agent conversation:', err);
             setActiveAgents([]);
           }
         };
 
-        await loadAgentConvo();
+        await initAgentConvo();
 
         // Subscribe to real-time agent conversation updates
         const unsubscribeAgents = base44.entities.AgentConversation.subscribe((event) => {
-          if (event.id === convo.id) {
-            loadAgentConvo();
+          if (event.metadata?.conversation_id === convo.id) {
+            initAgentConvo();
           }
         });
 
