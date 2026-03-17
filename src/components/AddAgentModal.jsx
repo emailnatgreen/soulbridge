@@ -8,6 +8,7 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     base44.entities.Agent.list('-honor_score', 50).then(list => {
