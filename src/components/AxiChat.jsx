@@ -157,7 +157,20 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     }
     try {
       setShowAddAgent(false);
+
+      // Update conversation to include the new agent participant in backend
+      const updatedParticipants = [
+        ...(conversation.participant_agent_ids || []),
+        agent.id
+      ].filter((id, idx, arr) => arr.indexOf(id) === idx); // Remove duplicates
+
+      await base44.agents.updateConversation(conversation.id, {
+        participant_agent_ids: updatedParticipants
+      });
+
+      // Update local state after successful backend update
       setActiveAgents(prev => [...prev, agent]);
+
       // Post a system message announcing the agent has joined
       await base44.agents.addMessage(conversation, {
         role: 'user',
@@ -165,7 +178,6 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       });
     } catch (err) {
       console.error('Failed to add agent:', err);
-      setActiveAgents(prev => prev.filter(a => a.id !== agent.id));
     }
   }, [conversation]);
 
