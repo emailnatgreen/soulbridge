@@ -479,7 +479,6 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
                   <p className="text-xs text-purple-300/60">The First Citizen</p>
                 )}
               </div>
-              </div>
             <div className="flex gap-1 flex-shrink-0">
               <Button
                 variant="ghost"
