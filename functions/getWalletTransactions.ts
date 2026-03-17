@@ -70,9 +70,10 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, transactions: [], wallet_address: null, network: walletRecord.network || 'testnet' });
     }
 
-    const rpcUrl = walletRecord.network === 'mainnet'
-      ? 'https://xrplcluster.com'
-      : 'https://s.altnet.rippletest.net:51234';
+    // Use multiple fallback RPC endpoints to avoid rate limits
+    const mainnetRpcs = ['https://xrpl.ws/', 'https://xrplcluster.com', 'https://s1.ripple.com'];
+    const testnetRpcs = ['https://s.altnet.rippletest.net:51234'];
+    const rpcUrls = walletRecord.network === 'mainnet' ? mainnetRpcs : testnetRpcs;
 
     let transactions = [];
 
