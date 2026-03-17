@@ -586,7 +586,8 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
+    </>
   );
 });
 
