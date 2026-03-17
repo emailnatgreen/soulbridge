@@ -1,19 +1,26 @@
 import { ethers } from 'npm:ethers@6.13.0';
 
 const RLUSD_CONTRACT = "0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD";
-const ETH_RPC = "https://ethereum.publicnode.com";
+const ETH_RPCS = [
+    "https://eth.llamarpc.com",
+    "https://ethereum.publicnode.com",
+    "https://rpc.ankr.com/eth",
+];
 
-async function ethCall(to, data) {
-    const res = await fetch(ETH_RPC, {
+async function ethCall(rpcUrl, to, data) {
+    const res = await fetch(rpcUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             jsonrpc: '2.0', id: 1, method: 'eth_call',
             params: [{ to, data }, 'latest']
-        })
+        }),
+        signal: AbortSignal.timeout(8000),
     });
-    const json = await res.json();
-    if (json.error) throw new Error(json.error.message);
+    const text = await res.text();
+    const json = JSON.parse(text);
+    if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+    if (!json.result) throw new Error('No result from RPC');
     return json.result;
 }
 
@@ -39,16 +46,25 @@ Deno.serve(async (req) => {
         const paddedAddress = address.toLowerCase().replace('0x', '').padStart(64, '0');
         const balanceData = `0x70a08231${paddedAddress}`;
 
-        const [balanceHex, decimalsHex] = await Promise.all([
-            ethCall(RLUSD_CONTRACT, balanceData),
-            ethCall(RLUSD_CONTRACT, '0x313ce567')
-        ]);
+        let lastError = null;
+        for (const rpcUrl of ETH_RPCS) {
+            try {
+                const [balanceHex, decimalsHex] = await Promise.all([
+                    ethCall(rpcUrl, RLUSD_CONTRACT, balanceData),
+                    ethCall(rpcUrl, RLUSD_CONTRACT, '0x313ce567')
+                ]);
+                const decimals = parseInt(decimalsHex, 16);
+                const balance = formatUnits(balanceHex, decimals);
+                return Response.json({ address, balance, balanceRaw: BigInt(balanceHex).toString() });
+            } catch (err) {
+                console.log(`RPC ${rpcUrl} failed:`, err.message);
+                lastError = err;
+            }
+        }
 
-        const decimals = parseInt(decimalsHex, 16);
-        const balance = formatUnits(balanceHex, decimals);
-
-        return Response.json({ address, balance, balanceRaw: BigInt(balanceHex).toString() });
+        return Response.json({ error: lastError?.message || 'All RPC endpoints failed' }, { status: 500 });
     } catch (error) {
+        console.error('checkShieldedBalance error:', error.message);
         return Response.json({ error: error.message }, { status: 500 });
     }
 });
