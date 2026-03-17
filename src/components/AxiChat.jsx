@@ -48,7 +48,23 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
          const convo = await base44.agents.getConversation(conversationId);
          setConversation(convo);
          setMessages(convo.messages || []);
-         setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
+         
+         // Load persisted agent participants from AgentConversation entity
+         try {
+           const agentConvo = await base44.entities.AgentConversation.filter({ id: conversationId }, '', 1);
+           if (agentConvo && agentConvo.length > 0 && agentConvo[0].participant_agent_ids?.length > 0) {
+             const agents = await Promise.all(
+               agentConvo[0].participant_agent_ids.map(id => base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0]))
+             );
+             setActiveAgents(agents.filter(Boolean));
+           } else {
+             setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
+           }
+         } catch (err) {
+           console.error('Failed to load persisted agents:', err);
+           setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
+         }
+         
          unsubscribeRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
            setMessages([...data.messages]);
          });
