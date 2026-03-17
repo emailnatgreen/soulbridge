@@ -295,7 +295,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
           transition={{ duration: 0.15 }}
           onClick={(e) => e.stopPropagation()}
           className={`fixed z-[55] bg-slate-950 backdrop-blur-xl border border-slate-700/50 shadow-2xl flex flex-col overflow-hidden ${
-            isExpanded ? 'inset-4 top-12 rounded-2xl' : 'top-12 right-4 w-[440px] h-[580px] rounded-2xl'
+            isExpanded ? 'inset-2 top-20 md:inset-4 md:top-12 rounded-2xl' : 'bottom-20 right-2 md:bottom-6 md:right-4 w-full md:w-[440px] max-w-[calc(100vw-1rem)] h-[500px] md:h-[580px] rounded-2xl'
           }`}
         >
           {/* Header */}
