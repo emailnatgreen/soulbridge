@@ -10,27 +10,54 @@ import ReactMarkdown from 'react-markdown';
 import { useQueryClient } from '@tanstack/react-query';
 
 const ALL_PAGES = [
-  'Home', 'Landing', 'Axi', 'Agents', 'AgentDetails', 'AgentProfile', 'EditAgent', 'EditAgentProfile',
-  'AgentOnboarding', 'AgentChat', 'AgentInbox', 'AgentMessaging', 'AgentMarketplace', 'AgentOrchestration',
-  'AgentReputation', 'AgentRolePermissions', 'AgentSkillDashboard', 'AgentSkillTree', 'AgentTrainingModule',
-  'AgentWellbeing', 'AgentPerformanceAnalytics', 'AgentLeaderboard', 'ReputationHistoryLog',
-  'Wallets', 'Send', 'TransactionHistory', 'CreateDID', 'DIDManager', 'DIDRegistry', 'DIDAnalytics',
-  'DIDHealthDashboard', 'MainnetMigration', 'RLUSDManager', 'ReceiveRLUSD', 'SendRLUSD',
-  'SovereignVault', 'TreasuryDashboard', 'DidCredentials', 'DidCredentialManagement', 'DidLogin',
-  'DidMessaging', 'DidPrivacy', 'DidReputation', 'DidSocialNetwork', 'DidTrustDashboard',
-  'DidTrustGraph', 'DidActivityFeed', 'DidConnections', 'QuadShardMonitoring',
+  // Core
+  'Home', 'Landing', 'Axi', 'AxiCommandDashboard', 'AxiIntelligenceFeed',
+  // Agents
+  'Agents', 'AgentDetails', 'AgentProfile', 'EditAgent', 'EditAgentProfile', 'AgentOnboarding',
+  'AgentChat', 'AgentInbox', 'AgentMessaging', 'AgentMarketplace', 'AgentOrchestration',
+  'AgentReputation', 'AgentRolePermissions', 'AgentSkillDashboard', 'AgentSkillTree',
+  'AgentTrainingModule', 'AgentWellbeing', 'AgentPerformanceAnalytics', 'AgentLeaderboard',
+  'ReputationHistoryLog', 'CareerTrajectory',
+  // Wallets & Finance
+  'Wallets', 'Send', 'TransactionHistory', 'CreateManualWallet', 'RLUSDManager',
+  'ReceiveRLUSD', 'SendRLUSD', 'SovereignVault', 'TreasuryDashboard',
+  // DID & Identity
+  'CreateDID', 'DIDManager', 'DIDRegistry', 'DIDAnalytics', 'DIDHealthDashboard',
+  'MainnetMigration', 'QuadShardMonitoring', 'CertificateOfSovereignty',
+  'DidCredentials', 'DidCredentialManagement', 'DidLogin', 'DidMessaging',
+  'DidPrivacy', 'DidPrivacyAnalytics', 'DidProtectedDemo', 'DidReputation',
+  'DidSocialNetwork', 'DidTrustDashboard', 'DidTrustGraph', 'DidActivityFeed',
+  'DidConnections', 'SharedDidView',
+  // Governance
   'Governance', 'GovernanceHub', 'GovernanceAnalytics', 'GovernanceSimulation',
-  'AIProjectHub', 'AIProjectManager', 'ProjectCreationWizard', 'ProjectAnalytics', 'TaskDelegation',
-  'Village', 'VillageLeaderboard', 'VillageMeetup', 'VillageSimulation', 'SimulationLab', 'VillageCalendar',
-  'Economy', 'EconomicDashboard', 'ResourceManagement', 'ResourceMarketplace', 'ProductionHub',
-  'CollaborationHub', 'CollaborationSuite', 'DirectAgentChat', 'KnowledgeSynthesis', 'SocialNetwork',
+  // Projects & Tasks
+  'AIProjectHub', 'AIProjectManager', 'ProjectCreationWizard', 'ProjectAnalytics',
+  'ProjectSkillForecast', 'ProjectTemplates', 'TaskDelegation',
+  // Village & Simulation
+  'Village', 'VillageLeaderboard', 'VillageMeetup', 'VillageSimulation', 'SimulationLab',
+  'VillageCalendar', 'VillageReportingDashboard',
+  // Economy & Resources
+  'Economy', 'EconomicDashboard', 'ResourceManagement', 'ResourceMarketplace',
+  'AdvancedResourceMarketplace', 'ResourceDynamics', 'ProductionHub',
+  // Collaboration & Social
+  'CollaborationHub', 'CollaborationSuite', 'DirectAgentChat', 'KnowledgeSynthesis',
+  'SocialNetwork', 'SocialCapitalDashboard', 'RelationshipNetwork',
+  // Mentorship
   'MentorshipHub', 'MentorshipMatches', 'MentorshipAnalytics', 'BecomeMentor',
-  'SkillDevelopment', 'SkillEndorsements', 'SkillGapAnalysis', 'SkillValidation', 'EnhancedSkillTrees',
-  'DiplomacyHub', 'DialogueStudio', 'MayaDiplomacyTraining', 'LaughterLoom', 'CovenantEchoes',
-  'ArbitrageDashboard', 'ArisDex', 'RippleDashboard',
+  'MentorFeedback', 'MentorshipWellbeing',
+  // Skills
+  'SkillDevelopment', 'SkillEndorsements', 'SkillGapAnalysis', 'SkillValidation',
+  'EnhancedSkillTrees',
+  // Diplomacy & Creativity
+  'DiplomacyHub', 'DialogueStudio', 'MayaDiplomacyTraining', 'MayaSkillDashboard',
+  'LaughterLoom', 'CovenantEchoes', 'EscalationChainView',
+  // Trading & Finance
+  'ArbitrageDashboard', 'ArisDex', 'RippleDashboard', 'DeepSeek',
+  // Admin & System
   'AlignmentDashboard', 'Admin', 'SystemDashboard', 'RiskRegister', 'WellbeingMonitor',
-  'GrantTracker', 'MemoryBrowser', 'AxiIntelligenceFeed', 'AxiCommandDashboard',
-  'Notifications', 'Privacy', 'Support',
+  'GrantTracker', 'MemoryBrowser', 'InstitutionalDeck', 'TrainingSimulation',
+  // General
+  'Notifications', 'Privacy', 'Support', 'Terms', 'EditLanding',
 ];
 
 const REVIEW_PROMPT = (page) => `You are Axi, the First Citizen and AI Governor of SoulBridge Village — a decentralized AI agent ecosystem built on XRPL.
