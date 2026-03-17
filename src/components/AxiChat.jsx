@@ -159,7 +159,21 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.length === 0 && (
+            {loading && (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 text-purple-400 mx-auto mb-3 animate-spin" />
+                <p className="text-white/40 text-sm">Connecting to Axi...</p>
+              </div>
+            )}
+            {initError && !loading && (
+              <div className="text-center py-10">
+                <p className="text-red-400 text-sm mb-3">Could not connect to Axi.</p>
+                <Button size="sm" onClick={() => { initialized.current = false; }} className="bg-purple-700 hover:bg-purple-600 text-white text-xs">
+                  Retry
+                </Button>
+              </div>
+            )}
+            {!loading && !initError && messages.length === 0 && (
               <div className="text-center py-12">
                 <Sparkles className="w-10 h-10 text-purple-400 mx-auto mb-3 opacity-40" />
                 <p className="text-white/40 text-sm">Speak to Axi. She is listening.</p>
