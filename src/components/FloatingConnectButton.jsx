@@ -20,6 +20,15 @@ export default function FloatingConnectButton() {
   }, [isOpen, mode]);
 
   useEffect(() => {
+    const unsubscribe = base44.entities.Agent.subscribe((event) => {
+      if (event.type === 'create' || event.type === 'update' || event.type === 'delete') {
+        fetchAgents();
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     setFiltered(
       search.trim()
         ? agents.filter(a =>
