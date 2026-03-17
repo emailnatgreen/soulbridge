@@ -177,7 +177,14 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
             ).then(agents => {
               const validAgents = agents.filter(Boolean);
               console.log('[Subscription:AgentConversation] Loaded agents:', validAgents.map(a => a.name));
+              console.log('[Subscription:AgentConversation] About to call setActiveAgents with:', {
+                count: validAgents.length,
+                agents: validAgents.map(a => ({ id: a.id, name: a.name }))
+              });
               setActiveAgents(validAgents);
+              console.log('[Subscription:AgentConversation] setState called, next render will show new value');
+            }).catch(err => {
+              console.error('[Subscription:AgentConversation] Error loading agents:', err);
             });
           }
         });
@@ -336,6 +343,15 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       throw err;
     }
   }, [agentConvoId, conversation, activeAgents]);
+
+  // Diagnostic: Log activeAgents on every render
+  useEffect(() => {
+    console.log('[AxiChat:Render] activeAgents updated:', {
+      count: activeAgents.length,
+      agents: activeAgents.map(a => ({ id: a.id, name: a.name })),
+      timestamp: new Date().toISOString()
+    });
+  }, [activeAgents]);
 
   const handleRemoveAgent = useCallback(async (agentId) => {
     if (!agentConvoId) return;
