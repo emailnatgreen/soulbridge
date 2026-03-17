@@ -211,8 +211,18 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       }
       console.log('[AxiChat] Backend update successful');
 
-      console.log('[AxiChat] Updating local state...');
-      setActiveAgents(prev => [...prev, agent]);
+      console.log('[AxiChat] Syncing activeAgents from backend...');
+      const updatedConvo = await base44.entities.AgentConversation.filter({ id: conversation.id }, '', 1);
+      if (updatedConvo && updatedConvo.length > 0 && updatedConvo[0].participant_agent_ids?.length > 0) {
+        const agents = await Promise.all(
+          updatedConvo[0].participant_agent_ids.map(id => base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0]))
+        );
+        const validAgents = agents.filter(Boolean);
+        console.log('[AxiChat] ActiveAgents synced:', validAgents.map(a => a.name));
+        setActiveAgents(validAgents);
+      } else {
+        setActiveAgents(prev => [...prev, agent]);
+      }
 
       console.log('[AxiChat] Posting system message...');
       await base44.agents.addMessage(conversation, {
