@@ -66,7 +66,10 @@ export default function AgentDropdown({
             {agents.map((agent) => (
               <button
                 key={agent.id}
-                onClick={() => handleSelectAgent(agent)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectAgent(agent);
+                }}
                 className="w-full p-3 text-left rounded-lg bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700 hover:border-slate-600 transition group"
               >
                 <div className="flex items-start justify-between">
