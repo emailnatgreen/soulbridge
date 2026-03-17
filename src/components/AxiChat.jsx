@@ -111,12 +111,13 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.97 }}
           transition={{ duration: 0.15 }}
-          className={`fixed z-[55] bg-slate-950/98 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col overflow-hidden ${
+          onClick={(e) => e.stopPropagation()}
+          className={`fixed z-[55] bg-slate-950 backdrop-blur-xl border border-slate-700/50 shadow-2xl flex flex-col overflow-hidden ${
             isExpanded ? 'inset-4 top-12 rounded-2xl' : 'top-12 right-4 w-[440px] h-[580px] rounded-2xl'
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center justify-between p-4 border-b border-slate-700/50 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
@@ -200,7 +201,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-white/10 flex-shrink-0">
+          <div className="p-4 border-t border-slate-700/50 flex-shrink-0">
             <div className="flex gap-2">
               <Textarea
                 value={input}
