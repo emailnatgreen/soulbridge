@@ -38,12 +38,16 @@ export default function AgentDropdown({
   return (
     <div className="flex flex-col h-full">
       {/* Search */}
-      <div className="p-4 border-b border-white/10 flex-shrink-0">
+      <div className="p-4 border-b border-slate-700/50 flex-shrink-0">
         <Input
           placeholder="Search agents..."
           value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="bg-white/5 border-white/20 text-white placeholder:text-white/30 h-9"
+          onChange={(e) => {
+            e.stopPropagation();
+            onSearchChange(e.target.value);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-400 h-9"
         />
       </div>
 

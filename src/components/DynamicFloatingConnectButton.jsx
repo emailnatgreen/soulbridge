@@ -104,10 +104,11 @@ export default function DynamicFloatingConnectButton() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-40 bg-slate-950/98 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-96 max-h-[600px] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+            className="fixed bottom-6 right-6 z-40 bg-slate-950/98 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl w-96 max-h-[600px] flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+            <div className="flex items-center justify-between p-4 border-b border-slate-700/50 flex-shrink-0">
               <h3 className="text-lg font-semibold text-white">
                 {activeMode === 'agents' ? 'Connect with Agents' : 'Talk to Axi'}
               </h3>
@@ -140,7 +141,7 @@ export default function DynamicFloatingConnectButton() {
 
             {/* Footer Navigation */}
             {activeMode && (
-              <div className="p-3 border-t border-white/10 flex gap-2 flex-shrink-0">
+              <div className="p-3 border-t border-slate-700/50 flex gap-2 flex-shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
