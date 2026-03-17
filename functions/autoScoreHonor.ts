@@ -1,9 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-// Helper function to log all automations
-async function logAutomationEvent(status, message, details, errorDetail, base44) {
+// Honor delta rules
+const TASK_HONOR = {
+  critical: 8,
+  high: 5,
+  medium: 3,
+  low: 2
+};
+
+const GOVERNANCE_HONOR = 2;
+
+// Helper function to log all automations (will be called with base44 in scope)
+async function logAutomationEvent(status, message, details, errorDetail, base44Client) {
   try {
-    await base44.asServiceRole.entities.AutomationLog.create({
+    await base44Client.asServiceRole.entities.AutomationLog.create({
       automation_name: 'Honor Score: Task Completion / Governance Vote',
       function_name: 'autoScoreHonor',
       status,
@@ -19,24 +29,13 @@ async function logAutomationEvent(status, message, details, errorDetail, base44)
   }
 }
 
-// Honor delta rules
-const TASK_HONOR = {
-  critical: 8,
-  high: 5,
-  medium: 3,
-  low: 2
-};
-
-const GOVERNANCE_HONOR = 2;
-
 Deno.serve(async (req) => {
   try {
   const base44 = createClientFromRequest(req);
   
-  // Make base44 available to logAutomationEvent
-  const originalLogAutomationEvent = logAutomationEvent;
+  // Bind logging function to current base44 instance
   const logAutomationEventWithClient = (status, message, details, errorDetail) => 
-    originalLogAutomationEvent(status, message, details, errorDetail, base44);
+    logAutomationEvent(status, message, details, errorDetail, base44);
  
   let body;
   try {
