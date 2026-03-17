@@ -117,12 +117,11 @@ export default function DidDocumentEditor({ wallet, didDocument, trigger }) {
       };
 
       // Save as a new DID document version
-      await base44.functions.invoke('createDidDocumentVersion', {
+      return await base44.functions.invoke('createDidDocumentVersion', {
         wallet_id: wallet.id,
-        did_classic_address: wallet.classic_address,
         document: updatedDoc,
         changes_summary: `Updated services (${services.length}) and aliases (${alsoKnownAs.length})`,
-        set_active: true,
+        set_as_active: true,
       });
     },
     onSuccess: () => {
