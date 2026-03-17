@@ -157,10 +157,10 @@ export default function AxiPage() {
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl flex-shrink-0">
         <div className="max-w-4xl mx-auto px-6 py-6">
-          <Link to="/Home" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-4">
+          <button onClick={() => window.history.back()} className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
+            ← Back
+          </button>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
