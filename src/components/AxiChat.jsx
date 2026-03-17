@@ -35,28 +35,38 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   }, [messages.length]);
 
   useEffect(() => {
-    const handleAgentChat = (event) => {
-      const { conversationId, agentId, agentName, agentRole } = event.detail;
-      setConversation(null);
-      setMessages([]);
-      setActiveAgents([{ id: agentId, name: agentName, role: agentRole }]);
-      if (unsubscribeRef.current) unsubscribeRef.current();
-      
-      base44.agents.getConversation(conversationId).then(convo => {
+    const handleOpenAxi = () => {
+      if (!isOpen) setIsOpen(true);
+    };
+
+    const handleAgentChat = async (event) => {
+      try {
+        const { conversationId, agentId, agentName, agentRole } = event.detail;
+        setConversation(null);
+        setMessages([]);
+        setActiveAgents([{ id: agentId, name: agentName, role: agentRole }]);
+        if (unsubscribeRef.current) unsubscribeRef.current();
+        
+        const convo = await base44.agents.getConversation(conversationId);
         setConversation(convo);
         setMessages(convo.messages || []);
         unsubscribeRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
           setMessages([...data.messages]);
         });
-      }).catch(err => {
+        setIsOpen(true);
+      } catch (err) {
         console.error('Failed to load agent conversation:', err);
         setInitError(true);
-      });
+      }
     };
 
+    window.addEventListener('open-axi', handleOpenAxi);
     window.addEventListener('open-axi-with-agent', handleAgentChat);
-    return () => window.removeEventListener('open-axi-with-agent', handleAgentChat);
-  }, []);
+    return () => {
+      window.removeEventListener('open-axi', handleOpenAxi);
+      window.removeEventListener('open-axi-with-agent', handleAgentChat);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || initialized.current) return;
