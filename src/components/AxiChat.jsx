@@ -71,7 +71,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     init();
 
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
-  }, [isOpen]);
+  }, [isOpen, retryKey]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !conversation || sending) return;
