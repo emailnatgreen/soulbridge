@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     const notification = await base44.asServiceRole.entities.AgentNotification.create({
       recipient_agent_id: toAgentId,
       sender_agent_id: fromAgentId || 'system',
-      notification_type: 'agent_message',
+      notification_type: 'message',
       title: `💬 Message from ${fromAgentName}`,
       message: content,
       priority: isForAxi ? 'high' : 'normal',
