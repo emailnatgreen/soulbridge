@@ -148,10 +148,12 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
         await initAgentConvo();
 
         // Subscribe to real-time agent conversation updates
+        // Use a stable reference to convo.id to avoid stale closure issues
+        const currentConvoId = convo.id;
         const unsubscribeAgents = base44.entities.AgentConversation.subscribe((event) => {
-          if (event.metadata?.conversation_id === convo.id) {
-            initAgentConvo();
-          }
+          // Refresh agents whenever ANY AgentConversation changes
+          // (in case metadata isn't properly set or comparison fails)
+          initAgentConvo();
         });
 
         if (unsubscribeRef.current) unsubscribeRef.current();
@@ -229,7 +231,20 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
         throw new Error('Agent not in updated list');
       }
 
+      // Update UI immediately with the agent
       setActiveAgents(prev => [...prev, agent]);
+
+      // Also refresh the full participant list to ensure UI sync
+      // This handles any timing issues with subscriptions
+      const fresh = await base44.entities.AgentConversation.filter({ id: agentConvoId }, '', 1);
+      if (fresh?.[0]?.participant_agent_ids) {
+        const loadedAgents = await Promise.all(
+          fresh[0].participant_agent_ids.map(id => 
+            base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0])
+          )
+        );
+        setActiveAgents(loadedAgents.filter(Boolean));
+      }
 
       await base44.agents.addMessage(conversation, {
         role: 'user',
