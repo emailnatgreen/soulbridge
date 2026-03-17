@@ -307,13 +307,13 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
               <div className="flex-1">
                 <h3 className="font-semibold text-white text-sm">Axi</h3>
                 {activeAgents.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <div className="flex flex-wrap gap-1 mt-1 max-h-12 overflow-y-auto">
                     {activeAgents.map(agent => (
-                      <div key={agent.id} className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 rounded-full text-xs text-purple-200">
-                        <span>{agent.name}</span>
+                      <div key={agent.id} className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 rounded-full text-xs text-purple-200 whitespace-nowrap">
+                        <span className="truncate max-w-[60px] md:max-w-none">{agent.name}</span>
                         <button
                           onClick={() => handleRemoveAgent(agent.id)}
-                          className="ml-1 hover:text-purple-100 transition-colors"
+                          className="ml-1 hover:text-purple-100 transition-colors flex-shrink-0"
                           title={`Remove ${agent.name}`}
                         >
                           <X className="w-3 h-3" />
