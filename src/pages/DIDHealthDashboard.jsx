@@ -153,8 +153,9 @@ export default function DIDHealthDashboard() {
   const queryOptions = (key, fn) => ({
     queryKey: [key],
     queryFn: fn,
-    staleTime: 15000,
-    refetchInterval: 15000,
+    staleTime: 5000,
+    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: wallets = [], refetch: refetchWallets } = useQuery(queryOptions('dh-wallets', () => base44.entities.Wallet.list()));
