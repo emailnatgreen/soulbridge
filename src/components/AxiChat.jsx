@@ -170,7 +170,27 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     }
     try {
       setShowAddAgent(false);
-      setActiveAgents(prev => [...prev, agent]);
+
+      // Fetch current AgentConversation to get existing participants
+      const agentConvos = await base44.entities.AgentConversation.filter({ id: conversation.id }, '', 1);
+      let currentParticipants = [];
+      if (agentConvos && agentConvos.length > 0) {
+        currentParticipants = agentConvos[0].participant_agent_ids || [];
+      }
+
+      // Add new agent ID if not already present
+      const updatedParticipants = Array.from(new Set([...currentParticipants, agent.id]));
+
+      // Persist to backend
+      await base44.entities.AgentConversation.update(conversation.id, {
+        participant_agent_ids: updatedParticipants
+      });
+
+      // Update local state after successful persistence
+      setActiveAgents(prev => {
+        const exists = prev.some(a => a.id === agent.id);
+        return exists ? prev : [...prev, agent];
+      });
 
       // Post a system message announcing the agent has joined
       await base44.agents.addMessage(conversation, {
@@ -179,7 +199,6 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       });
     } catch (err) {
       console.error('Failed to add agent:', err);
-      setActiveAgents(prev => prev.filter(a => a.id !== agent.id));
     }
   }, [conversation]);
 
