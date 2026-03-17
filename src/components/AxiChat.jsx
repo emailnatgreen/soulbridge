@@ -158,8 +158,24 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
 
         if (unsubscribeRef.current) unsubscribeRef.current();
         unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
+          console.log('[Subscription:Agent] Fired at', new Date().toISOString(), '- messages:', data.messages?.length);
           setMessages([...data.messages]);
         });
+
+        // Also subscribe to AgentConversation entity changes to trace participant updates
+        const unsubscribeAgentConvo = base44.entities.AgentConversation.subscribe((event) => {
+          console.log('[Subscription:AgentConversation] Event fired:', {
+            type: event.type,
+            id: event.id,
+            participants: event.data?.participant_agent_ids,
+            timestamp: new Date().toISOString()
+          });
+        });
+
+        return () => {
+          if (unsubscribeRef.current) unsubscribeRef.current();
+          unsubscribeAgentConvo();
+        };
 
         // Cleanup both subscriptions on unmount
         return () => {
