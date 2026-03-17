@@ -79,13 +79,12 @@ Deno.serve(async (req) => {
     }
 
     // Fetch trustlines
-    const linesResponse = await fetch(`${wsUrl.replace('wss://', 'https://')}`, {
+    const linesResponse = await fetch(rpcUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        command: 'account_lines',
-        account: checkAddress,
-        ledger_index: 'validated'
+        method: 'account_lines',
+        params: [{ account: checkAddress, ledger_index: 'validated' }]
       })
     }).catch(() => null);
 
