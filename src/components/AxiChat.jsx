@@ -38,9 +38,12 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     initialized.current = true;
 
     const init = async () => {
+      setLoading(true);
+      setInitError(false);
       try {
         const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-        const existing = conversations.find(c => c.metadata?.unified_axi_chat === true);
+        const unified = conversations.filter(c => c.metadata?.unified_axi_chat === true);
+        const existing = unified.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
         let convo;
         if (existing) {
           convo = await base44.agents.getConversation(existing.id);
@@ -52,11 +55,16 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
         }
         setConversation(convo);
         setMessages(convo.messages || []);
+        if (unsubscribeRef.current) unsubscribeRef.current();
         unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
           setMessages([...data.messages]);
         });
       } catch (err) {
         console.error('Axi init error:', err);
+        setInitError(true);
+        initialized.current = false; // allow retry
+      } finally {
+        setLoading(false);
       }
     };
     init();
