@@ -413,8 +413,23 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   }, [agentConvoId, activeAgents, conversation]);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <>
+      {/* Floating trigger button — always visible when chat is closed */}
+      {!isOpen && !isPublicPage && (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          exit={{ scale: 0 }}
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-xl flex items-center justify-center text-white transition-all hover:scale-110"
+          title="Talk to Axi"
+        >
+          <Sparkles className="w-6 h-6" />
+        </motion.button>
+      )}
+      
+      <AnimatePresence>
+        {isOpen && (
         <motion.div
           initial={{ opacity: 0, y: -8, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
