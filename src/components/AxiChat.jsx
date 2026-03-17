@@ -169,7 +169,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
             {initError && !loading && (
               <div className="text-center py-10">
                 <p className="text-red-400 text-sm mb-3">Could not connect to Axi.</p>
-                <Button size="sm" onClick={() => { initialized.current = false; }} className="bg-purple-700 hover:bg-purple-600 text-white text-xs">
+                <Button size="sm" onClick={() => setRetryKey(k => k + 1)} className="bg-purple-700 hover:bg-purple-600 text-white text-xs">
                   Retry
                 </Button>
               </div>
