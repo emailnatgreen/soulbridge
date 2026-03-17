@@ -12,7 +12,6 @@ import {
   ArrowLeft, RefreshCw, Activity, Clock, FileText, Users,
   Award, Lock, TrendingUp, Wifi, WifiOff, Loader2, Search, Copy
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import DidEventStream from '../components/DidEventStream';
