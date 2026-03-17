@@ -23,6 +23,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [activeAgents, setActiveAgents] = useState([]);
   const [agentConvoId, setAgentConvoId] = useState(null);
+  const [userAgentId, setUserAgentId] = useState(null);
 
   // DIAGNOSTIC 1: Trace state origin
   console.log('[State Origin] setActiveAgents type:', typeof setActiveAgents);
