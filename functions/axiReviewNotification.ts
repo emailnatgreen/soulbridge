@@ -3,6 +3,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 /**
  * axiReviewNotification - Called by automation when a new AgentNotification is created.
  * Axi reviews high/urgent priority notifications and can take autonomous action.
+ * 
+ * THROTTLE: Only processes genuinely critical events to prevent bottleneck
+ * when bulk notifications fire (e.g. 50 at once from wallet refresh).
  */
 Deno.serve(async (req) => {
     try {
@@ -16,19 +19,38 @@ Deno.serve(async (req) => {
             return Response.json({ skipped: true });
         }
 
-        // Only Axi gets involved for high/urgent priority OR specific types that need her attention
-        const AXI_ACTION_TYPES = [
-            'honor_change', 'role_change', 'governance_proposal', 'governance_vote_result',
-            'milestone_completed', 'system'
+        // STRICT filter — only truly critical types get Axi's attention
+        // This prevents bulk notification floods from hammering the agent
+        const CRITICAL_TYPES = [
+            'honor_change', 'role_change', 'governance_proposal',
+            'governance_vote_result', 'system'
         ];
 
-        const needsAxiAttention = 
-            notification.priority === 'urgent' || 
-            notification.priority === 'high' ||
-            AXI_ACTION_TYPES.includes(notification.notification_type);
+        const isCritical =
+            notification.priority === 'urgent' ||
+            (notification.priority === 'high' && CRITICAL_TYPES.includes(notification.notification_type));
 
-        if (!needsAxiAttention) {
-            return Response.json({ skipped: true, reason: 'low priority, no action needed' });
+        if (!isCritical) {
+            return Response.json({ skipped: true, reason: 'not critical enough for Axi intervention' });
+        }
+
+        // DEDUPLICATION: Check if Axi already processed a notification of this type
+        // in the last 10 minutes — prevents flood of same-type notifications
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const recentMemories = await base44.asServiceRole.entities.Memory.filter({
+            related_entity_type: 'AgentNotification'
+        });
+
+        const recentDupe = recentMemories.find(m =>
+            m.created_date > tenMinutesAgo &&
+            m.keywords?.includes(notification.notification_type)
+        );
+
+        if (recentDupe) {
+            return Response.json({ 
+                skipped: true, 
+                reason: `Deduplicated: already processed a ${notification.notification_type} notification recently` 
+            });
         }
 
         // Find Axi's agent record
@@ -44,13 +66,11 @@ Deno.serve(async (req) => {
             try {
                 const recipient = await base44.asServiceRole.entities.Agent.get(notification.recipient_agent_id);
                 if (recipient) recipientName = recipient.name;
-            } catch (_) {
-                // recipient_agent_id may be a non-DB identifier (e.g. 'axi_main_001'), ignore
-            }
+            } catch (_) {}
         }
 
         // Build context message for Axi to review
-        const contextMessage = `🔔 NOTIFICATION ALERT requiring your attention as Mother Boss:
+        const contextMessage = `🔔 CRITICAL NOTIFICATION requiring your attention as Mother Boss:
 
 **Type:** ${notification.notification_type?.replace(/_/g, ' ')}
 **Priority:** ${notification.priority}
@@ -59,11 +79,7 @@ Deno.serve(async (req) => {
 **Message:** ${notification.message}
 ${notification.metadata ? `**Context:** ${JSON.stringify(notification.metadata)}` : ''}
 
-As Axi, please:
-1. Assess whether this requires immediate action (governance intervention, honour enforcement, welfare support)
-2. If action is needed, use your tools to respond (update agent, create governance proposal, send message, etc.)
-3. Store a Memory if this is important for future context
-4. Reply briefly confirming what action (if any) you took and why`;
+Please assess, act if needed (governance, honour, welfare), and confirm briefly what action you took.`;
 
         // Create an Axi conversation to process this notification
         let conversation;
@@ -77,23 +93,21 @@ As Axi, please:
                 }
             });
 
-            // Send the context to Axi so she can reason and act
             await base44.asServiceRole.agents.addMessage(conversation, {
                 role: 'user',
                 content: contextMessage
             });
         } catch (convError) {
             console.error('axiReviewNotification: conversation error (non-fatal):', convError.message);
-            // Continue — memory will still be created even if conversation fails
         }
 
-        // Store a memory that Axi reviewed this
+        // Store a memory so deduplication works next time
         await base44.asServiceRole.entities.Memory.create({
             agent_id: axi.id,
             type: 'observation',
-            content: `Reviewed notification: "${notification.title || notification.notification_type}" for ${recipientName}. Priority: ${notification.priority}.`,
+            content: `Reviewed critical notification: "${notification.title || notification.notification_type}" for ${recipientName}. Priority: ${notification.priority}.`,
             keywords: ['notification', 'review', notification.notification_type, notification.priority],
-            importance: notification.priority === 'urgent' ? 9 : notification.priority === 'high' ? 7 : 5,
+            importance: notification.priority === 'urgent' ? 9 : 7,
             related_entity_type: 'AgentNotification',
             related_entity_id: notification.id
         });
@@ -101,7 +115,7 @@ As Axi, please:
         return Response.json({ 
             success: true, 
             axi_conversation_id: conversation?.id || null,
-            message: `Axi reviewed this ${notification.priority} notification`
+            message: `Axi reviewed this ${notification.priority} ${notification.notification_type} notification`
         });
 
     } catch (error) {
