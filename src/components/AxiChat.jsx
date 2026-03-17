@@ -327,17 +327,17 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
                 )}
               </div>
               </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowAddAgent(true)}
                 title="Invite agent to chat"
-                className="text-white/50 hover:text-purple-400 hover:bg-white/10 h-8 w-8"
+                className="text-white/50 hover:text-purple-400 hover:bg-white/10 h-8 w-8 md:block hidden"
               >
                 <UserPlus className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8">
+              <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:block">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
               <Button variant="ghost" size="icon" onClick={handleClose} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8">
