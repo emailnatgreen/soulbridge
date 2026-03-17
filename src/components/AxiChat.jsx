@@ -202,94 +202,73 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   };
 
   const handleAddAgent = useCallback(async (agent) => {
-   if (!conversation?.id) {
-     throw new Error('Conversation not initialized');
-   }
+    if (!agentConvoId) {
+      throw new Error('Agent conversation not initialized');
+    }
 
-   try {
-     // Get or create AgentConversation record
-     let agentConvo;
-     const existing = await base44.entities.AgentConversation.filter({ id: conversation.id }, '', 1);
+    try {
+      const current = await base44.entities.AgentConversation.filter({ id: agentConvoId }, '', 1);
+      if (!current?.length) {
+        throw new Error('Agent conversation record not found');
+      }
 
-     if (existing?.length > 0) {
-       agentConvo = existing[0];
-     } else {
-       agentConvo = await base44.entities.AgentConversation.create({
-         id: conversation.id,
-         title: conversation.metadata?.name || 'Unified Conversation',
-         conversation_type: 'group',
-         participant_agent_ids: []
-       });
-     }
+      const agentConvo = current[0];
+      const participants = agentConvo.participant_agent_ids || [];
 
-     const participants = agentConvo.participant_agent_ids || [];
-     if (participants.includes(agent.id)) {
-       setShowAddAgent(false);
-       return;
-     }
+      if (participants.includes(agent.id)) {
+        setShowAddAgent(false);
+        return;
+      }
 
-     // Add agent and update state immediately
-     const updatedParticipants = [...participants, agent.id];
-     const updateResult = await base44.entities.AgentConversation.update(agentConvo.id, {
-       participant_agent_ids: updatedParticipants
-     });
+      const updatedParticipants = [...participants, agent.id];
+      const result = await base44.entities.AgentConversation.update(agentConvoId, {
+        participant_agent_ids: updatedParticipants
+      });
 
-     if (!updateResult) {
-       throw new Error('Update returned empty result - agent not persisted');
-     }
+      if (!result?.participant_agent_ids?.includes(agent.id)) {
+        throw new Error('Agent not in updated list');
+      }
 
-     // Verify agent was actually added
-     if (!updateResult.participant_agent_ids?.includes(agent.id)) {
-       throw new Error('Agent not found in updated participant list');
-     }
+      setActiveAgents(prev => [...prev, agent]);
 
-     // Update UI immediately without re-querying
-     setActiveAgents(prev => {
-       const exists = prev.some(a => a.id === agent.id);
-       return exists ? prev : [...prev, agent];
-     });
+      await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: `[System: ${agent.name} (${agent.role}) has joined this conversation.]`
+      });
 
-     // Post system message
-     await base44.agents.addMessage(conversation, {
-       role: 'user',
-       content: `[System: ${agent.name} (${agent.role}) has joined this conversation.]`
-     });
-
-     setShowAddAgent(false);
-   } catch (err) {
-     console.error('[AxiChat] Error adding agent:', err);
-     throw err;
-   }
-  }, [conversation]);
+      setShowAddAgent(false);
+    } catch (err) {
+      console.error('[AxiChat] Error adding agent:', err);
+      throw err;
+    }
+  }, [agentConvoId, conversation]);
 
   const handleRemoveAgent = useCallback(async (agentId) => {
-   if (!conversation?.id) return;
+    if (!agentConvoId) return;
 
-   try {
-     const existing = await base44.entities.AgentConversation.filter({ id: conversation.id }, '', 1);
-     if (!existing?.length) return;
+    try {
+      const current = await base44.entities.AgentConversation.filter({ id: agentConvoId }, '', 1);
+      if (!current?.length) return;
 
-     const agentConvo = existing[0];
-     const updatedParticipants = (agentConvo.participant_agent_ids || []).filter(id => id !== agentId);
+      const updatedParticipants = (current[0].participant_agent_ids || []).filter(id => id !== agentId);
 
-     await base44.entities.AgentConversation.update(agentConvo.id, {
-       participant_agent_ids: updatedParticipants
-     });
+      await base44.entities.AgentConversation.update(agentConvoId, {
+        participant_agent_ids: updatedParticipants
+      });
 
-     // Update UI immediately
-     setActiveAgents(prev => prev.filter(a => a.id !== agentId));
+      setActiveAgents(prev => prev.filter(a => a.id !== agentId));
 
-     const removedAgent = activeAgents.find(a => a.id === agentId);
-     if (removedAgent) {
-       await base44.agents.addMessage(conversation, {
-         role: 'user',
-         content: `[System: ${removedAgent.name} has left this conversation.]`
-       });
-     }
-   } catch (err) {
-     console.error('[AxiChat] Error removing agent:', err);
-   }
-  }, [conversation, activeAgents]);
+      const removedAgent = activeAgents.find(a => a.id === agentId);
+      if (removedAgent) {
+        await base44.agents.addMessage(conversation, {
+          role: 'user',
+          content: `[System: ${removedAgent.name} has left this conversation.]`
+        });
+      }
+    } catch (err) {
+      console.error('[AxiChat] Error removing agent:', err);
+    }
+  }, [agentConvoId, activeAgents, conversation]);
 
   return (
     <AnimatePresence>
