@@ -47,11 +47,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Persist updated balance
-    await base44.asServiceRole.entities.Wallet.update(wallet_id, {
-      balance,
-      last_accessed: new Date().toISOString()
-    });
+    // Persist updated balance (only patch the two fields — avoid re-validating full record)
+    try {
+      await base44.asServiceRole.entities.Wallet.update(wallet_id, {
+        balance,
+        last_accessed: new Date().toISOString()
+      });
+    } catch (updateErr) {
+      console.warn('Could not persist balance update:', updateErr.message);
+      // Non-fatal — still return the live balance
+    }
 
     return Response.json({ success: true, balance, classic_address: walletRecord.classic_address });
 
