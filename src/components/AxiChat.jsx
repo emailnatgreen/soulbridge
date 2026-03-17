@@ -164,7 +164,16 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
 
         // Also subscribe to AgentConversation entity changes to auto-sync active agents
         const unsubscribeAgentConvo = base44.entities.AgentConversation.subscribe((event) => {
-          if (event.id === agentConvoId && event.data?.participant_agent_ids) {
+          console.log('[Subscription:AgentConversation] Event fired:', {
+            type: event.type,
+            eventId: event.id,
+            agentConvoId: currentConvoId,
+            match: event.id === currentConvoId,
+            participants: event.data?.participant_agent_ids,
+            timestamp: new Date().toISOString()
+          });
+          
+          if (event.id === currentConvoId && event.data?.participant_agent_ids) {
             console.log('[Subscription:AgentConversation] Syncing activeAgents from subscription:', {
               participants: event.data.participant_agent_ids,
               timestamp: new Date().toISOString()
