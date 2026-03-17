@@ -64,17 +64,13 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
         {filtered.map(agent => (
           <button
             key={agent.id}
-            onClick={async (e) => {
-              e.stopPropagation();
+            type="button"
+            onClick={(e) => {
               e.preventDefault();
               setAdding(true);
-              try {
-                await onAdd(agent);
-              } catch (err) {
-                console.error('Error adding agent:', err);
-              } finally {
-                setAdding(false);
-              }
+              onAdd(agent)
+                .catch(err => console.error('Error adding agent:', err))
+                .finally(() => setAdding(false));
             }}
             className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 transition-all text-left group cursor-pointer"
           >
