@@ -7,12 +7,12 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { useEffect, useState } from 'react';
 import {
   Shield, Fingerprint, CheckCircle, AlertTriangle, XCircle,
   ArrowLeft, RefreshCw, Activity, Clock, FileText, Users,
   Award, Lock, TrendingUp, Wifi, WifiOff, Loader2, Search, Copy
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import DidEventStream from '../components/DidEventStream';
