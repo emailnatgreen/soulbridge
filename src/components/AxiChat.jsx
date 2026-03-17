@@ -23,6 +23,10 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [activeAgents, setActiveAgents] = useState([]);
   const [agentConvoId, setAgentConvoId] = useState(null);
+
+  // DIAGNOSTIC 1: Trace state origin
+  console.log('[State Origin] setActiveAgents type:', typeof setActiveAgents);
+  console.log('[State Origin] activeAgents type:', typeof activeAgents, 'length:', activeAgents.length);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
   const initialized = useRef(false);
@@ -190,6 +194,13 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
                 count: validAgents.length,
                 agents: validAgents.map(a => ({ id: a.id, name: a.name }))
               });
+              
+              // DIAGNOSTIC 2 & 3: Check reference identity before setState
+              console.log('[Identity Check] New data:', validAgents);
+              console.log('[Identity Check] Current activeAgents:', activeAgents);
+              console.log('[Identity Check] Same reference?', activeAgents === validAgents);
+              console.log('[Identity Check] Length match?', activeAgents.length === validAgents.length);
+              
               setActiveAgents(validAgents);
               console.log('[Subscription:AgentConversation] setState called, next render will show new value');
             }).catch(err => {
@@ -331,6 +342,12 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
         
         console.log(`[${traceId}] PHASE 6: Setting activeAgents to loaded list...`);
         console.log(`[${traceId}] About to setState with:`, validAgents.map(a => ({ id: a.id, name: a.name })));
+        
+        // DIAGNOSTIC 2 & 3: Check reference identity (Phase 6)
+        console.log(`[${traceId}] [Identity Check] New validAgents:`, validAgents);
+        console.log(`[${traceId}] [Identity Check] Current activeAgents:`, activeAgents);
+        console.log(`[${traceId}] [Identity Check] Same ref?`, activeAgents === validAgents);
+        
         setActiveAgents(validAgents);
         console.log(`[${traceId}] setState called, check if state updated in next render`);
       }
@@ -361,6 +378,12 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       timestamp: new Date().toISOString()
     });
   }, [activeAgents]);
+
+  // DIAGNOSTIC 5: Check memo wrapping
+  useEffect(() => {
+    console.log('[Memo Check] AxiChat.displayName:', AxiChat.displayName);
+    console.log('[Memo Check] Is wrapped in memo?', AxiChat.displayName?.includes('memo'));
+  }, []);
 
   const handleRemoveAgent = useCallback(async (agentId) => {
     if (!agentConvoId) return;
