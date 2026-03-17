@@ -448,4 +448,4 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
   );
 }
 
-export default AxiChat;
+export default memo(AxiChat);
