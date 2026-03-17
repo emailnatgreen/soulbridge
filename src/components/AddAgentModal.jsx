@@ -52,7 +52,7 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2 pointer-events-auto">
         {loading && (
           <div className="flex justify-center pt-8">
             <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
