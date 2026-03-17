@@ -136,7 +136,7 @@ export default function FloatingConnectButton() {
       {/* Panel */}
        <div
         onClick={(e) => e.stopPropagation()}
-        className="fixed bottom-6 right-6 md:bottom-6 sm:bottom-20 z-40 bg-slate-900 border border-slate-700 rounded-xl shadow-xl w-96 max-h-[600px] flex flex-col overflow-hidden"
+        className="fixed bottom-20 right-6 md:bottom-6 z-40 bg-slate-900 border border-slate-700 rounded-xl shadow-xl w-96 max-h-[600px] flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
