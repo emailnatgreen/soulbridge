@@ -65,7 +65,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       window.removeEventListener('open-axi', handleOpenAxi);
       window.removeEventListener('open-axi-with-agent', handleAgentChat);
     };
-  }, [isOpen]);
+  }, [isOpen, conversation]);
 
   useEffect(() => {
     if (!isOpen || initialized.current) return;
