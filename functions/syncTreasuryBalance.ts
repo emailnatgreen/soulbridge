@@ -1,23 +1,36 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { Client, dropsToXrp } from 'npm:xrpl@3.0.0';
+
+const XRPL_HTTP = 'https://xrplcluster.com';
+
+async function getXrpBalance(address) {
+    const res = await fetch(XRPL_HTTP, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            method: 'account_info',
+            params: [{ account: address, ledger_index: 'validated' }]
+        })
+    });
+    const json = await res.json();
+    if (json.result?.error) throw new Error(json.result.error_message || json.result.error);
+    const drops = json.result?.account_data?.Balance;
+    if (!drops) throw new Error('No balance returned');
+    return parseFloat(drops) / 1_000_000;
+}
 
 Deno.serve(async (req) => {
     const startTime = Date.now();
     const base44 = createClientFromRequest(req);
 
-    // Support both authenticated requests and scheduler calls
     let isScheduler = false;
     try {
         const user = await base44.auth.me();
-        if (!user) {
-            // Allow service-role scheduler calls
-            isScheduler = true;
-        }
+        if (!user) isScheduler = true;
     } catch {
         isScheduler = true;
     }
 
-    let logEntry = {
+    const logEntry = {
         automation_name: 'Sync Treasury Balance',
         function_name: 'syncTreasuryBalance',
         status: 'success',
@@ -28,50 +41,30 @@ Deno.serve(async (req) => {
     };
 
     try {
-        // Fetch all treasuries to sync
         const treasuries = await base44.asServiceRole.entities.Treasury.list();
         if (!treasuries || treasuries.length === 0) {
-            logEntry.status = 'success';
             logEntry.message = 'No treasuries to sync';
             logEntry.duration_ms = Date.now() - startTime;
             await base44.asServiceRole.entities.AutomationLog.create(logEntry);
             return Response.json({ success: true, synced_count: 0 });
         }
 
-        const client = new Client('wss://xrpl.ws');
-        await client.connect();
-
         let syncedCount = 0;
         const results = [];
 
-        // Sync each treasury in parallel
-        const syncPromises = treasuries.map(async (treasury) => {
-            if (!treasury.classic_address) return null;
+        await Promise.all(treasuries.map(async (treasury) => {
+            if (!treasury.classic_address) return;
             try {
-                const accountInfo = await client.request({
-                    command: 'account_info',
-                    account: treasury.classic_address,
-                    ledger_index: 'validated',
-                });
-                const balance = parseFloat(dropsToXrp(accountInfo.result.account_data.Balance));
-                
-                // Update treasury balance
-                await base44.asServiceRole.entities.Treasury.update(treasury.id, {
-                    total_balance: balance,
-                });
+                const balance = await getXrpBalance(treasury.classic_address);
+                await base44.asServiceRole.entities.Treasury.update(treasury.id, { total_balance: balance });
                 syncedCount++;
                 results.push({ treasury_id: treasury.id, balance, address: treasury.classic_address });
             } catch (err) {
                 console.error(`Failed to sync treasury ${treasury.id}:`, err.message);
                 results.push({ treasury_id: treasury.id, error: err.message });
             }
-        });
+        }));
 
-        await Promise.all(syncPromises);
-        await client.disconnect();
-
-        // Write success log
-        logEntry.status = 'success';
         logEntry.message = `Synced ${syncedCount}/${treasuries.length} treasuries`;
         logEntry.details = { synced_count: syncedCount, total_treasuries: treasuries.length, results };
         logEntry.duration_ms = Date.now() - startTime;
