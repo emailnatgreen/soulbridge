@@ -167,9 +167,9 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     console.log('[AxiChat] handleAddAgent called for agent:', agent.name, agent.id);
     console.log('[AxiChat] Current conversation:', conversation?.id);
     
-    if (!conversation) {
-      const error = 'No active conversation';
-      console.error('[AxiChat] CRITICAL ERROR:', error);
+    if (!conversation || !conversation.id) {
+      const error = 'Conversation not initialized. Please wait for chat to load.';
+      console.error('[AxiChat] CRITICAL ERROR:', error, { conversation });
       throw new Error(error);
     }
 
@@ -184,7 +184,13 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       }
       console.log('[AxiChat] Current participants:', currentParticipants);
 
-      const updatedParticipants = Array.from(new Set([...currentParticipants, agent.id]));
+      if (currentParticipants.includes(agent.id)) {
+        console.log('[AxiChat] Agent already in conversation, skipping duplicate add');
+        setShowAddAgent(false);
+        return;
+      }
+
+      const updatedParticipants = [...currentParticipants, agent.id];
       console.log('[AxiChat] Updated participants:', updatedParticipants);
 
       console.log('[AxiChat] Persisting to backend...');
@@ -194,12 +200,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       console.log('[AxiChat] Backend update successful');
 
       console.log('[AxiChat] Updating local state...');
-      setActiveAgents(prev => {
-        const exists = prev.some(a => a.id === agent.id);
-        const newList = exists ? prev : [...prev, agent];
-        console.log('[AxiChat] ActiveAgents updated:', newList.map(a => a.name));
-        return newList;
-      });
+      setActiveAgents(prev => [...prev, agent]);
 
       console.log('[AxiChat] Posting system message...');
       await base44.agents.addMessage(conversation, {
@@ -215,6 +216,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       console.error('[AxiChat] ERROR in handleAddAgent:', {
         agentId: agent.id,
         agentName: agent.name,
+        conversationId: conversation?.id,
         error: err?.message || err,
         stack: err?.stack
       });
