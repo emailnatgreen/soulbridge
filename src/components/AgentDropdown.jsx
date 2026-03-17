@@ -67,17 +67,17 @@ export default function AgentDropdown({
               <button
                 key={agent.id}
                 onClick={() => handleSelectAgent(agent)}
-                className="w-full p-3 text-left rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition group"
+                className="w-full p-3 text-left rounded-lg bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700 hover:border-slate-600 transition group"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h4 className="font-medium text-white text-sm">{agent.name}</h4>
-                    <p className="text-xs text-white/50 mt-1">{agent.role || 'Agent'}</p>
+                    <p className="text-xs text-slate-300 mt-1">{agent.role || 'Agent'}</p>
                   </div>
-                  <MessageSquare className="w-4 h-4 text-white/30 group-hover:text-purple-400 flex-shrink-0 ml-2" />
+                  <MessageSquare className="w-4 h-4 text-slate-400 group-hover:text-purple-300 flex-shrink-0 ml-2" />
                 </div>
                 {agent.bio && (
-                  <p className="text-xs text-white/40 mt-2 line-clamp-1">{agent.bio}</p>
+                  <p className="text-xs text-slate-400 mt-2 line-clamp-1">{agent.bio}</p>
                 )}
               </button>
             ))}
