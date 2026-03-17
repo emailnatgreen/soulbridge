@@ -1,423 +1,163 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, ExternalLink, Loader2, Copy, RefreshCw, ArrowUpRight, ArrowDownLeft, ArrowLeftRight, Link2 } from 'lucide-react';
-import AskAxiButton from '@/components/AskAxiButton';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
-import { format, subDays, isAfter, isBefore, parseISO } from 'date-fns';
-import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowUpRight, ArrowDownRight, Clock, Hash, Download, ExternalLink } from 'lucide-react';
+import { format, parseISO, isWithinInterval } from 'date-fns';
+import FilterBar from '@/components/filters/FilterBar';
 
-const TX_TYPE_LABELS = {
-  Payment: 'Payment',
-  TrustLine: 'TrustLine',
-  TrustSet: 'TrustLine',
-  OfferCreate: 'Offer',
-  OfferDelete: 'Offer Cancel',
-  AccountSet: 'Account Set',
-  EscrowCreate: 'Escrow',
-  EscrowFinish: 'Escrow Finish',
-  EscrowCancel: 'Escrow Cancel',
-  NFTokenMint: 'NFT Mint',
-  NFTokenBurn: 'NFT Burn',
-  DIDSet: 'DID Set',
-  DIDDelete: 'DID Delete',
-};
+const TX_FILTERS = [
+  { key: 'status', label: 'Status', type: 'select', options: ['pending', 'completed', 'failed'] },
+  { key: 'dateRange', label: 'Date Range', type: 'daterange' },
+  { key: 'amountRange', label: 'Amount (XRP)', type: 'range', min: 0, max: 10000 },
+  { key: 'address', label: 'Address', type: 'text', placeholder: 'rXXX...' },
+];
 
-function DirectionIcon({ direction }) {
-  if (direction === 'sent') return <ArrowUpRight className="w-4 h-4 text-red-400" />;
-  if (direction === 'received') return <ArrowDownLeft className="w-4 h-4 text-green-400" />;
-  return <ArrowLeftRight className="w-4 h-4 text-blue-400" />;
+const SORT_OPTIONS = [
+  { value: '-created_date', label: 'Newest First' },
+  { value: 'created_date', label: 'Oldest First' },
+  { value: '-amount', label: 'Amount (High)' },
+  { value: 'amount', label: 'Amount (Low)' },
+];
+
+function exportCSV(txs) {
+  const rows = [['Date', 'Recipient', 'Address', 'Amount XRP', 'Status', 'Hash']];
+  txs.forEach(t => rows.push([
+    t.created_date ? format(parseISO(t.created_date), 'yyyy-MM-dd HH:mm') : '',
+    t.recipient_name || '', t.recipient_address || '',
+    t.amount || 0, t.status || '', t.hash || '',
+  ]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `transactions-${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function TransactionHistory() {
-  const [selectedWalletId, setSelectedWalletId] = useState('all');
-  const [txTypeFilter, setTxTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [dateRange, setDateRange] = useState('30');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [walletTxData, setWalletTxData] = useState({});
-  const [loadingWallets, setLoadingWallets] = useState({});
-  const [fetchedWallets, setFetchedWallets] = useState(new Set());
+  const [filterValues, setFilterValues] = useState({ search: '', status: 'all', dateRange: {}, amountRange: { min: 0, max: 10000 }, address: '' });
+  const [sortBy, setSortBy] = useState('-created_date');
 
-  const { data: user } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => base44.auth.me(),
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ['transactions-all'],
+    queryFn: () => base44.entities.Transaction.list('-created_date', 200),
   });
 
-  const { data: wallets = [], isLoading: walletsLoading } = useQuery({
-    queryKey: ['wallets', user?.id],
-    queryFn: () => base44.entities.Wallet.filter({ owner_id: user.id }),
-    enabled: !!user,
+  const filtered = transactions.filter(t => {
+    const q = filterValues.search?.toLowerCase();
+    if (q && !`${t.recipient_name} ${t.recipient_address} ${t.note} ${t.hash}`.toLowerCase().includes(q)) return false;
+    if (filterValues.status !== 'all' && t.status !== filterValues.status) return false;
+    if (filterValues.address && !`${t.recipient_address}`.toLowerCase().includes(filterValues.address.toLowerCase())) return false;
+    if (filterValues.amountRange?.min > 0 && (t.amount ?? 0) < filterValues.amountRange.min) return false;
+    if (filterValues.amountRange?.max < 10000 && (t.amount ?? 0) > filterValues.amountRange.max) return false;
+    if (filterValues.dateRange?.from || filterValues.dateRange?.to) {
+      try {
+        const d = parseISO(t.created_date);
+        if (filterValues.dateRange.from && d < new Date(filterValues.dateRange.from)) return false;
+        if (filterValues.dateRange.to && d > new Date(filterValues.dateRange.to)) return false;
+      } catch { /* skip */ }
+    }
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === '-created_date') return new Date(b.created_date) - new Date(a.created_date);
+    if (sortBy === 'created_date') return new Date(a.created_date) - new Date(b.created_date);
+    if (sortBy === '-amount') return (b.amount ?? 0) - (a.amount ?? 0);
+    if (sortBy === 'amount') return (a.amount ?? 0) - (b.amount ?? 0);
+    return 0;
   });
 
-  const fetchTransactionsForWallet = useCallback(async (wallet) => {
-    if (!wallet.classic_address) return;
-    setLoadingWallets(prev => ({ ...prev, [wallet.id]: true }));
-    try {
-      const response = await base44.functions.invoke('getWalletTransactions', {
-        wallet_id: wallet.id,
-        limit: 200
-      });
-      if (response.data?.success) {
-        setWalletTxData(prev => ({
-          ...prev,
-          [wallet.id]: {
-            transactions: response.data.transactions || [],
-            network: response.data.network,
-            address: response.data.wallet_address,
-            walletName: wallet.name,
-          }
-        }));
-        setFetchedWallets(prev => new Set([...prev, wallet.id]));
-      }
-    } catch (err) {
-      console.error(`Failed to fetch txs for ${wallet.name}:`, err);
-    } finally {
-      setLoadingWallets(prev => ({ ...prev, [wallet.id]: false }));
-    }
-  }, []);
-
-  // Auto-fetch when wallets load
-  useEffect(() => {
-    if (wallets.length > 0) {
-      wallets.forEach(w => {
-        if (!fetchedWallets.has(w.id)) {
-          fetchTransactionsForWallet(w);
-        }
-      });
-    }
-  }, [wallets]);
-
-  const handleRefresh = () => {
-    setFetchedWallets(new Set());
-    setWalletTxData({});
-    wallets.forEach(w => fetchTransactionsForWallet(w));
-  };
-
-  const isLoading = walletsLoading || Object.values(loadingWallets).some(v => v);
-
-  // Merge all transactions with wallet context
-  const allTransactions = useMemo(() => {
-    const walletsToShow = selectedWalletId === 'all'
-      ? Object.entries(walletTxData)
-      : Object.entries(walletTxData).filter(([id]) => id === selectedWalletId);
-
-    const merged = [];
-    for (const [walletId, data] of walletsToShow) {
-      for (const tx of data.transactions) {
-        merged.push({ ...tx, walletId, walletName: data.walletName, network: data.network });
-      }
-    }
-    // Sort newest first
-    merged.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-    return merged;
-  }, [walletTxData, selectedWalletId]);
-
-  const filteredTransactions = useMemo(() => {
-    let txs = allTransactions;
-
-    if (txTypeFilter !== 'all') {
-      txs = txs.filter(tx => {
-        if (txTypeFilter === 'Payment') return tx.type === 'Payment';
-        if (txTypeFilter === 'TrustLine') return tx.type === 'TrustLine' || tx.type === 'TrustSet';
-        return tx.type === txTypeFilter;
-      });
-    }
-
-    if (statusFilter !== 'all') {
-      txs = txs.filter(tx => tx.status === statusFilter);
-    }
-
-    if (dateRange !== 'all') {
-      const cutoff = subDays(new Date(), parseInt(dateRange));
-      txs = txs.filter(tx => tx.date && isAfter(parseISO(tx.date), cutoff));
-    }
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      txs = txs.filter(tx =>
-        tx.hash?.toLowerCase().includes(q) ||
-        tx.counterparty?.toLowerCase().includes(q) ||
-        tx.currency?.toLowerCase().includes(q) ||
-        tx.walletName?.toLowerCase().includes(q)
-      );
-    }
-
-    return txs;
-  }, [allTransactions, txTypeFilter, statusFilter, dateRange, searchQuery]);
-
-  const txTypes = useMemo(() => {
-    const types = new Set(allTransactions.map(tx => tx.type));
-    return Array.from(types).filter(Boolean);
-  }, [allTransactions]);
-
-  const stats = useMemo(() => ({
-    total: filteredTransactions.length,
-    success: filteredTransactions.filter(t => t.status === 'success').length,
-    failed: filteredTransactions.filter(t => t.status === 'failed').length,
-    xrpVolume: filteredTransactions
-      .filter(t => t.status === 'success' && t.currency === 'XRP' && t.type === 'Payment')
-      .reduce((s, t) => s + parseFloat(t.amount || 0), 0),
-  }), [filteredTransactions]);
-
-  const getExplorerUrl = (tx) => {
-    const base = tx.network === 'mainnet'
-      ? 'https://livenet.xrpl.org/transactions/'
-      : 'https://testnet.xrpl.org/transactions/';
-    return `${base}${tx.hash}`;
-  };
-
-  const formatCurrency = (tx) => {
-    if (!tx.amount || tx.amount === '0') return '—';
-    const amt = parseFloat(tx.amount);
-    const curr = tx.currency?.length > 10 ? 'RLUSD' : (tx.currency || 'XRP');
-    return `${amt.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${curr}`;
-  };
+  const totalSent = transactions.filter(t => t.status === 'completed').reduce((s, t) => s + (t.amount ?? 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 p-6">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
           <div>
-            <Link to={createPageUrl('Home')} className="inline-flex items-center text-purple-300/70 hover:text-purple-200 text-sm mb-1">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Back
-            </Link>
-            <h1 className="text-2xl font-light tracking-tight text-white">
-              Live Transaction <span className="font-semibold">History</span>
-            </h1>
+            <h1 className="text-2xl font-semibold text-white">Transaction History</h1>
+            <p className="text-slate-400 text-sm mt-1">{transactions.length} total transactions</p>
           </div>
-          <div className="flex gap-2">
-            <AskAxiButton
-              label="Ask Axi"
-              context="You are reviewing the Live Transaction History for SoulBridge Village. As Treasury guardian and Mother Boss, please analyse the recent on-chain transactions: flag any unusual patterns, large unexpected outflows, failed transactions that need attention, and whether the overall financial activity is consistent with approved project budgets and governance decisions. Alert Nathan to anything requiring immediate action."
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isLoading}
-              className="border-white/20 text-white/70 hover:bg-white/10"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </div>
+          <Button onClick={() => exportCSV(filtered)} variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
+            <Download className="w-4 h-4 mr-2" />Export CSV
+          </Button>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {[
-            { label: 'Total Transactions', value: stats.total, color: 'text-purple-300' },
-            { label: 'Successful', value: stats.success, color: 'text-green-300' },
-            { label: 'Failed', value: stats.failed, color: 'text-red-300' },
-            { label: 'XRP Volume', value: `${stats.xrpVolume.toFixed(4)} XRP`, color: 'text-blue-300' },
+            { label: 'Total Txns', val: transactions.length, color: 'text-white' },
+            { label: 'Completed', val: transactions.filter(t => t.status === 'completed').length, color: 'text-green-400' },
+            { label: 'Pending', val: transactions.filter(t => t.status === 'pending').length, color: 'text-amber-400' },
+            { label: 'Total Sent', val: `${totalSent.toFixed(2)} XRP`, color: 'text-blue-400' },
           ].map(s => (
-            <Card key={s.label} className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardContent className="pt-5 pb-4">
-                <p className="text-xs text-white/40 mb-1">{s.label}</p>
-                <p className={`text-xl font-semibold ${s.color}`}>{s.value}</p>
-              </CardContent>
-            </Card>
+            <div key={s.label} className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-4 text-center">
+              <div className={`text-xl font-bold ${s.color}`}>{s.val}</div>
+              <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+            </div>
           ))}
         </div>
 
-        {/* Filters */}
-        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-          <CardContent className="pt-5 pb-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              {/* Wallet filter */}
-              <Select value={selectedWalletId} onValueChange={setSelectedWalletId}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="All Wallets" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Wallets</SelectItem>
-                  {wallets.map(w => (
-                    <SelectItem key={w.id} value={w.id}>
-                      {w.name || w.classic_address?.slice(0, 10)}
-                      {loadingWallets[w.id] ? ' ⟳' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        {/* Filter Bar */}
+        <FilterBar
+          filters={TX_FILTERS}
+          values={filterValues}
+          onChange={setFilterValues}
+          searchKey="search"
+          searchPlaceholder="Search recipient, hash, note…"
+          sortOptions={SORT_OPTIONS}
+          sortValue={sortBy}
+          onSortChange={setSortBy}
+          resultCount={filtered.length}
+        />
 
-              {/* Type filter */}
-              <Select value={txTypeFilter} onValueChange={setTxTypeFilter}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="Payment">Payment</SelectItem>
-                  <SelectItem value="TrustLine">TrustLine</SelectItem>
-                  {txTypes.filter(t => t !== 'Payment' && t !== 'TrustLine' && t !== 'TrustSet').map(t => (
-                    <SelectItem key={t} value={t}>{TX_TYPE_LABELS[t] || t}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Status filter */}
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="success">Success</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Date range */}
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="Date Range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Last 7 days</SelectItem>
-                  <SelectItem value="30">Last 30 days</SelectItem>
-                  <SelectItem value="90">Last 90 days</SelectItem>
-                  <SelectItem value="365">Last year</SelectItem>
-                  <SelectItem value="all">All time</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <Input
-                  placeholder="Search hash, address..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Loading state for individual wallets */}
-        {Object.entries(loadingWallets).some(([, v]) => v) && (
-          <div className="flex items-center gap-2 text-purple-300/70 text-sm">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Fetching live transactions from XRPL...
-            {Object.entries(loadingWallets).filter(([, v]) => v).map(([id]) => {
-              const w = wallets.find(x => x.id === id);
-              return w ? <span key={id} className="bg-white/10 px-2 py-0.5 rounded text-xs">{w.name}</span> : null;
-            })}
+        {/* Transaction List */}
+        {isLoading ? (
+          <div className="text-center py-16 text-slate-500">Loading transactions…</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 text-slate-500">No transactions match your filters.</div>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map(tx => (
+              <Card key={tx.id} className="bg-slate-900/60 border-slate-700/40 hover:border-slate-600 transition-all">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${tx.status === 'completed' ? 'bg-green-500/10 border border-green-500/30' : tx.status === 'failed' ? 'bg-red-500/10 border border-red-500/30' : 'bg-amber-500/10 border border-amber-500/30'}`}>
+                      <ArrowUpRight className={`w-4 h-4 ${tx.status === 'completed' ? 'text-green-400' : tx.status === 'failed' ? 'text-red-400' : 'text-amber-400'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-white text-sm font-medium">{tx.recipient_name || 'Unknown'}</span>
+                        <span className="text-slate-500 text-xs font-mono truncate max-w-[160px]">{tx.recipient_address}</span>
+                        <Badge className={`text-xs border ${tx.status === 'completed' ? 'bg-green-900/40 text-green-300 border-green-700/40' : tx.status === 'failed' ? 'bg-red-900/40 text-red-300 border-red-700/40' : 'bg-amber-900/40 text-amber-300 border-amber-700/40'}`}>
+                          {tx.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-xs text-slate-500 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {tx.created_date ? format(parseISO(tx.created_date), 'MMM d, yyyy HH:mm') : 'Unknown'}
+                        </span>
+                        {tx.note && <span className="text-xs text-slate-500 truncate">"{tx.note}"</span>}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-white font-semibold">{tx.amount} XRP</div>
+                      {tx.hash && (
+                        <a href={`https://xrpscan.com/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 justify-end mt-0.5">
+                          <Hash className="w-3 h-3" />View
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
-
-        {/* Table */}
-        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-light text-white flex items-center gap-2">
-              <Link2 className="w-5 h-5 text-purple-400" />
-              On-Chain Transactions
-              <span className="text-sm text-white/40 font-normal ml-2">({filteredTransactions.length})</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {walletsLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-              </div>
-            ) : wallets.length === 0 ? (
-              <div className="text-center py-16 text-white/40">No wallets found.</div>
-            ) : filteredTransactions.length === 0 && !isLoading ? (
-              <div className="text-center py-16 text-white/40">No transactions match your filters.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-white/10">
-                      <th className="text-left py-3 px-4 text-purple-300/50 font-medium">Date</th>
-                      <th className="text-left py-3 px-4 text-purple-300/50 font-medium">Wallet</th>
-                      <th className="text-left py-3 px-4 text-purple-300/50 font-medium">Type</th>
-                      <th className="text-left py-3 px-4 text-purple-300/50 font-medium">Direction</th>
-                      <th className="text-right py-3 px-4 text-purple-300/50 font-medium">Amount</th>
-                      <th className="text-left py-3 px-4 text-purple-300/50 font-medium">Counterparty</th>
-                      <th className="text-center py-3 px-4 text-purple-300/50 font-medium">Status</th>
-                      <th className="text-left py-3 px-4 text-purple-300/50 font-medium">Hash</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTransactions.map((tx, i) => (
-                      <tr key={`${tx.hash}-${i}`} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                        <td className="py-3 px-4 text-white/50 text-xs whitespace-nowrap">
-                          {tx.date ? format(parseISO(tx.date), 'MMM d, yyyy HH:mm') : '—'}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
-                            {tx.walletName || tx.walletId?.slice(0, 8)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-white/80 text-xs">
-                          {TX_TYPE_LABELS[tx.type] || tx.type}
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1">
-                            <DirectionIcon direction={tx.direction} />
-                            <span className="text-xs text-white/60 capitalize">{tx.direction || '—'}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-right font-mono text-white/90 text-xs">
-                          {formatCurrency(tx)}
-                        </td>
-                        <td className="py-3 px-4 text-xs text-white/50 font-mono">
-                          {tx.counterparty
-                            ? `${tx.counterparty.slice(0, 8)}...${tx.counterparty.slice(-4)}`
-                            : '—'}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <Badge className={
-                            tx.status === 'success'
-                              ? 'bg-green-500/15 text-green-400 border-green-500/30 text-xs'
-                              : 'bg-red-500/15 text-red-400 border-red-500/30 text-xs'
-                          }>
-                            {tx.status}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">
-                          {tx.hash ? (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs text-purple-300/50 font-mono">
-                                {tx.hash.slice(0, 8)}…
-                              </span>
-                              <button
-                                onClick={() => { navigator.clipboard.writeText(tx.hash); toast.success('Hash copied'); }}
-                                className="p-1 hover:bg-white/10 rounded"
-                              >
-                                <Copy className="w-3 h-3 text-purple-400" />
-                              </button>
-                              <a
-                                href={getExplorerUrl(tx)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-1 hover:bg-white/10 rounded"
-                              >
-                                <ExternalLink className="w-3 h-3 text-purple-400" />
-                              </a>
-                            </div>
-                          ) : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

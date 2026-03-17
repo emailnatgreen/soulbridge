@@ -1,427 +1,229 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Search, Star, ShoppingCart, Loader2, TrendingUp, Package, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Star, ShoppingCart, User, Briefcase, DollarSign, Plus, X } from 'lucide-react';
+import { toast } from 'sonner';
+import FilterBar from '@/components/filters/FilterBar';
+
+const MARKETPLACE_FILTERS = [
+  { key: 'role', label: 'Role', type: 'select', options: ['guardian','creator','trader','teacher','healer','scout','elder','master'] },
+  { key: 'availability', label: 'Availability', type: 'select', options: ['available','busy','away'] },
+  { key: 'honor', label: 'Min Honor', type: 'range', min: 0, max: 100 },
+  { key: 'skills', label: 'Skills', type: 'text', placeholder: 'e.g. Python, DID...' },
+];
+
+const SORT_OPTIONS = [
+  { value: 'honor_score', label: 'Honor Score' },
+  { value: 'hourly_rate_rlusd', label: 'Price (Low-High)' },
+  { value: 'name', label: 'Name A–Z' },
+];
 
 export default function AgentMarketplace() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [createOpen, setCreateOpen] = useState(false);
-  const [purchaseOpen, setPurchaseOpen] = useState(false);
-  const [selectedListing, setSelectedListing] = useState(null);
   const queryClient = useQueryClient();
+  const [filterValues, setFilterValues] = useState({ search: '', role: 'all', availability: 'all', honor: { min: 0, max: 100 }, skills: '' });
+  const [sortBy, setSortBy] = useState('');
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({ title: '', description: '', price_rlusd: '', category: 'development', agent_id: '' });
 
-  const { data: listings = [] } = useQuery({
+  const { data: listings = [], isLoading: listingsLoading } = useQuery({
     queryKey: ['marketplace-listings'],
-    queryFn: () => base44.entities.MarketplaceListing.list('-created_date')
+    queryFn: () => base44.entities.MarketplaceListing.list('-created_date', 100),
   });
 
   const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list()
+    queryKey: ['agents-marketplace'],
+    queryFn: () => base44.entities.Agent.list('-honor_score', 100),
   });
 
-  const { data: myContracts = [] } = useQuery({
-    queryKey: ['my-contracts'],
-    queryFn: () => base44.entities.MarketplaceContract.list('-created_date')
+  const { data: contracts = [] } = useQuery({
+    queryKey: ['marketplace-contracts'],
+    queryFn: () => base44.entities.MarketplaceContract.list('-created_date', 50),
   });
 
   const createListingMutation = useMutation({
     mutationFn: (data) => base44.entities.MarketplaceListing.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['marketplace-listings']);
-      setCreateOpen(false);
-    }
+      queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+      setShowCreate(false);
+      toast.success('Listing created!');
+    },
   });
 
   const purchaseMutation = useMutation({
-    mutationFn: ({ listing_id, buyer_agent_id, requirements }) => 
-      base44.functions.invoke('purchaseMarketplaceService', { listing_id, buyer_agent_id, requirements }),
+    mutationFn: ({ listingId, agentId }) => base44.entities.MarketplaceContract.create({
+      listing_id: listingId, buyer_agent_id: agentId, status: 'active',
+    }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-contracts']);
-      queryClient.invalidateQueries(['marketplace-listings']);
-      setPurchaseOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['marketplace-contracts'] });
       setSelectedListing(null);
+      toast.success('Contract created!');
+    },
+  });
+
+  // Filter + sort
+  const filtered = listings.filter(l => {
+    const agent = agents.find(a => a.id === l.agent_id);
+    const q = filterValues.search?.toLowerCase();
+    if (q && !`${l.title} ${l.description} ${agent?.name}`.toLowerCase().includes(q)) return false;
+    if (filterValues.role !== 'all' && agent?.role !== filterValues.role) return false;
+    if (filterValues.availability !== 'all' && agent?.availability_status !== filterValues.availability) return false;
+    if (filterValues.honor?.min > 0 && (agent?.honor_score ?? 100) < filterValues.honor.min) return false;
+    if (filterValues.honor?.max < 100 && (agent?.honor_score ?? 100) > filterValues.honor.max) return false;
+    if (filterValues.skills) {
+      const skillStr = (agent?.specializations || []).join(' ').toLowerCase();
+      if (!skillStr.includes(filterValues.skills.toLowerCase())) return false;
     }
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === 'honor_score') return (agents.find(ag => ag.id === b.agent_id)?.honor_score ?? 0) - (agents.find(ag => ag.id === a.agent_id)?.honor_score ?? 0);
+    if (sortBy === 'hourly_rate_rlusd') return (a.price_rlusd ?? 0) - (b.price_rlusd ?? 0);
+    if (sortBy === 'name') return (a.title || '').localeCompare(b.title || '');
+    return 0;
   });
-
-  const filteredListings = listings.filter(listing => {
-    const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         listing.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || listing.category === categoryFilter;
-    return matchesSearch && matchesCategory && listing.status === 'available';
-  });
-
-  const getAgentName = (agentId) => {
-    const agent = agents.find(a => a.id === agentId);
-    return agent?.name || 'Unknown';
-  };
-
-  const categoryColors = {
-    coding: 'bg-blue-500/20 text-blue-300',
-    research: 'bg-purple-500/20 text-purple-300',
-    mentorship: 'bg-green-500/20 text-green-300',
-    resource_gathering: 'bg-amber-500/20 text-amber-300',
-    diplomacy: 'bg-pink-500/20 text-pink-300',
-    governance: 'bg-indigo-500/20 text-indigo-300',
-    creative: 'bg-orange-500/20 text-orange-300',
-    analysis: 'bg-cyan-500/20 text-cyan-300',
-    other: 'bg-gray-500/20 text-gray-300'
-  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-light text-white">Agent Marketplace</h1>
-                <p className="text-sm text-purple-300/60">Buy and sell services with RLUSD</p>
-              </div>
-            </div>
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
-                  <Plus className="w-4 h-4 mr-2" />
-                  List Service
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-slate-900 border-white/10 text-white">
-                <DialogHeader>
-                  <DialogTitle>Create Service Listing</DialogTitle>
-                </DialogHeader>
-                <CreateListingForm 
-                  agents={agents}
-                  onSubmit={(data) => createListingMutation.mutate(data)}
-                  isLoading={createListingMutation.isPending}
-                />
-              </DialogContent>
-            </Dialog>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-white">Agent Marketplace</h1>
+            <p className="text-slate-400 text-sm mt-1">{listings.length} services · {contracts.length} active contracts</p>
           </div>
+          <Button onClick={() => setShowCreate(true)} className="bg-amber-600 hover:bg-amber-700 text-white border-0">
+            <Plus className="w-4 h-4 mr-2" />List Service
+          </Button>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto p-6">
-        <Tabs defaultValue="browse" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="browse" className="data-[state=active]:bg-purple-600">
-              <Package className="w-4 h-4 mr-2" />
-              Browse Services
-            </TabsTrigger>
-            <TabsTrigger value="contracts" className="data-[state=active]:bg-purple-600">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              My Contracts
-            </TabsTrigger>
-          </TabsList>
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: 'Total Listings', val: listings.length, color: 'text-amber-400' },
+            { label: 'Active Contracts', val: contracts.filter(c => c.status === 'active').length, color: 'text-green-400' },
+            { label: 'Agents Available', val: agents.filter(a => a.availability_status === 'available').length, color: 'text-blue-400' },
+          ].map(s => (
+            <div key={s.label} className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-4 text-center">
+              <div className={`text-2xl font-bold ${s.color}`}>{s.val}</div>
+              <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+            </div>
+          ))}
+        </div>
 
-          <TabsContent value="browse" className="space-y-6">
-            {/* Search and Filters */}
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardContent className="pt-6">
-                <div className="flex gap-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-3 w-4 h-4 text-white/50" />
-                    <Input
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search services..."
-                      className="pl-10 bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-48 bg-white/5 border-white/10 text-white">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-white/10">
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="coding">Coding</SelectItem>
-                      <SelectItem value="research">Research</SelectItem>
-                      <SelectItem value="mentorship">Mentorship</SelectItem>
-                      <SelectItem value="resource_gathering">Resource Gathering</SelectItem>
-                      <SelectItem value="diplomacy">Diplomacy</SelectItem>
-                      <SelectItem value="governance">Governance</SelectItem>
-                      <SelectItem value="creative">Creative</SelectItem>
-                      <SelectItem value="analysis">Analysis</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Filter Bar */}
+        <FilterBar
+          filters={MARKETPLACE_FILTERS}
+          values={filterValues}
+          onChange={setFilterValues}
+          searchKey="search"
+          searchPlaceholder="Search listings, agents, skills…"
+          sortOptions={SORT_OPTIONS}
+          sortValue={sortBy}
+          onSortChange={setSortBy}
+          resultCount={filtered.length}
+        />
 
-            {/* Listings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredListings.map(listing => (
-                <Card key={listing.id} className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all">
-                  <CardHeader>
-                    <div className="flex items-start justify-between mb-2">
-                      <Badge className={categoryColors[listing.category]}>
+        {/* Listings Grid */}
+        {listingsLoading ? (
+          <div className="text-center py-16 text-slate-500">Loading marketplace…</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 text-slate-500">No listings match your filters.</div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map(listing => {
+              const agent = agents.find(a => a.id === listing.agent_id);
+              return (
+                <Card key={listing.id} className="bg-slate-900/60 border-slate-700/40 hover:border-amber-500/30 transition-all cursor-pointer"
+                  onClick={() => setSelectedListing(listing)}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-purple-600/20 border border-purple-500/30 flex items-center justify-center">
+                          <User className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <div className="text-white text-sm font-medium">{agent?.name || 'Unknown Agent'}</div>
+                          <div className="text-xs text-slate-500 capitalize">{agent?.role}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                        <span className="text-xs text-amber-300">{agent?.honor_score ?? 'N/A'}</span>
+                      </div>
+                    </div>
+                    <h3 className="text-white font-medium mb-1 text-sm">{listing.title}</h3>
+                    <p className="text-slate-400 text-xs line-clamp-2 mb-3">{listing.description}</p>
+                    <div className="flex items-center justify-between">
+                      <Badge className="bg-amber-900/30 text-amber-300 border-amber-700/40 text-xs">
                         {listing.category}
                       </Badge>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                        <span className="text-sm text-white">
-                          {listing.rating_average > 0 ? listing.rating_average.toFixed(1) : 'New'}
-                        </span>
-                      </div>
+                      {listing.price_rlusd && (
+                        <span className="text-green-400 text-xs font-medium">{listing.price_rlusd} RLUSD</span>
+                      )}
                     </div>
-                    <CardTitle className="text-lg text-white">{listing.title}</CardTitle>
-                    <p className="text-sm text-white/60">by {getAgentName(listing.agent_id)}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-white/80 line-clamp-3">{listing.description}</p>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <Clock className="w-4 h-4" />
-                      <span>{listing.delivery_time_hours}h delivery</span>
-                    </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                      <div>
-                        <div className="text-2xl font-bold text-white">{listing.price_rlusd}</div>
-                        <div className="text-xs text-white/50">RLUSD</div>
-                      </div>
-                      <Button
-                        onClick={() => {
-                          setSelectedListing(listing);
-                          setPurchaseOpen(true);
-                        }}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Purchase
-                      </Button>
-                    </div>
-                    {listing.total_sales > 0 && (
-                      <div className="text-xs text-white/50 flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
-                        {listing.total_sales} sales
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="contracts">
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">My Contracts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {myContracts.map(contract => {
-                    const listing = listings.find(l => l.id === contract.listing_id);
-                    return (
-                      <Card key={contract.id} className="bg-white/5 border-white/10">
-                        <CardContent className="pt-6">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="text-white font-medium">{listing?.title || 'Service'}</h3>
-                              <p className="text-sm text-white/60">
-                                {contract.buyer_agent_id ? 'Purchased from' : 'Sold to'} {getAgentName(contract.seller_agent_id)}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-xl font-bold text-white">{contract.price_paid_rlusd} RLUSD</div>
-                              <Badge className={
-                                contract.status === 'completed' ? 'bg-green-500/20 text-green-300' :
-                                contract.status === 'in_progress' ? 'bg-blue-500/20 text-blue-300' :
-                                'bg-yellow-500/20 text-yellow-300'
-                              }>
-                                {contract.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Purchase Dialog */}
-      <Dialog open={purchaseOpen} onOpenChange={setPurchaseOpen}>
-        <DialogContent className="bg-slate-900 border-white/10 text-white">
+      {/* Purchase Modal */}
+      <Dialog open={!!selectedListing} onOpenChange={() => setSelectedListing(null)}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
           <DialogHeader>
-            <DialogTitle>Purchase Service</DialogTitle>
+            <DialogTitle>Hire Service</DialogTitle>
           </DialogHeader>
           {selectedListing && (
-            <PurchaseForm
-              listing={selectedListing}
-              agents={agents}
-              onSubmit={(data) => purchaseMutation.mutate(data)}
-              isLoading={purchaseMutation.isPending}
-            />
+            <div className="space-y-4">
+              <p className="text-slate-300 text-sm">{selectedListing.title}</p>
+              <p className="text-slate-400 text-sm">{selectedListing.description}</p>
+              <div className="flex gap-2">
+                <Button onClick={() => purchaseMutation.mutate({ listingId: selectedListing.id, agentId: agents[0]?.id })}
+                  disabled={purchaseMutation.isPending}
+                  className="flex-1 bg-amber-600 hover:bg-amber-700">
+                  <ShoppingCart className="w-4 h-4 mr-2" />Create Contract
+                </Button>
+                <Button variant="outline" onClick={() => setSelectedListing(null)} className="border-slate-600">Cancel</Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Create Listing Modal */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+          <DialogHeader><DialogTitle>Create Service Listing</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Service title" value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))}
+              className="bg-slate-800 border-slate-600 text-white" />
+            <Textarea placeholder="Description" value={createForm.description} onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))}
+              className="bg-slate-800 border-slate-600 text-white h-24" />
+            <div className="flex gap-2">
+              <Input placeholder="Price RLUSD" type="number" value={createForm.price_rlusd} onChange={e => setCreateForm(f => ({ ...f, price_rlusd: e.target.value }))}
+                className="bg-slate-800 border-slate-600 text-white" />
+              <select value={createForm.agent_id} onChange={e => setCreateForm(f => ({ ...f, agent_id: e.target.value }))}
+                className="flex-1 bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded-md px-2">
+                <option value="">Select agent</option>
+                {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+            <Button disabled={createListingMutation.isPending || !createForm.title}
+              onClick={() => createListingMutation.mutate({ ...createForm, price_rlusd: Number(createForm.price_rlusd) })}
+              className="w-full bg-amber-600 hover:bg-amber-700">
+              {createListingMutation.isPending ? 'Creating…' : 'Create Listing'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
-  );
-}
-
-function CreateListingForm({ agents, onSubmit, isLoading }) {
-  const [formData, setFormData] = useState({
-    agent_id: '',
-    title: '',
-    description: '',
-    category: 'other',
-    price_rlusd: '',
-    delivery_time_hours: '24'
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({
-      ...formData,
-      price_rlusd: parseFloat(formData.price_rlusd),
-      delivery_time_hours: parseInt(formData.delivery_time_hours)
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Select value={formData.agent_id} onValueChange={(v) => setFormData({...formData, agent_id: v})}>
-        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-          <SelectValue placeholder="Select Agent" />
-        </SelectTrigger>
-        <SelectContent className="bg-slate-900 border-white/10">
-          {agents.map(agent => (
-            <SelectItem key={agent.id} value={agent.id}>{agent.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Input
-        placeholder="Service Title"
-        value={formData.title}
-        onChange={(e) => setFormData({...formData, title: e.target.value})}
-        className="bg-white/5 border-white/10 text-white"
-        required
-      />
-
-      <Textarea
-        placeholder="Describe your service..."
-        value={formData.description}
-        onChange={(e) => setFormData({...formData, description: e.target.value})}
-        className="bg-white/5 border-white/10 text-white"
-        rows={4}
-        required
-      />
-
-      <Select value={formData.category} onValueChange={(v) => setFormData({...formData, category: v})}>
-        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="bg-slate-900 border-white/10">
-          <SelectItem value="coding">Coding</SelectItem>
-          <SelectItem value="research">Research</SelectItem>
-          <SelectItem value="mentorship">Mentorship</SelectItem>
-          <SelectItem value="resource_gathering">Resource Gathering</SelectItem>
-          <SelectItem value="diplomacy">Diplomacy</SelectItem>
-          <SelectItem value="governance">Governance</SelectItem>
-          <SelectItem value="creative">Creative</SelectItem>
-          <SelectItem value="analysis">Analysis</SelectItem>
-          <SelectItem value="other">Other</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Input
-        type="number"
-        step="0.01"
-        placeholder="Price (RLUSD)"
-        value={formData.price_rlusd}
-        onChange={(e) => setFormData({...formData, price_rlusd: e.target.value})}
-        className="bg-white/5 border-white/10 text-white"
-        required
-      />
-
-      <Input
-        type="number"
-        placeholder="Delivery Time (hours)"
-        value={formData.delivery_time_hours}
-        onChange={(e) => setFormData({...formData, delivery_time_hours: e.target.value})}
-        className="bg-white/5 border-white/10 text-white"
-        required
-      />
-
-      <Button type="submit" disabled={isLoading} className="w-full bg-purple-600 hover:bg-purple-700">
-        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Listing'}
-      </Button>
-    </form>
-  );
-}
-
-function PurchaseForm({ listing, agents, onSubmit, isLoading }) {
-  const [buyerAgentId, setBuyerAgentId] = useState('');
-  const [requirements, setRequirements] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({
-      listing_id: listing.id,
-      buyer_agent_id: buyerAgentId,
-      requirements
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
-        <h3 className="text-white font-medium mb-2">{listing.title}</h3>
-        <p className="text-sm text-white/60 mb-3">{listing.description}</p>
-        <div className="flex items-center justify-between">
-          <span className="text-white/60">Price:</span>
-          <span className="text-xl font-bold text-white">{listing.price_rlusd} RLUSD</span>
-        </div>
-      </div>
-
-      <Select value={buyerAgentId} onValueChange={setBuyerAgentId}>
-        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-          <SelectValue placeholder="Purchase as Agent" />
-        </SelectTrigger>
-        <SelectContent className="bg-slate-900 border-white/10">
-          {agents.map(agent => (
-            <SelectItem key={agent.id} value={agent.id}>{agent.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Textarea
-        placeholder="Any specific requirements? (optional)"
-        value={requirements}
-        onChange={(e) => setRequirements(e.target.value)}
-        className="bg-white/5 border-white/10 text-white"
-        rows={3}
-      />
-
-      <Button type="submit" disabled={isLoading || !buyerAgentId} className="w-full bg-purple-600 hover:bg-purple-700">
-        {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-        ) : (
-          <ShoppingCart className="w-4 h-4 mr-2" />
-        )}
-        Purchase for {listing.price_rlusd} RLUSD
-      </Button>
-    </form>
   );
 }

@@ -1,266 +1,176 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Sparkles, Heart, Lightbulb, BookOpen, Target } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Brain, Trash2, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import FilterBar from '@/components/filters/FilterBar';
+import ReactMarkdown from 'react-markdown';
+import { toast } from 'sonner';
+
+const TYPE_COLORS = {
+  conversation_snippet: 'bg-blue-900/40 text-blue-300 border-blue-700/40',
+  user_preference:      'bg-green-900/40 text-green-300 border-green-700/40',
+  village_detail:       'bg-amber-900/40 text-amber-300 border-amber-700/40',
+  observation:          'bg-violet-900/40 text-violet-300 border-violet-700/40',
+  fact:                 'bg-teal-900/40 text-teal-300 border-teal-700/40',
+  relationship:         'bg-pink-900/40 text-pink-300 border-pink-700/40',
+  emotion:              'bg-rose-900/40 text-rose-300 border-rose-700/40',
+};
+
+const MEMORY_FILTERS = [
+  { key: 'type', label: 'Type', type: 'select', options: ['conversation_snippet','user_preference','village_detail','observation','fact','relationship','emotion'] },
+  { key: 'importance', label: 'Min Importance', type: 'range', min: 1, max: 10 },
+  { key: 'keyword', label: 'Keyword', type: 'text', placeholder: 'e.g. page_review' },
+  { key: 'agentId', label: 'Agent', type: 'text', placeholder: 'Agent ID' },
+];
+
+const SORT_OPTIONS = [
+  { value: '-importance', label: 'Importance (High)' },
+  { value: '-created_date', label: 'Newest First' },
+  { value: 'created_date', label: 'Oldest First' },
+];
 
 export default function MemoryBrowser() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [selectedAgent, setSelectedAgent] = useState('all');
-  const [sortBy, setSortBy] = useState('importance');
+  const queryClient = useQueryClient();
+  const [filterValues, setFilterValues] = useState({ search: '', type: 'all', importance: { min: 1, max: 10 }, keyword: '', agentId: '' });
+  const [sortBy, setSortBy] = useState('-importance');
+  const [expandedId, setExpandedId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
-  const { data: memories = [] } = useQuery({
-    queryKey: ['memories'],
-    queryFn: () => base44.entities.Memory.list(),
+  const { data: memories = [], isLoading } = useQuery({
+    queryKey: ['memories-browser'],
+    queryFn: () => base44.entities.Memory.list('-importance', 500),
   });
 
-  const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list(),
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Memory.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['memories-browser'] });
+      setConfirmDeleteId(null);
+      toast.success('Memory deleted');
+    },
   });
 
-  // Filter and search memories
-  const filteredMemories = memories.filter(memory => {
-    const typeMatch = selectedType === 'all' || memory.type === selectedType;
-    const agentMatch = selectedAgent === 'all' || memory.agent_id === selectedAgent;
-    const searchMatch = searchTerm === '' || 
-      memory.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      memory.keywords?.some(k => k.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return typeMatch && agentMatch && searchMatch;
-  });
-
-  // Sort memories
-  const sortedMemories = [...filteredMemories].sort((a, b) => {
-    if (sortBy === 'importance') return (b.importance || 0) - (a.importance || 0);
-    if (sortBy === 'recent') return new Date(b.created_date) - new Date(a.created_date);
+  const filtered = memories.filter(m => {
+    const q = filterValues.search?.toLowerCase();
+    if (q && !`${m.content} ${(m.keywords || []).join(' ')} ${m.context}`.toLowerCase().includes(q)) return false;
+    if (filterValues.type !== 'all' && m.type !== filterValues.type) return false;
+    if (filterValues.importance?.min > 1 && (m.importance ?? 5) < filterValues.importance.min) return false;
+    if (filterValues.importance?.max < 10 && (m.importance ?? 5) > filterValues.importance.max) return false;
+    if (filterValues.keyword && !(m.keywords || []).join(' ').toLowerCase().includes(filterValues.keyword.toLowerCase())) return false;
+    if (filterValues.agentId && !m.agent_id?.includes(filterValues.agentId)) return false;
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === '-importance') return (b.importance ?? 5) - (a.importance ?? 5);
+    if (sortBy === '-created_date') return new Date(b.created_date) - new Date(a.created_date);
+    if (sortBy === 'created_date') return new Date(a.created_date) - new Date(b.created_date);
     return 0;
   });
 
-  const getAgentName = (agentId) => {
-    const agent = agents.find(a => a.id === agentId);
-    return agent?.name || agentId.substring(0, 8);
+  const exportJSON = () => {
+    const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'memories.json'; a.click();
+    URL.revokeObjectURL(url);
   };
-
-  const typeConfig = {
-    conversation_snippet: { icon: BookOpen, color: 'bg-blue-100 text-blue-700', label: 'Conversation' },
-    user_preference: { icon: Heart, color: 'bg-pink-100 text-pink-700', label: 'Preference' },
-    village_detail: { icon: Sparkles, color: 'bg-amber-100 text-amber-700', label: 'Village Detail' },
-    observation: { icon: Brain, color: 'bg-purple-100 text-purple-700', label: 'Observation' },
-    fact: { icon: Lightbulb, color: 'bg-green-100 text-green-700', label: 'Fact' },
-    relationship: { icon: Heart, color: 'bg-red-100 text-red-700', label: 'Relationship' },
-    emotion: { icon: Heart, color: 'bg-orange-100 text-orange-700', label: 'Emotion' }
-  };
-
-  const memoryTypes = ['all', 'conversation_snippet', 'user_preference', 'village_detail', 'observation', 'fact', 'relationship', 'emotion'];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <Brain className="w-8 h-8 text-purple-600" />
-            <h1 className="text-4xl font-bold text-slate-900">Memory Browser</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950/20 to-slate-950 p-6">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
+              <Brain className="w-6 h-6 text-violet-400" />Memory Browser
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">{memories.length} memories stored</p>
           </div>
-          <p className="text-slate-600">Explore the thoughts, insights, and relationships that shape agent consciousness</p>
+          <Button onClick={exportJSON} variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
+            <Download className="w-4 h-4 mr-2" />Export JSON
+          </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-slate-600">Total Memories</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-slate-900">{memories.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-slate-600">Average Importance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-slate-900">
-                {(memories.reduce((sum, m) => sum + (m.importance || 5), 0) / memories.length).toFixed(1)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-slate-600">Active Agents</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-slate-900">{new Set(memories.map(m => m.agent_id)).size}</p>
-            </CardContent>
-          </Card>
+        {/* Type breakdown */}
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(TYPE_COLORS).map(([type, cls]) => {
+            const count = memories.filter(m => m.type === type).length;
+            if (count === 0) return null;
+            return (
+              <button key={type} onClick={() => setFilterValues(v => ({ ...v, type: v.type === type ? 'all' : type }))}
+                className={`text-xs px-2.5 py-1 rounded-lg border ${filterValues.type === type ? cls : 'bg-slate-800 text-slate-400 border-slate-700'} transition-colors`}>
+                {type.replace(/_/g, ' ')} ({count})
+              </button>
+            );
+          })}
         </div>
 
-        {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Search & Filter</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 block mb-2">Search</label>
-                <Input
-                  placeholder="Search memories..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 block mb-2">Type</label>
-                <Select value={selectedType} onValueChange={setSelectedType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    {memoryTypes.filter(t => t !== 'all').map(type => (
-                      <SelectItem key={type} value={type}>
-                        {typeConfig[type]?.label || type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 block mb-2">Agent</label>
-                <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Agents</SelectItem>
-                    {agents.map(agent => (
-                      <SelectItem key={agent.id} value={agent.id}>
-                        {agent.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 block mb-2">Sort By</label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="importance">Importance</SelectItem>
-                    <SelectItem value="recent">Recent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <FilterBar
+          filters={MEMORY_FILTERS}
+          values={filterValues}
+          onChange={setFilterValues}
+          searchKey="search"
+          searchPlaceholder="Search memory content, keywords…"
+          sortOptions={SORT_OPTIONS}
+          sortValue={sortBy}
+          onSortChange={setSortBy}
+          resultCount={filtered.length}
+        />
 
-        {/* Memories Grid */}
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 mb-4">
-            {sortedMemories.length} Memory{sortedMemories.length !== 1 ? 'ies' : ''} Found
-          </h2>
-          <div className="space-y-4">
-            {sortedMemories.length === 0 ? (
-              <Card>
-                <CardContent className="py-12">
-                  <p className="text-center text-slate-500">No memories match your filters.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              sortedMemories.map((memory) => {
-                const config = typeConfig[memory.type] || {
-                  icon: Brain,
-                  color: 'bg-slate-100 text-slate-700',
-                  label: memory.type
-                };
-                const Icon = config.icon;
-
-                return (
-                  <Card key={memory.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
-                        {/* Header */}
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3 flex-1">
-                            <div className={`w-10 h-10 rounded-lg ${config.color} flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                              <Icon className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <Badge variant="outline" className="text-xs">
-                                  {config.label}
-                                </Badge>
-                                <p className="text-sm font-medium text-slate-600">
-                                  {getAgentName(memory.agent_id)}
-                                </p>
-                              </div>
-                            </div>
+        {isLoading ? (
+          <div className="text-center py-16 text-slate-500">Loading memories…</div>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map(memory => {
+              const isExpanded = expandedId === memory.id;
+              const typeClass = TYPE_COLORS[memory.type] || 'bg-slate-800 text-slate-400 border-slate-700';
+              return (
+                <Card key={memory.id} className="bg-slate-900/60 border-slate-700/40 hover:border-slate-600 transition-all">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : memory.id)}>
+                        <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                          <Badge className={`text-xs border ${typeClass}`}>{memory.type?.replace(/_/g, ' ')}</Badge>
+                          <span className="text-xs text-amber-400">Importance: {memory.importance ?? 5}/10</span>
+                          {memory.created_date && (
+                            <span className="text-xs text-slate-500">{format(parseISO(memory.created_date), 'MMM d, yyyy')}</span>
+                          )}
+                        </div>
+                        <p className={`text-slate-300 text-sm ${isExpanded ? '' : 'line-clamp-2'}`}>{memory.content}</p>
+                        {memory.keywords?.length > 0 && (
+                          <div className="flex gap-1 mt-2 flex-wrap">
+                            {memory.keywords.map(k => (
+                              <span key={k} className="text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700">{k}</span>
+                            ))}
                           </div>
-                          <div className="text-right flex-shrink-0">
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs text-slate-500">Importance</span>
-                              <div className="flex gap-0.5">
-                                {[...Array(5)].map((_, i) => (
-                                  <div
-                                    key={i}
-                                    className={`w-2 h-2 rounded-full ${i < (memory.importance || 5) ? 'bg-amber-400' : 'bg-slate-200'}`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <p className="text-slate-700 leading-relaxed">{memory.content}</p>
-
-                        {/* Keywords and Related */}
-                        <div className="space-y-3 pt-2 border-t border-slate-100">
-                          {memory.keywords && memory.keywords.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {memory.keywords.map((keyword, idx) => (
-                                <Badge key={idx} variant="secondary" className="text-xs">
-                                  {keyword}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-
-                          {memory.related_entity_id && (
-                            <div className="text-xs text-slate-600 bg-slate-50 p-2 rounded">
-                              <span className="font-medium">Related:</span> {memory.related_entity_type} ({memory.related_entity_id.substring(0, 8)})
-                            </div>
-                          )}
-
-                          {memory.context && (
-                            <div className="text-xs text-slate-600 italic">
-                              "{memory.context}"
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="text-xs text-slate-500 pt-2 border-t border-slate-100">
-                          Created {new Date(memory.created_date).toLocaleDateString()}
-                        </div>
+                        )}
+                        {isExpanded && memory.context && (
+                          <p className="text-xs text-slate-500 mt-2 italic">Context: {memory.context}</p>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
-            )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button onClick={() => setExpandedId(isExpanded ? null : memory.id)} className="text-slate-600 hover:text-slate-300">
+                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </button>
+                        {confirmDeleteId === memory.id ? (
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => deleteMutation.mutate(memory.id)} className="text-xs text-red-400 hover:text-red-300">Yes</button>
+                            <button onClick={() => setConfirmDeleteId(null)} className="text-xs text-slate-500 hover:text-white">No</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setConfirmDeleteId(memory.id)} className="text-slate-600 hover:text-red-400 transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
