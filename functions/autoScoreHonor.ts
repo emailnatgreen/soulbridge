@@ -69,11 +69,13 @@ Deno.serve(async (req) => {
   // --- Task completion scoring ---
   if (entityName === 'ProjectTask' && eventType === 'update') {
     if (data.status !== 'completed') {
+      await logAutomationEventWithClient('skipped', 'Task not completed yet', { entity_id: event.entity_id, status: data.status }, null);
       return Response.json({ skipped: true, reason: 'Task not completed yet' });
     }
 
     agentId = data.assigned_agent_id;
     if (!agentId) {
+      await logAutomationEventWithClient('skipped', 'No assigned agent on task', { entity_id: event.entity_id }, null);
       return Response.json({ skipped: true, reason: 'No assigned agent on task' });
     }
 
@@ -87,6 +89,7 @@ Deno.serve(async (req) => {
   else if (entityName === 'GovernanceVote' && eventType === 'create') {
     agentId = data.voter_agent_id;
     if (!agentId) {
+      await logAutomationEventWithClient('skipped', 'No voter agent ID', { entity_id: event.entity_id }, null);
       return Response.json({ skipped: true, reason: 'No voter agent ID' });
     }
 
@@ -105,7 +108,7 @@ Deno.serve(async (req) => {
     const agents = await base44.asServiceRole.entities.Agent.filter({ id: agentId });
     const agent = agents?.[0];
     if (!agent) {
-      await logAutomationEvent('skipped', `Agent ${agentId} not found`, { agentId, entityName }, null);
+      await logAutomationEventWithClient('skipped', `Agent ${agentId} not found`, { agentId, entityName }, null);
       return Response.json({ skipped: true, reason: `Agent ${agentId} not found` });
     }
 
@@ -139,7 +142,7 @@ Deno.serve(async (req) => {
     console.log(`[autoScoreHonor] ${agent.name}: ${currentScore} → ${newScore} (+${honorDelta}) | ${reason}`);
 
     // Log successful execution
-    await logAutomationEvent('success', reason, { agent_id: agentId, agent_name: agent.name, honor_before: currentScore, honor_after: newScore, delta: honorDelta }, null);
+    await logAutomationEventWithClient('success', reason, { agent_id: agentId, agent_name: agent.name, honor_before: currentScore, honor_after: newScore, delta: honorDelta }, null);
 
     return Response.json({
       success: true,
@@ -151,7 +154,7 @@ Deno.serve(async (req) => {
     });
   } catch (scoringErr) {
     console.error(`[autoScoreHonor] Failed to process honor for agent ${agentId}:`, scoringErr.message);
-    await logAutomationEvent('error', `Failed to process honor: ${scoringErr.message}`, { agentId, entityName }, scoringErr.message);
+    await logAutomationEventWithClient('error', `Failed to process honor: ${scoringErr.message}`, { agentId, entityName }, scoringErr.message);
     return Response.json({ skipped: true, reason: `Failed to process honor: ${scoringErr.message}` });
   }
   } catch (err) {
