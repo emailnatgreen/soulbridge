@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { Client, dropsToXrp } from 'npm:xrpl@3.0.0';
 
 Deno.serve(async (req) => {
   try {
@@ -17,24 +16,36 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Wallet has no classic_address' }, { status: 400 });
     }
 
-    const networkUrl = walletRecord.network === 'mainnet' ? 'wss://xrpl.ws' : 'wss://s.altnet.rippletest.net:51233';
-    const client = new Client(networkUrl);
-    await client.connect();
+    const rpcUrl = walletRecord.network === 'mainnet'
+      ? 'https://xrplcluster.com'
+      : 'https://s.altnet.rippletest.net:51234';
 
     let balance = 0;
     try {
-      const accountInfo = await client.request({
-        command: 'account_info',
-        account: walletRecord.classic_address,
-        ledger_index: 'validated'
+      const response = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'account_info',
+          params: [{ account: walletRecord.classic_address, ledger_index: 'validated' }]
+        }),
+        signal: AbortSignal.timeout(10000),
       });
-      balance = parseFloat(dropsToXrp(accountInfo.result.account_data.Balance));
-    } catch (err) {
-      // Account may not be activated yet
-      console.log('account_info failed:', err.message);
-    }
 
-    await client.disconnect();
+      const data = await response.json();
+      if (data?.result?.account_data?.Balance) {
+        balance = parseFloat(data.result.account_data.Balance) / 1_000_000;
+      }
+    } catch (err) {
+      console.log('account_info fetch failed:', err.message);
+      // Return stored balance if live fetch fails
+      return Response.json({
+        success: true,
+        balance: walletRecord.balance ?? 0,
+        classic_address: walletRecord.classic_address,
+        cached: true,
+      });
+    }
 
     // Persist updated balance
     await base44.asServiceRole.entities.Wallet.update(wallet_id, {
