@@ -163,11 +163,7 @@ export default function DynamicFloatingConnectButton() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                handleClose();
-              }
-            }}
+            onClick={handleClose}
             className="fixed inset-0 z-30 bg-black/20"
           />
         )}
