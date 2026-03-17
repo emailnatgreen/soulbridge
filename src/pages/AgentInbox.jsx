@@ -14,7 +14,7 @@ import {
 import { format } from 'date-fns';
 
 const AXI_ID = 'axi_main_001';
-const axiIds = ['axi_main_001', 'Axi', 'axi'];
+const axiIds = [AXI_ID, 'Axi', 'axi'];
 
 export default function AgentInbox() {
   const queryClient = useQueryClient();
