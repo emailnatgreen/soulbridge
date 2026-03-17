@@ -39,18 +39,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'address or wallet_id required' }, { status: 400 });
     }
 
-    const wsUrl = walletNetwork === 'testnet'
-      ? 'wss://s.altnet.rippletest.net:51233'
-      : 'wss://xrpl.ws';
+    // Use stable XRPL JSON-RPC HTTP endpoints
+    const rpcUrl = walletNetwork === 'testnet'
+      ? 'https://s.altnet.rippletest.net:51234'
+      : 'https://s1.ripple.com:51234';
 
-    // Use native fetch to query XRPL
-    const response = await fetch(`${wsUrl.replace('wss://', 'https://')}`, {
+    const response = await fetch(rpcUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        command: 'account_info',
-        account: checkAddress,
-        ledger_index: 'validated'
+        method: 'account_info',
+        params: [{ account: checkAddress, ledger_index: 'validated' }]
       })
     }).catch(() => null);
 
