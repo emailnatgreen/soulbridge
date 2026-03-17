@@ -49,16 +49,17 @@ Deno.serve(async (req) => {
         let lastError = null;
         for (const rpcUrl of ETH_RPCS) {
             try {
-                const [balanceHex, decimalsHex] = await Promise.all([
-                    ethCall(rpcUrl, RLUSD_CONTRACT, balanceData),
-                    ethCall(rpcUrl, RLUSD_CONTRACT, '0x313ce567')
-                ]);
+                // Try balance call first with timeout
+                const balanceHex = await ethCall(rpcUrl, RLUSD_CONTRACT, balanceData);
+                // If balance works, get decimals
+                const decimalsHex = await ethCall(rpcUrl, RLUSD_CONTRACT, '0x313ce567');
                 const decimals = parseInt(decimalsHex, 16);
                 const balance = formatUnits(balanceHex, decimals);
                 return Response.json({ address, balance, balanceRaw: BigInt(balanceHex).toString() });
             } catch (err) {
                 console.log(`RPC ${rpcUrl} failed:`, err.message);
                 lastError = err;
+                // Continue to next RPC endpoint
             }
         }
 
