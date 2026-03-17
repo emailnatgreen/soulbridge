@@ -353,7 +353,22 @@ export default function PageReviewPanel() {
                 <option value={20}>20 pages</option>
                 <option value={total}>All ({total})</option>
               </select>
-              <span className="text-slate-500">Starting at page {batchStartIndex + 1}</span>
+              <span className="text-slate-500 flex items-center gap-1.5">
+                From page:
+                <input
+                  type="number"
+                  min={1}
+                  max={total}
+                  value={batchStartIndex + 1}
+                  onChange={e => {
+                    const val = Math.min(Math.max(1, parseInt(e.target.value) || 1), total);
+                    setBatchStartIndex(val - 1);
+                  }}
+                  disabled={batchRunning}
+                  className="w-16 bg-slate-800 border border-slate-600/50 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
+                />
+                <span className="text-slate-600">/ {total}</span>
+              </span>
             </div>
           </div>
 
