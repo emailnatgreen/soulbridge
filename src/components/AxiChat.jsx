@@ -415,7 +415,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   return (
     <>
       {/* Floating trigger button — always visible when chat is closed */}
-      {!isOpen && !isPublicPage && (
+      {!isOpen && (
         <motion.button
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
