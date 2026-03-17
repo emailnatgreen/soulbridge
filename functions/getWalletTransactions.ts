@@ -1,14 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { Client, dropsToXrp } from 'npm:xrpl@3.0.0';
 
-const RLUSD_HEX = "524C555344000000000000000000000000000000";
+function dropsToXrp(drops) {
+  return (parseInt(drops) / 1_000_000).toString();
+}
 
 function parseTransaction(tx, accountAddress) {
-  const raw = tx.tx || tx;
+  const raw = tx.tx_json || tx.tx || tx;
   const meta = tx.meta || tx.metaData || {};
 
   const txType = raw.TransactionType || 'Unknown';
-  const hash = raw.hash;
+  const hash = tx.hash || raw.hash;
   const date = raw.date
     ? new Date((raw.date + 946684800) * 1000).toISOString()
     : null;
@@ -24,7 +25,6 @@ function parseTransaction(tx, accountAddress) {
   if (txType === 'Payment') {
     const amt = raw.Amount;
     if (typeof amt === 'string') {
-      // XRP in drops
       amount = dropsToXrp(amt);
       currency = 'XRP';
     } else if (typeof amt === 'object' && amt !== null) {
@@ -67,43 +67,40 @@ Deno.serve(async (req) => {
     if (!walletRecord) return Response.json({ error: 'Wallet not found' }, { status: 404 });
 
     if (!walletRecord.classic_address) {
-      return Response.json({ 
-        success: true, 
-        transactions: [], 
-        wallet_address: null, 
-        network: walletRecord.network || 'testnet' 
-      });
+      return Response.json({ success: true, transactions: [], wallet_address: null, network: walletRecord.network || 'testnet' });
     }
 
-    const networkUrl = walletRecord.network === 'mainnet'
-      ? 'wss://xrpl.ws'
-      : 'wss://s.altnet.rippletest.net:51233';
+    const rpcUrl = walletRecord.network === 'mainnet'
+      ? 'https://xrplcluster.com'
+      : 'https://s.altnet.rippletest.net:51234';
 
-    const client = new Client(networkUrl);
     let transactions = [];
-    
+
     try {
-      await client.connect();
-      try {
-        const response = await client.request({
-          command: 'account_tx',
-          account: walletRecord.classic_address,
-          limit: Math.min(limit, 200),
-          ledger_index_min: -1,
-          ledger_index_max: -1,
-          forward: false,
-        });
-        transactions = (response.result.transactions || []).map(tx =>
+      const response = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'account_tx',
+          params: [{
+            account: walletRecord.classic_address,
+            limit: Math.min(limit, 200),
+            ledger_index_min: -1,
+            ledger_index_max: -1,
+            forward: false,
+          }]
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+
+      const data = await response.json();
+      if (data?.result?.transactions) {
+        transactions = data.result.transactions.map(tx =>
           parseTransaction(tx, walletRecord.classic_address)
         );
-      } catch (err) {
-        // Account not found / not activated / malformed — return empty
-        console.log('account_tx failed:', err.message);
-      } finally {
-        try { await client.disconnect(); } catch (_) { /* ignore disconnect errors */ }
       }
-    } catch (connectErr) {
-      console.error('Client connection error:', connectErr.message);
+    } catch (err) {
+      console.log('account_tx fetch failed:', err.message);
     }
 
     return Response.json({
