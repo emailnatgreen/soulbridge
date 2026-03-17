@@ -499,12 +499,12 @@ export default function DIDManager() {
                           </div>
 
                           {/* Verification Status */}
-                          {getVerificationBadge(wallet.id) && (
+                          {getVerificationBadge(wallet) && (
                           <div className="border-t pt-4">
-                        <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-700">Last Verification:</span>
-                          {getVerificationBadge(wallet.id)}
-                        </div>
+                          {getVerificationBadge(wallet)}
+                          </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {new Date(verificationResults[wallet.id]?.verification?.verified_at).toLocaleString()}
                           </div>
