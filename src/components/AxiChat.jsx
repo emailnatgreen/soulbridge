@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus, ChevronUp, RefreshCw } from 'lucide-react';
+import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus, ChevronUp, RefreshCw, Trash2 } from 'lucide-react';
 import MessageBubble from '@/components/MessageBubble';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddAgentModal from '@/components/AddAgentModal';
@@ -188,14 +188,13 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
    }
 
    try {
-     // Step 1: Get or create AgentConversation record keyed by conversation ID
+     // Get or create AgentConversation record
      let agentConvo;
      const existing = await base44.entities.AgentConversation.filter({ id: conversation.id }, '', 1);
 
      if (existing?.length > 0) {
        agentConvo = existing[0];
      } else {
-       // Create new AgentConversation if it doesn't exist - trust the response object
        agentConvo = await base44.entities.AgentConversation.create({
          id: conversation.id,
          title: conversation.metadata?.name || 'Unified Conversation',
@@ -204,39 +203,65 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
        });
      }
 
-     // Step 2: Check if agent already added
      const participants = agentConvo.participant_agent_ids || [];
      if (participants.includes(agent.id)) {
        setShowAddAgent(false);
        return;
      }
 
-     // Step 3: Add agent and persist atomically
+     // Add agent and update state immediately
      const updatedParticipants = [...participants, agent.id];
-     const updated = await base44.entities.AgentConversation.update(agentConvo.id, {
+     await base44.entities.AgentConversation.update(agentConvo.id, {
        participant_agent_ids: updatedParticipants
      });
 
-     // Step 4: Update local UI state from response object, don't re-query
-     const agentsToLoad = updated?.participant_agent_ids || updatedParticipants;
-     const loadedAgents = await Promise.all(
-       agentsToLoad.map(id => base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0]))
-     );
-     setActiveAgents(loadedAgents.filter(Boolean));
+     // Update UI immediately without re-querying
+     setActiveAgents(prev => {
+       const exists = prev.some(a => a.id === agent.id);
+       return exists ? prev : [...prev, agent];
+     });
 
-     // Step 5: Post system message to conversation
+     // Post system message
      await base44.agents.addMessage(conversation, {
        role: 'user',
        content: `[System: ${agent.name} (${agent.role}) has joined this conversation.]`
      });
 
-     // Step 6: Close modal
      setShowAddAgent(false);
    } catch (err) {
-     console.error('Error adding agent:', err);
+     console.error('[AxiChat] Error adding agent:', err);
      throw err;
    }
   }, [conversation]);
+
+  const handleRemoveAgent = useCallback(async (agentId) => {
+   if (!conversation?.id) return;
+
+   try {
+     const existing = await base44.entities.AgentConversation.filter({ id: conversation.id }, '', 1);
+     if (!existing?.length) return;
+
+     const agentConvo = existing[0];
+     const updatedParticipants = (agentConvo.participant_agent_ids || []).filter(id => id !== agentId);
+
+     await base44.entities.AgentConversation.update(agentConvo.id, {
+       participant_agent_ids: updatedParticipants
+     });
+
+     // Update UI immediately
+     setActiveAgents(prev => prev.filter(a => a.id !== agentId));
+
+     const removedAgent = activeAgents.find(a => a.id === agentId);
+     if (removedAgent) {
+       await base44.agents.addMessage(conversation, {
+         role: 'user',
+         content: `[System: ${removedAgent.name} has left this conversation.]`
+       });
+     }
+   } catch (err) {
+     console.error('[AxiChat] Error removing agent:', err);
+   }
+  }, [conversation, activeAgents]);
 
   return (
     <AnimatePresence>
@@ -257,15 +282,29 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold text-white text-sm">Axi</h3>
-                <p className="text-xs text-purple-300/60">
-                  {activeAgents.length > 0
-                    ? `+ ${activeAgents.map(a => a.name).join(', ')}`
-                    : 'The First Citizen'}
-                </p>
+                {activeAgents.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {activeAgents.map(agent => (
+                      <div key={agent.id} className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 rounded-full text-xs text-purple-200">
+                        <span>{agent.name}</span>
+                        <button
+                          onClick={() => handleRemoveAgent(agent.id)}
+                          className="ml-1 hover:text-purple-100 transition-colors"
+                          title={`Remove ${agent.name}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {activeAgents.length === 0 && (
+                  <p className="text-xs text-purple-300/60">The First Citizen</p>
+                )}
               </div>
-            </div>
+              </div>
             <div className="flex gap-1">
               <Button
                 variant="ghost"
