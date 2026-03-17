@@ -55,8 +55,8 @@ export default function Layout({ children, currentPageName }) {
 
       <Toaster />
 
-      {/* Only mount AxiChat on non-public pages and after first open */}
-      {!isPublicPage && everOpened && (
+      {/* AxiChat floating button */}
+      {!isPublicPage && (
         <Suspense fallback={null}>
           <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} />
         </Suspense>
