@@ -53,21 +53,29 @@ export default function FloatingConnectButton() {
 
   const handleSelectAgent = async (agent) => {
     try {
+      // First, open the Axi chat
+      window.dispatchEvent(new Event('open-axi'));
+      
+      // Then create conversation and load it
       const convo = await base44.agents.createConversation({
         agent_name: agent.id,
         metadata: { agent_id: agent.id, agent_name: agent.name }
       });
-      // Open Axi chat and trigger agent conversation
-      window.dispatchEvent(
-        new CustomEvent('open-axi-with-agent', {
-          detail: { 
-            conversationId: convo.id, 
-            agentId: agent.id,
-            agentName: agent.name,
-            agentRole: agent.role
-          }
-        })
-      );
+      
+      // Give AxiChat a moment to open, then trigger agent load
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent('open-axi-with-agent', {
+            detail: { 
+              conversationId: convo.id, 
+              agentId: agent.id,
+              agentName: agent.name,
+              agentRole: agent.role
+            }
+          })
+        );
+      }, 100);
+      
       setIsOpen(false);
       setMode(null);
       setSearch('');
