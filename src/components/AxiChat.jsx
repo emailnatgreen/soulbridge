@@ -137,14 +137,22 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   };
 
   const handleAddAgent = useCallback(async (agent) => {
-    if (!conversation) return;
-    setActiveAgents(prev => [...prev, agent]);
-    setShowAddAgent(false);
-    // Post a system message announcing the agent has joined
-    await base44.agents.addMessage(conversation, {
-      role: 'user',
-      content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
-    });
+    if (!conversation) {
+      console.error('Cannot add agent: no active conversation');
+      return;
+    }
+    try {
+      setShowAddAgent(false);
+      setActiveAgents(prev => [...prev, agent]);
+      // Post a system message announcing the agent has joined
+      await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
+      });
+    } catch (err) {
+      console.error('Failed to add agent:', err);
+      setActiveAgents(prev => prev.filter(a => a.id !== agent.id));
+    }
   }, [conversation]);
 
   return (
