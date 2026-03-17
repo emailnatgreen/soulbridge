@@ -341,7 +341,9 @@ export default function Notifications() {
       <div className="max-w-6xl mx-auto p-6">
 
         {/* Agent selector */}
-        {!agentId ? (
+        <FeedbackWidget pageName="Notifications" />
+
+      {!agentId ? (
           <Card className="bg-white/5 border-white/10">
             <CardContent className="text-center py-12">
               <Bell className="w-12 h-12 text-white/20 mx-auto mb-4" />

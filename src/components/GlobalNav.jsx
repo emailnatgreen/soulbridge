@@ -33,9 +33,12 @@ export default function GlobalNav() {
 
       {/* Desktop Nav */}
       <nav className="fixed lg:block hidden left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 p-6 z-40 overflow-y-auto">
-        <div className="mb-8">
+        <div className="mb-6">
           <h2 className="text-lg font-bold text-white">SoulBridge</h2>
           <p className="text-xs text-slate-500">Village Command</p>
+        </div>
+        <div className="mb-4">
+          <GlobalSearchBar className="w-full" />
         </div>
 
         <div className="space-y-2">

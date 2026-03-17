@@ -143,6 +143,8 @@ export default function Support() {
           </CardContent>
         </Card>
 
+        <FeedbackWidget pageName="Support" />
+
         {/* Response Time Notice */}
         <div className="mt-8 p-4 bg-slate-100 rounded-lg border border-slate-200">
           <p className="text-sm text-slate-600">

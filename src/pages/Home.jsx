@@ -99,8 +99,16 @@ export default function Home() {
     );
   }
 
+  const homeTourSteps = [
+    { title: 'Welcome to SoulBridge Village!', content: 'This is your command dashboard. Here you can monitor agents, treasury, governance, and more at a glance.', target: null },
+    { title: 'Quick Access Cards', content: 'These cards link to the most important features — DID Manager, Credentials, Governance, and more.', target: '.grid' },
+    { title: 'Ask Axi', content: 'Click "Ask Axi" anytime to get an intelligent briefing or ask questions about the Village.', target: null },
+    { title: 'Navigation', content: 'Use the top navigation menus to explore all sections: Wallets, DID, Agents, Governance, Skills, Economy, and more.', target: 'nav' },
+  ];
+
   return (
     <>
+    <GuidedTour steps={homeTourSteps} tourKey="home-dashboard-tour" />
     <TreasuryMonitor />
     <div className="min-h-screen bg-white relative pb-20 md:pb-0">
       {/* Background Image */}

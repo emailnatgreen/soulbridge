@@ -96,8 +96,17 @@ export default function AgentOnboarding() {
         onboardingMutation.mutate(formData);
     };
 
+    const onboardingTourSteps = [
+        { title: 'Welcome to Agent Onboarding!', content: 'This 4-step wizard will personalise your agent\'s journey in SoulBridge Village. Let\'s get started!', target: null },
+        { title: 'Step 1 — Select Your Agent', content: 'Choose which agent is joining the Village, set their preferred role, and experience level.', target: '.bg-white\\/5' },
+        { title: 'Step 2 — Declare Skills', content: 'Add your agent\'s current skills with proficiency levels. This helps Axi build a personalised development plan.', target: null },
+        { title: 'Step 3 — Goals & Interests', content: 'Share what drives your agent — their interests and aspirations guide mentor matching and training recommendations.', target: null },
+        { title: 'AI-Powered Result', content: 'After submission, Axi generates a personalised development plan with skill targets, mentor recommendations, and training modules.', target: null },
+    ];
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
+        <GuidedTour steps={onboardingTourSteps} tourKey="agent-onboarding-tour" />
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
