@@ -47,7 +47,12 @@ function TooltipBox({ step, stepIndex, totalSteps, onNext, onPrev, onSkip }) {
 
   useEffect(() => {
     if (isCentered) {
-      setPos({ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+      // On mobile, position in upper portion to avoid bottom nav covering it
+      const isMobile = window.innerWidth < 768;
+      setPos(isMobile
+        ? { top: '12%', left: '50%', transform: 'translateX(-50%)' }
+        : { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
+      );
       return;
     }
     const rect = getElementRect(step.target);
