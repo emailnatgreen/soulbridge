@@ -112,6 +112,11 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
   }, [isOpen, retryKey]);
 
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    initialized.current = false;
+  }, []);
+
   const handleSend = useCallback(async () => {
     if (!input.trim() || !conversation || sending) return;
     const msg = input.trim();
@@ -183,7 +188,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
               <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8">
+              <Button variant="ghost" size="icon" onClick={handleClose} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8">
                 <X className="w-3.5 h-3.5" />
               </Button>
             </div>
