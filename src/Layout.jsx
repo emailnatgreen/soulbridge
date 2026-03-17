@@ -2,7 +2,7 @@ import React, { useState, lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from 'lucide-react';
-import AxiFloatingButton from '@/components/AxiFloatingButton';
+import DynamicFloatingConnectButton from '@/components/DynamicFloatingConnectButton';
 import GlobalNav from '@/components/GlobalNav';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
@@ -46,8 +46,8 @@ export default function Layout({ children, currentPageName }) {
 
       <Toaster />
 
-      {/* Floating Axi Button — hidden on pages with their own chat UI */}
-      {!NO_FLOAT_PAGES.includes(currentPageName) && <AxiFloatingButton />}
+      {/* Dynamic Floating Connect Button — hidden on pages with their own chat UI */}
+      {!NO_FLOAT_PAGES.includes(currentPageName) && <DynamicFloatingConnectButton />}
 
       {/* Only mount AxiChat on non-public pages and after first open */}
       {!isPublicPage && everOpened && (
