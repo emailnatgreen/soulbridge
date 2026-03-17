@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useEffect, useState } from 'react';
 import {
   Shield, Fingerprint, CheckCircle, AlertTriangle, XCircle,
   ArrowLeft, RefreshCw, Activity, Clock, FileText, Users,
@@ -14,7 +15,6 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
 import DidEventStream from '../components/DidEventStream';
 import DidHealthAlertsPanel from '../components/DidHealthAlertsPanel';
 
