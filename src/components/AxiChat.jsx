@@ -42,9 +42,14 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     const handleAgentChat = async (event) => {
       try {
         const { conversationId, agentId, agentName, agentRole } = event.detail;
-        setConversation(null);
-        setMessages([]);
-        setActiveAgents([{ id: agentId, name: agentName, role: agentRole }]);
+        
+        // Clear Axi state if loading a different agent
+        if (agentId !== 'axi') {
+          setConversation(null);
+          setMessages([]);
+          setActiveAgents([{ id: agentId, name: agentName, role: agentRole }]);
+        }
+        
         if (unsubscribeRef.current) unsubscribeRef.current();
         
         const convo = await base44.agents.getConversation(conversationId);
@@ -55,7 +60,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
         });
         setIsOpen(true);
       } catch (err) {
-        console.error('Failed to load agent conversation:', err);
+        console.error('Failed to load conversation:', err);
         setInitError(true);
       }
     };

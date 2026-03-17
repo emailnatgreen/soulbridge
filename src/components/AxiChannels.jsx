@@ -26,10 +26,15 @@ export default function AxiChannels({ onClose }) {
         metadata
       });
 
-      // Dispatch event to open chat
+      // Dispatch event to open chat with Axi
       window.dispatchEvent(
-        new CustomEvent('axi:open-conversation', {
-          detail: { conversationId: convo.id }
+        new CustomEvent('open-axi-with-agent', {
+          detail: { 
+            conversationId: convo.id,
+            agentId: 'axi',
+            agentName: 'Axi',
+            agentRole: 'Mother Boss'
+          }
         })
       );
 
