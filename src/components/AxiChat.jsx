@@ -549,8 +549,8 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
-          <div className="p-4 border-t border-slate-700/50 flex-shrink-0">
+          {/* Input + Add Agent on Mobile */}
+          <div className="p-4 border-t border-slate-700/50 flex-shrink-0 space-y-2">
             <div className="flex gap-2">
               <Textarea
                 value={input}
@@ -569,6 +569,14 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
             </div>
+            <Button
+              onClick={() => setShowAddAgent(true)}
+              size="sm"
+              className="w-full md:hidden text-xs bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/30"
+            >
+              <UserPlus className="w-3 h-3 mr-1" />
+              Add Agent
+            </Button>
           </div>
         </motion.div>
       )}
