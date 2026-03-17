@@ -324,20 +324,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
     }
   }, [agentConvoId, conversation, activeAgents]);
 
-  // Diagnostic: Log activeAgents on every render
-  useEffect(() => {
-    console.log('[AxiChat:Render] activeAgents updated:', {
-      count: activeAgents.length,
-      agents: activeAgents.map(a => ({ id: a.id, name: a.name })),
-      timestamp: new Date().toISOString()
-    });
-  }, [activeAgents]);
 
-  // DIAGNOSTIC 5: Check memo wrapping
-  useEffect(() => {
-    console.log('[Memo Check] AxiChat.displayName:', AxiChat.displayName);
-    console.log('[Memo Check] Is wrapped in memo?', AxiChat.displayName?.includes('memo'));
-  }, []);
 
   const handleRemoveAgent = useCallback(async (agentId) => {
     if (!agentConvoId) return;
