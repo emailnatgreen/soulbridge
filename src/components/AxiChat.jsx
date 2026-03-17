@@ -162,14 +162,24 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
           setMessages([...data.messages]);
         });
 
-        // Also subscribe to AgentConversation entity changes to trace participant updates
+        // Also subscribe to AgentConversation entity changes to auto-sync active agents
         const unsubscribeAgentConvo = base44.entities.AgentConversation.subscribe((event) => {
-          console.log('[Subscription:AgentConversation] Event fired:', {
-            type: event.type,
-            id: event.id,
-            participants: event.data?.participant_agent_ids,
-            timestamp: new Date().toISOString()
-          });
+          if (event.id === agentConvoId && event.data?.participant_agent_ids) {
+            console.log('[Subscription:AgentConversation] Syncing activeAgents from subscription:', {
+              participants: event.data.participant_agent_ids,
+              timestamp: new Date().toISOString()
+            });
+            // Fetch fresh agent objects when participants change
+            Promise.all(
+              event.data.participant_agent_ids.map(id => 
+                base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0])
+              )
+            ).then(agents => {
+              const validAgents = agents.filter(Boolean);
+              console.log('[Subscription:AgentConversation] Loaded agents:', validAgents.map(a => a.name));
+              setActiveAgents(validAgents);
+            });
+          }
         });
 
         return () => {
