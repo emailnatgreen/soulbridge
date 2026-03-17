@@ -312,20 +312,17 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-white text-sm">Axi</h3>
-                {(() => {
-                  console.log('[Header:JSX] Rendering header, activeAgents:', {
-                    length: activeAgents.length,
-                    agents: activeAgents.map(a => ({ id: a.id, name: a.name }))
-                  });
-                  console.log('[Header:JSX] Condition activeAgents.length > 0:', activeAgents.length > 0);
-                  return null;
-                })()}
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-white text-sm">Axi</h3>
+                  {userAgentId && (
+                    <span className="text-xs text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">
+                      {userAgentId}
+                    </span>
+                  )}
+                </div>
                 {activeAgents.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1 max-h-12 overflow-y-auto">
-                    {(() => {
-                      console.log('[Badges:Render] About to render badges for:', activeAgents.map(a => a.name));
-                      return activeAgents.map(agent => (
+                    {activeAgents.map(agent => (
                         <div key={agent.id} className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 rounded-full text-xs text-purple-200 whitespace-nowrap">
                           <span className="truncate max-w-[60px] md:max-w-none">{agent.name}</span>
                           <button
