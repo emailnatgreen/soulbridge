@@ -14,9 +14,9 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
 import DidEventStream from '../components/DidEventStream';
 import DidHealthAlertsPanel from '../components/DidHealthAlertsPanel';
-import { useEffect, useState } from 'react';
 
 // ── Health check logic ────────────────────────────────────
 function evaluateWalletHealth(wallet, agents, credentials, didVersions, auditLogs) {
