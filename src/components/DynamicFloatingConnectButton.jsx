@@ -87,10 +87,10 @@ export default function DynamicFloatingConnectButton() {
                 setIsExpanded(true);
                 setActiveMode('axi');
               }}
-              className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-2xl hover:shadow-purple-500/50 flex items-center justify-center"
+              className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800 shadow-2xl hover:shadow-purple-600/50 flex items-center justify-center border border-purple-500/30"
               title="Talk to Axi"
             >
-              <Sparkles className="w-6 h-6" />
+              <Sparkles className="w-6 h-6 text-white" />
             </Button>
           </motion.div>
         )}
@@ -162,7 +162,11 @@ export default function DynamicFloatingConnectButton() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleClose}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                handleClose();
+              }
+            }}
             className="fixed inset-0 z-30 bg-black/20"
           />
         )}

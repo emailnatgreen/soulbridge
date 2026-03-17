@@ -43,7 +43,10 @@ export default function AxiChannels({ onClose }) {
     <div className="p-4 space-y-3 h-full overflow-y-auto">
       {/* Onboarding Channel */}
       <button
-        onClick={() => handleOpenChannel('onboarding')}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleOpenChannel('onboarding');
+        }}
         className="w-full p-4 rounded-lg border border-white/20 bg-gradient-to-br from-blue-900/30 to-blue-800/20 hover:from-blue-900/50 hover:to-blue-800/40 transition text-left group"
       >
         <div className="flex items-start gap-3">
@@ -61,7 +64,10 @@ export default function AxiChannels({ onClose }) {
 
       {/* General Channel */}
       <button
-        onClick={() => handleOpenChannel('general')}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleOpenChannel('general');
+        }}
         className="w-full p-4 rounded-lg border border-white/20 bg-gradient-to-br from-purple-900/30 to-pink-900/20 hover:from-purple-900/50 hover:to-pink-900/40 transition text-left group"
       >
         <div className="flex items-start gap-3">
