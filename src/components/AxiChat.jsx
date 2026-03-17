@@ -35,6 +35,30 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   }, [messages.length]);
 
   useEffect(() => {
+    const handleAgentChat = (event) => {
+      const { conversationId, agentId, agentName, agentRole } = event.detail;
+      setConversation(null);
+      setMessages([]);
+      setActiveAgents([{ id: agentId, name: agentName, role: agentRole }]);
+      if (unsubscribeRef.current) unsubscribeRef.current();
+      
+      base44.agents.getConversation(conversationId).then(convo => {
+        setConversation(convo);
+        setMessages(convo.messages || []);
+        unsubscribeRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
+          setMessages([...data.messages]);
+        });
+      }).catch(err => {
+        console.error('Failed to load agent conversation:', err);
+        setInitError(true);
+      });
+    };
+
+    window.addEventListener('agent:open-chat', handleAgentChat);
+    return () => window.removeEventListener('agent:open-chat', handleAgentChat);
+  }, []);
+
+  useEffect(() => {
     if (!isOpen || initialized.current) return;
     initialized.current = true;
 
