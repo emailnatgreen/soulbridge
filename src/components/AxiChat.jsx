@@ -19,6 +19,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initError, setInitError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [activeAgents, setActiveAgents] = useState([]);
   const messagesEndRef = useRef(null);
