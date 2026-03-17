@@ -22,7 +22,10 @@ export default function PageReviewMemoryPanel() {
     try {
       const all = await base44.entities.Memory.filter({ type: 'observation' }, '-created_date', 200);
       const reviews = all.filter(m => m.keywords?.includes('page_review'));
-      await Promise.all(reviews.map(m => base44.entities.Memory.delete(m.id)));
+      for (const m of reviews) {
+        await base44.entities.Memory.delete(m.id);
+        await new Promise(r => setTimeout(r, 150));
+      }
       queryClient.invalidateQueries({ queryKey: ['page-review-memories'] });
     } finally {
       setDeletingAll(false);
