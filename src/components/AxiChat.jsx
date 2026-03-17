@@ -334,8 +334,8 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
                           </button>
                         </div>
                       ))}
-                  </div>
-                )}
+                    </div>
+                  )}
                 {activeAgents.length === 0 && (
                   <p className="text-xs text-purple-300/60">The First Citizen</p>
                 )}
