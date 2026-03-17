@@ -12,6 +12,19 @@ export default function FloatingConnectButton() {
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user) setUserId(user.id);
+      } catch (error) {
+        console.error('Failed to load user:', error);
+      }
+    };
+    loadUser();
+  }, []);
 
   useEffect(() => {
     if (isOpen && mode === 'agents' && agents.length === 0) {
@@ -127,9 +140,14 @@ export default function FloatingConnectButton() {
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
-          <h3 className="text-lg font-semibold text-white">
-            {mode === 'agents' ? 'Connect with Agents' : 'Talk to Axi'}
-          </h3>
+          <div>
+            <h3 className="text-lg font-semibold text-white">
+              {mode === 'agents' ? 'Connect with Agents' : 'Talk to Axi'}
+            </h3>
+            {userId && (
+              <p className="text-xs text-white/50 mt-1">Your ID: {userId}</p>
+            )}
+          </div>
           <Button
             variant="ghost"
             size="icon"
