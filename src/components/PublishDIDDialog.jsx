@@ -10,6 +10,7 @@ import { CheckCircle, XCircle, Loader2, QrCode, AlertCircle, ExternalLink, Uploa
 import { toast } from 'sonner';
 
 export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess }) {
+  const queryClient = useQueryClient();
   const [step, setStep] = useState('form'); // form | qr | waiting | done | error
   const [didUri, setDidUri] = useState('');
   const [qrData, setQrData] = useState(null);
