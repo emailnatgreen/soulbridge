@@ -183,8 +183,14 @@ export default function DIDManager() {
     verifyMutation.mutate(walletId);
   };
 
-  const getVerificationBadge = (walletId) => {
-    const result = verificationResults[walletId];
+  const getVerificationBadge = (wallet) => {
+    // First check persistent database state
+    if (wallet.is_published) {
+      return <Badge className="bg-green-600">✅ Published on XRPL</Badge>;
+    }
+
+    // Fall back to recent verification results
+    const result = verificationResults[wallet.id];
     if (!result) return null;
 
     const verification = result.verification;
