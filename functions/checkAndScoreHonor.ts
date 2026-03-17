@@ -46,16 +46,20 @@ Deno.serve(async (req) => {
         }
 
         if (!task.assigned_agent_id) {
-          results.skipped.push({ type: 'task', id: task.id, reason: 'no assigned agent' });
-          console.log(`[checkAndScoreHonor] Skipping task ${task.id}: no assigned agent`);
+          // Mark as processed so it doesn't keep re-queuing every run
+          await base44.asServiceRole.entities.ProjectTask.update(task.id, { honor_processed: true });
+          results.skipped.push({ type: 'task', id: task.id, reason: 'no assigned agent - marked processed' });
+          console.log(`[checkAndScoreHonor] Skipping task ${task.id}: no assigned agent (marked honor_processed=true)`);
           continue;
         }
 
         // Validate agent ID format
         if (!isValidAgentId(task.assigned_agent_id)) {
-          const error = `Invalid assigned_agent_id format: "${task.assigned_agent_id}" (must be UUID). Task skipped - requires data correction.`;
-          results.errors.push({ type: 'task', task_id: task.id, error, task_title: task.title });
-          console.error(`[checkAndScoreHonor] Task ${task.id}: ${error}`);
+          // Mark as processed so it doesn't keep re-queuing every run
+          await base44.asServiceRole.entities.ProjectTask.update(task.id, { honor_processed: true });
+          const error = `Invalid assigned_agent_id format: "${task.assigned_agent_id}" - marked processed to prevent re-queue.`;
+          results.skipped.push({ type: 'task', id: task.id, reason: error });
+          console.log(`[checkAndScoreHonor] Task ${task.id}: ${error}`);
           continue;
         }
         
