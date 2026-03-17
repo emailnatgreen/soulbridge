@@ -16,7 +16,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import DidEventStream from '../components/DidEventStream';
 import DidHealthAlertsPanel from '../components/DidHealthAlertsPanel';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 // ── Health check logic ────────────────────────────────────
 function evaluateWalletHealth(wallet, agents, credentials, didVersions, auditLogs) {
@@ -171,6 +171,23 @@ export default function DIDHealthDashboard() {
     setRefreshing(false);
   };
 
+  // Only evaluate wallets that have a classic_address (real DIDs)
+  const didWallets = wallets.filter(w => w.classic_address);
+  const healthReports = didWallets.map(w => ({
+    wallet: w,
+    ...evaluateWalletHealth(w, agents, credentials, didVersions, auditLogs),
+  }));
+
+  // Summary stats
+  const total = healthReports.length;
+  const healthy = healthReports.filter(r => r.overall === 'healthy').length;
+  const warning = healthReports.filter(r => r.overall === 'warning').length;
+  const degraded = healthReports.filter(r => r.overall === 'degraded').length;
+  const critical = healthReports.filter(r => r.overall === 'critical').length;
+  const avgScore = total > 0 ? Math.round(healthReports.reduce((sum, r) => sum + r.score, 0) / total) : 0;
+  const overallStatus = critical > 0 ? 'critical' : degraded > 0 ? 'degraded' : warning > 0 ? 'warning' : 'healthy';
+  const OverallIcon = STATUS_CONFIG[overallStatus].icon;
+
   // Notify Axi Command Dashboard of DID health updates
   useEffect(() => {
     const didHealthData = {
@@ -205,23 +222,6 @@ export default function DIDHealthDashboard() {
       }
     }
   }, [didWallets.length, healthy, warning, degraded, critical, avgScore, overallStatus, healthReports]);
-
-  // Only evaluate wallets that have a classic_address (real DIDs)
-  const didWallets = wallets.filter(w => w.classic_address);
-  const healthReports = didWallets.map(w => ({
-    wallet: w,
-    ...evaluateWalletHealth(w, agents, credentials, didVersions, auditLogs),
-  }));
-
-  // Summary stats
-  const total = healthReports.length;
-  const healthy = healthReports.filter(r => r.overall === 'healthy').length;
-  const warning = healthReports.filter(r => r.overall === 'warning').length;
-  const degraded = healthReports.filter(r => r.overall === 'degraded').length;
-  const critical = healthReports.filter(r => r.overall === 'critical').length;
-  const avgScore = total > 0 ? Math.round(healthReports.reduce((sum, r) => sum + r.score, 0) / total) : 0;
-  const overallStatus = critical > 0 ? 'critical' : degraded > 0 ? 'degraded' : warning > 0 ? 'warning' : 'healthy';
-  const OverallIcon = STATUS_CONFIG[overallStatus].icon;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white">
