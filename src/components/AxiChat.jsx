@@ -257,6 +257,9 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       const current = await base44.entities.AgentConversation.filter({ id: agentConvoId }, '', 1);
       if (!current?.length) return;
 
+      const agentName = current[0].participant_agent_ids?.includes(agentId) ? 
+        (await base44.entities.Agent.filter({ id: agentId }, '', 1))?.[0]?.name : null;
+
       const updatedParticipants = (current[0].participant_agent_ids || []).filter(id => id !== agentId);
 
       await base44.entities.AgentConversation.update(agentConvoId, {
@@ -265,17 +268,16 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
 
       setActiveAgents(prev => prev.filter(a => a.id !== agentId));
 
-      const removedAgent = activeAgents.find(a => a.id === agentId);
-      if (removedAgent) {
+      if (agentName) {
         await base44.agents.addMessage(conversation, {
           role: 'user',
-          content: `[System: ${removedAgent.name} has left this conversation.]`
+          content: `[System: ${agentName} has left this conversation.]`
         });
       }
     } catch (err) {
       console.error('[AxiChat] Error removing agent:', err);
     }
-  }, [agentConvoId, activeAgents, conversation]);
+  }, [agentConvoId, conversation]);
 
   return (
     <>
