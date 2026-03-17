@@ -211,9 +211,18 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
 
      // Add agent and update state immediately
      const updatedParticipants = [...participants, agent.id];
-     await base44.entities.AgentConversation.update(agentConvo.id, {
+     const updateResult = await base44.entities.AgentConversation.update(agentConvo.id, {
        participant_agent_ids: updatedParticipants
      });
+
+     if (!updateResult) {
+       throw new Error('Update returned empty result - agent not persisted');
+     }
+
+     // Verify agent was actually added
+     if (!updateResult.participant_agent_ids?.includes(agent.id)) {
+       throw new Error('Agent not found in updated participant list');
+     }
 
      // Update UI immediately without re-querying
      setActiveAgents(prev => {
