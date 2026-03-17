@@ -179,7 +179,9 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       console.log('[AxiChat] AgentConversation query result:', agentConvos);
       
       let currentParticipants = [];
-      if (agentConvos && agentConvos.length > 0) {
+      let agentConvoExists = agentConvos && agentConvos.length > 0;
+      
+      if (agentConvoExists) {
         currentParticipants = agentConvos[0].participant_agent_ids || [];
       }
       console.log('[AxiChat] Current participants:', currentParticipants);
@@ -194,9 +196,19 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       console.log('[AxiChat] Updated participants:', updatedParticipants);
 
       console.log('[AxiChat] Persisting to backend...');
-      await base44.entities.AgentConversation.update(conversation.id, {
-        participant_agent_ids: updatedParticipants
-      });
+      if (agentConvoExists) {
+        await base44.entities.AgentConversation.update(conversation.id, {
+          participant_agent_ids: updatedParticipants
+        });
+      } else {
+        console.log('[AxiChat] AgentConversation does not exist, creating it...');
+        await base44.entities.AgentConversation.create({
+          id: conversation.id,
+          title: conversation.metadata?.name || 'Agent Conversation',
+          conversation_type: 'direct',
+          participant_agent_ids: updatedParticipants
+        });
+      }
       console.log('[AxiChat] Backend update successful');
 
       console.log('[AxiChat] Updating local state...');
