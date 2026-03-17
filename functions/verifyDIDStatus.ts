@@ -16,7 +16,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'wallet_id is required' }, { status: 400 });
     }
 
-    // Fetch wallet
     const wallet = await base44.asServiceRole.entities.Wallet.get(wallet_id);
     
     if (!wallet) {
@@ -38,10 +37,9 @@ Deno.serve(async (req) => {
     };
 
     try {
-      // Check account info with retry logic
       let accountResult = null;
       let retries = 3;
-      let delay = 1000; // Start with 1 second delay
+      let delay = 1000;
       
       while (retries > 0) {
         const accountResponse = await fetch(xrplUrl, {
@@ -58,12 +56,11 @@ Deno.serve(async (req) => {
 
         accountResult = await accountResponse.json();
         
-        // Check for rate limit error
         if (accountResult.error?.message?.includes('rate limit') || accountResponse.status === 429) {
           retries--;
           if (retries > 0) {
             await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2; // Exponential backoff
+            delay *= 2;
             continue;
           }
         }
@@ -77,7 +74,6 @@ Deno.serve(async (req) => {
         verification.message = accountResult.error?.message || 'Account not found on XRPL';
       }
 
-      // Fetch the actual DID ledger object (XRPL DID standard)
       if (verification.account_exists) {
         try {
           const didObjResponse = await fetch(xrplUrl, {
