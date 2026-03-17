@@ -241,6 +241,12 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
         content: `[System: ${agent.name} (${agent.role}) has joined this conversation.]`
       });
 
+      // Invoke agent to respond
+      await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: `@${agent.name}, welcome to the conversation. Please share your thoughts.`
+      });
+
       setShowAddAgent(false);
     } catch (err) {
       console.error('Error adding agent:', err);
