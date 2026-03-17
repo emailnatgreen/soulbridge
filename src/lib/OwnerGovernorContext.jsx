@@ -13,9 +13,17 @@ export function OwnerGovernorProvider({ children }) {
       try {
         const user = await base44.auth.me();
         if (user) {
-          setOwnerId(user.id);
-          // Check if user has governor role
-          setGovernorId(user.role === 'admin' ? user.id : null);
+          const newOwnerId = user.id;
+          const newGovernorId = user.role === 'admin' ? user.id : null;
+          
+          setOwnerId(newOwnerId);
+          setGovernorId(newGovernorId);
+          
+          // Save to user profile for persistence
+          await base44.auth.updateMe({
+            owner_id: newOwnerId,
+            governor_id: newGovernorId
+          });
         }
       } catch (error) {
         console.error('Failed to load owner/governor info:', error);
