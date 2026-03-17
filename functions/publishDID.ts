@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
 
     // Handle status check
     if (action === 'check_status') {
-      const { uuid } = body;
+      const { uuid, wallet_id: checkWalletId } = body;
       const statusRes = await fetch(`https://xumm.app/api/v1/platform/payload/${uuid}`, {
         headers: {
           'x-api-key': XUMM_API_KEY,
@@ -23,6 +23,21 @@ Deno.serve(async (req) => {
       });
       const statusData = await statusRes.json();
       const txid = statusData.response?.txid || statusData.response?.tx_id || statusData.response?.hash || null;
+
+      // If transaction is signed and we have a txid, save it to the wallet
+      if (statusData.meta?.signed && txid && checkWalletId) {
+        try {
+          await base44.asServiceRole.entities.Wallet.update(checkWalletId, {
+            is_published: true,
+            published_at: new Date().toISOString(),
+            published_txid: txid
+          });
+          console.log(`Saved publication status for wallet ${checkWalletId}`);
+        } catch (err) {
+          console.error('Failed to save publication status:', err);
+        }
+      }
+
       return Response.json({
         signed: statusData.meta?.signed ?? false,
         resolved: statusData.meta?.resolved ?? false,
