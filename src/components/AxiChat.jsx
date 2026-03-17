@@ -89,7 +89,23 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
         }
         setConversation(convo);
         setMessages(convo.messages || []);
-        setActiveAgents([]);
+        
+        // Load persisted agent participants from AgentConversation entity
+        try {
+          const agentConvo = await base44.entities.AgentConversation.filter({ id: convo.id }, '', 1);
+          if (agentConvo && agentConvo.length > 0 && agentConvo[0].participant_agent_ids?.length > 0) {
+            const agents = await Promise.all(
+              agentConvo[0].participant_agent_ids.map(id => base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0]))
+            );
+            setActiveAgents(agents.filter(Boolean));
+          } else {
+            setActiveAgents([]);
+          }
+        } catch (err) {
+          console.error('Failed to load agent participants:', err);
+          setActiveAgents([]);
+        }
+        
         if (unsubscribeRef.current) unsubscribeRef.current();
         unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
           setMessages([...data.messages]);
