@@ -84,7 +84,10 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
             setResult({ success: true, txid: status.txid, account: status.account });
             setStep('done');
             toast.success('✅ DID published on XRPL!');
-            setTimeout(() => queryClient.invalidateQueries({ queryKey: ['wallets'] }), 500);
+            setTimeout(() => {
+              queryClient.invalidateQueries({ queryKey: ['wallets'] });
+              queryClient.invalidateQueries({ queryKey: ['dh-wallets'] });
+            }, 500);
             if (onSuccess) onSuccess();
           }
           // If signed but no txid yet, keep polling — Xaman may not have submitted yet
