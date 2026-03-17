@@ -446,6 +446,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
       </AnimatePresence>
     </>
   );
-};
+}
 
 export default AxiChat;
