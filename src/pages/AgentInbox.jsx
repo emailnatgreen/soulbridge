@@ -306,5 +306,3 @@ export default function AgentInbox() {
     </div>
   );
 }
-
-const axiIds = ['axi_main_001', 'Axi', 'axi'];
