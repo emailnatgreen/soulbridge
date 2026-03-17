@@ -16,6 +16,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import DidEventStream from '../components/DidEventStream';
 import DidHealthAlertsPanel from '../components/DidHealthAlertsPanel';
+import { useEffect } from 'react';
 
 // ── Health check logic ────────────────────────────────────
 function evaluateWalletHealth(wallet, agents, credentials, didVersions, auditLogs) {
@@ -153,8 +154,8 @@ export default function DIDHealthDashboard() {
   const queryOptions = (key, fn) => ({
     queryKey: [key],
     queryFn: fn,
-    staleTime: 30000,
-    refetchInterval: 30000,
+    staleTime: 15000,
+    refetchInterval: 15000,
   });
 
   const { data: wallets = [], refetch: refetchWallets } = useQuery(queryOptions('dh-wallets', () => base44.entities.Wallet.list()));
@@ -169,6 +170,41 @@ export default function DIDHealthDashboard() {
     setLastRefresh(new Date());
     setRefreshing(false);
   };
+
+  // Notify Axi Command Dashboard of DID health updates
+  useEffect(() => {
+    const didHealthData = {
+      timestamp: new Date(),
+      totalDIDs: didWallets.length,
+      healthy,
+      warning,
+      degraded,
+      critical,
+      avgScore,
+      overallStatus,
+      healthReports: healthReports.map(r => ({
+        walletId: r.wallet.id,
+        did: r.did,
+        status: r.overall,
+        score: r.score,
+        linkedAgent: r.linkedAgent?.name || 'Unlinked'
+      }))
+    };
+    
+    // Store in sessionStorage for Axi dashboard to access
+    sessionStorage.setItem('didHealthSnapshot', JSON.stringify(didHealthData));
+    
+    // Broadcast to other tabs/windows
+    if (window.BroadcastChannel) {
+      try {
+        const channel = new BroadcastChannel('did-health-updates');
+        channel.postMessage(didHealthData);
+        channel.close();
+      } catch (err) {
+        console.log('BroadcastChannel not available');
+      }
+    }
+  }, [didWallets.length, healthy, warning, degraded, critical, avgScore, overallStatus, healthReports]);
 
   // Only evaluate wallets that have a classic_address (real DIDs)
   const didWallets = wallets.filter(w => w.classic_address);
