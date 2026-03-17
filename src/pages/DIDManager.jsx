@@ -17,6 +17,7 @@ import WalletQRCode from '../components/WalletQRCode';
 import DidReputationScore from '../components/DidReputationScore';
 import PublishDIDDialog from '../components/PublishDIDDialog';
 import AskAxiButton from '../components/AskAxiButton';
+import DidReviewPanel from '../components/DidReviewPanel';
 import {
   Dialog,
   DialogContent,
@@ -240,58 +241,51 @@ export default function DIDManager() {
               <p className="text-gray-600">Decentralized Identifiers on XRPL</p>
               <Badge className="mt-2 bg-purple-600">World's First XRPL DID Manager</Badge>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <DidResolverTool 
                 trigger={
-                  <Button variant="outline">
-                    <Search className="w-4 h-4 mr-2" />
-                    Resolve DID
+                  <Button size="sm" variant="outline">
+                    <Search className="w-3 h-3 mr-2" />
+                    Resolve
                   </Button>
                 }
-              />
-              <AgentManagementDialog 
-                mode="create"
-                trigger={
-                  <Button variant="outline">
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Create Agent
-                  </Button>
-                }
-                onSuccess={() => queryClient.invalidateQueries(['agents'])}
               />
               <Link to={createPageUrl('DIDHealthDashboard')}>
-                <Button variant="outline">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Health Dashboard
+                <Button size="sm" variant="outline">
+                  <Activity className="w-3 h-3 mr-2" />
+                  Health
                 </Button>
               </Link>
-              <AskAxiButton
-                label="Ask Axi"
-                context={`You are the Axi assistant on the DID Manager page of SoulBridge. The user has ${wallets.length} total DIDs (${activeWallets.length} active, ${revokedWallets.length} revoked) on the XRPL. Help them manage, verify, publish, or understand their Decentralized Identifiers. You can help with DID publishing via Xaman, governance activation proposals, linking agents to DIDs, and understanding on-chain DID status.`}
-                className="border-purple-300 text-purple-700 hover:bg-purple-50 hover:text-purple-800"
-              />
               <Link to="/Axi">
-                <Button variant="outline">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Talk to Axi
+                <Button size="sm" variant="outline">
+                  <Sparkles className="w-3 h-3 mr-2" />
+                  Axi
                 </Button>
               </Link>
               <Link to={createPageUrl('CreateDID')}>
-                <Button>
-                  <Fingerprint className="w-4 h-4 mr-2" />
-                  Create New DID
+                <Button size="sm">
+                  <Fingerprint className="w-3 h-3 mr-2" />
+                  New DID
                 </Button>
               </Link>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-indigo-600">{wallets.length}</div>
-                <div className="text-sm text-gray-600">Total DIDs</div>
+              <div className="text-right ml-4">
+                <div className="text-2xl font-bold text-indigo-600">{wallets.length}</div>
+                <div className="text-xs text-gray-600">DIDs</div>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Review Panel */}
+        <DidReviewPanel 
+          wallets={wallets}
+          agents={agents}
+          activeWallets={activeWallets}
+          revokedWallets={revokedWallets}
+        />
+
         {/* DID Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-8">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="active" className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4" />
