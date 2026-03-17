@@ -204,59 +204,112 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
   };
 
   const handleAddAgent = useCallback(async (agent) => {
+    const traceId = `TRACE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`[${traceId}] ========== PHASE 0: INIT ==========`);
+    console.log(`[${traceId}] Agent: ${agent.name} (${agent.id})`);
+    console.log(`[${traceId}] Target ConversationId: ${agentConvoId}`);
+    
     if (!agentConvoId) {
       throw new Error('Agent conversation not initialized');
     }
 
     try {
+      // PHASE 1: Fetch current state
+      console.log(`[${traceId}] PHASE 1: Fetching current AgentConversation...`);
       const current = await base44.entities.AgentConversation.filter({ id: agentConvoId }, '', 1);
       if (!current?.length) {
         throw new Error('Agent conversation record not found');
       }
+      console.log(`[${traceId}] PHASE 1 SUCCESS: Found record`, { id: current[0].id, participants: current[0].participant_agent_ids });
 
       const agentConvo = current[0];
       const participants = agentConvo.participant_agent_ids || [];
+      console.log(`[${traceId}] Current participants:`, participants);
 
       if (participants.includes(agent.id)) {
+        console.log(`[${traceId}] Agent already in list, exiting`);
         setShowAddAgent(false);
         return;
       }
 
+      // PHASE 2: Build new participant list
+      console.log(`[${traceId}] PHASE 2: Building updated participant list...`);
       const updatedParticipants = [...participants, agent.id];
+      console.log(`[${traceId}] Updated participants array:`, updatedParticipants);
+
+      // PHASE 3: Execute update
+      console.log(`[${traceId}] PHASE 3: Executing .update() call...`);
       const result = await base44.entities.AgentConversation.update(agentConvoId, {
         participant_agent_ids: updatedParticipants
       });
+      console.log(`[${traceId}] PHASE 3 RESULT:`, {
+        returned_id: result?.id,
+        returned_participants: result?.participant_agent_ids,
+        agent_in_list: result?.participant_agent_ids?.includes(agent.id),
+        full_result: JSON.stringify(result)
+      });
 
       if (!result?.participant_agent_ids?.includes(agent.id)) {
-        throw new Error('Agent not in updated list');
+        throw new Error('Agent not in updated list after .update()');
       }
 
-      // Update UI immediately with the agent
-      setActiveAgents(prev => [...prev, agent]);
+      // PHASE 4: Immediate state update
+      console.log(`[${traceId}] PHASE 4: Updating UI state immediately...`);
+      console.log(`[${traceId}] Current activeAgents before setState:`, activeAgents);
+      setActiveAgents(prev => {
+        const newState = [...prev, agent];
+        console.log(`[${traceId}] PHASE 4 setState callback: prev=${JSON.stringify(prev)}, new=${JSON.stringify(newState)}`);
+        return newState;
+      });
 
-      // Also refresh the full participant list to ensure UI sync
-      // This handles any timing issues with subscriptions
+      // PHASE 5: Re-query from database
+      console.log(`[${traceId}] PHASE 5: Re-querying fresh data from database...`);
       const fresh = await base44.entities.AgentConversation.filter({ id: agentConvoId }, '', 1);
+      console.log(`[${traceId}] PHASE 5 RE-QUERY RESULT:`, {
+        found: fresh?.length > 0,
+        participants: fresh?.[0]?.participant_agent_ids,
+        matches_updated: JSON.stringify(fresh?.[0]?.participant_agent_ids) === JSON.stringify(updatedParticipants)
+      });
+
       if (fresh?.[0]?.participant_agent_ids) {
+        // PHASE 6: Load full Agent objects
+        console.log(`[${traceId}] PHASE 6: Loading full Agent objects for participants...`);
+        console.log(`[${traceId}] Participant IDs to load:`, fresh[0].participant_agent_ids);
         const loadedAgents = await Promise.all(
-          fresh[0].participant_agent_ids.map(id => 
-            base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0])
-          )
+          fresh[0].participant_agent_ids.map(async (id) => {
+            console.log(`[${traceId}] Fetching agent ${id}...`);
+            const result = await base44.entities.Agent.filter({ id }, '', 1);
+            const agent = result?.[0];
+            console.log(`[${traceId}] Fetched agent ${id}:`, { name: agent?.name, found: !!agent });
+            return agent;
+          })
         );
-        setActiveAgents(loadedAgents.filter(Boolean));
+        const validAgents = loadedAgents.filter(Boolean);
+        console.log(`[${traceId}] PHASE 6 COMPLETE: Loaded ${validAgents.length}/${loadedAgents.length} agents`);
+        
+        console.log(`[${traceId}] PHASE 6: Setting activeAgents to loaded list...`);
+        console.log(`[${traceId}] About to setState with:`, validAgents.map(a => ({ id: a.id, name: a.name })));
+        setActiveAgents(validAgents);
+        console.log(`[${traceId}] setState called, check if state updated in next render`);
       }
 
+      // PHASE 7: Post system message
+      console.log(`[${traceId}] PHASE 7: Posting system message to conversation...`);
       await base44.agents.addMessage(conversation, {
         role: 'user',
         content: `[System: ${agent.name} (${agent.role}) has joined this conversation.]`
       });
+      console.log(`[${traceId}] PHASE 7 SUCCESS: Message posted`);
 
+      console.log(`[${traceId}] PHASE 8: Closing modal`);
       setShowAddAgent(false);
+      console.log(`[${traceId}] ========== ALL PHASES COMPLETE ==========`);
     } catch (err) {
-      console.error('[AxiChat] Error adding agent:', err);
+      console.error(`[${traceId}] ERROR THROWN:`, err);
+      console.error(`[${traceId}] Stack:`, err?.stack);
       throw err;
     }
-  }, [agentConvoId, conversation]);
+  }, [agentConvoId, conversation, activeAgents]);
 
   const handleRemoveAgent = useCallback(async (agentId) => {
     if (!agentConvoId) return;
