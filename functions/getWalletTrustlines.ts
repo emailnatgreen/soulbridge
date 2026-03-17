@@ -64,11 +64,12 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
-    
+    const result = data.result ?? data;
+
     let xrp_balance = 0;
-    if (data.result?.account_data?.Balance) {
-      xrp_balance = dropsToXrp(data.result.account_data.Balance);
-    } else if (data.result?.error === 'actNotFound') {
+    if (result?.account_data?.Balance) {
+      xrp_balance = dropsToXrp(result.account_data.Balance);
+    } else if (result?.error === 'actNotFound') {
       return Response.json({
         address: checkAddress,
         xrp_balance: 0,
