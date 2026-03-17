@@ -499,20 +499,6 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
             </div>
           </div>
 
-          {/* Add Agent Button for Mobile - moved to bottom */}
-          {!isExpanded && (
-            <div className="md:hidden px-4 py-1 border-t border-slate-700/50">
-              <Button
-                onClick={() => setShowAddAgent(true)}
-                size="sm"
-                className="w-full text-xs bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/30"
-              >
-                <UserPlus className="w-3 h-3 mr-1" />
-                Add Agent
-              </Button>
-            </div>
-          )}
-
           {/* Add Agent Modal (overlay inside chat) */}
           {showAddAgent && (
             <AddAgentModal
