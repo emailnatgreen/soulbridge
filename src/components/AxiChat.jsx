@@ -48,18 +48,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
          const convo = await base44.agents.getConversation(conversationId);
          setConversation(convo);
          setMessages(convo.messages || []);
-
-         // Populate activeAgents from persisted participant_agent_ids
-         if (convo.participant_agent_ids && convo.participant_agent_ids.length > 0) {
-           const agents = await Promise.all(
-             convo.participant_agent_ids.map(id => base44.entities.Agent.get(id))
-           );
-           setActiveAgents(agents.filter(Boolean));
-         } else {
-           // Fallback for single agent conversations
-           setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
-         }
-
+         setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
          unsubscribeRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
            setMessages([...data.messages]);
          });
