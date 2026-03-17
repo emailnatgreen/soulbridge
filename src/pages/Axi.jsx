@@ -72,6 +72,23 @@ export default function AxiPage() {
       setConversation(convo);
       setMessages(convo.messages || []);
       
+      // Check for DID review data and auto-send if available
+      const didReviewData = sessionStorage.getItem('axiDIDReview');
+      if (didReviewData && convo) {
+        try {
+          const { message } = JSON.parse(didReviewData);
+          sessionStorage.removeItem('axiDIDReview');
+          
+          // Send the DID review message
+          await base44.agents.addMessage(convo, {
+            role: 'user',
+            content: message
+          });
+        } catch (err) {
+          console.error('Failed to send DID review:', err);
+        }
+      }
+      
       if (unsubscribeRef.current) unsubscribeRef.current();
       unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
         setMessages(data.messages);
