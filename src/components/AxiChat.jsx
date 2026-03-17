@@ -333,8 +333,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
                             <X className="w-3 h-3" />
                           </button>
                         </div>
-                      ));
-                    })()}
+                      ))}
                   </div>
                 )}
                 {activeAgents.length === 0 && (
