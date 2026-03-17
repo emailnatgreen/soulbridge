@@ -65,7 +65,8 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
       try {
         const statusRes = await base44.functions.invoke('publishDID', {
           action: 'check_status',
-          uuid: data.uuid
+          uuid: data.uuid,
+          wallet_id: wallet.id
         });
         const status = statusRes.data;
 
