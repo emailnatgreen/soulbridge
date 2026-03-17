@@ -67,10 +67,22 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
             type="button"
             onClick={(e) => {
               e.preventDefault();
+              console.log('[AddAgentModal] Button clicked for agent:', agent.name, agent.id);
               setAdding(true);
               onAdd(agent)
-                .catch(err => console.error('Error adding agent:', err))
-                .finally(() => setAdding(false));
+                .catch(err => {
+                  console.error('[AddAgentModal] ERROR adding agent:', {
+                    agentId: agent.id,
+                    agentName: agent.name,
+                    error: err?.message || err,
+                    stack: err?.stack
+                  });
+                  alert(`Failed to add ${agent.name}: ${err?.message || 'Unknown error'}`);
+                })
+                .finally(() => {
+                  console.log('[AddAgentModal] onAdd callback completed for agent:', agent.id);
+                  setAdding(false);
+                });
             }}
             className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 transition-all text-left group pointer-events-auto"
           >
