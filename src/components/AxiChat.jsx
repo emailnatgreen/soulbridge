@@ -63,7 +63,7 @@ const AxiChat = memo(function AxiChat({ isOpen, setIsOpen }) {
       } catch (err) {
         console.error('Axi init error:', err);
         setInitError(true);
-        initialized.current = false; // allow retry
+        initialized.current = false;
       } finally {
         setLoading(false);
       }
