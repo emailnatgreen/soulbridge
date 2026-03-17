@@ -27,6 +27,11 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
+  // Blacklist phantom/corrupted task
+  if (event.entity_id === '69a93d3719537facffb4dd61') {
+    return Response.json({ skipped: true, reason: 'Phantom entity blacklisted' });
+  }
+
   const entityName = event.entity_name;
   const eventType = event.type;
 
@@ -68,50 +73,55 @@ Deno.serve(async (req) => {
     return Response.json({ skipped: true, reason: `Unhandled entity/event: ${entityName}/${eventType}` });
   }
 
-  // Fetch current agent
-  const agents = await base44.asServiceRole.entities.Agent.filter({ id: agentId });
-  const agent = agents?.[0];
-  if (!agent) {
-    return Response.json({ error: `Agent ${agentId} not found` }, { status: 404 });
+  try {
+    // Fetch current agent
+    const agents = await base44.asServiceRole.entities.Agent.filter({ id: agentId });
+    const agent = agents?.[0];
+    if (!agent) {
+      return Response.json({ skipped: true, reason: `Agent ${agentId} not found` });
+    }
+
+    const currentScore = agent.honor_score ?? 100;
+    const newScore = Math.min(100, Math.max(0, currentScore + honorDelta));
+
+    // Update agent honor score
+    await base44.asServiceRole.entities.Agent.update(agentId, {
+      honor_score: newScore
+    });
+
+    // Log reputation event
+    const eventTypeMap = {
+      task_completion: 'project_completed',
+      governance_participation: 'vote_cast'
+    };
+
+    await base44.asServiceRole.entities.ReputationEvent.create({
+      agent_id: agentId,
+      event_type: eventTypeMap[category] || 'milestone_achieved',
+      impact: honorDelta,
+      category,
+      description: reason,
+      related_entity_type: entityName,
+      related_entity_id: event.entity_id,
+      verified: true,
+      verified_by: 'autoScoreHonor',
+      is_public: true
+    });
+
+    console.log(`[autoScoreHonor] ${agent.name}: ${currentScore} → ${newScore} (+${honorDelta}) | ${reason}`);
+
+    return Response.json({
+      success: true,
+      agent_name: agent.name,
+      honor_before: currentScore,
+      honor_after: newScore,
+      delta: honorDelta,
+      reason
+    });
+  } catch (scoringErr) {
+    console.error(`[autoScoreHonor] Failed to process honor for agent ${agentId}:`, scoringErr.message);
+    return Response.json({ skipped: true, reason: `Failed to process honor: ${scoringErr.message}` });
   }
-
-  const currentScore = agent.honor_score ?? 100;
-  const newScore = Math.min(100, Math.max(0, currentScore + honorDelta));
-
-  // Update agent honor score
-  await base44.asServiceRole.entities.Agent.update(agentId, {
-    honor_score: newScore
-  });
-
-  // Log reputation event
-  const eventTypeMap = {
-    task_completion: 'project_completed',
-    governance_participation: 'vote_cast'
-  };
-
-  await base44.asServiceRole.entities.ReputationEvent.create({
-    agent_id: agentId,
-    event_type: eventTypeMap[category] || 'milestone_achieved',
-    impact: honorDelta,
-    category,
-    description: reason,
-    related_entity_type: entityName,
-    related_entity_id: event.entity_id,
-    verified: true,
-    verified_by: 'autoScoreHonor',
-    is_public: true
-  });
-
-  console.log(`[autoScoreHonor] ${agent.name}: ${currentScore} → ${newScore} (+${honorDelta}) | ${reason}`);
-
-  return Response.json({
-    success: true,
-    agent_name: agent.name,
-    honor_before: currentScore,
-    honor_after: newScore,
-    delta: honorDelta,
-    reason
-  });
   } catch (err) {
     console.error('autoScoreHonor error:', err.message, err.stack);
     return Response.json({ error: err.message }, { status: 500 });
