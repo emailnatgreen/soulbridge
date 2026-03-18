@@ -726,6 +726,19 @@ export default function Home() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to={createPageUrl('MemoryBrowser')}>
+              <Card className="bg-gradient-to-br from-violet-50 to-purple-50 border-violet-300 hover:border-violet-400 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Brain className="w-8 h-8 text-violet-600" />
+                    <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full border border-violet-300 font-semibold">Verified Truth</span>
+                  </div>
+                  <h3 className="text-gray-900 font-semibold mb-1">Memory Browser</h3>
+                  <p className="text-gray-600 text-sm">Verify Axi's persisted memories</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
