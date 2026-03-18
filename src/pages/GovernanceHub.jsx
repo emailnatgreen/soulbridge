@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ export default function GovernanceHub() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const queryClient = useQueryClient();
+  usePageSignal();
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents-governance'],

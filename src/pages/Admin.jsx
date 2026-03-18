@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -37,6 +38,7 @@ function notifColor(n) {
 
 export default function Admin() {
   const queryClient = useQueryClient();
+  usePageSignal();
   const scrollRef = useRef(null);
   const [broadcastMsg, setBroadcastMsg] = useState('');
   const [notifFilter, setNotifFilter] = useState('all');

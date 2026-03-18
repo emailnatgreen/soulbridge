@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ import {
 
 export default function DIDManager() {
   const queryClient = useQueryClient();
+  usePageSignal();
   const [selectedDID, setSelectedDID] = useState(null);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState('');

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Sparkles, MessageCircle, Flame, ArrowLeft } from 'lucide-react';
@@ -12,6 +13,7 @@ import AskAxiButton from '@/components/AskAxiButton';
 
 export default function AgentsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  usePageSignal();
 
   const { data: agents = [], isLoading } = useQuery({
     queryKey: ['agents'],

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ export default function WalletsPage() {
   const [name, setName] = useState('');
   const [network, setNetwork] = useState('testnet');
   const queryClient = useQueryClient();
+  usePageSignal();
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
