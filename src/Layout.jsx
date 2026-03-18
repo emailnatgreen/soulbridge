@@ -1,9 +1,10 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useCallback } from 'react';
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from 'lucide-react';
 
 import GlobalNav from '@/components/GlobalNav';
+import ChatLoader from '@/components/axi/ChatLoader';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
 
@@ -16,6 +17,7 @@ const NO_FLOAT_PAGES = ['Axi'];
 export default function Layout({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
   const [everOpened, setEverOpened] = useState(false);
+  const [prefilledAxiMessage, setPrefilledAxiMessage] = useState(null);
 
   const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
   const isNoFloatPage = NO_FLOAT_PAGES.includes(currentPageName);
@@ -23,20 +25,29 @@ export default function Layout({ children, currentPageName }) {
   const handleToggle = () => {
     if (!everOpened) setEverOpened(true);
     setIsOpen(prev => !prev);
+    if (prefilledAxiMessage) {
+      setPrefilledAxiMessage(null);
+    }
   };
 
+  const handleOpenAxi = useCallback((event) => {
+    if (!everOpened) setEverOpened(true);
+    setIsOpen(true);
+    if (event.detail?.message) {
+      setPrefilledAxiMessage(event.detail.message);
+    }
+  }, [everOpened]);
+
   useEffect(() => {
-    const handleOpenAxi = () => {
-      if (!everOpened) setEverOpened(true);
-      setIsOpen(true);
-    };
     window.addEventListener('open-axi', handleOpenAxi);
     window.addEventListener('open-axi-with-agent', handleOpenAxi);
+    window.addEventListener('open-axi-with-message', handleOpenAxi);
     return () => {
       window.removeEventListener('open-axi', handleOpenAxi);
       window.removeEventListener('open-axi-with-agent', handleOpenAxi);
+      window.removeEventListener('open-axi-with-message', handleOpenAxi);
     };
-  }, [everOpened]);
+  }, [handleOpenAxi]);
 
   return (
     <div className="relative">
@@ -63,9 +74,17 @@ export default function Layout({ children, currentPageName }) {
       {/* AxiChat floating button */}
       {!isPublicPage && !isNoFloatPage && (
         <Suspense fallback={null}>
-          <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} />
+          <AxiChat 
+            isOpen={isOpen} 
+            setIsOpen={setIsOpen} 
+            prefilledMessage={prefilledAxiMessage}
+            onMessageCleared={() => setPrefilledAxiMessage(null)}
+          />
         </Suspense>
       )}
+
+      {/* ChatLoader — listens for JukeboxDecision events */}
+      <ChatLoader />
     </div>
   );
 }

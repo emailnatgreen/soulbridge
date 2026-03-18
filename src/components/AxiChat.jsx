@@ -10,7 +10,7 @@ import AddAgentModal from '@/components/AddAgentModal';
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
 
-const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
+const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessageCleared }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -190,15 +190,30 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
   }, [isOpen, retryKey]);
 
+  // Handle prefilled message when chat opens
+  useEffect(() => {
+    if (prefilledMessage && conversation && !input) {
+      setInput(prefilledMessage);
+    }
+  }, [prefilledMessage, conversation, input]);
+
+  // Clear prefilled message state when closing chat
+  useEffect(() => {
+    if (!isOpen && onMessageCleared) {
+      onMessageCleared();
+    }
+  }, [isOpen, onMessageCleared]);
+
   const handleClose = useCallback(() => {
     setIsOpen(false);
     initialized.current = false;
-  }, []);
+  }, [setIsOpen]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !conversation || sending) return;
     const msg = input.trim();
     setInput('');
+    if (onMessageCleared) onMessageCleared();
     setSending(true);
     try {
       await base44.agents.addMessage(conversation, { role: 'user', content: msg });
@@ -208,7 +223,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
     } finally {
       setSending(false);
     }
-  }, [input, conversation, sending]);
+  }, [input, conversation, sending, onMessageCleared]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
