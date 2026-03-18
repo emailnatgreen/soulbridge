@@ -16,7 +16,6 @@ const NO_FLOAT_PAGES = ['Axi'];
 export default function Layout({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
   const [everOpened, setEverOpened] = useState(false);
-  const [chatConversationId, setChatConversationId] = useState(null);
 
   const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
 
