@@ -24,6 +24,7 @@ import RealTimeNotificationCenter from "@/components/axi/RealTimeNotificationCen
 import AgentPerformanceReviewSystem from "@/components/axi/AgentPerformanceReviewSystem";
 import IntegratedHelpCenter from "@/components/axi/IntegratedHelpCenter";
 import DidHealthPanel from "@/components/axi/DidHealthPanel";
+import MemoryReviewPanel from "@/components/axi/MemoryReviewPanel";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
