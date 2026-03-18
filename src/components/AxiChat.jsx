@@ -189,7 +189,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, initialConversationId }) {
     init();
 
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
-  }, [isOpen, retryKey]);
+  }, [isOpen, retryKey, initialConversationId]);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
