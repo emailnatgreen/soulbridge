@@ -16,6 +16,7 @@ const NO_FLOAT_PAGES = ['Axi'];
 export default function Layout({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
   const [everOpened, setEverOpened] = useState(false);
+  const [chatConversationId, setChatConversationId] = useState(null);
 
   const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
 
@@ -25,9 +26,12 @@ export default function Layout({ children, currentPageName }) {
   };
 
   useEffect(() => {
-    const handleOpenAxi = () => {
+    const handleOpenAxi = (event) => {
       if (!everOpened) setEverOpened(true);
       setIsOpen(true);
+      if (event?.detail?.conversationId) {
+        setChatConversationId(event.detail.conversationId);
+      }
     };
     window.addEventListener('open-axi-with-agent', handleOpenAxi);
     return () => window.removeEventListener('open-axi-with-agent', handleOpenAxi);
@@ -58,7 +62,7 @@ export default function Layout({ children, currentPageName }) {
       {/* AxiChat floating button */}
       {!isPublicPage && (
         <Suspense fallback={null}>
-          <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} />
+          <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} initialConversationId={chatConversationId} />
         </Suspense>
       )}
     </div>
