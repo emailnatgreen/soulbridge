@@ -20,6 +20,9 @@ export default function Layout({ children, currentPageName }) {
   const [everOpened, setEverOpened] = useState(false);
   const [prefilledAxiMessage, setPrefilledAxiMessage] = useState(null);
 
+  // Trigger comprehensive page signal for Jukebox Brain
+  usePageSignal();
+
   const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
   const isNoFloatPage = NO_FLOAT_PAGES.includes(currentPageName);
 
