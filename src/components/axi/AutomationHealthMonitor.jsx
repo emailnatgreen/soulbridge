@@ -12,7 +12,9 @@ export default function AutomationHealthMonitor() {
     queryFn: async () => {
       try {
         const response = await base44.functions.invoke('getAutomationStatus', {});
-        return response.data || [];
+        const data = response.data || [];
+        // Ensure we always return an array
+        return Array.isArray(data) ? data : [];
       } catch (e) {
         console.error('Error fetching automations:', e);
         return [];
