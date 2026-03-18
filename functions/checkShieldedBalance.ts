@@ -2,9 +2,10 @@ import { ethers } from 'npm:ethers@6.13.0';
 
 const RLUSD_CONTRACT = "0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD";
 const ETH_RPCS = [
-    "https://eth.llamarpc.com",
     "https://ethereum.publicnode.com",
     "https://rpc.ankr.com/eth",
+    "https://cloudflare-eth.com",
+    "https://eth.llamarpc.com",
 ];
 
 async function ethCall(rpcUrl, to, data) {
