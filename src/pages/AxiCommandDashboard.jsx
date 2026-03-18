@@ -227,6 +227,14 @@ export default function AxiCommandDashboard() {
             </div>
           </div>
 
+          {/* Memory Review Panel */}
+          <div className="mt-4 rounded-2xl border border-violet-600/50 bg-slate-800/60 backdrop-blur p-5">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-violet-400" /> Memory Review
+            </h2>
+            <MemoryReviewPanel />
+          </div>
+
           {/* Memory Browser Quick Access */}
           <div className="mt-4 rounded-2xl border border-violet-600/50 bg-slate-800/60 backdrop-blur p-5">
             <div className="flex items-center justify-between mb-3">
