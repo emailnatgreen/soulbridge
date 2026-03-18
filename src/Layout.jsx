@@ -18,6 +18,7 @@ export default function Layout({ children, currentPageName }) {
   const [everOpened, setEverOpened] = useState(false);
 
   const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
+  const isNoFloatPage = NO_FLOAT_PAGES.includes(currentPageName);
 
   const handleToggle = () => {
     if (!everOpened) setEverOpened(true);
