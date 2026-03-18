@@ -102,11 +102,15 @@ export default function MemoryBrowser() {
 
         {/* Type breakdown */}
         <div className="flex flex-wrap gap-2">
+          <button onClick={() => setFilterValues(v => ({ ...v, type: 'all' }))}
+            className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${filterValues.type === 'all' ? 'bg-slate-700 text-white border-slate-600' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+            All ({memories.length})
+          </button>
           {Object.entries(TYPE_COLORS).map(([type, cls]) => {
             const count = memories.filter(m => m.type === type).length;
             if (count === 0) return null;
             return (
-              <button key={type} onClick={() => setFilterValues(v => ({ ...v, type: v.type === type ? 'all' : type }))}
+              <button key={type} onClick={() => setFilterValues(v => ({ ...v, type }))}
                 className={`text-xs px-2.5 py-1 rounded-lg border ${filterValues.type === type ? cls : 'bg-slate-800 text-slate-400 border-slate-700'} transition-colors`}>
                 {type.replace(/_/g, ' ')} ({count})
               </button>
