@@ -24,10 +24,11 @@ function jukebox(amplifiedSignal) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    let user = null;
+    try {
+      user = await base44.auth.me();
+    } catch (e) {
+      // Not authenticated — that's fine for new_user signals
     }
 
     const { signal_type, page_id, user_action } = await req.json();
