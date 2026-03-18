@@ -241,8 +241,8 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
   };
 
   const handleAddAgent = useCallback(async (agent) => {
-    if (!agentConvoId) {
-      throw new Error('Agent conversation not initialized');
+    if (!agentConvoId || !conversation) {
+      throw new Error('Agent conversation not initialized. Please wait for the chat to fully load.');
     }
 
     try {
@@ -384,8 +384,8 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowAddAgent(true)}
-                disabled={!agentConvoId || loading}
-                title={!agentConvoId ? "Initializing..." : "Invite agent to chat"}
+                disabled={!agentConvoId || !conversation || loading}
+                title={loading ? "Loading..." : !agentConvoId ? "Initializing..." : "Invite agent to chat"}
                 className="text-white/50 hover:text-purple-400 hover:bg-white/10 h-8 w-8 md:block hidden disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <UserPlus className="w-3.5 h-3.5" />
@@ -472,7 +472,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
             <Button
               onClick={() => setShowAddAgent(true)}
               size="sm"
-              disabled={!agentConvoId || loading}
+              disabled={!agentConvoId || !conversation || loading}
               className="w-full md:hidden text-xs bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <UserPlus className="w-3 h-3 mr-1" />
