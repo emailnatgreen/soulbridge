@@ -25,6 +25,7 @@ import AgentPerformanceReviewSystem from "@/components/axi/AgentPerformanceRevie
 import IntegratedHelpCenter from "@/components/axi/IntegratedHelpCenter";
 import DidHealthPanel from "@/components/axi/DidHealthPanel";
 import MemoryReviewPanel from "@/components/axi/MemoryReviewPanel";
+import JukeboxBrainInterface from "@/components/axi/JukeboxBrainInterface";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
@@ -225,6 +226,14 @@ export default function AxiCommandDashboard() {
             <div className="rounded-2xl border border-amber-700/40 bg-slate-800/60 backdrop-blur p-4">
               <PageReviewMemoryPanel />
             </div>
+          </div>
+
+          {/* Jukebox Brain Interface — Primary Memory Control Panel */}
+          <div className="mt-4 rounded-2xl border border-violet-600/50 bg-slate-800/60 backdrop-blur p-5">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-violet-400" /> 🎵 Jukebox Brain — Memory Intelligence Control
+            </h2>
+            <JukeboxBrainInterface />
           </div>
 
           {/* Memory Review Panel */}
