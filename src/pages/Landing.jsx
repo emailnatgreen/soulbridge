@@ -158,6 +158,9 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Particle Emitter */}
+      <ParticleCanvas />
+
       {/* Subtle Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-t from-blue-50/40 via-transparent to-transparent pointer-events-none" />
 
