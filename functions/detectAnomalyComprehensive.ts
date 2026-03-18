@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
           messageContent = `I see your task "${anomaly.task_title}" is blocked. Do you need help removing the obstacles?`;
           break;
         default:
-          messageContent = 'An anomaly has been detected. I'm here to help.';
+          messageContent = "An anomaly has been detected. I'm here to help.";
       }
 
       // Only create outreach for agents (skip if no agent_id)
