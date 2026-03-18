@@ -244,8 +244,26 @@ export default function AxiPage() {
         </div>
       )}
 
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl flex-shrink-0">
+          <div className="max-w-4xl mx-auto px-6">
+            <TabsList className="bg-transparent border-b border-white/10">
+              <TabsTrigger value="chat" className="text-white/70 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-purple-500">
+                Chat
+              </TabsTrigger>
+              {briefingMessages.length > 0 && (
+                <TabsTrigger value="summary" className="text-white/70 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-purple-500 gap-2">
+                  <FileText className="w-4 h-4" />
+                  Summary
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </div>
+        </div>
+
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <TabsContent value="chat" className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
           {loading && (
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
