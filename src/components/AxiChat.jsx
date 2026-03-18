@@ -112,33 +112,51 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     const init = async () => {
       setLoading(true);
       setInitError(false);
+      
+      const retryWithBackoff = async (fn, maxRetries = 3) => {
+        for (let i = 0; i < maxRetries; i++) {
+          try {
+            return await fn();
+          } catch (err) {
+            const isRateLimit = err?.status === 429;
+            const isLastRetry = i === maxRetries - 1;
+            if (isRateLimit && !isLastRetry) {
+              const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue;
+            }
+            throw err;
+          }
+        }
+      };
+
       try {
         let convo;
 
         // Always find/create the user's own unified conversation
-        const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+        const conversations = await retryWithBackoff(() => base44.agents.listConversations({ agent_name: 'axi' }));
         const unified = conversations.filter(c => c.metadata?.unified_axi_chat === true);
         const existing = unified.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
         if (existing) {
-          convo = await base44.agents.getConversation(existing.id);
+          convo = await retryWithBackoff(() => base44.agents.getConversation(existing.id));
         } else {
-          convo = await base44.agents.createConversation({
+          convo = await retryWithBackoff(() => base44.agents.createConversation({
             agent_name: 'axi',
             metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
-          });
+          }));
         }
         setConversation(convo);
         setMessages(convo.messages || []);
         
         // Load or create AgentConversation and store its ID
-        const initAgentConvo = async () => {
-          try {
-            // Query by conversation metadata to find linked AgentConversation
-            const existing = await base44.entities.AgentConversation.filter(
-              { metadata: { conversation_id: convo.id } },
-              '',
-              1
-            );
+         const initAgentConvo = async () => {
+           try {
+             // Query by conversation metadata to find linked AgentConversation
+             const existing = await retryWithBackoff(() => base44.entities.AgentConversation.filter(
+               { metadata: { conversation_id: convo.id } },
+               '',
+               1
+             ));
 
             if (existing?.length > 0) {
               const agentConvo = existing[0];
@@ -146,19 +164,19 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
               if (agentConvo.participant_agent_ids?.length > 0) {
                 const agents = await Promise.all(
                   agentConvo.participant_agent_ids.map(id => 
-                    base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0])
+                    retryWithBackoff(() => base44.entities.Agent.filter({ id }, '', 1)).then(arr => arr?.[0])
                   )
                 );
                 setActiveAgents(agents.filter(Boolean));
               }
             } else {
               // Create new AgentConversation with metadata link
-              const newConvo = await base44.entities.AgentConversation.create({
+              const newConvo = await retryWithBackoff(() => base44.entities.AgentConversation.create({
                 title: convo.metadata?.name || 'Agent Conversation',
                 conversation_type: 'group',
                 participant_agent_ids: [],
                 metadata: { conversation_id: convo.id }
-              });
+              }));
               setAgentConvoId(newConvo.id);
               setActiveAgents([]);
             }
@@ -171,9 +189,9 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
         await initAgentConvo();
 
         if (unsubscribeRef.current) unsubscribeRef.current();
-        unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
+        unsubscribeRef.current = await retryWithBackoff(() => base44.agents.subscribeToConversation(convo.id, (data) => {
           setMessages([...data.messages]);
-        });
+        })) || unsubscribeRef.current;
 
         return () => {
           if (unsubscribeRef.current) unsubscribeRef.current();
