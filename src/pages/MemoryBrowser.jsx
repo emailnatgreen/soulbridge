@@ -157,6 +157,9 @@ export default function MemoryBrowser() {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
+                        <button onClick={() => sendToAxi(memory)} title="Send to Axi" className="text-slate-600 hover:text-violet-400 transition-colors">
+                          <Sparkles className="w-3.5 h-3.5" />
+                        </button>
                         <button onClick={() => setExpandedId(isExpanded ? null : memory.id)} className="text-slate-600 hover:text-slate-300">
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
