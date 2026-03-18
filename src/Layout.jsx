@@ -26,6 +26,14 @@ export default function Layout({ children, currentPageName }) {
   };
 
   useEffect(() => {
+    // Check sessionStorage in case the event fired before this component mounted (mobile timing fix)
+    const storedConvoId = sessionStorage.getItem('sb_lobby_conversation_id');
+    if (storedConvoId && !chatConversationId) {
+      setChatConversationId(storedConvoId);
+      setEverOpened(true);
+      setIsOpen(true);
+    }
+
     const handleOpenAxi = (event) => {
       if (!everOpened) setEverOpened(true);
       setIsOpen(true);

@@ -44,6 +44,8 @@ export default function Home() {
           console.log('[SoulBridge] Signal processed:', res.data);
           const conversationId = res.data?.conversation_id;
           if (conversationId) {
+            // Store in sessionStorage so Layout can read it even if event was missed (mobile timing)
+            sessionStorage.setItem('sb_lobby_conversation_id', conversationId);
             window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
               detail: { conversationId, agentId: 'axi', agentName: 'Axi', agentRole: 'guardian' }
             }));
