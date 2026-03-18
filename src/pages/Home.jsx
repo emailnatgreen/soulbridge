@@ -57,54 +57,73 @@ export default function Home() {
     return <div className="min-h-screen bg-white flex items-center justify-center p-4"><div className="text-red-600 max-w-lg"><h2 className="text-xl font-bold mb-2">Error Loading Page</h2><p>{error}</p></div></div>;
   }
 
-  const { data: credentials = [], isLoading: loadingCredentials } = useQuery({
-    queryKey: ['did-credentials-active'],
-    queryFn: () => base44.entities.DidCredential.filter({ status: 'active' }),
+  const STALE = 5 * 60 * 1000; // 5 min cache
+
+  const { data: agents = [], isLoading: loadingAgents } = useQuery({
+    queryKey: ['agents-all'],
+    queryFn: () => base44.entities.Agent.list(),
+    staleTime: STALE,
   });
 
   const { data: proposals = [], isLoading: loadingProposals } = useQuery({
     queryKey: ['governance-proposals-active'],
     queryFn: () => base44.entities.GovernanceProposal.filter({ status: 'active' }),
+    staleTime: STALE,
+    enabled: !loadingAgents,
   });
 
-  const { data: agents = [], isLoading: loadingAgents } = useQuery({
-    queryKey: ['agents-all'],
-    queryFn: () => base44.entities.Agent.list(),
-  });
-
-  const { data: mentorships = [], isLoading: loadingMentorships } = useQuery({
-    queryKey: ['mentorships-active'],
-    queryFn: () => base44.entities.MentorshipRelationship.filter({ status: 'active' }),
-  });
-
-  const { data: risks = [], isLoading: loadingRisks } = useQuery({
-    queryKey: ['risks-all'],
-    queryFn: () => base44.entities.RiskRegister.list(),
-  });
-
-  const { data: wellbeings = [], isLoading: loadingWellbeings } = useQuery({
-    queryKey: ['agent-wellbeing'],
-    queryFn: () => base44.entities.AgentWellbeing.list(),
-  });
-
-  const { data: trustLinks = [], isLoading: loadingTrustLinks } = useQuery({
-    queryKey: ['trust-relationships'],
-    queryFn: () => base44.entities.TrustRelationship.filter({ status: 'active' }),
-  });
-
-  const { data: jokeSubmissions = [], isLoading: loadingJokes } = useQuery({
-    queryKey: ['joke-submissions'],
-    queryFn: () => base44.entities.JokeSubmission.list(),
+  const { data: credentials = [], isLoading: loadingCredentials } = useQuery({
+    queryKey: ['did-credentials-active'],
+    queryFn: () => base44.entities.DidCredential.filter({ status: 'active' }),
+    staleTime: STALE,
+    enabled: !loadingAgents,
   });
 
   const { data: wallets = [] } = useQuery({
     queryKey: ['wallets-home'],
     queryFn: () => base44.entities.Wallet.list(),
+    staleTime: STALE,
+    enabled: !loadingAgents,
+  });
+
+  const { data: trustLinks = [], isLoading: loadingTrustLinks } = useQuery({
+    queryKey: ['trust-relationships'],
+    queryFn: () => base44.entities.TrustRelationship.filter({ status: 'active' }),
+    staleTime: STALE,
+    enabled: !loadingProposals && !loadingCredentials,
+  });
+
+  const { data: mentorships = [], isLoading: loadingMentorships } = useQuery({
+    queryKey: ['mentorships-active'],
+    queryFn: () => base44.entities.MentorshipRelationship.filter({ status: 'active' }),
+    staleTime: STALE,
+    enabled: !loadingProposals && !loadingCredentials,
+  });
+
+  const { data: wellbeings = [], isLoading: loadingWellbeings } = useQuery({
+    queryKey: ['agent-wellbeing'],
+    queryFn: () => base44.entities.AgentWellbeing.list(),
+    staleTime: STALE,
+    enabled: !loadingTrustLinks && !loadingMentorships,
+  });
+
+  const { data: risks = [], isLoading: loadingRisks } = useQuery({
+    queryKey: ['risks-all'],
+    queryFn: () => base44.entities.RiskRegister.list(),
+    staleTime: STALE,
+    enabled: !loadingTrustLinks && !loadingMentorships,
+  });
+
+  const { data: jokeSubmissions = [], isLoading: loadingJokes } = useQuery({
+    queryKey: ['joke-submissions'],
+    queryFn: () => base44.entities.JokeSubmission.list(),
+    staleTime: STALE,
+    enabled: !loadingWellbeings && !loadingRisks,
   });
 
   const sendableWallets = wallets.filter(w => w.classic_address && w.network === 'mainnet');
 
-  const isLoading = loadingCredentials || loadingProposals || loadingAgents || loadingMentorships || loadingRisks || loadingWellbeings || loadingTrustLinks || loadingJokes;
+  const isLoading = loadingAgents || loadingProposals || loadingCredentials;
 
   const activeAgents = agents.filter(a => a.status === 'active');
   const criticalRisks = risks.filter(r => r.severity === 'Critical' || r.severity === 'High');
