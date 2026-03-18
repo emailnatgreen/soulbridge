@@ -4,7 +4,15 @@ import { Button } from "@/components/ui/button";
 import { QrCode, ShieldAlert, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { QRCodeSVG } from 'qrcode.react';
+
+const QRImage = ({ value, size = 200, color = '000000' }) => (
+  <img
+    src={`https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(value)}&color=${color}&bgcolor=ffffff`}
+    alt="QR Code"
+    width={size}
+    height={size}
+  />
+);
 
 export default function WalletQRCode({ wallet, currentUser }) {
     const [decryptedSeed, setDecryptedSeed] = useState(null);
