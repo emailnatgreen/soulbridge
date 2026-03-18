@@ -78,14 +78,20 @@ export default function AxiPage() {
         try {
           const { message } = JSON.parse(didReviewData);
           sessionStorage.removeItem('axiDIDReview');
-          
-          // Send the DID review message
-          await base44.agents.addMessage(convo, {
-            role: 'user',
-            content: message
-          });
+          await base44.agents.addMessage(convo, { role: 'user', content: message });
         } catch (err) {
           console.error('Failed to send DID review:', err);
+        }
+      }
+
+      // Check for memory browser pending message
+      const pendingMemory = sessionStorage.getItem('axi_pending_message');
+      if (pendingMemory && convo) {
+        sessionStorage.removeItem('axi_pending_message');
+        try {
+          await base44.agents.addMessage(convo, { role: 'user', content: pendingMemory });
+        } catch (err) {
+          console.error('Failed to send memory message:', err);
         }
       }
       
