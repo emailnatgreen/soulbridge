@@ -24,6 +24,8 @@ export default function AxiPage() {
   const [showAddAgent, setShowAddAgent] = useState(false);
   const [activeAgents, setActiveAgents] = useState([]);
   const [ttsEnabled, setTtsEnabled] = useState(false);
+  const [activeTab, setActiveTab] = useState('chat');
+  const [briefingMessages, setBriefingMessages] = useState([]);
   const ttsEnabledRef = useRef(false);
   const lastSpokenRef = useRef(null);
   const messagesEndRef = useRef(null);
