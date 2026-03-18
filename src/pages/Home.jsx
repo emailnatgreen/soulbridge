@@ -40,8 +40,14 @@ export default function Home() {
     base44.functions.invoke('signalProcessor', rawSignal)
       .then(res => {
         console.log('[SoulBridge] Signal processed:', res.data);
-        // Open Axi chat so the welcome message is visible
-        window.dispatchEvent(new CustomEvent('open-axi'));
+        const conversationId = res.data?.conversation_id;
+        if (conversationId) {
+          window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
+            detail: { conversationId, agentId: 'axi', agentName: 'Axi', agentRole: 'guardian' }
+          }));
+        } else {
+          window.dispatchEvent(new CustomEvent('open-axi'));
+        }
       })
       .catch(err => console.error('[SoulBridge] Signal error:', err));
   }, []);
