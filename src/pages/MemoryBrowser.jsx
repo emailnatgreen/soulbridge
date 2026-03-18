@@ -36,7 +36,15 @@ const SORT_OPTIONS = [
 
 export default function MemoryBrowser() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [filterValues, setFilterValues] = useState({ search: '', type: 'all', importance: { min: 1, max: 10 }, keyword: '', agentId: '' });
+
+  const sendToAxi = (memory) => {
+    const msg = `Memory ID: ${memory.id}\nType: ${memory.type}\nImportance: ${memory.importance ?? 5}/10\nContent: ${memory.content}${memory.context ? `\nContext: ${memory.context}` : ''}${memory.keywords?.length ? `\nKeywords: ${memory.keywords.join(', ')}` : ''}`;
+    sessionStorage.setItem('axi_pending_message', msg);
+    toast.success('Opening Axi…');
+    navigate('/Axi');
+  };
   const [sortBy, setSortBy] = useState('-importance');
   const [expandedId, setExpandedId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
