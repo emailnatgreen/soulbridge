@@ -12,9 +12,9 @@ export default function ChatLoader() {
 
         // Only handle open_chat actions
         if (action === 'open_chat' && agent_id === 'axi') {
-          // Dispatch custom event to open Axi Chat with pre-filled message
+          // Dispatch custom event to open Axi Chat with pre-filled message and agent identity
           window.dispatchEvent(new CustomEvent('open-axi-with-message', {
-            detail: { message, conversationId: conversation_id }
+            detail: { message, conversationId: conversation_id, agentId: agent_id }
           }));
 
           // Mark the decision as processed

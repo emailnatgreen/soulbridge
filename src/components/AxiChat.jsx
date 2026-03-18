@@ -10,7 +10,7 @@ import AddAgentModal from '@/components/AddAgentModal';
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
 
-const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessageCleared }) {
+const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessageCleared, speakerAgentId, onSpeakerAgentCleared }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -24,6 +24,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
   const [activeAgents, setActiveAgents] = useState([]);
   const [agentConvoId, setAgentConvoId] = useState(null);
   const [userAgentId, setUserAgentId] = useState(null);
+  const [localSpeakerAgentId, setLocalSpeakerAgentId] = useState(null);
 
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
@@ -190,19 +191,24 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
   }, [isOpen, retryKey]);
 
-  // Handle prefilled message when chat opens
+  // Handle prefilled message and speaker agent when chat opens
   useEffect(() => {
     if (prefilledMessage && conversation && !input) {
       setInput(prefilledMessage);
     }
-  }, [prefilledMessage, conversation, input]);
-
-  // Clear prefilled message state when closing chat
-  useEffect(() => {
-    if (!isOpen && onMessageCleared) {
-      onMessageCleared();
+    if (speakerAgentId) {
+      setLocalSpeakerAgentId(speakerAgentId);
     }
-  }, [isOpen, onMessageCleared]);
+  }, [prefilledMessage, conversation, input, speakerAgentId]);
+
+  // Clear prefilled message and speaker agent state when closing chat
+  useEffect(() => {
+    if (!isOpen) {
+      if (onMessageCleared) onMessageCleared();
+      if (onSpeakerAgentCleared) onSpeakerAgentCleared();
+      setLocalSpeakerAgentId(null);
+    }
+  }, [isOpen, onMessageCleared, onSpeakerAgentCleared]);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -216,14 +222,19 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     if (onMessageCleared) onMessageCleared();
     setSending(true);
     try {
-      await base44.agents.addMessage(conversation, { role: 'user', content: msg });
+      await base44.agents.addMessage(conversation, { 
+        role: 'user', 
+        content: msg,
+        metadata: localSpeakerAgentId ? { sourceAgentId: localSpeakerAgentId } : undefined
+      });
+      setLocalSpeakerAgentId(null);
     } catch (err) {
       console.error('Send error:', err);
       setInput(msg);
     } finally {
       setSending(false);
     }
-  }, [input, conversation, sending, onMessageCleared]);
+  }, [input, conversation, sending, onMessageCleared, localSpeakerAgentId]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }

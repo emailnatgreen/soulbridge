@@ -19,6 +19,7 @@ export default function Layout({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
   const [everOpened, setEverOpened] = useState(false);
   const [prefilledAxiMessage, setPrefilledAxiMessage] = useState(null);
+  const [speakerAgentId, setSpeakerAgentId] = useState(null);
 
   // Trigger comprehensive page signal for Jukebox Brain
   usePageSignal();
@@ -39,6 +40,9 @@ export default function Layout({ children, currentPageName }) {
     setIsOpen(true);
     if (event.detail?.message) {
       setPrefilledAxiMessage(event.detail.message);
+    }
+    if (event.detail?.agentId) {
+      setSpeakerAgentId(event.detail.agentId);
     }
   }, [everOpened]);
 
@@ -83,6 +87,8 @@ export default function Layout({ children, currentPageName }) {
             setIsOpen={setIsOpen} 
             prefilledMessage={prefilledAxiMessage}
             onMessageCleared={() => setPrefilledAxiMessage(null)}
+            speakerAgentId={speakerAgentId}
+            onSpeakerAgentCleared={() => setSpeakerAgentId(null)}
           />
         </Suspense>
       )}

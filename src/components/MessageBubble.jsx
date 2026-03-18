@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from "@/components/ui/button";
 import { Copy, Zap, CheckCircle2, AlertCircle, Loader2, ChevronRight, Clock } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { base44 } from '@/api/base44Client';
 
 const FunctionDisplay = ({ toolCall }) => {
     const [expanded, setExpanded] = useState(false);
@@ -97,6 +98,28 @@ const FunctionDisplay = ({ toolCall }) => {
 export default function MessageBubble({ message }) {
     const isUser = message.role === 'user';
     const isSystemError = message.role === 'system_error';
+    const [agentName, setAgentName] = useState(null);
+    
+    // Fetch agent name if sourceAgentId exists in metadata
+    useEffect(() => {
+      const fetchAgentName = async () => {
+        if (message.metadata?.sourceAgentId && !isUser) {
+          try {
+            const agent = await base44.entities.Agent.filter(
+              { id: message.metadata.sourceAgentId },
+              '',
+              1
+            );
+            if (agent?.length > 0) {
+              setAgentName(agent[0].name);
+            }
+          } catch (err) {
+            console.error('Failed to fetch agent name:', err);
+          }
+        }
+      };
+      fetchAgentName();
+    }, [message.metadata?.sourceAgentId, isUser]);
 
     const handleCopyMessage = () => {
         navigator.clipboard.writeText(message.content);
@@ -114,13 +137,19 @@ export default function MessageBubble({ message }) {
     }
     
     return (
-        <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
-            {!isUser && (
-                <div className="h-7 w-7 rounded-lg bg-purple-500/20 flex items-center justify-center mt-0.5">
-                    <div className="h-1.5 w-1.5 rounded-full bg-purple-400" />
+        <div className={cn("flex gap-3 flex-col", isUser ? "items-end" : "items-start")}>
+            {!isUser && agentName && (
+                <div className="text-xs text-purple-300/70 px-2 font-semibold">
+                    {agentName}
                 </div>
             )}
-            <div className={cn("max-w-[85%]", isUser && "flex flex-col items-end")}>
+            <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start", "w-full")}>
+                {!isUser && (
+                    <div className="h-7 w-7 rounded-lg bg-purple-500/20 flex items-center justify-center mt-0.5">
+                        <div className="h-1.5 w-1.5 rounded-full bg-purple-400" />
+                    </div>
+                )}
+                <div className={cn("max-w-[85%]", isUser && "flex flex-col items-end")}>
                 {message.content && (
                     <div className={cn(
                         "rounded-2xl px-4 py-2.5 relative group/message",
@@ -187,6 +216,7 @@ export default function MessageBubble({ message }) {
                         ))}
                     </div>
                 )}
+                </div>
             </div>
         </div>
     );
