@@ -106,8 +106,11 @@ export default function AxiPage() {
       
       if (unsubscribeRef.current) unsubscribeRef.current();
       unsubscribeRef.current = base44.agents.subscribeToConversation(convo.id, (data) => {
-        setMessages(data.messages);
-        const lastMsg = data.messages[data.messages.length - 1];
+         const briefing = (data.messages || []).filter(msg => msg.metadata?.is_briefing);
+         const chat = (data.messages || []).filter(msg => !msg.metadata?.is_briefing);
+         setBriefingMessages(briefing);
+         setMessages(chat);
+         const lastMsg = chat[chat.length - 1];
         if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content && lastMsg.id !== lastSpokenRef.current) {
           lastSpokenRef.current = lastMsg.id;
           if (ttsEnabledRef.current) {
