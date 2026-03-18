@@ -133,6 +133,34 @@ export default function AxiCommandDashboard() {
             <ComprehensiveAnalyticsDashboard />
           </div>
 
+          {/* JUKEBOX BRAIN NERVE CENTER — Core Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            {/* LEFT — Active Anomalies (tall) */}
+            <div className="lg:row-span-2 rounded-2xl border border-red-700/40 bg-slate-800/60 backdrop-blur p-4 flex flex-col" style={{ minHeight: "480px" }}>
+              <AnomalyOverviewPanel />
+            </div>
+
+            {/* MIDDLE — Pending Decisions */}
+            <div className="rounded-2xl border border-purple-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <PendingJukeboxDecisions />
+            </div>
+
+            {/* RIGHT — Automation Health */}
+            <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <AutomationHealthMonitor />
+            </div>
+
+            {/* MIDDLE — Page Signal Trends */}
+            <div className="rounded-2xl border border-emerald-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <PageSignalActivityTrends />
+            </div>
+
+            {/* RIGHT — Correlated Insights */}
+            <div className="rounded-2xl border border-indigo-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <CorrelatedInsightsViewer />
+            </div>
+          </div>
+
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
@@ -151,9 +179,9 @@ export default function AxiCommandDashboard() {
               <TreasuryStatusPanel />
             </div>
 
-            {/* MIDDLE — Automation Health */}
-            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
-              <AutomationHealthPanel />
+            {/* MIDDLE — Direct Action Interface */}
+            <div className="rounded-2xl border border-violet-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <DirectActionInterface />
             </div>
 
             {/* RIGHT — Governance Risk */}
