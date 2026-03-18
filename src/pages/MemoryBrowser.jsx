@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import FilterBar from '@/components/filters/FilterBar';
 import { toast } from 'sonner';
+import MemoryReviewPanel from '@/components/axi/MemoryReviewPanel';
 
 const TYPE_COLORS = {
   conversation_snippet: 'bg-blue-900/40 text-blue-300 border-blue-700/40',
