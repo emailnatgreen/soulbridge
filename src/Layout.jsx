@@ -25,23 +25,16 @@ export default function Layout({ children, currentPageName }) {
   };
 
   useEffect(() => {
-    // Check sessionStorage in case the event fired before this component mounted (mobile timing fix)
-    const storedConvoId = sessionStorage.getItem('sb_lobby_conversation_id');
-    if (storedConvoId && !chatConversationId) {
-      setChatConversationId(storedConvoId);
-      setEverOpened(true);
-      setIsOpen(true);
-    }
-
-    const handleOpenAxi = (event) => {
+    const handleOpenAxi = () => {
       if (!everOpened) setEverOpened(true);
       setIsOpen(true);
-      if (event?.detail?.conversationId) {
-        setChatConversationId(event.detail.conversationId);
-      }
     };
+    window.addEventListener('open-axi', handleOpenAxi);
     window.addEventListener('open-axi-with-agent', handleOpenAxi);
-    return () => window.removeEventListener('open-axi-with-agent', handleOpenAxi);
+    return () => {
+      window.removeEventListener('open-axi', handleOpenAxi);
+      window.removeEventListener('open-axi-with-agent', handleOpenAxi);
+    };
   }, [everOpened]);
 
   return (
