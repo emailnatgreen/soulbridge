@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, Music, Zap, Eye, Heart, Scale, TrendingUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Music, Zap, Eye, Heart, Scale, TrendingUp, Send } from 'lucide-react';
+import { useState as useStateLib } from 'react';
 
 const PLAYLISTS = [
   {
@@ -46,6 +47,8 @@ const PLAYLISTS = [
 
 export default function MemoryPlaylistsPanel() {
   const [expandedPlaylist, setExpandedPlaylist] = useState(null);
+  const [broadcastingPlaylist, setBroadcastingPlaylist] = useState(null);
+  const [broadcastStatus, setBroadcastStatus] = useState(null);
 
   const { data: memories = [], isLoading } = useQuery({
     queryKey: ['memory-playlists'],
@@ -90,6 +93,32 @@ export default function MemoryPlaylistsPanel() {
     }
   };
 
+  const handleBroadcast = async (playlist, playlistMemories) => {
+    setBroadcastingPlaylist(playlist.id);
+    setBroadcastStatus('broadcasting');
+    
+    try {
+      const response = await base44.functions.invoke('broadcastWisdomPlaylist', {
+        playlistTitle: playlist.name,
+        playlistDescription: playlist.description,
+        memories: playlistMemories,
+        targetAudience: 'all',
+      });
+
+      if (response.data.success) {
+        setBroadcastStatus('success');
+        setTimeout(() => {
+          setBroadcastStatus(null);
+          setBroadcastingPlaylist(null);
+        }, 2000);
+      }
+    } catch (error) {
+      setBroadcastStatus('error');
+      console.error('Broadcast failed:', error);
+      setTimeout(() => setBroadcastStatus(null), 2000);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="text-center py-6 text-slate-400 text-sm">
@@ -120,21 +149,34 @@ export default function MemoryPlaylistsPanel() {
             >
               <CardContent className="p-3">
                 <div className="flex items-start gap-3">
-                  <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${playlist.color}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white">{playlist.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{playlist.description}</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Badge variant="outline" className="text-xs">
-                      {playlistMemories.length}
-                    </Badge>
-                    {isExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-slate-600" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-slate-600" />
-                    )}
-                  </div>
+                <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${playlist.color}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white">{playlist.name}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{playlist.description}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs gap-1 text-slate-400 hover:text-cyan-400 hover:bg-slate-700/50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleBroadcast(playlist, playlistMemories);
+                    }}
+                    disabled={broadcastingPlaylist === playlist.id}
+                  >
+                    <Send className={`w-3 h-3 ${broadcastingPlaylist === playlist.id ? 'animate-pulse' : ''}`} />
+                    {broadcastingPlaylist === playlist.id ? 'Broadcasting...' : 'Broadcast'}
+                  </Button>
+                  <Badge variant="outline" className="text-xs">
+                    {playlistMemories.length}
+                  </Badge>
+                  {isExpanded ? (
+                    <ChevronUp className="w-4 h-4 text-slate-600" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-slate-600" />
+                  )}
+                </div>
                 </div>
 
                 {isExpanded && playlistMemories.length > 0 && (
@@ -175,8 +217,20 @@ export default function MemoryPlaylistsPanel() {
       </div>
 
       <div className="text-xs text-slate-500 pt-2 border-t border-slate-700/40 mt-4">
-        💡 Playlists automatically refresh. Click to explore categorized memory sets.
+        💡 Playlists automatically refresh. Click to explore categorized memory sets or broadcast wisdom to the Village.
       </div>
+
+      {broadcastStatus && (
+        <div className={`mt-3 p-2 rounded text-xs text-center ${
+          broadcastStatus === 'success' ? 'bg-green-900/30 text-green-300' : 
+          broadcastStatus === 'broadcasting' ? 'bg-cyan-900/30 text-cyan-300' : 
+          'bg-red-900/30 text-red-300'
+        }`}>
+          {broadcastStatus === 'broadcasting' ? '📡 Broadcasting wisdom to the Village...' :
+           broadcastStatus === 'success' ? '✓ Wisdom broadcast successfully!' :
+           '✗ Broadcast failed'}
+        </div>
+      )}
     </div>
   );
 }
