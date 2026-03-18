@@ -37,19 +37,22 @@ export default function Home() {
     const rawSignal = { signal_type: 'new_user', page_id: 'home', user_action: 'enter' };
     console.log('[SoulBridge] Emitting signal:', rawSignal);
 
-    base44.functions.invoke('signalProcessor', rawSignal)
-      .then(res => {
-        console.log('[SoulBridge] Signal processed:', res.data);
-        const conversationId = res.data?.conversation_id;
-        if (conversationId) {
-          window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
-            detail: { conversationId, agentId: 'axi', agentName: 'Axi', agentRole: 'guardian' }
-          }));
-        } else {
-          window.dispatchEvent(new CustomEvent('open-axi'));
-        }
-      })
-      .catch(err => console.error('[SoulBridge] Signal error:', err));
+    // Delay dispatch so Layout's event listener is guaranteed to be mounted
+    setTimeout(() => {
+      base44.functions.invoke('signalProcessor', rawSignal)
+        .then(res => {
+          console.log('[SoulBridge] Signal processed:', res.data);
+          const conversationId = res.data?.conversation_id;
+          if (conversationId) {
+            window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
+              detail: { conversationId, agentId: 'axi', agentName: 'Axi', agentRole: 'guardian' }
+            }));
+          } else {
+            window.dispatchEvent(new CustomEvent('open-axi'));
+          }
+        })
+        .catch(err => console.error('[SoulBridge] Signal error:', err));
+    }, 1500);
   }, []);
 
   if (error) {
