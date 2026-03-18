@@ -191,6 +191,12 @@ export default function Home() {
                   label="Ask Axi"
                   context="Nathan is on the SoulBridge Dashboard. Please give him a brief Village morning briefing: treasury balance, any urgent notifications, active governance proposals needing votes, and which agents need your attention today."
                 />
+                <Link to={createPageUrl('MemoryBrowser')}>
+                  <Button variant="outline" className="border-violet-300 text-violet-700 hover:bg-violet-50 gap-2">
+                    <Brain className="w-4 h-4" />
+                    Memory Browser
+                  </Button>
+                </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-500/25 transition-all duration-300">
