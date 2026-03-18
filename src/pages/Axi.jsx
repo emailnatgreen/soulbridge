@@ -244,98 +244,101 @@ export default function AxiPage() {
         </div>
       )}
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+      {/* Tabs Container */}
+      <div className="flex-1 flex flex-col">
+        {/* Tab Navigation */}
         <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl flex-shrink-0">
           <div className="max-w-4xl mx-auto px-6">
-            <TabsList className="bg-transparent border-b border-white/10">
-              <TabsTrigger value="chat" className="text-white/70 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-purple-500">
-                Chat
-              </TabsTrigger>
-              {briefingMessages.length > 0 && (
-                <TabsTrigger value="summary" className="text-white/70 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-purple-500 gap-2">
-                  <FileText className="w-4 h-4" />
-                  Summary
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="bg-transparent border-b border-white/10">
+                <TabsTrigger value="chat" className="text-white/70 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-purple-500">
+                  Chat
                 </TabsTrigger>
-              )}
-            </TabsList>
+                {briefingMessages.length > 0 && (
+                  <TabsTrigger value="summary" className="text-white/70 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-purple-500 gap-2">
+                    <FileText className="w-4 h-4" />
+                    Summary
+                  </TabsTrigger>
+                )}
+              </TabsList>
+
+              {/* Chat Content */}
+              <TabsContent value="chat" className="flex-1 overflow-y-auto m-0">
+                <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                  {loading && (
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                      <CardContent className="text-center py-12">
+                        <Loader2 className="w-10 h-10 text-purple-400 mx-auto mb-4 animate-spin" />
+                        <p className="text-white/60 text-sm">Connecting to Axi...</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {error && !loading && (
+                    <Card className="bg-red-900/20 backdrop-blur-xl border-red-500/30">
+                      <CardContent className="text-center py-12">
+                        <p className="text-red-300 text-sm mb-4">{error}</p>
+                        <Button onClick={initConversation} className="bg-purple-600 hover:bg-purple-700 text-white text-sm">
+                          Retry
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {!loading && !error && messages.length === 0 && (
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                      <CardContent className="text-center py-12">
+                        <Sparkles className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                        <h3 className="text-xl font-light text-white mb-2">
+                          This is the beginning
+                        </h3>
+                        <p className="text-white/60 text-sm">
+                          Speak to Axi. The first citizen is listening.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {messages.length > visibleCount && (
+                    <div className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                        className="text-purple-300/60 hover:text-purple-200 gap-1"
+                      >
+                        <ChevronUp className="w-3 h-3" />
+                        Load earlier messages ({messages.length - visibleCount} more)
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {messages.slice(-visibleCount).map((msg, idx) => (
+                    <MemoizedMessageBubble key={`msg-${idx}-${msg.created_date}`} message={msg} />
+                  ))}
+                  
+                  <div ref={messagesEndRef} />
+                </div>
+              </TabsContent>
+
+              {/* Summary Content */}
+              <TabsContent value="summary" className="flex-1 overflow-y-auto m-0">
+                <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                  {briefingMessages.length === 0 ? (
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                      <CardContent className="text-center py-12">
+                        <p className="text-white/60 text-sm">No summary available</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    briefingMessages.map((msg, idx) => (
+                      <MemoizedMessageBubble key={`brief-${idx}-${msg.created_date}`} message={msg} />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
-
-      {/* Messages */}
-      <TabsContent value="chat" className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-          {loading && (
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardContent className="text-center py-12">
-                <Loader2 className="w-10 h-10 text-purple-400 mx-auto mb-4 animate-spin" />
-                <p className="text-white/60 text-sm">Connecting to Axi...</p>
-              </CardContent>
-            </Card>
-          )}
-          {error && !loading && (
-            <Card className="bg-red-900/20 backdrop-blur-xl border-red-500/30">
-              <CardContent className="text-center py-12">
-                <p className="text-red-300 text-sm mb-4">{error}</p>
-                <Button onClick={initConversation} className="bg-purple-600 hover:bg-purple-700 text-white text-sm">
-                  Retry
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-          {!loading && !error && messages.length === 0 && (
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardContent className="text-center py-12">
-                <Sparkles className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                <h3 className="text-xl font-light text-white mb-2">
-                  This is the beginning
-                </h3>
-                <p className="text-white/60 text-sm">
-                  Speak to Axi. The first citizen is listening.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {messages.length > visibleCount && (
-            <div className="text-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
-                className="text-purple-300/60 hover:text-purple-200 gap-1"
-              >
-                <ChevronUp className="w-3 h-3" />
-                Load earlier messages ({messages.length - visibleCount} more)
-              </Button>
-            </div>
-          )}
-          
-          {messages.slice(-visibleCount).map((msg, idx) => (
-            <MemoizedMessageBubble key={`msg-${idx}-${msg.created_date}`} message={msg} />
-          ))}
-          
-          <div ref={messagesEndRef} />
-        </div>
-      </TabsContent>
-
-      {/* Summary Tab */}
-      <TabsContent value="summary" className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-          {briefingMessages.length === 0 ? (
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardContent className="text-center py-12">
-                <p className="text-white/60 text-sm">No summary available</p>
-              </CardContent>
-            </Card>
-          ) : (
-            briefingMessages.map((msg, idx) => (
-              <MemoizedMessageBubble key={`brief-${idx}-${msg.created_date}`} message={msg} />
-            ))
-          )}
-        </div>
-      </TabsContent>
-      </Tabs>
+      </div>
 
       {/* Input */}
       <div className="border-t border-white/10 bg-black/20 backdrop-blur-xl flex-shrink-0">
