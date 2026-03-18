@@ -16,7 +16,7 @@ async function ethCall(rpcUrl, to, data) {
             jsonrpc: '2.0', id: 1, method: 'eth_call',
             params: [{ to, data }, 'latest']
         }),
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(5000),
     });
     const text = await res.text();
     const json = JSON.parse(text);
