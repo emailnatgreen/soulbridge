@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { QrCode, ShieldAlert, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import QRCodeStyling from 'qr-code-styling';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function WalletQRCode({ wallet, currentUser }) {
     const [decryptedSeed, setDecryptedSeed] = useState(null);
