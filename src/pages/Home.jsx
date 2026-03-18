@@ -28,31 +28,22 @@ export default function Home() {
     });
   }, []);
 
-  // SoulBridge Nervous System — Step 1: emit new_user signal on home load
+  // ─── SoulBridge Nervous System — Step 1: new_user signal ───────
   React.useEffect(() => {
-    const fireSignal = async () => {
-      try {
-        const response = await base44.functions.invoke('signalProcessor', {
-          signal_type: 'new_user',
-          page_id: 'home',
-          user_action: 'enter',
-        });
-        if (response?.data?.conversation_id) {
-          // Open Axi chat with the conversation
-          window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
-            detail: {
-              conversationId: response.data.conversation_id,
-              agentId: 'axi',
-              agentName: 'Axi',
-              agentRole: 'guardian',
-            }
-          }));
-        }
-      } catch (err) {
-        console.error('[SoulBridge] Signal failed:', err);
-      }
-    };
-    fireSignal();
+    const fired = sessionStorage.getItem('sb_new_user_signal');
+    if (fired) return;
+    sessionStorage.setItem('sb_new_user_signal', '1');
+
+    const rawSignal = { signal_type: 'new_user', page_id: 'home', user_action: 'enter' };
+    console.log('[SoulBridge] Emitting signal:', rawSignal);
+
+    base44.functions.invoke('signalProcessor', rawSignal)
+      .then(res => {
+        console.log('[SoulBridge] Signal processed:', res.data);
+        // Open Axi chat so the welcome message is visible
+        window.dispatchEvent(new CustomEvent('open-axi'));
+      })
+      .catch(err => console.error('[SoulBridge] Signal error:', err));
   }, []);
 
   if (error) {
