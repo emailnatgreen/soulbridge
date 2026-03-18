@@ -23,6 +23,16 @@ Deno.serve(async (req) => {
     const amplified = signalTower(rawSignal);
     console.log('[SignalProcessor] Amplified signal:', amplified);
 
+    // ── Bootstrap: create service-role-owned lobby if needed ──
+    if (signal_type === 'bootstrap_lobby') {
+      const convo = await base44.asServiceRole.agents.createConversation({
+        agent_name: 'axi',
+        metadata: { name: 'SoulBridge Welcome Lobby', unified_axi_chat: true, service_owned: true },
+      });
+      console.log('[SignalProcessor] Lobby created:', convo.id);
+      return Response.json({ success: true, lobby_id: convo.id });
+    }
+
     const lobbyId = Deno.env.get('LOBBY_CONVERSATION_ID');
     if (!lobbyId) {
       return Response.json({ error: 'LOBBY_CONVERSATION_ID not set' }, { status: 500 });
