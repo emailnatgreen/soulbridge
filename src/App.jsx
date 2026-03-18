@@ -64,6 +64,7 @@ const AuthenticatedApp = () => {
       <Route path="/VillageCalendar" element={<LayoutWrapper currentPageName="VillageCalendar"><VillageCalendar /></LayoutWrapper>} />
       <Route path="/AxiCommandDashboard" element={<LayoutWrapper currentPageName="AxiCommandDashboard"><AxiCommandDashboard /></LayoutWrapper>} />
       <Route path="/AgentAdditionDiagnostic" element={<LayoutWrapper currentPageName="AgentAdditionDiagnostic"><AgentAdditionDiagnostic /></LayoutWrapper>} />
+      <Route path="/MemoryBrowser" element={<LayoutWrapper currentPageName="MemoryBrowser"><MemoryBrowser /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
