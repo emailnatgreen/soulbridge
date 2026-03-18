@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
@@ -21,6 +22,7 @@ import GuidedTour from '../components/onboarding/GuidedTour';
 
 export default function Home() {
   const [error, setError] = React.useState(null);
+  usePageSignal();
 
   React.useEffect(() => {
     window.addEventListener('error', (e) => {
