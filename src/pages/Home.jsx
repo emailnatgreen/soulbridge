@@ -28,6 +28,33 @@ export default function Home() {
     });
   }, []);
 
+  // SoulBridge Nervous System — Step 1: emit new_user signal on home load
+  React.useEffect(() => {
+    const fireSignal = async () => {
+      try {
+        const response = await base44.functions.invoke('signalProcessor', {
+          signal_type: 'new_user',
+          page_id: 'home',
+          user_action: 'enter',
+        });
+        if (response?.data?.conversation_id) {
+          // Open Axi chat with the conversation
+          window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
+            detail: {
+              conversationId: response.data.conversation_id,
+              agentId: 'axi',
+              agentName: 'Axi',
+              agentRole: 'guardian',
+            }
+          }));
+        }
+      } catch (err) {
+        console.error('[SoulBridge] Signal failed:', err);
+      }
+    };
+    fireSignal();
+  }, []);
+
   if (error) {
     return <div className="min-h-screen bg-white flex items-center justify-center p-4"><div className="text-red-600 max-w-lg"><h2 className="text-xl font-bold mb-2">Error Loading Page</h2><p>{error}</p></div></div>;
   }
