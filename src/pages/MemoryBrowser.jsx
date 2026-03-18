@@ -6,16 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Brain, Trash2, ChevronDown, ChevronUp, Download, Sparkles } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import FilterBar from '@/components/filters/FilterBar';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
-
-function sendToAxi(memory) {
-  const msg = `Memory ID: ${memory.id}\nType: ${memory.type}\nImportance: ${memory.importance ?? 5}/10\nContent: ${memory.content}${memory.context ? `\nContext: ${memory.context}` : ''}${memory.keywords?.length ? `\nKeywords: ${memory.keywords.join(', ')}` : ''}`;
-  sessionStorage.setItem('axi_pending_review', JSON.stringify({ type: 'memory', content: msg, label: `Memory: ${memory.content?.slice(0, 60)}…` }));
-  window.dispatchEvent(new Event('open-axi'));
-  toast.success('Sent to Axi chat');
-}
 
 const TYPE_COLORS = {
   conversation_snippet: 'bg-blue-900/40 text-blue-300 border-blue-700/40',
