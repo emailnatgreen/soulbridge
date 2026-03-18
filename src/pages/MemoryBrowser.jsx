@@ -8,7 +8,6 @@ import { Brain, Trash2, ChevronDown, ChevronUp, Download, Sparkles } from 'lucid
 import { format, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import FilterBar from '@/components/filters/FilterBar';
-import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 
 const TYPE_COLORS = {
