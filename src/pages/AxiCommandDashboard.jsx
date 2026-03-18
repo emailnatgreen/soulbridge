@@ -6,7 +6,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import VillageStatsBar from "@/components/axi/VillageStatsBar";
 import AlertsFeed from "@/components/axi/AlertsFeed";
 import HonorRiskPanel from "@/components/axi/HonorRiskPanel";
-import AutomationHealthPanel from "@/components/axi/AutomationHealthPanel";
 import GovernanceRiskPanel from "@/components/axi/GovernanceRiskPanel";
 import TreasuryStatusPanel from "@/components/axi/TreasuryStatusPanel";
 import WellbeingPanel from "@/components/axi/WellbeingPanel";
@@ -27,6 +26,12 @@ import DidHealthPanel from "@/components/axi/DidHealthPanel";
 import MemoryReviewPanel from "@/components/axi/MemoryReviewPanel";
 import JukeboxBrainInterface from "@/components/axi/JukeboxBrainInterface";
 import MemoryPlaylistsPanel from "@/components/axi/MemoryPlaylistsPanel";
+import AnomalyOverviewPanel from "@/components/axi/AnomalyOverviewPanel";
+import PendingJukeboxDecisions from "@/components/axi/PendingJukeboxDecisions";
+import CorrelatedInsightsViewer from "@/components/axi/CorrelatedInsightsViewer";
+import PageSignalActivityTrends from "@/components/axi/PageSignalActivityTrends";
+import AutomationHealthMonitor from "@/components/axi/AutomationHealthMonitor";
+import DirectActionInterface from "@/components/axi/DirectActionInterface";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
