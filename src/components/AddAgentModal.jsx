@@ -18,6 +18,7 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
   }, []);
 
   const filtered = agents.filter(a =>
+    !alreadyAdded.includes(a.id) &&
     (a.name?.toLowerCase().includes(search.toLowerCase()) ||
      a.role?.toLowerCase().includes(search.toLowerCase()))
   );
