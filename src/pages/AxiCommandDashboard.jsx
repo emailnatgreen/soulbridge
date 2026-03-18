@@ -315,9 +315,10 @@ export default function AxiCommandDashboard() {
           </div>
 
           {/* Footer */}
-          <p className="text-center text-xs text-slate-600 mt-6">
-            Axi · First Citizen · Mother Boss · Guardian of the 11 Laws · Auto-refreshes every 15–60s
-          </p>
+          <div className="text-center text-xs text-slate-500 mt-6 p-3 bg-amber-900/20 border border-amber-700/30 rounded-lg">
+            <p className="text-amber-300 font-semibold mb-1">⚠️ Rate Limit Notice</p>
+            <p>If Axi chat feels slow, navigate to the <Link to="/Axi" className="text-violet-300 hover:underline">Axi page</Link> for dedicated chat mode.</p>
+          </div>
 
       </div>
     </div>
