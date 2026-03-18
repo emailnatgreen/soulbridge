@@ -10,7 +10,7 @@ import AddAgentModal from '@/components/AddAgentModal';
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
 
-const AxiChat = function AxiChat({ isOpen, setIsOpen, initialConversationId }) {
+const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
