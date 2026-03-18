@@ -111,7 +111,7 @@ export default function WalletQRCode({ wallet, currentUser }) {
                                 <>
                                     <p className="text-sm text-gray-500 font-medium">{wallet.name}</p>
                                     <div className="p-4 bg-white rounded-xl border-2 border-red-300 shadow-sm">
-                                        <QRCodeSVG value={decryptedSeed} size={200} fgColor="#991b1b" />
+                                        <QRImage value={decryptedSeed} size={200} color="991b1b" />
                                     </div>
                                     <code className="text-xs bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded w-full text-center break-all">
                                         {decryptedSeed}
