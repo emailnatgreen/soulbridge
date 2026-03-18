@@ -61,7 +61,7 @@ export default function Layout({ children, currentPageName }) {
       <Toaster />
 
       {/* AxiChat floating button */}
-      {!isPublicPage && (
+      {!isPublicPage && !isNoFloatPage && (
         <Suspense fallback={null}>
           <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} />
         </Suspense>
