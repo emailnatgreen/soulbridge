@@ -45,8 +45,9 @@ Deno.serve(async (req) => {
     console.log(`[SignalProcessor] Jukebox routed to: ${targetAgent}`);
 
     // Step 4 — Find or create Axi's unified conversation
-    const conversations = await base44.agents.listConversations({ agent_name: targetAgent });
-    const unified = conversations.filter(c => c.metadata?.unified_axi_chat === true);
+    const conversationsRaw = await base44.agents.listConversations({ agent_name: targetAgent });
+    const conversationsList = Array.isArray(conversationsRaw) ? conversationsRaw : (conversationsRaw?.items || conversationsRaw?.conversations || Object.values(conversationsRaw));
+    const unified = conversationsList.filter(c => c.metadata?.unified_axi_chat === true);
     const existing = unified.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
 
     let convo;
