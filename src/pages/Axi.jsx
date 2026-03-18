@@ -317,7 +317,25 @@ export default function AxiPage() {
           
           <div ref={messagesEndRef} />
         </div>
-      </div>
+      </TabsContent>
+
+      {/* Summary Tab */}
+      <TabsContent value="summary" className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+          {briefingMessages.length === 0 ? (
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardContent className="text-center py-12">
+                <p className="text-white/60 text-sm">No summary available</p>
+              </CardContent>
+            </Card>
+          ) : (
+            briefingMessages.map((msg, idx) => (
+              <MemoizedMessageBubble key={`brief-${idx}-${msg.created_date}`} message={msg} />
+            ))
+          )}
+        </div>
+      </TabsContent>
+      </Tabs>
 
       {/* Input */}
       <div className="border-t border-white/10 bg-black/20 backdrop-blur-xl flex-shrink-0">
