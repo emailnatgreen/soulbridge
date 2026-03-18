@@ -384,8 +384,9 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowAddAgent(true)}
-                title="Invite agent to chat"
-                className="text-white/50 hover:text-purple-400 hover:bg-white/10 h-8 w-8 md:block hidden"
+                disabled={!agentConvoId || loading}
+                title={!agentConvoId ? "Initializing..." : "Invite agent to chat"}
+                className="text-white/50 hover:text-purple-400 hover:bg-white/10 h-8 w-8 md:block hidden disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <UserPlus className="w-3.5 h-3.5" />
               </Button>
@@ -471,7 +472,8 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
             <Button
               onClick={() => setShowAddAgent(true)}
               size="sm"
-              className="w-full md:hidden text-xs bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/30"
+              disabled={!agentConvoId || loading}
+              className="w-full md:hidden text-xs bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <UserPlus className="w-3 h-3 mr-1" />
               Add Agent
