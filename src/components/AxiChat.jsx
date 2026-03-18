@@ -103,6 +103,11 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, initialConversationId }) {
   }, [isOpen, conversation]);
 
   useEffect(() => {
+    // Reset so init re-runs when the lobby conversation ID arrives
+    initialized.current = false;
+  }, [initialConversationId]);
+
+  useEffect(() => {
     if (!isOpen || initialized.current) return;
     initialized.current = true;
 
