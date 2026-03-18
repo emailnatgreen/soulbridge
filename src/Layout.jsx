@@ -62,7 +62,7 @@ export default function Layout({ children, currentPageName }) {
       {/* AxiChat floating button */}
       {!isPublicPage && (
         <Suspense fallback={null}>
-          <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} initialConversationId={chatConversationId} />
+          <AxiChat isOpen={isOpen} setIsOpen={setIsOpen} />
         </Suspense>
       )}
     </div>
