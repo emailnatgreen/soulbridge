@@ -73,7 +73,13 @@ export default function AxiPage() {
       }
       
       setConversation(convo);
-      setMessages(convo.messages || []);
+
+      // Separate briefing messages from chat messages
+      const briefing = (convo.messages || []).filter(msg => msg.metadata?.is_briefing);
+      const chat = (convo.messages || []).filter(msg => !msg.metadata?.is_briefing);
+
+      setBriefingMessages(briefing);
+      setMessages(chat);
       
       // Check for DID review data and auto-send if available
       const didReviewData = sessionStorage.getItem('axiDIDReview');
