@@ -119,17 +119,24 @@ export default function MemoryBrowser() {
           })}
         </div>
 
+        <div className="rounded-2xl border border-violet-600/50 bg-slate-800/40 backdrop-blur p-5">
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-violet-400" /> Memory Review
+          </h2>
+          <MemoryReviewPanel />
+        </div>
+
         <FilterBar
-          filters={MEMORY_FILTERS}
-          values={filterValues}
-          onChange={setFilterValues}
-          searchKey="search"
-          searchPlaceholder="Search memory content, keywords…"
-          sortOptions={SORT_OPTIONS}
-          sortValue={sortBy}
-          onSortChange={setSortBy}
-          resultCount={filtered.length}
-        />
+           filters={MEMORY_FILTERS}
+           values={filterValues}
+           onChange={setFilterValues}
+           searchKey="search"
+           searchPlaceholder="Search memory content, keywords…"
+           sortOptions={SORT_OPTIONS}
+           sortValue={sortBy}
+           onSortChange={setSortBy}
+           resultCount={filtered.length}
+         />
 
         {isLoading ? (
           <div className="text-center py-16 text-slate-500">Loading memories…</div>
