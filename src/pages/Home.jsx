@@ -42,18 +42,14 @@ export default function Home() {
       base44.functions.invoke('signalProcessor', rawSignal)
         .then(res => {
           console.log('[SoulBridge] Signal processed:', res.data);
-          const conversationId = res.data?.conversation_id;
-          if (conversationId) {
-            // Store in sessionStorage so Layout can read it even if event was missed (mobile timing)
-            sessionStorage.setItem('sb_lobby_conversation_id', conversationId);
-            window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
-              detail: { conversationId, agentId: 'axi', agentName: 'Axi', agentRole: 'guardian' }
-            }));
-          } else {
-            window.dispatchEvent(new CustomEvent('open-axi'));
-          }
+          // Just open Axi — AxiChat manages its own conversation
+          window.dispatchEvent(new CustomEvent('open-axi'));
         })
-        .catch(err => console.error('[SoulBridge] Signal error:', err));
+        .catch(err => {
+          console.error('[SoulBridge] Signal error:', err);
+          // Still open Axi even if signal fails
+          window.dispatchEvent(new CustomEvent('open-axi'));
+        });
     }, 1500);
   }, []);
 
