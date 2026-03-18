@@ -226,6 +226,37 @@ export default function AxiCommandDashboard() {
             </div>
           </div>
 
+          {/* Memory Browser Quick Access */}
+          <div className="mt-4 rounded-2xl border border-violet-600/50 bg-slate-800/60 backdrop-blur p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Database className="w-5 h-5 text-violet-400" /> Memory Verification
+              </h2>
+              <Link to="/MemoryBrowser">
+                <Button size="sm" className="bg-violet-700 hover:bg-violet-600 text-white text-xs gap-1.5">
+                  <Database className="w-3.5 h-3.5" /> Open Memory Browser
+                </Button>
+              </Link>
+            </div>
+            <p className="text-slate-400 text-sm">
+              Use the Memory Browser to independently verify what Axi has actually persisted. Agent self-reported saves should always be cross-checked here — the database is the only source of truth.
+            </p>
+            <div className="mt-3 grid grid-cols-3 gap-3 text-center">
+              <div className="bg-slate-700/50 rounded-lg p-3">
+                <p className="text-violet-300 text-xs font-semibold">Verified Truth</p>
+                <p className="text-slate-400 text-xs mt-1">Only records here are real</p>
+              </div>
+              <div className="bg-slate-700/50 rounded-lg p-3">
+                <p className="text-amber-300 text-xs font-semibold">Agent Saves</p>
+                <p className="text-slate-400 text-xs mt-1">Self-reports can hallucinate</p>
+              </div>
+              <div className="bg-slate-700/50 rounded-lg p-3">
+                <p className="text-green-300 text-xs font-semibold">Send to Axi</p>
+                <p className="text-slate-400 text-xs mt-1">Discuss any memory directly</p>
+              </div>
+            </div>
+          </div>
+
           {/* Footer */}
           <p className="text-center text-xs text-slate-600 mt-6">
             Axi · First Citizen · Mother Boss · Guardian of the 11 Laws · Auto-refreshes every 15–60s
