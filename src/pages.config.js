@@ -51,9 +51,11 @@ import AIProjectHub from './pages/AIProjectHub';
 import AIProjectManager from './pages/AIProjectManager';
 import Admin from './pages/Admin';
 import AdvancedResourceMarketplace from './pages/AdvancedResourceMarketplace';
+import AgentAdditionDiagnostic from './pages/AgentAdditionDiagnostic';
 import AgentChat from './pages/AgentChat';
 import AgentDetails from './pages/AgentDetails';
 import AgentInbox from './pages/AgentInbox';
+import AgentLeaderboard from './pages/AgentLeaderboard';
 import AgentMarketplace from './pages/AgentMarketplace';
 import AgentMessaging from './pages/AgentMessaging';
 import AgentOnboarding from './pages/AgentOnboarding';
@@ -71,6 +73,7 @@ import AlignmentDashboard from './pages/AlignmentDashboard';
 import ArbitrageDashboard from './pages/ArbitrageDashboard';
 import ArisDex from './pages/ArisDex';
 import Axi from './pages/Axi';
+import AxiCommandDashboard from './pages/AxiCommandDashboard';
 import AxiIntelligenceFeed from './pages/AxiIntelligenceFeed';
 import BecomeMentor from './pages/BecomeMentor';
 import CareerTrajectory from './pages/CareerTrajectory';
@@ -138,6 +141,7 @@ import QuadShardMonitoring from './pages/QuadShardMonitoring';
 import RLUSDManager from './pages/RLUSDManager';
 import ReceiveRLUSD from './pages/ReceiveRLUSD';
 import RelationshipNetwork from './pages/RelationshipNetwork';
+import ReputationHistoryLog from './pages/ReputationHistoryLog';
 import ResourceDynamics from './pages/ResourceDynamics';
 import ResourceManagement from './pages/ResourceManagement';
 import ResourceMarketplace from './pages/ResourceMarketplace';
@@ -162,11 +166,12 @@ import TrainingSimulation from './pages/TrainingSimulation';
 import TransactionHistory from './pages/TransactionHistory';
 import TreasuryDashboard from './pages/TreasuryDashboard';
 import Village from './pages/Village';
+import VillageCalendar from './pages/VillageCalendar';
 import VillageLeaderboard from './pages/VillageLeaderboard';
 import VillageMeetup from './pages/VillageMeetup';
-import Wallets from './pages/Wallets';
 import VillageReportingDashboard from './pages/VillageReportingDashboard';
 import VillageSimulation from './pages/VillageSimulation';
+import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
 import __Layout from './Layout.jsx';
 
@@ -176,9 +181,11 @@ export const PAGES = {
     "AIProjectManager": AIProjectManager,
     "Admin": Admin,
     "AdvancedResourceMarketplace": AdvancedResourceMarketplace,
+    "AgentAdditionDiagnostic": AgentAdditionDiagnostic,
     "AgentChat": AgentChat,
     "AgentDetails": AgentDetails,
     "AgentInbox": AgentInbox,
+    "AgentLeaderboard": AgentLeaderboard,
     "AgentMarketplace": AgentMarketplace,
     "AgentMessaging": AgentMessaging,
     "AgentOnboarding": AgentOnboarding,
@@ -196,6 +203,7 @@ export const PAGES = {
     "ArbitrageDashboard": ArbitrageDashboard,
     "ArisDex": ArisDex,
     "Axi": Axi,
+    "AxiCommandDashboard": AxiCommandDashboard,
     "AxiIntelligenceFeed": AxiIntelligenceFeed,
     "BecomeMentor": BecomeMentor,
     "CareerTrajectory": CareerTrajectory,
@@ -263,6 +271,7 @@ export const PAGES = {
     "RLUSDManager": RLUSDManager,
     "ReceiveRLUSD": ReceiveRLUSD,
     "RelationshipNetwork": RelationshipNetwork,
+    "ReputationHistoryLog": ReputationHistoryLog,
     "ResourceDynamics": ResourceDynamics,
     "ResourceManagement": ResourceManagement,
     "ResourceMarketplace": ResourceMarketplace,
@@ -287,11 +296,12 @@ export const PAGES = {
     "TransactionHistory": TransactionHistory,
     "TreasuryDashboard": TreasuryDashboard,
     "Village": Village,
+    "VillageCalendar": VillageCalendar,
     "VillageLeaderboard": VillageLeaderboard,
     "VillageMeetup": VillageMeetup,
-    "Wallets": Wallets,
     "VillageReportingDashboard": VillageReportingDashboard,
     "VillageSimulation": VillageSimulation,
+    "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
 }
 
