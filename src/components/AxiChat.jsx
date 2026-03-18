@@ -10,7 +10,7 @@ import AddAgentModal from '@/components/AddAgentModal';
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
 
-const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
+const AxiChat = function AxiChat({ isOpen, setIsOpen, initialConversationId }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -110,17 +110,22 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen }) {
       setLoading(true);
       setInitError(false);
       try {
-        const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-        const unified = conversations.filter(c => c.metadata?.unified_axi_chat === true);
-        const existing = unified.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
         let convo;
-        if (existing) {
-          convo = await base44.agents.getConversation(existing.id);
+        if (initialConversationId) {
+          // Load the lobby conversation passed from the signal processor
+          convo = await base44.agents.getConversation(initialConversationId);
         } else {
-          convo = await base44.agents.createConversation({
-            agent_name: 'axi',
-            metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
-          });
+          const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+          const unified = conversations.filter(c => c.metadata?.unified_axi_chat === true);
+          const existing = unified.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
+          if (existing) {
+            convo = await base44.agents.getConversation(existing.id);
+          } else {
+            convo = await base44.agents.createConversation({
+              agent_name: 'axi',
+              metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
+            });
+          }
         }
         setConversation(convo);
         setMessages(convo.messages || []);
