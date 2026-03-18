@@ -72,6 +72,12 @@ export default function AxiCommandDashboard() {
               Talk to Axi
             </Button>
           </Link>
+          <Link to="/MemoryBrowser">
+            <Button variant="outline" size="sm" className="border-violet-700/60 bg-violet-900/30 text-violet-300 hover:bg-violet-800/40 text-xs">
+              <Database className="w-3.5 h-3.5 mr-1.5" />
+              Memory Browser
+            </Button>
+          </Link>
           <Link to="/VillageCalendar">
             <Button variant="outline" size="sm" className="border-emerald-600/60 bg-emerald-900/30 text-emerald-300 hover:bg-emerald-800/40 text-xs">
               <Calendar className="w-3.5 h-3.5 mr-1.5" />
