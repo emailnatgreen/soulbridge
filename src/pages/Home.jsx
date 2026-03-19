@@ -26,30 +26,19 @@ export default function Home() {
   // Removed global error listener — it was catching unrelated XRPL/backend errors
   // and causing a white screen on rate limit errors.
 
-  // ─── SoulBridge Nervous System — Step 1: new_user signal ───────
-  React.useEffect(() => {
-    const fired = sessionStorage.getItem('sb_new_user_signal');
-    if (fired) return;
-    sessionStorage.setItem('sb_new_user_signal', '1');
-
-    const rawSignal = { signal_type: 'new_user', page_id: 'home', user_action: 'enter' };
-    console.log('[SoulBridge] Emitting signal:', rawSignal);
-
-    // Delay dispatch so Layout's event listener is guaranteed to be mounted
-    setTimeout(() => {
-      base44.functions.invoke('signalProcessor', rawSignal)
-        .then(res => {
-          console.log('[SoulBridge] Signal processed:', res.data);
-          // Only open Axi on desktop to avoid mobile keyboard/viewport issues
-          if (window.innerWidth >= 768) {
-            window.dispatchEvent(new CustomEvent('open-axi'));
-          }
-        })
-        .catch(err => {
-          console.error('[SoulBridge] Signal error:', err);
-        });
-    }, 1500);
-  }, []);
+  // Disabled: Signal processing causing 500 errors on load
+  // React.useEffect(() => {
+  //   const fired = sessionStorage.getItem('sb_new_user_signal');
+  //   if (fired) return;
+  //   sessionStorage.setItem('sb_new_user_signal', '1');
+  //   
+  //   // Only open Axi on desktop to avoid mobile keyboard/viewport issues
+  //   if (window.innerWidth >= 768) {
+  //     setTimeout(() => {
+  //       window.dispatchEvent(new CustomEvent('open-axi'));
+  //     }, 1500);
+  //   }
+  // }, []);
 
   const STALE = 5 * 60 * 1000; // 5 min cache
 
