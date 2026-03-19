@@ -444,7 +444,7 @@ export default function Home() {
 
         {/* Ripple Compliance Banner */}
         <div className="mb-6">
-          <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-blue-300 hover:border-blue-400 transition-all">
+          <Card className="bg-gradient-to-r from-blue-900/30 via-indigo-900/30 to-blue-900/30 backdrop-blur-xl border-blue-500/30 hover:border-blue-400/50 transition-all">
             <CardContent className="pt-5 pb-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
