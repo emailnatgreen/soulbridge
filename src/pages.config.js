@@ -173,6 +173,7 @@ import VillageReportingDashboard from './pages/VillageReportingDashboard';
 import VillageSimulation from './pages/VillageSimulation';
 import Wallets from './pages/Wallets';
 import WellbeingMonitor from './pages/WellbeingMonitor';
+import ImageStorage from './pages/ImageStorage';
 import __Layout from './Layout.jsx';
 
 
@@ -303,6 +304,7 @@ export const PAGES = {
     "VillageSimulation": VillageSimulation,
     "Wallets": Wallets,
     "WellbeingMonitor": WellbeingMonitor,
+    "ImageStorage": ImageStorage,
 }
 
 export const pagesConfig = {
