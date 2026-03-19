@@ -42,32 +42,40 @@ export default function HomeRecentTransactions() {
   const fetchLiveTxs = useCallback(async () => {
     if (!wallets.length) return;
     setLoading(true);
-    const all = [];
-    await Promise.all(wallets.map(async (w) => {
-      if (!w.classic_address) return;
-      try {
-        const res = await base44.functions.invoke('getWalletTransactions', { wallet_id: w.id, limit: 20 });
-        if (res.data?.success) {
-          res.data.transactions.forEach(tx => all.push({ ...tx, walletName: w.name, network: res.data.network }));
+    try {
+      const all = [];
+      await Promise.all(wallets.map(async (w) => {
+        if (!w.classic_address) return;
+        try {
+          const res = await base44.functions.invoke('getWalletTransactions', { wallet_id: w.id, limit: 20 });
+          if (res.data?.success) {
+            res.data.transactions.forEach(tx => all.push({ ...tx, walletName: w.name, network: res.data.network }));
+          }
+        } catch (_) {
+          // Silently fail per wallet — continue loading others
         }
-      } catch (_) {}
-    }));
+      }));
 
-    all.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-    const recent = all.slice(0, 10);
-    setTxData(recent);
+      all.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      const recent = all.slice(0, 10);
+      setTxData(recent);
 
-    const volume = all
-      .filter(t => t.status === 'success' && t.currency === 'XRP' && t.type === 'Payment')
-      .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+      const volume = all
+        .filter(t => t.status === 'success' && t.currency === 'XRP' && t.type === 'Payment')
+        .reduce((s, t) => s + parseFloat(t.amount || 0), 0);
 
-    setStats({
-      total: all.length,
-      success: all.filter(t => t.status === 'success').length,
-      failed: all.filter(t => t.status === 'failed').length,
-      volume,
-    });
-    setLoading(false);
+      setStats({
+        total: all.length,
+        success: all.filter(t => t.status === 'success').length,
+        failed: all.filter(t => t.status === 'failed').length,
+        volume,
+      });
+    } catch (error) {
+      // Final fallback — render with empty live data
+      console.warn('Failed to fetch live transactions:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [wallets]);
 
   useEffect(() => { fetchLiveTxs(); }, [fetchLiveTxs]);
