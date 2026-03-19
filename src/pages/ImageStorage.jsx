@@ -109,6 +109,13 @@ export default function ImageStorage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const copyFormat = (text, format) => {
+    navigator.clipboard.writeText(text);
+    setCopiedFormat(format);
+    toast.success('Copied!');
+    setTimeout(() => setCopiedFormat(null), 2000);
+  };
+
   const filteredImages = images.filter(img =>
     img.name?.toLowerCase().includes(search.toLowerCase())
   );
