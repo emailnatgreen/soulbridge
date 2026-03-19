@@ -380,6 +380,32 @@ export default function Home() {
               </Card>
             </Link>
 
+            <Link to={createPageUrl('Axi')}>
+              <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:border-blue-400/50 hover:bg-white/10 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Brain className="w-8 h-8 text-blue-400" />
+                    <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/30 font-semibold">AI Chat</span>
+                  </div>
+                  <h3 className="text-white font-semibold mb-1">Talk to Axi</h3>
+                  <p className="text-white/50 text-sm">Direct conversation with your AI co-pilot</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to={createPageUrl('AlignmentDashboard')}>
+              <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:border-rose-400/50 hover:bg-white/10 transition-all cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Scale className="w-8 h-8 text-rose-400" />
+                    <span className="text-xs bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full border border-rose-500/30 font-semibold">Safety</span>
+                  </div>
+                  <h3 className="text-white font-semibold mb-1">Alignment & Safety</h3>
+                  <p className="text-white/50 text-sm">System integrity, anti-sycophancy, drift detection</p>
+                </CardContent>
+              </Card>
+            </Link>
+
             <Link to={createPageUrl('MentorshipHub')}>
               <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:border-pink-400/50 hover:bg-white/10 transition-all cursor-pointer h-full">
                 <CardContent className="pt-6">
