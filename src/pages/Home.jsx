@@ -457,12 +457,12 @@ export default function Home() {
                       <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full border border-green-300">● LIVE</span>
                     </div>
                     <div className="flex flex-wrap gap-2 text-xs">
-                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> XLS-70 Identity (Nathan Green)</span>
-                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> XLS-80 VIP Passport</span>
-                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> XLS-70 Treasury Auth</span>
-                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> XLS-70 AI Agent Auth (Axi)</span>
-                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> 3 DIDs On-Chain</span>
-                      <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-3 h-3 text-green-600" /> soulbridge.app Permissioned Domain</span>
+                      <span className="flex items-center gap-1 text-blue-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Identity (Nathan Green)</span>
+                      <span className="flex items-center gap-1 text-blue-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-80 VIP Passport</span>
+                      <span className="flex items-center gap-1 text-blue-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 Treasury Auth</span>
+                      <span className="flex items-center gap-1 text-blue-300"><CheckCircle className="w-3 h-3 text-green-400" /> XLS-70 AI Agent Auth (Axi)</span>
+                      <span className="flex items-center gap-1 text-blue-300"><CheckCircle className="w-3 h-3 text-green-400" /> 3 DIDs On-Chain</span>
+                      <span className="flex items-center gap-1 text-blue-300"><CheckCircle className="w-3 h-3 text-green-400" /> soulbridge.app Permissioned Domain</span>
                     </div>
                   </div>
                 </div>
