@@ -138,15 +138,14 @@ export default function GlobalNav() {
   return (
     <>
       {/* Mobile Toggle */}
-      <div className="fixed top-4 left-4 z-50 lg:hidden">
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setIsOpen(!isOpen)}
-          className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700"
+      <div className="fixed top-4 left-4 z-[9999] lg:hidden">
+        <button
+          onClick={() => setIsOpen(o => !o)}
+          style={{ touchAction: 'manipulation' }}
+          className="flex items-center justify-center w-10 h-10 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-md"
         >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </Button>
+        </button>
       </div>
 
       {/* Desktop Nav */}
