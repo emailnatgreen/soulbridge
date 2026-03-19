@@ -205,20 +205,20 @@ export default function HomeRecentTransactions() {
                         {tx.date ? format(parseISO(tx.date), 'MMM d, HH:mm') : '—'}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                        <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30">
                           {tx.walletName || '—'}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-gray-600 text-xs">{TX_TYPE_LABELS[tx.type] || tx.type}</td>
+                      <td className="py-3 px-4 text-white/60 text-xs">{TX_TYPE_LABELS[tx.type] || tx.type}</td>
                       <td className="py-3 px-4">
                         <DirectionIcon direction={tx.direction} />
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-gray-800 text-xs">{formatAmt(tx)}</td>
+                      <td className="py-3 px-4 text-right font-mono text-white/80 text-xs">{formatAmt(tx)}</td>
                       <td className="py-3 px-4 text-center">
                         <Badge className={
                           tx.status === 'success'
-                            ? 'bg-green-100 text-green-700 border-green-200 text-xs'
-                            : 'bg-red-100 text-red-600 border-red-200 text-xs'
+                            ? 'bg-green-500/20 text-green-300 border-green-500/30 text-xs'
+                            : 'bg-red-500/20 text-red-300 border-red-500/30 text-xs'
                         }>
                           {tx.status}
                         </Badge>
@@ -226,11 +226,11 @@ export default function HomeRecentTransactions() {
                       <td className="py-3 px-4">
                         {tx.hash ? (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-gray-400 font-mono">{tx.hash.slice(0, 8)}…</span>
-                            <button onClick={() => { navigator.clipboard.writeText(tx.hash); toast.success('Copied'); }} className="p-1 hover:bg-gray-100 rounded">
-                              <Copy className="w-3 h-3 text-gray-400" />
+                            <span className="text-xs text-white/40 font-mono">{tx.hash.slice(0, 8)}…</span>
+                            <button onClick={() => { navigator.clipboard.writeText(tx.hash); toast.success('Copied'); }} className="p-1 hover:bg-white/10 rounded">
+                              <Copy className="w-3 h-3 text-white/40" />
                             </button>
-                            <a href={getExplorerUrl(tx)} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-gray-100 rounded">
+                            <a href={getExplorerUrl(tx)} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-white/10 rounded">
                               <ExternalLink className="w-3 h-3 text-blue-400" />
                             </a>
                           </div>
