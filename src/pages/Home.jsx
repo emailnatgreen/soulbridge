@@ -161,7 +161,7 @@ export default function Home() {
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-10 pointer-events-none"
         style={{
-          backgroundImage: 'url(https://chatgpt.com/backend-api/estuary/public_content/enc/eyJpZCI6Im1fNjk5N2E0MzE0ZWY4ODE5MTgzZmNiMWQ0ZDE1MmFjYmI6ZmlsZV8wMDAwMDAwMDI0MmM3MjQzOWRlNTkzY2NkYmJlNDhiZCIsInRzIjoiMjA1MDQiLCJwIjoicHlpIiwiY2lkIjoiMSIsInNpZyI6Ijc1NjZjNDYzYWVjODQxN2VjYjNkMDkwYzUzNTY1M2M0YmU2ZDI2MDBmYTdhNjJiMmNlNmY0OWRhNTAzZGEwZmMiLCJ2IjoiMCIsImdpem1vX2lkIjpudWxsLCJjcyI6bnVsbCwiY2RuIjpudWxsLCJjcCI6bnVsbCwibWEiOm51bGx9)'
+          backgroundImage: 'none'
         }}
       />
       {/* Header */}
