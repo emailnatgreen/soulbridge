@@ -90,6 +90,9 @@ const NAV_GROUPS = [
       { label: 'Admin Panel', path: '/Admin', icon: Settings },
       { label: 'System Dashboard', path: '/SystemDashboard', icon: Activity },
       { label: 'Axi Intelligence', path: '/AxiIntelligenceFeed', icon: Zap },
+      { label: 'Ripple Dashboard', path: '/RippleDashboard', icon: Zap },
+      { label: 'Arbitrage Dashboard', path: '/ArbitrageDashboard', icon: TrendingUp },
+      { label: 'Edit Landing', path: '/EditLanding', icon: FileText },
     ]
   },
 ];
