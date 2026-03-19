@@ -103,9 +103,9 @@ export default function HomeRecentTransactions() {
       </div>
 
       {/* Transaction Table */}
-      <Card className="bg-white border-gray-200">
+      <Card className="bg-white/5 backdrop-blur-xl border-white/10">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-xl font-light text-gray-900 flex items-center gap-2">
+          <CardTitle className="text-xl font-light text-white flex items-center gap-2">
             Recent Live Transactions
             {loading && <Loader2 className="w-4 h-4 animate-spin text-purple-400" />}
           </CardTitle>
