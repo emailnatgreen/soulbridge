@@ -27,6 +27,7 @@ export default function AgentCard({ agent, wallets }) {
   };
 
   return (
+    <>
     <Card className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-all duration-300 group">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
