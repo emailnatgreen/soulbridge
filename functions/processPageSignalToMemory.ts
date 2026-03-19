@@ -9,36 +9,19 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     
-    console.log('Received payload keys:', Object.keys(body));
-    console.log('body.event:', body.event);
-    console.log('body.data:', body.data);
-    
-    // Handle both direct invocation and entity automation payload
+    // Extract Signal from entity automation payload
+    // Entity automation sends: { event: { type, entity_name, entity_id }, data, old_data }
     let signal = body.signal || body.data;
     
-    // If neither signal nor data exists, try fetching Signal by entity_id
+    // If triggered by Signal create/update automation, fetch the Signal by entity_id
     if (!signal && body.event?.entity_id) {
-      // Fetch the Signal entity directly
       try {
         const signals = await base44.asServiceRole.entities.Signal.filter({ id: body.event.entity_id });
         if (signals.length > 0) {
           signal = signals[0];
-        } else {
-          console.warn(`Signal ${body.event.entity_id} not found in database`);
         }
       } catch (err) {
-        console.warn(`Failed to fetch Signal ${body.event.entity_id}:`, err.message);
-      }
-    }
-    
-    // Last resort: try fetching if we have an ID but no signal object yet
-    if (!signal && (body.event?.entity_id || body.signal_id)) {
-      const signalId = body.event?.entity_id || body.signal_id;
-      try {
-        const signals = await base44.asServiceRole.entities.Signal.filter({ id: signalId });
-        signal = signals[0];
-      } catch (err) {
-        console.warn(`Final Signal fetch attempt failed for ${signalId}:`, err.message);
+        console.error(`Failed to fetch Signal ${body.event.entity_id}:`, err.message);
       }
     }
     
