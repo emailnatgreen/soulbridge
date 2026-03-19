@@ -264,7 +264,16 @@ export default function Home() {
         {/* Hero Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 sm:mb-12">
           <Link to={createPageUrl('AxiCommandDashboard')}>
-            <Card className="bg-gradient-to-br from-indigo-900/50 to-purple-900/50 backdrop-blur-xl border-indigo-500/40 hover:border-indigo-400/70 hover:bg-gradient-to-br hover:from-indigo-900/60 hover:to-purple-900/60 transition-all cursor-pointer h-full">
+            <Card className={`bg-gradient-to-br from-indigo-900/50 to-purple-900/50 backdrop-blur-xl border-indigo-500/40 hover:border-indigo-400/70 hover:bg-gradient-to-br hover:from-indigo-900/60 hover:to-purple-900/60 transition-all cursor-pointer h-full relative ${criticalRisks.length > 0 ? 'ring-1 ring-orange-500/40' : ''}`}>
+              {criticalRisks.length > 0 && (
+                <div className="absolute top-4 right-4 flex items-center gap-1">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                  </span>
+                  <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded-full border border-orange-500/30 font-semibold">{criticalRisks.length} Alerts</span>
+                </div>
+              )}
               <CardContent className="pt-8 pb-8">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
