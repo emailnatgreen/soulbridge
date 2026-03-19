@@ -181,13 +181,20 @@ export default function GlobalNav() {
           <div onClick={() => setIsOpen(false)} className="absolute inset-0 bg-black/60" />
           <div className="absolute left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
             <div className="p-5 pb-3 flex-shrink-0">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-lg font-bold text-white">SoulBridge</h2>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <img
+                    src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
+                    alt="SoulBridge"
+                    className="w-6 h-6 rounded-md object-contain flex-shrink-0"
+                    style={{ imageRendering: 'crisp-edges' }}
+                  />
+                  <h2 className="text-lg font-bold text-white">SoulBridge</h2>
+                </div>
                 <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-xs text-slate-500">Village Command</p>
             </div>
             <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
               {NAV_GROUPS.map((group, i) => (
