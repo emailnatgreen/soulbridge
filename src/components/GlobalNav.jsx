@@ -151,8 +151,17 @@ export default function GlobalNav() {
       {/* Desktop Nav */}
       <nav className="fixed lg:flex hidden flex-col left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 z-40">
         <div className="p-6 pb-3 flex-shrink-0">
-          <h2 className="text-lg font-bold text-white">SoulBridge</h2>
-          <p className="text-xs text-slate-500">Village Command</p>
+          <div className="flex items-center gap-3 mb-1">
+            <img
+              src="https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
+              alt="SoulBridge"
+              className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+            />
+            <div>
+              <h2 className="text-lg font-bold text-white">SoulBridge</h2>
+              <p className="text-xs text-slate-500">Village Command</p>
+            </div>
+          </div>
           <div className="mt-4">
             <GlobalSearchBar className="w-full" />
           </div>
