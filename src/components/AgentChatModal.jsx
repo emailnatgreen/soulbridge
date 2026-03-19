@@ -30,6 +30,9 @@ export default function AgentChatModal({ agent, onClose }) {
 
   useEffect(() => {
     initConversation();
+    return () => {
+      if (unsubscribeRef.current) unsubscribeRef.current();
+    };
   }, [agent.id]);
 
   useEffect(() => {
@@ -38,6 +41,7 @@ export default function AgentChatModal({ agent, onClose }) {
 
   const initConversation = async () => {
     setLoading(true);
+    setError(null);
     try {
       const conv = await base44.agents.createConversation({
         agent_name: agentKey,
@@ -46,11 +50,12 @@ export default function AgentChatModal({ agent, onClose }) {
       setConversation(conv);
       setMessages(conv.messages || []);
 
-      base44.agents.subscribeToConversation(conv.id, (data) => {
+      unsubscribeRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
         setMessages(data.messages || []);
       });
     } catch (e) {
       console.error('Failed to init conversation:', e);
+      setError(`Could not connect to ${agent.name}. Agent key: "${agentKey}"`);
     }
     setLoading(false);
   };
