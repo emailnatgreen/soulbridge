@@ -287,7 +287,7 @@ export default function Home() {
               {/* Projects */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-blue-600 hover:bg-blue-100 hover:text-blue-700">
+                  <Button variant="ghost" className="text-blue-300 hover:bg-white/10 hover:text-blue-200">
                     <Target className="w-4 h-4 mr-2" />
                     Projects <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
@@ -396,7 +396,7 @@ export default function Home() {
               </DropdownMenu>
 
               <Link to={createPageUrl('RippleDashboard')}>
-                <Button variant="ghost" className="text-blue-600 hover:bg-blue-100 hover:text-blue-700">
+                <Button variant="ghost" className="text-blue-300 hover:bg-white/10 hover:text-blue-200">
                   <Zap className="w-4 h-4 mr-2" />
                   Ripple Dashboard
                 </Button>
