@@ -59,6 +59,15 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="relative">
+      {/* Logo and branding in top-left, visible across all pages */}
+      <div className="fixed top-0 left-0 z-50 p-3 md:hidden">
+        <img
+          src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+          alt="SoulBridge"
+          className="w-10 h-10 rounded-lg object-contain"
+          style={{ imageRendering: 'crisp-edges' }}
+        />
+      </div>
       <GlobalNav />
       
       {/* Global Background Watermark */}
