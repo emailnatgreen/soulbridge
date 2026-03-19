@@ -22,20 +22,29 @@ Deno.serve(async (req) => {
       console.warn('Failed to fetch signals:', err.message);
     }
 
-    // Filter out signals that already have a corresponding VillagePage
-    const processedPaths = new Set();
+    // Filter out signals that already have been processed (VillagePage or GovernanceProposal created)
+    const processedSignals = new Set();
     try {
       const villagePages = await base44.asServiceRole.entities.VillagePage.list();
       villagePages.forEach(page => {
         if (page.metadata?.related_signal_id) {
-          processedPaths.add(page.metadata.related_signal_id);
+          processedSignals.add(page.metadata.related_signal_id);
+        }
+      });
+      
+      const proposals = await base44.asServiceRole.entities.GovernanceProposal.filter({ status: 'draft' });
+      proposals.forEach(proposal => {
+        // Extract signal ID from proposal description if it contains "Related Signal ID:"
+        const match = proposal.description?.match(/Related Signal ID: ([a-f0-9]+)/);
+        if (match && match[1]) {
+          processedSignals.add(match[1]);
         }
       });
     } catch (err) {
-      console.warn('Failed to fetch VillagePages:', err.message);
+      console.warn('Failed to fetch processed signals:', err.message);
     }
 
-    const unprocessedSignals = signals.filter(s => !processedPaths.has(s.id));
+    const unprocessedSignals = signals.filter(s => !processedSignals.has(s.id));
 
     // Process each signal through applicable automations
     for (const signal of unprocessedSignals) {
