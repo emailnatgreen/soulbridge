@@ -155,7 +155,8 @@ export default function GlobalNav() {
             <img
               src="https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
               alt="SoulBridge"
-              className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+              className="w-8 h-8 rounded-md object-contain flex-shrink-0"
+              style={{ imageRendering: 'crisp-edges' }}
             />
             <div>
               <h2 className="text-lg font-bold text-white">SoulBridge</h2>
