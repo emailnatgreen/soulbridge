@@ -23,6 +23,7 @@ export default function ImageStorage() {
   const [copiedFormat, setCopiedFormat] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [search, setSearch] = useState('');
+  const [editingImage, setEditingImage] = useState(null);
 
   const { data: images = [], isLoading } = useQuery({
     queryKey: ['image-assets'],
