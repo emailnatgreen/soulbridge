@@ -71,56 +71,48 @@ export default function Home() {
     queryKey: ['governance-proposals-active'],
     queryFn: () => base44.entities.GovernanceProposal.filter({ status: 'active' }),
     staleTime: STALE,
-    enabled: !loadingAgents,
   });
 
-  const { data: credentials = [], isLoading: loadingCredentials } = useQuery({
+  const { data: credentials = [] } = useQuery({
     queryKey: ['did-credentials-active'],
     queryFn: () => base44.entities.DidCredential.filter({ status: 'active' }),
     staleTime: STALE,
-    enabled: !loadingAgents,
   });
 
   const { data: wallets = [] } = useQuery({
     queryKey: ['wallets-home'],
     queryFn: () => base44.entities.Wallet.list(),
     staleTime: STALE,
-    enabled: !loadingAgents,
   });
 
-  const { data: trustLinks = [], isLoading: loadingTrustLinks } = useQuery({
+  const { data: trustLinks = [] } = useQuery({
     queryKey: ['trust-relationships'],
     queryFn: () => base44.entities.TrustRelationship.filter({ status: 'active' }),
     staleTime: STALE,
-    enabled: !loadingProposals && !loadingCredentials,
   });
 
-  const { data: mentorships = [], isLoading: loadingMentorships } = useQuery({
+  const { data: mentorships = [] } = useQuery({
     queryKey: ['mentorships-active'],
     queryFn: () => base44.entities.MentorshipRelationship.filter({ status: 'active' }),
     staleTime: STALE,
-    enabled: !loadingProposals && !loadingCredentials,
   });
 
-  const { data: wellbeings = [], isLoading: loadingWellbeings } = useQuery({
+  const { data: wellbeings = [] } = useQuery({
     queryKey: ['agent-wellbeing'],
     queryFn: () => base44.entities.AgentWellbeing.list(),
     staleTime: STALE,
-    enabled: !loadingTrustLinks && !loadingMentorships,
   });
 
-  const { data: risks = [], isLoading: loadingRisks } = useQuery({
+  const { data: risks = [] } = useQuery({
     queryKey: ['risks-all'],
     queryFn: () => base44.entities.RiskRegister.list(),
     staleTime: STALE,
-    enabled: !loadingTrustLinks && !loadingMentorships,
   });
 
-  const { data: jokeSubmissions = [], isLoading: loadingJokes } = useQuery({
+  const { data: jokeSubmissions = [] } = useQuery({
     queryKey: ['joke-submissions'],
     queryFn: () => base44.entities.JokeSubmission.list(),
     staleTime: STALE,
-    enabled: !loadingWellbeings && !loadingRisks,
   });
 
   const sendableWallets = wallets.filter(w => w.classic_address && w.network === 'mainnet');
