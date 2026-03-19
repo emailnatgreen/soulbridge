@@ -9,19 +9,19 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     
-    // Extract Signal from entity automation payload
-    // Entity automation sends: { event: { type, entity_name, entity_id }, data, old_data }
+    // Extract Signal from entity automation payload or direct invocation
     let signal = body.signal || body.data;
+    const signal_id = body.signal_id || body.event?.entity_id;
     
     // If triggered by Signal create/update automation, fetch the Signal by entity_id
-    if (!signal && body.event?.entity_id) {
+    if (!signal && signal_id) {
       try {
-        const signals = await base44.asServiceRole.entities.Signal.filter({ id: body.event.entity_id });
+        const signals = await base44.asServiceRole.entities.Signal.filter({ id: signal_id });
         if (signals.length > 0) {
           signal = signals[0];
         }
       } catch (err) {
-        console.error(`Failed to fetch Signal ${body.event.entity_id}:`, err.message);
+        console.error(`Failed to fetch Signal ${signal_id}:`, err.message);
       }
     }
     
@@ -29,18 +29,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No signal provided' }, { status: 400 });
     }
 
-    // Get user context for personalized memory
-    let user = null;
+    // Get user context for personalized memory (optional in service context)
+    let user_id = null;
     try {
-      user = await base44.auth.me();
+      const user = await base44.auth.me();
+      user_id = user?.id;
     } catch (e) {
-      // Continue for public pages
+      // Continue for service role or public contexts
+      console.warn('User context unavailable (service role)');
     }
 
     // Create memory entry from page signal
     const memory = await base44.asServiceRole.entities.Memory.create({
       agent_id: 'axi', // Axi absorbs page view intelligence
-      user_id: user?.id,
+      user_id: user_id,
       type: 'observation',
       content: `User viewed page: ${signal.page_name} at ${signal.timestamp}. Path: ${signal.page_path}. Viewport: ${signal.metadata?.viewport?.width}x${signal.metadata?.viewport?.height}`,
       keywords: [
@@ -61,7 +63,7 @@ Deno.serve(async (req) => {
       page: signal.page_name,
     });
   } catch (error) {
-    console.error('Page signal to memory conversion error:', error);
+    console.error('Page signal to memory conversion error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
