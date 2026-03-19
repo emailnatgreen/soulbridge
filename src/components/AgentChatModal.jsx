@@ -10,7 +10,9 @@ export default function AgentChatModal({ agent, onClose }) {
   const [conversation, setConversation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
+  const unsubscribeRef = useRef(null);
 
   // Map agent names to their agent config names
   const AGENT_NAME_MAP = {
