@@ -158,7 +158,7 @@ export default function Home() {
                   context="Nathan is on the SoulBridge Dashboard. Please give him a brief Village morning briefing: treasury balance, any urgent notifications, active governance proposals needing votes, and which agents need your attention today."
                 />
                 <Link to={createPageUrl('MemoryBrowser')}>
-                  <Button variant="outline" className="border-violet-300 text-violet-700 hover:bg-violet-50 gap-2">
+                  <Button variant="outline" className="border-violet-500/40 text-violet-300 hover:bg-white/10 gap-2">
                     <Brain className="w-4 h-4" />
                     Memory Browser
                   </Button>
