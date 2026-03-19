@@ -477,7 +477,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                 placeholder="Speak to Axi..."
                 className="bg-white/5 border-white/20 text-white placeholder:text-white/30 resize-none h-12 min-h-[48px]"
                 disabled={sending}
-                autoFocus
               />
               <Button
                 onClick={handleSend}
