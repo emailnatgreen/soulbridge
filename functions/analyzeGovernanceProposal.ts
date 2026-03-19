@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
         
         // Extract proposal ID from entity automation payload
         // Payload structure: {event: {type, entity_name, entity_id}, data: {...}, old_data: {...}}
-        const proposalId = body.event?.entity_id || body.entity_id || body.proposal_id;
+        const proposalId = body.event?.entity_id || body.data?.id || body.entity_id || body.proposal_id;
         if (!proposalId) {
             console.error('Invalid payload structure:', JSON.stringify(body));
             return Response.json({ error: 'proposal_id required' }, { status: 400 });
