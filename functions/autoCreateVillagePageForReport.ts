@@ -14,19 +14,26 @@ Deno.serve(async (req) => {
     let is_critical = payload.is_critical;
 
     // If triggered from entity automation or signal_id provided, fetch Signal metadata
-    if (signal_id) {
+    if (signal_id && !report_title) {
       try {
         const signals = await base44.asServiceRole.entities.Signal.filter({ id: signal_id });
         if (signals.length) {
           const signal = signals[0];
           const metadata = signal.metadata || {};
-          report_title = report_title || `${signal.page_name || 'AI Intel Report'} - ${metadata.alert_type || 'Analysis'}`;
+          report_title = `${signal.page_name || 'AI Intel Report'} - ${metadata.alert_type || 'Analysis'}`;
           report_summary = report_summary || metadata.findings || signal.page_name;
           is_critical = is_critical !== undefined ? is_critical : (metadata.findings ? true : false);
         }
       } catch (err) {
         console.warn(`Failed to fetch Signal ${signal_id}:`, err.message);
+        // Fallback: use generic title if Signal fetch fails
+        report_title = report_title || 'AI Intelligence Report';
       }
+    }
+    
+    // Final fallback if still no title
+    if (!report_title) {
+      report_title = 'AI Intelligence Report';
     }
 
     if (!report_title) {
