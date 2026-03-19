@@ -326,7 +326,7 @@ export default function Home() {
               {/* Economy */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-amber-600 hover:bg-amber-100 hover:text-amber-700">
+                  <Button variant="ghost" className="text-amber-300 hover:bg-white/10 hover:text-amber-200">
                     <Wallet className="w-4 h-4 mr-2" />
                     Economy <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
@@ -403,7 +403,7 @@ export default function Home() {
               </Link>
 
               <Link to={createPageUrl('ArbitrageDashboard')}>
-                <Button variant="ghost" className="text-amber-600 hover:bg-amber-100 hover:text-amber-700">
+                <Button variant="ghost" className="text-amber-300 hover:bg-white/10 hover:text-amber-200">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Arbitrage Dashboard
                 </Button>
