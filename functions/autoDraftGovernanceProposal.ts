@@ -6,7 +6,7 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     
     // Handle both direct invocation and entity automation payload
-    const signal_id = payload.signal_id || payload.event?.entity_id;
+    const signal_id = payload.signal_id || payload.event?.entity_id || payload.data?.id;
     const { alert_summary, governance_focus } = payload;
 
     if (!signal_id) {
