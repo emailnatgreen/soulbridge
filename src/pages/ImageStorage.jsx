@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Upload, CloudIcon, HardDrive, Trash2, ExternalLink, Download,
-  Image as ImageIcon, Loader2, FolderOpen, Copy, Check, Code2, Link, X
+  Image as ImageIcon, Loader2, FolderOpen, Copy, Check, Code2, Link, X, Pencil
 } from 'lucide-react';
+import ImageEditor from '@/components/ImageEditor';
 import { toast } from 'sonner';
 
 export default function ImageStorage() {
