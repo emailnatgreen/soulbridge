@@ -204,7 +204,7 @@ export default function Home() {
               {/* Wallets & Payments */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-green-600 hover:bg-green-100 hover:text-green-700">
+                  <Button variant="ghost" className="text-green-400 hover:bg-white/10 hover:text-green-300">
                     <Wallet className="w-4 h-4 mr-2" />
                     Wallets <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
@@ -366,7 +366,7 @@ export default function Home() {
               {/* Village & Simulation */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-green-600 hover:bg-green-100 hover:text-green-700">
+                  <Button variant="ghost" className="text-green-400 hover:bg-white/10 hover:text-green-300">
                     <Map className="w-4 h-4 mr-2" />
                     Village <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
