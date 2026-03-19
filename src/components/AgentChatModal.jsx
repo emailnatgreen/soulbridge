@@ -120,6 +120,13 @@ export default function AgentChatModal({ agent, onClose }) {
             <div className="flex items-center justify-center h-full">
               <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
             </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-4">
+              <p className="text-red-400 text-sm">{error}</p>
+              <Button size="sm" onClick={initConversation} className="bg-purple-600 hover:bg-purple-700 text-white text-xs">
+                Retry
+              </Button>
+            </div>
           ) : messages.length === 0 ? (
             <div className="flex items-center justify-center h-full text-white/30 text-sm">
               Start a conversation with {agent.name}...
