@@ -12,6 +12,17 @@ Deno.serve(async (req) => {
     // Handle both direct invocation and entity automation payload
     let signal = body.signal || body.data;
     
+    // If neither signal nor data exists, and this is an entity automation with full event payload
+    if (!signal && body.event?.entity_id) {
+      // Fetch the Signal entity directly
+      try {
+        const signals = await base44.asServiceRole.entities.Signal.filter({ id: body.event.entity_id });
+        signal = signals[0];
+      } catch (err) {
+        console.warn(`Failed to fetch Signal ${body.event.entity_id}:`, err.message);
+      }
+    }
+    
     if (!signal) {
       return Response.json({ error: 'No signal provided' }, { status: 400 });
     }
