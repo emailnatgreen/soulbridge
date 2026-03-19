@@ -60,10 +60,12 @@ Deno.serve(async (req) => {
       const memory = await base44.asServiceRole.entities.Memory.create({
         agent_id: AXI_ID,
         type: 'observation',
-        content: `[Page Review: ${page_name}]\n\n${review}`,
+        content: `Auto-generated review for page: ${page_name}\n\n${review}`,
         keywords: ['page_review', 'axi_suggestion', 'auto_review', page_name.toLowerCase()],
         context: `Auto-generated review for page: ${page_name}`,
-        importance: 7
+        importance: 7,
+        related_entity_type: 'page',
+        related_entity_id: page_name
       });
 
       await base44.asServiceRole.entities.AgentNotification.create({
