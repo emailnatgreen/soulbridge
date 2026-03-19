@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     
+    console.log('Received payload keys:', Object.keys(body));
+    console.log('body.event:', body.event);
+    console.log('body.data:', body.data);
+    
     // Handle both direct invocation and entity automation payload
     let signal = body.signal || body.data;
     
