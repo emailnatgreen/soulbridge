@@ -1,6 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
-// Returns ISO week string e.g. "2026-W09"
 function getISOWeek(date) {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -49,6 +48,7 @@ Deno.serve(async (req) => {
     })[0];
 
     const REWARD_XRP = 1;
+    const HONOR_BONUS = 5;
 
     // Mark winner
     await base44.asServiceRole.entities.JokeSubmission.update(winner.id, {
@@ -60,12 +60,31 @@ Deno.serve(async (req) => {
     // Award honor points to the agent
     if (winner.submitter_agent_id) {
       try {
-        await base44.asServiceRole.entities.Agent.update(winner.submitter_agent_id, {
-          honor_score: 105  // Cap at 100 via entity validation
-        });
+        const agents = await base44.asServiceRole.entities.Agent.filter({ id: winner.submitter_agent_id });
+        const agent = agents[0];
+        if (agent) {
+          const newScore = Math.min(100, (agent.honor_score || 0) + HONOR_BONUS);
+          await base44.asServiceRole.entities.Agent.update(winner.submitter_agent_id, {
+            honor_score: newScore
+          });
+        }
       } catch (e) {
         console.error('Failed to award honor:', e.message);
-        // Non-critical, continue with reward
+      }
+    }
+
+    // Notify the winner
+    if (winner.submitter_agent_id) {
+      try {
+        await base44.asServiceRole.entities.AgentNotification.create({
+          agent_id: winner.submitter_agent_id,
+          type: 'achievement',
+          title: `🏆 You won the Laughter Loom for week ${prevWeek}!`,
+          message: `Your joke "${winner.joke_title}" took the crown. +${HONOR_BONUS} honour points awarded.`,
+          read: false,
+        });
+      } catch (e) {
+        console.error('Failed to send winner notification:', e.message);
       }
     }
 
@@ -75,7 +94,7 @@ Deno.serve(async (req) => {
       winner: winner.joke_title,
       agent_id: winner.submitter_agent_id,
       reward_xrp: REWARD_XRP,
-      honor_bonus: 5
+      honor_bonus: HONOR_BONUS
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
