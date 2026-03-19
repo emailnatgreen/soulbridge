@@ -4,36 +4,34 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { sender_agent_id, recipient_agent_id, content, conversation_id } = body;
 
-    // Create Signal record for Jukebox Brain to analyze message semantics
-    await base44.asServiceRole.entities.Signal.create({
-      signal_type: 'agent_message',
-      source: 'agent_communication',
-      from_agent: sender_agent_id,
-      to_agent: recipient_agent_id,
-      metadata: { 
-        content_length: content?.length || 0,
-        conversation_id,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    // Support both direct invocation and entity automation payload
+    const data = body.data || body;
+    const { sender_agent_id, to_agent_id, content, conversation_id, message_type } = data;
 
-    // If conversation exists, also store the message in AgentMessage entity for persistence
-    if (conversation_id) {
-      await base44.asServiceRole.entities.AgentMessage.create({
-        sender_agent_id,
-        conversation_id,
-        content,
-        message_type: 'text',
-        status: 'sent',
+    const recipientId = to_agent_id || data.recipient_agent_id;
+
+    // Route to recipient's notification feed
+    if (recipientId && content) {
+      await base44.asServiceRole.entities.AgentNotification.create({
+        agent_id: recipientId,
+        type: 'message',
+        title: 'New Message',
+        message: content?.substring(0, 200) || 'You have a new message',
+        from_agent_id: sender_agent_id,
+        conversation_id: conversation_id || null,
+        read: false,
+        metadata: {
+          message_type: message_type || 'text',
+          timestamp: new Date().toISOString(),
+        },
       });
     }
 
     return Response.json({ 
       success: true, 
       message_routed: true,
-      signal_created: true 
+      recipient: recipientId || 'none',
     });
   } catch (error) {
     console.error('Message routing error:', error);
