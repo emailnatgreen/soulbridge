@@ -23,11 +23,14 @@ Deno.serve(async (req) => {
     const AXI_ID = '6993271e7dc0fa2ab78762bf';
 
     // Fetch recent page review memories to know which pages have been reviewed
-    const reviewedPages = await base44.asServiceRole.entities.Memory.list();
+    const reviewedPages = await base44.asServiceRole.entities.Memory.filter(
+      { type: 'observation', keywords: 'page_review' },
+      '-created_date',
+      50
+    );
     const reviewedPageNames = new Set(
       reviewedPages
-        .filter(m => m.keywords && m.keywords.includes('page_review'))
-        .map(m => m.content.match(/\[Page Review: (.+?)\]/)?.[1])
+        .map(m => m.related_entity_id) // Use related_entity_id instead of parsing content
         .filter(Boolean)
     );
 
