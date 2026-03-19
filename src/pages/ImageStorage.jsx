@@ -294,7 +294,7 @@ export default function ImageStorage() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {filteredImages.map((img) => (
-              <div key={img.id} className="group relative rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/30 transition-all">
+              <div key={img.id} className={`group relative rounded-xl overflow-hidden bg-white/5 border transition-all cursor-pointer ${selectedImage?.id === img.id ? 'border-purple-500/70' : 'border-white/10 hover:border-white/30'}`} onClick={() => setSelectedImage(selectedImage?.id === img.id ? null : img)}>
                 {/* Thumbnail */}
                 <div className="aspect-square overflow-hidden bg-black/20">
                   <img
