@@ -55,10 +55,6 @@ export default function Home() {
     }, 1500);
   }, []);
 
-  if (error) {
-    return <div className="min-h-screen bg-white flex items-center justify-center p-4"><div className="text-red-600 max-w-lg"><h2 className="text-xl font-bold mb-2">Error Loading Page</h2><p>{error}</p></div></div>;
-  }
-
   const STALE = 5 * 60 * 1000; // 5 min cache
 
   const { data: agents = [], isLoading: loadingAgents } = useQuery({
