@@ -9,8 +9,6 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import GlobalSearchBar from '@/components/search/GlobalSearchBar';
-import { Button } from '@/components/ui/button';
-import GlobalSearchBar from '@/components/search/GlobalSearchBar';
 
 const NAV_GROUPS = [
   {
