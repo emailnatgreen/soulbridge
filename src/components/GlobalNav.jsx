@@ -158,8 +158,7 @@ export default function GlobalNav() {
             <GlobalSearchBar className="w-full" />
           </div>
         </div>
-
-        <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
           {NAV_GROUPS.map((group, i) => (
             <NavGroup key={group.label} group={group} isOpen={i === 0} />
           ))}
@@ -170,7 +169,6 @@ export default function GlobalNav() {
       {isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div onClick={() => setIsOpen(false)} className="absolute inset-0 bg-black/60" />
-
           <div className="absolute left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
             <div className="p-5 pb-3 flex-shrink-0">
               <div className="flex items-center justify-between mb-1">
@@ -181,7 +179,6 @@ export default function GlobalNav() {
               </div>
               <p className="text-xs text-slate-500">Village Command</p>
             </div>
-
             <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
               {NAV_GROUPS.map((group, i) => (
                 <NavGroup
