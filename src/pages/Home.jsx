@@ -133,20 +133,24 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex flex-col gap-4">
             {/* Mobile Header */}
-            <div className="flex md:hidden items-center justify-between">
-              <MobileNav />
-              <div className="flex items-center gap-2">
+            <div className="flex md:hidden items-center justify-between gap-2">
+              <div className="flex-shrink-0">
+                <MobileNav />
+              </div>
+              <div className="flex items-center gap-2 flex-1 justify-center">
                 <img
-                  src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+                  src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
                   alt="SoulBridge"
-                  className="w-8 h-8 rounded-md object-contain"
+                  className="w-7 h-7 rounded-md object-contain flex-shrink-0"
                   style={{ imageRendering: 'crisp-edges' }}
                 />
-                <h1 className="text-xl font-semibold text-white">
+                <h1 className="text-lg font-semibold text-white">
                   SoulBridge
                 </h1>
               </div>
-              <NotificationCenter agentId="axi_main_001" />
+              <div className="flex-shrink-0">
+                <NotificationCenter agentId="axi_main_001" />
+              </div>
             </div>
             
             {/* Desktop Header */}
