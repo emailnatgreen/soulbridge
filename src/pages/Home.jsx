@@ -309,7 +309,16 @@ export default function Home() {
           </Link>
 
           <Link to={createPageUrl('GovernanceHub')}>
-            <Card className="bg-gradient-to-br from-violet-900/50 to-purple-900/50 backdrop-blur-xl border-violet-500/40 hover:border-violet-400/70 hover:bg-gradient-to-br hover:from-violet-900/60 hover:to-purple-900/60 transition-all cursor-pointer h-full">
+            <Card className={`bg-gradient-to-br from-violet-900/50 to-purple-900/50 backdrop-blur-xl border-violet-500/40 hover:border-violet-400/70 hover:bg-gradient-to-br hover:from-violet-900/60 hover:to-purple-900/60 transition-all cursor-pointer h-full relative ${proposals.length > 0 ? 'ring-1 ring-orange-500/40' : ''}`}>
+              {proposals.length > 0 && (
+                <div className="absolute top-4 right-4 flex items-center gap-1">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                  </span>
+                  <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded-full border border-orange-500/30 font-semibold">{proposals.length} Active</span>
+                </div>
+              )}
               <CardContent className="pt-8 pb-8">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
