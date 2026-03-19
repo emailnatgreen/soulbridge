@@ -135,9 +135,17 @@ export default function Home() {
             {/* Mobile Header */}
             <div className="flex md:hidden items-center justify-between">
               <MobileNav />
-              <h1 className="text-xl font-semibold text-white">
-                SoulBridge
-              </h1>
+              <div className="flex items-center gap-2">
+                <img
+                  src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+                  alt="SoulBridge"
+                  className="w-8 h-8 rounded-md object-contain"
+                  style={{ imageRendering: 'crisp-edges' }}
+                />
+                <h1 className="text-xl font-semibold text-white">
+                  SoulBridge
+                </h1>
+              </div>
               <NotificationCenter agentId="axi_main_001" />
             </div>
             
