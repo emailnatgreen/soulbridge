@@ -139,18 +139,18 @@ export default function HomeRecentTransactions() {
              </div>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium text-xs">Date</th>
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium text-xs">Type</th>
-                    <th className="text-right py-3 px-4 text-gray-400 font-medium text-xs">Amount</th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-medium text-xs">Status</th>
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium text-xs">Hash</th>
+                  <tr className="border-b border-white/10">
+                    <th className="text-left py-3 px-4 text-white/60 font-medium text-xs">Date</th>
+                    <th className="text-left py-3 px-4 text-white/60 font-medium text-xs">Type</th>
+                    <th className="text-right py-3 px-4 text-white/60 font-medium text-xs">Amount</th>
+                    <th className="text-center py-3 px-4 text-white/60 font-medium text-xs">Status</th>
+                    <th className="text-left py-3 px-4 text-white/60 font-medium text-xs">Hash</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dbTransactions.map((tx, i) => (
-                    <tr key={tx.id || i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-4 text-gray-400 text-xs whitespace-nowrap">
+                    <tr key={tx.id || i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-white/40 text-xs whitespace-nowrap">
                         {tx.created_date ? format(parseISO(tx.created_date), 'MMM d, HH:mm') : '—'}
                       </td>
                       <td className="py-3 px-4 text-gray-600 text-xs capitalize">{tx.transaction_type || tx.type || '—'}</td>
