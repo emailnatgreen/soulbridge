@@ -139,7 +139,7 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-2 flex-1 justify-center">
                 <img
-                  src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
+                  src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
                   alt="SoulBridge"
                   className="w-7 h-7 rounded-md object-contain flex-shrink-0"
                   style={{ imageRendering: 'crisp-edges' }}
