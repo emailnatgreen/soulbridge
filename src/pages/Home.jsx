@@ -437,7 +437,7 @@ export default function Home() {
                 <span className="font-semibold text-green-300">🟢 DUAA 2025 — Full Compliance: Green Light</span>
                 <span className="text-green-400/80 text-sm ml-2">Certificate of Sovereignty issued · Zoe confirms: "Refined Vintage" ✓</span>
               </div>
-              <ExternalLink className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <ExternalLink className="w-4 h-4 text-green-400 flex-shrink-0" />
             </div>
           </Link>
         </div>
