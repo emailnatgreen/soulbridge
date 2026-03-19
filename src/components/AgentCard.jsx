@@ -8,6 +8,7 @@ import { Sparkles, Wallet, Activity, Edit, Eye, MessageCircle } from 'lucide-rea
 import AgentChatModal from './AgentChatModal';
 
 export default function AgentCard({ agent, wallets }) {
+  const [showChat, setShowChat] = useState(false);
   const wallet = wallets.find(w => w.id === agent.wallet_id);
   
   const statusConfig = {
