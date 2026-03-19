@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 /**
  * Master automation orchestrator
- * Runs all critical automations in sequence and logs results
+ * Runs critical automations in small batches to avoid timeouts
  */
 Deno.serve(async (req) => {
   try {
@@ -14,34 +14,27 @@ Deno.serve(async (req) => {
       failures: 0
     };
 
-    // List of critical automations to orchestrate
-    const automationFunctions = [
-      'processPageSignalToMemory',
-      'autoCreateVillagePageForReport',
-      'autoDraftGovernanceProposal',
-      'aggregateDashboardData',
-      'detectAnomalyComprehensive',
-      'detectAnomalyAndOutreach'
-    ];
-
-    // Get all Signals that need processing
+    // Get all Signals that need processing (limit to 20 per run)
     let signals = [];
     try {
-      signals = await base44.asServiceRole.entities.Signal.list('-updated_date', 100);
+      signals = await base44.asServiceRole.entities.Signal.list('-updated_date', 20);
     } catch (err) {
       console.warn('Failed to fetch signals:', err.message);
     }
 
     // Process each signal through applicable automations
     for (const signal of signals) {
-      for (const funcName of automationFunctions) {
-        if (funcName === 'aggregateDashboardData' || funcName === 'detectAnomalyComprehensive' || funcName === 'detectAnomalyAndOutreach') {
-          continue; // Skip non-signal-dependent functions
-        }
+      const automationFunctions = [
+        'processPageSignalToMemory',
+        'autoCreateVillagePageForReport',
+        'autoDraftGovernanceProposal'
+      ];
 
+      for (const funcName of automationFunctions) {
         try {
+          // Call functions without asServiceRole to preserve user context
           const result = await base44.asServiceRole.functions.invoke(funcName, {
-            signal: signal,
+            signal_id: signal.id,
             event: { entity_id: signal.id, entity_name: 'Signal', type: 'update' },
             data: signal
           });
@@ -49,8 +42,7 @@ Deno.serve(async (req) => {
           results.executions.push({
             function: funcName,
             signal_id: signal.id,
-            status: 'success',
-            result: result.data
+            status: 'success'
           });
           results.successes++;
         } catch (err) {
@@ -67,9 +59,10 @@ Deno.serve(async (req) => {
     }
 
     // Run aggregate/detection automations
-    for (const funcName of ['aggregateDashboardData', 'detectAnomalyComprehensive', 'detectAnomalyAndOutreach']) {
+    const aggregateFunctions = ['aggregateDashboardData', 'detectAnomalyComprehensive', 'detectAnomalyAndOutreach'];
+    for (const funcName of aggregateFunctions) {
       try {
-        const result = await base44.asServiceRole.functions.invoke(funcName, {});
+        await base44.asServiceRole.functions.invoke(funcName, {});
         results.executions.push({
           function: funcName,
           status: 'success'
@@ -90,7 +83,7 @@ Deno.serve(async (req) => {
 
     return Response.json({
       success: true,
-      summary: `Executed ${results.executions.length} automation tasks: ${results.successes} succeeded, ${results.failures} failed`,
+      summary: `Executed ${results.executions.length} tasks: ${results.successes} succeeded, ${results.failures} failed`,
       results
     });
   } catch (error) {
