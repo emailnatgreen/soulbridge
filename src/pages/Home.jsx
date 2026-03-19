@@ -148,10 +148,9 @@ export default function Home() {
                   style={{ imageRendering: 'crisp-edges' }}
                 />
                 <div>
-                  <h1 className="text-3xl font-light tracking-tight text-white mb-1">
-                    SoulBridge <span className="font-semibold">Village</span>
+                  <h1 className="text-3xl font-light tracking-tight text-white">
+                    SoulBridge
                   </h1>
-                  <p className="text-sm text-purple-300/70">The Living Codex</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">

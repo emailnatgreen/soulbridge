@@ -159,8 +159,7 @@ export default function GlobalNav() {
               style={{ imageRendering: 'crisp-edges' }}
             />
             <div>
-              <h2 className="text-lg font-bold text-white">SoulBridge</h2>
-              <p className="text-xs text-slate-500">Village Command</p>
+              <h2 className="text-lg font-bold text-white">The Living Codex</h2>
             </div>
           </div>
           <div className="mt-4">
@@ -189,7 +188,7 @@ export default function GlobalNav() {
                     className="w-6 h-6 rounded-md object-contain flex-shrink-0"
                     style={{ imageRendering: 'crisp-edges' }}
                   />
-                  <h2 className="text-lg font-bold text-white">SoulBridge</h2>
+                  <h2 className="text-lg font-bold text-white">The Living Codex</h2>
                 </div>
                 <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
                   <X className="w-5 h-5" />
