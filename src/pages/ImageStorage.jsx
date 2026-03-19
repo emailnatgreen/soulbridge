@@ -229,6 +229,58 @@ export default function ImageStorage() {
           className="bg-white/5 border-white/10 text-white placeholder-white/30"
         />
 
+        {/* Editor URL Panel — shown when an image is selected */}
+        {selectedImage && (
+          <Card className="bg-white/5 border-purple-500/40 border">
+            <CardContent className="pt-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-white font-medium">
+                  <Code2 className="w-4 h-4 text-purple-400" />
+                  Editor URLs — <span className="text-purple-300 font-normal truncate max-w-xs">{selectedImage.name}</span>
+                </div>
+                <button onClick={() => setSelectedImage(null)} className="text-white/40 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                {/* Direct URL */}
+                {[
+                  { label: 'Direct URL', format: 'url', value: selectedImage.file_url, icon: <Link className="w-3 h-3" /> },
+                  { label: 'Markdown', format: 'md', value: `![${selectedImage.name}](${selectedImage.file_url})`, icon: <Code2 className="w-3 h-3" /> },
+                  { label: 'HTML <img>', format: 'html', value: `<img src="${selectedImage.file_url}" alt="${selectedImage.name}" />`, icon: <Code2 className="w-3 h-3" /> },
+                ].map(({ label, format, value, icon }) => (
+                  <div key={format} className="space-y-1">
+                    <p className="text-white/50 text-xs flex items-center gap-1">{icon} {label}</p>
+                    <div className="flex gap-2">
+                      <code className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-xs text-green-300 font-mono truncate">
+                        {value}
+                      </code>
+                      <button
+                        onClick={() => copyFormat(value, format)}
+                        className="flex-shrink-0 px-3 py-2 rounded-lg bg-purple-600/70 hover:bg-purple-600 text-white text-xs flex items-center gap-1 transition-colors"
+                      >
+                        {copiedFormat === format ? <Check className="w-3 h-3 text-green-300" /> : <Copy className="w-3 h-3" />}
+                        {copiedFormat === format ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Preview */}
+              <div className="pt-2 border-t border-white/10">
+                <p className="text-white/40 text-xs mb-2">Preview</p>
+                <img
+                  src={selectedImage.file_url}
+                  alt={selectedImage.name}
+                  className="max-h-40 rounded-lg object-contain bg-black/20 w-full"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Image Grid */}
         {isLoading ? (
           <div className="flex items-center justify-center h-40">
