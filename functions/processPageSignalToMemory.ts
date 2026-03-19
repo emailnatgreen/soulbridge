@@ -8,8 +8,10 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { signal } = body;
-
+    
+    // Handle both direct invocation and entity automation payload
+    let signal = body.signal || body.data;
+    
     if (!signal) {
       return Response.json({ error: 'No signal provided' }, { status: 400 });
     }
