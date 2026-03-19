@@ -88,14 +88,14 @@ export default function HomeRecentTransactions() {
       {/* Live Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total On-Chain', value: stats.total, color: 'text-purple-600' },
-          { label: 'Successful', value: stats.success, color: 'text-green-600' },
-          { label: 'Failed', value: stats.failed, color: 'text-red-500' },
-          { label: 'XRP Volume', value: `${stats.volume.toFixed(4)} XRP`, color: 'text-blue-600' },
+          { label: 'Total On-Chain', value: stats.total, color: 'text-purple-400' },
+          { label: 'Successful', value: stats.success, color: 'text-green-400' },
+          { label: 'Failed', value: stats.failed, color: 'text-red-400' },
+          { label: 'XRP Volume', value: `${stats.volume.toFixed(4)} XRP`, color: 'text-blue-400' },
         ].map(s => (
-          <Card key={s.label} className="bg-white border-gray-200 hover:shadow-md transition-all">
+          <Card key={s.label} className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 transition-all">
             <CardContent className="pt-5 pb-4">
-              <p className="text-xs text-gray-500 mb-1">{s.label}</p>
+              <p className="text-xs text-white/60 mb-1">{s.label}</p>
               <p className={`text-xl font-semibold ${s.color}`}>{s.value}</p>
             </CardContent>
           </Card>
