@@ -11,6 +11,7 @@ import VillageCalendar from './pages/VillageCalendar';
 import AxiCommandDashboard from './pages/AxiCommandDashboard';
 import AgentAdditionDiagnostic from './pages/AgentAdditionDiagnostic';
 import MemoryBrowser from './pages/MemoryBrowser';
+import ImageStorage from './pages/ImageStorage';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
