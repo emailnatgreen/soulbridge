@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
         try {
           const result = await base44.asServiceRole.functions.invoke(funcName, {
             signal_id: signal.id,
+            signal: signal,
             event: { entity_id: signal.id, entity_name: 'Signal', type: 'update' },
             data: signal
           });
