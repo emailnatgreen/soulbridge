@@ -111,6 +111,24 @@ export default function ImageStorage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleEditorSave = async (file, originalImage) => {
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.ImageAsset.create({
+        name: file.name,
+        file_url,
+        mime_type: file.type,
+        size_bytes: file.size,
+        source: 'platform_upload',
+      });
+      queryClient.invalidateQueries({ queryKey: ['image-assets'] });
+      setEditingImage(null);
+      toast.success('Edited image saved!');
+    } catch (err) {
+      toast.error('Failed to save edited image');
+    }
+  };
+
   const copyFormat = (text, format) => {
     navigator.clipboard.writeText(text);
     setCopiedFormat(format);
