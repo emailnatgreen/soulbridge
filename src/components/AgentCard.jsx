@@ -104,15 +104,27 @@ export default function AgentCard({ agent, wallets }) {
         )}
 
         {/* Actions */}
-        <div className="pt-3 border-t border-white/5">
-          <Link to={createPageUrl('AgentProfile') + '?id=' + agent.id}>
+        <div className="pt-3 border-t border-white/5 flex gap-2">
+          <Link to={createPageUrl('AgentProfile') + '?id=' + agent.id} className="flex-1">
             <Button size="sm" variant="ghost" className="w-full text-purple-300 hover:bg-purple-500/10">
               <Eye className="w-3 h-3 mr-2" />
-              View Profile
+              Profile
             </Button>
           </Link>
+          <Button
+            size="sm"
+            onClick={() => setShowChat(true)}
+            className="flex-1 bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/30 text-purple-300 hover:from-purple-600/50 hover:to-pink-600/50"
+          >
+            <MessageCircle className="w-3 h-3 mr-2" />
+            Chat
+          </Button>
         </div>
       </CardContent>
     </Card>
+
+    {showChat && (
+      <AgentChatModal agent={agent} onClose={() => setShowChat(false)} />
+    )}
   );
 }
