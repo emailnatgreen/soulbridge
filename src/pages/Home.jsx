@@ -143,11 +143,19 @@ export default function Home() {
             
             {/* Desktop Header */}
             <div className="hidden md:flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-light tracking-tight text-white mb-1">
-                  SoulBridge <span className="font-semibold">Village</span>
-                </h1>
-                <p className="text-sm text-purple-300/70">The Living Codex</p>
+              <div className="flex items-center gap-4">
+                <img
+                  src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+                  alt="SoulBridge"
+                  className="w-12 h-12 rounded-lg object-contain"
+                  style={{ imageRendering: 'crisp-edges' }}
+                />
+                <div>
+                  <h1 className="text-3xl font-light tracking-tight text-white mb-1">
+                    SoulBridge <span className="font-semibold">Village</span>
+                  </h1>
+                  <p className="text-sm text-purple-300/70">The Living Codex</p>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <DidAuthStatus />
