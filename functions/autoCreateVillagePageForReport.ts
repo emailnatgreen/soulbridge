@@ -4,10 +4,29 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
-    const { report_title, report_summary, category, report_url, is_critical } = payload;
+    
+    // Handle both direct invocation and entity automation payload
+    const signal_id = payload.signal_id || payload.event?.entity_id;
+    let report_title = payload.report_title;
+    let report_summary = payload.report_summary;
+    let category = payload.category || 'governance';
+    let report_url = payload.report_url;
+    let is_critical = payload.is_critical;
+
+    // If triggered from entity automation, fetch Signal metadata
+    if (!report_title && signal_id) {
+      const signals = await base44.asServiceRole.entities.Signal.filter({ id: signal_id });
+      if (signals.length) {
+        const signal = signals[0];
+        const metadata = signal.metadata || {};
+        report_title = `${signal.page_name || 'AI Intel Report'} - ${metadata.alert_type || 'Analysis'}`;
+        report_summary = metadata.findings || signal.page_name;
+        is_critical = metadata.findings ? true : false;
+      }
+    }
 
     if (!report_title) {
-      return Response.json({ error: 'report_title required' }, { status: 400 });
+      return Response.json({ error: 'report_title or signal_id required' }, { status: 400 });
     }
 
     // Generate a URL-safe path

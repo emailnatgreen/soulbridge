@@ -4,10 +4,13 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
-    const { signal_id, alert_summary, governance_focus } = payload;
+    
+    // Handle both direct invocation and entity automation payload
+    const signal_id = payload.signal_id || payload.event?.entity_id;
+    const { alert_summary, governance_focus } = payload;
 
     if (!signal_id) {
-      return Response.json({ error: 'signal_id required' }, { status: 400 });
+      return Response.json({ error: 'signal_id or event.entity_id required' }, { status: 400 });
     }
 
     // Fetch the Signal (AI Intel alert)
