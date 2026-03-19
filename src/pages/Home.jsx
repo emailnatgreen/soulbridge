@@ -298,6 +298,42 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+
+          <Link to={createPageUrl('GovernanceHub')}>
+            <Card className="bg-gradient-to-br from-violet-900/50 to-purple-900/50 backdrop-blur-xl border-violet-500/40 hover:border-violet-400/70 hover:bg-gradient-to-br hover:from-violet-900/60 hover:to-purple-900/60 transition-all cursor-pointer h-full">
+              <CardContent className="pt-8 pb-8">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Vote className="w-10 h-10 text-violet-300" />
+                    <h3 className="text-white font-bold text-2xl">Governance</h3>
+                  </div>
+                  <p className="text-white/70 text-base">Vote on proposals, manage community decisions, and shape the future of the Living Codex</p>
+                  <div className="flex gap-2 pt-2">
+                    <Badge className="bg-violet-500/30 text-violet-200 border-violet-400/50">Voting</Badge>
+                    <Badge className="bg-purple-500/30 text-purple-200 border-purple-400/50">Proposals</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to={createPageUrl('Wallets')}>
+            <Card className="bg-gradient-to-br from-emerald-900/50 to-teal-900/50 backdrop-blur-xl border-emerald-500/40 hover:border-emerald-400/70 hover:bg-gradient-to-br hover:from-emerald-900/60 hover:to-teal-900/60 transition-all cursor-pointer h-full">
+              <CardContent className="pt-8 pb-8">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Wallet className="w-10 h-10 text-emerald-300" />
+                    <h3 className="text-white font-bold text-2xl">Wallets</h3>
+                  </div>
+                  <p className="text-white/70 text-base">Manage XRP assets, send transactions, and control your digital wealth across networks</p>
+                  <div className="flex gap-2 pt-2">
+                    <Badge className="bg-emerald-500/30 text-emerald-200 border-emerald-400/50">XRP</Badge>
+                    <Badge className="bg-teal-500/30 text-teal-200 border-teal-400/50">Transactions</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Featured Quick Access */}
