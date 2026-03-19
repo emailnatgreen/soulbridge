@@ -126,5 +126,6 @@ export default function AgentCard({ agent, wallets }) {
     {showChat && (
       <AgentChatModal agent={agent} onClose={() => setShowChat(false)} />
     )}
+    </>
   );
 }
