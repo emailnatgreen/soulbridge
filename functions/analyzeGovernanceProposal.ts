@@ -71,7 +71,7 @@ Return a JSON object with:
             notification_type: 'governance_proposal_analysis',
             title: `AI Analysis Complete: "${proposal.title}"`,
             message: `Sentiment: ${analysis.sentiment}. ${analysis.summary} ${analysis.risk_flags?.length > 0 ? `⚠️ ${analysis.risk_flags.length} risk flag(s) identified.` : '✅ No major risks detected.'}`,
-            read: false,
+            is_read: false,
         });
 
         return Response.json({
