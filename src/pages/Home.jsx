@@ -123,10 +123,6 @@ export default function Home() {
     { title: 'Navigation', content: 'Use the top navigation menus to explore all sections: Wallets, DID, Agents, Governance, Skills, Economy, and more.', target: 'nav' },
   ];
 
-  if (error) {
-    return <div className="min-h-screen bg-white flex items-center justify-center p-4"><div className="text-red-600 max-w-lg"><h2 className="text-xl font-bold mb-2">Error Loading Page</h2><p>{error}</p></div></div>;
-  }
-
   return (
     <>
     <GuidedTour steps={homeTourSteps} tourKey="home-dashboard-tour" />
