@@ -125,18 +125,18 @@ export default function HomeRecentTransactions() {
         </CardHeader>
         <CardContent className="p-0">
           {loading && txData.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-purple-400 animate-spin mr-2" />
-              <span className="text-gray-500 text-sm">Fetching live data from XRPL...</span>
-            </div>
+           <div className="flex items-center justify-center py-12">
+             <Loader2 className="w-6 h-6 text-purple-400 animate-spin mr-2" />
+             <span className="text-white/60 text-sm">Fetching live data from XRPL...</span>
+           </div>
           ) : txData.length === 0 && dbTransactions.length === 0 ? (
-            <div className="text-center py-12 text-gray-400 text-sm">No transactions found.</div>
+           <div className="text-center py-12 text-white/40 text-sm">No transactions found.</div>
           ) : showFallback ? (
-            // Fallback: show local DB transactions
-            <div className="overflow-x-auto">
-              <div className="px-4 py-2 text-xs text-amber-600 bg-amber-50 border-b border-amber-100 flex items-center gap-1">
-                ⚡ Showing saved transactions — connect a wallet to see live XRPL data
-              </div>
+           // Fallback: show local DB transactions
+           <div className="overflow-x-auto">
+             <div className="px-4 py-2 text-xs text-amber-300 bg-amber-500/20 border-b border-amber-500/30 flex items-center gap-1">
+               ⚡ Showing saved transactions — connect a wallet to see live XRPL data
+             </div>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100">
