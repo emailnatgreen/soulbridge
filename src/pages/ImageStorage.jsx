@@ -301,6 +301,15 @@ export default function ImageStorage() {
           </Card>
         )}
 
+        {/* Image Editor Modal */}
+        {editingImage && (
+          <ImageEditor
+            image={editingImage}
+            onSave={handleEditorSave}
+            onClose={() => setEditingImage(null)}
+          />
+        )}
+
         {/* Image Grid */}
         {isLoading ? (
           <div className="flex items-center justify-center h-40">
