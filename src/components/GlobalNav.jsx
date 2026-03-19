@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Home, Menu, X, BarChart3, Users, Vote, Briefcase, Vault, Calendar,
+  Home, Menu, X, BarChart3, Users, Vote, Briefcase, Archive, Calendar,
   Settings, Image, Brain, Wallet, Globe, Shield, BookOpen, Zap,
   TrendingUp, Network, MessageSquare, Star, ChevronDown, ChevronRight,
   Swords, TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
