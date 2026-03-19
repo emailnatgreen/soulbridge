@@ -61,18 +61,6 @@ export default function Layout({ children, currentPageName }) {
     <div className="relative">
       <GlobalNav />
       
-      {/* Global SoulBridge Logo Header */}
-      <div className="fixed top-0 left-0 right-0 z-20 bg-gradient-to-b from-slate-950 to-transparent pointer-events-none lg:hidden">
-        <div className="flex items-center justify-center pt-16 pb-4">
-          <img
-            src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
-            alt="SoulBridge"
-            className="w-10 h-10 rounded-lg object-contain"
-            style={{ imageRendering: 'crisp-edges' }}
-          />
-        </div>
-      </div>
-
       {/* Global Background Watermark */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
