@@ -172,6 +172,13 @@ export default function GlobalNav() {
             <NavGroup key={group.label} group={group} isOpen={i === 0} />
           ))}
         </div>
+        <div className="flex-shrink-0 p-4 border-t border-slate-800">
+          <img
+            src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/841f4d99d_1135.png"
+            alt="SoulBridge"
+            className="w-full rounded-xl object-contain"
+          />
+        </div>
       </nav>
 
       {/* Mobile Sidebar */}
