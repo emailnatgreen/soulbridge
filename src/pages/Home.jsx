@@ -725,12 +725,16 @@ export default function Home() {
 
         {/* DID Activation Pipeline */}
         <div className="mb-8 sm:mb-12">
-          <DidActivationPipeline />
+          <React.Suspense fallback={null}>
+            <DidActivationPipeline />
+          </React.Suspense>
         </div>
 
         {/* Shielded Wallet Balance */}
         <div className="mb-8 sm:mb-12">
-          <ShieldedWalletBalance autoRefresh={true} refreshInterval={30000} />
+          <React.Suspense fallback={null}>
+            <ShieldedWalletBalance autoRefresh={false} refreshInterval={60000} />
+          </React.Suspense>
         </div>
 
         {/* Live Transactions */}
