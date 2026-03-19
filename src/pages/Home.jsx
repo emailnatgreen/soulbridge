@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock, ChevronDown, Laugh, Vote, CheckCircle, ExternalLink, ShieldAlert, Zap, Scale, ClipboardList, Globe, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
