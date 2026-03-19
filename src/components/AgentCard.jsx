@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Wallet, Activity, Edit, Eye } from 'lucide-react';
+import { Sparkles, Wallet, Activity, Edit, Eye, MessageCircle } from 'lucide-react';
+import AgentChatModal from './AgentChatModal';
 
 export default function AgentCard({ agent, wallets }) {
   const wallet = wallets.find(w => w.id === agent.wallet_id);
