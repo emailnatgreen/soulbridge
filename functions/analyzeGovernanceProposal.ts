@@ -66,13 +66,17 @@ Return a JSON object with:
         });
 
         // Send notification to governance guardians
-        await base44.asServiceRole.entities.AgentNotification.create({
-            recipient_agent_id: proposal.proposed_by || 'axi_main_001',
-            notification_type: 'governance_proposal_analysis',
-            title: `AI Analysis Complete: "${proposal.title}"`,
-            message: `Sentiment: ${analysis.sentiment}. ${analysis.summary} ${analysis.risk_flags?.length > 0 ? `⚠️ ${analysis.risk_flags.length} risk flag(s) identified.` : '✅ No major risks detected.'}`,
-            is_read: false,
-        });
+        const recipientId = proposal.proposed_by || 'axi_main_001';
+        if (recipientId) {
+            await base44.asServiceRole.entities.AgentNotification.create({
+                recipient_agent_id: recipientId,
+                notification_type: 'governance_proposal',
+                message: `AI Analysis Complete: "${proposal.title}". Sentiment: ${analysis.sentiment}. ${analysis.summary} ${analysis.risk_flags?.length > 0 ? `⚠️ ${analysis.risk_flags.length} risk flag(s) identified.` : '✅ No major risks detected.'}`,
+                related_entity_type: 'GovernanceProposal',
+                related_entity_id: proposalId,
+                is_read: false,
+            });
+        }
 
         return Response.json({
             success: true,
