@@ -41,13 +41,16 @@ export function usePageSignal() {
           },
         };
 
-        // Emit to Jukebox Brain via routePageSignal
-        await base44.functions.invoke('routePageSignal', signalPayload);
+        // Emit to Jukebox Brain via routePageSignal (non-blocking, fire-and-forget)
+        base44.functions.invoke('routePageSignal', signalPayload).catch(err => {
+          console.warn('Page signal emission failed (non-critical):', err.message);
+        });
       } catch (error) {
-        console.error('Failed to emit page signal:', error);
+        console.warn('Page signal preparation failed:', error.message);
       }
     };
 
+    // Non-blocking: emit signal without waiting for response
     emitPageSignal();
   }, [location.pathname, location.search]);
 }
