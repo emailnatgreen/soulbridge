@@ -431,7 +431,7 @@ export default function Home() {
         {/* DUAA 2025 Green Light Banner */}
         <div className="mb-4">
           <Link to={createPageUrl('CertificateOfSovereignty')}>
-            <div className="flex items-center gap-3 px-5 py-3 bg-green-50 border border-green-300 rounded-xl hover:bg-green-100 transition-all cursor-pointer">
+            <div className="flex items-center gap-3 px-5 py-3 bg-green-500/10 border border-green-500/30 rounded-xl hover:bg-green-500/20 transition-all cursor-pointer">
               <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
               <div className="flex-1">
                 <span className="font-semibold text-green-800">🟢 DUAA 2025 — Full Compliance: Green Light</span>
