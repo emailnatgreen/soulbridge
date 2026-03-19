@@ -44,13 +44,13 @@ export default function Home() {
       base44.functions.invoke('signalProcessor', rawSignal)
         .then(res => {
           console.log('[SoulBridge] Signal processed:', res.data);
-          // Just open Axi — AxiChat manages its own conversation
-          window.dispatchEvent(new CustomEvent('open-axi'));
+          // Only open Axi on desktop to avoid mobile keyboard/viewport issues
+          if (window.innerWidth >= 768) {
+            window.dispatchEvent(new CustomEvent('open-axi'));
+          }
         })
         .catch(err => {
           console.error('[SoulBridge] Signal error:', err);
-          // Still open Axi even if signal fails
-          window.dispatchEvent(new CustomEvent('open-axi'));
         });
     }, 1500);
   }, []);
