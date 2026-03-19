@@ -14,9 +14,15 @@ Deno.serve(async (req) => {
     }
 
     // Fetch the Signal (AI Intel alert)
-    const signals = await base44.asServiceRole.entities.Signal.filter({ id: signal_id });
-    if (!signals.length) {
-      return Response.json({ error: 'Signal not found' }, { status: 404 });
+    let signals;
+    try {
+      signals = await base44.asServiceRole.entities.Signal.filter({ id: signal_id });
+      if (!signals.length) {
+        return Response.json({ error: 'Signal not found' }, { status: 404 });
+      }
+    } catch (err) {
+      console.warn(`Failed to fetch Signal ${signal_id}:`, err.message);
+      return Response.json({ error: `Failed to fetch Signal: ${err.message}` }, { status: 500 });
     }
 
     const signal = signals[0];
