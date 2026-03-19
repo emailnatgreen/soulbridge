@@ -22,8 +22,23 @@ Deno.serve(async (req) => {
       console.warn('Failed to fetch signals:', err.message);
     }
 
+    // Filter out signals that already have a corresponding VillagePage
+    const processedPaths = new Set();
+    try {
+      const villagePages = await base44.asServiceRole.entities.VillagePage.list();
+      villagePages.forEach(page => {
+        if (page.metadata?.related_signal_id) {
+          processedPaths.add(page.metadata.related_signal_id);
+        }
+      });
+    } catch (err) {
+      console.warn('Failed to fetch VillagePages:', err.message);
+    }
+
+    const unprocessedSignals = signals.filter(s => !processedPaths.has(s.id));
+
     // Process each signal through applicable automations
-    for (const signal of signals) {
+    for (const signal of unprocessedSignals) {
       const automationFunctions = [
         'processPageSignalToMemory',
         'autoCreateVillagePageForReport',
@@ -32,7 +47,6 @@ Deno.serve(async (req) => {
 
       for (const funcName of automationFunctions) {
         try {
-          // Call functions without asServiceRole to preserve user context
           const result = await base44.asServiceRole.functions.invoke(funcName, {
             signal_id: signal.id,
             event: { entity_id: signal.id, entity_name: 'Signal', type: 'update' },
