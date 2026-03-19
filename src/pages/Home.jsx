@@ -171,7 +171,7 @@ export default function Home() {
                       <ChevronDown className="w-3 h-3 ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-white border-gray-200 min-w-[220px]">
+                  <DropdownMenuContent className="bg-slate-900 border-white/10 text-white min-w-[220px]">
                     <DropdownMenuLabel className="text-xs text-gray-500">Send from wallet</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {sendableWallets.length === 0 ? (
