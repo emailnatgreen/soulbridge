@@ -135,7 +135,7 @@ export default function Home() {
             {/* Mobile Header */}
             <div className="flex md:hidden items-center justify-between">
               <MobileNav />
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 className="text-xl font-semibold text-white">
                 SoulBridge
               </h1>
               <NotificationCenter agentId="axi_main_001" />
@@ -144,10 +144,10 @@ export default function Home() {
             {/* Desktop Header */}
             <div className="hidden md:flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-light tracking-tight text-gray-900 mb-1">
+                <h1 className="text-3xl font-light tracking-tight text-white mb-1">
                   SoulBridge <span className="font-semibold">Village</span>
                 </h1>
-                <p className="text-sm text-blue-600/70">The Living Codex</p>
+                <p className="text-sm text-purple-300/70">The Living Codex</p>
               </div>
               <div className="flex items-center gap-3">
                 <DidAuthStatus />
