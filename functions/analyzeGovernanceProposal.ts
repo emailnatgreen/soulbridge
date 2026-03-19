@@ -67,11 +67,11 @@ Return a JSON object with:
 
         // Send notification to governance guardians
         await base44.asServiceRole.entities.AgentNotification.create({
-            recipient_agent_id: proposal.proposed_by || 'axi_main_001',
+            agent_id: proposal.proposed_by || 'axi_main_001',
+            type: 'governance_proposal',
             title: `AI Analysis Complete: "${proposal.title}"`,
             message: `Sentiment: ${analysis.sentiment}. ${analysis.summary} ${analysis.risk_flags?.length > 0 ? `⚠️ ${analysis.risk_flags.length} risk flag(s) identified.` : '✅ No major risks detected.'}`,
-            notification_type: 'governance_proposal',
-            priority: analysis.sentiment === 'divisive' ? 'high' : 'normal'
+            read: false,
         });
 
         return Response.json({
