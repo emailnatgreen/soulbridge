@@ -336,7 +336,12 @@ export default function Home() {
           </Link>
 
           <Link to={createPageUrl('Wallets')}>
-            <Card className="bg-gradient-to-br from-emerald-900/50 to-teal-900/50 backdrop-blur-xl border-emerald-500/40 hover:border-emerald-400/70 hover:bg-gradient-to-br hover:from-emerald-900/60 hover:to-teal-900/60 transition-all cursor-pointer h-full">
+            <Card className={`bg-gradient-to-br from-emerald-900/50 to-teal-900/50 backdrop-blur-xl border-emerald-500/40 hover:border-emerald-400/70 hover:bg-gradient-to-br hover:from-emerald-900/60 hover:to-teal-900/60 transition-all cursor-pointer h-full relative ${sendableWallets.length === 0 ? 'ring-1 ring-yellow-500/40' : ''}`}>
+              {sendableWallets.length === 0 && (
+                <div className="absolute top-4 right-4 flex items-center gap-1">
+                  <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/30 font-semibold">⚠ No Mainnet</span>
+                </div>
+              )}
               <CardContent className="pt-8 pb-8">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
