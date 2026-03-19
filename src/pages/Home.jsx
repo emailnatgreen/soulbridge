@@ -26,19 +26,28 @@ export default function Home() {
   // Removed global error listener — it was catching unrelated XRPL/backend errors
   // and causing a white screen on rate limit errors.
 
-  // Disabled: Signal processing causing 500 errors on load
-  // React.useEffect(() => {
-  //   const fired = sessionStorage.getItem('sb_new_user_signal');
-  //   if (fired) return;
-  //   sessionStorage.setItem('sb_new_user_signal', '1');
-  //   
-  //   // Only open Axi on desktop to avoid mobile keyboard/viewport issues
-  //   if (window.innerWidth >= 768) {
-  //     setTimeout(() => {
-  //       window.dispatchEvent(new CustomEvent('open-axi'));
-  //     }, 1500);
-  //   }
-  // }, []);
+  // ─── SoulBridge Nervous System — Page Signal Emission ───────
+  React.useEffect(() => {
+    const fired = sessionStorage.getItem('sb_new_user_signal');
+    if (fired) return;
+    sessionStorage.setItem('sb_new_user_signal', '1');
+
+    // Emit page signal to Jukebox Brain (non-blocking)
+    setTimeout(() => {
+      base44.functions.invoke('routePageSignal', {
+        page: 'Home',
+        path: '/',
+        timestamp: new Date().toISOString(),
+      }).catch(err => {
+        console.warn('Page signal failed (non-critical):', err.message);
+      });
+
+      // Only open Axi on desktop to avoid mobile keyboard/viewport issues
+      if (window.innerWidth >= 768) {
+        window.dispatchEvent(new CustomEvent('open-axi'));
+      }
+    }, 1500);
+  }, []);
 
   const STALE = 5 * 60 * 1000; // 5 min cache
 
