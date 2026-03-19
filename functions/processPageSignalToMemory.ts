@@ -12,14 +12,29 @@ Deno.serve(async (req) => {
     // Handle both direct invocation and entity automation payload
     let signal = body.signal || body.data;
     
-    // If neither signal nor data exists, and this is an entity automation with full event payload
+    // If neither signal nor data exists, try fetching Signal by entity_id
     if (!signal && body.event?.entity_id) {
       // Fetch the Signal entity directly
       try {
         const signals = await base44.asServiceRole.entities.Signal.filter({ id: body.event.entity_id });
-        signal = signals[0];
+        if (signals.length > 0) {
+          signal = signals[0];
+        } else {
+          console.warn(`Signal ${body.event.entity_id} not found in database`);
+        }
       } catch (err) {
         console.warn(`Failed to fetch Signal ${body.event.entity_id}:`, err.message);
+      }
+    }
+    
+    // Last resort: try fetching if we have an ID but no signal object yet
+    if (!signal && (body.event?.entity_id || body.signal_id)) {
+      const signalId = body.event?.entity_id || body.signal_id;
+      try {
+        const signals = await base44.asServiceRole.entities.Signal.filter({ id: signalId });
+        signal = signals[0];
+      } catch (err) {
+        console.warn(`Final Signal fetch attempt failed for ${signalId}:`, err.message);
       }
     }
     
