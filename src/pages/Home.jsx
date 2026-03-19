@@ -21,7 +21,6 @@ import DidActivationPipeline from '../components/DidActivationPipeline';
 import GuidedTour from '../components/onboarding/GuidedTour';
 
 export default function Home() {
-  const [error, setError] = React.useState(null);
   usePageSignal();
 
   // Removed global error listener — it was catching unrelated XRPL/backend errors
