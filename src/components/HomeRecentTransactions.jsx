@@ -113,12 +113,12 @@ export default function HomeRecentTransactions() {
             <button
               onClick={fetchLiveTxs}
               disabled={loading}
-              className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+              className="p-1.5 rounded hover:bg-white/10 transition-colors"
               title="Refresh"
             >
-              <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-white/60 hover:text-white/80 ${loading ? 'animate-spin' : ''}`} />
             </button>
-            <Link to={createPageUrl('TransactionHistory')} className="text-xs text-blue-600 hover:underline">
+            <Link to={createPageUrl('TransactionHistory')} className="text-xs text-blue-400 hover:text-blue-300">
               View all →
             </Link>
           </div>
