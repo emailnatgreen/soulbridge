@@ -24,11 +24,8 @@ export default function Home() {
   const [error, setError] = React.useState(null);
   usePageSignal();
 
-  React.useEffect(() => {
-    window.addEventListener('error', (e) => {
-      setError(e.error?.message || 'An error occurred');
-    });
-  }, []);
+  // Removed global error listener — it was catching unrelated XRPL/backend errors
+  // and causing a white screen on rate limit errors.
 
   // ─── SoulBridge Nervous System — Step 1: new_user signal ───────
   React.useEffect(() => {
