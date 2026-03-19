@@ -125,25 +125,12 @@ export default function Home() {
 
   const sendableWallets = wallets.filter(w => w.classic_address && w.network === 'mainnet');
 
-  const isLoading = loadingAgents || loadingProposals || loadingCredentials;
-
   const activeAgents = agents.filter(a => a.status === 'active');
   const criticalRisks = risks.filter(r => r.severity === 'Critical' || r.severity === 'High');
   const unhealthyAgents = wellbeings.filter(w => w.wellbeing_status !== 'healthy');
   const avgHarmony = wellbeings.length > 0
     ? Math.round(wellbeings.reduce((sum, w) => sum + (w.overall_wellbeing_score || 70), 0) / wellbeings.length)
     : null;
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading SoulBridge...</p>
-        </div>
-      </div>
-    );
-  }
 
   const homeTourSteps = [
     { title: 'Welcome to SoulBridge Village!', content: 'This is your command dashboard. Here you can monitor agents, treasury, governance, and more at a glance.', target: null },
