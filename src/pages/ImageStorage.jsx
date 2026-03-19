@@ -19,6 +19,8 @@ export default function ImageStorage() {
   const [driveFileId, setDriveFileId] = useState('');
   const [importing, setImporting] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [copiedFormat, setCopiedFormat] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [search, setSearch] = useState('');
 
   const { data: images = [], isLoading } = useQuery({
