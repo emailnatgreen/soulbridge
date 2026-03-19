@@ -448,8 +448,8 @@ export default function Home() {
             <CardContent className="pt-5 pb-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-blue-100 rounded-xl">
-                    <Shield className="w-7 h-7 text-blue-600" />
+                  <div className="p-3 bg-blue-500/20 rounded-xl">
+                  <Shield className="w-7 h-7 text-blue-400" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
