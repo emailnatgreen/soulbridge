@@ -473,7 +473,7 @@ export default function Home() {
                     </button>
                   </Link>
                   <Link to={createPageUrl('DidCredentials')}>
-                    <button className="bg-gray-200 hover:bg-gray-300 text-gray-900 text-sm font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                    <button className="bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-2 border border-white/20">
                       <Award className="w-4 h-4" /> Credentials
                     </button>
                   </Link>
