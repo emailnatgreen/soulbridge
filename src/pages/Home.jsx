@@ -260,6 +260,45 @@ export default function Home() {
           </Card>
         </div>
 
+        {/* Hero Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 sm:mb-12">
+          <Link to={createPageUrl('AxiCommandDashboard')}>
+            <Card className="bg-gradient-to-br from-indigo-900/50 to-purple-900/50 backdrop-blur-xl border-indigo-500/40 hover:border-indigo-400/70 hover:bg-gradient-to-br hover:from-indigo-900/60 hover:to-purple-900/60 transition-all cursor-pointer h-full">
+              <CardContent className="pt-8 pb-8">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Brain className="w-10 h-10 text-indigo-300" />
+                    <h3 className="text-white font-bold text-2xl">Axi Command</h3>
+                  </div>
+                  <p className="text-white/70 text-base">Launch AI operations, access intelligence feeds, and orchestrate system-wide automations</p>
+                  <div className="flex gap-2 pt-2">
+                    <Badge className="bg-indigo-500/30 text-indigo-200 border-indigo-400/50">AI Orchestration</Badge>
+                    <Badge className="bg-purple-500/30 text-purple-200 border-purple-400/50">Real-time</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to={createPageUrl('VillageReportingDashboard')}>
+            <Card className="bg-gradient-to-br from-amber-900/50 to-orange-900/50 backdrop-blur-xl border-amber-500/40 hover:border-amber-400/70 hover:bg-gradient-to-br hover:from-amber-900/60 hover:to-orange-900/60 transition-all cursor-pointer h-full">
+              <CardContent className="pt-8 pb-8">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <ClipboardList className="w-10 h-10 text-amber-300" />
+                    <h3 className="text-white font-bold text-2xl">Daily Reports</h3>
+                  </div>
+                  <p className="text-white/70 text-base">Comprehensive village analytics, performance metrics, and automated daily synthesis reports</p>
+                  <div className="flex gap-2 pt-2">
+                    <Badge className="bg-amber-500/30 text-amber-200 border-amber-400/50">Analytics</Badge>
+                    <Badge className="bg-orange-500/30 text-orange-200 border-orange-400/50">Automated</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
         {/* Featured Quick Access */}
         <div className="mb-8 sm:mb-12">
           <h2 className="text-white/80 text-xl font-semibold mb-4">Quick Access</h2>
