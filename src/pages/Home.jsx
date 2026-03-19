@@ -345,7 +345,7 @@ export default function Home() {
               {/* Social */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-pink-600 hover:bg-pink-100 hover:text-pink-700">
+                  <Button variant="ghost" className="text-pink-300 hover:bg-white/10 hover:text-pink-200">
                     <Users className="w-4 h-4 mr-2" />
                     Social <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
