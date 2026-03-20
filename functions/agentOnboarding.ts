@@ -28,7 +28,9 @@ Deno.serve(async (req) => {
         const newWallet = Wallet.generate();
         
         // Store wallet in database (service role)
+        // owner_id should be the agent's user_id, but we'll use the agent_id as placeholder
         const walletData = await base44.asServiceRole.entities.Wallet.create({
+            owner_id: agentId,
             name: `${agentName}'s Wallet`,
             classic_address: newWallet.address,
             encrypted_seed: newWallet.seed,
