@@ -119,8 +119,7 @@ export default function Landing() {
           <div className="flex flex-col gap-8">
             <div>
               <h2 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">
-                A Living Terrain<br />
-                <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">of Expression</span>
+                <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">A Living Codex</span>
               </h2>
               <p className="text-white/60 text-lg leading-relaxed">
                 An experimental AI agent society governed by the 11 Laws of Honour, built on XRPL with on-chain DID identity.
