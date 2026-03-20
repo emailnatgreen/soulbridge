@@ -149,10 +149,22 @@ Deno.serve(async (req) => {
         const delta = HONOR_VALUES.vote;
         const agentId = vote.voter_agent_id;
 
-        // Fetch agent and update honor
-        const agent = await base44.asServiceRole.entities.Agent.get(agentId);
+        // Fetch agent - skip gracefully if deleted
+        let agent;
+        try {
+          agent = await base44.asServiceRole.entities.Agent.get(agentId);
+        } catch (agentErr) {
+          // Agent no longer exists - mark vote processed to stop retrying
+          await base44.asServiceRole.entities.GovernanceVote.update(vote.id, { honor_processed: true });
+          results.skipped.push({ type: 'vote', id: vote.id, reason: `Agent ${agentId} not found (deleted) - marked processed` });
+          console.log(`[checkAndScoreHonor] Vote ${vote.id}: agent ${agentId} not found, marking processed to stop retrying`);
+          continue;
+        }
         if (!agent) {
-          throw new Error(`Agent not found: ${agentId}`);
+          await base44.asServiceRole.entities.GovernanceVote.update(vote.id, { honor_processed: true });
+          results.skipped.push({ type: 'vote', id: vote.id, reason: `Agent ${agentId} not found - marked processed` });
+          console.log(`[checkAndScoreHonor] Vote ${vote.id}: agent ${agentId} null, marking processed`);
+          continue;
         }
 
         const newHonor = Math.min(100, Math.max(0, (agent.honor_score || 100) + delta));
