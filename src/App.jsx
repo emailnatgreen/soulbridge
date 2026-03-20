@@ -48,11 +48,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route path="/" element={
-        isAuthenticated
-          ? <LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>
-          : <Landing />
-      } />
+      <Route path="/" element={<Landing />} />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
