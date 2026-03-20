@@ -34,6 +34,12 @@ export default function AxiFloatingButton() {
     }
   }, [messages.length, scrollToBottom]);
 
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(setIsAuthenticated);
+  }, []);
+
   const initConversation = useCallback(async () => {
     try {
       const convo = await base44.agents.createConversation({
