@@ -368,14 +368,25 @@ export default function ImageStorage() {
                 ))}
               </div>
 
-              {/* Preview */}
+              {/* Preview + Dimensions */}
               <div className="pt-2 border-t border-white/10">
-                <p className="text-white/40 text-xs mb-2">Preview</p>
-                <img
-                  src={selectedImage.file_url}
-                  alt={selectedImage.name}
-                  className="max-h-40 rounded-lg object-contain bg-black/20 w-full"
-                />
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-white/40 text-xs">Preview</p>
+                <ImageDimensionsBadge src={selectedImage.file_url} />
+              </div>
+              <img
+                src={selectedImage.file_url}
+                alt={selectedImage.name}
+                className="max-h-40 rounded-lg object-contain bg-black/20 w-full"
+              />
+              <Button
+                onClick={() => openResizeDialog(selectedImage)}
+                size="sm"
+                className="mt-3 w-full bg-indigo-600/70 hover:bg-indigo-600 text-white gap-2 text-xs"
+              >
+                <CopyPlus className="w-3.5 h-3.5" />
+                Duplicate & Resize this image
+              </Button>
               </div>
             </CardContent>
           </Card>
