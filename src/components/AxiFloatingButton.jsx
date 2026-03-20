@@ -157,6 +157,9 @@ export default function AxiFloatingButton() {
     }
   }, [handleSend]);
 
+  // Still loading auth — render nothing (avoid white screen)
+  if (isAuthenticated === null) return null;
+
   // If not authenticated, show a "Sign in to talk to Axi" button
   if (isAuthenticated === false) {
     return (
