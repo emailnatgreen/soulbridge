@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 import { Client, Wallet, xrpToDrops } from 'npm:xrpl@3.0.0';
 
 Deno.serve(async (req) => {
@@ -46,7 +46,8 @@ Deno.serve(async (req) => {
             classic_address: newWallet.address,
             encrypted_seed: newWallet.seed,
             network: 'mainnet',
-            balance: fundAmount
+            balance: fundAmount,
+            owner_id: agentId
         });
 
         // Create transaction record
