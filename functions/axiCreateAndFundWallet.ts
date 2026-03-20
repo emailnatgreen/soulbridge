@@ -6,19 +6,6 @@ Deno.serve(async (req) => {
         const base44 = createClientFromRequest(req);
         const { walletName = 'Agent Wallet', fundAmount = 10, agentId } = await req.json();
 
-        // Allow admin users or service role calls to proceed
-        try {
-            const user = await base44.auth.me();
-            if (!user || user.role !== 'admin') {
-                return Response.json({ 
-                    error: 'Admin access required for wallet creation' 
-                }, { status: 403 });
-            }
-        } catch (authErr) {
-            // If auth fails, try service role (for automations)
-            // Service role has elevated permissions
-        }
-
         // Connect to mainnet
         const client = new Client('wss://s1.ripple.com:51233');
         await client.connect();
@@ -59,8 +46,7 @@ Deno.serve(async (req) => {
             classic_address: newWallet.address,
             encrypted_seed: newWallet.seed,
             network: 'mainnet',
-            balance: fundAmount,
-            owner_id: agentId
+            balance: fundAmount
         });
 
         // Create transaction record
