@@ -22,6 +22,8 @@ export default function WalletCard({ wallet, onRefresh }) {
     const [decryptedSeed, setDecryptedSeed] = useState(null);
     const [decrypting, setDecrypting] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [editingNotes, setEditingNotes] = useState(false);
     const [savingNotes, setSavingNotes] = useState(false);
     const queryClient = useQueryClient();
