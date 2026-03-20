@@ -79,11 +79,80 @@ export default function WalletsPage() {
   };
 
   const handleCreate = () => {
-    if (!name.trim()) {
-      toast.error('Please enter a wallet name');
+    if (!name.trim()) { toast.error('Please enter a wallet name'); return; }
+    createWallet.mutate({ name, network });
+  };
+
+  const handleAddExisting = () => {
+    if (!name.trim() || !classicAddress.trim()) {
+      toast.error('Please enter a wallet name and address');
       return;
     }
-    createWallet.mutate({ name, network });
+    base44.entities.Wallet.create({
+      name,
+      classic_address: classicAddress,
+      encrypted_seed: seed || undefined,
+      network,
+      balance: 0,
+    }).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      toast.success('Wallet added successfully');
+      resetForm();
+    });
+  };
+
+  const resetForm = () => {
+    setShowCreate(false);
+    setName('');
+    setClassicAddress('');
+    setSeed('');
+    setXummQr(null);
+    setXummResolved(false);
+    setXummPolling(false);
+  };
+
+  const initiateXumm = async () => {
+    setXummLoading(true);
+    setXummQr(null);
+    setXummResolved(false);
+    try {
+      const res = await base44.functions.invoke('xummSignIn', {});
+      if (res.data?.qr_png && res.data?.payload_id) {
+        setXummQr(res.data.qr_png);
+        pollXumm(res.data.payload_id);
+      } else {
+        toast.error('Could not generate XUMM QR — use manual entry');
+        setAddMode('manual');
+      }
+    } catch {
+      toast.error('XUMM unavailable — use manual entry');
+      setAddMode('manual');
+    } finally {
+      setXummLoading(false);
+    }
+  };
+
+  const pollXumm = (payloadId) => {
+    setXummPolling(true);
+    let attempts = 0;
+    const iv = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await base44.functions.invoke('xummCheckPayload', { payload_id: payloadId });
+        if (res.data?.resolved && res.data?.account) {
+          clearInterval(iv);
+          setXummPolling(false);
+          setXummResolved(true);
+          setClassicAddress(res.data.account);
+          toast.success('Wallet address imported from XUMM!');
+        } else if (res.data?.expired || attempts >= 60) {
+          clearInterval(iv);
+          setXummPolling(false);
+          toast.error('QR expired — please try again');
+          setXummQr(null);
+        }
+      } catch { clearInterval(iv); setXummPolling(false); }
+    }, 2000);
   };
 
   return (
