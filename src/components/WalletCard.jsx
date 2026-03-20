@@ -228,12 +228,63 @@ export default function WalletCard({ wallet, onRefresh }) {
                     </div>
                 )}
 
-                {wallet.notes && (
-                    <div>
-                        <p className="text-sm text-gray-500 mb-1">Notes</p>
-                        <p className="text-sm">{wallet.notes}</p>
+                {/* Structured Notes / Identity Card */}
+                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50/50">
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-gray-600">Identity / Notes</p>
+                        {!editingNotes ? (
+                            <Button variant="ghost" size="sm" onClick={() => setEditingNotes(true)} className="h-7 px-2 text-xs gap-1">
+                                <Pencil className="w-3 h-3" /> Edit
+                            </Button>
+                        ) : (
+                            <div className="flex gap-1">
+                                <Button variant="ghost" size="sm" onClick={handleSaveNotes} disabled={savingNotes} className="h-7 px-2 text-xs gap-1 text-green-600 hover:text-green-700">
+                                    {savingNotes ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Save
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => { setEditingNotes(false); setNoteFields(parsed); }} className="h-7 px-2 text-xs gap-1 text-gray-500">
+                                    <X className="w-3 h-3" /> Cancel
+                                </Button>
+                            </div>
+                        )}
                     </div>
-                )}
+                    {editingNotes ? (
+                        <div className="space-y-2">
+                            {[
+                                { key: 'role', label: 'Role' },
+                                { key: 'position', label: 'Position in Council' },
+                                { key: 'answers_to', label: 'Answers To' },
+                                { key: 'created_via', label: 'Created Via' },
+                            ].map(({ key, label }) => (
+                                <div key={key}>
+                                    <Label className="text-xs text-gray-500">{label}</Label>
+                                    <Input
+                                        value={noteFields[key]}
+                                        onChange={e => setNoteFields(f => ({ ...f, [key]: e.target.value }))}
+                                        placeholder={`Enter ${label.toLowerCase()}...`}
+                                        className="h-7 text-xs mt-0.5"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            {[
+                                { label: 'Role', value: noteFields.role },
+                                { label: 'Position', value: noteFields.position },
+                                { label: 'Answers To', value: noteFields.answers_to },
+                                { label: 'Created Via', value: noteFields.created_via },
+                            ].filter(f => f.value).map(({ label, value }) => (
+                                <div key={label} className="flex gap-2 text-xs">
+                                    <span className="text-gray-400 min-w-[80px] shrink-0">{label}</span>
+                                    <span className="text-gray-700">{value}</span>
+                                </div>
+                            ))}
+                            {!noteFields.role && !noteFields.position && !noteFields.answers_to && !noteFields.created_via && (
+                                <p className="text-xs text-gray-400 italic">No notes yet — click Edit to add identity info</p>
+                            )}
+                        </div>
+                    )}
+                </div>
 
                 <WalletQRCode wallet={wallet} currentUser={currentUser} />
 
