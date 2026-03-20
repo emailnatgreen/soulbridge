@@ -63,23 +63,11 @@ function ParticleCanvas() {
 }
 
 export default function Landing() {
-  const [tab, setTab] = useState('main'); // 'main' | 'email' | 'did'
+  const [tab, setTab] = useState('main'); // 'main' | 'email'
   const [email, setEmail] = useState('');
-  const [didAddress, setDidAddress] = useState('');
-  const [didError, setDidError] = useState('');
 
   const handleGoogleLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
   const handleEmailLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
-
-  const handleDidEntry = () => {
-    if (!didAddress.startsWith('r') || didAddress.length < 25) {
-      setDidError('Please enter a valid XRPL classic address (starts with "r")');
-      return;
-    }
-    // Store DID for post-auth linking and redirect to login
-    sessionStorage.setItem('pending_did_address', didAddress);
-    base44.auth.redirectToLogin(createPageUrl('Home'));
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative overflow-hidden flex flex-col">
