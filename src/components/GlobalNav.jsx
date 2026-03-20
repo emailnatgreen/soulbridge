@@ -153,16 +153,17 @@ export default function GlobalNav() {
 
       {/* Desktop Nav */}
       <nav className="fixed lg:flex hidden flex-col left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 z-40">
-        <div className="p-6 pb-3 flex-shrink-0">
+        <div className="p-5 pb-3 flex-shrink-0">
           <div className="flex items-center gap-3 mb-1">
             <img
-              src="https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
+              src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
               alt="SoulBridge"
-              className="w-8 h-8 rounded-md object-contain flex-shrink-0"
+              className="w-12 h-12 object-contain flex-shrink-0"
               style={{ imageRendering: 'crisp-edges' }}
             />
             <div>
-              <h2 className="text-lg font-bold text-amber-300">The Living Codex</h2>
+              <h2 className="text-base font-bold text-amber-300 leading-tight">The Living Codex</h2>
+              <p className="text-slate-500 text-xs">SoulBridge Village</p>
             </div>
           </div>
           <div className="mt-4">
