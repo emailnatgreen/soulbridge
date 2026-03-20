@@ -417,6 +417,83 @@ export default function ImageStorage() {
           />
         )}
 
+        {/* Duplicate & Resize Dialog */}
+        <Dialog open={!!resizeImage} onOpenChange={(open) => !open && setResizeImage(null)}>
+          <DialogContent className="bg-slate-900 border-white/10 text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-white">
+                <CopyPlus className="w-5 h-5 text-indigo-400" />
+                Duplicate & Resize
+              </DialogTitle>
+            </DialogHeader>
+            {resizeImage && (
+              <div className="space-y-5">
+                <div className="flex items-center gap-3 bg-white/5 rounded-lg p-3">
+                  <img src={resizeImage.file_url} alt={resizeImage.name} className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{resizeImage.name}</p>
+                    <p className="text-white/40 text-xs mt-0.5">Original: {origDimensions.w > 0 ? `${origDimensions.w} × ${origDimensions.h}px` : 'Loading…'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-white/60">
+                    <input
+                      type="checkbox"
+                      checked={keepAspect}
+                      onChange={e => setKeepAspect(e.target.checked)}
+                      className="rounded"
+                    />
+                    Lock aspect ratio
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-white/70 text-xs">Width (px)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={resizeWidth}
+                      onChange={e => handleResizeWidthChange(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-white/70 text-xs">Height (px)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={resizeHeight}
+                      onChange={e => handleResizeHeightChange(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3">
+                  <p className="text-indigo-300 text-xs">
+                    A <strong>new image</strong> will be saved as:<br />
+                    <code className="text-indigo-200 mt-1 block">
+                      {resizeImage.name.replace(/\.[^.]+$/, '')}_{ resizeWidth}x{resizeHeight}.{resizeImage.name.split('.').pop()}
+                    </code>
+                  </p>
+                  <p className="text-white/30 text-xs mt-2">The original image is not modified — no duplicates, just a new size variant.</p>
+                </div>
+
+                <Button
+                  onClick={handleResizeAndDuplicate}
+                  disabled={resizing}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                >
+                  {resizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CopyPlus className="w-4 h-4" />}
+                  {resizing ? 'Creating…' : `Save ${resizeWidth}×${resizeHeight} Copy`}
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Image Grid */}
         {isLoading ? (
           <div className="flex items-center justify-center h-40">
