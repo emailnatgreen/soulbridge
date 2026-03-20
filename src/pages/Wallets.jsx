@@ -197,7 +197,7 @@ export default function WalletsPage() {
                 context="You are reviewing the XRPL Wallets dashboard for SoulBridge Village. As financial steward and Mother Boss, please assess: current wallet balances across all wallets, any wallets with critically low balances, whether testnet vs mainnet distribution is appropriate, and whether the wallet infrastructure adequately supports current Village operations. Flag any financial risks."
               />
               <Button 
-                onClick={() => { setShowCreate(!showCreate); setAddMode('generate'); }}
+                onClick={() => { setShowCreate(prev => addMode === 'generate' ? !prev : true); setAddMode('generate'); }}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -205,7 +205,7 @@ export default function WalletsPage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => { setShowCreate(!showCreate); setAddMode('xumm'); }}
+                onClick={() => { setShowCreate(prev => addMode === 'xumm' ? !prev : true); setAddMode('xumm'); }}
                 className="border-white/10 text-white hover:bg-white/5"
               >
                 <QrCode className="w-4 h-4 mr-2" />
