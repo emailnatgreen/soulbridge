@@ -143,8 +143,10 @@ export default function WalletsPage() {
           clearInterval(iv);
           setXummPolling(false);
           setXummResolved(true);
-          setClassicAddress(res.data.account);
-          toast.success('Wallet address imported from XUMM!');
+          const account = res.data.account;
+          setClassicAddress(account);
+          // Auto-save the wallet immediately on XUMM resolve
+          autoSaveXummWallet(account);
         } else if (res.data?.expired || attempts >= 60) {
           clearInterval(iv);
           setXummPolling(false);
@@ -153,6 +155,25 @@ export default function WalletsPage() {
         }
       } catch { clearInterval(iv); setXummPolling(false); }
     }, 2000);
+  };
+
+  const autoSaveXummWallet = async (account) => {
+    const walletName = name.trim() || `XUMM Wallet (${account.slice(0, 8)}...)`;
+    try {
+      await base44.entities.Wallet.create({
+        owner_id: user?.id || user?.email || '',
+        name: walletName,
+        classic_address: account,
+        network,
+        balance: 0,
+      });
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      toast.success(`Wallet "${walletName}" added successfully!`);
+      // Small delay so user sees success state, then close
+      setTimeout(() => resetForm(), 1800);
+    } catch (err) {
+      toast.error('Wallet imported but failed to save — please click Add Wallet');
+    }
   };
 
   return (
