@@ -23,10 +23,10 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Inline wallet creation with XRPL integration
+        // Inline wallet creation with XRPL integration - testnet for now
         const { Wallet, Client, xrpToDrops } = await import('npm:xrpl@3.0.0');
         
-        const xrplClient = new Client('wss://s1.ripple.com:51233');
+        const xrplClient = new Client('wss://s.altnet.rippletest.net:51233');
         await xrplClient.connect();
         
         const newWallet = Wallet.generate();
@@ -36,7 +36,13 @@ Deno.serve(async (req) => {
             throw new Error('XRPL sender seed not configured');
         }
         
-        const senderWallet = Wallet.fromSeed(senderSeed);
+        let senderWallet;
+        try {
+            senderWallet = Wallet.fromSeed(senderSeed);
+        } catch (seedErr) {
+            await xrplClient.disconnect();
+            throw new Error(`Invalid XRPL seed: ${seedErr.message}`);
+        }
         const payment = {
             TransactionType: 'Payment',
             Account: senderWallet.address,
