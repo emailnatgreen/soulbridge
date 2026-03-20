@@ -14,6 +14,22 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
+function ImageDimensionsBadge({ src }) {
+  const [dims, setDims] = useState(null);
+  useEffect(() => {
+    const img = new window.Image();
+    img.onload = () => setDims({ w: img.naturalWidth, h: img.naturalHeight });
+    img.src = src;
+  }, [src]);
+  if (!dims) return null;
+  return (
+    <span className="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+      <Maximize2 className="w-2.5 h-2.5" />
+      {dims.w} × {dims.h}px
+    </span>
+  );
+}
+
 export default function ImageStorage() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
