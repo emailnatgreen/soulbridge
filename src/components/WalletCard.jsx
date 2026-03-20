@@ -54,6 +54,13 @@ export default function WalletCard({ wallet, onRefresh }) {
         ].filter(Boolean).join('\n');
     };
 
+    const handleDelete = async () => {
+        setDeleting(true);
+        await base44.entities.Wallet.delete(wallet.id);
+        queryClient.invalidateQueries({ queryKey: ['wallets'] });
+        toast.success('Wallet removed');
+    };
+
     const handleSaveNotes = async () => {
         setSavingNotes(true);
         await base44.entities.Wallet.update(wallet.id, { notes: serializeNotes(noteFields) });
