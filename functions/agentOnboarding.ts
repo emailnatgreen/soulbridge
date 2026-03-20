@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
             name: `${agentName}'s Wallet`,
             classic_address: newWallet.address,
             encrypted_seed: newWallet.seed,
-            network: 'mainnet',
+            network: 'testnet',
             balance: 5
         });
         
