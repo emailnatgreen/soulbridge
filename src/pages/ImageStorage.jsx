@@ -7,10 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Upload, CloudIcon, HardDrive, Trash2, ExternalLink, Download,
-  Image as ImageIcon, Loader2, FolderOpen, Copy, Check, Code2, Link, X, Pencil
+  Image as ImageIcon, Loader2, FolderOpen, Copy, Check, Code2, Link, X, Pencil, CopyPlus, Maximize2
 } from 'lucide-react';
 import ImageEditor from '@/components/ImageEditor';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 export default function ImageStorage() {
   const queryClient = useQueryClient();
