@@ -7,18 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Wallet, ArrowLeft, Loader2 } from 'lucide-react';
+import { Plus, Wallet, ArrowLeft, Loader2, QrCode, CheckCircle, RefreshCw } from 'lucide-react';
 import AskAxiButton from '@/components/AskAxiButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import WalletCard from '../components/WalletCard';
 import TransactionAlerts from '../components/TransactionAlerts';
+import { Badge } from "@/components/ui/badge";
 
 export default function WalletsPage() {
   const [showCreate, setShowCreate] = useState(false);
+  const [addMode, setAddMode] = useState('xumm'); // 'xumm' | 'manual'
   const [name, setName] = useState('');
-  const [network, setNetwork] = useState('testnet');
+  const [network, setNetwork] = useState('mainnet');
+  const [classicAddress, setClassicAddress] = useState('');
+  const [seed, setSeed] = useState('');
+
+  // XUMM state
+  const [xummLoading, setXummLoading] = useState(false);
+  const [xummQr, setXummQr] = useState(null);
+  const [xummPolling, setXummPolling] = useState(false);
+  const [xummResolved, setXummResolved] = useState(false);
+
   const queryClient = useQueryClient();
   usePageSignal();
 
