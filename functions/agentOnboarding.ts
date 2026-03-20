@@ -23,37 +23,9 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Inline wallet creation with XRPL integration - testnet for now
-        const { Wallet, Client, xrpToDrops } = await import('npm:xrpl@3.0.0');
-        
-        const xrplClient = new Client('wss://s.altnet.rippletest.net:51233');
-        await xrplClient.connect();
-        
+        // Generate new wallet locally (XRPL funding requires valid sender credentials)
+        const { Wallet } = await import('npm:xrpl@3.0.0');
         const newWallet = Wallet.generate();
-        const senderSeed = Deno.env.get('XRPL_SENDER_SEED');
-        if (!senderSeed) {
-            await xrplClient.disconnect();
-            throw new Error('XRPL sender seed not configured');
-        }
-        
-        let senderWallet;
-        try {
-            senderWallet = Wallet.fromSeed(senderSeed);
-        } catch (seedErr) {
-            await xrplClient.disconnect();
-            throw new Error(`Invalid XRPL seed: ${seedErr.message}`);
-        }
-        const payment = {
-            TransactionType: 'Payment',
-            Account: senderWallet.address,
-            Destination: newWallet.address,
-            Amount: xrpToDrops(5)
-        };
-        
-        const prepared = await xrplClient.autofill(payment);
-        const signed = senderWallet.sign(prepared);
-        const xrplResponse = await xrplClient.submitAndWait(signed.tx_blob);
-        await xrplClient.disconnect();
         
         // Store wallet in database (service role)
         const walletData = await base44.asServiceRole.entities.Wallet.create({
@@ -61,14 +33,13 @@ Deno.serve(async (req) => {
             classic_address: newWallet.address,
             encrypted_seed: newWallet.seed,
             network: 'testnet',
-            balance: 5
+            balance: 0
         });
         
         const wallet = {
             id: walletData.id,
             classic_address: newWallet.address,
-            balance: 5,
-            transaction_hash: xrplResponse.result.hash
+            balance: 0
         };
 
         // Update the agent record with wallet information (using service role)
