@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { LogIn, Mail, Shield, Sparkles, ChevronRight, Lock, CheckCircle } from 'lucide-react';
+import { LogIn, Mail, Sparkles, ChevronRight, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AxiFloatingButton from '../components/AxiFloatingButton';
