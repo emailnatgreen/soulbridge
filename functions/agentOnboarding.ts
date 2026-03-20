@@ -23,25 +23,47 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Call axiCreateAndFundWallet to create and fund a wallet for this agent
-        let walletResponse;
-        try {
-            walletResponse = await base44.asServiceRole.functions.invoke('axiCreateAndFundWallet', {
-                walletName: `${agentName}'s Wallet`,
-                fundAmount: 5,
-                agentId: agentId
-            });
-        } catch (invokeErr) {
-            console.error('Failed to invoke axiCreateAndFundWallet:', invokeErr.message);
-            throw new Error(`Wallet creation failed: ${invokeErr.message}`);
+        // Inline wallet creation with XRPL integration
+        const { Wallet, Client, xrpToDrops } = await import('npm:xrpl@3.0.0');
+        
+        const xrplClient = new Client('wss://s1.ripple.com:51233');
+        await xrplClient.connect();
+        
+        const newWallet = Wallet.generate();
+        const senderSeed = Deno.env.get('XRPL_SENDER_SEED');
+        if (!senderSeed) {
+            await xrplClient.disconnect();
+            throw new Error('XRPL sender seed not configured');
         }
-
-        if (!walletResponse?.data?.wallet) {
-            console.error('Invalid wallet response:', JSON.stringify(walletResponse));
-            throw new Error('Failed to create wallet for agent - invalid response');
-        }
-
-        const wallet = walletResponse.data.wallet;
+        
+        const senderWallet = Wallet.fromSeed(senderSeed);
+        const payment = {
+            TransactionType: 'Payment',
+            Account: senderWallet.address,
+            Destination: newWallet.address,
+            Amount: xrpToDrops(5)
+        };
+        
+        const prepared = await xrplClient.autofill(payment);
+        const signed = senderWallet.sign(prepared);
+        const xrplResponse = await xrplClient.submitAndWait(signed.tx_blob);
+        await xrplClient.disconnect();
+        
+        // Store wallet in database (service role)
+        const walletData = await base44.asServiceRole.entities.Wallet.create({
+            name: `${agentName}'s Wallet`,
+            classic_address: newWallet.address,
+            encrypted_seed: newWallet.seed,
+            network: 'mainnet',
+            balance: 5
+        });
+        
+        const wallet = {
+            id: walletData.id,
+            classic_address: newWallet.address,
+            balance: 5,
+            transaction_hash: xrplResponse.result.hash
+        };
 
         // Update the agent record with wallet information (using service role)
         await base44.asServiceRole.entities.Agent.update(agentId, {
