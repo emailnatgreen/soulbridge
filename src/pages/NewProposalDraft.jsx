@@ -282,6 +282,11 @@ export default function NewProposalDraft() {
           </CardContent>
         </Card>
 
+        {/* Feedback — shown once a draft has been saved */}
+        {savedDraftId && (
+          <ProposalFeedback proposalId={savedDraftId} proposalTitle={form.title} />
+        )}
+
         {/* Save Button */}
         <div className="flex justify-end gap-3 pb-10">
           <Link to={createPageUrl('GovernanceHub')}>
