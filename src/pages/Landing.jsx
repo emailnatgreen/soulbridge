@@ -140,7 +140,7 @@ export default function Landing() {
             </div>
 
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/699319649276f1077c1f2c81/af72f22d2_file_00000000242c72439de593ccdbbe48bd11.png"
+              src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/a89a8b67c_1185_200x200.png"
               alt="SoulBridge Village"
               className="w-full rounded-2xl shadow-2xl shadow-purple-500/20 border border-white/10"
             />
