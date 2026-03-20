@@ -26,6 +26,12 @@ export default function ImageStorage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [search, setSearch] = useState('');
   const [editingImage, setEditingImage] = useState(null);
+  const [resizeImage, setResizeImage] = useState(null);
+  const [resizeWidth, setResizeWidth] = useState(800);
+  const [resizeHeight, setResizeHeight] = useState(600);
+  const [resizing, setResizing] = useState(false);
+  const [keepAspect, setKeepAspect] = useState(true);
+  const [origDimensions, setOrigDimensions] = useState({ w: 0, h: 0 });
 
   const { data: images = [], isLoading } = useQuery({
     queryKey: ['image-assets'],
