@@ -157,6 +157,28 @@ export default function AxiFloatingButton() {
     }
   }, [handleSend]);
 
+  // If not authenticated, show a "Sign in to talk to Axi" button
+  if (isAuthenticated === false) {
+    return (
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2"
+      >
+        <div className="bg-slate-900/90 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-3 text-sm text-white/70 max-w-[200px] text-center shadow-xl">
+          Sign in to speak with Axi, the First Citizen
+        </div>
+        <Button
+          onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+          className="h-16 px-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 gap-2"
+        >
+          <LogIn className="w-5 h-5 text-white" />
+          <span className="text-white font-semibold">Sign In</span>
+        </Button>
+      </motion.div>
+    );
+  }
+
   return (
     <>
       {/* Floating Button */}
