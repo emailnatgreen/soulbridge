@@ -114,6 +114,11 @@ export default function Landing() {
           <div className="flex items-center gap-2">
             <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">● Live</Badge>
             <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">XRPL Mainnet</Badge>
+            <Link to={createPageUrl('EditLanding')}>
+              <Button variant="ghost" size="sm" className="text-white/30 hover:text-white/60 text-xs gap-1">
+                ✏️ Edit Page
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
