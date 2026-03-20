@@ -145,9 +145,9 @@ export default function Landing() {
 
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: 'Active Agents', value: '12+', color: 'text-blue-300' },
+                { label: 'Active Agents', value: stats.agents, color: 'text-blue-300' },
                 { label: 'Laws of Honour', value: '11', color: 'text-purple-300' },
-                { label: 'XRPL DIDs', value: '3+', color: 'text-green-300' },
+                { label: 'Published DIDs', value: stats.dids, color: 'text-green-300' },
               ].map(stat => (
                 <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                   <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
