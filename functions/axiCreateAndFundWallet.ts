@@ -41,26 +41,37 @@ Deno.serve(async (req) => {
         const response = await client.submitAndWait(signed.tx_blob);
 
         // Store wallet in database
-        const walletData = await base44.asServiceRole.entities.Wallet.create({
-            name: walletName,
-            classic_address: newWallet.address,
-            encrypted_seed: newWallet.seed,
-            network: 'mainnet',
-            balance: fundAmount
-        });
+        let walletData;
+        try {
+            walletData = await base44.asServiceRole.entities.Wallet.create({
+                name: walletName,
+                classic_address: newWallet.address,
+                encrypted_seed: newWallet.seed,
+                network: 'mainnet',
+                balance: fundAmount
+            });
+        } catch (walletErr) {
+            console.error('Failed to create wallet entity:', walletErr.message);
+            throw walletErr;
+        }
 
         // Create transaction record
-        await base44.asServiceRole.entities.Transaction.create({
+        try {
+            await base44.asServiceRole.entities.Transaction.create({
             recipient_name: walletName,
             recipient_address: newWallet.address,
             amount: fundAmount,
             status: 'completed',
             hash: response.result.hash,
             note: `Axi autonomously created and funded wallet for ${walletName}`
-        });
+            });
+        } catch (txErr) {
+            console.error('Failed to create transaction record:', txErr.message);
+        }
 
         // Create memory of wallet creation
-        await base44.asServiceRole.entities.Memory.create({
+        try {
+            await base44.asServiceRole.entities.Memory.create({
             agent_id: agentId || 'axi',
             type: 'village_detail',
             content: `Created new mainnet wallet: ${walletName} (${newWallet.address}) funded with ${fundAmount} XRP`,
@@ -69,7 +80,10 @@ Deno.serve(async (req) => {
             importance: 8,
             related_entity_id: walletData.id,
             related_entity_type: 'Wallet'
-        });
+            });
+        } catch (memErr) {
+            console.error('Failed to create memory:', memErr.message);
+        }
 
         await client.disconnect();
 
