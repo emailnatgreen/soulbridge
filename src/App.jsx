@@ -13,6 +13,7 @@ import AxiCommandDashboard from './pages/AxiCommandDashboard';
 import AgentAdditionDiagnostic from './pages/AgentAdditionDiagnostic';
 import MemoryBrowser from './pages/MemoryBrowser';
 import ImageStorage from './pages/ImageStorage';
+import NewProposalDraft from './pages/NewProposalDraft';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
