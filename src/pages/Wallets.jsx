@@ -280,10 +280,10 @@ export default function WalletsPage() {
                     <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
                       <CheckCircle className="w-5 h-5 text-green-400" />
                       <div>
-                        <p className="text-green-300 text-sm font-medium">Address imported!</p>
+                        <p className="text-green-300 text-sm font-medium">Wallet scanned — saving automatically...</p>
                         <p className="text-green-400/70 text-xs font-mono mt-0.5">{classicAddress}</p>
                       </div>
-                      <Badge className="ml-auto bg-green-500/20 text-green-300 border-green-500/30">✓ Ready</Badge>
+                      <Loader2 className="ml-auto w-4 h-4 text-green-400 animate-spin" />
                     </div>
                   )}
                 </div>
