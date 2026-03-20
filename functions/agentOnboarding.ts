@@ -45,10 +45,15 @@ Deno.serve(async (req) => {
         };
 
         // Update the agent record with wallet information (using service role)
-        await base44.asServiceRole.entities.Agent.update(agentId, {
-            wallet_id: wallet.id,
-            classic_address: wallet.classic_address
-        });
+        try {
+            await base44.asServiceRole.entities.Agent.update(agentId, {
+                wallet_id: wallet.id,
+                classic_address: wallet.classic_address
+            });
+        } catch (updateErr) {
+            console.error(`Failed to update agent ${agentId}:`, updateErr.message);
+            // Don't fail the whole automation if agent update fails
+        }
 
         // Create a memory of the onboarding event (using service role)
         await base44.asServiceRole.entities.Memory.create({
