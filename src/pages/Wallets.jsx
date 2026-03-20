@@ -198,54 +198,103 @@ export default function WalletsPage() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         {showCreate && (
           <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-8">
-            <CardHeader>
-              <CardTitle className="text-xl font-light text-white">Create New Wallet</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl font-light text-white">
+                {addMode === 'generate' ? 'Generate New Wallet' : 'Add Existing Wallet'}
+              </CardTitle>
+              {addMode !== 'generate' && (
+                <div className="flex gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
+                  <button onClick={() => setAddMode('xumm')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${addMode === 'xumm' ? 'bg-purple-600 text-white' : 'text-white/50 hover:text-white'}`}>
+                    <QrCode className="w-3 h-3" /> XUMM QR
+                  </button>
+                  <button onClick={() => setAddMode('manual')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${addMode === 'manual' ? 'bg-purple-600 text-white' : 'text-white/50 hover:text-white'}`}>
+                    <Wallet className="w-3 h-3" /> Manual
+                  </button>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-purple-200/90">Wallet Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="My Wallet"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                />
+
+              {/* Common: Name + Network */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-purple-200/90">Wallet Name</Label>
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="My Wallet" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-purple-200/90">Network</Label>
+                  <Select value={network} onValueChange={setNetwork}>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mainnet">Mainnet</SelectItem>
+                      <SelectItem value="testnet">Testnet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="network" className="text-purple-200/90">Network</Label>
-                <Select value={network} onValueChange={setNetwork}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="testnet">Testnet</SelectItem>
-                    <SelectItem value="mainnet">Mainnet</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-3">
-                <Button 
-                  onClick={handleCreate}
-                  disabled={createWallet.isPending}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                >
-                  {createWallet.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    'Create'
+
+              {/* XUMM QR mode */}
+              {addMode === 'xumm' && (
+                <div className="space-y-4">
+                  {!xummQr && !xummResolved && (
+                    <Button onClick={initiateXumm} disabled={xummLoading} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 h-11">
+                      {xummLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating QR...</> : <><QrCode className="w-4 h-4 mr-2" />Generate XUMM QR Code</>}
+                    </Button>
                   )}
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowCreate(false)}
-                  className="border-white/10 text-white hover:bg-white/5"
-                >
-                  Cancel
-                </Button>
+                  {xummQr && !xummResolved && (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="bg-white p-3 rounded-xl shadow-xl">
+                        <img src={xummQr} alt="XUMM QR" className="w-48 h-48 object-contain" />
+                      </div>
+                      <p className="text-sm text-purple-300/70 flex items-center gap-2">
+                        {xummPolling && <Loader2 className="w-3 h-3 animate-spin" />}
+                        {xummPolling ? 'Waiting for scan...' : 'Open XUMM and scan'}
+                      </p>
+                      <Button variant="outline" size="sm" onClick={initiateXumm} className="border-white/20 text-white/50 hover:text-white gap-1.5">
+                        <RefreshCw className="w-3 h-3" /> Refresh QR
+                      </Button>
+                    </div>
+                  )}
+                  {xummResolved && (
+                    <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
+                      <CheckCircle className="w-5 h-5 text-green-400" />
+                      <div>
+                        <p className="text-green-300 text-sm font-medium">Address imported!</p>
+                        <p className="text-green-400/70 text-xs font-mono mt-0.5">{classicAddress}</p>
+                      </div>
+                      <Badge className="ml-auto bg-green-500/20 text-green-300 border-green-500/30">✓ Ready</Badge>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Manual mode */}
+              {addMode === 'manual' && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-purple-200/90">Classic Address <span className="text-red-400">*</span></Label>
+                    <Input value={classicAddress} onChange={(e) => setClassicAddress(e.target.value)} placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXX" className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-purple-200/90">Seed <span className="text-white/30 text-xs">(optional)</span></Label>
+                    <Input type="password" value={seed} onChange={(e) => setSeed(e.target.value)} placeholder="sXXXXXXXXXXXXXXXXXXXXXXXXXXXX" className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono text-sm" />
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                {addMode === 'generate' && (
+                  <Button onClick={handleCreate} disabled={createWallet.isPending} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                    {createWallet.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating...</> : 'Generate Wallet'}
+                  </Button>
+                )}
+                {(addMode === 'xumm' || addMode === 'manual') && (
+                  <Button onClick={handleAddExisting} disabled={!classicAddress} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                    Add Wallet
+                  </Button>
+                )}
+                <Button variant="outline" onClick={resetForm} className="border-white/10 text-white hover:bg-white/5">Cancel</Button>
               </div>
             </CardContent>
           </Card>
