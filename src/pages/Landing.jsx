@@ -65,6 +65,20 @@ function ParticleCanvas() {
 export default function Landing() {
   const [tab, setTab] = useState('main'); // 'main' | 'email'
   const [email, setEmail] = useState('');
+  const [stats, setStats] = useState({ agents: 0, dids: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const agents = await base44.entities.Agent.list();
+        const wallets = await base44.entities.Wallet.filter({ is_published: true });
+        setStats({ agents: agents.length, dids: wallets.length });
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const handleGoogleLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
   const handleEmailLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
