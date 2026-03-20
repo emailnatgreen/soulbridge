@@ -436,6 +436,15 @@ export default function ImageStorage() {
                     <Pencil className="w-3 h-3" />
                   </button>
 
+                  {/* Duplicate & Resize */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); openResizeDialog(img); }}
+                    className="w-7 h-7 rounded-lg bg-indigo-600/70 flex items-center justify-center text-white hover:bg-indigo-600/90"
+                    title="Duplicate & Resize"
+                  >
+                    <CopyPlus className="w-3 h-3" />
+                  </button>
+
                   {/* Copy URL */}
                   <button
                     onClick={() => copyUrl(img.file_url, img.id)}
