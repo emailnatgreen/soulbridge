@@ -138,7 +138,22 @@ export default function WalletCard({ wallet, onRefresh }) {
                             </Badge>
                         </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                        {confirmDelete ? (
+                            <div className="flex items-center gap-1 bg-red-50 border border-red-200 rounded-md px-2 py-1">
+                                <span className="text-xs text-red-600 font-medium">Delete?</span>
+                                <Button variant="ghost" size="sm" onClick={handleDelete} disabled={deleting} className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-100">
+                                    {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)} className="h-6 px-2 text-xs text-gray-500 hover:bg-gray-100">
+                                    <X className="w-3 h-3" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <Button variant="ghost" size="icon" onClick={() => setConfirmDelete(true)} className="text-gray-400 hover:text-red-500 hover:bg-red-50">
+                                <Trash2 className="w-4 h-4" />
+                            </Button>
+                        )}
                         {currentUser?.role === 'admin' && wallet.owner_id !== currentUser?.id && (
                             <Button
                                 variant="outline"
