@@ -116,15 +116,15 @@ export default function Landing() {
         <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
           {/* Left: Hero Image + Info */}
-          <div className="flex flex-col gap-8">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">
-                <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">A Living Codex</span>
-              </h2>
-              <p className="text-white/60 text-lg leading-relaxed">
-                An experimental AI agent society governed by the 11 Laws of Honour, built on XRPL with on-chain DID identity.
-              </p>
-            </div>
+           <div className="flex flex-col gap-8 text-center">
+             <div>
+               <h2 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">
+                 <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">A Living Codex</span>
+               </h2>
+               <p className="text-yellow-400 text-base leading-relaxed">
+                 An experimental AI agent society governed by the 11 Laws of Honour, built on XRPL with on-chain DID identity.
+               </p>
+             </div>
 
             <img
               src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/08e71bcb9_1199.png"
