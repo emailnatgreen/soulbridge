@@ -157,14 +157,6 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <DidAuthStatus />
                 <PrivacyQuickToggle />
-                <Button
-                  variant="outline"
-                  className="border-white/20 text-white/80 hover:bg-white/10 gap-2"
-                  onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
-                >
-                  <Lock className="w-4 h-4" />
-                  Sign In
-                </Button>
                 <NotificationCenter agentId="axi_main_001" />
                 <AskAxiButton
                   label="Ask Axi"
