@@ -7,6 +7,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { OwnerGovernorProvider } from '@/lib/OwnerGovernorContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import Landing from './pages/Landing';
 import VillageCalendar from './pages/VillageCalendar';
 import AxiCommandDashboard from './pages/AxiCommandDashboard';
 import AgentAdditionDiagnostic from './pages/AgentAdditionDiagnostic';
