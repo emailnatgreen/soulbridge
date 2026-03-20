@@ -310,9 +310,14 @@ export default function WalletsPage() {
                     {createWallet.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating...</> : 'Generate Wallet'}
                   </Button>
                 )}
-                {(addMode === 'xumm' || addMode === 'manual') && (
+                {addMode === 'manual' && (
                   <Button onClick={handleAddExisting} disabled={!classicAddress} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                     Add Wallet
+                  </Button>
+                )}
+                {addMode === 'xumm' && !xummResolved && xummQr && (
+                  <Button onClick={handleAddExisting} disabled={!classicAddress} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                    Add Wallet Manually
                   </Button>
                 )}
                 <Button variant="outline" onClick={resetForm} className="border-white/10 text-white hover:bg-white/5">Cancel</Button>
