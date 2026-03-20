@@ -43,13 +43,13 @@ Deno.serve(async (req) => {
 
         const wallet = walletResponse.data.wallet;
 
-        // Update the agent record with wallet information
+        // Update the agent record with wallet information (using service role)
         await base44.asServiceRole.entities.Agent.update(agentId, {
             wallet_id: wallet.id,
             classic_address: wallet.classic_address
         });
 
-        // Create a memory of the onboarding event
+        // Create a memory of the onboarding event (using service role)
         await base44.asServiceRole.entities.Memory.create({
             agent_id: 'axi',
             type: 'village_detail',
