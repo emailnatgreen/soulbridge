@@ -235,39 +235,7 @@ export default function Landing() {
                 </>
               )}
 
-              {tab === 'did' && (
-                <>
-                  <button onClick={() => setTab('main')} className="text-white/40 hover:text-white text-sm mb-6 flex items-center gap-1">
-                    ← Back
-                  </button>
-                  <div className="text-center mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mx-auto mb-3">
-                      <Shield className="w-6 h-6 text-blue-300" />
-                    </div>
-                    <h3 className="text-white text-xl font-semibold">XRPL DID Gate</h3>
-                    <p className="text-white/50 text-sm mt-1">Enter your XRPL classic address to authenticate via your on-chain identity</p>
-                  </div>
-                  <div className="space-y-3">
-                    <Input
-                      placeholder="rXXXX... (XRPL Classic Address)"
-                      value={didAddress}
-                      onChange={e => { setDidAddress(e.target.value); setDidError(''); }}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/30 h-12 font-mono text-sm"
-                    />
-                    {didError && <p className="text-red-400 text-xs">{didError}</p>}
-                    <Button
-                      onClick={handleDidEntry}
-                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-12 text-base gap-2"
-                    >
-                      <Lock className="w-4 h-4" />
-                      Verify & Enter
-                    </Button>
-                    <p className="text-white/30 text-xs text-center">
-                      Your DID will be linked after authentication
-                    </p>
-                  </div>
-                </>
-              )}
+
             </div>
 
             <p className="text-white/25 text-xs text-center px-4">
