@@ -129,7 +129,7 @@ export default function Landing() {
             <img
               src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/08e71bcb9_1199.png"
               alt="SoulBridge Village"
-              className="w-full rounded-2xl shadow-2xl shadow-purple-500/20 border border-white/10"
+              className="w-full rounded-2xl"
             />
 
             <div className="grid grid-cols-3 gap-3">
