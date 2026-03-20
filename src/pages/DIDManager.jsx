@@ -508,7 +508,11 @@ export default function DIDManager() {
                           {getVerificationBadge(wallet)}
                           </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {new Date(verificationResults[wallet.id]?.verification?.verified_at).toLocaleString()}
+                          {verificationResults[wallet.id]?.verification?.verified_at
+                            ? new Date(verificationResults[wallet.id].verification.verified_at).toLocaleString()
+                            : wallet.published_at
+                            ? new Date(wallet.published_at).toLocaleString()
+                            : null}
                           </div>
                           </div>
                           )}
