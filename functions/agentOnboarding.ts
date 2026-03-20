@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
     try {
@@ -24,14 +24,21 @@ Deno.serve(async (req) => {
         }
 
         // Call axiCreateAndFundWallet to create and fund a wallet for this agent
-        const walletResponse = await base44.asServiceRole.functions.invoke('axiCreateAndFundWallet', {
-            walletName: `${agentName}'s Wallet`,
-            fundAmount: 5,
-            agentId: agentId
-        });
+        let walletResponse;
+        try {
+            walletResponse = await base44.asServiceRole.functions.invoke('axiCreateAndFundWallet', {
+                walletName: `${agentName}'s Wallet`,
+                fundAmount: 5,
+                agentId: agentId
+            });
+        } catch (invokeErr) {
+            console.error('Failed to invoke axiCreateAndFundWallet:', invokeErr.message);
+            throw new Error(`Wallet creation failed: ${invokeErr.message}`);
+        }
 
-        if (!walletResponse.data?.wallet) {
-            throw new Error('Failed to create wallet for agent');
+        if (!walletResponse?.data?.wallet) {
+            console.error('Invalid wallet response:', JSON.stringify(walletResponse));
+            throw new Error('Failed to create wallet for agent - invalid response');
         }
 
         const wallet = walletResponse.data.wallet;
