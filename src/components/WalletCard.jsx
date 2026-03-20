@@ -22,7 +22,44 @@ export default function WalletCard({ wallet, onRefresh }) {
     const [decryptedSeed, setDecryptedSeed] = useState(null);
     const [decrypting, setDecrypting] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [editingNotes, setEditingNotes] = useState(false);
+    const [savingNotes, setSavingNotes] = useState(false);
     const queryClient = useQueryClient();
+
+    // Parse structured notes from wallet.notes (stored as key:value lines)
+    const parseNotes = (raw) => {
+        const fields = { role: '', position: '', answers_to: '', created_via: '' };
+        if (!raw) return fields;
+        raw.split('\n').forEach(line => {
+            const [key, ...rest] = line.split(':');
+            const val = rest.join(':').trim();
+            if (key?.trim() === 'Role') fields.role = val;
+            if (key?.trim() === 'Position') fields.position = val;
+            if (key?.trim() === 'Answers To') fields.answers_to = val;
+            if (key?.trim() === 'Created Via') fields.created_via = val;
+        });
+        return fields;
+    };
+    const parsed = parseNotes(wallet.notes);
+    const [noteFields, setNoteFields] = useState(parsed);
+
+    const serializeNotes = (f) => {
+        return [
+            f.role ? `Role: ${f.role}` : '',
+            f.position ? `Position: ${f.position}` : '',
+            f.answers_to ? `Answers To: ${f.answers_to}` : '',
+            f.created_via ? `Created Via: ${f.created_via}` : '',
+        ].filter(Boolean).join('\n');
+    };
+
+    const handleSaveNotes = async () => {
+        setSavingNotes(true);
+        await base44.entities.Wallet.update(wallet.id, { notes: serializeNotes(noteFields) });
+        queryClient.invalidateQueries({ queryKey: ['wallets'] });
+        setSavingNotes(false);
+        setEditingNotes(false);
+        toast.success('Notes saved');
+    };
 
     const { data: currentUser } = useQuery({
         queryKey: ['currentUser'],
