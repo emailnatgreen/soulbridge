@@ -17,12 +17,12 @@ import {
   FileText,
   Save,
   Sparkles,
-  Scale,
   User,
   Loader2,
   CheckCircle2,
   Diamond
 } from 'lucide-react';
+import ProposalFeedback from '@/components/governance/ProposalFeedback';
 
 const PROPOSAL_TYPES = [
   { value: 'project_funding', label: 'Project Funding' },
