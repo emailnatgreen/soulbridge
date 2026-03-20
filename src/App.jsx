@@ -68,6 +68,8 @@ const AuthenticatedApp = () => {
       <Route path="/AgentAdditionDiagnostic" element={<LayoutWrapper currentPageName="AgentAdditionDiagnostic"><AgentAdditionDiagnostic /></LayoutWrapper>} />
       <Route path="/MemoryBrowser" element={<LayoutWrapper currentPageName="MemoryBrowser"><MemoryBrowser /></LayoutWrapper>} />
       <Route path="/ImageStorage" element={<LayoutWrapper currentPageName="ImageStorage"><ImageStorage /></LayoutWrapper>} />
+      <Route path="/NewProposalDraft" element={<LayoutWrapper currentPageName="NewProposalDraft"><NewProposalDraft /></LayoutWrapper>} />
+      <Route path="/governance/new-proposal" element={<LayoutWrapper currentPageName="NewProposalDraft"><NewProposalDraft /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
