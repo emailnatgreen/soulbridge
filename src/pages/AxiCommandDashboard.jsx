@@ -32,6 +32,7 @@ import CorrelatedInsightsViewer from "@/components/axi/CorrelatedInsightsViewer"
 import PageSignalActivityTrends from "@/components/axi/PageSignalActivityTrends";
 import AutomationHealthMonitor from "@/components/axi/AutomationHealthMonitor";
 import DirectActionInterface from "@/components/axi/DirectActionInterface";
+import AutomationTerminal from "@/components/axi/AutomationTerminal";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
