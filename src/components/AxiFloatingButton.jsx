@@ -213,7 +213,7 @@ export default function AxiFloatingButton() {
             className={`fixed z-50 bg-slate-950/95 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col ${
               isExpanded 
                 ? 'inset-4 rounded-2xl' 
-                : 'bottom-6 right-6 w-[440px] h-[600px] rounded-2xl'
+                : 'bottom-4 right-4 left-4 sm:left-auto sm:w-[440px] h-[600px] rounded-2xl'
             }`}
           >
             {/* Header */}
