@@ -282,7 +282,7 @@ export default function NewProposalDraft() {
           </CardContent>
         </Card>
 
-        {/* Feedback — shown once a draft has been saved */}
+        {/* Feedback — shown after draft is saved */}
         {savedDraftId && (
           <ProposalFeedback proposalId={savedDraftId} proposalTitle={form.title} />
         )}
