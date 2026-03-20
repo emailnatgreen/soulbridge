@@ -155,6 +155,13 @@ export default function Landing() {
                 </div>
               ))}
             </div>
+
+            <img
+              src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/926ccb84a_a07afe9e-f5fc-4c9e-964c-615d2fbc9e42-1_all_1302.png"
+              alt="SoulBridge"
+              className="w-full max-w-md mx-auto"
+              style={{ opacity: 1 }}
+            />
           </div>
 
           {/* Right: Sign In Card */}
