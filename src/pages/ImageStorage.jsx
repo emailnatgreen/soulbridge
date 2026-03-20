@@ -144,6 +144,78 @@ export default function ImageStorage() {
     setTimeout(() => setCopiedFormat(null), 2000);
   };
 
+  const openResizeDialog = (img) => {
+    setResizeImage(img);
+    // Load original dimensions
+    const el = new window.Image();
+    el.onload = () => {
+      setOrigDimensions({ w: el.naturalWidth, h: el.naturalHeight });
+      setResizeWidth(el.naturalWidth);
+      setResizeHeight(el.naturalHeight);
+    };
+    el.src = img.file_url;
+  };
+
+  const handleResizeWidthChange = (val) => {
+    const w = parseInt(val) || 1;
+    setResizeWidth(w);
+    if (keepAspect && origDimensions.w > 0) {
+      setResizeHeight(Math.round(w * origDimensions.h / origDimensions.w));
+    }
+  };
+
+  const handleResizeHeightChange = (val) => {
+    const h = parseInt(val) || 1;
+    setResizeHeight(h);
+    if (keepAspect && origDimensions.h > 0) {
+      setResizeWidth(Math.round(h * origDimensions.w / origDimensions.h));
+    }
+  };
+
+  const handleResizeAndDuplicate = async () => {
+    if (!resizeImage) return;
+    setResizing(true);
+    try {
+      // Draw onto canvas at new size
+      const img = new window.Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = resizeImage.file_url;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.width = resizeWidth;
+      canvas.height = resizeHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, resizeWidth, resizeHeight);
+
+      // Convert to blob
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, resizeImage.mime_type || 'image/jpeg', 0.92));
+      const ext = (resizeImage.name.split('.').pop()) || 'jpg';
+      const baseName = resizeImage.name.replace(/\.[^.]+$/, '');
+      const newName = `${baseName}_${resizeWidth}x${resizeHeight}.${ext}`;
+      const file = new File([blob], newName, { type: resizeImage.mime_type || 'image/jpeg' });
+
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.ImageAsset.create({
+        name: newName,
+        file_url,
+        mime_type: file.type,
+        size_bytes: file.size,
+        source: 'platform_upload',
+        tags: [...(resizeImage.tags || []), `resized_from:${resizeImage.id}`, `${resizeWidth}x${resizeHeight}`],
+        description: `Resized copy of "${resizeImage.name}" at ${resizeWidth}×${resizeHeight}px`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['image-assets'] });
+      toast.success(`Saved as "${newName}" (${resizeWidth}×${resizeHeight})`);
+      setResizeImage(null);
+    } catch (err) {
+      toast.error('Resize failed — image may be cross-origin protected');
+    }
+    setResizing(false);
+  };
+
   const filteredImages = images.filter(img =>
     img.name?.toLowerCase().includes(search.toLowerCase())
   );
