@@ -121,37 +121,42 @@ Deno.serve(async (req) => {
         results.failures++;
       }
 
-      // 3. Create GovernanceProposal from signal
-      try {
-        const metadata = signal.metadata || {};
-        const proposalTitle = `[Draft] Governance Review: ${signal.page_name || 'AI Intel Alert'}`;
-        
-        await base44.asServiceRole.entities.GovernanceProposal.create({
-          title: proposalTitle,
-          description: `**Source Alert:** ${signal.page_name || 'AI Intelligence System'}\n**Related Signal ID:** ${signal.id}`,
-          proposal_type: 'general',
-          proposed_by: 'axi_intelligence_system',
-          status: 'draft',
-          voting_period_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-          quorum_required: 50,
-          pass_threshold: 60
-        });
+      // 3. Create GovernanceProposal — only for genuine high/critical alerts, not routine system events
+      const isGovernanceWorthy =
+        (signal.signal_type === 'alert' || signal.signal_type === 'anomaly') &&
+        (signal.metadata?.severity === 'high' || signal.metadata?.severity === 'critical');
 
-        results.executions.push({
-          function: 'autoDraftGovernanceProposal',
-          signal_id: signal.id,
-          status: 'success'
-        });
-        results.successes++;
-      } catch (err) {
-        console.warn(`GovernanceProposal creation failed for signal ${signal.id}:`, err.message);
-        results.executions.push({
-          function: 'autoDraftGovernanceProposal',
-          signal_id: signal.id,
-          status: 'failed',
-          error: err.message
-        });
-        results.failures++;
+      if (isGovernanceWorthy) {
+        try {
+          const proposalTitle = `[Draft] Governance Review: ${signal.page_name || 'AI Intel Alert'}`;
+          
+          await base44.asServiceRole.entities.GovernanceProposal.create({
+            title: proposalTitle,
+            description: `**Source Alert:** ${signal.page_name || 'AI Intelligence System'}\n**Related Signal ID:** ${signal.id}\n**Severity:** ${signal.metadata?.severity}\n**Findings:** ${signal.metadata?.findings || 'N/A'}`,
+            proposal_type: 'general',
+            proposed_by: 'axi_intelligence_system',
+            status: 'draft',
+            voting_period_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+            quorum_required: 50,
+            pass_threshold: 60
+          });
+
+          results.executions.push({
+            function: 'autoDraftGovernanceProposal',
+            signal_id: signal.id,
+            status: 'success'
+          });
+          results.successes++;
+        } catch (err) {
+          console.warn(`GovernanceProposal creation failed for signal ${signal.id}:`, err.message);
+          results.executions.push({
+            function: 'autoDraftGovernanceProposal',
+            signal_id: signal.id,
+            status: 'failed',
+            error: err.message
+          });
+          results.failures++;
+        }
       }
     }
 
