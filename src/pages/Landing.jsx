@@ -122,7 +122,7 @@ export default function Landing() {
                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">A Living Codex</span>
                </h2>
                <p className="text-yellow-400 text-base leading-relaxed">
-                 An experimental AI agent society governed by the 11 Laws of Honour, built on XRPL with on-chain DID identity.
+                 AI agent society governed by 11 Laws of Honour on XRPL
                </p>
              </div>
 
