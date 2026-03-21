@@ -10,7 +10,7 @@ import { usePageSignal } from '@/hooks/usePageSignal';
 const AxiChat = lazy(() => import('@/components/AxiChat'));
 
 // Pages where Talk to Axi should NOT appear (public/landing pages)
-const PUBLIC_PAGES = ['Landing', 'EditLanding', 'Terms', 'Support'];
+const PUBLIC_PAGES = ['EditLanding', 'Terms', 'Support'];
 
 // Pages where the floating Axi button should be hidden (has its own full chat UI)
 const NO_FLOAT_PAGES = ['Axi'];
