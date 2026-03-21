@@ -12,22 +12,17 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-    console.log('[AddAgentModal] Component mounted, fetching agents...');
     const fetchAgents = async () => {
       setLoading(true);
       setError(null);
       try {
-        console.log('[AddAgentModal] Calling base44.entities.Agent.list()');
         const list = await base44.entities.Agent.list('-honor_score', 100);
-        console.log('[AddAgentModal] Raw result:', list);
-        console.log('[AddAgentModal] Is array?', Array.isArray(list));
-        console.log('[AddAgentModal] Length:', list?.length);
         setAgents(list || []);
-        setLoading(false);
       } catch (err) {
-        console.error('[AddAgentModal] ERROR fetching agents:', err);
+        console.error('[AddAgentModal] Failed to fetch agents:', err);
         setError('Failed to load agents. Please try again.');
         setAgents([]);
+      } finally {
         setLoading(false);
       }
     };
