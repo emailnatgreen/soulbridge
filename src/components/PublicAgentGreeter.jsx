@@ -16,8 +16,10 @@ export default function PublicAgentGreeter() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hasGreeted, setHasGreeted] = useState(false);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
     if (!isOpen || conversation) return;
@@ -35,6 +37,18 @@ export default function PublicAgentGreeter() {
         unsubscribeRef.current = await base44.agents.subscribeToConversation(conv.id, (data) => {
           setMessages([...data.messages]);
         });
+
+        // Send intelligent greeting from Axi on first open
+        if (!hasGreeted && !initialized.current) {
+          setTimeout(() => {
+            base44.agents.addMessage(conv, {
+              role: 'user',
+              content: '[system: User has arrived at the landing page]'
+            }).catch(err => console.error('Failed to send system message:', err));
+            setHasGreeted(true);
+            initialized.current = true;
+          }, 500);
+        }
       } catch (err) {
         console.error('Failed to init public agent:', err);
       } finally {
@@ -44,7 +58,15 @@ export default function PublicAgentGreeter() {
 
     initChat();
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
-  }, [isOpen, conversation]);
+  }, [isOpen, conversation, hasGreeted]);
+
+  // Auto-open greeting on mount after brief delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
