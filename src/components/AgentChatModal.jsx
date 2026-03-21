@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { X, Send, Loader2, ArrowUpRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function AgentChatModal({ agent, onClose }) {
-  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [conversation, setConversation] = useState(null);
@@ -121,8 +119,10 @@ export default function AgentChatModal({ agent, onClose }) {
 
   const handleSendToAxi = () => {
     const message = input.trim() || `Need help with ${agent.name}`;
-    navigate('/Axi', { state: { prefilledMessage: `[From ${agent.name}] ${message}` } });
-    onClose();
+    window.dispatchEvent(new CustomEvent('open-axi-with-message', {
+      detail: { message: `[From ${agent.name}] ${message}` }
+    }));
+    setInput('');
   };
 
   return (
