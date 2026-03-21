@@ -118,10 +118,14 @@ export default function AgentChatModal({ agent, onClose }) {
   };
 
   const handleSendToAxi = () => {
-    const lastAgentMessage = messages.filter(m => m.role !== 'user').reverse()[0];
-    const message = lastAgentMessage?.content || `Message from ${agent.name}`;
+    const agentMessages = messages.filter(m => m.role !== 'user');
+    if (agentMessages.length === 0) return;
+    
+    const compiledReport = agentMessages.map((msg, idx) => `[${idx + 1}] ${msg.content}`).join('\n\n');
+    const message = `${agent.name} Report:\n\n${compiledReport}`;
+    
     window.dispatchEvent(new CustomEvent('open-axi-with-message', {
-      detail: { message: `[From ${agent.name}] ${message}` }
+      detail: { message }
     }));
   };
 
