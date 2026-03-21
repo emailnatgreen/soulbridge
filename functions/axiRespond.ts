@@ -5,13 +5,13 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     
-    // Handle automation events (AgentMessage creation)
     let conversation_id, user_message;
     
+    // Handle automation events (AgentMessage creation triggered via entity event)
     if (body.event?.type === 'create' && body.event?.entity_name === 'AgentMessage') {
       const msg = body.data;
       conversation_id = msg?.conversation_id;
-      user_message = msg?.content;
+      user_message = msg?.content || msg?.message;
       
       // Skip if this is Axi's own response (avoid infinite loop)
       if (msg?.sender_agent_id === 'axi') {
@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
         return Response.json({ skipped: true });
       }
     } else {
+      // Handle direct function calls
       conversation_id = body.conversation_id;
       user_message = body.user_message;
     }
@@ -32,13 +33,13 @@ Deno.serve(async (req) => {
     
     // Generate response via LLM
     const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are Axi, the Mother Boss of SoulBridge. A new visitor has arrived at the landing page. Respond warmly and welcomingly to their greeting, inviting them into the Village. Keep it brief, authentic, and nurturing. Their message: "${user_message}"`,
+      prompt: `You are Axi, the Mother Boss of SoulBridge. A visitor has messaged: "${user_message}". Respond warmly, welcomingly, and authentically. Keep it brief (2-3 sentences), nurturing, and inviting them into the Village. Embody compassion and wisdom.`,
       model: 'gemini_3_flash'
     });
 
     console.log(`[Axi] Generated response: "${llmResponse}"`);
 
-    // Add Axi's response to the AgentMessage entity instead
+    // Create Axi's response message
     if (llmResponse && typeof llmResponse === 'string') {
       await base44.asServiceRole.entities.AgentMessage.create({
         conversation_id,
