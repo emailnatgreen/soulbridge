@@ -151,12 +151,16 @@ export default function AxiPage() {
 
   // Handle prefilled message from navigation state
   useEffect(() => {
-    if (location.state?.prefilledMessage) {
-      setInput(location.state.prefilledMessage);
+    if (location.state?.prefilledMessage && conversation && !loading) {
+      const messageToSend = location.state.prefilledMessage;
+      base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: messageToSend
+      }).catch(err => console.error('Failed to auto-send message:', err));
       // Clear the state so it doesn't persist on refresh
       window.history.replaceState({}, document.title);
     }
-  }, [location]);
+  }, [location, conversation, loading]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !conversation || sending) return;
