@@ -309,7 +309,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-xl shadow-purple-500/50 flex items-center justify-center text-white transition-all hover:scale-110"
+            className="fixed bottom-28 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-xl shadow-purple-500/50 flex items-center justify-center text-white transition-all hover:scale-110"
             title="Chat with Axi"
           >
             <Sparkles className="w-6 h-6" />
