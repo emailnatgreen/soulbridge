@@ -194,24 +194,36 @@ export default function AgentChatModal({ agent, onClose }) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-slate-700/50 flex gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={`Message ${agent.name}...`}
-            className="flex-1 resize-none bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 min-h-[40px] max-h-[100px]"
-            disabled={sending}
-          />
-          <Button
-            size="icon"
-            onClick={handleSend}
-            disabled={!input.trim() || sending}
-            className={`bg-gradient-to-r ${gradientClass} border-0 text-white disabled:opacity-40 flex-shrink-0 h-10 w-10`}
-          >
-            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </Button>
-        </div>
+         <div className="p-4 border-t border-slate-700/50 flex gap-2">
+           <textarea
+             value={input}
+             onChange={(e) => setInput(e.target.value)}
+             onKeyDown={handleKeyDown}
+             placeholder={`Message ${agent.name}...`}
+             className="flex-1 resize-none bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 min-h-[40px] max-h-[100px]"
+             disabled={sending}
+           />
+           <div className="flex gap-1 flex-shrink-0">
+             <Button
+               size="icon"
+               onClick={handleSendToAxi}
+               disabled={sending}
+               variant="outline"
+               className="border-white/20 text-white/70 hover:text-white hover:border-purple-500/50 h-10 w-10"
+               title="Send to Axi"
+             >
+               <ArrowUpRight className="w-4 h-4" />
+             </Button>
+             <Button
+               size="icon"
+               onClick={handleSend}
+               disabled={!input.trim() || sending}
+               className={`bg-gradient-to-r ${gradientClass} border-0 text-white disabled:opacity-40 h-10 w-10`}
+             >
+               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+             </Button>
+           </div>
+         </div>
       </div>
     </div>
   );
