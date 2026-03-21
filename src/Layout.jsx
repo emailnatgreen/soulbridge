@@ -5,6 +5,7 @@ import { Sparkles } from 'lucide-react';
 
 import GlobalNav from '@/components/GlobalNav';
 import ChatLoader from '@/components/axi/ChatLoader';
+import WelcomeGreeting from '@/components/WelcomeGreeting';
 import { usePageSignal } from '@/hooks/usePageSignal';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
