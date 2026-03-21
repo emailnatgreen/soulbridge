@@ -33,9 +33,9 @@ Respond authentically as this character. Keep responses concise and natural. Sta
       model: 'gemini_3_flash'
     });
 
-    // Add agent's response to conversation
+    // Add agent's response to conversation (no service role needed—SDK handles it)
     if (llmResponse && typeof llmResponse === 'string') {
-      await base44.asServiceRole.agents.addMessage(
+      await base44.agents.addMessage(
         { id: conversation_id },
         {
           role: 'assistant',
