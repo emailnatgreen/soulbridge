@@ -85,11 +85,15 @@ export default function AgentChatModal({ agent, onClose }) {
    setSending(true);
    try {
      const updatedConv = await base44.agents.addMessage(conversation, { role: 'user', content: text });
-     setMessages((updatedConv.messages || []).filter(m => m.role !== 'system'));
+     if (updatedConv && updatedConv.messages) {
+       setMessages((updatedConv.messages || []).filter(m => m.role !== 'system'));
+     }
    } catch (e) {
      console.error('Failed to send message:', e);
+     setError('Failed to send message. Please try again.');
+   } finally {
+     setSending(false);
    }
-   setSending(false);
   };
 
   const handleKeyDown = (e) => {
