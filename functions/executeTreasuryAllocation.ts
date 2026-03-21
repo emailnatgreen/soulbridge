@@ -64,27 +64,46 @@ Deno.serve(async (req) => {
     }, { status: 400 });
   }
 
+  // All signer blobs must have been produced from the same prepared_multisig_tx.
+  // If LastLedgerSequence has expired, signers must re-sign a fresh tx.
+  const preparedTx = action.prepared_multisig_tx;
+  if (!preparedTx) {
+    return Response.json({
+      error: 'No prepared_multisig_tx found in proposal. Signers must re-sign using the signing tool first.'
+    }, { status: 400 });
+  }
+
   // Connect to XRPL mainnet
   const client = new xrpl.Client('wss://xrplcluster.com');
   await client.connect();
 
   try {
-    const amountDrops = String(Math.floor(action.amount_xrp * 1_000_000));
+    // Check if the LastLedgerSequence has expired and refresh if needed
+    const serverInfo = await client.request({ command: 'server_info' });
+    const currentLedger = serverInfo.result.info.validated_ledger.seq;
 
-    // Build the base Payment transaction
-    const baseTx = {
-      TransactionType: 'Payment',
-      Account: TREASURY_ADDRESS,
-      Destination: action.recipient_address,
-      Amount: amountDrops,
-      Fee: '12',
-    };
+    let signerBlobs = uniqueSigners.slice(0, QUORUM).map(s => s.tx_blob);
 
-    // Autofill sequence and ledger fields
-    const prepared = await client.autofill(baseTx);
+    // If the prepared tx's LastLedgerSequence has expired, we cannot execute —
+    // signers need to re-sign with a fresh tx
+    if (preparedTx.LastLedgerSequence && preparedTx.LastLedgerSequence < currentLedger) {
+      await client.disconnect();
+      // Clear the stale prepared tx so generateMultiSigBlob will autofill a fresh one
+      await base44.asServiceRole.entities.GovernanceProposal.update(proposal.id, {
+        action_data: {
+          ...action,
+          prepared_multisig_tx: null,
+          multisig_signatures: [],
+        },
+      });
+      return Response.json({
+        error: 'Transaction expired (LastLedgerSequence passed). Signatures have been cleared — please re-sign using the Treasury Signing Helper.',
+        expired_at_ledger: preparedTx.LastLedgerSequence,
+        current_ledger: currentLedger,
+      }, { status: 400 });
+    }
 
     // Combine multi-sig blobs from the quorum signers (use first QUORUM valid ones)
-    const signerBlobs = uniqueSigners.slice(0, QUORUM).map(s => s.tx_blob);
 
     // Combine signatures into a multi-signed transaction
     const multiSigned = xrpl.multisign(signerBlobs);
