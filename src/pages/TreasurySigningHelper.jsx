@@ -114,7 +114,7 @@ export default function TreasurySigningHelper() {
                   <p className="text-white/80 text-sm">{s.name}</p>
                   <p className="text-white/30 text-xs font-mono">{s.address}</p>
                 </div>
-                {alreadySigned(s.address)
+                {hasPreparedTx && alreadySigned(s.address)
                   ? <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signed</Badge>
                   : <Badge className="bg-white/10 text-white/40 text-xs">Pending</Badge>
                 }
