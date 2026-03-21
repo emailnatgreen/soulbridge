@@ -76,13 +76,12 @@ export default function PublicAgentGreeter() {
     setMessages(prev => [...prev, userMsg]);
     
     try {
-      console.log('Sending message to conversation:', conversation);
+      console.log('Sending message to conversation:', conversation.id);
       await base44.agents.addMessage(conversation, { role: 'user', content: msg });
       console.log('Message sent successfully');
     } catch (err) {
       console.error('Send error:', err?.message || err);
-      setInput(msg);
-      setMessages(prev => prev.filter(m => m !== userMsg));
+      // Keep the optimistic message, don't revert it
     } finally {
       setSending(false);
     }
