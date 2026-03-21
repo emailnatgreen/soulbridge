@@ -62,7 +62,7 @@ export default function AgentChatModal({ agent, onClose }) {
       setMessages((conv.messages || []).filter(m => m.role !== 'system'));
 
       unsubscribeRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
-        setMessages(data.messages || []);
+        setMessages((data.messages || []).filter(m => m.role !== 'system'));
       });
     } catch (e) {
       console.error('Failed to init conversation:', e);
