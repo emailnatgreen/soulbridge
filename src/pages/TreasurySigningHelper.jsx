@@ -35,6 +35,10 @@ export default function TreasurySigningHelper() {
   const action = proposal?.action_data || {};
   const sigs = action.multisig_signatures || [];
   const uniqueSigs = [...new Map(sigs.map(s => [s.signer_address, s])).values()];
+  // Signatures are only valid if there's a canonical prepared tx they were all signed against
+  const hasPreparedTx = !!action.prepared_multisig_tx;
+  const validSigs = hasPreparedTx ? uniqueSigs : [];
+  const sigsMismatch = uniqueSigs.length > 0 && !hasPreparedTx;
 
   const handleSign = async (e) => {
     e.preventDefault();
