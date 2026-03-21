@@ -211,13 +211,18 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
   // Handle prefilled message and speaker agent when chat opens
   useEffect(() => {
-    if (prefilledMessage && conversation && !input) {
-      setInput(prefilledMessage);
+    if (prefilledMessage && conversation) {
+      base44.agents.addMessage(conversation, { 
+        role: 'user', 
+        content: prefilledMessage,
+        metadata: speakerAgentId ? { sourceAgentId: speakerAgentId } : undefined
+      }).catch(err => console.error('Failed to add prefilled message:', err));
+      if (onMessageCleared) onMessageCleared();
     }
     if (speakerAgentId) {
       setLocalSpeakerAgentId(speakerAgentId);
     }
-  }, [prefilledMessage, conversation, input, speakerAgentId]);
+  }, [prefilledMessage, conversation, speakerAgentId, onMessageCleared]);
 
   // Clear prefilled message and speaker agent state when closing chat
   useEffect(() => {
