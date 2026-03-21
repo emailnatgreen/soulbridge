@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { X, Send, Loader2, ArrowUpRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function AgentChatModal({ agent, onClose }) {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [conversation, setConversation] = useState(null);
@@ -118,12 +120,9 @@ export default function AgentChatModal({ agent, onClose }) {
   };
 
   const handleSendToAxi = () => {
-   const message = `[From ${agent.name}] ${input || 'Need help with this conversation'}`;
-   window.dispatchEvent(new CustomEvent('open-axi-with-message', {
-     detail: { message }
-   }));
-   setInput('');
-   onClose();
+    const message = input.trim() || `Need help with ${agent.name}`;
+    navigate('/Axi', { state: { prefilledMessage: `[From ${agent.name}] ${message}` } });
+    onClose();
   };
 
   return (
@@ -208,8 +207,7 @@ export default function AgentChatModal({ agent, onClose }) {
                size="icon"
                onClick={handleSendToAxi}
                disabled={sending}
-               variant="outline"
-               className="border-white/20 text-white/70 hover:text-white hover:border-purple-500/50 h-10 w-10"
+               className="bg-white/20 hover:bg-white/30 text-white h-10 w-10"
                title="Send to Axi"
              >
                <ArrowUpRight className="w-4 h-4" />
