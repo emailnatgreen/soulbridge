@@ -54,8 +54,14 @@ export default function AgentChatModal({ agent, onClose }) {
         agent_name: agentKey,
         metadata: { name: `Chat with ${agent.name}` }
       });
+
+      // For custom agents, seed the conversation with a system prompt
+      if (isCustomAgent && customAgentContext) {
+        await base44.agents.addMessage(conv, { role: 'system', content: customAgentContext });
+      }
+
       setConversation(conv);
-      setMessages(conv.messages || []);
+      setMessages((conv.messages || []).filter(m => m.role !== 'system'));
 
       unsubscribeRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
         setMessages(data.messages || []);
