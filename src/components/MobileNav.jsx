@@ -31,6 +31,8 @@ export default function MobileNav() {
   const navItems = [
     { icon: Home, label: 'Home', page: 'Home' },
     { icon: Wallet, label: 'Wallets', page: 'Wallets' },
+    { icon: Vote, label: 'Governance Hub', page: 'GovernanceHub' },
+    { icon: KeyRound, label: 'Treasury Signing', page: 'TreasurySigningHelper' },
     { icon: Shield, label: 'DID Manager', page: 'DIDManager' },
     { icon: Award, label: 'Credentials', page: 'DidCredentials' },
     { icon: Network, label: 'Trust Dashboard', page: 'DidTrustDashboard' },
