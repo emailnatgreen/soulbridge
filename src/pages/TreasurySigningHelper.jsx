@@ -150,7 +150,7 @@ export default function TreasurySigningHelper() {
                   <select value={signerName} onChange={e => setSignerName(e.target.value)}
                     className="w-full h-9 rounded-md bg-white/10 border border-white/20 text-white px-3 text-sm">
                     <option value="">Select your node…</option>
-                    {SIGNERS.filter(s => !alreadySigned(s.address)).map(s => (
+                    {SIGNERS.filter(s => !hasPreparedTx || !alreadySigned(s.address)).map(s => (
                       <option key={s.address} value={s.name} className="bg-slate-900">{s.name}</option>
                     ))}
                   </select>
