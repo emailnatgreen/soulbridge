@@ -7,6 +7,7 @@ import { LogIn, Mail, Sparkles, ChevronRight, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AxiFloatingButton from '../components/AxiFloatingButton';
+import WelcomeGreeting from '../components/WelcomeGreeting';
 
 function ParticleCanvas() {
   const canvasRef = useRef(null);
