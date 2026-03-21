@@ -273,6 +273,7 @@ export default function Landing() {
       </footer>
 
       <AxiFloatingButton />
+      <WelcomeGreeting />
     </div>
   );
 }
