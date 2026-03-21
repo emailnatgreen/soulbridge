@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus, ChevronUp, RefreshCw, Trash2 } from 'lucide-react';
+import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, ChevronUp, RefreshCw, Trash2 } from 'lucide-react';
 import MessageBubble from '@/components/MessageBubble';
 import { motion, AnimatePresence } from 'framer-motion';
-import AddAgentModal from '@/components/AddAgentModal';
+
 
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
@@ -20,7 +20,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
   const [loading, setLoading] = useState(false);
   const [initError, setInitError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
-  const [showAddAgent, setShowAddAgent] = useState(false);
+
   const [activeAgents, setActiveAgents] = useState([]);
   const [agentConvoId, setAgentConvoId] = useState(null);
   const [userAgentId, setUserAgentId] = useState(null);
@@ -258,49 +258,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const handleAddAgent = useCallback(async (agent) => {
-    if (!agentConvoId || !conversation) {
-      throw new Error('Agent conversation not initialized. Please wait for the chat to fully load.');
-    }
 
-    try {
-      const current = await base44.entities.AgentConversation.filter({ id: agentConvoId }, '', 1);
-      if (!current?.length) {
-        throw new Error('Agent conversation record not found');
-      }
-
-      const agentConvo = current[0];
-      const participants = agentConvo.participant_agent_ids || [];
-
-      if (participants.includes(agent.id)) {
-        setShowAddAgent(false);
-        return;
-      }
-
-      const updatedParticipants = [...participants, agent.id];
-      await base44.entities.AgentConversation.update(agentConvoId, {
-        participant_agent_ids: updatedParticipants
-      });
-
-      setActiveAgents(prev => [...prev, agent]);
-
-      await base44.agents.addMessage(conversation, {
-        role: 'user',
-        content: `[System: ${agent.name} (${agent.role}) has joined this conversation.]`
-      });
-
-      // Invoke agent to respond
-      await base44.agents.addMessage(conversation, {
-        role: 'user',
-        content: `@${agent.name}, welcome to the conversation. Please share your thoughts.`
-      });
-
-      setShowAddAgent(false);
-    } catch (err) {
-      console.error('Error adding agent:', err);
-      throw err;
-    }
-  }, [agentConvoId, conversation]);
 
 
 
@@ -398,16 +356,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
               </div>
             </div>
             <div className="flex gap-1 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowAddAgent(true)}
-                disabled={!agentConvoId || !conversation || loading}
-                title={loading ? "Loading..." : !agentConvoId ? "Initializing..." : "Invite agent to chat"}
-                className="text-white/50 hover:text-purple-400 hover:bg-white/10 h-8 w-8 md:block hidden disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-              </Button>
+
               <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:block">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
@@ -417,14 +366,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
             </div>
           </div>
 
-          {/* Add Agent Modal (overlay inside chat) */}
-          {showAddAgent && (
-            <AddAgentModal
-              onAdd={handleAddAgent}
-              onClose={() => setShowAddAgent(false)}
-              alreadyAdded={activeAgents.map(a => a.id)}
-            />
-          )}
+
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -486,15 +428,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
             </div>
-            <Button
-              onClick={() => setShowAddAgent(true)}
-              size="sm"
-              disabled={!agentConvoId || !conversation || loading}
-              className="w-full md:hidden text-xs bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <UserPlus className="w-3 h-3 mr-1" />
-              Add Agent
-            </Button>
+
           </div>
         </motion.div>
       )}
