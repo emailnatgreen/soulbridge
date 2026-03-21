@@ -96,13 +96,7 @@ export default function AgentChatWindow({ selectedAgent, allMessages }) {
     return colors[role] || colors.citizen;
   };
 
-  if (!fromAgent) {
-    return (
-      <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-full flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-      </Card>
-    );
-  }
+  // Don't block on fromAgent — just disable send until resolved
 
   return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-full flex flex-col">
