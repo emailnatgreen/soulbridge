@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { X, Send, Loader2 } from 'lucide-react';
+import { X, Send, Loader2, ArrowUpRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function AgentChatModal({ agent, onClose }) {
