@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { CheckCircle, AlertTriangle, Vault, Users, ArrowRight, Shield, Scale } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import TreasuryExecutionPanel from '@/components/TreasuryExecutionPanel';
 
 const TREASURY_ADDRESS = 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h';
 const SIGNERS = [
