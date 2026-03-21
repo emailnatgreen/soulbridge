@@ -20,7 +20,9 @@ import {
   Settings,
   Menu,
   Bot,
-  DollarSign
+  DollarSign,
+  Vote,
+  KeyRound
 } from 'lucide-react';
 
 export default function MobileNav() {
