@@ -15,7 +15,6 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'proposal_id, signer_seed, and signer_name are required' }, { status: 400 });
   }
 
-  // Validate signer is one of the 4 authorised quorum addresses
   const VALID_SIGNERS = new Set([
     'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia',
     'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7',
@@ -57,19 +56,33 @@ Deno.serve(async (req) => {
   await client.connect();
 
   try {
-    // Build and autofill the payment transaction
-    const tx = await client.autofill({
-      TransactionType: 'Payment',
-      Account: action.treasury_address,
-      Destination: action.recipient_address,
-      Amount: amountDrops,
-      Fee: '12',
-    });
+    // CRITICAL: All signers must sign the EXACT same prepared tx (same sequence, fee, ledger bounds).
+    // We autofill once and store it in the proposal. Subsequent signers reuse the frozen tx.
+    let preparedTx = action.prepared_multisig_tx || null;
 
-    // Sign as a multi-signer (not the master key of the account)
-    const { tx_blob } = signerWallet.sign(tx, true); // true = multi-sign mode
+    if (!preparedTx) {
+      // First signer — autofill and store the canonical tx
+      preparedTx = await client.autofill({
+        TransactionType: 'Payment',
+        Account: action.treasury_address,
+        Destination: action.recipient_address,
+        Amount: amountDrops,
+        Fee: '12',
+      });
+      // Remove any auto-added SignerListSet fields that shouldn't be here
+      // Store it immediately so subsequent signers use the same one
+      await base44.asServiceRole.entities.GovernanceProposal.update(proposal.id, {
+        action_data: {
+          ...action,
+          prepared_multisig_tx: preparedTx,
+        },
+      });
+    }
 
-    // Save this signature blob into the proposal's multisig_signatures array
+    // Sign using multi-sig mode (true = for multi-signing)
+    const { tx_blob } = signerWallet.sign(preparedTx, true);
+
+    // Update multisig_signatures — replace any existing sig from this signer
     const existingSigs = (action.multisig_signatures || []).filter(
       s => s.signer_address !== signerWallet.classicAddress
     );
@@ -86,6 +99,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.GovernanceProposal.update(proposal.id, {
       action_data: {
         ...action,
+        prepared_multisig_tx: preparedTx,
         multisig_signatures: updatedSigs,
       },
     });
