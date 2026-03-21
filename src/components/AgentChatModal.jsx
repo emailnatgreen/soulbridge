@@ -85,14 +85,21 @@ export default function AgentChatModal({ agent, onClose }) {
    setSending(true);
    setError(null);
    try {
+     // Add user message to conversation
      const updatedConv = await base44.agents.addMessage(conversation, { 
        role: 'user', 
-       content: text,
-       metadata: { agent_name: agent.name }
+       content: text
      });
      if (updatedConv && updatedConv.messages) {
        setMessages((updatedConv.messages || []).filter(m => m.role !== 'system'));
      }
+
+     // Generate agent response
+     await base44.functions.invoke('generateAgentResponse', {
+       conversation_id: conversation.id,
+       agent_name: agent.name,
+       user_message: text
+     });
    } catch (e) {
      console.error('Failed to send message:', e);
      setError('Failed to send message. Please try again.');
