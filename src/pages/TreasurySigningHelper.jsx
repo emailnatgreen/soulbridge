@@ -124,7 +124,19 @@ export default function TreasurySigningHelper() {
         </Card>
 
         {/* Signing Form */}
-        {uniqueSigs.length < 2 ? (
+        {sigsMismatch && (
+          <Card className="bg-amber-500/10 border-amber-500/30">
+            <CardContent className="pt-5 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-amber-300 font-medium text-sm">Signatures invalidated — please re-sign</p>
+                <p className="text-white/50 text-xs mt-1">Previous signatures were made against different transactions and cannot be combined. The proposal has been reset — all quorum members must sign again below.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {validSigs.length < 2 ? (
           <Card className="bg-white/5 border-amber-500/20">
             <CardHeader className="pb-3">
               <CardTitle className="text-white text-sm flex items-center gap-2">
