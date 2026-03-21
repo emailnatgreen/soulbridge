@@ -68,7 +68,7 @@ export default function AIProjectHub() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (data) => {
-      await base44.functions.invoke('sendProjectMessage', data);
+      await base44.entities.ProjectMessage.create(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['project-messages', projectId]);
