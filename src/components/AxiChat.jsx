@@ -369,7 +369,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-white text-sm">Axi</h3>
+                  <h3 className="font-semibold text-white text-sm">Village Chat</h3>
                   {userAgentId && (
                     <span className="text-xs text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">
                       {userAgentId}
@@ -393,7 +393,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                     </div>
                   )}
                 {activeAgents.length === 0 && (
-                  <p className="text-xs text-purple-300/60">The First Citizen</p>
+                  <p className="text-xs text-purple-300/60">Invite agents to join</p>
                 )}
               </div>
             </div>
