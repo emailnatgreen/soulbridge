@@ -65,14 +65,22 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2 pointer-events-auto">
-        {loading && (
-          <div className="flex justify-center pt-8">
-            <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
-          </div>
-        )}
-        {!loading && filtered.length === 0 && (
-          <p className="text-white/30 text-xs text-center pt-8">No agents found</p>
-        )}
+         {loading && (
+           <div className="flex justify-center pt-8">
+             <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+           </div>
+         )}
+         {error && !loading && (
+           <div className="text-center pt-8">
+             <p className="text-red-400/70 text-xs mb-3">{error}</p>
+             <Button size="sm" onClick={() => window.location.reload()} className="text-xs bg-purple-600 hover:bg-purple-700">
+               Retry
+             </Button>
+           </div>
+         )}
+         {!loading && !error && filtered.length === 0 && (
+           <p className="text-white/30 text-xs text-center pt-8">{agents.length === 0 ? 'No agents available' : 'No agents found'}</p>
+         )}
         {filtered.map(agent => (
           <button
             key={agent.id}
