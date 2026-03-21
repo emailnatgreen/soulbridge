@@ -33,12 +33,16 @@ ${agent.bio ? `- Bio: ${agent.bio}` : ''}
 Respond authentically as this character. Keep responses concise and natural. Stay in character.`;
 
     // Generate response via LLM
+    console.log(`[Axi Response] Generating response for: "${user_message}"`);
+    
     const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `${systemContext}\n\nUser message: "${user_message}"\n\nRespond naturally as this agent:`,
       model: 'gemini_3_flash'
     });
 
-    // Add agent's response to conversation (no service role needed—SDK handles it)
+    console.log(`[Axi Response] Generated: "${llmResponse}"`);
+
+    // Add agent's response to conversation
     if (llmResponse && typeof llmResponse === 'string') {
       await base44.agents.addMessage(
         { id: conversation_id },
@@ -47,6 +51,7 @@ Respond authentically as this character. Keep responses concise and natural. Sta
           content: llmResponse
         }
       );
+      console.log('[Axi Response] Message added successfully');
     }
 
     return Response.json({ success: true, response: llmResponse });
