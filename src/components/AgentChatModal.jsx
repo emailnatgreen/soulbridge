@@ -94,13 +94,21 @@ export default function AgentChatModal({ agent, onClose }) {
         role: 'user',
         content: text
       });
+      
+      // Trigger agent response generation
+      await base44.functions.invoke('generateAgentResponse', {
+        conversation_id: conversation.id,
+        agent_name: agent.name,
+        agent_id: agent.id,
+        user_message: text
+      });
     } catch (e) {
       console.error('Send error:', e);
       setInput(text);
     } finally {
       setSending(false);
     }
-  }, [input, conversation, sending]);
+  }, [input, conversation, sending, agent]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
