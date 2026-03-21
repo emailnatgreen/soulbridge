@@ -66,13 +66,19 @@ export default function PublicAgentGreeter() {
     const msg = input.trim();
     setInput('');
     setSending(true);
+    
+    // Optimistic UI update
+    const userMsg = { role: 'user', content: msg, created_date: new Date().toISOString() };
+    setMessages(prev => [...prev, userMsg]);
+    
     try {
       console.log('Sending message to conversation:', conversation);
-      const result = await base44.agents.addMessage(conversation, { role: 'user', content: msg });
-      console.log('Message sent successfully:', result);
+      await base44.agents.addMessage(conversation, { role: 'user', content: msg });
+      console.log('Message sent successfully');
     } catch (err) {
       console.error('Send error:', err?.message || err);
       setInput(msg);
+      setMessages(prev => prev.filter(m => m !== userMsg));
     } finally {
       setSending(false);
     }
