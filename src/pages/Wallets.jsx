@@ -351,11 +351,49 @@ export default function WalletsPage() {
         ) : (
           <>
             <TransactionAlerts wallets={wallets} pollInterval={60000} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {wallets.map(wallet => (
-                <WalletCard key={wallet.id} wallet={wallet} onRefresh={refreshBalance} />
+            <Tabs defaultValue="all" className="space-y-5">
+              <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl flex gap-1 h-auto w-fit">
+                {[
+                  { value: 'all', label: 'All Wallets', count: wallets.length, gradient: 'from-purple-600 to-pink-600' },
+                  { value: 'mainnet', label: 'Mainnet', count: wallets.filter(w => w.network === 'mainnet').length, icon: Globe, gradient: 'from-emerald-500 to-teal-600' },
+                  { value: 'testnet', label: 'Testnet', count: wallets.filter(w => w.network === 'testnet').length, icon: FlaskConical, gradient: 'from-amber-500 to-orange-500' },
+                ].map(({ value, label, count, icon: Icon, gradient }) => (
+                  <TabsTrigger
+                    key={value}
+                    value={value}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                      text-white/50 hover:text-white/80
+                      data-[state=active]:bg-gradient-to-r data-[state=active]:${gradient}
+                      data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-900/40`}
+                  >
+                    {Icon && <Icon className="w-3.5 h-3.5" />}
+                    {label}
+                    <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/20 text-xs">
+                      {count}
+                    </span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {['all', 'mainnet', 'testnet'].map(tab => (
+                <TabsContent key={tab} value={tab}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {wallets
+                      .filter(w => tab === 'all' || w.network === tab)
+                      .map(wallet => (
+                        <WalletCard key={wallet.id} wallet={wallet} onRefresh={refreshBalance} />
+                      ))}
+                  </div>
+                  {wallets.filter(w => tab === 'all' || w.network === tab).length === 0 && (
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                      <CardContent className="text-center py-10">
+                        <p className="text-white/40 text-sm">No {tab} wallets found</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
               ))}
-            </div>
+            </Tabs>
           </>
         )}
       </div>
