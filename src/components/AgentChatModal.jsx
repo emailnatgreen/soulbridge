@@ -52,13 +52,11 @@ export default function AgentChatModal({ agent, onClose }) {
     try {
       const conv = await base44.agents.createConversation({
         agent_name: agentKey,
-        metadata: { name: `Chat with ${agent.name}` }
+        metadata: { 
+          name: `Chat with ${agent.name}`,
+          system_prompt: isCustomAgent ? customAgentContext : undefined
+        }
       });
-
-      // For custom agents, seed the conversation with a system prompt
-      if (isCustomAgent && customAgentContext) {
-        await base44.agents.addMessage(conv, { role: 'system', content: customAgentContext });
-      }
 
       setConversation(conv);
       setMessages((conv.messages || []).filter(m => m.role !== 'system'));
