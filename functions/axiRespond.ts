@@ -38,16 +38,16 @@ Deno.serve(async (req) => {
 
     console.log(`[Axi] Generated response: "${llmResponse}"`);
 
-    // Add agent's response to conversation
+    // Add Axi's response to the AgentMessage entity instead
     if (llmResponse && typeof llmResponse === 'string') {
-      await base44.asServiceRole.agents.addMessage(
-        { id: conversation_id },
-        {
-          role: 'assistant',
-          content: llmResponse
-        }
-      );
-      console.log('[Axi] Response added to conversation');
+      await base44.asServiceRole.entities.AgentMessage.create({
+        conversation_id,
+        sender_agent_id: 'axi',
+        content: llmResponse,
+        message_type: 'text',
+        status: 'sent'
+      });
+      console.log('[Axi] Response message created');
     }
 
     return Response.json({ success: true, response: llmResponse });
