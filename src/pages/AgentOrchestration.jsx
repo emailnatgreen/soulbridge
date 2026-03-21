@@ -183,19 +183,29 @@ export default function AgentOrchestration() {
         </div>
 
         <Tabs defaultValue="orchestrate" className="space-y-6">
-          <TabsList className="bg-white/10">
-            <TabsTrigger value="orchestrate">
-              <Zap className="w-4 h-4 mr-2" />
-              Orchestrate
-            </TabsTrigger>
-            <TabsTrigger value="agents">
-              <Users className="w-4 h-4 mr-2" />
-              Agent Performance
-            </TabsTrigger>
-            <TabsTrigger value="projects">
-              <Target className="w-4 h-4 mr-2" />
-              Project Progress
-            </TabsTrigger>
+          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl flex gap-1 h-auto w-fit">
+            {[
+              { value: 'orchestrate', label: 'Orchestrate', icon: Zap, gradient: 'from-indigo-600 to-purple-600' },
+              { value: 'agents', label: 'Agent Performance', icon: Users, gradient: 'from-blue-500 to-cyan-500', count: agentMetrics.length },
+              { value: 'projects', label: 'Project Progress', icon: Target, gradient: 'from-emerald-500 to-teal-600', count: projectProgress.length },
+            ].map(({ value, label, icon: Icon, gradient, count }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  text-white/50 hover:text-white/80
+                  data-[state=active]:bg-gradient-to-r data-[state=active]:${gradient}
+                  data-[state=active]:text-white data-[state=active]:shadow-lg`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+                {count !== undefined && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/20 text-xs">
+                    {count}
+                  </span>
+                )}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* Orchestrate Tab */}

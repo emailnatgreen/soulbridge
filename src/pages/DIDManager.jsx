@@ -294,15 +294,26 @@ export default function DIDManager() {
 
         {/* DID Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-8">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="active" className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
-              Active DIDs ({activeWallets.length})
-            </TabsTrigger>
-            <TabsTrigger value="revoked" className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4" />
-              Revoked DIDs ({revokedWallets.length})
-            </TabsTrigger>
+          <TabsList className="bg-slate-100 border border-slate-200 p-1 rounded-xl flex gap-1 h-auto w-fit">
+            {[
+              { value: 'active', label: 'Active DIDs', icon: CheckCircle, count: activeWallets.length, gradient: 'from-indigo-600 to-purple-600' },
+              { value: 'revoked', label: 'Revoked DIDs', icon: AlertTriangle, count: revokedWallets.length, gradient: 'from-red-500 to-orange-500' },
+            ].map(({ value, label, icon: Icon, count, gradient }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  text-slate-500 hover:text-slate-800
+                  data-[state=active]:bg-gradient-to-r data-[state=active]:${gradient}
+                  data-[state=active]:text-white data-[state=active]:shadow-md`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+                <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/20 text-xs">
+                  {count}
+                </span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* Active DIDs Tab */}
