@@ -43,15 +43,14 @@ export default function CreateAgentDialog({ open, onClose, wallets }) {
       if (result.success) {
         setStep(4);
         
-        // Trigger automated onboarding
-        try {
-          await base44.functions.invoke('automateAgentOnboarding', {
-            agent_id: result.agent.id
-          });
+        // Trigger automated onboarding (fire and forget - don't block birth)
+        base44.functions.invoke('automateAgentOnboarding', {
+          agent_id: result.agent.id
+        }).then(() => {
           toast.success('✨ Automated onboarding initiated!');
-        } catch (error) {
-          console.error('Onboarding error:', error);
-        }
+        }).catch(error => {
+          console.error('Onboarding error (non-critical):', error);
+        });
       }
     },
     onError: (error) => {
