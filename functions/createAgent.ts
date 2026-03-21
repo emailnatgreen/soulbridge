@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       classic_address = wallet.classic_address;
     }
 
-    // Create agent
+    // Create agent - only include wallet_id if it's a valid string
     const agentData = {
       name,
       purpose,
@@ -59,7 +59,10 @@ Deno.serve(async (req) => {
       specializations: specializations || [],
       honor_score: 100,
       status: 'active'
-    });
+    };
+    if (wallet_id) agentData.wallet_id = wallet_id;
+
+    const agent = await base44.entities.Agent.create(agentData);
 
     // Log agent creation
     try {
@@ -68,7 +71,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.DidAuditLog.create({
         action_type: 'agent_created',
         did_classic_address: classic_address,
-        wallet_id: wallet_id || null,
+        wallet_id: wallet_id || undefined,
         agent_id: agent.id,
         user_id: user.id,
         user_email: user.email,
