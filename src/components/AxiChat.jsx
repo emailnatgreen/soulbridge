@@ -295,27 +295,16 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     <>
       {/* Floating trigger button — always visible when chat is closed */}
        {!isOpen && (
-         <motion.div
+         <motion.button
            initial={{ scale: 0 }}
            animate={{ scale: 1 }}
            exit={{ scale: 0 }}
-           className="fixed bottom-6 right-4 z-50 flex flex-col gap-3"
+           onClick={() => setIsOpen(true)}
+           className="fixed bottom-6 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-xl shadow-purple-500/50 flex items-center justify-center text-white transition-all hover:scale-110"
+           title="Chat with Axi"
          >
-           <motion.button
-             onClick={() => window.location.href = '/Agents'}
-             className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-xl shadow-blue-500/50 flex items-center justify-center text-white transition-all hover:scale-110"
-             title="Manage Agents"
-           >
-             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 12H9m6 0a6 6 0 11-12 0 6 6 0 0112 0z" /></svg>
-           </motion.button>
-           <motion.button
-             onClick={() => setIsOpen(true)}
-             className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-xl shadow-purple-500/50 flex items-center justify-center text-white transition-all hover:scale-110"
-             title="Chat with Axi"
-           >
-             <Sparkles className="w-6 h-6" />
-           </motion.button>
-         </motion.div>
+           <Sparkles className="w-6 h-6" />
+         </motion.button>
        )}
       
       <AnimatePresence>
