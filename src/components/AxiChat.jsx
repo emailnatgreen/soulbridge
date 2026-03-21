@@ -363,7 +363,9 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
               </div>
             </div>
             <div className="flex gap-1 flex-shrink-0">
-
+              <Button variant="ghost" size="icon" onClick={() => navigate('/Agents')} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:block" title="Go to Agents">
+                <Users className="w-3.5 h-3.5" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:block">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
