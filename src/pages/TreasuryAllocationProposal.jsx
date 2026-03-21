@@ -264,6 +264,11 @@ export default function TreasuryAllocationProposal() {
                       <span>Ends: {new Date(p.voting_period_end).toLocaleDateString()}</span>
                     )}
                   </div>
+                  {(p.status === 'passed' || p.status === 'executed') && (
+                    <div className="mt-3">
+                      <TreasuryExecutionPanel proposal={p} onExecuted={() => setSubmitted(true)} />
+                    </div>
+                  )}
                 </div>
               ))}
             </CardContent>
