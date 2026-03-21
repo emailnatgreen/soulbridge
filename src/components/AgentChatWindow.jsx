@@ -64,13 +64,13 @@ export default function AgentChatWindow({ selectedAgent, allMessages }) {
   });
 
   const handleSend = () => {
-    if (!message.trim() || !fromAgent) {
+    if (!message.trim()) {
       toast.error('Please enter a message');
       return;
     }
 
     sendMessageMutation.mutate({
-      from_agent_id: fromAgent.id,
+      from_agent_id: fromAgent?.id || null,
       to_agent_id: selectedAgent.id,
       message: message.trim()
     });
