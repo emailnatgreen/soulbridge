@@ -4,9 +4,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { conversation_id, agent_name, user_message } = body;
+    
+    // Handle both direct calls and automation events
+    const conversation_id = body.conversation_id || body.data?.conversation_id;
+    const user_message = body.user_message || body.data?.content;
+    const agent_name = body.agent_name || 'axi';
 
-    if (!conversation_id || !agent_name || !user_message) {
+    if (!conversation_id || !user_message) {
+      console.log('Missing fields:', { conversation_id, user_message });
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
