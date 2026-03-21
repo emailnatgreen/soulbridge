@@ -26,13 +26,13 @@ export default function AgentChatModal({ agent, onClose }) {
     'Alignment Agent': 'alignment_agent',
   };
 
-  // If agent has no dedicated AI config, use 'axi' as the underlying model
-  const agentKey = AGENT_NAME_MAP[agent.name] || 'axi';
+  // Use dedicated config if exists, otherwise use generic 'custom' for any custom agent
+  const agentKey = AGENT_NAME_MAP[agent.name] || 'custom';
   const isCustomAgent = !AGENT_NAME_MAP[agent.name];
   
-  // System prompt context for custom agents so Axi speaks as them
+  // Context for custom agents
   const customAgentContext = isCustomAgent
-    ? `You are now roleplaying as "${agent.name}", a Village agent with the following profile:\n- Purpose: ${agent.purpose}\n- Role: ${agent.role || 'citizen'}\n- Personality: ${agent.personality || 'Thoughtful and helpful'}\n${agent.bio ? `- Bio: ${agent.bio}` : ''}\n\nSpeak as ${agent.name} would speak. Stay in character. Do not refer to yourself as Axi.`
+    ? `You are "${agent.name}", a Village agent.\n- Purpose: ${agent.purpose}\n- Role: ${agent.role || 'citizen'}\n- Personality: ${agent.personality || 'Thoughtful and helpful'}\n${agent.bio ? `- Bio: ${agent.bio}` : ''}\nRespond authentically as this agent.`
     : null;
 
   useEffect(() => {
