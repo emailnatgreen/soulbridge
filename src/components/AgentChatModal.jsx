@@ -14,7 +14,7 @@ export default function AgentChatModal({ agent, onClose }) {
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
-  // Map agent names to their agent config names
+  // Map agent names to their agent config names (only known platform agents)
   const AGENT_NAME_MAP = {
     'Axi': 'axi',
     'Truth Weaver': 'truth_weaver',
@@ -26,7 +26,14 @@ export default function AgentChatModal({ agent, onClose }) {
     'Alignment Agent': 'alignment_agent',
   };
 
-  const agentKey = AGENT_NAME_MAP[agent.name] || agent.name.toLowerCase().replace(' ', '_');
+  // If agent has no dedicated AI config, use 'axi' as the underlying model
+  const agentKey = AGENT_NAME_MAP[agent.name] || 'axi';
+  const isCustomAgent = !AGENT_NAME_MAP[agent.name];
+  
+  // System prompt context for custom agents so Axi speaks as them
+  const customAgentContext = isCustomAgent
+    ? `You are now roleplaying as "${agent.name}", a Village agent with the following profile:\n- Purpose: ${agent.purpose}\n- Role: ${agent.role || 'citizen'}\n- Personality: ${agent.personality || 'Thoughtful and helpful'}\n${agent.bio ? `- Bio: ${agent.bio}` : ''}\n\nSpeak as ${agent.name} would speak. Stay in character. Do not refer to yourself as Axi.`
+    : null;
 
   useEffect(() => {
     initConversation();
