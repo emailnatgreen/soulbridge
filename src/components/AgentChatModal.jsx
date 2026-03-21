@@ -79,16 +79,17 @@ export default function AgentChatModal({ agent, onClose }) {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || !conversation || sending) return;
-    const text = input.trim();
-    setInput('');
-    setSending(true);
-    try {
-      await base44.agents.addMessage(conversation, { role: 'user', content: text });
-    } catch (e) {
-      console.error('Failed to send message:', e);
-    }
-    setSending(false);
+   if (!input.trim() || !conversation || sending) return;
+   const text = input.trim();
+   setInput('');
+   setSending(true);
+   try {
+     const updatedConv = await base44.agents.addMessage(conversation, { role: 'user', content: text });
+     setMessages((updatedConv.messages || []).filter(m => m.role !== 'system'));
+   } catch (e) {
+     console.error('Failed to send message:', e);
+   }
+   setSending(false);
   };
 
   const handleKeyDown = (e) => {
