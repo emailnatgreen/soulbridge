@@ -202,6 +202,48 @@ export default function EditAgent() {
                 />
               </div>
 
+              {/* Seed Assignment */}
+              <div className="border-t border-white/10 pt-6 space-y-3">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-amber-400" />
+                  <Label className="text-amber-300/90 font-medium">Assign / Reassign Wallet Seed</Label>
+                </div>
+                <p className="text-white/40 text-xs">Enter the wallet seed to encrypt and store it. The derived address must match the wallet on file.</p>
+                <form onSubmit={handleAssignSeed} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      type={showSeed ? 'text' : 'password'}
+                      value={seed}
+                      onChange={e => setSeed(e.target.value)}
+                      placeholder="s… (family seed / secret)"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono pr-10"
+                    />
+                    <button type="button" onClick={() => setShowSeed(v => !v)}
+                      className="absolute right-3 top-2 text-white/40 hover:text-white/70">
+                      {showSeed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <Button type="submit" disabled={seedLoading || !seed}
+                    className="bg-amber-600 hover:bg-amber-700 text-white shrink-0">
+                    {seedLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Seed'}
+                  </Button>
+                </form>
+                {seedError && (
+                  <p className="text-red-300 text-xs flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> {seedError}
+                  </p>
+                )}
+                {seedResult && (
+                  <p className="text-green-300 text-xs flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> {seedResult}
+                  </p>
+                )}
+                <p className="text-white/25 text-xs flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3 text-amber-500/50" />
+                  Seed is encrypted server-side using AES-256-GCM and never stored in plain text.
+                </p>
+              </div>
+
               <Button
                 type="submit"
                 disabled={updateAgent.isPending}
