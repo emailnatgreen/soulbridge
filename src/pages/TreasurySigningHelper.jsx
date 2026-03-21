@@ -104,7 +104,7 @@ export default function TreasurySigningHelper() {
         <Card className="bg-white/5 border-white/10">
           <CardHeader className="pb-3">
             <CardTitle className="text-white text-sm flex items-center gap-2">
-              <Shield className="w-4 h-4 text-purple-400" /> Quorum Status ({uniqueSigs.length}/2 required)
+              <Shield className="w-4 h-4 text-purple-400" /> Quorum Status ({validSigs.length}/2 required)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
