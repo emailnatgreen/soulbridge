@@ -8,6 +8,7 @@ import AlertsFeed from "@/components/axi/AlertsFeed";
 import HonorRiskPanel from "@/components/axi/HonorRiskPanel";
 import GovernanceRiskPanel from "@/components/axi/GovernanceRiskPanel";
 import TreasuryStatusPanel from "@/components/axi/TreasuryStatusPanel";
+import TreasuryGovernancePanel from "@/components/axi/TreasuryGovernancePanel";
 import WellbeingPanel from "@/components/axi/WellbeingPanel";
 import SystemBehaviorPanel from "@/components/axi/SystemBehaviorPanel";
 import AgentPersonalityPanel from "@/components/axi/AgentPersonalityPanel";
