@@ -17,6 +17,7 @@ export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
       setError(null);
       try {
         const list = await base44.entities.Agent.list('-honor_score', 100);
+        console.log('[AddAgentModal] Fetched agents:', list?.length || 0, list);
         setAgents(list || []);
       } catch (err) {
         console.error('[AddAgentModal] Failed to fetch agents:', err);
