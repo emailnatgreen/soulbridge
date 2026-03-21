@@ -271,8 +271,7 @@ export default function Landing() {
         </div>
       </footer>
 
-      <AxiFloatingButton />
-      <WelcomeGreeting />
+      <PublicAgentGreeter />
     </div>
   );
 }
