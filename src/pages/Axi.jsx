@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ const MemoizedMessageBubble = React.memo(MessageBubble);
 const PAGE_SIZE = 30;
 
 export default function AxiPage() {
+  const location = useLocation();
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -146,6 +148,15 @@ export default function AxiPage() {
       }
     };
   }, [initConversation]);
+
+  // Handle prefilled message from navigation state
+  useEffect(() => {
+    if (location.state?.prefilledMessage) {
+      setInput(location.state.prefilledMessage);
+      // Clear the state so it doesn't persist on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || !conversation || sending) return;
