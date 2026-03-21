@@ -43,12 +43,11 @@ Deno.serve(async (req) => {
     }
 
     // Create agent
-    const agent = await base44.entities.Agent.create({
+    const agentData = {
       name,
       purpose,
       personality: personality || '',
       role: role || 'citizen',
-      wallet_id: wallet_id || null,
       classic_address: classic_address,
       bio: bio || '',
       tagline: tagline || '',
