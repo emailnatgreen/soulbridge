@@ -22,7 +22,7 @@ export default function PublicAgentGreeter() {
   const initialized = useRef(false);
 
   useEffect(() => {
-    if (!isOpen || conversation) return;
+    if (!isOpen || initialized.current) return;
 
     const initChat = async () => {
       setLoading(true);
@@ -33,11 +33,15 @@ export default function PublicAgentGreeter() {
         });
         setConversation(conv);
         setMessages(conv.messages || []);
-        setHasGreeted(true);
+        initialized.current = true;
 
-        unsubscribeRef.current = await base44.agents.subscribeToConversation(conv.id, (data) => {
-          setMessages([...data.messages]);
+        // Subscribe to conversation updates
+        const unsub = await base44.agents.subscribeToConversation(conv.id, (data) => {
+          if (data.messages) {
+            setMessages([...data.messages]);
+          }
         });
+        unsubscribeRef.current = unsub;
       } catch (err) {
         console.error('Failed to init public agent:', err);
       } finally {
@@ -47,7 +51,7 @@ export default function PublicAgentGreeter() {
 
     initChat();
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
-  }, [isOpen, conversation, hasGreeted]);
+  }, [isOpen]);
 
   // Auto-open greeting on mount after brief delay
   useEffect(() => {
