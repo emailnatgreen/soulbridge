@@ -4,12 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Sparkles, MessageCircle, Flame, ArrowLeft } from 'lucide-react';
+import { Plus, Users, Sparkles, Flame, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
-import AskAxiButton from '@/components/AskAxiButton';
 
 export default function AgentsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -37,16 +35,6 @@ export default function AgentsPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white mb-4">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -56,27 +44,6 @@ export default function AgentsPage() {
               <p className="text-sm text-purple-300/60">AI Agents with Soul</p>
             </div>
             <div className="flex gap-3">
-              <Link to={createPageUrl('DeepSeek')}>
-                <Button 
-                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white border-0 shadow-lg shadow-amber-500/25"
-                >
-                  <Flame className="w-4 h-4 mr-2" />
-                  DeepSeek
-                </Button>
-              </Link>
-              <AskAxiButton
-                label="Ask Axi about the Village"
-                context={`You are viewing the Agents page of SoulBridge. Please review the current Village population — how many agents are active, their average honor score, any agents in dormant/suspended status, and who might need your attention as Mother Boss. Provide a Village health summary.`}
-                className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 border-purple-500/30"
-              />
-              <Link to={createPageUrl('Axi')}>
-                <Button 
-                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0 shadow-lg shadow-blue-500/25"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Talk to Axi
-                </Button>
-              </Link>
               <Button 
                 onClick={() => setShowCreateDialog(true)}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25"
