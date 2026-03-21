@@ -19,13 +19,19 @@ export default function TreasuryExecutionPanel({ proposal, onExecuted }) {
     setLoading(true);
     setError('');
     setResult(null);
-    const res = await base44.functions.invoke('executeTreasuryAllocation', { proposal_id: proposal.id });
-    setLoading(false);
-    if (res.data?.success) {
-      setResult(res.data);
-      if (onExecuted) onExecuted(res.data);
-    } else {
-      setError(res.data?.error || 'Execution failed');
+    try {
+      const res = await base44.functions.invoke('executeTreasuryAllocation', { proposal_id: proposal.id });
+      if (res.data?.success) {
+        setResult(res.data);
+        if (onExecuted) onExecuted(res.data);
+      } else {
+        setError(res.data?.error || 'Execution failed');
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Execution failed';
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
