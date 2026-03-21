@@ -111,10 +111,19 @@ export default function AgentChatModal({ agent, onClose }) {
   }, [input, conversation, sending, agent]);
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+   if (e.key === 'Enter' && !e.shiftKey) {
+     e.preventDefault();
+     handleSend();
+   }
+  };
+
+  const handleSendToAxi = () => {
+   const message = `[From ${agent.name}] ${input || 'Need help with this conversation'}`;
+   window.dispatchEvent(new CustomEvent('open-axi-with-message', {
+     detail: { message }
+   }));
+   setInput('');
+   onClose();
   };
 
   return (
