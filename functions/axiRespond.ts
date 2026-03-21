@@ -42,8 +42,8 @@ Deno.serve(async (req) => {
 
     console.log(`[Axi] Generated response: "${llmResponse}"`);
 
-    // Create Axi's response message
-    if (llmResponse && typeof llmResponse === 'string') {
+    // Create Axi's response message if we have a conversation_id
+    if (llmResponse && typeof llmResponse === 'string' && conversation_id) {
       await base44.asServiceRole.entities.AgentMessage.create({
         conversation_id,
         sender_agent_id: 'axi',
