@@ -83,8 +83,13 @@ export default function AgentChatModal({ agent, onClose }) {
    const text = input.trim();
    setInput('');
    setSending(true);
+   setError(null);
    try {
-     const updatedConv = await base44.agents.addMessage(conversation, { role: 'user', content: text });
+     const updatedConv = await base44.agents.addMessage(conversation, { 
+       role: 'user', 
+       content: text,
+       metadata: { agent_name: agent.name }
+     });
      if (updatedConv && updatedConv.messages) {
        setMessages((updatedConv.messages || []).filter(m => m.role !== 'system'));
      }
