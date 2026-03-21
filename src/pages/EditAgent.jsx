@@ -39,6 +39,40 @@ export default function EditAgent() {
     personality: '',
   });
 
+  // Seed assignment state
+  const [seed, setSeed] = useState('');
+  const [showSeed, setShowSeed] = useState(false);
+  const [seedLoading, setSeedLoading] = useState(false);
+  const [seedResult, setSeedResult] = useState(null);
+  const [seedError, setSeedError] = useState('');
+
+  const handleAssignSeed = async (e) => {
+    e.preventDefault();
+    setSeedError('');
+    setSeedResult(null);
+    if (!seed) return;
+    const currentWalletId = formData.wallet_id || agent?.wallet_id;
+    if (!currentWalletId) {
+      setSeedError('No wallet assigned to this agent. Save a wallet first.');
+      return;
+    }
+    setSeedLoading(true);
+    try {
+      const res = await base44.functions.invoke('assignWalletSeed', { wallet_id: currentWalletId, seed });
+      if (res.data?.success) {
+        setSeedResult(res.data.message);
+        setSeed('');
+        queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      } else {
+        setSeedError(res.data?.error || 'Failed to assign seed');
+      }
+    } catch (err) {
+      setSeedError(err?.response?.data?.error || err.message || 'Failed to assign seed');
+    } finally {
+      setSeedLoading(false);
+    }
+  };
+
   React.useEffect(() => {
     if (agent) {
       setFormData({
