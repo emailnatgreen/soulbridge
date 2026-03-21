@@ -55,26 +55,27 @@ export default function AgentChatModal({ agent, onClose }) {
         metadata: { name: `Chat with ${agent.name}` }
       });
 
-      // For custom agents, prime with a system-style context message so Axi stays in character
-      if (isCustomAgent) {
-        await base44.agents.addMessage(conv, {
-          role: 'user',
-          content: `[Context: ${customAgentContext}]\n\nPlease acknowledge that you are ready to speak as ${agent.name} and give a brief greeting in character.`
-        });
-      }
+      setConversation(conv);
+      setMessages((conv.messages || []).filter(m => m.role !== 'system'));
+      setLoading(false);
 
-      const fresh = await base44.agents.getConversation(conv.id);
-      setConversation(fresh);
-      setMessages((fresh.messages || []).filter(m => m.role !== 'system'));
-
+      // Subscribe to real-time updates
       unsubscribeRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
         setMessages((data.messages || []).filter(m => m.role !== 'system'));
       });
+
+      // For custom agents, send a greeting in the background (don't block UI)
+      if (isCustomAgent) {
+        base44.agents.addMessage(conv, {
+          role: 'user',
+          content: `[System context — stay in character for this entire conversation: ${customAgentContext}]\n\nGreet me briefly as ${agent.name}.`
+        });
+      }
     } catch (e) {
       console.error('Failed to init conversation:', e);
       setError(`Could not connect to ${agent.name}.`);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const sendMessage = async () => {
