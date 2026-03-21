@@ -68,6 +68,14 @@ export default function Landing() {
   const [tab, setTab] = useState('main'); // 'main' | 'email'
   const [email, setEmail] = useState('');
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
+  const [isAgentOpen, setIsAgentOpen] = useState(false);
+  const [agentMessages, setAgentMessages] = useState([]);
+  const [agentInput, setAgentInput] = useState('');
+  const [agentConversation, setAgentConversation] = useState(null);
+  const [agentLoading, setAgentLoading] = useState(false);
+  const [agentSending, setAgentSending] = useState(false);
+  const messagesEndRef = useRef(null);
+  const unsubscribeRef = useRef(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -81,6 +89,53 @@ export default function Landing() {
     };
     fetchStats();
   }, []);
+
+  // Initialize public agent conversation
+  useEffect(() => {
+    if (!isAgentOpen || agentConversation) return;
+    
+    const initAgent = async () => {
+      setAgentLoading(true);
+      try {
+        const conv = await base44.agents.createConversation({
+          agent_name: 'axi',
+          metadata: { name: 'Landing Page Public Chat', public: true }
+        });
+        setAgentConversation(conv);
+        setAgentMessages(conv.messages || []);
+        
+        unsubscribeRef.current = await base44.agents.subscribeToConversation(conv.id, (data) => {
+          setAgentMessages([...data.messages]);
+        });
+      } catch (err) {
+        console.error('Failed to init public agent:', err);
+      } finally {
+        setAgentLoading(false);
+      }
+    };
+    
+    initAgent();
+    return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
+  }, [isAgentOpen, agentConversation]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [agentMessages]);
+
+  const handleAgentSend = async () => {
+    if (!agentInput.trim() || !agentConversation || agentSending) return;
+    const msg = agentInput.trim();
+    setAgentInput('');
+    setAgentSending(true);
+    try {
+      await base44.agents.addMessage(agentConversation, { role: 'user', content: msg });
+    } catch (err) {
+      console.error('Send error:', err);
+      setAgentInput(msg);
+    } finally {
+      setAgentSending(false);
+    }
+  };
 
   const handleGoogleLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
   const handleEmailLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
