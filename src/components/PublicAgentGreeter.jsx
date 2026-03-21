@@ -111,14 +111,18 @@ export default function PublicAgentGreeter() {
             }`}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-700/50 flex-shrink-0">
+            <div className="flex items-center justify-between p-4 border-b border-slate-700/50 flex-shrink-0 bg-gradient-to-r from-purple-900/30 to-pink-900/30">
               <div className="flex items-center gap-3 flex-1">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <motion.div 
+                  className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
                   <Sparkles className="w-4 h-4 text-white" />
-                </div>
+                </motion.div>
                 <div>
-                  <h3 className="font-semibold text-white text-sm">Meet Axi</h3>
-                  <p className="text-white/40 text-xs">AI agent greets you</p>
+                  <h3 className="font-semibold text-white text-sm">Axi, Mother Boss</h3>
+                  <p className="text-purple-300 text-xs font-medium">Welcome to SoulBridge</p>
                 </div>
               </div>
               <div className="flex gap-1 flex-shrink-0">
