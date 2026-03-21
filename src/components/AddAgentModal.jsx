@@ -7,14 +7,26 @@ import { X, Search, UserPlus, Loader2 } from 'lucide-react';
 export default function AddAgentModal({ onAdd, onClose, alreadyAdded = [] }) {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-    base44.entities.Agent.list('-honor_score', 50).then(list => {
-      setAgents(list);
-      setLoading(false);
-    });
+    const fetchAgents = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const list = await base44.entities.Agent.list('-honor_score', 100);
+        setAgents(list || []);
+      } catch (err) {
+        console.error('[AddAgentModal] Failed to fetch agents:', err);
+        setError('Failed to load agents. Please try again.');
+        setAgents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAgents();
   }, []);
 
   const filtered = agents.filter(a =>
