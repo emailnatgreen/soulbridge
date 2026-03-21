@@ -118,11 +118,11 @@ export default function AgentChatModal({ agent, onClose }) {
   };
 
   const handleSendToAxi = () => {
-    const message = input.trim() || `Need help with ${agent.name}`;
+    const lastAgentMessage = messages.filter(m => m.role !== 'user').reverse()[0];
+    const message = lastAgentMessage?.content || `Message from ${agent.name}`;
     window.dispatchEvent(new CustomEvent('open-axi-with-message', {
       detail: { message: `[From ${agent.name}] ${message}` }
     }));
-    setInput('');
   };
 
   return (
