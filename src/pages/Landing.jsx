@@ -66,14 +66,6 @@ export default function Landing() {
   const [tab, setTab] = useState('main'); // 'main' | 'email'
   const [email, setEmail] = useState('');
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
-  const [isAgentOpen, setIsAgentOpen] = useState(false);
-  const [agentMessages, setAgentMessages] = useState([]);
-  const [agentInput, setAgentInput] = useState('');
-  const [agentConversation, setAgentConversation] = useState(null);
-  const [agentLoading, setAgentLoading] = useState(false);
-  const [agentSending, setAgentSending] = useState(false);
-  const messagesEndRef = useRef(null);
-  const unsubscribeRef = useRef(null);
 
   useEffect(() => {
     const fetchStats = async () => {
