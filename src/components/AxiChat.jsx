@@ -14,6 +14,7 @@ const MemoizedBubble = memo(MessageBubble);
 
 const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessageCleared, speakerAgentId, onSpeakerAgentCleared }) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
