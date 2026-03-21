@@ -179,9 +179,14 @@ export default function AxiCommandDashboard() {
               <HonorRiskPanel />
             </div>
 
-            {/* RIGHT — Treasury */}
+            {/* RIGHT — Treasury Balance */}
             <div className="rounded-2xl border border-slate-700/60 bg-slate-800/60 backdrop-blur p-4">
               <TreasuryStatusPanel />
+            </div>
+
+            {/* RIGHT — Treasury Governance (live proposals + sig status) */}
+            <div className="rounded-2xl border border-purple-700/40 bg-slate-800/60 backdrop-blur p-4">
+              <TreasuryGovernancePanel />
             </div>
 
             {/* MIDDLE — Direct Action Interface */}
