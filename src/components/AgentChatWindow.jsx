@@ -167,7 +167,7 @@ export default function AgentChatWindow({ selectedAgent, allMessages }) {
           </div>
           <Button
             onClick={handleSend}
-            disabled={!message.trim() || sendMessageMutation.isPending}
+            disabled={!message.trim() || sendMessageMutation.isPending || !selectedAgent}
             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 h-[60px] px-6"
           >
             {sendMessageMutation.isPending ? (
