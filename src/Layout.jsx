@@ -88,9 +88,6 @@ export default function Layout({ children, currentPageName }) {
 
       <Toaster />
 
-      {/* Welcome greeting for unauthed visitors */}
-      <WelcomeGreeting />
-
       {/* AxiChat for authenticated users */}
       {!isPublicPage && !isNoFloatPage && (
         <Suspense fallback={null}>
