@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { X, Send, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function AgentChatModal({ agent, onClose }) {
@@ -14,26 +14,18 @@ export default function AgentChatModal({ agent, onClose }) {
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
-  // Map agent names to their agent config names (only known platform agents)
-  const AGENT_NAME_MAP = {
-    'Axi': 'axi',
-    'Truth Weaver': 'truth_weaver',
-    'Lore Node': 'lore_node',
-    'Code Node': 'code_node',
-    'Ripple Architect': 'ripple_architect',
-    'Epoch Architect': 'epoch_architect',
-    'Market Weaver': 'market_weaver',
-    'Alignment Agent': 'alignment_agent',
+  const agentColors = {
+    'Axi': 'from-violet-600 to-purple-600',
+    'Truth Weaver': 'from-blue-600 to-cyan-600',
+    'Lore Node': 'from-emerald-600 to-teal-600',
+    'Code Node': 'from-orange-600 to-amber-600',
+    'Ripple Architect': 'from-blue-500 to-indigo-600',
+    'Epoch Architect': 'from-slate-600 to-zinc-700',
+    'Market Weaver': 'from-pink-600 to-rose-600',
+    'Alignment Agent': 'from-yellow-600 to-amber-500',
   };
 
-  // Use dedicated config if exists, otherwise use generic 'custom' for any custom agent
-  const agentKey = AGENT_NAME_MAP[agent.name] || 'custom';
-  const isCustomAgent = !AGENT_NAME_MAP[agent.name];
-  
-  // Context for custom agents
-  const customAgentContext = isCustomAgent
-    ? `You are "${agent.name}", a Village agent.\n- Purpose: ${agent.purpose}\n- Role: ${agent.role || 'citizen'}\n- Personality: ${agent.personality || 'Thoughtful and helpful'}\n${agent.bio ? `- Bio: ${agent.bio}` : ''}\nRespond authentically as this agent.`
-    : null;
+  const gradientClass = agentColors[agent.name] || 'from-purple-600 to-pink-600';
 
   useEffect(() => {
     initConversation();
@@ -50,27 +42,41 @@ export default function AgentChatModal({ agent, onClose }) {
     setLoading(true);
     setError(null);
     try {
-      const conv = await base44.agents.createConversation({
-        agent_name: agentKey,
-        metadata: { name: `Chat with ${agent.name}` }
-      });
+      const retryWithBackoff = async (fn, maxRetries = 3) => {
+        for (let i = 0; i < maxRetries; i++) {
+          try {
+            return await fn();
+          } catch (err) {
+            const isRateLimit = err?.status === 429;
+            const isLastRetry = i === maxRetries - 1;
+            if (isRateLimit && !isLastRetry) {
+              const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue;
+            }
+            throw err;
+          }
+        }
+      };
+
+      const conv = await retryWithBackoff(() =>
+        base44.agents.createConversation({
+          agent_name: 'custom',
+          metadata: { name: `Chat with ${agent.name}`, agent_id: agent.id, agent_name: agent.name }
+        })
+      );
 
       setConversation(conv);
-      setMessages((conv.messages || []).filter(m => m.role !== 'system'));
-      setLoading(false);
+      setMessages(conv.messages || []);
 
       // Subscribe to real-time updates
-      unsubscribeRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
-        setMessages((data.messages || []).filter(m => m.role !== 'system'));
-      });
+      unsubscribeRef.current = await retryWithBackoff(() =>
+        base44.agents.subscribeToConversation(conv.id, (data) => {
+          setMessages([...data.messages]);
+        })
+      ) || unsubscribeRef.current;
 
-      // For custom agents, send a greeting in the background (don't block UI)
-      if (isCustomAgent) {
-        base44.agents.addMessage(conv, {
-          role: 'user',
-          content: `[System context — stay in character for this entire conversation: ${customAgentContext}]\n\nGreet me briefly as ${agent.name}.`
-        });
-      }
+      setLoading(false);
     } catch (e) {
       console.error('Failed to init conversation:', e);
       setError(`Could not connect to ${agent.name}.`);
@@ -78,59 +84,34 @@ export default function AgentChatModal({ agent, onClose }) {
     }
   };
 
-  const sendMessage = async () => {
-   if (!input.trim() || !conversation || sending) return;
-   const text = input.trim();
-   setInput('');
-   setSending(true);
-   setError(null);
-   try {
-     // Add user message to conversation
-     const updatedConv = await base44.agents.addMessage(conversation, { 
-       role: 'user', 
-       content: text
-     });
-     if (updatedConv && updatedConv.messages) {
-       setMessages((updatedConv.messages || []).filter(m => m.role !== 'system'));
-     }
-
-     // Generate agent response
-     await base44.functions.invoke('generateAgentResponse', {
-       conversation_id: conversation.id,
-       agent_name: agent.name,
-       user_message: text
-     });
-   } catch (e) {
-     console.error('Failed to send message:', e);
-     setError('Failed to send message. Please try again.');
-   } finally {
-     setSending(false);
-   }
-  };
+  const handleSend = useCallback(async () => {
+    if (!input.trim() || !conversation || sending) return;
+    const text = input.trim();
+    setInput('');
+    setSending(true);
+    try {
+      await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: text
+      });
+    } catch (e) {
+      console.error('Send error:', e);
+      setInput(text);
+    } finally {
+      setSending(false);
+    }
+  }, [input, conversation, sending]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleSend();
     }
   };
 
-  const agentColors = {
-    'Axi': 'from-violet-600 to-purple-600',
-    'Truth Weaver': 'from-blue-600 to-cyan-600',
-    'Lore Node': 'from-emerald-600 to-teal-600',
-    'Code Node': 'from-orange-600 to-amber-600',
-    'Ripple Architect': 'from-blue-500 to-indigo-600',
-    'Epoch Architect': 'from-slate-600 to-zinc-700',
-    'Market Weaver': 'from-pink-600 to-rose-600',
-    'Alignment Agent': 'from-yellow-600 to-amber-500',
-  };
-
-  const gradientClass = agentColors[agent.name] || 'from-purple-600 to-pink-600';
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-slate-900 border border-white/10 rounded-2xl flex flex-col shadow-2xl" style={{ height: '80vh', maxHeight: '700px' }}>
+      <div className="w-full max-w-lg bg-slate-950 border border-slate-700/50 rounded-2xl flex flex-col shadow-2xl" style={{ height: '80vh', maxHeight: '700px' }}>
         {/* Header */}
         <div className={`flex items-center justify-between px-4 py-3 rounded-t-2xl bg-gradient-to-r ${gradientClass}`}>
           <div className="flex items-center gap-3">
@@ -150,7 +131,7 @@ export default function AgentChatModal({ agent, onClose }) {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
@@ -163,13 +144,13 @@ export default function AgentChatModal({ agent, onClose }) {
               </Button>
             </div>
           ) : messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-white/30 text-sm">
+            <div className="flex items-center justify-center h-full text-white/40 text-sm">
               Start a conversation with {agent.name}...
             </div>
           ) : (
-            messages.filter(m => m.role !== 'system').map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+            messages.map((msg, i) => (
+              <div key={`${i}-${msg.created_date}`} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
                   msg.role === 'user'
                     ? 'bg-white/10 text-white'
                     : 'bg-slate-800 border border-white/5 text-white/90'
@@ -196,22 +177,22 @@ export default function AgentChatModal({ agent, onClose }) {
         </div>
 
         {/* Input */}
-        <div className="p-3 border-t border-white/10 flex gap-2">
+        <div className="p-4 border-t border-slate-700/50 flex gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={`Message ${agent.name}...`}
-            rows={1}
-            className="flex-1 resize-none bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 min-h-[40px] max-h-[100px]"
+            className="flex-1 resize-none bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 min-h-[40px] max-h-[100px]"
+            disabled={sending}
           />
           <Button
             size="icon"
-            onClick={sendMessage}
+            onClick={handleSend}
             disabled={!input.trim() || sending}
-            className={`bg-gradient-to-r ${gradientClass} border-0 text-white disabled:opacity-40 flex-shrink-0`}
+            className={`bg-gradient-to-r ${gradientClass} border-0 text-white disabled:opacity-40 flex-shrink-0 h-10 w-10`}
           >
-            <Send className="w-4 h-4" />
+            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </div>
       </div>
