@@ -33,22 +33,11 @@ export default function PublicAgentGreeter() {
         });
         setConversation(conv);
         setMessages(conv.messages || []);
+        setHasGreeted(true);
 
         unsubscribeRef.current = await base44.agents.subscribeToConversation(conv.id, (data) => {
           setMessages([...data.messages]);
         });
-
-        // Send intelligent greeting from Axi on first open
-        if (!hasGreeted && !initialized.current) {
-          setTimeout(() => {
-            base44.agents.addMessage(conv, {
-              role: 'user',
-              content: '[system: User has arrived at the landing page]'
-            }).catch(err => console.error('Failed to send system message:', err));
-            setHasGreeted(true);
-            initialized.current = true;
-          }, 500);
-        }
       } catch (err) {
         console.error('Failed to init public agent:', err);
       } finally {
