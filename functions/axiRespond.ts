@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     // Handle automation events (AgentMessage creation triggered via entity event)
     if (body.event?.type === 'create' && body.event?.entity_name === 'AgentMessage') {
       const msg = body.data;
-      conversation_id = msg?.conversation_id;
+      conversation_id = msg?.conversation_id || msg?.context?.conversation_id;
       user_message = msg?.content || msg?.message;
       
       // Skip if this is Axi's own response (avoid infinite loop)
@@ -24,10 +24,13 @@ Deno.serve(async (req) => {
       user_message = body.user_message;
     }
 
-    if (!conversation_id || !user_message) {
-      console.log('[Axi] Missing fields:', { conversation_id, user_message });
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!user_message) {
+      console.log('[Axi] Missing message content');
+      return Response.json({ error: 'Missing message content' }, { status: 400 });
     }
+
+    // If no conversation_id, generate response anyway (for standalone messages)
+    console.log('[Axi] Processing message:', { conversation_id, has_message: !!user_message });
 
     console.log(`[Axi] Generating response for: "${user_message}"`);
     
