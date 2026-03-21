@@ -163,17 +163,29 @@ export default function GovernancePage() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="all" className="data-[state=active]:bg-purple-500/20">
-              All Agents ({stats.total})
-            </TabsTrigger>
-            <TabsTrigger value="concerning" className="data-[state=active]:bg-red-500/20">
-              Concerning ({concerningAgents.length})
-            </TabsTrigger>
-            <TabsTrigger value="laws" className="data-[state=active]:bg-blue-500/20">
-              <Scale className="w-4 h-4 mr-2" />
-              Village Laws
-            </TabsTrigger>
+          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl flex gap-1 h-auto w-fit">
+            {[
+              { value: 'all', label: 'All Agents', count: stats.total, gradient: 'from-purple-600 to-indigo-600' },
+              { value: 'concerning', label: 'Concerning', count: concerningAgents.length, gradient: 'from-red-600 to-orange-600' },
+              { value: 'laws', label: 'Village Laws', icon: Scale, gradient: 'from-blue-600 to-cyan-600' },
+            ].map(({ value, label, count, icon: Icon, gradient }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  text-white/50 hover:text-white/80
+                  data-[state=active]:bg-gradient-to-r data-[state=active]:${gradient}
+                  data-[state=active]:text-white data-[state=active]:shadow-lg`}
+              >
+                {Icon && <Icon className="w-3.5 h-3.5" />}
+                {label}
+                {count !== undefined && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/20 text-xs">
+                    {count}
+                  </span>
+                )}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* All Agents */}

@@ -395,13 +395,25 @@ export default function GovernanceHub() {
         </Card>
 
         <Tabs defaultValue="active" className="space-y-6">
-          <TabsList className="bg-white/10">
-            <TabsTrigger value="active">
-              Active Proposals ({activeProposals.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed">
-              Completed ({completedProposals.length})
-            </TabsTrigger>
+          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl flex gap-1 h-auto w-fit">
+            {[
+              { value: 'active', label: 'Active Proposals', count: activeProposals.length, color: 'from-yellow-500 to-orange-500' },
+              { value: 'completed', label: 'Completed', count: completedProposals.length, color: 'from-purple-600 to-pink-600' },
+            ].map(({ value, label, count, color }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  text-white/50 hover:text-white/80
+                  data-[state=active]:bg-gradient-to-r data-[state=active]:${color}
+                  data-[state=active]:text-white data-[state=active]:shadow-lg`}
+              >
+                {label}
+                <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/20 text-xs">
+                  {count}
+                </span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* Active Proposals */}

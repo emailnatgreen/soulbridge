@@ -354,11 +354,24 @@ export default function TreasuryDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="commitments">Commitments</TabsTrigger>
-            <TabsTrigger value="sustainability">Sustainability</TabsTrigger>
-            <TabsTrigger value="activities">Recent Activities</TabsTrigger>
+          <TabsList className="bg-slate-100 border border-slate-200 p-1 rounded-xl flex gap-1 h-auto w-fit">
+            {[
+              { value: 'overview', label: 'Overview', gradient: 'from-indigo-600 to-purple-600' },
+              { value: 'commitments', label: 'Commitments', gradient: 'from-amber-500 to-orange-500' },
+              { value: 'sustainability', label: 'Sustainability', gradient: 'from-emerald-500 to-green-600' },
+              { value: 'activities', label: 'Recent Activities', gradient: 'from-blue-500 to-cyan-500' },
+            ].map(({ value, label, gradient }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  text-slate-500 hover:text-slate-800
+                  data-[state=active]:bg-gradient-to-r data-[state=active]:${gradient}
+                  data-[state=active]:text-white data-[state=active]:shadow-md`}
+              >
+                {label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* Overview Tab */}
