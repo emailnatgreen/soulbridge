@@ -73,6 +73,7 @@ const AuthenticatedApp = () => {
       <Route path="/NewProposalDraft" element={<LayoutWrapper currentPageName="NewProposalDraft"><NewProposalDraft /></LayoutWrapper>} />
       <Route path="/governance/new-proposal" element={<LayoutWrapper currentPageName="NewProposalDraft"><NewProposalDraft /></LayoutWrapper>} />
       <Route path="/TreasuryAllocationProposal" element={<LayoutWrapper currentPageName="TreasuryAllocationProposal"><TreasuryAllocationProposal /></LayoutWrapper>} />
+      <Route path="/TreasurySigningHelper" element={<LayoutWrapper currentPageName="TreasurySigningHelper"><TreasurySigningHelper /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
