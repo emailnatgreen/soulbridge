@@ -52,21 +52,27 @@ export default function AgentChatModal({ agent, onClose }) {
     try {
       const conv = await base44.agents.createConversation({
         agent_name: agentKey,
-        metadata: { 
-          name: `Chat with ${agent.name}`,
-          system_prompt: isCustomAgent ? customAgentContext : undefined
-        }
+        metadata: { name: `Chat with ${agent.name}` }
       });
 
-      setConversation(conv);
-      setMessages((conv.messages || []).filter(m => m.role !== 'system'));
+      // For custom agents, prime with a system-style context message so Axi stays in character
+      if (isCustomAgent) {
+        await base44.agents.addMessage(conv, {
+          role: 'user',
+          content: `[Context: ${customAgentContext}]\n\nPlease acknowledge that you are ready to speak as ${agent.name} and give a brief greeting in character.`
+        });
+      }
+
+      const fresh = await base44.agents.getConversation(conv.id);
+      setConversation(fresh);
+      setMessages((fresh.messages || []).filter(m => m.role !== 'system'));
 
       unsubscribeRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
         setMessages((data.messages || []).filter(m => m.role !== 'system'));
       });
     } catch (e) {
       console.error('Failed to init conversation:', e);
-      setError(`Could not connect to ${agent.name}. Agent key: "${agentKey}"`);
+      setError(`Could not connect to ${agent.name}.`);
     }
     setLoading(false);
   };
