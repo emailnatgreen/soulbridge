@@ -154,10 +154,20 @@ export default function PublicAgentGreeter() {
                 </div>
               )}
               {!loading && messages.length === 0 && (
-                <div className="text-center py-8">
-                  <Sparkles className="w-8 h-8 text-purple-400 mx-auto mb-2 opacity-40" />
-                  <p className="text-white/40 text-xs">Hello, welcome to SoulBridge</p>
-                </div>
+                <motion.div 
+                  className="text-center py-8"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.6 }}
+                >
+                  <motion.div
+                    animate={{ scale: [0.95, 1.05, 0.95] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Sparkles className="w-10 h-10 text-purple-400 mx-auto mb-2" />
+                  </motion.div>
+                  <p className="text-purple-200 text-sm font-medium">I am awakening...</p>
+                </motion.div>
               )}
               {messages.map((msg, idx) => (
                 <MemoizedBubble key={`${idx}-${msg.created_date}`} message={msg} />
