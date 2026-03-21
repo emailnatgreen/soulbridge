@@ -105,7 +105,8 @@ Deno.serve(async (req) => {
 
     // Combine multi-sig blobs from the quorum signers (use first QUORUM valid ones)
 
-    // Combine signatures into a multi-signed transaction
+    // Combine all collected signatures into a single multi-signed transaction
+    // All blobs must derive from the same prepared_multisig_tx (same Sequence, Fee, LastLedgerSequence)
     const multiSigned = xrpl.multisign(signerBlobs);
 
     // Submit the multi-signed transaction
