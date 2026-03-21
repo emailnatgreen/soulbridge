@@ -369,35 +369,39 @@ export default function AIProjectHub() {
         </Card>
 
         <Tabs defaultValue="tasks" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="tasks">
-              <ListTodo className="w-4 h-4 mr-2" />
-              Tasks
-            </TabsTrigger>
-            <TabsTrigger value="ai-insights">
-              <Brain className="w-4 h-4 mr-2" />
-              AI Insights
-            </TabsTrigger>
-            <TabsTrigger value="chat">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Team Chat
-            </TabsTrigger>
-            <TabsTrigger value="milestones">
-              <Target className="w-4 h-4 mr-2" />
-              Milestones
-            </TabsTrigger>
-              <TabsTrigger value="team">
-                <Users className="w-4 h-4 mr-2" />
-                Team
-              </TabsTrigger>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl flex gap-1 h-auto">
+              {[
+                { value: 'tasks', icon: ListTodo, label: 'Tasks', count: tasks.length },
+                { value: 'ai-insights', icon: Brain, label: 'AI Insights' },
+                { value: 'chat', icon: MessageSquare, label: 'Chat', count: messages.length },
+                { value: 'milestones', icon: Target, label: 'Milestones', count: project.milestones?.length },
+                { value: 'team', icon: Users, label: 'Team', count: project.team_members?.length },
+              ].map(({ value, icon: Icon, label, count }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                    text-white/50 hover:text-white/80
+                    data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600
+                    data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-900/40"
+                >
+                  <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="hidden sm:inline">{label}</span>
+                  {count !== undefined && count > 0 && (
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/20 text-xs leading-none">
+                      {count}
+                    </span>
+                  )}
+                </TabsTrigger>
+              ))}
             </TabsList>
             {tasks.filter(t => !t.assigned_agent_id && t.status !== 'completed').length > 0 && (
               <Button
                 onClick={() => autoAssignAllMutation.mutate()}
                 disabled={autoAssignAllMutation.isPending}
                 size="sm"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shrink-0"
               >
                 {autoAssignAllMutation.isPending ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
