@@ -37,60 +37,64 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  const STALE = 5 * 60 * 1000; // 5 min cache
+  const STALE = 10 * 60 * 1000; // 10 min cache
+  const RETRY_OPTS = { retry: 1, retryDelay: 3000 };
 
-  const { data: agents = [], isLoading: loadingAgents } = useQuery({
+  // Tier 1 — load immediately (critical)
+  const { data: agents = [] } = useQuery({
     queryKey: ['agents-all'],
     queryFn: () => base44.entities.Agent.list(),
-    staleTime: STALE,
-  });
-
-  const { data: proposals = [], isLoading: loadingProposals } = useQuery({
-    queryKey: ['governance-proposals-active'],
-    queryFn: () => base44.entities.GovernanceProposal.filter({ status: 'active' }),
-    staleTime: STALE,
-  });
-
-  const { data: credentials = [] } = useQuery({
-    queryKey: ['did-credentials-active'],
-    queryFn: () => base44.entities.DidCredential.filter({ status: 'active' }),
-    staleTime: STALE,
+    staleTime: STALE, ...RETRY_OPTS,
   });
 
   const { data: wallets = [] } = useQuery({
     queryKey: ['wallets-home'],
     queryFn: () => base44.entities.Wallet.list(),
-    staleTime: STALE,
+    staleTime: STALE, ...RETRY_OPTS,
   });
 
-  const { data: trustLinks = [] } = useQuery({
-    queryKey: ['trust-relationships'],
-    queryFn: () => base44.entities.TrustRelationship.filter({ status: 'active' }),
-    staleTime: STALE,
+  const { data: proposals = [] } = useQuery({
+    queryKey: ['governance-proposals-active'],
+    queryFn: () => base44.entities.GovernanceProposal.filter({ status: 'active' }),
+    staleTime: STALE, ...RETRY_OPTS,
   });
 
-  const { data: mentorships = [] } = useQuery({
-    queryKey: ['mentorships-active'],
-    queryFn: () => base44.entities.MentorshipRelationship.filter({ status: 'active' }),
-    staleTime: STALE,
+  // Tier 2 — deferred by 1s to avoid burst
+  const { data: credentials = [] } = useQuery({
+    queryKey: ['did-credentials-active'],
+    queryFn: () => new Promise(r => setTimeout(r, 1000)).then(() => base44.entities.DidCredential.filter({ status: 'active' })),
+    staleTime: STALE, ...RETRY_OPTS,
   });
 
   const { data: wellbeings = [] } = useQuery({
     queryKey: ['agent-wellbeing'],
-    queryFn: () => base44.entities.AgentWellbeing.list(),
-    staleTime: STALE,
+    queryFn: () => new Promise(r => setTimeout(r, 1500)).then(() => base44.entities.AgentWellbeing.list()),
+    staleTime: STALE, ...RETRY_OPTS,
   });
 
   const { data: risks = [] } = useQuery({
     queryKey: ['risks-all'],
-    queryFn: () => base44.entities.RiskRegister.list(),
-    staleTime: STALE,
+    queryFn: () => new Promise(r => setTimeout(r, 2000)).then(() => base44.entities.RiskRegister.list()),
+    staleTime: STALE, ...RETRY_OPTS,
+  });
+
+  // Tier 3 — deferred by 3s (badge-only, low priority)
+  const { data: trustLinks = [] } = useQuery({
+    queryKey: ['trust-relationships'],
+    queryFn: () => new Promise(r => setTimeout(r, 3000)).then(() => base44.entities.TrustRelationship.filter({ status: 'active' })),
+    staleTime: STALE, ...RETRY_OPTS,
+  });
+
+  const { data: mentorships = [] } = useQuery({
+    queryKey: ['mentorships-active'],
+    queryFn: () => new Promise(r => setTimeout(r, 3500)).then(() => base44.entities.MentorshipRelationship.filter({ status: 'active' })),
+    staleTime: STALE, ...RETRY_OPTS,
   });
 
   const { data: jokeSubmissions = [] } = useQuery({
     queryKey: ['joke-submissions'],
-    queryFn: () => base44.entities.JokeSubmission.list(),
-    staleTime: STALE,
+    queryFn: () => new Promise(r => setTimeout(r, 4000)).then(() => base44.entities.JokeSubmission.list()),
+    staleTime: STALE, ...RETRY_OPTS,
   });
 
   const sendableWallets = wallets.filter(w => w.classic_address && w.network === 'mainnet');
