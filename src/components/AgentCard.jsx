@@ -10,6 +10,7 @@ import AgentInsightsPanel from './AgentInsightsPanel';
 
 export default function AgentCard({ agent, wallets }) {
   const [showChat, setShowChat] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
   const wallet = wallets.find(w => w.id === agent.wallet_id);
   
   const statusConfig = {
