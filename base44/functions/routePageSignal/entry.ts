@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     });
 
     return Response.json({ 
-      success: true, 
+      success: true,
       signal: 'page_view_routed',
       signalId: signal.id,
       page: page,
