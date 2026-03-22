@@ -4,8 +4,9 @@ import { createPageUrl } from '../utils';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Wallet, Activity, Edit, Eye, MessageCircle } from 'lucide-react';
+import { Sparkles, Wallet, Activity, Edit, Eye, MessageCircle, BarChart2 } from 'lucide-react';
 import AgentChatModal from './AgentChatModal';
+import AgentInsightsPanel from './AgentInsightsPanel';
 
 export default function AgentCard({ agent, wallets }) {
   const [showChat, setShowChat] = useState(false);
