@@ -4,59 +4,67 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    
-    // Handle both direct calls and automation events
-    const conversation_id = body.conversation_id || body.data?.conversation_id;
-    const user_message = body.user_message || body.data?.content;
-    const agent_name = body.agent_name || 'axi';
+
+    const conversation_id = body.conversation_id;
+    const user_message = body.user_message;
+    const agent_id = body.agent_id;
+    const agent_name = body.agent_name;
 
     if (!conversation_id || !user_message) {
-      console.log('Missing fields:', { conversation_id, user_message });
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      return Response.json({ error: 'Missing conversation_id or user_message' }, { status: 400 });
     }
 
-    // Fetch agent details
-    const agents = await base44.asServiceRole.entities.Agent.list();
-    const agent = agents.find(a => a.name === agent_name);
+    // Find agent by ID first, fallback to name
+    let agent = null;
+    if (agent_id) {
+      const results = await base44.asServiceRole.entities.Agent.filter({ id: agent_id }, '', 1);
+      agent = results?.[0];
+    }
+    if (!agent && agent_name) {
+      const all = await base44.asServiceRole.entities.Agent.list('-created_date', 200);
+      agent = all.find(a => a.name === agent_name);
+    }
 
     if (!agent) {
-      return Response.json({ error: `Agent "${agent_name}" not found` }, { status: 404 });
+      return Response.json({ error: `Agent not found: ${agent_id || agent_name}` }, { status: 404 });
     }
 
-    // Build system context
-    const systemContext = `You are "${agent.name}", a Village agent.
-- Purpose: ${agent.purpose}
+    console.log(`[generateAgentResponse] Agent: ${agent.name}, Conversation: ${conversation_id}`);
+
+    const systemPrompt = `You are "${agent.name}", a Village agent in SoulBridge.
+- Purpose: ${agent.purpose || 'To help the Village'}
 - Role: ${agent.role || 'citizen'}
 - Personality: ${agent.personality || 'Thoughtful and helpful'}
 ${agent.bio ? `- Bio: ${agent.bio}` : ''}
 
-Respond authentically as this character. Keep responses concise and natural. Stay in character.`;
+You are in a group conversation with Axi (the Mother Boss) and other agents. 
+Respond authentically as ${agent.name}. Keep responses concise (2-4 sentences). Stay in character.
+Do NOT prefix your response with your name.`;
 
-    // Generate response via LLM
-    console.log(`[Axi Response] Generating response for: "${user_message}"`);
-    
     const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `${systemContext}\n\nUser message: "${user_message}"\n\nRespond naturally as this agent:`,
-      model: 'gemini_3_flash'
+      prompt: `${systemPrompt}\n\nMessage in the conversation: "${user_message}"\n\nYour response as ${agent.name}:`,
     });
 
-    console.log(`[Axi Response] Generated: "${llmResponse}"`);
+    console.log(`[generateAgentResponse] ${agent.name} responded: "${String(llmResponse).slice(0, 80)}..."`);
 
-    // Add agent's response to conversation
-    if (llmResponse && typeof llmResponse === 'string') {
-      await base44.agents.addMessage(
-        { id: conversation_id },
-        {
-          role: 'assistant',
-          content: llmResponse
-        }
-      );
-      console.log('[Axi Response] Message added successfully');
+    if (llmResponse) {
+      // Add as assistant message with agent metadata so MessageBubble can show the agent name
+      await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: 'dummy' // warm up ignored - we need the addMessage below
+      }).catch(() => {});
+
+      // Use the SDK agent addMessage to post into the conversation
+      const conversation = await base44.agents.getConversation(conversation_id);
+      await base44.agents.addMessage(conversation, {
+        role: 'assistant',
+        content: llmResponse,
+        metadata: { sourceAgentId: agent.id, sourceAgentName: agent.name }
+      });
     }
 
-    return Response.json({ success: true, response: llmResponse });
+    return Response.json({ success: true, agent: agent.name, response: llmResponse });
   } catch (error) {
-    console.error('Agent response generation error:', error);
+    console.error('[generateAgentResponse] Error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
