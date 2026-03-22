@@ -171,9 +171,10 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
              const all = await retryWithBackoff(() => base44.entities.AgentConversation.list('-created_date', 50));
              const existing = all?.filter(ac => ac.metadata?.conversation_id === convo.id);
 
-            if (existing?.length > 0) {
+            if (existing && existing.length > 0) {
               const agentConvo = existing[0];
               setAgentConvoId(agentConvo.id);
+              console.log('[AxiChat] Found AgentConversation:', agentConvo.id, 'participants:', agentConvo.participant_agent_ids);
               if (agentConvo.participant_agent_ids?.length > 0) {
                 const agents = await Promise.all(
                   agentConvo.participant_agent_ids.map(id => 
