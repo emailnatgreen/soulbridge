@@ -16,6 +16,7 @@ import ImageStorage from './pages/ImageStorage';
 import NewProposalDraft from './pages/NewProposalDraft';
 import TreasuryAllocationProposal from './pages/TreasuryAllocationProposal';
 import TreasurySigningHelper from './pages/TreasurySigningHelper';
+import GovernanceVotingDashboard from './pages/GovernanceVotingDashboard';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
