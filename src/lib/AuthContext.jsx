@@ -124,8 +124,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    // Use clean pathname only (no preview query params) to avoid redirect loops after OAuth
+    const cleanNextUrl = window.location.origin + window.location.pathname;
+    base44.auth.redirectToLogin(cleanNextUrl);
   };
 
   return (
