@@ -218,8 +218,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     if (prefilledMessage && conversation) {
       base44.agents.addMessage(conversation, { 
         role: 'user', 
-        content: prefilledMessage,
-        metadata: speakerAgentId ? { sourceAgentId: speakerAgentId } : undefined
+        content: prefilledMessage
       }).catch(err => console.error('Failed to add prefilled message:', err));
       if (onMessageCleared) onMessageCleared();
     }
