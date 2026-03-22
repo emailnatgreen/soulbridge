@@ -80,8 +80,8 @@ export default function Landing() {
     fetchStats();
   }, []);
 
-  const handleGoogleLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
-  const handleEmailLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
+  const handleGoogleLogin = () => base44.auth.redirectToLogin('/Home');
+  const handleEmailLogin = () => base44.auth.redirectToLogin('/Home');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative flex flex-col">
