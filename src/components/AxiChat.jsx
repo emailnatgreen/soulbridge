@@ -150,7 +150,10 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
           }));
         }
         setConversation(convo);
-        setMessages(convo.messages || []);
+        // Only load the last PAGE_SIZE messages initially for speed
+        const allMsgs = convo.messages || [];
+        setMessages(allMsgs.slice(-PAGE_SIZE));
+        setAllMessages(allMsgs);
         
         // Load or create AgentConversation and store its ID
          const initAgentConvo = async () => {
