@@ -276,6 +276,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
           base44.functions.invoke('generateAgentResponse', {
             conversation_id: conversation.id,
             user_message: msg,
+            agent_id: agent.id,
             agent_name: agent.name
           }).catch(err => console.error(`Failed to get response from ${agent.name}:`, err));
         });
