@@ -48,17 +48,10 @@ Do NOT prefix your response with your name.`;
     console.log(`[generateAgentResponse] ${agent.name} responded: "${String(llmResponse).slice(0, 80)}..."`);
 
     if (llmResponse) {
-      // Add as assistant message with agent metadata so MessageBubble can show the agent name
-      await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: 'dummy' // warm up ignored - we need the addMessage below
-      }).catch(() => {});
-
-      // Use the SDK agent addMessage to post into the conversation
       const conversation = await base44.agents.getConversation(conversation_id);
       await base44.agents.addMessage(conversation, {
         role: 'assistant',
-        content: llmResponse,
-        metadata: { sourceAgentId: agent.id, sourceAgentName: agent.name }
+        content: `**${agent.name}:** ${llmResponse}`
       });
     }
 
