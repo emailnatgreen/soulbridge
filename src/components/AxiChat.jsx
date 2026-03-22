@@ -250,8 +250,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     try {
       await base44.agents.addMessage(conversation, { 
         role: 'user', 
-        content: msg,
-        metadata: localSpeakerAgentId ? { sourceAgentId: localSpeakerAgentId } : undefined
+        content: msg
       });
       setLocalSpeakerAgentId(null);
     } catch (err) {
