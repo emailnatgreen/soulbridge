@@ -270,6 +270,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
       // Also trigger each active agent to respond
       if (activeAgents.length > 0) {
+        console.log('[AxiChat] Triggering responses from agents:', activeAgents.map(a => a.name));
         activeAgents.forEach(agent => {
           base44.functions.invoke('generateAgentResponse', {
             conversation_id: conversation.id,
