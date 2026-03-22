@@ -72,7 +72,10 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
          const convo = await base44.agents.getConversation(conversationId);
          setConversation(convo);
-         setMessages(convo.messages || []);
+         const all = convo.messages || [];
+         setAllMessages(all);
+         setMessages(all.slice(-PAGE_SIZE));
+         setPage(1);
          
          // Load persisted agent participants from AgentConversation entity
          try {
