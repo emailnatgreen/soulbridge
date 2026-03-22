@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, ChevronUp, Users, UserPlus } from 'lucide-react';
+import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, ChevronUp, UserPlus } from 'lucide-react';
 import AgentPicker from '@/components/axi/AgentPicker';
 import { useNavigate } from 'react-router-dom';
 import MessageBubble from '@/components/MessageBubble';
