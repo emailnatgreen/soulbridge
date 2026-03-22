@@ -84,7 +84,7 @@ export default function Landing() {
   const handleEmailLogin = () => base44.auth.redirectToLogin(createPageUrl('Home'));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative flex flex-col">
       <ParticleCanvas />
 
       {/* Global Background Watermark */}
