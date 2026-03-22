@@ -122,7 +122,19 @@ export default function AgentCard({ agent, wallets }) {
             <MessageCircle className="w-3 h-3 mr-2" />
             Chat
           </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowInsights(p => !p)}
+            className={`text-blue-300 hover:bg-blue-500/10 ${showInsights ? 'bg-blue-500/10' : ''}`}
+            title="Agent Insights"
+          >
+            <BarChart2 className="w-3 h-3" />
+          </Button>
         </div>
+
+        {/* Insights Panel */}
+        {showInsights && <AgentInsightsPanel agent={agent} />}
       </CardContent>
     </Card>
 
