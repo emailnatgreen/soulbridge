@@ -54,10 +54,14 @@ const AuthenticatedApp = () => {
     }
   }
 
+  // In editor preview, redirect / to /Home so the dashboard is shown
+  const urlParams = new URLSearchParams(window.location.search);
+  const isEditorPreview = urlParams.has('_preview_token');
+
   // Render the main app
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={isEditorPreview ? <LayoutWrapper currentPageName="Home"><Pages.Home /></LayoutWrapper> : <Landing />} />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
