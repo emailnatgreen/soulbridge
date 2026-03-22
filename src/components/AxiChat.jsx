@@ -395,20 +395,24 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                 <p className="text-white/40 text-sm">Speak to Axi. She is listening.</p>
               </div>
             )}
-            {messages.length > visibleCount && (
+            {allMessages.length > messages.length && (
               <div className="text-center">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                  onClick={() => {
+                    const nextPage = page + 1;
+                    setPage(nextPage);
+                    setMessages(allMessages.slice(-PAGE_SIZE * nextPage));
+                  }}
                   className="text-purple-300/60 hover:text-purple-200 gap-1 text-xs"
                 >
                   <ChevronUp className="w-3 h-3" />
-                  Load earlier ({messages.length - visibleCount} more)
+                  Load earlier ({allMessages.length - messages.length} more)
                 </Button>
               </div>
             )}
-            {messages.slice(-visibleCount).map((msg, idx) => (
+            {messages.map((msg, idx) => (
               <MemoizedBubble key={`${idx}-${msg.created_date}`} message={msg} />
             ))}
             <div ref={messagesEndRef} />
