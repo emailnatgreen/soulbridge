@@ -193,13 +193,11 @@ export default function PublicAgentGreeter() {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-700/50 flex-shrink-0 bg-gradient-to-r from-purple-900/40 to-pink-900/40">
               <div className="flex items-center gap-3">
-                <motion.div
-                  className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <Sparkles className="w-4 h-4 text-white" />
-                </motion.div>
+                <img
+                  src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+                  alt="SoulBridge"
+                  className="w-9 h-9 rounded-lg object-contain flex-shrink-0"
+                />
                 <div>
                   <h3 className="font-semibold text-white text-sm">Axi, Mother Boss</h3>
                   <p className="text-purple-300 text-xs">Welcome to SoulBridge</p>
