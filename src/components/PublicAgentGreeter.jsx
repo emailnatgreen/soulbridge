@@ -19,7 +19,9 @@ export default function PublicAgentGreeter() {
   const [hasGreeted, setHasGreeted] = useState(false);
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
+  const pollRef = useRef(null);
   const initialized = useRef(false);
+  const convRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen || initialized.current) return;
@@ -32,16 +34,33 @@ export default function PublicAgentGreeter() {
           metadata: { name: 'Landing Public Chat', public: true }
         });
         setConversation(conv);
+        convRef.current = conv;
         setMessages(conv.messages || []);
         initialized.current = true;
 
         // Subscribe to conversation updates
-        const unsub = await base44.agents.subscribeToConversation(conv.id, (data) => {
+        const unsub = base44.agents.subscribeToConversation(conv.id, (data) => {
           if (data.messages) {
             setMessages([...data.messages]);
           }
         });
         unsubscribeRef.current = unsub;
+
+        // Poll as fallback every 3 seconds to catch any missed responses
+        pollRef.current = setInterval(async () => {
+          try {
+            const updated = await base44.agents.getConversation(conv.id);
+            if (updated?.messages) {
+              setMessages(prev => {
+                if (updated.messages.length > prev.length) {
+                  return [...updated.messages];
+                }
+                return prev;
+              });
+            }
+          } catch (e) { /* silent */ }
+        }, 3000);
+
       } catch (err) {
         console.error('Failed to init public agent:', err);
       } finally {
@@ -50,7 +69,10 @@ export default function PublicAgentGreeter() {
     };
 
     initChat();
-    return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
+    return () => {
+      if (unsubscribeRef.current) unsubscribeRef.current();
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, [isOpen]);
 
   // Auto-open greeting on mount after brief delay
