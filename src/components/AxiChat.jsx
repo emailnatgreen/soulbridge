@@ -31,6 +31,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
   const [agentConvoId, setAgentConvoId] = useState(null);
   const [userAgentId, setUserAgentId] = useState(null);
   const [localSpeakerAgentId, setLocalSpeakerAgentId] = useState(null);
+  const [showAgentPicker, setShowAgentPicker] = useState(false);
 
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
