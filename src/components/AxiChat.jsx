@@ -263,18 +263,30 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     if (onMessageCleared) onMessageCleared();
     setSending(true);
     try {
+      // Send to Axi (the base agent conversation handles this)
       await base44.agents.addMessage(conversation, { 
         role: 'user', 
         content: msg
       });
       setLocalSpeakerAgentId(null);
+
+      // Also trigger each active agent to respond
+      if (activeAgents.length > 0) {
+        activeAgents.forEach(agent => {
+          base44.functions.invoke('generateAgentResponse', {
+            conversation_id: conversation.id,
+            user_message: msg,
+            agent_name: agent.name
+          }).catch(err => console.error(`Failed to get response from ${agent.name}:`, err));
+        });
+      }
     } catch (err) {
       console.error('Send error:', err);
       setInput(msg);
     } finally {
       setSending(false);
     }
-  }, [input, conversation, sending, onMessageCleared, localSpeakerAgentId]);
+  }, [input, conversation, sending, onMessageCleared, localSpeakerAgentId, activeAgents]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
