@@ -45,7 +45,7 @@ const AuthenticatedApp = () => {
       // Allow Landing (/) to be public — only redirect on other pages
       // Also check for token in URL params (post-OAuth redirect) to avoid redirect loops
       const urlParams = new URLSearchParams(window.location.search);
-      const hasToken = urlParams.has('token') || urlParams.has('base44_token');
+      const hasToken = urlParams.has('token') || urlParams.has('base44_token') || urlParams.has('_preview_token');
       if (window.location.pathname !== '/' && !hasToken) {
         navigateToLogin();
         return null;
