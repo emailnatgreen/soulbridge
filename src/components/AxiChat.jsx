@@ -284,6 +284,34 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
 
 
+  const handleAddAgent = useCallback(async (agent) => {
+    try {
+      // Update AgentConversation participant list
+      if (agentConvoId) {
+        const current = await base44.entities.AgentConversation.filter({ id: agentConvoId }, '', 1);
+        const existing = current?.[0]?.participant_agent_ids || [];
+        if (!existing.includes(agent.id)) {
+          await base44.entities.AgentConversation.update(agentConvoId, {
+            participant_agent_ids: [...existing, agent.id]
+          });
+        }
+      }
+
+      setActiveAgents(prev => prev.find(a => a.id === agent.id) ? prev : [...prev, agent]);
+      setShowAgentPicker(false);
+
+      // Notify the conversation
+      if (conversation) {
+        await base44.agents.addMessage(conversation, {
+          role: 'user',
+          content: `[System: ${agent.name} (${agent.role}) has joined this conversation.]`
+        });
+      }
+    } catch (err) {
+      console.error('[AxiChat] Error adding agent:', err);
+    }
+  }, [agentConvoId, conversation]);
+
   const handleRemoveAgent = useCallback(async (agentId) => {
     if (!agentConvoId) return;
 
