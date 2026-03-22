@@ -207,10 +207,11 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
         if (unsubscribeRef.current) unsubscribeRef.current();
         unsubscribeRef.current = await retryWithBackoff(() => base44.agents.subscribeToConversation(convo.id, (data) => {
           const all = [...data.messages];
-          console.log('[AxiChat] Subscription update, total messages:', all.length, 'last:', all[all.length-1]?.content?.slice(0,40));
           setAllMessages(all);
-          setMessages(all.slice(-PAGE_SIZE));
-          setPage(1);
+          setPage(prev => {
+            setMessages(all.slice(-PAGE_SIZE * prev));
+            return prev;
+          });
         })) || unsubscribeRef.current;
 
         return () => {
