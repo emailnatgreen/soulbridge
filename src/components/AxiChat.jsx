@@ -167,12 +167,9 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
         // Load or create AgentConversation and store its ID
          const initAgentConvo = async () => {
            try {
-             // Query by conversation metadata to find linked AgentConversation
-             const existing = await retryWithBackoff(() => base44.entities.AgentConversation.filter(
-               { metadata: { conversation_id: convo.id } },
-               '',
-               1
-             ));
+             // Query all AgentConversations and find the one linked to this convo
+             const all = await retryWithBackoff(() => base44.entities.AgentConversation.list('-created_date', 50));
+             const existing = all?.filter(ac => ac.metadata?.conversation_id === convo.id);
 
             if (existing?.length > 0) {
               const agentConvo = existing[0];
