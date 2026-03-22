@@ -11,6 +11,13 @@ export function OwnerGovernorProvider({ children }) {
   useEffect(() => {
     const init = async () => {
       try {
+        // Only proceed if user is authenticated — avoids 401s on public pages
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) {
+          setLoading(false);
+          return;
+        }
+
         const user = await base44.auth.me();
         if (user) {
           const newOwnerId = user.id;
@@ -26,7 +33,8 @@ export function OwnerGovernorProvider({ children }) {
           });
         }
       } catch (error) {
-        console.error('Failed to load owner/governor info:', error);
+        // Silently ignore auth errors — user is simply not logged in
+        console.log('OwnerGovernor: user not authenticated, skipping.');
       } finally {
         setLoading(false);
       }
