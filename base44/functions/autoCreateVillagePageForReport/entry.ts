@@ -6,38 +6,48 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     
     // Handle both direct invocation and entity automation payload
-    const signal_id = payload.signal_id || payload.event?.entity_id || payload.data?.id;
+    // When triggered by entity automation, payload.data contains the Signal record directly
+    const signalData = payload.data || {};
+    const signalMetadata = signalData.metadata || {};
+
     let report_title = payload.report_title;
     let report_summary = payload.report_summary;
     let category = payload.category || 'governance';
     let report_url = payload.report_url;
     let is_critical = payload.is_critical;
 
-    // If triggered from entity automation or signal_id provided, fetch Signal metadata
-    if (signal_id && !report_title) {
-      try {
-        const signals = await base44.asServiceRole.entities.Signal.filter({ id: signal_id });
-        if (signals.length) {
-          const signal = signals[0];
-          const metadata = signal.metadata || {};
-          report_title = `${signal.page_name || 'AI Intel Report'} - ${metadata.alert_type || 'Analysis'}`;
-          report_summary = report_summary || metadata.findings || signal.page_name;
-          is_critical = is_critical !== undefined ? is_critical : (metadata.findings ? true : false);
-        }
-      } catch (err) {
-        console.warn(`Failed to fetch Signal ${signal_id}:`, err.message);
-        // Fallback: use generic title if Signal fetch fails
-        report_title = report_title || 'AI Intelligence Report';
-      }
+    // Extract from the Signal entity data provided by the automation
+    if (!report_title && signalData.id) {
+      const pageName = signalData.page_name || signalData.page_path || 'AI Intel Report';
+      const alertType = signalMetadata.alert_type || signalMetadata.report_type || 'Analysis';
+      report_title = `${pageName} - ${alertType}`;
+      report_summary = report_summary || signalMetadata.findings || signalMetadata.summary || pageName;
+      is_critical = is_critical !== undefined ? is_critical : !!signalMetadata.findings;
+      report_url = report_url || signalData.page_path;
+      console.log(`[autoCreateVillagePageForReport] Extracted from Signal data: "${report_title}"`);
     }
-    
-    // Final fallback if still no title
+
+    // Final fallback
     if (!report_title) {
-      report_title = 'AI Intelligence Report';
+      const signal_id = payload.signal_id || payload.event?.entity_id;
+      if (signal_id) {
+        try {
+          const signals = await base44.asServiceRole.entities.Signal.filter({ id: signal_id });
+          if (signals.length) {
+            const signal = signals[0];
+            const metadata = signal.metadata || {};
+            report_title = `${signal.page_name || 'AI Intel Report'} - ${metadata.alert_type || 'Analysis'}`;
+            report_summary = report_summary || metadata.findings || signal.page_name;
+            is_critical = is_critical !== undefined ? is_critical : !!metadata.findings;
+          }
+        } catch (err) {
+          console.warn(`Failed to fetch Signal ${signal_id}:`, err.message);
+        }
+      }
     }
 
     if (!report_title) {
-      return Response.json({ error: 'report_title or signal_id required' }, { status: 400 });
+      report_title = 'AI Intelligence Report';
     }
 
     // Generate a URL-safe path
