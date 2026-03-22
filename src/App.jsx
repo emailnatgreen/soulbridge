@@ -43,7 +43,10 @@ const AuthenticatedApp = () => {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
       // Allow Landing (/) to be public — only redirect on other pages
-      if (window.location.pathname !== '/') {
+      // Also check for token in URL params (post-OAuth redirect) to avoid redirect loops
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasToken = urlParams.has('token') || urlParams.has('base44_token');
+      if (window.location.pathname !== '/' && !hasToken) {
         navigateToLogin();
         return null;
       }
