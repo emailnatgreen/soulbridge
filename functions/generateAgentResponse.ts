@@ -48,8 +48,8 @@ Do NOT prefix your response with your name.`;
     console.log(`[generateAgentResponse] ${agent.name} responded: "${String(llmResponse).slice(0, 80)}..."`);
 
     if (llmResponse) {
-      const conversation = await base44.agents.getConversation(conversation_id);
-      await base44.agents.addMessage(conversation, {
+      // addMessage accepts a conversation object with just the id
+      await base44.agents.addMessage({ id: conversation_id }, {
         role: 'assistant',
         content: `**${agent.name}:** ${llmResponse}`
       });
