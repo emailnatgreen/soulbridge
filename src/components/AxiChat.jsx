@@ -451,9 +451,25 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input + Add Agent on Mobile */}
-          <div className="p-4 border-t border-slate-700/50 flex-shrink-0 space-y-2">
+          {/* Input area */}
+          <div className="p-4 border-t border-slate-700/50 flex-shrink-0 space-y-2 relative">
+            {showAgentPicker && (
+              <AgentPicker
+                activeAgentIds={activeAgents.map(a => a.id)}
+                onAdd={handleAddAgent}
+                onClose={() => setShowAgentPicker(false)}
+              />
+            )}
             <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowAgentPicker(p => !p)}
+                className={`h-12 w-10 flex-shrink-0 border ${showAgentPicker ? 'border-purple-500 text-purple-300 bg-purple-500/10' : 'border-white/10 text-white/40 hover:text-white hover:bg-white/5'}`}
+                title="Add agent to chat"
+              >
+                <UserPlus className="w-4 h-4" />
+              </Button>
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -470,7 +486,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
             </div>
-
           </div>
         </motion.div>
       )}
