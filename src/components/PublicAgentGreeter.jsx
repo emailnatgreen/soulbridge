@@ -276,7 +276,11 @@ export default function PublicAgentGreeter() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Sparkles className="w-6 h-6 text-white" />
+        <img
+          src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+          alt="SoulBridge"
+          className="w-9 h-9 rounded-lg object-contain"
+        />
       </motion.button>
     </>
   );
