@@ -91,7 +91,10 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
          }
          
          unsubscribeRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
-           setMessages([...data.messages]);
+           const all = [...data.messages];
+           setAllMessages(all);
+           setMessages(all.slice(-PAGE_SIZE));
+           setPage(1);
          });
          setIsOpen(true);
        } catch (err) {
