@@ -405,9 +405,11 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
               </div>
             </div>
             <div className="flex gap-1 flex-shrink-0">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/Agents')} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:block" title="Go to Agents">
-                <Users className="w-3.5 h-3.5" />
-              </Button>
+              <img
+                src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+                alt="SoulBridge"
+                className="w-8 h-8 rounded-lg object-contain"
+              />
               <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:block">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
