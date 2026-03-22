@@ -48,20 +48,12 @@ Do NOT prefix your response with your name.`;
     console.log(`[generateAgentResponse] ${agent.name} responded: "${String(llmResponse).slice(0, 80)}..."`);
 
     if (llmResponse) {
-      // Post message into the conversation - use service role to ensure it posts regardless of session
-      try {
-        await base44.asServiceRole.agents.addMessage({ id: conversation_id }, {
-          role: 'assistant',
-          content: `**${agent.name}:** ${llmResponse}`
-        });
-        console.log(`[generateAgentResponse] Message posted for ${agent.name}`);
-      } catch (postErr) {
-        console.error(`[generateAgentResponse] addMessage failed, trying user-scoped:`, postErr.message);
-        await base44.agents.addMessage({ id: conversation_id }, {
-          role: 'assistant',
-          content: `**${agent.name}:** ${llmResponse}`
-        });
-      }
+      // Called from frontend with user auth token - post message into user's conversation
+      await base44.agents.addMessage({ id: conversation_id }, {
+        role: 'assistant',
+        content: `**${agent.name}:** ${llmResponse}`
+      });
+      console.log(`[generateAgentResponse] Message posted for ${agent.name}`);
     }
 
     return Response.json({ success: true, agent: agent.name, response: llmResponse });
