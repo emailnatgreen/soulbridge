@@ -63,7 +63,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route path="/" element={isEditorPreview ? <LayoutWrapper currentPageName="Home"><Pages.Home /></LayoutWrapper> : <Landing />} />
+      <Route path="/" element={isEditorPreview || isAuthenticated ? <LayoutWrapper currentPageName="Home"><Pages.Home /></LayoutWrapper> : <Landing />} />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
