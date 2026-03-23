@@ -135,11 +135,14 @@ export default function Dashboard() {
                 <Radio className="w-5 h-5 text-purple-400" />
                 <h3 className="text-white font-semibold">Signal Log</h3>
               </div>
-              <div className="space-y-2">
-                {signalLog.map((sig, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {signals.length === 0 && (
+                  <p className="text-white/30 text-xs py-2">Waiting for signals…</p>
+                )}
+                {signals.map((sig) => (
+                  <div key={sig.id} className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
                     <div className="flex items-center gap-2">
-                      <span>{sig.status}</span>
+                      <span>✅</span>
                       <span className="text-white/70 font-mono">{sig.type}</span>
                     </div>
                     <span className="text-white/30 text-xs">{sig.time}</span>
