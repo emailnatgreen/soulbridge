@@ -140,7 +140,7 @@ export default function PublicAgentGreeter() {
     const convId = convIdRef.current;
 
     // Check if user is saying yes to sign-in prompt
-    const isYes = /^(yes|yeah|sure|ok|okay|yep|yup|absolutely|let'?s go|sign me in|log me in)$/i.test(msg.trim());
+    const isYes = /\b(yes|yeah|sure|ok|okay|yep|yup|absolutely|let'?s go|sign me in|log me in|yes please|please|sign in|take me in)\b/i.test(msg.trim());
     const lastAxiMsg = [...messages].reverse().find(m => m.sender_agent_id === 'axi');
     const lastMsgAboutSignIn = lastAxiMsg && /sign.?in|log.?in|enter the village|would you like to/i.test(lastAxiMsg.content || '');
     if (isYes && lastMsgAboutSignIn) {
