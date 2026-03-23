@@ -1,132 +1,84 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { wallet_id } = body;
+    const { classic_address, network } = await req.json();
 
-    if (!wallet_id) {
-      return Response.json({ error: 'wallet_id is required' }, { status: 400 });
+    if (!classic_address) {
+      return Response.json({ error: 'classic_address is required' }, { status: 400 });
     }
 
-    const wallet = await base44.asServiceRole.entities.Wallet.get(wallet_id);
-    
-    if (!wallet) {
-      return Response.json({ error: 'Wallet not found' }, { status: 404 });
+    const isTestnet = !network || network === 'testnet';
+    const wsUrl = isTestnet
+      ? 'wss://s.altnet.rippletest.net:51233'
+      : 'wss://xrplcluster.com';
+
+    // Use XRPL HTTP API instead of WebSocket for simplicity
+    const rpcUrl = isTestnet
+      ? 'https://s.altnet.rippletest.net:51234'
+      : 'https://xrplcluster.com';
+
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        method: 'account_info',
+        params: [{ account: classic_address, ledger_index: 'current' }],
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.result?.error === 'actNotFound') {
+      return Response.json({
+        verified: false,
+        status: 'not_found',
+        message: 'Address not found on XRPL. Fund this testnet wallet first.',
+        classic_address,
+        network: isTestnet ? 'testnet' : 'mainnet',
+      });
     }
 
-    const xrplUrl = wallet.network === 'mainnet'
-      ? 'https://xrplcluster.com'
-      : 'https://s.altnet.rippletest.net:51234';
+    if (data.result?.account_data) {
+      const accountData = data.result.account_data;
+      // Check for DID object on-chain
+      const didResponse = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'ledger_entry',
+          params: [{ did: { account: classic_address }, ledger_index: 'current' }],
+        }),
+      });
+      const didData = await didResponse.json();
+      const didPublished = !didData.result?.error;
 
-    const didAddress = `did:xrpl:${wallet.classic_address}`;
-    let did_data = null;
-    const verification = {
-      account_exists: false,
-      did_active: false,
-      balance: 0,
-      verified_at: new Date().toISOString(),
-      message: ''
-    };
-
-    try {
-      let accountResult = null;
-      let retries = 3;
-      let delay = 1000;
-      
-      while (retries > 0) {
-        const accountResponse = await fetch(xrplUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            method: 'account_info',
-            params: [{
-              account: wallet.classic_address,
-              ledger_index: 'validated'
-            }]
-          })
-        });
-
-        accountResult = await accountResponse.json();
-        
-        if (accountResult.error?.message?.includes('rate limit') || accountResponse.status === 429) {
-          retries--;
-          if (retries > 0) {
-            await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2;
-            continue;
-          }
-        }
-        break;
-      }
-
-      if (accountResult.result && accountResult.result.account_data) {
-        verification.account_exists = true;
-        verification.balance = parseInt(accountResult.result.account_data.Balance) / 1000000;
-      } else {
-        verification.message = accountResult.error?.message || 'Account not found on XRPL';
-      }
-
-      if (verification.account_exists) {
-        try {
-          const didObjResponse = await fetch(xrplUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              method: 'account_objects',
-              params: [{
-                account: wallet.classic_address,
-                type: 'did',
-                ledger_index: 'validated'
-              }]
-            })
-          });
-
-          const didObjResult = await didObjResponse.json();
-          const didObjects = didObjResult.result?.account_objects || [];
-
-          if (didObjects.length > 0) {
-            verification.did_active = true;
-            const didObj = didObjects[0];
-            did_data = {
-              verified: true,
-              uri: didObj.URI ? Buffer.from(didObj.URI, 'hex').toString('utf8') : null,
-              data: didObj.Data ? Buffer.from(didObj.Data, 'hex').toString('utf8') : null,
-              document: didObj.DIDDocument ? Buffer.from(didObj.DIDDocument, 'hex').toString('utf8') : null,
-              raw: didObj
-            };
-          } else {
-            verification.did_active = false;
-            verification.message = 'Account exists on XRPL but no DID object found. Publish the DID document on-chain to activate.';
-          }
-        } catch (e) {
-          // DID object fetch is optional
-        }
-      }
-
-    } catch (error) {
-      verification.message = `XRPL verification error: ${error.message}`;
+      return Response.json({
+        verified: true,
+        status: didPublished ? 'published' : 'active_not_published',
+        message: didPublished
+          ? 'DID is active and published on-chain!'
+          : 'Wallet is active on XRPL but DID not yet published on-chain.',
+        classic_address,
+        network: isTestnet ? 'testnet' : 'mainnet',
+        balance_xrp: accountData.Balance ? parseInt(accountData.Balance) / 1_000_000 : 0,
+        did_published: didPublished,
+        did_uri: didPublished ? `did:xrpl:${classic_address}` : null,
+        ledger_sequence: data.result?.ledger_current_index,
+      });
     }
 
     return Response.json({
-      wallet_id,
-      did: didAddress,
-      network: wallet.network,
-      verification,
-      did_data: did_data,
-      wallet: {
-        id: wallet.id,
-        name: wallet.name,
-        classic_address: wallet.classic_address,
-        network: wallet.network
-      }
+      verified: false,
+      status: 'error',
+      message: 'Unexpected response from XRPL.',
+      raw: data.result,
     });
 
   } catch (error) {
