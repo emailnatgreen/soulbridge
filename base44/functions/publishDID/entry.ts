@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 const XUMM_API_KEY = Deno.env.get('xumm_api_key');
 const XUMM_API_SECRET = Deno.env.get('xume_secret_key');
@@ -71,12 +71,8 @@ Deno.serve(async (req) => {
       },
       options: {
         submit: true,
-        expire: 10, // 10 minutes
-        ...(isTestnet ? {
-          multisign: false,
-          signers: [],
-          force_network: 'TESTNET',
-        } : {}),
+        expire: 10,
+        ...(isTestnet ? { force_network: 'TESTNET' } : {}),
       },
       custom_meta: {
         instruction: `Publish DID for ${wallet.name || wallet.classic_address} on XRPL ${wallet.network}`,
