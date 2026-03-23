@@ -109,7 +109,7 @@ export default function AgentConversationList({ agents, allMessages, selectedAge
                 {lastMessage && (
                   <div className="text-xs">
                     <p className="text-white/50 truncate mb-1">
-                      {lastMessage.message.substring(0, 50)}...
+                      {(lastMessage.message || lastMessage.content || '').substring(0, 50)}...
                     </p>
                     <p className="text-white/30">{formatTime(lastMessage.created_date)}</p>
                   </div>
