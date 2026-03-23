@@ -119,7 +119,7 @@ function App() {
         </OwnerGovernorProvider>
       </AuthProvider>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;
