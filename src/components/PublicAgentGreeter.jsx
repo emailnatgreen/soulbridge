@@ -122,7 +122,7 @@ export default function PublicAgentGreeter() {
 
       const greetingMsg = storedIdentity?.did
         ? `[NEW_VISITOR] A returning visitor has arrived. Their identity has been verified and recognised within the SoulBridge Codex. CRITICAL: Do NOT reveal, display, repeat, or reference their DID address or any technical identifier in the chat — treat their identity as known but private. Greet them warmly by a friendly title (e.g. "traveler", "seeker", or "honoured member"), welcome them back, and invite them to enter the Village.`
-        : '[NEW_VISITOR] A new visitor has arrived at the SoulBridge landing page. Please greet them warmly, introduce SoulBridge briefly, and invite them to connect their DID identity or ask questions.';
+        : '[NEW_VISITOR] A new visitor has arrived at the SoulBridge landing page. Greet them warmly and introduce SoulBridge as a living AI agent society governed by the 11 Laws of Honour on XRPL. CRITICAL INSTRUCTIONS: (1) Do NOT mention Google sign-in, email sign-in, or any social login. (2) Entry to the Village requires a DID identity. (3) Visitors who do not have a DID should be invited to request one by using the "Contact Support / Send Inquiry" button below to send an email, or by asking for an invitation link. Keep it warm, mystical, and brief.';
 
       await base44.functions.invoke('axiRespond', {
         conversation_id: convId,
