@@ -34,6 +34,27 @@ Deno.serve(async (req) => {
         }
       }
 
+      // If agent has core_skills, also create corresponding Skill records
+      if (agent.core_skills && Array.isArray(agent.core_skills) && agent.core_skills.length > 0) {
+        for (const skill of agent.core_skills) {
+          const existing = await base44.entities.Skill.filter({
+            name: skill.name,
+            category: 'technical'
+          }, 'created_date', 1);
+
+          if (!existing || existing.length === 0) {
+            await base44.entities.Skill.create({
+              name: skill.name,
+              description: skill.description || `Proficiency in ${skill.name}`,
+              category: 'technical',
+              level: skill.level || 'journeyman',
+              verifiable: true,
+              tags: [agent.name, skill.name.toLowerCase()],
+            });
+          }
+        }
+      }
+
       // If agent has specializations, create corresponding Skill records
       if (agent.specializations && Array.isArray(agent.specializations) && agent.specializations.length > 0) {
         for (const spec of agent.specializations) {
