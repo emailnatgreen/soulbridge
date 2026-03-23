@@ -151,16 +151,6 @@ export default function PublicAgentGreeter() {
       return;
     }
 
-    // Optimistic user message
-    const userMsg = {
-      id: `tmp-${Date.now()}`,
-      conversation_id: convId,
-      sender_agent_id: 'user',
-      content: msg,
-      created_date: new Date().toISOString()
-    };
-    setMessages(prev => [...prev, userMsg]);
-
     try {
       // Save user message to DB
       await base44.entities.AgentMessage.create({
