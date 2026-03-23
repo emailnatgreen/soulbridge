@@ -74,7 +74,7 @@ export default function DIDManager() {
       base44.functions.invoke('linkAgentToDID', { agent_id, wallet_id }),
     onSuccess: () => {
       toast.success('Agent successfully linked to DID');
-      queryClient.invalidateQueries(['agents']);
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
       setLinkDialogOpen(false);
       setSelectedAgent('');
     },
@@ -183,6 +183,13 @@ export default function DIDManager() {
 
   const handleVerifyDID = (walletId) => {
     verifyMutation.mutate(walletId);
+  };
+
+  const handlePostPublishVerify = (walletId) => {
+    // Wait 4s for XRPL to propagate then auto-verify
+    setTimeout(() => {
+      verifyMutation.mutate(walletId);
+    }, 4000);
   };
 
   const getVerificationBadge = (wallet) => {
@@ -782,7 +789,10 @@ export default function DIDManager() {
           onOpenChange={setPublishDialogOpen}
           onSuccess={() => {
             setPublishDialogOpen(false);
-            queryClient.invalidateQueries(['wallets']);
+            queryClient.invalidateQueries({ queryKey: ['wallets'] });
+            if (selectedWalletForPublish?.id) {
+              handlePostPublishVerify(selectedWalletForPublish.id);
+            }
           }}
         />
 
