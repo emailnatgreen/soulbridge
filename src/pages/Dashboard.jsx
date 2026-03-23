@@ -27,8 +27,6 @@ export default function Dashboard() {
     return () => window.removeEventListener('signal-update', loadSignals);
   }, []);
 
-  const didEmitStartup = useRef(false);
-
   useEffect(() => {
     try {
       const stored = localStorage.getItem('soulbridge_identity');
@@ -36,12 +34,6 @@ export default function Dashboard() {
         const parsed = JSON.parse(stored);
         if (parsed?.connected) {
           setIdentity(parsed);
-          if (!didEmitStartup.current) {
-            didEmitStartup.current = true;
-            window.__soulbridge.emitSignal({ type: 'identity_connected' });
-            window.__soulbridge.emitSignal({ type: 'session_started' });
-            window.__soulbridge.emitSignal({ type: 'axi_activated' });
-          }
           return;
         }
       }
