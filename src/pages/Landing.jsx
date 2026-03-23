@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,7 @@ function ParticleCanvas() {
 }
 
 export default function Landing() {
+  const navigate = useNavigate();
   const inactivityRef = useRef(null);
 
   const handleDisconnectDID = () => {
@@ -135,9 +137,9 @@ export default function Landing() {
     window.__soulbridge.identity = identity;
     localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
     emitSignal({ type: 'identity_connected', did: did.trim(), timestamp: Date.now() });
-    // Tell PublicAgentGreeter about the DID connection
     window.dispatchEvent(new CustomEvent('did-connected', { detail: { did: did.trim() } }));
     setDidConnected(identity);
+    setTimeout(() => navigate('/dashboard'), 1200);
   };
 
 
