@@ -17,6 +17,7 @@ import NewProposalDraft from './pages/NewProposalDraft';
 import TreasuryAllocationProposal from './pages/TreasuryAllocationProposal';
 import TreasurySigningHelper from './pages/TreasurySigningHelper';
 import GovernanceVotingDashboard from './pages/GovernanceVotingDashboard';
+import ContactSupport from './pages/ContactSupport';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];

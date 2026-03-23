@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
     // Send notification email to support
     await base44.asServiceRole.integrations.Core.SendEmail({
-        to: 'support@duck.com',
+        to: 'support@duck.com', // Replace with your actual duck.com address
         subject: `New Inquiry: ${subject}`,
         body: `A new inquiry has been submitted.\n\nFrom: ${sender_email}\nSubject: ${subject}\n\nMessage:\n${message}\n\n---\nSource: ${source || 'website'}\nInquiry ID: ${inquiry.id}`
     });
