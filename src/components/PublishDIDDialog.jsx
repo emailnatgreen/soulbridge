@@ -71,33 +71,29 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
         const status = statusRes.data;
 
         if (status.signed) {
-          if (status.txid) {
-            // We have the txid, complete immediately
-            clearInterval(interval);
-            setPollingInterval(null);
-            // Save publication status to wallet for persistence
-            base44.entities.Wallet.update(wallet.id, {
-              is_published: true,
-              published_at: new Date().toISOString(),
-              published_txid: status.txid
-            }).catch(err => console.error('Failed to save publication status:', err));
+          clearInterval(interval);
+          setPollingInterval(null);
+          // Sync wallet to DB — signed means tx was submitted
+          base44.entities.Wallet.update(wallet.id, {
+            is_published: true,
+            published_at: new Date().toISOString(),
+            published_txid: status.txid || 'pending'
+          }).catch(err => console.error('Failed to save publication status:', err));
 
-            setResult({ success: true, txid: status.txid, account: status.account });
-            setStep('done');
-            toast.success('✅ DID published on XRPL!');
-            setTimeout(() => {
-              queryClient.invalidateQueries({ queryKey: ['wallets'] });
-              queryClient.invalidateQueries({ queryKey: ['dh-wallets'] });
-            }, 500);
-            if (onSuccess) onSuccess();
-          }
-          // If signed but no txid yet, keep polling — Xaman may not have submitted yet
+          setResult({ success: true, txid: status.txid, account: status.account });
+          setStep('done');
+          toast.success('✅ DID published on XRPL!');
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ['wallets'] });
+            queryClient.invalidateQueries({ queryKey: ['dh-wallets'] });
+            queryClient.invalidateQueries({ queryKey: ['user-wallets'] });
+          }, 500);
+          if (onSuccess) onSuccess();
         } else if (status.resolved && !status.signed) {
           clearInterval(interval);
           setPollingInterval(null);
           setResult({ success: false, message: 'Signing request was rejected or expired' });
           setStep('error');
-        }
       } catch (e) {
         console.error('Polling error:', e);
       }
