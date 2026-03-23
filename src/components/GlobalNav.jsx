@@ -46,6 +46,7 @@ const NAV_GROUPS = [
     links: [
       { label: 'AI Project Hub', path: '/AIProjectHub', icon: Briefcase },
       { label: 'Project Manager', path: '/AIProjectManager', icon: FileText },
+      { label: 'Service Skill Marketplace', path: '/ServiceSkillMarketplace', icon: ShoppingBag },
       { label: 'Skill Tree', path: '/AgentSkillTree', icon: TreePine },
       { label: 'Training', path: '/AgentTrainingModule', icon: GraduationCap },
       { label: 'Mentorship', path: '/MentorshipHub', icon: BookOpen },
