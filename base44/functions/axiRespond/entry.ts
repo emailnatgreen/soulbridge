@@ -18,6 +18,11 @@ Deno.serve(async (req) => {
         console.log('[Axi] Skipping own message');
         return Response.json({ skipped: true });
       }
+      // Skip visitor messages — they are handled by direct axiRespond calls from the frontend
+      if (msg?.sender_agent_id === 'visitor') {
+        console.log('[Axi] Skipping visitor message (handled by direct call)');
+        return Response.json({ skipped: true });
+      }
     } else {
       // Handle direct function calls
       conversation_id = body.conversation_id;
