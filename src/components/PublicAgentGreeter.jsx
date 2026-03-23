@@ -80,18 +80,14 @@ export default function PublicAgentGreeter() {
     return () => window.removeEventListener('did-connected', handleDidConnected);
   }, []);
 
-  // Init: use stored conv ID or create new one
+  // Init: always start fresh on landing page visit
   useEffect(() => {
     if (!isOpen || initialized.current) return;
     initialized.current = true;
 
-    const storedId = localStorage.getItem(CONV_KEY);
-    if (storedId) {
-      convIdRef.current = storedId;
-      loadMessages(storedId);
-    } else {
-      createConversation();
-    }
+    // Clear any previous conversation — fresh meet & greet every visit
+    localStorage.removeItem(CONV_KEY);
+    createConversation();
 
     // Poll every 4s for new messages
     pollRef.current = setInterval(() => {
@@ -117,9 +113,20 @@ export default function PublicAgentGreeter() {
       convIdRef.current = convId;
       localStorage.setItem(CONV_KEY, convId);
 
+      // Check if visitor has a previously stored DID identity
+      let storedIdentity = null;
+      try {
+        const stored = localStorage.getItem('soulbridge_identity');
+        if (stored) storedIdentity = JSON.parse(stored);
+      } catch (e) {}
+
+      const greetingMsg = storedIdentity?.did
+        ? `[NEW_VISITOR] A visitor has returned to the SoulBridge landing page. Their previously stored DID identity is: ${storedIdentity.did}. Reload their identity into your awareness, greet them personally by referencing their DID, welcome them back warmly, and ask if they would like to sign in to the Village.`
+        : '[NEW_VISITOR] A new visitor has arrived at the SoulBridge landing page. Please greet them warmly, introduce SoulBridge briefly, and invite them to connect their DID identity or ask questions.';
+
       await base44.functions.invoke('axiRespond', {
         conversation_id: convId,
-        user_message: '[NEW_VISITOR] A new visitor has arrived at the SoulBridge landing page. Please greet them warmly and invite them to explore or ask questions.',
+        user_message: greetingMsg,
         is_greeting: true
       });
 
