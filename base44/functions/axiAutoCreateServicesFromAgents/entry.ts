@@ -3,11 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { event } = await req.json();
+    const payload = await req.json();
+    const event = payload.event || payload;
+    const agent = event.data || payload.data;
 
     // Triggered when an agent is created or updated
     if (event.type === 'create' || event.type === 'update') {
-      const agent = event.data;
       
       // If agent has core_skills, automatically create corresponding Service offerings
       if (agent.core_skills && Array.isArray(agent.core_skills) && agent.core_skills.length > 0) {
@@ -35,20 +36,21 @@ Deno.serve(async (req) => {
       }
 
       // If agent has core_skills, create corresponding AgentSkill records
-      if (agent.core_skills && Array.isArray(agent.core_skills) && agent.core_skills.length > 0) {
+      if (agent && agent.core_skills && Array.isArray(agent.core_skills) && agent.core_skills.length > 0) {
         for (const skill of agent.core_skills) {
+          const skillId = skill.name.toLowerCase().replace(/\s+/g, '_');
           const existing = await base44.entities.AgentSkill.filter({
             agent_id: agent.id,
-            skill_name: skill.name
+            skill_id: skillId
           }, 'created_date', 1);
 
           if (!existing || existing.length === 0) {
             await base44.entities.AgentSkill.create({
               agent_id: agent.id,
-              skill_id: skill.name.toLowerCase().replace(/\s+/g, '_'),
+              skill_id: skillId,
               skill_name: skill.name,
               skill_description: skill.description || `Expertise in ${skill.name}`,
-              skill_category: 'technical',
+              skill_category: skill.category || 'technical',
               level: skill.level || 1,
               unlocked_at: new Date().toISOString(),
             });
