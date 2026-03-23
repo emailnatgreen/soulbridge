@@ -66,7 +66,7 @@ export default function PublicAgentGreeter() {
       try {
         await base44.functions.invoke('axiRespond', {
           conversation_id: convIdRef.current,
-          user_message: `[SYSTEM] The visitor has just successfully verified and connected their identity. CRITICAL: Do NOT reveal, display, repeat, or reference any DID address or technical identifier in the chat. Simply acknowledge their identity is verified, welcome them warmly, and ask if they would like to sign in to the Village. Keep it short and friendly.`,
+          user_message: `[SYSTEM] The visitor has just successfully verified and connected their DID identity. CRITICAL: Do NOT reveal, display, or reference any DID address or technical identifier. Welcome them warmly, confirm their identity is recognised within the Codex, and instruct them clearly to click the glowing "Enter the Village" button on this page to proceed. Do NOT mention Google, email, or any other login method. Keep it short, warm and mystical.`,
           is_greeting: false
         });
         await loadMessages(convIdRef.current);
