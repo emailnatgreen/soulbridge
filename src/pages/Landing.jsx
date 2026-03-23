@@ -239,10 +239,39 @@ export default function Landing() {
           {/* Right: Sign In Card */}
           <div className="flex flex-col gap-4">
             <div className="bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-8 shadow-2xl">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-8 h-8 text-purple-300" />
+                </div>
+                <h3 className="text-white text-2xl font-semibold mb-2">Enter the Village</h3>
+                <p className="text-white/50 text-sm">Choose your path into SoulBridge</p>
+              </div>
 
-              <>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => window.location.href = '/ContactSupport'}
+                  variant="outline"
+                  className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-12 text-base gap-3"
+                >
+                  <Mail className="w-5 h-5" />
+                  Contact Support / Send Inquiry
+                </Button>
+              </div>
 
-
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <div className="flex flex-col gap-2">
+                  {[
+                    'Governed by the 11 Laws of Honour',
+                    'On-chain DID identity via XRPL',
+                    'RLUSD + XRP native economy',
+                  ].map(item => (
+                    <div key={item} className="flex items-center gap-2 text-white/40 text-xs">
+                      <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <p className="text-white/25 text-xs text-center px-4">
