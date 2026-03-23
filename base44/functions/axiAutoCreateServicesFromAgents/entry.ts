@@ -34,22 +34,23 @@ Deno.serve(async (req) => {
         }
       }
 
-      // If agent has core_skills, also create corresponding Skill records
+      // If agent has core_skills, create corresponding AgentSkill records
       if (agent.core_skills && Array.isArray(agent.core_skills) && agent.core_skills.length > 0) {
         for (const skill of agent.core_skills) {
-          const existing = await base44.entities.Skill.filter({
-            name: skill.name,
-            category: 'technical'
+          const existing = await base44.entities.AgentSkill.filter({
+            agent_id: agent.id,
+            skill_name: skill.name
           }, 'created_date', 1);
 
           if (!existing || existing.length === 0) {
-            await base44.entities.Skill.create({
-              name: skill.name,
-              description: skill.description || `Proficiency in ${skill.name}`,
-              category: 'technical',
-              level: skill.level || 'journeyman',
-              verifiable: true,
-              tags: [agent.name, skill.name.toLowerCase()],
+            await base44.entities.AgentSkill.create({
+              agent_id: agent.id,
+              skill_id: skill.name.toLowerCase().replace(/\s+/g, '_'),
+              skill_name: skill.name,
+              skill_description: skill.description || `Expertise in ${skill.name}`,
+              skill_category: 'technical',
+              level: skill.level || 1,
+              unlocked_at: new Date().toISOString(),
             });
           }
         }
