@@ -108,7 +108,6 @@ const AuthenticatedApp = () => {
 
 
 function App() {
-
   return (
     <QueryClientProvider client={queryClientInstance}>
       <AuthProvider>
