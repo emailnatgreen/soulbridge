@@ -11,6 +11,10 @@ if (!window.__soulbridge) window.__soulbridge = {};
 
 function emitSignal(data) {
   window.__soulbridge.lastSignal = data;
+  // Use the global signal store for real-time dashboard
+  if (window.__soulbridge.emitSignal) {
+    window.__soulbridge.emitSignal(data);
+  }
   window.dispatchEvent(new CustomEvent('soulbridge-signal', { detail: data }));
 }
 
