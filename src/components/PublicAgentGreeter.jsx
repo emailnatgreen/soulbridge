@@ -139,9 +139,13 @@ export default function PublicAgentGreeter() {
 
     const convId = convIdRef.current;
 
-    // If user expresses any affirmative/sign-in intent, redirect immediately
-    const isYes = /\b(yes|yeah|sure|ok|okay|yep|yup|absolutely|let'?s go|sign me in|log me in|yes please|please|sign in|take me in|login|log in)\b/i.test(msg.trim());
-    if (isYes) {
+    // Redirect only if user says yes AND Axi has previously mentioned sign-in
+    const isYes = /^(yes|yeah|sure|ok|okay|yep|yup|absolutely|let'?s go|sign me in|log me in|yes please|please|sign in|take me in|login|log in)[\.!\?]?$/i.test(msg.trim());
+    const axiEverMentionedSignIn = messages.some(m =>
+      m.sender_agent_id === 'axi' &&
+      /sign.?in|log.?in|enter the village|would you like to|shall i|ready to|take you|guide you/i.test(m.content || '')
+    );
+    if (isYes && axiEverMentionedSignIn) {
       setSending(false);
       base44.auth.redirectToLogin('/Home');
       return;
