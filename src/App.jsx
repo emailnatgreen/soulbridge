@@ -104,6 +104,7 @@ const AuthenticatedApp = () => {
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
+}
 
 
 function App() {
