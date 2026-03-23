@@ -104,12 +104,9 @@ export default function PublicAgentGreeter() {
 
   const loadMessages = async (convId) => {
     try {
-      const msgs = await base44.entities.AgentMessage.filter(
-        { conversation_id: convId },
-        'created_date',
-        50
-      );
-      setMessages(msgs || []);
+      // Use service-role backend function so public visitors see ALL messages (including Axi's)
+      const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
+      setMessages(res?.data?.messages || []);
     } catch (err) {
       console.error('Load messages error:', err);
     }
