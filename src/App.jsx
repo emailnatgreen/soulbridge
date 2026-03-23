@@ -57,18 +57,6 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Restrict app to admin users only
-  if (isAuthenticated && user && user.role !== 'admin') {
-    return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-950 text-white gap-4">
-        <div className="text-4xl">🚫</div>
-        <h1 className="text-2xl font-bold">Access Restricted</h1>
-        <p className="text-white/50">This platform is for authorised administrators only.</p>
-        <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">Sign Out</button>
-      </div>
-    );
-  }
-
   // In editor preview, redirect / to /Home so the dashboard is shown
   const urlParams = new URLSearchParams(window.location.search);
   const isEditorPreview = urlParams.has('_preview_token');
@@ -76,35 +64,18 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route path="/" element={isEditorPreview || isAuthenticated ? <LayoutWrapper currentPageName="Home"><Pages.Home /></LayoutWrapper> : <Landing />} />
-      {Object.entries(Pages).map(([path, Page]) => (
-        <Route
-          key={path}
-          path={`/${path}`}
-          element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
-          }
-        />
-      ))}
-      <Route path="/VillageCalendar" element={<LayoutWrapper currentPageName="VillageCalendar"><VillageCalendar /></LayoutWrapper>} />
-      <Route path="/AxiCommandDashboard" element={<LayoutWrapper currentPageName="AxiCommandDashboard"><AxiCommandDashboard /></LayoutWrapper>} />
-      <Route path="/AgentAdditionDiagnostic" element={<LayoutWrapper currentPageName="AgentAdditionDiagnostic"><AgentAdditionDiagnostic /></LayoutWrapper>} />
-      <Route path="/MemoryBrowser" element={<LayoutWrapper currentPageName="MemoryBrowser"><MemoryBrowser /></LayoutWrapper>} />
-      <Route path="/ImageStorage" element={<LayoutWrapper currentPageName="ImageStorage"><ImageStorage /></LayoutWrapper>} />
-      <Route path="/NewProposalDraft" element={<LayoutWrapper currentPageName="NewProposalDraft"><NewProposalDraft /></LayoutWrapper>} />
-      <Route path="/governance/new-proposal" element={<LayoutWrapper currentPageName="NewProposalDraft"><NewProposalDraft /></LayoutWrapper>} />
-      <Route path="/TreasuryAllocationProposal" element={<LayoutWrapper currentPageName="TreasuryAllocationProposal"><TreasuryAllocationProposal /></LayoutWrapper>} />
-      <Route path="/TreasurySigningHelper" element={<LayoutWrapper currentPageName="TreasurySigningHelper"><TreasurySigningHelper /></LayoutWrapper>} />
-      <Route path="/GovernanceVotingDashboard" element={<LayoutWrapper currentPageName="GovernanceVotingDashboard"><GovernanceVotingDashboard /></LayoutWrapper>} />
-      <Route path="/ContactSupport" element={<ContactSupport />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/IntegrationCreditDashboard" element={<LayoutWrapper currentPageName="IntegrationCreditDashboard"><IntegrationCreditDashboard /></LayoutWrapper>} />
-      <Route path="/ServiceSkillMarketplace" element={<LayoutWrapper currentPageName="ServiceSkillMarketplace"><ServiceSkillMarketplace /></LayoutWrapper>} />
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
-  );
+      <Route path="/" element={isEditorPreview || isAuthenticated ? (
+        isAuthenticated && user && user.role !== 'admin' ? (
+          <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-950 text-white gap-4">
+            <div className="text-4xl">🚫</div>
+            <h1 className="text-2xl font-bold">Access Restricted</h1>
+            <p className="text-white/50">This platform is for authorised administrators only.</p>
+            <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">Sign Out</button>
+          </div>
+        ) : (
+          <LayoutWrapper currentPageName="Home"><Pages.Home /></LayoutWrapper>
+        )
+      ) : <Landing />} />
 };
 
 
