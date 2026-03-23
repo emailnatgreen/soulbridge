@@ -121,7 +121,7 @@ export default function PublicAgentGreeter() {
       } catch (e) {}
 
       const greetingMsg = storedIdentity?.did
-        ? `[NEW_VISITOR] A visitor has returned to the SoulBridge landing page. Their previously stored DID identity is: ${storedIdentity.did}. Reload their identity into your awareness, greet them personally by referencing their DID, welcome them back warmly, and ask if they would like to sign in to the Village.`
+        ? `[NEW_VISITOR] A returning visitor has arrived. Their DID identity has been verified and loaded into your awareness. IMPORTANT: Do NOT display or repeat their DID address in the chat — it is sensitive. Instead, greet them warmly by a friendly name or simply as a recognised member of SoulBridge. Acknowledge their identity is verified, welcome them back, and ask if they would like to proceed into the Village.`
         : '[NEW_VISITOR] A new visitor has arrived at the SoulBridge landing page. Please greet them warmly, introduce SoulBridge briefly, and invite them to connect their DID identity or ask questions.';
 
       await base44.functions.invoke('axiRespond', {
