@@ -124,9 +124,10 @@ export default function PublicAgentGreeter() {
 
   const loadMessages = async (convId) => {
     try {
-      // Use service-role backend function so public visitors see ALL messages (including Axi's)
       const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
-      setMessages(res?.data?.messages || []);
+      const fetched = res?.data?.messages || [];
+      // Replace all messages, dropping any optimistic (tmp-) entries
+      setMessages(fetched);
     } catch (err) {
       console.error('Load messages error:', err);
     }
