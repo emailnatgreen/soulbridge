@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { LogIn, Mail, Sparkles, ChevronRight, CheckCircle, Link2, Shield } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
@@ -71,7 +71,7 @@ function ParticleCanvas() {
 }
 
 export default function Landing() {
-  const [tab, setTab] = useState('main');
+  const [tab, setTab] = useState('main'); // kept for structure
   const [email, setEmail] = useState('');
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [did, setDid] = useState('');
@@ -235,16 +235,16 @@ export default function Landing() {
                   </div>
 
                   <div className="space-y-3">
-                    {/* Email Sign In */}
+                    {/* Support / Inquiry */}
                     <Button
-                      onClick={() => setTab('email')}
+                      onClick={() => window.location.href = '/ContactSupport'}
                       variant="outline"
                       className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-12 text-base gap-3"
                     >
                       <Mail className="w-5 h-5" />
-                       Continue with Email
-                     </Button>
-                   </div>
+                      Contact Support / Send Inquiry
+                    </Button>
+                  </div>
 
                   <div className="mt-6 pt-6 border-t border-white/10">
                     <div className="flex flex-col gap-2">
@@ -259,37 +259,6 @@ export default function Landing() {
                         </div>
                       ))}
                     </div>
-                  </div>
-                </>
-              )}
-
-              {tab === 'email' && (
-                <>
-                  <button onClick={() => setTab('main')} className="text-white/40 hover:text-white text-sm mb-6 flex items-center gap-1">
-                    ← Back
-                  </button>
-                  <div className="text-center mb-6">
-                    <Mail className="w-10 h-10 text-purple-300 mx-auto mb-3" />
-                    <h3 className="text-white text-xl font-semibold">Email Sign In</h3>
-                    <p className="text-white/50 text-sm mt-1">Enter your email to continue</p>
-                  </div>
-                  <div className="space-y-3">
-                    <Input
-                      type="email"
-                      placeholder="your@email.com"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/30 h-12"
-                      onKeyDown={e => e.key === 'Enter' && handleEmailLogin()}
-                    />
-                    <Button
-                      onClick={handleEmailLogin}
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-12 text-base gap-2"
-                    >
-                      <LogIn className="w-5 h-5" />
-                      Continue
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
                   </div>
                 </>
               )}
