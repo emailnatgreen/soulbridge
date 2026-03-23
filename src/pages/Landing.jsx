@@ -282,7 +282,7 @@ export default function Landing() {
 
               <div className="space-y-3">
                 <Button
-                    onClick={() => base44.auth.redirectToLogin()}
+                    onClick={() => window.location.href = '/Home'}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-12 text-base gap-3"
                   >
                     <LogIn className="w-5 h-5" />
