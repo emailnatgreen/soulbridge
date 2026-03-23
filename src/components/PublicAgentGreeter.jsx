@@ -53,9 +53,29 @@ export default function PublicAgentGreeter() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Listen for DID connected event from Landing
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const handleDidConnected = async (e) => {
+      const { did } = e.detail || {};
+      if (!convIdRef.current) return;
+      setIsOpen(true);
+      setSending(true);
+      try {
+        await base44.functions.invoke('axiRespond', {
+          conversation_id: convIdRef.current,
+          user_message: `[SYSTEM] The visitor has just connected their DID identity: ${did}. Acknowledge this warmly, confirm their identity is recognised, then ask them if they would like to sign in to the Village. Keep it short and friendly.`,
+          is_greeting: false
+        });
+        setTimeout(() => loadMessages(convIdRef.current), 800);
+      } catch (err) {
+        console.error('DID connected message error:', err);
+      } finally {
+        setSending(false);
+      }
+    };
+    window.addEventListener('did-connected', handleDidConnected);
+    return () => window.removeEventListener('did-connected', handleDidConnected);
+  }, []);
 
   // Init: use stored conv ID or create new one
   useEffect(() => {
@@ -119,6 +139,16 @@ export default function PublicAgentGreeter() {
     setSending(true);
 
     const convId = convIdRef.current;
+
+    // Check if user is saying yes to sign-in prompt
+    const isYes = /^(yes|yeah|sure|ok|okay|yep|yup|absolutely|let'?s go|sign me in|log me in)$/i.test(msg.trim());
+    const lastAxiMsg = [...messages].reverse().find(m => m.sender_agent_id === 'axi');
+    const lastMsgAboutSignIn = lastAxiMsg && /sign.?in|log.?in|enter the village|would you like to/i.test(lastAxiMsg.content || '');
+    if (isYes && lastMsgAboutSignIn) {
+      setSending(false);
+      base44.auth.redirectToLogin('/Home');
+      return;
+    }
 
     // Optimistic user message
     const userMsg = {
