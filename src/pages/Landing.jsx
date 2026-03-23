@@ -265,9 +265,7 @@ export default function Landing() {
                   </button>
                 </div>
                 <p className="text-white/40 text-xs">Identity verified · Auto-locks after 5 min inactivity</p>
-              </div>
-                <p className="text-white/50 text-xs break-all">Connected as: {didConnected.did}</p>
-              </div>
+                </div>
             )}
           </div>
 
