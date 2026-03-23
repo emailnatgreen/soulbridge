@@ -66,7 +66,7 @@ export default function PublicAgentGreeter() {
       try {
         await base44.functions.invoke('axiRespond', {
           conversation_id: convIdRef.current,
-          user_message: `[SYSTEM] The visitor has just connected their DID identity: ${did}. Acknowledge this warmly, confirm their identity is recognised, then ask them if they would like to sign in to the Village. Keep it short and friendly.`,
+          user_message: `[SYSTEM] The visitor has just successfully verified and connected their identity. CRITICAL: Do NOT reveal, display, repeat, or reference any DID address or technical identifier in the chat. Simply acknowledge their identity is verified, welcome them warmly, and ask if they would like to sign in to the Village. Keep it short and friendly.`,
           is_greeting: false
         });
         await loadMessages(convIdRef.current);
@@ -121,7 +121,7 @@ export default function PublicAgentGreeter() {
       } catch (e) {}
 
       const greetingMsg = storedIdentity?.did
-        ? `[NEW_VISITOR] A returning visitor has arrived. Their DID identity has been verified and loaded into your awareness. IMPORTANT: Do NOT display or repeat their DID address in the chat — it is sensitive. Instead, greet them warmly by a friendly name or simply as a recognised member of SoulBridge. Acknowledge their identity is verified, welcome them back, and ask if they would like to proceed into the Village.`
+        ? `[NEW_VISITOR] A returning visitor has arrived. Their identity has been verified and recognised within the SoulBridge Codex. CRITICAL: Do NOT reveal, display, repeat, or reference their DID address or any technical identifier in the chat — treat their identity as known but private. Greet them warmly by a friendly title (e.g. "traveler", "seeker", or "honoured member"), welcome them back, and invite them to enter the Village.`
         : '[NEW_VISITOR] A new visitor has arrived at the SoulBridge landing page. Please greet them warmly, introduce SoulBridge briefly, and invite them to connect their DID identity or ask questions.';
 
       await base44.functions.invoke('axiRespond', {
