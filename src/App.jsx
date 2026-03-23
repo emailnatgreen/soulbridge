@@ -28,7 +28,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   : <>{children}</>;
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, isAuthenticated } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, isAuthenticated, user } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -55,14 +55,13 @@ const AuthenticatedApp = () => {
   }
 
   // Restrict app to admin users only
-  const { user } = useAuth();
   if (isAuthenticated && user && user.role !== 'admin') {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-950 text-white gap-4">
         <div className="text-4xl">🚫</div>
         <h1 className="text-2xl font-bold">Access Restricted</h1>
         <p className="text-white/50">This platform is for authorised administrators only.</p>
-        <button onClick={() => base44.auth.logout('/')} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">Sign Out</button>
+        <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">Sign Out</button>
       </div>
     );
   }
