@@ -44,8 +44,6 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Allow Landing (/) to be public — only redirect on other pages
-      // Also check for token in URL params (post-OAuth redirect) to avoid redirect loops
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.has('token') || urlParams.has('base44_token');
       const isEditorPreview = urlParams.has('_preview_token');
@@ -54,6 +52,19 @@ const AuthenticatedApp = () => {
         return null;
       }
     }
+  }
+
+  // Restrict app to admin users only
+  const { user } = useAuth();
+  if (isAuthenticated && user && user.role !== 'admin') {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-950 text-white gap-4">
+        <div className="text-4xl">🚫</div>
+        <h1 className="text-2xl font-bold">Access Restricted</h1>
+        <p className="text-white/50">This platform is for authorised administrators only.</p>
+        <button onClick={() => base44.auth.logout('/')} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">Sign Out</button>
+      </div>
+    );
   }
 
   // In editor preview, redirect / to /Home so the dashboard is shown
