@@ -3,14 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, CheckCircle, Radio, Sparkles, LogOut } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 
+// Global signal emitter — attach to window so anything can call it
+if (typeof window !== 'undefined') {
+  window.__soulbridge = window.__soulbridge || {};
+  window.__soulbridge.signals = window.__soulbridge.signals || [];
+  window.__soulbridge.emitSignal = function(signal) {
+    const entry = { ...signal, id: Date.now(), time: new Date().toLocaleTimeString() };
+    window.__soulbridge.signals.unshift(entry);
+    window.dispatchEvent(new Event('signal-update'));
+  };
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [identity, setIdentity] = useState(null);
-  const [signalLog] = useState([
-    { type: 'identity_connected', time: new Date().toLocaleTimeString(), status: '✅' },
-    { type: 'session_started', time: new Date().toLocaleTimeString(), status: '✅' },
-    { type: 'axi_activated', time: new Date().toLocaleTimeString(), status: '✅' },
-  ]);
+  const [signals, setSignals] = useState([]);
+
+  // Listen for real-time signal updates
+  useEffect(() => {
+    const loadSignals = () => setSignals([...( window.__soulbridge?.signals || [])]);
+    loadSignals();
+    window.addEventListener('signal-update', loadSignals);
+    return () => window.removeEventListener('signal-update', loadSignals);
+  }, []);
 
   useEffect(() => {
     try {
@@ -19,11 +34,14 @@ export default function Dashboard() {
         const parsed = JSON.parse(stored);
         if (parsed?.connected) {
           setIdentity(parsed);
+          // Emit startup signals
+          window.__soulbridge.emitSignal({ type: 'identity_connected' });
+          window.__soulbridge.emitSignal({ type: 'session_started' });
+          window.__soulbridge.emitSignal({ type: 'axi_activated' });
           return;
         }
       }
     } catch (e) {}
-    // No identity — send back to landing
     navigate('/');
   }, []);
 
