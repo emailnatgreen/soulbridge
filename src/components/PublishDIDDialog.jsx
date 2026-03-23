@@ -73,7 +73,6 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
         if (status.signed) {
           clearInterval(interval);
           setPollingInterval(null);
-          // Sync wallet to DB — signed means tx was submitted
           base44.entities.Wallet.update(wallet.id, {
             is_published: true,
             published_at: new Date().toISOString(),
@@ -94,6 +93,7 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
           setPollingInterval(null);
           setResult({ success: false, message: 'Signing request was rejected or expired' });
           setStep('error');
+        }
       } catch (e) {
         console.error('Polling error:', e);
       }
