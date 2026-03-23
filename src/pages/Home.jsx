@@ -174,16 +174,6 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {didConnected && (
-                  <button
-                    onClick={handleDisconnectDID}
-                    className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-3 py-1.5 transition-colors"
-                    title="Disconnect DID Identity"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    Disconnect DID
-                  </button>
-                )}
                 <DidAuthStatus />
                 <PrivacyQuickToggle />
                 <NotificationCenter agentId="axi_main_001" />
