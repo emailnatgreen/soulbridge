@@ -142,7 +142,9 @@ export default function PublicAgentGreeter() {
     // Check if user is saying yes to sign-in prompt
     const isYes = /\b(yes|yeah|sure|ok|okay|yep|yup|absolutely|let'?s go|sign me in|log me in|yes please|please|sign in|take me in)\b/i.test(msg.trim());
     const lastAxiMsg = [...messages].reverse().find(m => m.sender_agent_id === 'axi');
-    const lastMsgAboutSignIn = lastAxiMsg && /sign.?in|log.?in|enter the village|would you like to/i.test(lastAxiMsg.content || '');
+    const lastMsgAboutSignIn = lastAxiMsg && /sign.?in|log.?in|enter the village|would you like to|shall i|ready to|take you|guide you|welcome you/i.test(lastAxiMsg.content || '');
+    // Also check if ANY recent Axi message mentioned sign-in (not just the last one)
+    const anyMsgAboutSignIn = messages.some(m => m.sender_agent_id === 'axi' && /sign.?in|log.?in|enter the village|would you like to|shall i|ready to/i.test(m.content || ''));
     if (isYes && lastMsgAboutSignIn) {
       setSending(false);
       base44.auth.redirectToLogin('/Home');
