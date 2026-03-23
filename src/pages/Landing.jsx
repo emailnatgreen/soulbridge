@@ -92,11 +92,16 @@ export default function Landing() {
   });
 
   const handleDisconnectDID = () => {
-    localStorage.removeItem('soulbridge_identity');
-    localStorage.removeItem('sb_public_conv_id');
-    delete window.__soulbridge.identity;
+    localStorage.clear();
+    if (window.__soulbridge) {
+      delete window.__soulbridge.identity;
+      delete window.__soulbridge.lastSignal;
+      window.__soulbridge.signals = [];
+    }
     setDidConnected(null);
     setDid('');
+    setDidError('');
+    setIsNavigating(false);
     window.location.href = '/';
   };
 
