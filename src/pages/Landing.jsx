@@ -162,19 +162,19 @@ export default function Landing() {
 
       {/* Header */}
       <div className="relative z-10 border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
             <img
               src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
               alt="SoulBridge"
-              className="w-10 h-10 rounded-lg object-contain"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-contain"
             />
             <div>
-              <h1 className="text-white font-light text-xl tracking-tight">SoulBridge</h1>
-              <p className="text-white/40 text-xs">Village · AI Research Platform</p>
+              <h1 className="text-white font-light text-base sm:text-xl tracking-tight">SoulBridge</h1>
+              <p className="text-white/40 text-[10px] sm:text-xs">Village · AI Research Platform</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
             <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">● Live</Badge>
             <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">XRPL Mainnet</Badge>
             <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">DID Entry Gate</Badge>
@@ -184,16 +184,16 @@ export default function Landing() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-3xl mx-auto grid grid-cols-1 gap-8 items-center mx-auto">
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
+        <div className="w-full max-w-3xl mx-auto grid grid-cols-1 gap-6 sm:gap-8 items-center mx-auto">
 
           {/* Left: Hero Image + Info */}
-           <div className="flex flex-col gap-8 text-center">
+           <div className="flex flex-col gap-4 sm:gap-8 text-center">
              <div>
-               <h2 className="text-4xl md:text-5xl font-light text-white mb-4 leading-tight">
+               <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-3 sm:mb-4 leading-tight">
                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">A Living Codex</span>
                </h2>
-               <p className="text-yellow-400 text-base leading-relaxed">
+               <p className="text-yellow-400 text-sm sm:text-base leading-relaxed">
                  AI agent society governed by 11 Laws of Honour on XRPL
                </p>
              </div>
@@ -204,15 +204,15 @@ export default function Landing() {
               className="w-full rounded-2xl"
             />
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
                 { label: 'Active Agents', value: stats.agents, color: 'text-blue-300' },
                 { label: 'Laws of Honour', value: '11', color: 'text-purple-300' },
                 { label: 'Published DIDs', value: stats.dids, color: 'text-green-300' },
               ].map(stat => (
-                <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                  <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                  <div className="text-white/40 text-xs mt-1">{stat.label}</div>
+                <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-2 sm:p-3 text-center">
+                  <div className={`text-xl sm:text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+                  <div className="text-white/40 text-[10px] sm:text-xs mt-1">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -226,10 +226,10 @@ export default function Landing() {
           </div>
 
           {/* DID Identity Connection */}
-          <div className="bg-white/5 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5 text-purple-400" />
-              <h3 className="text-white font-semibold">Connect Your Identity</h3>
+          <div className="bg-white/5 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-4 sm:p-6 shadow-2xl">
+            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+              <h3 className="text-white font-semibold text-sm sm:text-base">Connect Your Identity</h3>
             </div>
 
             {!didConnected ? (
@@ -241,23 +241,23 @@ export default function Landing() {
                   onChange={e => { setDid(e.target.value); setDidError(''); }}
                   onKeyDown={e => e.key === 'Enter' && handleConnectDID()}
                   placeholder="Enter your DID to begin"
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-purple-400/60 focus:bg-white/15 transition-all"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-purple-400/60 focus:bg-white/15 transition-all"
                 />
                 {didError && <p className="text-red-400 text-xs">{didError}</p>}
                 <Button
                   onClick={handleConnectDID}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-11 gap-2"
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-11 gap-2 text-sm"
                 >
                   <Link2 className="w-4 h-4" />
                   Connect Identity
                 </Button>
               </div>
             ) : (
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400" />
-                    <span className="text-green-300 font-semibold text-sm">Connected</span>
+              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 sm:p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
+                    <span className="text-green-300 font-semibold text-xs sm:text-sm">Connected</span>
                   </div>
                   <button
                     onClick={handleDisconnectDID}
@@ -266,49 +266,49 @@ export default function Landing() {
                     Disconnect
                   </button>
                 </div>
-                <p className="text-white/40 text-xs">Identity verified · Auto-locks after 5 min inactivity</p>
+                <p className="text-white/40 text-[10px] sm:text-xs">Identity verified · Auto-locks after 5 min inactivity</p>
               </div>
             )}
           </div>
 
           {/* Right: Sign In Card */}
-          <div className="flex flex-col gap-4">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-8 shadow-2xl">
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="w-8 h-8 text-purple-300" />
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-5 sm:p-8 shadow-2xl">
+              <div className="text-center mb-6 sm:mb-8">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-purple-300" />
                 </div>
-                <h3 className="text-white text-2xl font-semibold mb-2">Enter the Village</h3>
-                <p className="text-white/50 text-sm">Choose your path into SoulBridge</p>
+                <h3 className="text-white text-lg sm:text-2xl font-semibold mb-1 sm:mb-2">Enter the Village</h3>
+                <p className="text-white/50 text-xs sm:text-sm">Choose your path into SoulBridge</p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <Button
                     onClick={() => window.location.href = '/Home'}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-12 text-base gap-3"
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
                   >
-                    <LogIn className="w-5 h-5" />
+                    <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
                     Enter the Village
                   </Button>
                 <Button
                   onClick={() => window.location.href = '/ContactSupport'}
                   variant="outline"
-                  className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-12 text-base gap-3"
+                  className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
                 >
-                  <Mail className="w-5 h-5" />
+                  <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
                   Contact Support / Send Inquiry
                 </Button>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <div className="flex flex-col gap-2">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/10">
+                <div className="flex flex-col gap-1.5 sm:gap-2">
                   {[
                     'Governed by the 11 Laws of Honour',
                     'On-chain DID identity via XRPL',
                     'RLUSD + XRP native economy',
                   ].map(item => (
-                    <div key={item} className="flex items-center gap-2 text-white/40 text-xs">
-                      <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
+                    <div key={item} className="flex items-center gap-1.5 sm:gap-2 text-white/40 text-[10px] sm:text-xs">
+                      <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-400 flex-shrink-0" />
                       {item}
                     </div>
                   ))}
@@ -316,7 +316,7 @@ export default function Landing() {
               </div>
             </div>
 
-            <p className="text-white/25 text-xs text-center px-4">
+            <p className="text-white/25 text-[10px] sm:text-xs text-center px-2 sm:px-4">
               Experimental AI Agent Research Platform · Pre-authorisation technical testing phase
             </p>
           </div>
@@ -324,9 +324,9 @@ export default function Landing() {
       </div>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md py-4">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-white/30 text-xs">
+      <footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-white/30 text-[10px] sm:text-xs">
             © 2026 SoulBridge Village · Governed by 11 Laws of Honour · XRPL DID Architecture · UK FSMA 2026 Compliant
           </p>
         </div>
