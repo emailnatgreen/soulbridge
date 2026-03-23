@@ -145,7 +145,7 @@ export default function PublicAgentGreeter() {
     const lastMsgAboutSignIn = lastAxiMsg && /sign.?in|log.?in|enter the village|would you like to|shall i|ready to|take you|guide you|welcome you/i.test(lastAxiMsg.content || '');
     // Also check if ANY recent Axi message mentioned sign-in (not just the last one)
     const anyMsgAboutSignIn = messages.some(m => m.sender_agent_id === 'axi' && /sign.?in|log.?in|enter the village|would you like to|shall i|ready to/i.test(m.content || ''));
-    if (isYes && lastMsgAboutSignIn) {
+    if (isYes && (lastMsgAboutSignIn || anyMsgAboutSignIn)) {
       setSending(false);
       base44.auth.redirectToLogin('/Home');
       return;
