@@ -152,24 +152,7 @@ export default function PublicAgentGreeter() {
     }
 
     try {
-      // Save user message to DB
-      await base44.entities.AgentMessage.create({
-        conversation_id: convId,
-        sender_agent_id: 'visitor',
-        content: msg,
-        message_type: 'text',
-        status: 'sent'
-      });
-
-      // Trigger Axi response
-      await base44.functions.invoke('axiRespond', {
-        conversation_id: convId,
-        user_message: msg
-      });
-
-      // Load updated messages after response
-      setTimeout(() => loadMessages(convId), 500);
-    } catch (err) {
+      // Trigger Axi response (axiRespond saves both user message and reply)
       console.error('Send error:', err?.message || err);
     } finally {
       setSending(false);
