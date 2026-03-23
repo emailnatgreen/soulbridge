@@ -311,6 +311,18 @@ export default function Landing() {
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   title={!didConnected ? 'Connect a DID to enter the Village' : ''}
                 >
+                  {isNavigating ? (
+                    <>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
+                      Enter the Village
+                    </>
+                  )}
+                </Button>
                 <Button
                   onClick={() => window.location.href = '/ContactSupport'}
                   variant="outline"
