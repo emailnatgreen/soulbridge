@@ -106,12 +106,8 @@ export default function Landing() {
     window.__soulbridge.identity = identity;
     localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
     emitSignal({ type: 'identity_connected', did: did.trim(), timestamp: Date.now() });
-    // Trigger Axi with context
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('open-axi-with-message', {
-        detail: { message: `Identity recognised. DID connected: ${did.trim()}. You are now authenticated. How can I assist you?` }
-      }));
-    }, 400);
+    // Tell PublicAgentGreeter about the DID connection
+    window.dispatchEvent(new CustomEvent('did-connected', { detail: { did: did.trim() } }));
     setDidConnected(identity);
   };
 
