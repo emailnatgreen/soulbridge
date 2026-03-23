@@ -78,6 +78,7 @@ export default function Landing() {
     delete window.__soulbridge.identity;
     setDidConnected(null);
     setDid('');
+    navigate('/');
   };
 
   const resetInactivityTimer = () => {
