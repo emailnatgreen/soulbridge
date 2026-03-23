@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,7 +6,6 @@ import { X, Sparkles, Send, Loader2, Minimize2, Maximize2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Simple inline bubble - no complex imports
 function Bubble({ message }) {
   const isUser = message.sender_agent_id !== 'axi';
   return (
@@ -53,6 +52,10 @@ export default function PublicAgentGreeter() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   // Listen for DID connected event from Landing
   useEffect(() => {
     const handleDidConnected = async (e) => {
@@ -66,7 +69,7 @@ export default function PublicAgentGreeter() {
           user_message: `[SYSTEM] The visitor has just connected their DID identity: ${did}. Acknowledge this warmly, confirm their identity is recognised, then ask them if they would like to sign in to the Village. Keep it short and friendly.`,
           is_greeting: false
         });
-        setTimeout(() => loadMessages(convIdRef.current), 800);
+        await loadMessages(convIdRef.current);
       } catch (err) {
         console.error('DID connected message error:', err);
       } finally {
@@ -82,8 +85,7 @@ export default function PublicAgentGreeter() {
     if (!isOpen || initialized.current) return;
     initialized.current = true;
 
-    // Check localStorage first (persists across reloads), then sessionStorage
-    const storedId = localStorage.getItem(CONV_KEY) || sessionStorage.getItem(CONV_KEY);
+    const storedId = localStorage.getItem(CONV_KEY);
     if (storedId) {
       convIdRef.current = storedId;
       loadMessages(storedId);
@@ -91,22 +93,29 @@ export default function PublicAgentGreeter() {
       createConversation();
     }
 
-    // Poll for new messages every 3s
+    // Poll every 4s for new messages
     pollRef.current = setInterval(() => {
       if (convIdRef.current) loadMessages(convIdRef.current);
-    }, 3000);
+    }, 4000);
 
     return () => clearInterval(pollRef.current);
   }, [isOpen]);
+
+  const loadMessages = async (convId) => {
+    try {
+      const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
+      setMessages(res?.data?.messages || []);
+    } catch (err) {
+      console.error('Load messages error:', err);
+    }
+  };
 
   const createConversation = async () => {
     setLoading(true);
     try {
       const convId = `public-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       convIdRef.current = convId;
-      // Persist across page reloads (not just session)
       localStorage.setItem(CONV_KEY, convId);
-      sessionStorage.setItem(CONV_KEY, convId);
 
       await base44.functions.invoke('axiRespond', {
         conversation_id: convId,
@@ -119,17 +128,6 @@ export default function PublicAgentGreeter() {
       console.error('Failed to create conversation:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadMessages = async (convId) => {
-    try {
-      const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
-      const fetched = res?.data?.messages || [];
-      // Replace all messages, dropping any optimistic (tmp-) entries
-      setMessages(fetched);
-    } catch (err) {
-      console.error('Load messages error:', err);
     }
   };
 
@@ -152,7 +150,13 @@ export default function PublicAgentGreeter() {
     }
 
     try {
-      // Trigger Axi response (axiRespond saves both user message and reply)
+      // axiRespond handles saving user message + generating Axi reply
+      await base44.functions.invoke('axiRespond', {
+        conversation_id: convId,
+        user_message: msg
+      });
+      await loadMessages(convId);
+    } catch (err) {
       console.error('Send error:', err?.message || err);
     } finally {
       setSending(false);
