@@ -4,10 +4,11 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
-    const event = payload.event || payload;
-    const agent = event.data || payload.data;
+    // Automation payloads have: {event: {type, entity_name, entity_id}, data: {...}, old_data: {...}}
+    const agent = payload.data || payload.event?.data;
+    const event = payload.event || {type: payload.type};
 
-    console.log('[axiAutoCreateServicesFromAgents] Event received:', { type: event.type, agent_id: agent?.id, agent_name: agent?.name, has_core_skills: !!agent?.core_skills, core_skills_count: agent?.core_skills?.length || 0 });
+    console.log('[axiAutoCreateServicesFromAgents] Raw payload:', JSON.stringify({event_type: event?.type, data_exists: !!payload.data, agent_id: agent?.id, agent_core_skills: agent?.core_skills}));
 
     // Triggered when an agent is created or updated
     if (event.type === 'create' || event.type === 'update') {
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
           }
         }
       } else {
-        console.log('[axiAutoCreateServicesFromAgents] No core_skills found or agent is null');
+        console.log('[axiAutoCreateServicesFromAgents] No core_skills found or agent is null', {agent: !!agent, core_skills: !!agent?.core_skills});
       }
 
       // If agent has specializations, create corresponding Skill records
