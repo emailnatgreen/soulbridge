@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Sparkles, CheckCircle, Link2, Shield } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn } from 'lucide-react';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 
 // Global session identity store
@@ -281,6 +281,15 @@ export default function Landing() {
               </div>
 
               <div className="space-y-3">
+                {didConnected && (
+                  <Button
+                    onClick={() => base44.auth.redirectToLogin('/Home')}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-12 text-base gap-3"
+                  >
+                    <LogIn className="w-5 h-5" />
+                    Enter the Village
+                  </Button>
+                )}
                 <Button
                   onClick={() => window.location.href = '/ContactSupport'}
                   variant="outline"
