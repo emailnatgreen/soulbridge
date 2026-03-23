@@ -76,6 +76,17 @@ export default function Landing() {
   const navigate = useNavigate();
   const inactivityRef = useRef(null);
   const [isNavigating, setIsNavigating] = useState(false);
+
+  const handleDisconnectDID = () => {
+    localStorage.removeItem('soulbridge_identity');
+    localStorage.removeItem('sb_public_conv_id');
+    delete window.__soulbridge.identity;
+    setDidConnected(null);
+    setDid('');
+    window.location.href = '/';
+  };
+
+  const resetInactivityTimer = () => {
     if (inactivityRef.current) clearTimeout(inactivityRef.current);
     inactivityRef.current = setTimeout(() => {
       handleDisconnectDID();
@@ -240,64 +251,12 @@ export default function Landing() {
                 />
                 {didError && <p className="text-red-400 text-xs">{didError}</p>}
                 <Button
-                  onClick={handleConnectDID}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-11 gap-2 text-sm"
-                >
-                  <Link2 className="w-4 h-4" />
-                  Connect Identity
-                </Button>
-              </div>
-            ) : (
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 sm:p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
-                    <span className="text-green-300 font-semibold text-xs sm:text-sm">Connected</span>
-                  </div>
-                  <button
-                    onClick={handleDisconnectDID}
-                    className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-2 py-1 transition-colors"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-                <p className="text-white/40 text-[10px] sm:text-xs">Identity verified · Auto-locks after 5 min inactivity</p>
-              </div>
-            )}
-          </div>
-
-          {/* Right: Sign In Card */}
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-5 sm:p-8 shadow-2xl">
-              <div className="text-center mb-6 sm:mb-8">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-purple-300" />
-                </div>
-                <h3 className="text-white text-lg sm:text-2xl font-semibold mb-1 sm:mb-2">Enter the Village</h3>
-                <p className="text-white/50 text-xs sm:text-sm">Choose your path into SoulBridge</p>
-              </div>
-
-              <div className="space-y-2 sm:space-y-3">
-                <Button
-                    onClick={() => {
-                      setIsNavigating(true);
-                      setTimeout(() => window.location.href = '/Home', 800);
-                    }}
-                    disabled={isNavigating}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50"
-                  >
-                    {isNavigating ? (
-                      <>
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
-                        Enter the Village
-                      </>
-                    )}
-                  </Button>
+                   onClick={handleConnectDID}
+                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-11 gap-2 text-sm"
+                 >
+                   <Link2 className="w-4 h-4" />
+                   Connect Identity
+                 </Button>
               </div>
 
               <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/10">
