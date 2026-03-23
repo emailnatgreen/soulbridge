@@ -34,6 +34,7 @@ import PageSignalActivityTrends from "@/components/axi/PageSignalActivityTrends"
 import AutomationHealthMonitor from "@/components/axi/AutomationHealthMonitor";
 import DirectActionInterface from "@/components/axi/DirectActionInterface";
 import AutomationTerminal from "@/components/axi/AutomationTerminal";
+import AxiServiceSkillCreator from "@/components/axi/AxiServiceSkillCreator";
 
 export default function AxiCommandDashboard() {
   const queryClient = useQueryClient();
@@ -191,7 +192,12 @@ export default function AxiCommandDashboard() {
 
             {/* MIDDLE — Direct Action Interface */}
             <div className="rounded-2xl border border-violet-700/40 bg-slate-800/60 backdrop-blur p-4">
-              <DirectActionInterface />
+             <DirectActionInterface />
+            </div>
+
+            {/* RIGHT — Service & Skill Creator */}
+            <div className="rounded-2xl border border-cyan-700/40 bg-slate-800/60 backdrop-blur p-4">
+             <AxiServiceSkillCreator />
             </div>
 
             {/* RIGHT — Governance Risk */}
