@@ -41,13 +41,11 @@ export default function IntegrationCreditDashboard() {
 
   // Subscribe to settings changes
   useEffect(() => {
-    const unsubscribe = base44.entities.IntegrationCreditSettings.subscribe((event) => {
-      if (event.type === 'update') {
-        refetchSettings();
-      }
+    const unsubscribe = base44.entities.IntegrationCreditSettings.subscribe(() => {
+      refetchSettings();
     });
     return unsubscribe;
-  }, [refetchSettings]);
+  }, []);
 
   // Fetch usage logs from production database (live data)
   const { data: usageLogs = [], refetch: refetchLogs } = useQuery({
