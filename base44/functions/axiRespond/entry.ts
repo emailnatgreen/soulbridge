@@ -32,6 +32,19 @@ Deno.serve(async (req) => {
     // If no conversation_id, generate response anyway (for standalone messages)
     console.log('[Axi] Processing message:', { conversation_id, has_message: !!user_message });
 
+    // Save user message to DB when called directly (not from automation)
+    const isDirectCall = !body.event;
+    const isSystemMsg = user_message?.startsWith('[SYSTEM]') || user_message?.startsWith('[NEW_VISITOR]');
+    if (isDirectCall && !isSystemMsg && conversation_id) {
+      await base44.asServiceRole.entities.AgentMessage.create({
+        conversation_id,
+        sender_agent_id: 'visitor',
+        content: user_message,
+        message_type: 'text',
+        status: 'sent'
+      });
+    }
+
     console.log(`[Axi] Generating response for: "${user_message}"`);
 
     const systemContext = `You are Axi — ${body.is_greeting ? 'greet the visitor warmly and introduce yourself and SoulBridge' : 'respond to the visitor'}.
