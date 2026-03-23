@@ -19,6 +19,7 @@ import TreasurySigningHelper from './pages/TreasurySigningHelper';
 import GovernanceVotingDashboard from './pages/GovernanceVotingDashboard';
 import ContactSupport from './pages/ContactSupport';
 import Dashboard from './pages/Dashboard';
+import IntegrationCreditDashboard from './pages/IntegrationCreditDashboard';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -98,6 +99,7 @@ const AuthenticatedApp = () => {
       <Route path="/GovernanceVotingDashboard" element={<LayoutWrapper currentPageName="GovernanceVotingDashboard"><GovernanceVotingDashboard /></LayoutWrapper>} />
       <Route path="/ContactSupport" element={<ContactSupport />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/IntegrationCreditDashboard" element={<LayoutWrapper currentPageName="IntegrationCreditDashboard"><IntegrationCreditDashboard /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
