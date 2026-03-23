@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
             };
             console.log(`[axiAutoCreateServicesFromAgents] Creating AgentSkill with payload:`, skillPayload);
             
-            const result = await base44.entities.AgentSkill.create(skillPayload);
+            const result = await base44.asServiceRole.entities.AgentSkill.create(skillPayload);
             console.log(`[axiAutoCreateServicesFromAgents] AgentSkill creation result:`, result?.id || 'no ID returned');
           } else {
             console.log(`[axiAutoCreateServicesFromAgents] Skipping ${skill.name} - already exists`);
