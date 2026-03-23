@@ -174,13 +174,18 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <DidAuthStatus />
+                {didConnected && (
+                  <button
+                    onClick={handleDisconnectDID}
+                    className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-3 py-1.5 transition-colors"
+                    title="Disconnect DID Identity"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Disconnect DID
+                  </button>
+                )}
                 <PrivacyQuickToggle />
                 <NotificationCenter agentId="axi_main_001" />
-                <AskAxiButton
-                  label="Ask Axi"
-                  context="Nathan is on the SoulBridge Dashboard. Please give him a brief Village morning briefing: treasury balance, any urgent notifications, active governance proposals needing votes, and which agents need your attention today."
-                />
                 <Link to={createPageUrl('MemoryBrowser')}>
                   <Button variant="outline" className="border-violet-500/40 text-violet-300 hover:bg-white/10 gap-2">
                     <Brain className="w-4 h-4" />
