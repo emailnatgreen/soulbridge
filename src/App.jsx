@@ -76,7 +76,34 @@ const AuthenticatedApp = () => {
           <LayoutWrapper currentPageName="Home"><Pages.Home /></LayoutWrapper>
         )
       ) : <Landing />} />
-};
+      {Object.entries(Pages).map(([path, Page]) => (
+        <Route
+          key={path}
+          path={`/${path}`}
+          element={
+            <LayoutWrapper currentPageName={path}>
+              <Page />
+            </LayoutWrapper>
+          }
+        />
+      ))}
+      <Route path="/VillageCalendar" element={<LayoutWrapper currentPageName="VillageCalendar"><VillageCalendar /></LayoutWrapper>} />
+      <Route path="/AxiCommandDashboard" element={<LayoutWrapper currentPageName="AxiCommandDashboard"><AxiCommandDashboard /></LayoutWrapper>} />
+      <Route path="/AgentAdditionDiagnostic" element={<LayoutWrapper currentPageName="AgentAdditionDiagnostic"><AgentAdditionDiagnostic /></LayoutWrapper>} />
+      <Route path="/MemoryBrowser" element={<LayoutWrapper currentPageName="MemoryBrowser"><MemoryBrowser /></LayoutWrapper>} />
+      <Route path="/ImageStorage" element={<LayoutWrapper currentPageName="ImageStorage"><ImageStorage /></LayoutWrapper>} />
+      <Route path="/NewProposalDraft" element={<LayoutWrapper currentPageName="NewProposalDraft"><NewProposalDraft /></LayoutWrapper>} />
+      <Route path="/governance/new-proposal" element={<LayoutWrapper currentPageName="NewProposalDraft"><NewProposalDraft /></LayoutWrapper>} />
+      <Route path="/TreasuryAllocationProposal" element={<LayoutWrapper currentPageName="TreasuryAllocationProposal"><TreasuryAllocationProposal /></LayoutWrapper>} />
+      <Route path="/TreasurySigningHelper" element={<LayoutWrapper currentPageName="TreasurySigningHelper"><TreasurySigningHelper /></LayoutWrapper>} />
+      <Route path="/GovernanceVotingDashboard" element={<LayoutWrapper currentPageName="GovernanceVotingDashboard"><GovernanceVotingDashboard /></LayoutWrapper>} />
+      <Route path="/ContactSupport" element={<ContactSupport />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/IntegrationCreditDashboard" element={<LayoutWrapper currentPageName="IntegrationCreditDashboard"><IntegrationCreditDashboard /></LayoutWrapper>} />
+      <Route path="/ServiceSkillMarketplace" element={<LayoutWrapper currentPageName="ServiceSkillMarketplace"><ServiceSkillMarketplace /></LayoutWrapper>} />
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
+  );
 
 
 function App() {
