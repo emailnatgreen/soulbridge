@@ -62,7 +62,8 @@ export default function PublicAgentGreeter() {
     if (!isOpen || initialized.current) return;
     initialized.current = true;
 
-    const storedId = sessionStorage.getItem(CONV_KEY);
+    // Check localStorage first (persists across reloads), then sessionStorage
+    const storedId = localStorage.getItem(CONV_KEY) || sessionStorage.getItem(CONV_KEY);
     if (storedId) {
       convIdRef.current = storedId;
       loadMessages(storedId);
@@ -70,9 +71,9 @@ export default function PublicAgentGreeter() {
       createConversation();
     }
 
-    // Poll for new messages every 3s
+    // Poll for new messages every 3s only while open
     pollRef.current = setInterval(() => {
-      if (convIdRef.current) loadMessages(convIdRef.current);
+      if (convIdRef.current && isOpen) loadMessages(convIdRef.current);
     }, 3000);
 
     return () => clearInterval(pollRef.current);
@@ -81,12 +82,12 @@ export default function PublicAgentGreeter() {
   const createConversation = async () => {
     setLoading(true);
     try {
-      // Create a unique conversation ID
       const convId = `public-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       convIdRef.current = convId;
+      // Persist across page reloads (not just session)
+      localStorage.setItem(CONV_KEY, convId);
       sessionStorage.setItem(CONV_KEY, convId);
 
-      // Send a welcome trigger message from Axi
       await base44.functions.invoke('axiRespond', {
         conversation_id: convId,
         user_message: '[NEW_VISITOR] A new visitor has arrived at the SoulBridge landing page. Please greet them warmly and invite them to explore or ask questions.',
@@ -103,24 +104,14 @@ export default function PublicAgentGreeter() {
 
   const loadMessages = async (convId) => {
     try {
-      const msgs = await base44.asServiceRole.entities.AgentMessage.filter(
+      const msgs = await base44.entities.AgentMessage.filter(
         { conversation_id: convId },
         'created_date',
         50
       );
       setMessages(msgs || []);
     } catch (err) {
-      // Try without service role (public)
-      try {
-        const msgs = await base44.entities.AgentMessage.filter(
-          { conversation_id: convId },
-          'created_date',
-          50
-        );
-        setMessages(msgs || []);
-      } catch (e) {
-        console.error('Load messages error:', e);
-      }
+      console.error('Load messages error:', err);
     }
   };
 

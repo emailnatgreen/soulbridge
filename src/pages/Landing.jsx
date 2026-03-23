@@ -1,11 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 
 // Global session identity store
@@ -71,15 +68,35 @@ function ParticleCanvas() {
 }
 
 export default function Landing() {
-  const [tab, setTab] = useState('main'); // kept for structure
-  const [email, setEmail] = useState('');
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
   const [didConnected, setDidConnected] = useState(() => {
-    const stored = window.__soulbridge?.identity;
-    return stored?.connected ? stored : null;
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.connected) {
+          window.__soulbridge.identity = parsed;
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return null;
   });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [agents, wallets] = await Promise.all([
+          base44.entities.Agent.list('created_date', 1000),
+          base44.entities.Wallet.filter({ is_published: true }, 'created_date', 1000)
+        ]);
+        setStats({ agents: agents.length, dids: wallets.length });
+      } catch (e) {}
+    };
+    fetchStats();
+  }, []);
 
   const handleConnectDID = () => {
     setDidError('');
@@ -87,7 +104,7 @@ export default function Landing() {
     if (!did.trim().startsWith('did:')) { setDidError('Invalid DID format — must start with did:'); return; }
     const identity = { did: did.trim(), connected: true, timestamp: Date.now() };
     window.__soulbridge.identity = identity;
-    sessionStorage.setItem('soulbridge_identity', JSON.stringify(identity));
+    localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
     emitSignal({ type: 'identity_connected', did: did.trim(), timestamp: Date.now() });
     // Trigger Axi with context
     setTimeout(() => {
@@ -98,8 +115,7 @@ export default function Landing() {
     setDidConnected(identity);
   };
 
-  const handleGoogleLogin = () => base44.auth.redirectToLogin('/Home');
-  const handleEmailLogin = () => base44.auth.redirectToLogin('/Home');
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative flex flex-col">
