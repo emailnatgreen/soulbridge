@@ -91,9 +91,9 @@ export default function PublicAgentGreeter() {
       createConversation();
     }
 
-    // Poll for new messages every 3s only while open
+    // Poll for new messages every 3s
     pollRef.current = setInterval(() => {
-      if (convIdRef.current && isOpen) loadMessages(convIdRef.current);
+      if (convIdRef.current) loadMessages(convIdRef.current);
     }, 3000);
 
     return () => clearInterval(pollRef.current);
