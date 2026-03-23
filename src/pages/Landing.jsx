@@ -68,6 +68,23 @@ function ParticleCanvas() {
 }
 
 export default function Landing() {
+  const inactivityRef = useRef(null);
+
+  const handleDisconnectDID = () => {
+    localStorage.removeItem('soulbridge_identity');
+    localStorage.removeItem('sb_public_conv_id');
+    delete window.__soulbridge.identity;
+    setDidConnected(null);
+    setDid('');
+  };
+
+  const resetInactivityTimer = () => {
+    if (inactivityRef.current) clearTimeout(inactivityRef.current);
+    inactivityRef.current = setTimeout(() => {
+      handleDisconnectDID();
+    }, 5 * 60 * 1000); // 5 minutes
+  };
+
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
@@ -84,6 +101,18 @@ export default function Landing() {
     } catch (e) {}
     return null;
   });
+
+  // Start inactivity timer when DID is connected
+  useEffect(() => {
+    if (!didConnected) return;
+    const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
+    events.forEach(e => window.addEventListener(e, resetInactivityTimer));
+    resetInactivityTimer();
+    return () => {
+      events.forEach(e => window.removeEventListener(e, resetInactivityTimer));
+      if (inactivityRef.current) clearTimeout(inactivityRef.current);
+    };
+  }, [didConnected]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -223,10 +252,20 @@ export default function Landing() {
               </div>
             ) : (
               <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span className="text-green-300 font-semibold text-sm">Connected</span>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span className="text-green-300 font-semibold text-sm">Connected</span>
+                  </div>
+                  <button
+                    onClick={handleDisconnectDID}
+                    className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-2 py-1 transition-colors"
+                  >
+                    Disconnect
+                  </button>
                 </div>
+                <p className="text-white/40 text-xs">Identity verified · Auto-locks after 5 min inactivity</p>
+              </div>
                 <p className="text-white/50 text-xs break-all">Connected as: {didConnected.did}</p>
               </div>
             )}
