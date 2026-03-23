@@ -3,10 +3,18 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { LogIn, Mail, Sparkles, ChevronRight, CheckCircle } from 'lucide-react';
+import { LogIn, Mail, Sparkles, ChevronRight, CheckCircle, Link2, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
+
+// Global session identity store
+if (!window.__soulbridge) window.__soulbridge = {};
+
+function emitSignal(data) {
+  window.__soulbridge.lastSignal = data;
+  window.dispatchEvent(new CustomEvent('soulbridge-signal', { detail: data }));
+}
 
 function ParticleCanvas() {
   const canvasRef = useRef(null);
@@ -63,22 +71,32 @@ function ParticleCanvas() {
 }
 
 export default function Landing() {
-  const [tab, setTab] = useState('main'); // 'main' | 'email'
+  const [tab, setTab] = useState('main');
   const [email, setEmail] = useState('');
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
+  const [did, setDid] = useState('');
+  const [didError, setDidError] = useState('');
+  const [didConnected, setDidConnected] = useState(() => {
+    const stored = window.__soulbridge?.identity;
+    return stored?.connected ? stored : null;
+  });
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const agents = await base44.entities.Agent.list();
-        const wallets = await base44.entities.Wallet.filter({ is_published: true });
-        setStats({ agents: agents.length, dids: wallets.length });
-      } catch (err) {
-        console.error('Failed to fetch stats:', err);
-      }
-    };
-    fetchStats();
-  }, []);
+  const handleConnectDID = () => {
+    setDidError('');
+    if (!did.trim()) { setDidError('Please enter a DID'); return; }
+    if (!did.trim().startsWith('did:')) { setDidError('Invalid DID format — must start with did:'); return; }
+    const identity = { did: did.trim(), connected: true, timestamp: Date.now() };
+    window.__soulbridge.identity = identity;
+    sessionStorage.setItem('soulbridge_identity', JSON.stringify(identity));
+    emitSignal({ type: 'identity_connected', did: did.trim(), timestamp: Date.now() });
+    // Trigger Axi with context
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('open-axi-with-message', {
+        detail: { message: `Identity recognised. DID connected: ${did.trim()}. You are now authenticated. How can I assist you?` }
+      }));
+    }, 400);
+    setDidConnected(identity);
+  };
 
   const handleGoogleLogin = () => base44.auth.redirectToLogin('/Home');
   const handleEmailLogin = () => base44.auth.redirectToLogin('/Home');
@@ -162,6 +180,44 @@ export default function Landing() {
               className="w-full max-w-md mx-auto"
               style={{ opacity: 1 }}
             />
+          </div>
+
+          {/* DID Identity Connection */}
+          <div className="bg-white/5 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-5 h-5 text-purple-400" />
+              <h3 className="text-white font-semibold">Connect Your Identity</h3>
+            </div>
+
+            {!didConnected ? (
+              <div className="space-y-3">
+                <input
+                  id="did-input"
+                  type="text"
+                  value={did}
+                  onChange={e => { setDid(e.target.value); setDidError(''); }}
+                  onKeyDown={e => e.key === 'Enter' && handleConnectDID()}
+                  placeholder="Enter your DID to begin"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-purple-400/60 focus:bg-white/15 transition-all"
+                />
+                {didError && <p className="text-red-400 text-xs">{didError}</p>}
+                <Button
+                  onClick={handleConnectDID}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-11 gap-2"
+                >
+                  <Link2 className="w-4 h-4" />
+                  Connect Identity
+                </Button>
+              </div>
+            ) : (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <span className="text-green-300 font-semibold text-sm">Connected</span>
+                </div>
+                <p className="text-white/50 text-xs break-all">Connected as: {didConnected.did}</p>
+              </div>
+            )}
           </div>
 
           {/* Right: Sign In Card */}
