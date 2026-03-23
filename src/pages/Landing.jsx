@@ -75,17 +75,7 @@ function ParticleCanvas() {
 export default function Landing() {
   const navigate = useNavigate();
   const inactivityRef = useRef(null);
-
-  const handleDisconnectDID = () => {
-    localStorage.removeItem('soulbridge_identity');
-    localStorage.removeItem('sb_public_conv_id');
-    delete window.__soulbridge.identity;
-    setDidConnected(null);
-    setDid('');
-    window.location.href = '/';
-  };
-
-  const resetInactivityTimer = () => {
+  const [isNavigating, setIsNavigating] = useState(false);
     if (inactivityRef.current) clearTimeout(inactivityRef.current);
     inactivityRef.current = setTimeout(() => {
       handleDisconnectDID();
@@ -189,7 +179,7 @@ export default function Landing() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
+      <div className={`relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 transition-opacity duration-700 ${isNavigating ? 'opacity-0' : 'opacity-100'}`}>
         <div className="w-full max-w-3xl mx-auto grid grid-cols-1 gap-6 sm:gap-8 items-center mx-auto">
 
           {/* Left: Hero Image + Info */}
@@ -289,20 +279,25 @@ export default function Landing() {
 
               <div className="space-y-2 sm:space-y-3">
                 <Button
-                    onClick={() => window.location.href = '/Home'}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
+                    onClick={() => {
+                      setIsNavigating(true);
+                      setTimeout(() => window.location.href = '/Home', 800);
+                    }}
+                    disabled={isNavigating}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50"
                   >
-                    <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Enter the Village
+                    {isNavigating ? (
+                      <>
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
+                        Enter the Village
+                      </>
+                    )}
                   </Button>
-                <Button
-                  onClick={() => window.location.href = '/ContactSupport'}
-                  variant="outline"
-                  className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
-                >
-                  <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Contact Support / Send Inquiry
-                </Button>
               </div>
 
               <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/10">
