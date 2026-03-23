@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock, ChevronDown, Laugh, Vote, CheckCircle, ExternalLink, ShieldAlert, Zap, Scale, ClipboardList, Globe, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Plus, MessageCircle, Users, Shield, BarChart3, Map, BookOpen, Sparkles, GraduationCap, ShoppingCart, Target, Award, FileText, Brain, Factory, Heart, Edit, Network, Lock, ChevronDown, Laugh, Vote, CheckCircle, ExternalLink, ShieldAlert, Zap, Scale, ClipboardList, Globe, TrendingUp, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import HomeRecentTransactions from '../components/HomeRecentTransactions';
@@ -23,6 +23,21 @@ import GuidedTour from '../components/onboarding/GuidedTour';
 
 export default function Home() {
   usePageSignal();
+
+  const [didConnected, setDidConnected] = useState(() => {
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return null;
+  });
+
+  const handleDisconnectDID = () => {
+    localStorage.removeItem('soulbridge_identity');
+    localStorage.removeItem('sb_public_conv_id');
+    if (window.__soulbridge) delete window.__soulbridge.identity;
+    setDidConnected(null);
+  };
 
   // Removed global error listener — it was catching unrelated XRPL/backend errors
   // and causing a white screen on rate limit errors.
@@ -159,6 +174,16 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
+                {didConnected && (
+                  <button
+                    onClick={handleDisconnectDID}
+                    className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-3 py-1.5 transition-colors"
+                    title="Disconnect DID Identity"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Disconnect DID
+                  </button>
+                )}
                 <DidAuthStatus />
                 <PrivacyQuickToggle />
                 <NotificationCenter agentId="axi_main_001" />
