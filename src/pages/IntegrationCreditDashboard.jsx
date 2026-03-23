@@ -14,21 +14,42 @@ import IntegrationUsageTimeline from '@/components/IntegrationUsageTimeline';
 const COLORS = ['#8b5cf6', '#ec4899', '#06b6d4', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#84cc16'];
 
 export default function IntegrationCreditDashboard() {
-  const [timeRange, setTimeRange] = useState('month'); // week, month, all
+  const [timeRange, setTimeRange] = useState('month');
   const [selectedIntegration, setSelectedIntegration] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [liveLogs, setLiveLogs] = useState([]);
 
-  // Fetch settings
-  const { data: settings = {} } = useQuery({
+  // Subscribe to real-time usage log changes from production
+  useEffect(() => {
+    const unsubscribe = base44.entities.IntegrationUsageLog.subscribe((event) => {
+      if (event.type === 'create' || event.type === 'update') {
+        setLiveLogs(prev => [event.data, ...prev].slice(0, 1000));
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  // Fetch settings from production database
+  const { data: settings = {}, refetch: refetchSettings } = useQuery({
     queryKey: ['integration-credit-settings'],
     queryFn: async () => {
       const result = await base44.entities.IntegrationCreditSettings.list();
       return result[0] || {};
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 seconds for live updates
   });
 
-  // Fetch usage logs
+  // Subscribe to settings changes
+  useEffect(() => {
+    const unsubscribe = base44.entities.IntegrationCreditSettings.subscribe((event) => {
+      if (event.type === 'update') {
+        refetchSettings();
+      }
+    });
+    return unsubscribe;
+  }, [refetchSettings]);
+
+  // Fetch usage logs from production database (live data)
   const { data: usageLogs = [], refetch: refetchLogs } = useQuery({
     queryKey: ['integration-usage-logs', timeRange],
     queryFn: async () => {
@@ -41,17 +62,20 @@ export default function IntegrationCreditDashboard() {
         : {};
       return await base44.entities.IntegrationUsageLog.filter(filter, '-created_date', 1000);
     },
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 seconds for live data
   });
 
+  // Merge live logs with query results for real-time display
+  const allLogs = [...liveLogs, ...usageLogs].filter((log, idx, arr) => arr.findIndex(l => l.id === log.id) === idx);
+
   // Calculate KPIs
-  const totalCreditsUsed = usageLogs.reduce((sum, log) => sum + (log.credits_consumed || 0), 0);
+  const totalCreditsUsed = allLogs.reduce((sum, log) => sum + (log.credits_consumed || 0), 0);
   const budgetRemaining = (settings.monthly_budget_credits || 1000) - totalCreditsUsed;
   const usagePercent = Math.round((totalCreditsUsed / (settings.monthly_budget_credits || 1000)) * 100);
-  const avgCreditsPerCall = usageLogs.length > 0 ? (totalCreditsUsed / usageLogs.length).toFixed(2) : 0;
+  const avgCreditsPerCall = allLogs.length > 0 ? (totalCreditsUsed / allLogs.length).toFixed(2) : 0;
 
   // Breakdown by integration type
-  const integrationBreakdown = usageLogs.reduce((acc, log) => {
+  const integrationBreakdown = allLogs.reduce((acc, log) => {
     const existing = acc.find(item => item.type === log.integration_type);
     if (existing) {
       existing.credits += log.credits_consumed;
@@ -63,7 +87,7 @@ export default function IntegrationCreditDashboard() {
   }, []);
 
   // Service breakdown
-  const serviceBreakdown = usageLogs.reduce((acc, log) => {
+  const serviceBreakdown = allLogs.reduce((acc, log) => {
     const existing = acc.find(item => item.name === log.service_name);
     if (existing) {
       existing.credits += log.credits_consumed;
@@ -74,7 +98,7 @@ export default function IntegrationCreditDashboard() {
   }, []).sort((a, b) => b.credits - a.credits).slice(0, 10);
 
   // Daily usage trend
-  const dailyUsage = usageLogs.reduce((acc, log) => {
+  const dailyUsage = allLogs.reduce((acc, log) => {
     const date = new Date(log.created_date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
     const existing = acc.find(item => item.date === date);
     if (existing) {
@@ -153,7 +177,7 @@ export default function IntegrationCreditDashboard() {
         </div>
 
         {/* Alerts */}
-        <IntegrationAlerts settings={settings} usagePercent={usagePercent} usageLogs={usageLogs} />
+        <IntegrationAlerts settings={settings} usagePercent={usagePercent} usageLogs={allLogs} />
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -279,7 +303,7 @@ export default function IntegrationCreditDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <IntegrationUsageBreakdown logs={usageLogs} />
+            <IntegrationUsageBreakdown logs={allLogs} />
           </CardContent>
         </Card>
       </div>
