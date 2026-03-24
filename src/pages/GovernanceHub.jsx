@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import ConstitutionalCompliancePanel from '@/components/governance/ConstitutionalCompliancePanel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -344,18 +345,20 @@ export default function GovernanceHub() {
                     <Sparkles className="w-3 h-3" /> Get Axi to review this proposal before submitting
                   </button>
 
+                  {/* Constitutional Compliance Panel */}
+                  <ConstitutionalCompliancePanel
+                    title={proposalTitle}
+                    description={proposalDescription}
+                    proposalType={proposalType}
+                    affectedEntities={[]}
+                  />
+
                   <Button
                     onClick={handleCreateProposal}
                     disabled={creatingProposal || !myAgent}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                     size="lg"
                   >
-                    {creatingProposal ? (
-                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating Proposal...</>
-                    ) : (
-                      <><Sparkles className="w-5 h-5 mr-2" />Submit for Vote</>
-                    )}
-                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
