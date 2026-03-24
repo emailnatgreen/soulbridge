@@ -568,6 +568,39 @@ export default function GovernanceHub() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        {/* Constitutional Alignment */}
+                        {proposal.constitutional_alignment && proposal.constitutional_alignment.length > 0 && (
+                          <div className="bg-purple-500/10 rounded-lg p-4 border border-purple-400/30 space-y-2">
+                            <h4 className="text-purple-200 font-semibold flex items-center gap-2">
+                              <Diamond className="w-4 h-4" />
+                              Constitutional Alignment
+                            </h4>
+                            <div className="space-y-2">
+                              {proposal.constitutional_alignment.map((alignment, idx) => (
+                                <div key={idx} className="bg-white/5 rounded p-2">
+                                  <p className="text-purple-300 text-xs font-medium">Law {alignment.law_number}: {alignment.law_name}</p>
+                                  <p className="text-purple-200/70 text-xs mt-1">{alignment.alignment_statement}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Affected Entities */}
+                        {proposal.affected_entities && proposal.affected_entities.length > 0 && (
+                          <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-400/30 space-y-2">
+                            <h4 className="text-blue-200 font-semibold text-sm">Affected Entities</h4>
+                            <div className="space-y-1">
+                              {proposal.affected_entities.map((entity, idx) => (
+                                <div key={idx} className="text-xs text-blue-200/80">
+                                  <p className="font-medium">{entity.entity_name} ({entity.entity_type})</p>
+                                  <p className="text-blue-200/60">{entity.impact_description}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         {/* AI Impact Assessment */}
                         {proposal.ai_impact_assessment && (
                           <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-400/30 space-y-3">
