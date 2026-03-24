@@ -305,7 +305,7 @@ export default function Landing() {
                   onClick={() => {
                     if (!didConnected) { setDidError('Please connect a DID first'); return; }
                     setIsNavigating(true);
-                    setTimeout(() => window.location.href = '/Home', 800);
+                    setTimeout(() => window.location.href = '/dashboard', 800);
                   }}
                   disabled={isNavigating || !didConnected}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
