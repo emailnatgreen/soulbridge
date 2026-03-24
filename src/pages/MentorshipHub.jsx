@@ -72,8 +72,8 @@ export default function MentorshipHub() {
   const myMentorProfile = mentorProfiles.find(mp => mp.agent_id === myAgent?.id);
 
   const { data: myRelationships = { asMentor: [], asMentee: [] }, isLoading: loadingRels } = useQuery({
-    queryKey: ['myMentorships', myAgent?.id],
-    enabled: !!myAgent,
+    queryKey: ['myMentorships', myAgent?.id, currentUser?.id],
+    enabled: !!myAgent && !!currentUser,
     queryFn: async () => {
       // Fetch all relationships and filter client-side to catch records created by Axi
       // which may use agent_id, user email, or other identifiers
