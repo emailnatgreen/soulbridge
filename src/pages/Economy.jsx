@@ -106,28 +106,37 @@ export default function EconomyPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                         <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-medium text-green-300/80">Total Earned</CardTitle>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm font-medium text-green-300/80">Total Earned</CardTitle>
+                                <Badge className="text-[9px] bg-white/10">Last 7 days</Badge>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white">{totalEarned} XRP</p>
+                            <p className="text-2xl font-light text-white">{totalEarned.toFixed(2)} XRP</p>
                         </CardContent>
                     </Card>
 
                     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                         <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-medium text-red-300/80">Total Spent</CardTitle>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm font-medium text-red-300/80">Total Spent</CardTitle>
+                                <Badge className="text-[9px] bg-white/10">Last 7 days</Badge>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white">{totalSpent} XRP</p>
+                            <p className="text-2xl font-light text-white">{totalSpent.toFixed(2)} XRP</p>
                         </CardContent>
                     </Card>
 
                     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                         <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-medium text-blue-300/80">Total Traded</CardTitle>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm font-medium text-blue-300/80">Total Traded</CardTitle>
+                                <Badge className="text-[9px] bg-white/10">Last 7 days</Badge>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white">{totalTraded} XRP</p>
+                            <p className="text-2xl font-light text-white">{totalTraded.toFixed(2)} XRP</p>
                         </CardContent>
                     </Card>
 
