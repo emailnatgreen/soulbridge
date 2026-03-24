@@ -52,7 +52,15 @@ export default function EconomyPage() {
 
     const { data: allActivities = [] } = useQuery({
         queryKey: ['all-economic-activities'],
-        queryFn: () => base44.entities.EconomicActivity.list('-created_date', 100),
+        queryFn: () => base44.entities.EconomicActivity.list('-created_date', 50),
+    });
+
+    // Filter to only show recent real activities (last 7 days, exclude simulated/test data)
+    const recentActivities = allActivities.filter(activity => {
+        const activityDate = new Date(activity.created_date);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        return activityDate >= sevenDaysAgo && !activity.description?.toLowerCase().includes('sim');
     });
 
     const { data: user } = useQuery({
