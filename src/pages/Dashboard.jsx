@@ -39,7 +39,7 @@ export default function Dashboard() {
         }
       }
     } catch (e) {}
-    navigate('/');
+    navigate('/Home');
   }, []);
 
   const handleDisconnect = () => {
