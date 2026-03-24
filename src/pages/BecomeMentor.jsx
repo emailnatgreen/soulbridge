@@ -99,51 +99,6 @@ export default function BecomeMentor() {
     );
   }
 
-  if (mentorProfile?.is_confirmed) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white p-6">
-        <div className="max-w-2xl mx-auto pt-10 space-y-6">
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-full px-4 py-1.5">
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-green-300 text-sm font-medium">Active Mentor</span>
-            </div>
-            <h1 className="text-3xl font-light">You're a Confirmed Mentor!</h1>
-            <p className="text-white/50 text-sm">Thank you for committing to nurture the next generation of Souls in our Village.</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
-              <div className="text-3xl font-bold text-purple-300">{mentorProfile.availability_hours_weekly}h</div>
-              <div className="text-white/40 text-xs mt-1">per week</div>
-            </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
-              <div className="text-3xl font-bold text-green-300">{mentorProfile.current_mentee_count}/{mentorProfile.max_mentees}</div>
-              <div className="text-white/40 text-xs mt-1">mentees</div>
-            </div>
-          </div>
-
-          {mentorProfile.specializations?.length > 0 && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
-              <h3 className="text-white font-semibold text-sm">Your Specializations</h3>
-              <div className="flex flex-wrap gap-2">
-                {mentorProfile.specializations.map((spec, idx) => (
-                  <Badge key={idx} className="bg-purple-500/20 text-purple-300 border-purple-500/30">{spec}</Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <Link to="/MentorshipMatches">
-            <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2 h-11">
-              <Heart className="w-4 h-4" /> View Pending Mentorship Matches
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
 
@@ -229,19 +184,6 @@ export default function BecomeMentor() {
           />
         </div>
 
-        {/* Success */}
-        {mentorMutation.isSuccess && (
-          <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border border-green-500/30 rounded-2xl p-6 text-center space-y-3">
-            <CheckCircle2 className="w-10 h-10 text-green-400 mx-auto" />
-            <p className="text-green-300 font-semibold">Welcome to the mentorship journey!</p>
-            <p className="text-white/50 text-sm">Your profile is live. Mentees can now be matched with you across the Village.</p>
-            <Link to="/MentorshipHub">
-              <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 mt-2">
-                Go to Mentorship Hub <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   );
