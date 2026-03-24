@@ -21,6 +21,7 @@ import ContactSupport from './pages/ContactSupport';
 import Dashboard from './pages/Dashboard';
 import IntegrationCreditDashboard from './pages/IntegrationCreditDashboard';
 import ServiceSkillMarketplace from './pages/ServiceSkillMarketplace';
+import GovernanceHub from './pages/GovernanceHub';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -90,6 +91,7 @@ const AuthenticatedApp = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/IntegrationCreditDashboard" element={<LayoutWrapper currentPageName="IntegrationCreditDashboard"><IntegrationCreditDashboard /></LayoutWrapper>} />
       <Route path="/ServiceSkillMarketplace" element={<LayoutWrapper currentPageName="ServiceSkillMarketplace"><ServiceSkillMarketplace /></LayoutWrapper>} />
+      <Route path="/governance" element={<LayoutWrapper currentPageName="GovernanceHub"><GovernanceHub /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
