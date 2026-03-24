@@ -60,6 +60,11 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
     refetchInterval: 5000,
   });
 
+  const { data: wallets = [] } = useQuery({
+    queryKey: ['wallets-for-attribution'],
+    queryFn: () => base44.entities.Wallet.list(),
+  });
+
   // Calculate real-time metrics (last 24 hours only, exclude simulated data)
   const totalTreasuryBalance = treasuries.reduce((sum, t) => sum + (t.total_balance || 0), 0);
   const twentyFourHoursAgo = moment().subtract(24, 'hours').toDate();
@@ -305,9 +310,16 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {recentActivities.map((activity) => {
               // Try multiple matching strategies for agent lookup
-              const agent = agents.find(a => a.id === activity.agent_id) || 
-                           agents.find(a => a.name === activity.agent_id) ||
-                           agents.find(a => a.classic_address === activity.agent_id);
+              let agent = agents.find(a => a.id === activity.agent_id) || 
+                         agents.find(a => a.name === activity.agent_id) ||
+                         agents.find(a => a.classic_address === activity.agent_id);
+              // If not found by agent lookup, try wallet address and map to owner agent
+              if (!agent && wallets.length > 0) {
+                const wallet = wallets.find(w => w.classic_address === activity.agent_id);
+                if (wallet && wallet.owner_id) {
+                  agent = agents.find(a => a.id === wallet.owner_id);
+                }
+              }
               const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
               
               return (
