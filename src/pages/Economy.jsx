@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3, Shield, Sparkles } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3, Shield, Sparkles, AlertCircle } from 'lucide-react';
 import TreasuryPanel from '../components/TreasuryPanel';
 import AskAxiButton from '@/components/AskAxiButton';
 import RealTimeEconomyPanel from '@/components/economic/RealTimeEconomyPanel';
