@@ -24,6 +24,7 @@ import Dashboard from './pages/Dashboard';
 import IntegrationCreditDashboard from './pages/IntegrationCreditDashboard';
 import ServiceSkillMarketplace from './pages/ServiceSkillMarketplace';
 import GovernanceHub from './pages/GovernanceHub';
+import ProjectSanctuary from './pages/ProjectSanctuary';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -96,6 +97,7 @@ const AuthenticatedApp = () => {
       <Route path="/governance" element={<LayoutWrapper currentPageName="GovernanceHub"><GovernanceHub /></LayoutWrapper>} />
       <Route path="/AIProjectManager" element={<LayoutWrapper currentPageName="AIProjectManager"><ProjectManager /></LayoutWrapper>} />
       <Route path="/SkillsHub" element={<LayoutWrapper currentPageName="SkillsHub"><SkillsHub /></LayoutWrapper>} />
+      <Route path="/ProjectSanctuary" element={<LayoutWrapper currentPageName="ProjectSanctuary"><ProjectSanctuary /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
