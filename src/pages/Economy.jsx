@@ -257,10 +257,9 @@ export default function EconomyPage() {
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className={`text-lg font-medium ${net >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-                                                            {net >= 0 ? '+' : ''}{net} XRP
-                                                        </p>
-                                                        <p className="text-xs text-white/40">{earnings} earned • {spending} spent</p>
+                                                        <p className="text-lg font-medium text-white">{walletBalance.toFixed(2)} XRP</p>
+                                                        <p className="text-xs text-white/40">Balance</p>
+                                                        <p className="text-xs text-white/50 mt-1">{earnings.toFixed(2)} earned • {spending.toFixed(2)} spent</p>
                                                     </div>
                                                 </div>
                                             </div>
