@@ -113,14 +113,15 @@ export default function MentorshipHub() {
                 Find a Mentor
               </Button>
               {!myMentorProfile && (
-                <Button
-                  onClick={() => setShowBecomeMentor(true)}
-                  variant="outline"
-                  className="border-green-400/60 text-green-200 bg-green-900/20 hover:bg-green-500/30 hover:text-white"
-                >
-                  <Heart className="w-4 h-4 mr-2" />
-                  Become a Mentor
-                </Button>
+                <Link to="/BecomeMentor">
+                  <Button
+                    variant="outline"
+                    className="border-green-400/60 text-green-200 bg-green-900/20 hover:bg-green-500/30 hover:text-white"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    Become a Mentor
+                  </Button>
+                </Link>
               )}
             </div>
           </div>
