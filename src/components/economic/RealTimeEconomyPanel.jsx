@@ -320,6 +320,10 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
                   agent = agents.find(a => a.id === wallet.owner_id);
                 }
               }
+              // Try external wallet links
+              if (!agent) {
+                agent = agents.find(a => a.external_classic_addresses?.includes(activity.agent_id));
+              }
               const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
               
               return (
