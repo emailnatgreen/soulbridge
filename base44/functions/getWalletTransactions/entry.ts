@@ -15,8 +15,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'wallet_address required' }, { status: 400 });
     }
 
-    // Query XRPL testnet for account transactions
-    const xrplUrl = 'https://s.altnet.rippletest.net:51234/';
+    // Query XRPL mainnet for account transactions
+    const xrplUrl = 'https://s1.ripple.com:51234/';
     const payload = {
       method: 'account_tx',
       params: {
