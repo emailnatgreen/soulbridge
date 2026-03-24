@@ -10,6 +10,7 @@ import { createPageUrl } from '../utils';
 import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3 } from 'lucide-react';
 import TreasuryPanel from '../components/TreasuryPanel';
 import AskAxiButton from '@/components/AskAxiButton';
+import RealTimeEconomyPanel from '@/components/economic/RealTimeEconomyPanel';
 
 export default function EconomyPage() {
     const { data: agents = [] } = useQuery({
