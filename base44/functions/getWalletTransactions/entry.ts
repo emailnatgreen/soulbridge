@@ -15,44 +15,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'wallet_address required' }, { status: 400 });
     }
 
-    // Query XRPL mainnet for account transactions
-    const xrplUrl = 'https://s1.ripple.com:51234/';
-    const payload = {
-      method: 'account_tx',
-      params: {
-        account: wallet_address,
-        ledger_index_min: -1,
-        ledger_index_max: -1,
-        limit: Math.min(limit, 100)
-      }
-    };
-
-    const response = await fetch(xrplUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
+    // Use XRPScan API to fetch transactions
+    const response = await fetch(`https://xrpscan.com/api/v1/account/${wallet_address}/transactions?limit=${Math.min(limit, 100)}`);
     const data = await response.json();
 
-    if (!data.result || !data.result.transactions) {
+    if (!data.transactions || data.transactions.length === 0) {
       return Response.json({ transactions: [] });
     }
 
     // Transform transactions for display
-    const transactions = data.result.transactions.map(txObj => {
-      const tx = txObj.tx || {};
-      return {
-        hash: txObj.hash,
-        Account: tx.Account,
-        Destination: tx.Destination,
-        Amount: tx.Amount,
-        TransactionType: tx.TransactionType,
-        close_time_iso: txObj.close_time_iso || new Date().toISOString(),
-        Fee: tx.Fee,
-        Sequence: tx.Sequence
-      };
-    });
+    const transactions = data.transactions.map(tx => ({
+      hash: tx.hash,
+      Account: tx.Account,
+      Destination: tx.Destination,
+      Amount: tx.Amount || '0',
+      TransactionType: tx.TransactionType,
+      close_time_iso: tx.close_time_iso,
+      Fee: tx.Fee,
+      Sequence: tx.Sequence
+    }));
 
     return Response.json({ transactions });
   } catch (error) {
