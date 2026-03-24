@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import TaskList from './TaskList';
 import MilestonesSection from './MilestonesSection';
 import RisksSection from './RisksSection';
+import ResourcesBudgetSection from './ResourcesBudgetSection';
 import {
   Shield, Users, CheckCircle2, Coins, Calendar, Target, 
   TrendingUp, AlertCircle, X, FileText, Lightbulb
@@ -281,6 +282,9 @@ export default function ProjectDetailView({
 
             {/* Risks & Mitigation */}
             <RisksSection project={project} onUpdate={handleProjectUpdate} />
+
+            {/* Resources & Budget */}
+            <ResourcesBudgetSection project={project} agents={agents || []} />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-4 border-t border-white/10">

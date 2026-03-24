@@ -94,7 +94,7 @@ export default function RisksSection({ project, onUpdate }) {
       ) : (
         <div className="space-y-3">
           {risks.map((risk, idx) => {
-            const config = severityConfig[risk.severity as keyof typeof severityConfig] || severityConfig.Medium;
+            const config = severityConfig[risk.severity] || severityConfig.Medium;
             const SeverityIcon = config.icon;
 
             return (
