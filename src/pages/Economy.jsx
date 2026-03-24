@@ -212,8 +212,8 @@ export default function EconomyPage() {
                             <CardContent>
                                 <div className="space-y-2">
                                     {agents.map((agent, idx) => {
-                                        const earnings = allActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
-                                        const spending = allActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
+                                        const earnings = recentActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
+                                        const spending = recentActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
                                         const net = earnings - spending;
 
                                         return (
