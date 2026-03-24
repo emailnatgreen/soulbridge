@@ -68,9 +68,9 @@ export default function EconomyPage() {
         queryFn: () => base44.auth.me(),
     });
 
-    const totalEarned = allActivities.filter(a => a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
-    const totalSpent = allActivities.filter(a => a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
-    const totalTraded = allActivities.filter(a => a.activity_type === 'traded').reduce((sum, a) => sum + a.amount, 0);
+    const totalEarned = recentActivities.filter(a => a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
+    const totalSpent = recentActivities.filter(a => a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
+    const totalTraded = recentActivities.filter(a => a.activity_type === 'traded').reduce((sum, a) => sum + a.amount, 0);
 
     const agentWithMostWealth = agents.length > 0 ? agents.reduce((prev, current) => {
         const currentEarnings = allActivities.filter(a => a.agent_id === current.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
