@@ -25,6 +25,17 @@ export default function GovernanceHub() {
   const [identity, setIdentity] = useState(null);
   const [myAgent, setMyAgent] = useState(null);
   const [agentLoading, setAgentLoading] = useState(true);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [creatingProposal, setCreatingProposal] = useState(false);
+  const [proposalTitle, setProposalTitle] = useState('');
+  const [proposalDescription, setProposalDescription] = useState('');
+  const [proposalType, setProposalType] = useState('');
+  const [votingPeriod, setVotingPeriod] = useState(7);
+  const [selectedProposal, setSelectedProposal] = useState(null);
+  const [voteChoice, setVoteChoice] = useState('');
+  const [voteRationale, setVoteRationale] = useState('');
+  const [handleVote, setHandleVote] = useState(null);
+  const [handleExecuteProposal, setHandleExecuteProposal] = useState(null);
 
   const queryClient = useQueryClient();
   usePageSignal();
