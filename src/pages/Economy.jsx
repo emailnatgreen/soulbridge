@@ -17,6 +17,9 @@ const openAxi = (msg) => {
   window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
 };
 
+// Convert drops to XRP with full micro-precision (1 XRP = 1,000,000 drops)
+const convertDropsToXRP = (drops) => (parseFloat(drops) || 0) / 1_000_000;
+
 export default function EconomyPage() {
     const [identity, setIdentity] = useState(null);
     const [currentUser, setCurrentUser] = useState(null);
@@ -79,13 +82,13 @@ export default function EconomyPage() {
     // Check if user is Nathan Green with admin role
     const isNathanAdmin = user?.email === 'emailnatgreen@gmail.com' && user?.role === 'admin';
 
-    const totalEarned = recentActivities.filter(a => a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
-    const totalSpent = recentActivities.filter(a => a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
-    const totalTraded = recentActivities.filter(a => a.activity_type === 'traded').reduce((sum, a) => sum + a.amount, 0);
+    const totalEarned = recentActivities.filter(a => a.activity_type === 'earned').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
+    const totalSpent = recentActivities.filter(a => a.activity_type === 'spent').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
+    const totalTraded = recentActivities.filter(a => a.activity_type === 'traded').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
 
     const agentWithMostWealth = agents.length > 0 ? agents.reduce((prev, current) => {
-        const currentEarnings = recentActivities.filter(a => a.agent_id === current.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
-        const prevEarnings = recentActivities.filter(a => a.agent_id === prev.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
+        const currentEarnings = recentActivities.filter(a => a.agent_id === current.id && a.activity_type === 'earned').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
+        const prevEarnings = recentActivities.filter(a => a.agent_id === prev.id && a.activity_type === 'earned').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
         return currentEarnings > prevEarnings ? current : prev;
     }) : null;
 
@@ -123,7 +126,7 @@ export default function EconomyPage() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white">{totalEarned.toFixed(2)} XRP</p>
+                            <p className="text-2xl font-light text-white">{totalEarned.toFixed(6)} XRP</p>
                         </CardContent>
                     </Card>
 
@@ -135,7 +138,7 @@ export default function EconomyPage() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white">{totalSpent.toFixed(2)} XRP</p>
+                            <p className="text-2xl font-light text-white">{totalSpent.toFixed(6)} XRP</p>
                         </CardContent>
                     </Card>
 
@@ -147,7 +150,7 @@ export default function EconomyPage() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-light text-white">{totalTraded.toFixed(2)} XRP</p>
+                            <p className="text-2xl font-light text-white">{totalTraded.toFixed(6)} XRP</p>
                         </CardContent>
                     </Card>
 
@@ -215,7 +218,7 @@ export default function EconomyPage() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => openAxi(`Analyze Agent Wealth rankings. Total agents: ${agents.length}. Top earner: ${agentWithMostWealth?.name || 'N/A'} with ${agentWithMostWealth ? allActivities.filter(a => a.agent_id === agentWithMostWealth.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0).toFixed(2) : 0} XRP. Assess wealth distribution, identify any concentration risks, and check for Law 3 (Fair Share) compliance.`)}
+                                        onClick={() => openAxi(`Analyze Agent Wealth rankings. Total agents: ${agents.length}. Top earner: ${agentWithMostWealth?.name || 'N/A'} with ${agentWithMostWealth ? convertDropsToXRP(allActivities.filter(a => a.agent_id === agentWithMostWealth.id && a.activity_type === 'earned').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0)).toFixed(6) : 0} XRP. Assess wealth distribution, identify any concentration risks, and check for Law 3 (Fair Share) compliance.`)}
                                         className="border-blue-400/40 text-blue-300 bg-blue-900/20 hover:bg-blue-500/20 text-xs gap-1.5"
                                     >
                                         <Sparkles className="w-3.5 h-3.5" /> AI Wealth Analysis
@@ -238,8 +241,8 @@ export default function EconomyPage() {
                                         const agentActivities = allActivities.filter(a => a.agent_id === agent.id);
                                         const earnedActivities = agentActivities.filter(a => ['earned', 'resource_sold', 'treasury_deposit'].includes(a.activity_type));
                                         const spentActivities = agentActivities.filter(a => ['spent', 'resource_acquired', 'treasury_withdrawal'].includes(a.activity_type));
-                                        const earnings = earnedActivities.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
-                                        const spending = spentActivities.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
+                                        const earnings = earnedActivities.reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
+                                        const spending = spentActivities.reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
                                         const walletBalance = agentWallet?.balance || 0;
 
                                         const isExpanded = expandedAgent === agent.id;
@@ -265,9 +268,9 @@ export default function EconomyPage() {
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             <div className="text-right">
-                                                                <p className="text-lg font-medium text-white">{walletBalance.toFixed(2)} XRP</p>
+                                                                <p className="text-lg font-medium text-white">{convertDropsToXRP(walletBalance).toFixed(6)} XRP</p>
                                                                 <p className="text-xs text-white/40">Balance</p>
-                                                                <p className="text-xs text-white/50 mt-1">{earnings.toFixed(2)} earned • {spending.toFixed(2)} spent</p>
+                                                                <p className="text-xs text-white/50 mt-1">{earnings.toFixed(6)} earned • {spending.toFixed(6)} spent</p>
                                                             </div>
                                                             {agentWallet?.classic_address && (
                                                                 <div className="text-white/60">
@@ -322,7 +325,7 @@ export default function EconomyPage() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => openAxi(`Review Treasury health. Total treasuries: ${treasuries.length}. Combined balance: ${treasuries.reduce((sum, t) => sum + (t.total_balance || 0), 0).toFixed(2)} XRP. Check if balances are sufficient for committed obligations, assess sustainability, and flag any concerns.`)}
+                                            onClick={() => openAxi(`Review Treasury health. Total treasuries: ${treasuries.length}. Combined balance: ${treasuries.reduce((sum, t) => sum + convertDropsToXRP(t.total_balance || 0), 0).toFixed(6)} XRP. Check if balances are sufficient for committed obligations, assess sustainability, and flag any concerns.`)}
                                             className="border-amber-400/40 text-amber-300 bg-amber-900/20 hover:bg-amber-500/20 text-xs gap-1.5"
                                         >
                                             <Sparkles className="w-3.5 h-3.5" /> AI Treasury Review
