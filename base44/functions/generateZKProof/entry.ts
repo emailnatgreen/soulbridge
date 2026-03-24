@@ -1,5 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+function encodeToBase64(str) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  let binary = '';
+  for (let i = 0; i < data.length; i++) {
+    binary += String.fromCharCode(data[i]);
+  }
+  return btoa(binary);
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -31,7 +41,7 @@ Deno.serve(async (req) => {
       nonce: Math.random().toString(36).substr(2, 16)
     };
 
-    const proofData = Buffer.from(JSON.stringify(proofInput)).toString('base64');
+    const proofData = encodeToBase64(JSON.stringify(proofInput));
     const expiresAt = new Date(Date.now() + expires_in_days * 24 * 60 * 60 * 1000).toISOString();
 
     // Create ZKProof record
