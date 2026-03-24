@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MySkillsPanel from '@/components/skill/MySkillsPanel';
+import SkillDirectoryPanel from '@/components/skill/SkillDirectoryPanel';
 import { BookOpen, Users, Map, Loader } from 'lucide-react';
 
 export default function SkillsHub() {
@@ -131,9 +132,7 @@ export default function SkillsHub() {
 
             {/* Tab 2: Skill Directory */}
             <TabsContent value="skill-directory" className="space-y-4 mt-6">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-                <p className="text-white/60 text-sm">Skill Directory coming in Phase 2</p>
-              </div>
+              <SkillDirectoryPanel currentUser={currentUser} agents={agents} />
             </TabsContent>
 
             {/* Tab 3: Development Paths */}
