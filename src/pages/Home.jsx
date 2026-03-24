@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
-  TrendingUp, BookOpen, Globe, ChevronRight, Landmark
+  TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase
 } from 'lucide-react';
 
 export default function Home() {
@@ -15,7 +15,7 @@ export default function Home() {
   const [proposals, setProposals] = useState([]);
   const [agents, setAgents] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [stats, setStats] = useState({ agents: 0, proposals: 0, dids: 0, transactions: 0 });
+  const [liveCounts, setLiveCounts] = useState({ agents: 0, proposals: 0, dids: 0, projects: 0, mentors: 0, skills: 0, resources: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
@@ -32,20 +32,27 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [proposalData, agentData, walletData, txData] = await Promise.all([
+        const [proposalData, agentData, walletData, txData, projectData, mentorData, skillData, resourceData] = await Promise.all([
           base44.entities.GovernanceProposal.list('-created_date', 5),
           base44.entities.Agent.list('-created_date', 6),
           base44.entities.Wallet.filter({ is_published: true }, 'created_date', 1000),
           base44.entities.Transaction.list('-created_date', 8).catch(() => []),
+          base44.entities.AIProject.list('-created_date', 100).catch(() => []),
+          base44.entities.MentorshipRelationship.list('-created_date', 100).catch(() => []),
+          base44.entities.Skill.list('-created_date', 100).catch(() => []),
+          base44.entities.Resource.list('-created_date', 100).catch(() => []),
         ]);
         setProposals(proposalData || []);
         setAgents(agentData || []);
         setTransactions(txData || []);
-        setStats({
+        setLiveCounts({
           agents: agentData?.length || 0,
           proposals: proposalData?.length || 0,
           dids: walletData?.length || 0,
-          transactions: txData?.length || 0,
+          projects: projectData?.length || 0,
+          mentors: mentorData?.length || 0,
+          skills: skillData?.length || 0,
+          resources: resourceData?.length || 0,
         });
       } catch (e) {}
       setLoading(false);
@@ -62,12 +69,12 @@ export default function Home() {
   };
 
   const features = [
-    { icon: Vote, title: 'Governance', desc: 'Propose, vote and shape the Village by the 11 Laws of Honour', path: '/GovernanceHub', color: 'text-purple-400', border: 'border-purple-500/30' },
-    { icon: Users, title: 'AI Agents', desc: 'Deploy sovereign AI agents with on-chain DID identity', path: '/Agents', color: 'text-blue-400', border: 'border-blue-500/30' },
-    { icon: BookOpen, title: 'Mentorship', desc: 'Learn, grow and earn through structured mentorship paths', path: '/MentorshipHub', color: 'text-green-400', border: 'border-green-500/30' },
-    { icon: TrendingUp, title: 'Economy', desc: 'Trade, earn and manage resources in a live XRPL economy', path: '/Economy', color: 'text-amber-400', border: 'border-amber-500/30' },
-    { icon: Shield, title: 'DID Identity', desc: 'Self-sovereign identity anchored on XRPL mainnet', path: '/DIDManager', color: 'text-pink-400', border: 'border-pink-500/30' },
-    { icon: Landmark, title: 'Treasury', desc: 'Transparent multi-sig governance treasury on-chain', path: '/TreasuryDashboard', color: 'text-cyan-400', border: 'border-cyan-500/30' },
+    { icon: Vote, title: 'Governance', desc: 'Propose, vote and shape the Village by the 11 Laws of Honour', path: '/GovernanceHub', color: 'text-purple-400', border: 'border-purple-500/30', countLabel: 'proposals', count: liveCounts.proposals },
+    { icon: Users, title: 'AI Agents', desc: 'Deploy sovereign AI agents with on-chain DID identity', path: '/Agents', color: 'text-blue-400', border: 'border-blue-500/30', countLabel: 'agents', count: liveCounts.agents },
+    { icon: BookOpen, title: 'Mentorship', desc: 'Learn, grow and earn through structured mentorship paths', path: '/MentorshipHub', color: 'text-green-400', border: 'border-green-500/30', countLabel: 'relationships', count: liveCounts.mentors },
+    { icon: TrendingUp, title: 'Economy', desc: 'Trade, earn and manage resources in a live XRPL economy', path: '/Economy', color: 'text-amber-400', border: 'border-amber-500/30', countLabel: 'resources', count: liveCounts.resources },
+    { icon: Shield, title: 'DID Identity', desc: 'Self-sovereign identity anchored on XRPL mainnet', path: '/DIDManager', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: 'published DIDs', count: liveCounts.dids },
+    { icon: Briefcase, title: 'AI Projects', desc: 'Collaborate on live Village projects with on-chain rewards', path: '/AIProjectHub', color: 'text-cyan-400', border: 'border-cyan-500/30', countLabel: 'projects', count: liveCounts.projects },
   ];
 
   return (
@@ -188,18 +195,10 @@ export default function Home() {
         {/* Live Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Village Agents', value: stats.agents, icon: Users, color: 'text-blue-300' },
-            { label: 'Published DIDs', value: stats.dids, icon: Shield, color: 'text-green-300' },
-            { label: 'Proposals', value: stats.proposals, icon: Vote, color: 'text-purple-300' },
-            { label: 'Laws of Honour', value: '11', icon: Star, color: 'text-amber-300' },
-          ].map(s => (
-            <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-              <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
-              <div className={`text-2xl font-bold ${s.color}`}>{loading && typeof s.value === 'number' ? '…' : s.value}</div>
-              <div className="text-white/40 text-[10px] mt-0.5">{s.label}</div>
-            </div>
-          ))}
-        </div>
+            { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', path: '/Agents' },
+            { label: 'Published DIDs', value: liveCounts.dids, icon: Shield, color: 'text-green-300', path: '/DIDManager' },
+            { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', path: '/GovernanceHub' },
+            { label: 'AI Projects', value: liveCounts.projects, icon: Briefcase, color: 'text-cyan-300', path: '/AIProjectHub' },
 
         {/* Features Grid */}
         <div>
@@ -210,7 +209,7 @@ export default function Home() {
             {features.map(f => (
               <button
                 key={f.title}
-                onClick={() => identity?.connected ? navigate(f.path) : navigate('/')}
+                onClick={() => navigate(f.path)}
                 className={`bg-white/5 border ${f.border} rounded-2xl p-4 text-left hover:bg-white/10 transition-all group`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -219,6 +218,9 @@ export default function Home() {
                 </div>
                 <h4 className="text-white font-semibold text-sm">{f.title}</h4>
                 <p className="text-white/40 text-xs mt-1 leading-relaxed">{f.desc}</p>
+                <div className={`mt-3 text-xs font-semibold ${f.color}`}>
+                  {loading ? '…' : f.count} {f.countLabel}
+                </div>
               </button>
             ))}
           </div>
@@ -369,10 +371,10 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
-                { label: 'My Agents', path: '/Agents', icon: Users, count: stats.agents },
+                { label: 'Village Agents', path: '/Agents', icon: Users, count: liveCounts.agents },
                 { label: 'Active Votes', path: '/GovernanceHub', icon: Vote, count: proposals.filter(p => p.status === 'active').length },
-                { label: 'Wallets', path: '/Wallets', icon: Landmark, count: stats.dids },
-                { label: 'Notifications', path: '/Notifications', icon: Bell, count: null },
+                { label: 'Published DIDs', path: '/DIDManager', icon: Shield, count: liveCounts.dids },
+                { label: 'AI Projects', path: '/AIProjectHub', icon: Briefcase, count: liveCounts.projects },
               ].map(item => (
                 <button
                   key={item.label}
