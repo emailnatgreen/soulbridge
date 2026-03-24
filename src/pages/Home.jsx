@@ -29,14 +29,23 @@ export default function Home() {
     } catch (e) {}
   }, []);
 
+  // Helper to resolve agent from activity
+  const resolveAgent = (activity) => {
+    return agents.find(a => a.id === activity.agent_id) || 
+           agents.find(a => a.name === activity.agent_id) ||
+           agents.find(a => a.classic_address === activity.agent_id) ||
+           agents.find(a => a.wallet_id === activity.agent_id) ||
+           agents.find(a => a.external_classic_addresses?.includes(activity.agent_id));
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [proposalData, agentData, walletData, txData, projectData, mentorData, skillData, resourceData] = await Promise.all([
+        const [proposalData, agentData, walletData, activityData, projectData, mentorData, skillData, resourceData] = await Promise.all([
           base44.entities.GovernanceProposal.list('-created_date', 5),
           base44.entities.Agent.list('-created_date', 6),
           base44.entities.Wallet.filter({ is_published: true }, 'created_date', 1000),
-          base44.entities.Transaction.list('-created_date', 8).catch(() => []),
+          base44.entities.EconomicActivity.list('-created_date', 8).catch(() => []),
           base44.entities.AIProject.list('-created_date', 100).catch(() => []),
           base44.entities.MentorshipRelationship.list('-created_date', 100).catch(() => []),
           base44.entities.Skill.list('-created_date', 100).catch(() => []),
@@ -44,7 +53,7 @@ export default function Home() {
         ]);
         setProposals(proposalData || []);
         setAgents(agentData || []);
-        setTransactions(txData || []);
+        setTransactions(activityData || []);
         setLiveCounts({
           agents: agentData?.length || 0,
           proposals: proposalData?.length || 0,
@@ -251,22 +260,28 @@ export default function Home() {
             ) : transactions.length === 0 ? (
               <div className="text-center py-6">
                 <Activity className="w-6 h-6 text-white/20 mx-auto mb-2" />
-                <p className="text-white/30 text-xs">No on-chain activity recorded yet.</p>
+                <p className="text-white/30 text-xs">No economic activity recorded yet.</p>
               </div>
             ) : (
               <div className="space-y-2">
-                {transactions.map(tx => (
-                  <div key={tx.id} className="flex items-center gap-3 bg-white/5 rounded-xl p-2.5">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-500/30 to-blue-500/30 flex items-center justify-center flex-shrink-0">
-                      <Zap className="w-3 h-3 text-green-300" />
+                {transactions.map(activity => {
+                  const agent = resolveAgent(activity);
+                  const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
+                  return (
+                    <div key={activity.id} className="flex items-center gap-3 bg-white/5 rounded-xl p-2.5">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        isInflow ? 'bg-green-500/30' : 'bg-blue-500/30'
+                      }`}>
+                        <Zap className={`w-3 h-3 ${ isInflow ? 'text-green-300' : 'text-blue-300'}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-xs truncate font-medium">{agent?.name || 'Unknown Agent'}</p>
+                        <p className="text-white/40 text-[10px] truncate">{activity.description}</p>
+                      </div>
+                      <span className={`text-[10px] font-mono flex-shrink-0 ${ isInflow ? 'text-green-300' : 'text-blue-300'}`}>{isInflow ? '+' : '-'}{activity.amount} XRP</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-xs truncate">{tx.description || tx.transaction_type || 'On-chain transaction'}</p>
-                      <p className="text-white/30 text-[10px]">{tx.created_date ? new Date(tx.created_date).toLocaleTimeString() : 'Recent'}</p>
-                    </div>
-                    <span className="text-green-300 text-[10px] font-mono flex-shrink-0">{tx.amount_xrp ? `${tx.amount_xrp} XRP` : '✓'}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
