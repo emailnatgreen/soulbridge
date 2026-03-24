@@ -64,18 +64,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route path="/" element={isEditorPreview || isAuthenticated ? (
-        isAuthenticated && user && user.role !== 'admin' ? (
-          <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-950 text-white gap-4">
-            <div className="text-4xl">🚫</div>
-            <h1 className="text-2xl font-bold">Access Restricted</h1>
-            <p className="text-white/50">This platform is for authorised administrators only.</p>
-            <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">Sign Out</button>
-          </div>
-        ) : (
-          <LayoutWrapper currentPageName="Home"><Pages.Home /></LayoutWrapper>
-        )
-      ) : <Landing />} />
+      <Route path="/" element={<Landing />} />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
