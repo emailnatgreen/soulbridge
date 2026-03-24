@@ -79,24 +79,27 @@ export default function AxiChatImporter({ onImported }) {
     await deleteBundleFromChat(bundleIndex);
   };
 
-  const deleteBundleFromChat = async (idx) => {
+  const deleteBundleFromChat = async (idx, currentMsgs) => {
     if (!convoRef) return;
     setDeleting(true);
     try {
+      const msgs = currentMsgs || allMessages;
       const start = idx * BUNDLE_SIZE;
-      const end = Math.min(start + BUNDLE_SIZE, allMessages.length);
-      const toRemove = new Set(allMessages.slice(start, end).map(m => m.id || m.created_date + m.content?.slice(0, 20)));
-      // Get fresh conversation to get all messages including system ones
+      const end = Math.min(start + BUNDLE_SIZE, msgs.length);
+      const bundleMsgs = msgs.slice(start, end);
+      const sigSet = new Set(bundleMsgs.map(m => (m.created_date || '') + '||' + (m.content || '').slice(0, 40)));
       const fresh = await base44.agents.getConversation(convoRef.id);
       const remaining = (fresh.messages || []).filter(m => {
-        const key = m.id || m.created_date + m.content?.slice(0, 20);
-        return !toRemove.has(key);
+        const sig = (m.created_date || '') + '||' + (m.content || '').slice(0, 40);
+        return !sigSet.has(sig);
       });
       await base44.agents.updateConversation(convoRef.id, { messages: remaining });
-      // Update local state - remove the deleted bundle messages
-      setAllMessages(prev => prev.filter((_, i) => i < start || i >= end));
+      // Update local state - remove the deleted bundle
+      const newMsgs = msgs.filter((_, i) => i < start || i >= end);
+      setAllMessages(newMsgs);
       setDeletedBundles(prev => new Set([...prev, idx]));
-      setBundleIndex(i => Math.min(i, Math.ceil((allMessages.length - (end - start)) / BUNDLE_SIZE) - 1));
+      const newTotal = Math.ceil(newMsgs.length / BUNDLE_SIZE);
+      setBundleIndex(i => Math.min(i, Math.max(0, newTotal - 1)));
     } catch (err) {
       console.error('Failed to delete bundle from chat:', err);
     }
