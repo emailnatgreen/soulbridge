@@ -199,6 +199,14 @@ export default function Home() {
             { label: 'Published DIDs', value: liveCounts.dids, icon: Shield, color: 'text-green-300', path: '/DIDManager' },
             { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', path: '/GovernanceHub' },
             { label: 'AI Projects', value: liveCounts.projects, icon: Briefcase, color: 'text-cyan-300', path: '/AIProjectHub' },
+          ].map(s => (
+            <button key={s.label} onClick={() => navigate(s.path)} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center hover:bg-white/10 transition">
+              <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
+              <div className={`text-2xl font-bold ${s.color}`}>{loading ? '…' : s.value}</div>
+              <div className="text-white/40 text-[10px] mt-0.5">{s.label}</div>
+            </button>
+          ))}
+        </div>
 
         {/* Features Grid */}
         <div>
