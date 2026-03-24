@@ -9,6 +9,7 @@ import { OwnerGovernorProvider } from '@/lib/OwnerGovernorContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Landing from './pages/Landing';
 import ProjectManager from './pages/ProjectManager';
+import SkillsHub from './pages/SkillsHub';
 import VillageCalendar from './pages/VillageCalendar';
 import AxiCommandDashboard from './pages/AxiCommandDashboard';
 import AgentAdditionDiagnostic from './pages/AgentAdditionDiagnostic';
@@ -94,6 +95,7 @@ const AuthenticatedApp = () => {
       <Route path="/ServiceSkillMarketplace" element={<LayoutWrapper currentPageName="ServiceSkillMarketplace"><ServiceSkillMarketplace /></LayoutWrapper>} />
       <Route path="/governance" element={<LayoutWrapper currentPageName="GovernanceHub"><GovernanceHub /></LayoutWrapper>} />
       <Route path="/AIProjectManager" element={<LayoutWrapper currentPageName="AIProjectManager"><ProjectManager /></LayoutWrapper>} />
+      <Route path="/SkillsHub" element={<LayoutWrapper currentPageName="SkillsHub"><SkillsHub /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
-  TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase
+  TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap
 } from 'lucide-react';
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
   const [proposals, setProposals] = useState([]);
   const [agents, setAgents] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [liveCounts, setLiveCounts] = useState({ agents: 0, proposals: 0, dids: 0, projects: 0, mentors: 0, skills: 0, resources: 0 });
+  const [liveCounts, setLiveCounts] = useState({ agents: 0, proposals: 0, dids: 0, projects: 0, mentors: 0, skills: 0, resources: 0, activeSkills: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
@@ -53,7 +53,7 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [proposalData, agentData, walletData, activityData, projectData, mentorData, skillData, resourceData] = await Promise.all([
+        const [proposalData, agentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData] = await Promise.all([
           base44.entities.GovernanceProposal.list('-created_date', 5),
           base44.entities.Agent.list('-created_date', 6),
           base44.entities.Wallet.filter({ is_published: true }, 'created_date', 1000),
@@ -62,6 +62,7 @@ export default function Home() {
           base44.entities.MentorshipRelationship.list('-created_date', 100).catch(() => []),
           base44.entities.Skill.list('-created_date', 100).catch(() => []),
           base44.entities.Resource.list('-created_date', 100).catch(() => []),
+          base44.entities.AgentSkill?.list?.('-created_date', 500).catch(() => []),
         ]);
         setProposals(proposalData || []);
         setAgents(agentData || []);
@@ -74,6 +75,7 @@ export default function Home() {
           mentors: mentorData?.length || 0,
           skills: skillData?.length || 0,
           resources: resourceData?.length || 0,
+          activeSkills: agentSkillData?.filter((s) => s.level > 1).length || 0,
         });
       } catch (e) {}
       setLoading(false);
@@ -92,6 +94,7 @@ export default function Home() {
   const features = [
     { icon: Vote, title: 'Governance', desc: 'Propose, vote and shape the Village by the 11 Laws of Honour', path: '/GovernanceHub', color: 'text-purple-400', border: 'border-purple-500/30', countLabel: 'proposals', count: liveCounts.proposals },
     { icon: Users, title: 'AI Agents', desc: 'Deploy sovereign AI agents with on-chain DID identity', path: '/Agents', color: 'text-blue-400', border: 'border-blue-500/30', countLabel: 'agents', count: liveCounts.agents },
+    { icon: GraduationCap, title: 'Skills Hub', desc: 'Develop expertise, discover mentors, and grow your talents', path: '/SkillsHub', color: 'text-emerald-400', border: 'border-emerald-500/30', countLabel: 'active skills', count: liveCounts.activeSkills },
     { icon: BookOpen, title: 'Mentorship', desc: 'Learn, grow and earn through structured mentorship paths', path: '/MentorshipHub', color: 'text-green-400', border: 'border-green-500/30', countLabel: 'relationships', count: liveCounts.mentors },
     { icon: TrendingUp, title: 'Economy', desc: 'Trade, earn and manage resources in a live XRPL economy', path: '/Economy', color: 'text-amber-400', border: 'border-amber-500/30', countLabel: 'resources', count: liveCounts.resources },
     { icon: Shield, title: 'DID Identity', desc: 'Self-sovereign identity anchored on XRPL mainnet', path: '/DIDManager', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: 'published DIDs', count: liveCounts.dids },
