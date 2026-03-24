@@ -45,10 +45,11 @@ Deno.serve(async (req) => {
       const notifications = agents.map(agent => ({
         recipient_agent_id: agent.id,
         sender_agent_id: axiAgentId,
-        notification_type: 'governance_proposal_created',
+        notification_type: 'governance_proposal',
         title: `New Proposal: ${title}`,
-        content: `Axi has initiated a governance proposal. Review: "${description.substring(0, 100)}..."`,
-        related_proposal_id: proposal.id,
+        message: `Axi has initiated a governance proposal. Review: "${description.substring(0, 100)}..."`,
+        related_entity_type: 'GovernanceProposal',
+        related_entity_id: proposal.id,
         priority: proposal_type === 'emergency' ? 'high' : 'normal',
         is_read: false
       }));
