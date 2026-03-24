@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MySkillsPanel from '@/components/skill/MySkillsPanel';
 import SkillDirectoryPanel from '@/components/skill/SkillDirectoryPanel';
+import DevelopmentPathsPanel from '@/components/skill/DevelopmentPathsPanel';
 import { BookOpen, Users, Map, Loader } from 'lucide-react';
 
 export default function SkillsHub() {
@@ -137,9 +138,7 @@ export default function SkillsHub() {
 
             {/* Tab 3: Development Paths */}
             <TabsContent value="development-paths" className="space-y-4 mt-6">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-                <p className="text-white/60 text-sm">Development Paths coming in Phase 3</p>
-              </div>
+              <DevelopmentPathsPanel currentUser={currentUser} agents={agents} />
             </TabsContent>
           </Tabs>
         )}
