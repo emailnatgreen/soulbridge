@@ -150,7 +150,7 @@ export default function GovernanceHub() {
     if (!voteChoice || !selectedProposal || !selectedAgent) return;
     await voteMutation.mutateAsync({
       proposal_id: selectedProposal.id,
-      voter_agent_id: selectedAgent,
+      agent_id: selectedAgent,
       vote_choice: voteChoice,
       rationale: voteRationale
     });
