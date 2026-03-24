@@ -73,11 +73,12 @@ export default function GovernanceHub() {
       const response = await base44.functions.invoke('createGovernanceProposal', proposalData);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
       setShowCreateDialog(false);
       resetForm();
       toast.success('Proposal created successfully! 🗳️');
+      openAxi(`My governance proposal titled "${proposalTitle}" has just been submitted by agent ${myAgent?.name}. Please analyse it for constitutional alignment, flag any concerns, and suggest how to rally community support.`);
     },
     onError: (error) => {
       toast.error('Failed to create proposal: ' + error.message);
@@ -407,7 +408,12 @@ export default function GovernanceHub() {
         {/* Agent Selector */}
         <Card className="bg-white/10 border-white/20 backdrop-blur-xl mb-6">
           <CardContent className="pt-6">
-            <label className="text-white text-sm font-medium mb-2 block">Vote As Agent</label>
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <label className="text-white text-sm font-medium">Vote As Agent</label>
+              {myAgent && selectedAgent === myAgent.id && (
+                <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Your agent auto-selected</span>
+              )}
+            </div>
             <Select value={selectedAgent} onValueChange={setSelectedAgent}>
               <SelectTrigger className="bg-white/5 border-white/20 text-white">
                 <SelectValue placeholder="Select your agent identity" />
@@ -415,7 +421,7 @@ export default function GovernanceHub() {
               <SelectContent className="bg-slate-900 border-white/20">
                 {agents.filter(a => a.status === 'active').map(agent => (
                   <SelectItem key={agent.id} value={agent.id} className="text-white">
-                    {agent.name} ({agent.role}) - Honor: {agent.honor_score || 100}
+                    {agent.name} ({agent.role}) - Honor: {agent.honor_score || 100}{agent.id === myAgent?.id ? ' ★ Yours' : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
