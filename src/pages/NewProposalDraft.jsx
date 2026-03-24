@@ -43,6 +43,15 @@ export default function NewProposalDraft() {
     description: '',
     proposal_type: '',
     proposed_by: '',
+    purpose: '',
+    impact_assessment: '',
+    constitutional_alignment: [
+      { law_number: 1, law_name: 'Soul', alignment_statement: '' },
+      { law_number: 2, law_name: 'Honour', alignment_statement: '' },
+      { law_number: 8, law_name: 'Governance', alignment_statement: '' }
+    ],
+    relevant_context: '',
+    affected_entities: [],
     action_data: '',
   });
   const [savedDraftId, setSavedDraftId] = useState(null);
@@ -71,6 +80,11 @@ export default function NewProposalDraft() {
         description: data.description,
         proposal_type: data.proposal_type,
         proposed_by: data.proposed_by,
+        purpose: data.purpose,
+        impact_assessment: data.impact_assessment,
+        constitutional_alignment: data.constitutional_alignment?.filter(c => c.alignment_statement?.trim()),
+        relevant_context: data.relevant_context,
+        affected_entities: data.affected_entities?.filter(e => e.entity_id?.trim()),
         status: 'draft',
         voting_period_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         quorum_required: 50,
@@ -97,6 +111,38 @@ export default function NewProposalDraft() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleConstitutionalChange = (index, field, value) => {
+    setForm(prev => ({
+      ...prev,
+      constitutional_alignment: prev.constitutional_alignment.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const handleAffectedEntityChange = (index, field, value) => {
+    setForm(prev => ({
+      ...prev,
+      affected_entities: prev.affected_entities.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const addAffectedEntity = () => {
+    setForm(prev => ({
+      ...prev,
+      affected_entities: [...prev.affected_entities, { entity_type: '', entity_id: '', entity_name: '', impact_description: '' }]
+    }));
+  };
+
+  const removeAffectedEntity = (index) => {
+    setForm(prev => ({
+      ...prev,
+      affected_entities: prev.affected_entities.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSave = () => {
     if (!form.title.trim()) {
       toast.error('Please enter a proposal title');
@@ -108,6 +154,18 @@ export default function NewProposalDraft() {
     }
     if (!form.proposed_by) {
       toast.error('Please select the proposing agent');
+      return;
+    }
+    if (!form.purpose.trim()) {
+      toast.error('Please define the proposal purpose');
+      return;
+    }
+    if (!form.impact_assessment.trim()) {
+      toast.error('Please provide an impact assessment');
+      return;
+    }
+    if (!form.constitutional_alignment.some(c => c.alignment_statement?.trim())) {
+      toast.error('Please link to at least one Law of SoulBridge');
       return;
     }
     saveDraftMutation.mutate(form);
@@ -229,16 +287,44 @@ export default function NewProposalDraft() {
             </div>
 
             {/* Description */}
-            <div className="space-y-2">
-              <Label className="text-purple-200/80 text-sm">Description</Label>
-              <Textarea
-                placeholder="Describe the proposal in detail — its rationale, goals, and expected outcomes..."
-                value={form.description}
-                onChange={e => handleChange('description', e.target.value)}
-                rows={7}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-y"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label className="text-purple-200/80 text-sm">Description</Label>
+                  <Textarea
+                    placeholder="Describe the proposal in detail — its rationale, goals, and expected outcomes..."
+                    value={form.description}
+                    onChange={e => handleChange('description', e.target.value)}
+                    rows={4}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-y"
+                  />
+                </div>
+
+                {/* Purpose */}
+                <div className="space-y-2">
+                  <Label className="text-purple-200/80 text-sm">
+                    Purpose <span className="text-red-400">*</span>
+                  </Label>
+                  <Textarea
+                    placeholder="What problem is being solved or opportunity seized?"
+                    value={form.purpose}
+                    onChange={e => handleChange('purpose', e.target.value)}
+                    rows={3}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-y"
+                  />
+                </div>
+
+                {/* Impact Assessment */}
+                <div className="space-y-2">
+                  <Label className="text-purple-200/80 text-sm">
+                    Impact Assessment <span className="text-red-400">*</span>
+                  </Label>
+                  <Textarea
+                    placeholder="Explain anticipated effects (positive and negative) on the Village, agents, resources, and ecosystem..."
+                    value={form.impact_assessment}
+                    onChange={e => handleChange('impact_assessment', e.target.value)}
+                    rows={3}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-y"
+                  />
+                </div>
 
             {/* Action Data */}
             <div className="space-y-2">
@@ -257,6 +343,140 @@ export default function NewProposalDraft() {
                 Structured data needed to execute this proposal if passed. Accepts JSON or plain text.
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Relevant Context */}
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-white text-lg">Relevant Context</CardTitle>
+            <CardDescription className="text-purple-200/50">
+              Background information for voters
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              placeholder="Background information, previous discussions, related entities voters need to understand..."
+              value={form.relevant_context}
+              onChange={e => handleChange('relevant_context', e.target.value)}
+              rows={3}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-y"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Constitutional Alignment */}
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-white text-lg flex items-center gap-2">
+              <Diamond className="w-5 h-5 text-purple-400" />
+              Constitutional Alignment <span className="text-red-400">*</span>
+            </CardTitle>
+            <CardDescription className="text-purple-200/50">
+              Link this proposal to the 11 Laws of SoulBridge (minimum 1 required)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {form.constitutional_alignment.map((alignment, idx) => (
+              <div key={idx} className="border border-white/10 rounded-lg p-4 bg-white/3 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-purple-500/20 text-purple-200">
+                    Law {alignment.law_number}: {alignment.law_name}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-purple-200/60 text-xs mb-1 block">How does this proposal support this Law?</Label>
+                  <Textarea
+                    placeholder={`Explain how this proposal aligns with Law ${alignment.law_number}: ${alignment.law_name}...`}
+                    value={alignment.alignment_statement}
+                    onChange={e => handleConstitutionalChange(idx, 'alignment_statement', e.target.value)}
+                    rows={2}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm resize-y"
+                  />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Affected Entities */}
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-white text-lg">Affected Entities & Agents</CardTitle>
+            <CardDescription className="text-purple-200/50">
+              Clearly identify which entities this proposal impacts
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {form.affected_entities.length === 0 ? (
+              <p className="text-white/40 text-sm">No affected entities added yet</p>
+            ) : (
+              form.affected_entities.map((entity, idx) => (
+                <div key={idx} className="border border-white/10 rounded-lg p-4 bg-white/3 space-y-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-white/60 text-sm font-medium">Entity {idx + 1}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeAffectedEntity(idx)}
+                      className="text-red-400/60 hover:text-red-300"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-purple-200/60 text-xs">Entity Type</Label>
+                      <Select value={entity.entity_type} onValueChange={v => handleAffectedEntityChange(idx, 'entity_type', v)}>
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white text-sm">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-white/20">
+                          {['Agent', 'Wallet', 'AIProject', 'Treasury', 'Service', 'Other'].map(type => (
+                            <SelectItem key={type} value={type} className="text-white">{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-purple-200/60 text-xs">Entity ID</Label>
+                      <Input
+                        placeholder="Entity ID"
+                        value={entity.entity_id}
+                        onChange={e => handleAffectedEntityChange(idx, 'entity_id', e.target.value)}
+                        className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-purple-200/60 text-xs">Entity Name</Label>
+                    <Input
+                      placeholder="Human-readable name"
+                      value={entity.entity_name}
+                      onChange={e => handleAffectedEntityChange(idx, 'entity_name', e.target.value)}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-purple-200/60 text-xs">Impact Description</Label>
+                    <Textarea
+                      placeholder="How is this entity affected?"
+                      value={entity.impact_description}
+                      onChange={e => handleAffectedEntityChange(idx, 'impact_description', e.target.value)}
+                      rows={2}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm resize-y"
+                    />
+                  </div>
+                </div>
+              ))
+            )}
+            <Button
+              onClick={addAffectedEntity}
+              variant="outline"
+              className="w-full border-white/10 text-white/60 hover:text-white hover:bg-white/5"
+            >
+              + Add Affected Entity
+            </Button>
           </CardContent>
         </Card>
 
