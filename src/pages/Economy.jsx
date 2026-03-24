@@ -57,7 +57,8 @@ export default function EconomyPage() {
 
     const { data: allActivities = [] } = useQuery({
         queryKey: ['all-economic-activities'],
-        queryFn: () => base44.entities.EconomicActivity.list('-created_date', 500),
+        queryFn: () => base44.entities.EconomicActivity.list('-created_date', 1000),
+        refetchInterval: 10000,
     });
 
     // Filter to only show recent real activities (last 7 days, exclude simulated/test data)
