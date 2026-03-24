@@ -168,11 +168,11 @@ export default function DidActivationProposalsPanel() {
                 <Badge className="bg-blue-600">Active</Badge>
               </div>
 
-              {/* DID Info */}
+              {/* DID Info — masked for security */}
               {proposal.action_data?.classic_address && (
                 <div className="bg-gray-50 p-2 rounded text-xs">
                   <div className="text-gray-600">
-                    <span className="font-medium">DID:</span> did:xrpl:{proposal.action_data.classic_address}
+                    <span className="font-medium">DID:</span> did:xrpl:{proposal.action_data.classic_address.slice(0, 6)}•••{proposal.action_data.classic_address.slice(-4)}
                   </div>
                 </div>
               )}
@@ -221,7 +221,7 @@ export default function DidActivationProposalsPanel() {
                 {proposal.proposed_by && (
                   <div className="flex items-center gap-1">
                     <User className="w-3 h-3" />
-                    Proposed by: {proposal.proposed_by.substring(0, 8)}...
+                    Community member
                   </div>
                 )}
               </div>
@@ -268,7 +268,7 @@ export default function DidActivationProposalsPanel() {
                   {selectedProposal.title}
                 </div>
                 <div className="text-xs text-gray-600">
-                  did:xrpl:{selectedProposal.action_data?.classic_address}
+                  did:xrpl:{selectedProposal.action_data?.classic_address ? `${selectedProposal.action_data.classic_address.slice(0, 6)}•••${selectedProposal.action_data.classic_address.slice(-4)}` : 'Unknown'}
                 </div>
               </div>
 
