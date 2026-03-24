@@ -14,7 +14,7 @@ const NAV_GROUPS = [
   {
     label: 'Core',
     links: [
-      { label: 'Home', path: '/', icon: Home },
+      { label: 'Home', path: '/dashboard', icon: Home },
       { label: 'Axi Command', path: '/AxiCommandDashboard', icon: Brain },
       { label: 'Village Calendar', path: '/VillageCalendar', icon: Calendar },
     ]
