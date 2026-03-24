@@ -74,10 +74,10 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
   // Agent wealth calculation
   const agentWealthMap = agents.reduce((acc, agent) => {
     const earnings = economicActivities
-      .filter(a => a.agent_id === agent.id && a.activity_type === 'earned')
+      .filter(a => a.agent_id === agent.id && ['earned', 'resource_sold', 'treasury_deposit'].includes(a.activity_type))
       .reduce((sum, a) => sum + (a.amount || 0), 0);
     const spending = economicActivities
-      .filter(a => a.agent_id === agent.id && a.activity_type === 'spent')
+      .filter(a => a.agent_id === agent.id && ['spent', 'resource_acquired', 'treasury_withdrawal'].includes(a.activity_type))
       .reduce((sum, a) => sum + (a.amount || 0), 0);
     acc[agent.id] = {
       agent,
@@ -106,9 +106,9 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
     economicActivities.forEach(activity => {
       const hour = moment(activity.created_date).format('HH:mm');
       if (hourlyData[hour]) {
-        if (['earned', 'treasury_deposit'].includes(activity.activity_type)) {
+        if (['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type)) {
           hourlyData[hour].inflow += activity.amount || 0;
-        } else if (['spent', 'treasury_withdrawal'].includes(activity.activity_type)) {
+        } else if (['spent', 'resource_acquired', 'treasury_withdrawal'].includes(activity.activity_type)) {
           hourlyData[hour].outflow += activity.amount || 0;
         }
       }
@@ -305,7 +305,7 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {recentActivities.map((activity) => {
               const agent = agents.find(a => a.id === activity.agent_id);
-              const isInflow = ['earned', 'treasury_deposit'].includes(activity.activity_type);
+              const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
               
               return (
                 <div key={activity.id} className="flex items-center gap-3 bg-white/5 rounded-lg p-3 border border-white/10">
