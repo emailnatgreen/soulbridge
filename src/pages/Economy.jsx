@@ -174,6 +174,10 @@ export default function EconomyPage() {
                             <TrendingUp className="w-4 h-4 mr-2" />
                             Agent Wealth
                         </TabsTrigger>
+                        <TabsTrigger value="history" className="data-[state=active]:bg-indigo-500/20">
+                            <Package className="w-4 h-4 mr-2" />
+                            Transaction History
+                        </TabsTrigger>
                         {isNathanAdmin && (
                             <TabsTrigger value="treasuries" className="data-[state=active]:bg-amber-500/20">
                                 <Wallet className="w-4 h-4 mr-2" />
@@ -288,6 +292,50 @@ export default function EconomyPage() {
                                             </div>
                                         );
                                     })}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="history" className="space-y-6">
+                        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                            <CardHeader>
+                                <CardTitle className="text-white flex items-center gap-2">
+                                    <Package className="w-5 h-5 text-indigo-400" />
+                                    Economic Activity History
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                                    {recentActivities.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <Package className="w-10 h-10 text-white/20 mx-auto mb-3" />
+                                            <p className="text-white/40 text-sm">No activities found</p>
+                                        </div>
+                                    ) : (
+                                        recentActivities.map((activity, idx) => {
+                                            const agent = agents.find(a => a.id === activity.agent_id);
+                                            return (
+                                                <div key={`${activity.id}-${idx}`} className="bg-white/5 rounded-lg p-3 border border-white/10 flex items-start justify-between hover:bg-white/8 transition-colors">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <Badge className={activity.activity_type === 'earned' ? 'bg-green-500/20 text-green-300' : activity.activity_type === 'spent' ? 'bg-red-500/20 text-red-300' : 'bg-blue-500/20 text-blue-300'}>
+                                                                {activity.activity_type}
+                                                            </Badge>
+                                                            <p className="text-xs text-white/50">{agent?.name || 'Unknown Agent'}</p>
+                                                        </div>
+                                                        <p className="text-xs text-white/40">{activity.description || 'Economic activity'}</p>
+                                                        <p className="text-xs text-white/30 mt-1">{new Date(activity.created_date).toLocaleDateString()} {new Date(activity.created_date).toLocaleTimeString()}</p>
+                                                    </div>
+                                                    <div className="text-right ml-4">
+                                                        <p className={`text-sm font-medium ${activity.activity_type === 'earned' ? 'text-green-400' : 'text-red-400'}`}>
+                                                            {activity.activity_type === 'earned' ? '+' : '-'}{convertDropsToXRP(activity.amount).toFixed(6)} XRP
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
