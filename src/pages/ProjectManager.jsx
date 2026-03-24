@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import ProjectCard from '@/components/project/ProjectCard';
 import ProjectFilters from '@/components/project/ProjectFilters';
+import ProjectDetailView from '@/components/project/ProjectDetailView';
 import { Plus, AlertCircle } from 'lucide-react';
 
 // Helper: Enrich projects with aggregated task and collaboration data
@@ -44,6 +45,7 @@ export default function ProjectManager() {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [ownerFilter, setOwnerFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
 
   // Fetch all required data
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
@@ -147,7 +149,7 @@ export default function ProjectManager() {
                     project={project}
                     variant="list"
                     ownerAgent={ownerAgent}
-                    onClick={() => navigate(`/AIProjectHub?id=${project.id}`)}
+                    onClick={() => setSelectedProjectId(project.id)}
                     onEdit={() => navigate(`/AIProjectHub?id=${project.id}&edit=true`)}
                   />
                 );
@@ -177,7 +179,7 @@ export default function ProjectManager() {
                     project={project}
                     variant="grid"
                     ownerAgent={ownerAgent}
-                    onClick={() => navigate(`/AIProjectHub?id=${project.id}`)}
+                    onClick={() => setSelectedProjectId(project.id)}
                     onEdit={() => navigate(`/AIProjectHub?id=${project.id}&edit=true`)}
                   />
                 );
@@ -187,6 +189,21 @@ export default function ProjectManager() {
         )}
 
       </div>
+
+      {/* Project Detail Modal */}
+      {selectedProjectId && (
+        <ProjectDetailView
+          project={enrichedProjects.find(p => p.id === selectedProjectId)}
+          ownerAgent={agents.find(a => a.id === enrichedProjects.find(p => p.id === selectedProjectId)?.owner_agent_id)}
+          taskStats={enrichedProjects.find(p => p.id === selectedProjectId)?.taskStats}
+          teamMembers={enrichedProjects.find(p => p.id === selectedProjectId)?.teamMembers || []}
+          onClose={() => setSelectedProjectId(null)}
+          onEdit={() => {
+            navigate(`/AIProjectHub?id=${selectedProjectId}&edit=true`);
+            setSelectedProjectId(null);
+          }}
+        />
+      )}
     </div>
   );
 }
