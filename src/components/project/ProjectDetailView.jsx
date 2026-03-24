@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import TaskList from './TaskList';
 import MilestonesSection from './MilestonesSection';
+import RisksSection from './RisksSection';
 import {
   Shield, Users, CheckCircle2, Coins, Calendar, Target, 
   TrendingUp, AlertCircle, X, FileText, Lightbulb
@@ -277,6 +278,9 @@ export default function ProjectDetailView({
 
             {/* Milestones & Deliverables */}
             <MilestonesSection project={project} onUpdate={handleProjectUpdate} />
+
+            {/* Risks & Mitigation */}
+            <RisksSection project={project} onUpdate={handleProjectUpdate} />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-4 border-t border-white/10">
