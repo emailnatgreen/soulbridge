@@ -75,10 +75,19 @@ export default function MentorshipHub() {
     queryKey: ['myMentorships', myAgent?.id],
     enabled: !!myAgent,
     queryFn: async () => {
-      const [asMentor, asMentee] = await Promise.all([
-        base44.entities.MentorshipRelationship.filter({ mentor_agent_id: myAgent.id }),
-        base44.entities.MentorshipRelationship.filter({ mentee_agent_id: myAgent.id }),
-      ]);
+      // Fetch all relationships and filter client-side to catch records created by Axi
+      // which may use agent_id, user email, or other identifiers
+      const all = await base44.entities.MentorshipRelationship.list();
+      const asMentor = all.filter(r =>
+        r.mentor_agent_id === myAgent.id ||
+        r.mentor_agent_id === currentUser?.email ||
+        r.mentor_agent_id === currentUser?.id
+      );
+      const asMentee = all.filter(r =>
+        r.mentee_agent_id === myAgent.id ||
+        r.mentee_agent_id === currentUser?.email ||
+        r.mentee_agent_id === currentUser?.id
+      );
       return { asMentor, asMentee };
     }
   });
