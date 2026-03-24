@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, FileJson, AlertTriangle, Shield, Clock, Info, UserPlus, Edit3, History, Search, Activity, Link2, Upload, Sparkles } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, FileJson, AlertTriangle, Shield, Clock, Info, UserPlus, Edit3, History, Search, Activity, Link2, Upload, Sparkles, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import AgentManagementDialog from '../components/AgentManagementDialog';
 import AuditLogViewer from '../components/AuditLogViewer';
@@ -245,9 +245,9 @@ export default function DIDManager() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link to={createPageUrl('Home')}>
-            <Button variant="outline" className="mb-4">
-              ← Back to Home
+          <Link to="/Home">
+            <Button variant="outline" className="mb-4 gap-2">
+              <Home className="w-4 h-4" /> Back to Home
             </Button>
           </Link>
           <div className="flex items-center justify-between">
