@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,13 +16,20 @@ import {
   ArrowLeft,
   Droplet,
   PiggyBank,
-  Activity
+  Activity,
+  Shield,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AskAxiButton from '@/components/AskAxiButton';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import moment from 'moment';
+
+const openAxi = (msg) => {
+  window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
+};
 
 export default function TreasuryDashboard() {
   const [timeRange, setTimeRange] = useState('30d');
