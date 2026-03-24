@@ -233,8 +233,9 @@ export default function EconomyPage() {
                                 <div className="space-y-2">
                                     {agents.map((agent, idx) => {
                                         const agentWallet = wallets.find(w => w.id === agent.wallet_id);
-                                        const earnings = allActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
-                                        const spending = allActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
+                                        const agentActivities = allActivities.filter(a => a.agent_id === agent.id);
+                                        const earnings = agentActivities.filter(a => a.activity_type === 'earned').reduce((sum, a) => sum + (a.amount || 0), 0);
+                                        const spending = agentActivities.filter(a => a.activity_type === 'spent').reduce((sum, a) => sum + (a.amount || 0), 0);
                                         const net = earnings - spending;
                                         const walletBalance = agentWallet?.balance || 0;
 
