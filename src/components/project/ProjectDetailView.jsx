@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import TaskList from './TaskList';
+import MilestonesSection from './MilestonesSection';
 import {
   Shield, Users, CheckCircle2, Coins, Calendar, Target, 
   TrendingUp, AlertCircle, X, FileText, Lightbulb
@@ -31,6 +33,11 @@ export default function ProjectDetailView({
   taskStats = null,
   teamMembers = [],
 }) {
+  const queryClient = useQueryClient();
+
+  const handleProjectUpdate = () => {
+    queryClient.invalidateQueries({ queryKey: ['aiProjects'] });
+  };
   const budgetPercentage = project.budget_drops
     ? Math.round((project.spent_drops / project.budget_drops) * 100)
     : 0;
@@ -267,6 +274,9 @@ export default function ProjectDetailView({
 
             {/* Task Management */}
             <TaskList projectId={project.id} agents={teamMembers.map(tm => tm.agent).filter(Boolean)} />
+
+            {/* Milestones & Deliverables */}
+            <MilestonesSection project={project} onUpdate={handleProjectUpdate} />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-4 border-t border-white/10">
