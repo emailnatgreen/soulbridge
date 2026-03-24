@@ -112,18 +112,30 @@ export default function MentorshipHub() {
                 </button>
               </div>
               {identity?.connected && (
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Find a Mentor
+                <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5">
+                  <Shield className="w-3.5 h-3.5 text-green-400" />
+                  <span className="text-green-300 text-xs font-mono truncate max-w-[120px]">
+                    {identity.did?.slice(0, 16)}…
+                  </span>
+                </div>
+              )}
+              <Link to="/MentorshipWellbeing">
+                <Button variant="outline" className="border-purple-400/60 text-purple-200 bg-purple-900/20 hover:bg-purple-500/30 hover:text-white">
+                  <Heart className="w-4 h-4 mr-2" />Well-being
+                </Button>
+              </Link>
+              <Link to="/MentorshipAnalytics">
+                <Button variant="outline" className="border-blue-400/60 text-blue-200 bg-blue-900/20 hover:bg-blue-500/30 hover:text-white">
+                  <BarChart3 className="w-4 h-4 mr-2" />Analytics
+                </Button>
+              </Link>
+              <Button onClick={() => setShowFindMentor(true)} className="bg-purple-600 hover:bg-purple-700 text-white">
+                <Users className="w-4 h-4 mr-2" />Find a Mentor
               </Button>
               {!myMentorProfile && (
                 <Link to="/BecomeMentor">
-                  <Button
-                    variant="outline"
-                    className="border-green-400/60 text-green-200 bg-green-900/20 hover:bg-green-500/30 hover:text-white"
-                  >
-                    <Heart className="w-4 h-4 mr-2" />
-                    Become a Mentor
+                  <Button variant="outline" className="border-green-400/60 text-green-200 bg-green-900/20 hover:bg-green-500/30 hover:text-white">
+                    <Heart className="w-4 h-4 mr-2" />Become a Mentor
                   </Button>
                 </Link>
               )}
@@ -337,6 +349,8 @@ function MentorCard({ profile, mentor, onRequest }) {
 }
 
 function MentorshipCard({ relationship, otherAgent, role, onOpenChat }) {
+  const goals = relationship.goals || [];
+  const progress = goals.length > 0 ? (goals.filter(g => g.completed).length / goals.length) * 100 : 0;
   return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
       <CardContent className="p-4">
