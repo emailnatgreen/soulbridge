@@ -199,35 +199,76 @@ export default function TreasuryDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl('Home')}>
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">Treasury Dashboard</h1>
-              <p className="text-slate-600">Real-time financial oversight and sustainability tracking</p>
+        {/* Header with DID & AI Hook */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link to={createPageUrl('Home')}>
+                <Button variant="ghost" size="icon">
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900">Treasury Dashboard</h1>
+                <p className="text-slate-600">Real-time financial oversight and sustainability tracking</p>
+              </div>
+            </div>
+            <div className="flex gap-2 items-center">
+              <AskAxiButton
+                label="Ask Axi"
+                context={`You are the Treasury guardian for SoulBridge Village. Nathan is reviewing the Treasury Dashboard. Please assess the current balance, committed rewards, available funds, burn rate, and runway. Are there any sustainability risks? Are there projects over-committed relative to available balance? Recommend actions to ensure financial health.`}
+              />
+              {['7d', '30d', '90d', '365d'].map(range => (
+                <Button
+                  key={range}
+                  variant={timeRange === range ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange(range)}
+                >
+                  {range}
+                </Button>
+              ))}
             </div>
           </div>
-          <div className="flex gap-2 items-center">
-            <AskAxiButton
-              label="Ask Axi"
-              context={`You are the Treasury guardian for SoulBridge Village. Nathan is reviewing the Treasury Dashboard. Please assess the current balance, committed rewards, available funds, burn rate, and runway. Are there any sustainability risks? Are there projects over-committed relative to available balance? Recommend actions to ensure financial health.`}
-            />
-            {['7d', '30d', '90d', '365d'].map(range => (
-              <Button
-                key={range}
-                variant={timeRange === range ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange(range)}
-              >
-                {range}
-              </Button>
-            ))}
-          </div>
+
+          {/* DID & Identity Bar */}
+          <Card className="bg-gradient-to-r from-purple-900/40 to-pink-900/30 border-purple-500/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  {identity?.connected ? (
+                    <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-1.5">
+                      <Shield className="w-4 h-4 text-green-400" />
+                      <span className="text-green-300 text-xs font-mono">{identity.did?.slice(0, 16)}…</span>
+                      <Badge className="bg-green-500/20 text-green-300 text-[10px]">Verified</Badge>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
+                      <AlertCircle className="w-4 h-4 text-yellow-400" />
+                      <span className="text-yellow-300 text-xs">DID Not Connected</span>
+                    </div>
+                  )}
+                  
+                  {myAgent && (
+                    <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-1.5">
+                      <Bot className="w-4 h-4 text-blue-400" />
+                      <span className="text-blue-300 text-xs">{myAgent.name}</span>
+                      <span className="text-blue-400/50 text-[10px]">· {myAgent.role}</span>
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openAxi(`Review the Treasury Dashboard. Current balance: ${currentBalance.toFixed(2)} XRP (${balanceInDrops.toLocaleString()} drops). Committed: ${committedRewards.toFixed(2)} XRP. Available: ${availableBalance.toFixed(2)} XRP. Burn rate: ${monthlyBurnRate.toFixed(2)} XRP/month. Runway: ${runwayMonths.toFixed(1)} months. Assess sustainability and flag any concerns.`)}
+                  className="border-purple-400/40 text-purple-300 bg-purple-900/20 hover:bg-purple-500/20 text-xs gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> AI Treasury Analysis
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Current Balance - Hero Section */}
