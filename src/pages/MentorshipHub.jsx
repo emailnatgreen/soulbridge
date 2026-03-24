@@ -30,6 +30,7 @@ export default function MentorshipHub() {
   const [identity, setIdentity] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [myAgent, setMyAgent] = useState(null);
+  const [agentLoading, setAgentLoading] = useState(true);
 
   // UI state
   const [showRequestDialog, setShowRequestDialog] = useState(false);
@@ -47,12 +48,13 @@ export default function MentorshipHub() {
     } catch (e) {}
 
     base44.auth.me().then(async (u) => {
-      if (!u) return;
+      if (!u) { setAgentLoading(false); return; }
       setCurrentUser(u);
       const agents = await base44.entities.Agent.list();
       const mine = agents.find(a => a.created_by === u.email);
       if (mine) setMyAgent(mine);
-    }).catch(() => {});
+      setAgentLoading(false);
+    }).catch(() => { setAgentLoading(false); });
 
     // Notify Axi
     openAxi("I've just opened the Mentorship Hub. Give me a brief overview of what's available here and how I can find a mentor or become one.");
@@ -97,7 +99,7 @@ export default function MentorshipHub() {
   const pendingRequests = myRelationships.asMentee?.filter(r => r.status === 'requested') || [];
   const availableMentors = mentorProfiles.filter(mp => mp.is_available && mp.agent_id !== myAgent?.id);
 
-  const isLoading = loadingProfiles || loadingRels;
+  const isLoading = agentLoading || loadingProfiles || loadingRels;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
