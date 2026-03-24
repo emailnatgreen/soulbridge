@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import { Progress } from "@/components/ui/progress";
 import AskAxiButton from '@/components/AskAxiButton';
 import DidActivationProposalsPanel from '@/components/DidActivationProposalsPanel';
+import ProposalAISummaryPanel from '@/components/governance/ProposalAISummaryPanel';
 
 const openAxi = (msg) => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
 
@@ -600,6 +601,9 @@ export default function GovernanceHub() {
                             </div>
                           </div>
                         )}
+
+                        {/* AI Summary */}
+                        <ProposalAISummaryPanel proposalId={proposal.id} />
 
                         {/* AI Impact Assessment */}
                         {proposal.ai_impact_assessment && (
