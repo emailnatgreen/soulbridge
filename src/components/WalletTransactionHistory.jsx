@@ -22,7 +22,7 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
       }
     },
     enabled: !!walletAddress,
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 60000,
   });
 
   if (isLoading) {
@@ -43,6 +43,11 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
     );
   }
 
+  const validTransactions = transactions.filter(tx => {
+    const isValidAmount = typeof tx.Amount === 'number' && !isNaN(tx.Amount) && tx.Amount >= 0;
+    return isValidAmount && (tx.Account || tx.Destination);
+  });
+
   return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
       <CardHeader>
@@ -52,17 +57,20 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {transactions.length === 0 ? (
+        {validTransactions.length === 0 ? (
           <div className="text-center py-8">
             <Clock className="w-10 h-10 text-white/20 mx-auto mb-3" />
             <p className="text-white/40 text-sm">No transactions found</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {transactions.map((tx, idx) => {
+            {validTransactions.map((tx, idx) => {
               const isOutgoing = tx.Account === walletAddress;
-              const amount = parseFloat(tx.Amount || 0) / 1000000; // Convert drops to XRP
-              
+              const amount = tx.Amount || 0;
+              const recipient = tx.Destination || 'Unknown';
+              const sender = tx.Account || 'Unknown';
+              const isZeroValue = amount === 0;
+
               return (
                 <div
                   key={`${tx.hash}-${idx}`}
@@ -76,10 +84,10 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
                     )}
                     <div className="flex-1">
                       <p className="text-sm font-medium text-white capitalize">
-                        {isOutgoing ? 'Sent' : 'Received'} XRP
+                        {isZeroValue ? tx.TransactionType : (isOutgoing ? 'Sent' : 'Received')} XRP
                       </p>
                       <p className="text-xs text-white/50 font-mono mt-0.5">
-                        {isOutgoing ? `To: ${tx.Destination?.slice(0, 12)}...` : `From: ${tx.Account?.slice(0, 12)}...`}
+                        {isOutgoing ? `To: ${recipient?.slice(0, 12)}...` : `From: ${sender?.slice(0, 12)}...`}
                       </p>
                       <p className="text-xs text-white/40 mt-1">
                         {moment(tx.close_time_iso).fromNow()}
@@ -91,7 +99,7 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
                       {isOutgoing ? '-' : '+'}{amount.toFixed(6)} XRP
                     </p>
                     <p className="text-xs text-white/40 mt-0.5">
-                      {tx.TransactionType}
+                      {isZeroValue ? 'Fee Only' : tx.TransactionType}
                     </p>
                   </div>
                 </div>
