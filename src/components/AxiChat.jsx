@@ -479,7 +479,12 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
             {showMemorySave && (
               <SaveToMemoryPanel
                 messages={allMessages}
+                conversation={conversation}
                 onClose={() => setShowMemorySave(false)}
+                onDeleted={(remaining) => {
+                  setAllMessages(remaining.filter(m => m.content && m.role !== 'system'));
+                  setMessages(remaining.filter(m => m.content && m.role !== 'system').slice(-PAGE_SIZE));
+                }}
               />
             )}
             {showAgentPicker && (
