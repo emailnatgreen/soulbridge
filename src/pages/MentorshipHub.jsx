@@ -181,6 +181,31 @@ export default function MentorshipHub() {
           </div>
         )}
 
+        {/* My Mentor Profile Banner */}
+        {myMentorProfile && (
+          <div className="bg-gradient-to-r from-purple-900/40 to-pink-900/30 border border-purple-500/30 rounded-xl p-4 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center flex-shrink-0">
+                <Heart className="w-5 h-5 text-pink-400" />
+              </div>
+              <div>
+                <p className="text-white font-medium text-sm">You are a registered Mentor</p>
+                <p className="text-white/40 text-xs">
+                  {myMentorProfile.is_available ? '● Accepting new mentees' : '○ Paused — not accepting'} · {myMentorProfile.current_mentee_count || 0}/{myMentorProfile.max_mentees || 3} mentees · {(myMentorProfile.specializations || []).slice(0,2).join(', ') || 'No specializations set'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className={myMentorProfile.is_available ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'}>
+                {myMentorProfile.is_available ? 'Open' : 'Paused'}
+              </Badge>
+              <Link to="/BecomeMentor">
+                <Button size="sm" variant="outline" className="border-purple-400/40 text-purple-300 bg-purple-900/20 hover:bg-purple-500/20 text-xs">Edit Profile</Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
