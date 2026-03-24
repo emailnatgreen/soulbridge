@@ -82,8 +82,8 @@ export default function EconomyPage() {
     // Check if user is Nathan Green with admin role
     const isNathanAdmin = user?.email === 'emailnatgreen@gmail.com' && user?.role === 'admin';
 
-    const totalEarned = recentActivities.filter(a => a.activity_type === 'earned').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
-    const totalSpent = recentActivities.filter(a => a.activity_type === 'spent').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
+    const totalEarned = recentActivities.filter(a => ['earned', 'resource_sold', 'treasury_deposit'].includes(a.activity_type)).reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
+    const totalSpent = recentActivities.filter(a => ['spent', 'resource_acquired', 'treasury_withdrawal'].includes(a.activity_type)).reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
     const totalTraded = recentActivities.filter(a => a.activity_type === 'traded').reduce((sum, a) => sum + convertDropsToXRP(a.amount), 0);
 
     const agentWithMostWealth = agents.length > 0 ? agents.reduce((prev, current) => {
