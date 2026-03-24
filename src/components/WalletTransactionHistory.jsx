@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUp, ArrowDown, Clock, TrendingUp, Loader2 } from 'lucide-react';
 import moment from 'moment';
 
+// Convert drops to XRP (1 XRP = 1,000,000 drops)
+const convertDropsToXRP = (drops) => (parseFloat(drops) || 0) / 1_000_000;
+
 export default function WalletTransactionHistory({ walletId, walletAddress }) {
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['wallet-transactions', walletAddress],
@@ -69,7 +72,7 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {validTransactions.map((tx, idx) => {
               const isOutgoing = tx.Account === walletAddress;
-              const amount = tx.Amount || 0;
+              const amountInXRP = convertDropsToXRP(tx.Amount || 0);
               const recipient = tx.Destination || 'Unknown';
               const sender = tx.Account || 'Unknown';
 
@@ -98,7 +101,7 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
                   </div>
                   <div className="text-right">
                     <p className={`text-sm font-medium ${isOutgoing ? 'text-orange-400' : 'text-green-400'}`}>
-                      {isOutgoing ? '-' : '+'}{amount.toFixed(6)} XRP
+                      {isOutgoing ? '-' : '+'}{amountInXRP.toFixed(6)} XRP
                     </p>
                     <p className="text-xs text-white/40 mt-0.5">
                       {tx.TransactionType}
