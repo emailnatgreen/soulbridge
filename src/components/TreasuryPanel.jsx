@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, ArrowUp, ArrowDown, History, Plus, Shield, ExternalLink } from 'lucide-react';
+import { Wallet, ArrowUp, ArrowDown, History, Plus, Shield, ExternalLink, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import moment from 'moment';
 
@@ -23,13 +23,15 @@ export default function TreasuryPanel({ treasuryId, canManage = false }) {
         refetchInterval: 10000,
     });
 
-    // Fetch associated wallet to check on-chain status
     const { data: wallet } = useQuery({
-        queryKey: ['treasury-wallet', treasuryId],
+        queryKey: ['wallet', treasury?.classic_address],
         queryFn: async () => {
-            const wallets = await base44.entities.Wallet.filter({
-                classic_address: treasury.classic_address
-            });
+            if (!treasury?.classic_address) return null;
+            const wallets = await base44.entities.Wallet.filter(
+                { classic_address: treasury.classic_address },
+                '-updated_date',
+                1
+            );
             return wallets[0] || null;
         },
         enabled: !!treasury?.classic_address,
@@ -108,36 +110,33 @@ export default function TreasuryPanel({ treasuryId, canManage = false }) {
                     </div>
                     <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
                         <p className="text-sm text-white/60 mb-2">{treasury.purpose}</p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <Badge className="bg-purple-500/10 text-purple-300 border-purple-500/20">
                                 {treasury.access_level}
                             </Badge>
                             {wallet?.is_published ? (
-                                <Badge className="bg-green-500/10 text-green-300 border-green-500/30 flex items-center gap-1">
-                                    <Shield className="w-3 h-3" />
-                                    Fully On-Chain (DID Published)
-                                </Badge>
+                                <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-1.5">
+                                    <Shield className="w-4 h-4 text-green-400" />
+                                    <span className="text-green-300 text-xs font-mono">{wallet.classic_address?.slice(0, 12)}…</span>
+                                    <Badge className="bg-green-500/20 text-green-300 text-[10px]">DID Published</Badge>
+                                    {wallet.published_txid && (
+                                        <a
+                                            href={`https://xrpscan.com/tx/${wallet.published_txid}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="ml-1"
+                                        >
+                                            <ExternalLink className="w-3 h-3 text-green-400 hover:text-green-300" />
+                                        </a>
+                                    )}
+                                </div>
                             ) : (
-                                <Badge className="bg-yellow-500/10 text-yellow-300 border-yellow-500/30 flex items-center gap-1">
-                                    <Wallet className="w-3 h-3" />
-                                    Internal Ledger Only
-                                </Badge>
+                                <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
+                                    <AlertCircle className="w-4 h-4 text-yellow-400" />
+                                    <span className="text-yellow-300 text-xs">Internal Ledger Only</span>
+                                </div>
                             )}
                         </div>
-                        {wallet?.is_published && (
-                            <div className="flex items-center gap-2 text-xs text-white/40">
-                                <span className="font-mono">{treasury.classic_address}</span>
-                                <a
-                                    href={`https://xrpscan.com/tx/${wallet.published_txid}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-green-400 hover:text-green-300 flex items-center gap-1"
-                                >
-                                    <ExternalLink className="w-3 h-3" />
-                                    View on XRPL
-                                </a>
-                            </div>
-                        )}
                     </div>
                 </CardContent>
             </Card>
