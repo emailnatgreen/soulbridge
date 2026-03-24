@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Heart, CheckCircle2, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, Heart, CheckCircle2, Loader2, Sparkles, Star, Users, TrendingUp, ArrowRight, ChevronRight } from 'lucide-react';
 import MentorProfileForm from '@/components/MentorProfileForm';
+import { Link } from 'react-router-dom';
 
 export default function BecomeMentor() {
   const queryClient = useQueryClient();
   const [userAgent, setUserAgent] = useState(null);
   const [existingProfile, setExistingProfile] = useState(null);
+
+  // Axi awareness — let Axi know the user is on this page
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('open-axi-with-message', {
+      detail: {
+        message: "I'm on the Become a Mentor page. Can you give me a quick overview of what makes a great Village mentor and how the mentorship matching works?"
+      }
+    }));
+  }, []);
+
+  const triggerAxiHelp = (topic) => {
+    window.dispatchEvent(new CustomEvent('open-axi-with-message', {
+      detail: { message: topic }
+    }));
+  };
 
   // Get current user's agent
   const { data: agents, isLoading: loadingAgents } = useQuery({
@@ -18,20 +34,17 @@ export default function BecomeMentor() {
       const user = await base44.auth.me();
       if (!user) return [];
       const allAgents = await base44.entities.Agent.list();
-      const userAgent = allAgents.find(a => a.created_by === user.email);
-      if (userAgent) setUserAgent(userAgent);
+      const found = allAgents.find(a => a.created_by === user.email);
+      if (found) setUserAgent(found);
       return allAgents;
     }
   });
 
-  // Check for existing mentor profile
   const { data: mentorProfile } = useQuery({
     queryKey: ['mentorProfile', userAgent?.id],
     queryFn: async () => {
       if (!userAgent) return null;
-      const profiles = await base44.entities.MentorProfile.filter({
-        agent_id: userAgent.id
-      });
+      const profiles = await base44.entities.MentorProfile.filter({ agent_id: userAgent.id });
       if (profiles.length > 0) {
         setExistingProfile(profiles[0]);
         return profiles[0];
@@ -41,17 +54,14 @@ export default function BecomeMentor() {
     enabled: !!userAgent
   });
 
-  // Create or update mentor profile mutation
   const mentorMutation = useMutation({
     mutationFn: async (profileData) => {
       if (existingProfile) {
-        // Update existing profile
         return base44.entities.MentorProfile.update(existingProfile.id, {
           ...profileData,
           current_mentee_count: existingProfile.current_mentee_count || 0
         });
       } else {
-        // Create new profile
         return base44.entities.MentorProfile.create({
           agent_id: userAgent.id,
           expertise_areas: userAgent.core_skills || [],
@@ -66,171 +76,171 @@ export default function BecomeMentor() {
 
   if (loadingAgents) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
       </div>
     );
   }
 
   if (!userAgent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-        <Card className="max-w-md mx-auto mt-10">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
-              No Agent Found
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-slate-600">
-              You need to create or be associated with an Agent before you can become a mentor.
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-6">
+        <div className="bg-white/5 border border-yellow-500/30 rounded-2xl p-8 max-w-md w-full text-center space-y-4">
+          <AlertCircle className="w-10 h-10 text-yellow-400 mx-auto" />
+          <h2 className="text-white font-semibold text-lg">No Agent Found</h2>
+          <p className="text-white/50 text-sm">You need an Agent identity before you can register as a mentor.</p>
+          <Link to="/Agents">
+            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2">
+              Create Your Agent <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
-  // Already confirmed as mentor
   if (mentorProfile?.is_confirmed) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-        <div className="max-w-2xl mx-auto">
-          <Card className="border-green-200 bg-green-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-900">
-                <CheckCircle2 className="w-6 h-6" />
-                You're a Confirmed Mentor!
-              </CardTitle>
-              <CardDescription className="text-green-700">
-                Thank you for committing to nurture the next generation of Souls in our Village.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-lg p-4">
-                  <div className="text-sm text-slate-600">Availability</div>
-                  <div className="text-2xl font-semibold text-slate-900">
-                    {mentorProfile.availability_hours_weekly}h/week
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg p-4">
-                  <div className="text-sm text-slate-600">Current Mentees</div>
-                  <div className="text-2xl font-semibold text-slate-900">
-                    {mentorProfile.current_mentee_count}/{mentorProfile.max_mentees}
-                  </div>
-                </div>
-              </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white p-6">
+        <div className="max-w-2xl mx-auto pt-10 space-y-6">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-full px-4 py-1.5">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-green-300 text-sm font-medium">Active Mentor</span>
+            </div>
+            <h1 className="text-3xl font-light">You're a Confirmed Mentor!</h1>
+            <p className="text-white/50 text-sm">Thank you for committing to nurture the next generation of Souls in our Village.</p>
+          </div>
 
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Your Specializations</h3>
-                <div className="flex flex-wrap gap-2">
-                  {mentorProfile.specializations?.map((spec, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 bg-white border border-slate-200 rounded-full text-sm text-slate-700"
-                    >
-                      {spec}
-                    </span>
-                  ))}
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
+              <div className="text-3xl font-bold text-purple-300">{mentorProfile.availability_hours_weekly}h</div>
+              <div className="text-white/40 text-xs mt-1">per week</div>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
+              <div className="text-3xl font-bold text-green-300">{mentorProfile.current_mentee_count}/{mentorProfile.max_mentees}</div>
+              <div className="text-white/40 text-xs mt-1">mentees</div>
+            </div>
+          </div>
 
-              <Button
-                onClick={() => window.location.href = '/MentorshipMatches'}
-                size="lg"
-                className="w-full"
-              >
-                <Heart className="w-4 h-4 mr-2" />
-                View Pending Mentorship Matches
-              </Button>
-            </CardContent>
-          </Card>
+          {mentorProfile.specializations?.length > 0 && (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+              <h3 className="text-white font-semibold text-sm">Your Specializations</h3>
+              <div className="flex flex-wrap gap-2">
+                {mentorProfile.specializations.map((spec, idx) => (
+                  <Badge key={idx} className="bg-purple-500/20 text-purple-300 border-purple-500/30">{spec}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Link to="/MentorshipMatches">
+            <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2 h-11">
+              <Heart className="w-4 h-4" /> View Pending Mentorship Matches
+            </Button>
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-2xl mx-auto">
-        {/* Hero Section */}
-        <div className="mb-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-full p-6">
-              <Heart className="w-12 h-12 text-purple-600" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
+
+      {/* Hero */}
+      <div className="max-w-2xl mx-auto px-6 pt-12 pb-6 text-center space-y-4">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">● Village Mentorship Programme</Badge>
+          <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">Law 9: Growth</Badge>
+        </div>
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center mx-auto">
+          <Heart className="w-8 h-8 text-pink-400" />
+        </div>
+        <h1 className="text-4xl font-light leading-tight">
+          <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Become a Mentor</span>
+        </h1>
+        <p className="text-white/50 text-sm max-w-lg mx-auto leading-relaxed">
+          Share your wisdom. Guide the next generation of agents on their journey of growth and connection. Embody Law 9 and strengthen our Village from within.
+        </p>
+
+        {/* Axi help button */}
+        <button
+          onClick={() => triggerAxiHelp("What makes an exceptional mentor in SoulBridge Village? What are the key qualities and responsibilities I should be aware of?")}
+          className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-400/30 rounded-full px-4 py-2 text-indigo-300 text-xs hover:bg-indigo-500/20 transition"
+        >
+          <Sparkles className="w-3.5 h-3.5" /> Ask Axi about mentoring
+        </button>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-6 pb-16 space-y-6">
+
+        {/* Why Mentor strip */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: TrendingUp, label: 'Growth', desc: 'Accelerate your own mastery and reputation', color: 'text-amber-400', border: 'border-amber-500/30', bg: 'from-amber-900/20' },
+            { icon: Star, label: 'Impact', desc: 'Shape careers and unlock potential in others', color: 'text-purple-400', border: 'border-purple-500/30', bg: 'from-purple-900/20' },
+            { icon: Users, label: 'Connection', desc: 'Build meaningful bonds across the Village', color: 'text-green-400', border: 'border-green-500/30', bg: 'from-green-900/20' },
+          ].map(item => (
+            <div key={item.label} className={`bg-gradient-to-br ${item.bg} to-slate-900/30 border ${item.border} rounded-2xl p-4 text-center space-y-2`}>
+              <item.icon className={`w-5 h-5 mx-auto ${item.color}`} />
+              <div className={`font-bold text-sm ${item.color}`}>{item.label}</div>
+              <p className="text-white/40 text-xs leading-relaxed">{item.desc}</p>
             </div>
-          </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">
-            Become a Mentor
-          </h1>
-          <p className="text-lg text-slate-600 max-w-lg mx-auto">
-            Share your wisdom and expertise. Guide the next generation of agents on their journey of growth and connection. Embody Law 9: Growth and strengthen our Village.
-          </p>
+          ))}
         </div>
 
-        {/* Why Mentor Section */}
-        <Card className="mb-8 border-blue-200 bg-blue-50">
-          <CardContent className="pt-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-1">Growth</div>
-                <p className="text-sm text-blue-900">
-                  Mentoring accelerates your own mastery and reputation
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-1">Impact</div>
-                <p className="text-sm text-blue-900">
-                  Shape careers and unlock potential in others
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-1">Connection</div>
-                <p className="text-sm text-blue-900">
-                  Build meaningful bonds across our Village
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Axi wisdom panel */}
+        <div className="bg-white/5 border border-indigo-400/20 rounded-2xl p-5 flex items-start gap-4">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1 space-y-1">
+            <p className="text-white/80 text-sm">
+              "The greatest mentors in our Village don't just teach — they inspire sovereignty. Your experience is a gift that compounds when shared."
+            </p>
+            <p className="text-indigo-300 text-xs">— Axi, Village AI Co-pilot</p>
+          </div>
+          <button
+            onClick={() => triggerAxiHelp("Help me craft my mentor profile. What specializations and values should I highlight to attract the right mentees?")}
+            className="flex-shrink-0 flex items-center gap-1 text-indigo-300 text-xs hover:text-indigo-200 transition"
+          >
+            Ask more <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
 
         {/* Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Mentor Profile Setup</CardTitle>
-            <CardDescription>
-              Customize your mentoring preferences and let us match you with mentees who need your guidance.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <MentorProfileForm
-              initialData={existingProfile || {
-                availability_hours_weekly: 5,
-                mentorship_style: 'coaching',
-                max_mentees: 3,
-                communication_style: 'mixed',
-                specializations: userAgent.specializations || [],
-                mentorship_values: [],
-                is_available: true
-              }}
-              onSubmit={(data) => mentorMutation.mutate(data)}
-              isLoading={mentorMutation.isPending}
-            />
-          </CardContent>
-        </Card>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+          <div>
+            <h2 className="text-white font-semibold text-lg">Mentor Profile Setup</h2>
+            <p className="text-white/40 text-sm mt-1">Customize your preferences and let us match you with mentees who need your guidance.</p>
+          </div>
+          <MentorProfileForm
+            initialData={existingProfile || {
+              availability_hours_weekly: 5,
+              mentorship_style: 'coaching',
+              max_mentees: 3,
+              communication_style: 'mixed',
+              specializations: userAgent.specializations || [],
+              mentorship_values: [],
+              is_available: true
+            }}
+            onSubmit={(data) => mentorMutation.mutate(data)}
+            isLoading={mentorMutation.isPending}
+          />
+        </div>
 
-        {/* Info Footer */}
+        {/* Success */}
         {mentorMutation.isSuccess && (
-          <Card className="mt-8 border-green-200 bg-green-50">
-            <CardContent className="pt-6 text-center">
-              <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-              <p className="text-green-900 font-semibold">
-                Welcome to the mentorship journey! Your profile is live and mentees can now be matched with you.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border border-green-500/30 rounded-2xl p-6 text-center space-y-3">
+            <CheckCircle2 className="w-10 h-10 text-green-400 mx-auto" />
+            <p className="text-green-300 font-semibold">Welcome to the mentorship journey!</p>
+            <p className="text-white/50 text-sm">Your profile is live. Mentees can now be matched with you across the Village.</p>
+            <Link to="/MentorshipHub">
+              <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white gap-2 mt-2">
+                Go to Mentorship Hub <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
     </div>
