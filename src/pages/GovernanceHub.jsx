@@ -70,24 +70,14 @@ export default function GovernanceHub() {
 
   const createProposalMutation = useMutation({
     mutationFn: async (proposalData) => {
-      const deadline = new Date();
-      deadline.setDate(deadline.getDate() + (proposalData.voting_period_days || 7));
       return await base44.entities.GovernanceProposal.create({
         title: proposalData.title,
         description: proposalData.description,
         proposal_type: proposalData.proposal_type,
         proposed_by: proposalData.proposer_agent_id,
-        status: 'active',
-        voting_period_end: deadline.toISOString(),
-        quorum_required: 50,
-        pass_threshold: 60,
-        votes_for: 0,
-        votes_against: 0,
-        votes_abstain: 0,
-        total_votes_cast: 0,
       });
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
       setShowCreateDialog(false);
       resetForm();
