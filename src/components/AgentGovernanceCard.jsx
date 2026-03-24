@@ -98,13 +98,11 @@ export default function AgentGovernanceCard({ agent, wallets, highlightConcerns 
                   </div>
                 )}
 
-                {/* Wallet */}
-                {wallet && wallet.classic_address && (
+                {/* Wallet — only show presence, never the address */}
+                {wallet && (
                   <div className="flex items-center gap-2">
                     <Wallet className="w-4 h-4 text-white/40" />
-                    <span className="text-white/60 font-mono text-xs">
-                      {wallet.classic_address.slice(0, 10)}...
-                    </span>
+                    <span className="text-white/50 text-xs">Wallet linked</span>
                   </div>
                 )}
 
