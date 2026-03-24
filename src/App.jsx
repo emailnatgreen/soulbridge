@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { OwnerGovernorProvider } from '@/lib/OwnerGovernorContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Landing from './pages/Landing';
+import ProjectManager from './pages/ProjectManager';
 import VillageCalendar from './pages/VillageCalendar';
 import AxiCommandDashboard from './pages/AxiCommandDashboard';
 import AgentAdditionDiagnostic from './pages/AgentAdditionDiagnostic';
@@ -92,6 +93,7 @@ const AuthenticatedApp = () => {
       <Route path="/IntegrationCreditDashboard" element={<LayoutWrapper currentPageName="IntegrationCreditDashboard"><IntegrationCreditDashboard /></LayoutWrapper>} />
       <Route path="/ServiceSkillMarketplace" element={<LayoutWrapper currentPageName="ServiceSkillMarketplace"><ServiceSkillMarketplace /></LayoutWrapper>} />
       <Route path="/governance" element={<LayoutWrapper currentPageName="GovernanceHub"><GovernanceHub /></LayoutWrapper>} />
+      <Route path="/AIProjectManager" element={<LayoutWrapper currentPageName="AIProjectManager"><ProjectManager /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
