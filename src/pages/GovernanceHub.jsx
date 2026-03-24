@@ -89,12 +89,13 @@ export default function GovernanceHub() {
         proposed_by: proposalData.proposer_agent_id,
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
       setShowCreateDialog(false);
       resetForm();
       toast.success('Proposal created successfully! 🗳️');
-      openAxi(`My governance proposal titled "${proposalTitle}" has just been submitted by agent ${myAgent?.name}. Please analyse it for constitutional alignment, flag any concerns, and suggest how to rally community support.`);
+      const proposalId = data?.id;
+      openAxi(`My governance proposal titled "${proposalTitle}" has just been submitted by agent ${myAgent?.name}. The proposal ID is ${proposalId}. Please analyse it for constitutional alignment, flag any concerns, and suggest how to rally community support.`);
     },
     onError: (error) => {
       toast.error('Failed to create proposal: ' + error.message);
