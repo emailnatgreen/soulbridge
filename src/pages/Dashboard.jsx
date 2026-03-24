@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
+import { base44 } from '@/api/base44Client';
 
 // Global signal emitter — attach to window so anything can call it
 if (typeof window !== 'undefined') {
@@ -20,12 +21,24 @@ export default function Dashboard() {
   const [identity, setIdentity] = useState(null);
   const [signals, setSignals] = useState([]);
 
-  // Listen for real-time signal updates
+  // Fetch signals from database + listen for real-time updates
   useEffect(() => {
-    const loadSignals = () => setSignals([...( window.__soulbridge?.signals || [])]);
+    const loadSignals = async () => {
+      try {
+        const dbSignals = await base44.entities.Signal.list('-created_date', 20);
+        const memorySignals = window.__soulbridge?.signals || [];
+        setSignals([...memorySignals, ...dbSignals].slice(0, 20));
+      } catch (e) {
+        setSignals([...(window.__soulbridge?.signals || [])]);
+      }
+    };
     loadSignals();
+    const interval = setInterval(loadSignals, 10000); // Poll every 10s
     window.addEventListener('signal-update', loadSignals);
-    return () => window.removeEventListener('signal-update', loadSignals);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('signal-update', loadSignals);
+    };
   }, []);
 
   useEffect(() => {
@@ -155,14 +168,15 @@ export default function Dashboard() {
                   <p className="text-white/30 text-xs py-2">Waiting for signals…</p>
                 )}
                 {signals.map((sig) => (
-                  <div key={sig.id} className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span>✅</span>
-                      <span className="text-white/70 font-mono">{sig.type}</span>
-                    </div>
-                    <span className="text-white/30 text-xs">{sig.time}</span>
-                  </div>
-                ))}
+                   <div key={sig.id} className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
+                     <div className="flex items-center gap-2">
+                       <span>✅</span>
+                       <span className="text-white/70 font-mono text-xs">{sig.signal_type || sig.type || 'event'}</span>
+                       {sig.page_name && <span className="text-white/40 text-xs">• {sig.page_name}</span>}
+                     </div>
+                     <span className="text-white/30 text-xs">{sig.time || new Date(sig.created_date).toLocaleTimeString()}</span>
+                   </div>
+                 ))}
               </div>
             </CardContent>
           </Card>
