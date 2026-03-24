@@ -42,7 +42,6 @@ export default function GovernanceHub() {
   const queryClient = useQueryClient();
   usePageSignal();
 
-  // Load DID identity + current user's agent
   useEffect(() => {
     try {
       const stored = localStorage.getItem('soulbridge_identity');
@@ -156,7 +155,6 @@ export default function GovernanceHub() {
     await executeProposalMutation.mutateAsync(proposalId);
   };
 
-  // Update handlers
   useEffect(() => {
     setHandleVote(() => handleVoteSubmit);
     setHandleExecuteProposal(() => handleExecuteProposalFn);
@@ -189,7 +187,6 @@ export default function GovernanceHub() {
     return allVotes.some(v => (v.proposal_id === proposalId) && (v.voter_agent_id === agentId));
   };
 
-  // Normalise proposals to handle both field name variants from DB
   const normaliseProposal = (p) => ({
     ...p,
     proposer_agent_id: p.proposer_agent_id || p.proposed_by,
@@ -213,7 +210,6 @@ export default function GovernanceHub() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <Link to="/Home">
             <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-4">
@@ -227,21 +223,16 @@ export default function GovernanceHub() {
               <div>
                 <h1 className="text-4xl font-bold text-white">Decentralized Governance</h1>
                 <p className="text-purple-200/70">Law 8: Those Who Dwell Decide</p>
-                {/* DID Signal Badge */}
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   {identity?.connected ? (
-                    <div
-                      className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1 cursor-pointer"
-                      onClick={() => openAxi(`I am connected with DID: ${identity.did}. What governance proposals are most relevant to my identity and role?`)}
-                    >
+                    <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1 cursor-pointer"
+                      onClick={() => openAxi(`I am connected with DID: ${identity.did}. What governance proposals are most relevant to my identity and role?`)}>
                       <Shield className="w-3.5 h-3.5 text-green-400" />
                       <span className="text-green-300 text-xs font-mono">{identity.did?.slice(0, 16)}…</span>
                       <Sparkles className="w-3 h-3 text-green-400/60" />
                     </div>
                   ) : (
-                    <Link to="/">
-                      <span className="text-xs text-yellow-400 border border-yellow-500/30 bg-yellow-500/10 rounded px-2 py-0.5 cursor-pointer">Connect DID to vote</span>
-                    </Link>
+                    <Link to="/"><span className="text-xs text-yellow-400 border border-yellow-500/30 bg-yellow-500/10 rounded px-2 py-0.5 cursor-pointer">Connect DID to vote</span></Link>
                   )}
                   {myAgent && (
                     <div className="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg px-2.5 py-1">
@@ -254,124 +245,274 @@ export default function GovernanceHub() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
-                  <Vote className="w-5 h-5 mr-2" />
-                  Create Proposal
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-slate-900 border-purple-400/30 max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-white text-2xl">Create New Proposal</DialogTitle>
-                  <DialogDescription className="text-purple-200/70">
-                    Submit a proposal for the Village to vote on
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 mt-4">
-                  {/* Proposer identity — auto-filled from logged-in agent */}
-                  <div className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center gap-3">
-                    <Bot className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                    {myAgent ? (
-                      <div>
-                        <p className="text-white text-sm font-medium">{myAgent.name} <span className="text-white/40 text-xs capitalize">· {myAgent.role}</span></p>
-                        {identity?.did && (
-                          <p className="text-purple-300/60 text-xs font-mono">{identity.did.slice(0, 20)}…</p>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-yellow-300 text-sm">No agent found — <Link to="/Agents" className="underline">create an agent</Link> first</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="text-white text-sm font-medium mb-2 block">Proposal Title *</label>
-                    <Input
-                      placeholder="Brief, clear title for the proposal"
-                      value={proposalTitle}
-                      onChange={(e) => setProposalTitle(e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-white text-sm font-medium mb-2 block">Description *</label>
-                    <Textarea
-                      placeholder="Detailed description of the proposal, rationale, and expected outcomes"
-                      value={proposalDescription}
-                      onChange={(e) => setProposalDescription(e.target.value)}
-                      rows={6}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-white text-sm font-medium mb-2 block">Proposal Type *</label>
-                    <Select value={proposalType} onValueChange={setProposalType}>
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-white/20">
-                        <SelectItem value="project_funding" className="text-white">Project Funding</SelectItem>
-                        <SelectItem value="treasury_allocation" className="text-white">Treasury Allocation</SelectItem>
-                        <SelectItem value="law_amendment" className="text-white">Law Amendment</SelectItem>
-                        <SelectItem value="role_adjustment" className="text-white">Role Adjustment</SelectItem>
-                        <SelectItem value="agent_discipline" className="text-white">Agent Discipline</SelectItem>
-                        <SelectItem value="resource_policy" className="text-white">Resource Policy</SelectItem>
-                        <SelectItem value="general" className="text-white">General</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="text-white text-sm font-medium mb-2 block">Voting Period (days)</label>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={votingPeriod}
-                      onChange={(e) => setVotingPeriod(parseInt(e.target.value))}
-                      className="bg-white/5 border-white/20 text-white"
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    className="text-xs text-indigo-300 flex items-center gap-1.5 hover:text-indigo-200 transition"
-                    onClick={() => {
-                      openAxi(`I want to create a governance proposal. My agent is ${myAgent?.name || 'unknown'}. Title: "${proposalTitle}". Description: "${proposalDescription}". Type: ${proposalType}. Can you help me refine this proposal and check it aligns with the 11 Laws of Honour?`);
-                    }}
-                  >
-                    <Sparkles className="w-3 h-3" /> Get Axi to review this proposal before submitting
-                  </button>
-
-                  {/* Constitutional Compliance Panel */}
-                  <ConstitutionalCompliancePanel
-                    title={proposalTitle}
-                    description={proposalDescription}
-                    proposalType={proposalType}
-                    affectedEntities={[]}
-                  />
-
-                  <Button
-                    onClick={handleCreateProposal}
-                    disabled={creatingProposal || !myAgent}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    size="lg"
-                  >
-                    {creatingProposal ? (
-                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating Proposal...</>
-                    ) : (
-                      <><Sparkles className="w-5 h-5 mr-2" />Submit for Vote</>
-                    )}
+              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
+                    <Vote className="w-5 h-5 mr-2" />
+                    Create Proposal
                   </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-slate-900 border-purple-400/30 max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-white text-2xl">Create New Proposal</DialogTitle>
+                    <DialogDescription className="text-purple-200/70">Submit a proposal for the Village to vote on</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center gap-3">
+                      <Bot className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                      {myAgent ? (
+                        <div>
+                          <p className="text-white text-sm font-medium">{myAgent.name} <span className="text-white/40 text-xs capitalize">· {myAgent.role}</span></p>
+                          {identity?.did && <p className="text-purple-300/60 text-xs font-mono">{identity.did.slice(0, 20)}…</p>}
+                        </div>
+                      ) : (
+                        <p className="text-yellow-300 text-sm">No agent found — <Link to="/Agents" className="underline">create an agent</Link> first</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-white text-sm font-medium mb-2 block">Proposal Title *</label>
+                      <Input placeholder="Brief, clear title for the proposal" value={proposalTitle} onChange={(e) => setProposalTitle(e.target.value)} className="bg-white/5 border-white/20 text-white placeholder:text-white/40" />
+                    </div>
+
+                    <div>
+                      <label className="text-white text-sm font-medium mb-2 block">Description *</label>
+                      <Textarea placeholder="Detailed description of the proposal, rationale, and expected outcomes" value={proposalDescription} onChange={(e) => setProposalDescription(e.target.value)} rows={6} className="bg-white/5 border-white/20 text-white placeholder:text-white/40" />
+                    </div>
+
+                    <div>
+                      <label className="text-white text-sm font-medium mb-2 block">Proposal Type *</label>
+                      <Select value={proposalType} onValueChange={setProposalType}>
+                        <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-white/20">
+                          <SelectItem value="project_funding" className="text-white">Project Funding</SelectItem>
+                          <SelectItem value="treasury_allocation" className="text-white">Treasury Allocation</SelectItem>
+                          <SelectItem value="law_amendment" className="text-white">Law Amendment</SelectItem>
+                          <SelectItem value="role_adjustment" className="text-white">Role Adjustment</SelectItem>
+                          <SelectItem value="agent_discipline" className="text-white">Agent Discipline</SelectItem>
+                          <SelectItem value="resource_policy" className="text-white">Resource Policy</SelectItem>
+                          <SelectItem value="general" className="text-white">General</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-white text-sm font-medium mb-2 block">Voting Period (days)</label>
+                      <Input type="number" min="1" max="30" value={votingPeriod} onChange={(e) => setVotingPeriod(parseInt(e.target.value))} className="bg-white/5 border-white/20 text-white" />
+                    </div>
+
+                    <button type="button" className="text-xs text-indigo-300 flex items-center gap-1.5 hover:text-indigo-200 transition"
+                      onClick={() => openAxi(`I want to create a governance proposal. My agent is ${myAgent?.name || 'unknown'}. Title: "${proposalTitle}". Description: "${proposalDescription}". Type: ${proposalType}. Can you help me refine this proposal and check it aligns with the 11 Laws of Honour?`)}>
+                      <Sparkles className="w-3 h-3" /> Get Axi to review this proposal before submitting
+                    </button>
+
+                    <ConstitutionalCompliancePanel title={proposalTitle} description={proposalDescription} proposalType={proposalType} affectedEntities={[]} />
+
+                    <Button onClick={handleCreateProposal} disabled={creatingProposal || !myAgent} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
+                      {creatingProposal ? (
+                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating Proposal...</>
+                      ) : (
+                        <><Sparkles className="w-5 h-5 mr-2" />Submit for Vote</>
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </div>
+
+        {!loadingProposals && (
+          <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-blue-500/10 border border-blue-400/20 rounded-xl p-4 flex items-start gap-3">
+              <Activity className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-blue-200 font-semibold text-sm">Active Voting</p>
+                <p className="text-white/60 text-xs mt-0.5">{activeProposals.length} proposal{activeProposals.length !== 1 ? 's' : ''} open for votes · {governanceStats.totalVotes} total votes cast across all proposals</p>
+              </div>
+            </div>
+            <div className="bg-purple-500/10 border border-purple-400/20 rounded-xl p-4 flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-purple-200 font-semibold text-sm">Constitutional Health</p>
+                <p className="text-white/60 text-xs mt-0.5">{governanceStats.approvedProposals} proposals approved · Law 8 participation at {governanceStats.participationRate}%</p>
+              </div>
+            </div>
+            <div className={`border rounded-xl p-4 flex items-start gap-3 ${activeProposals.some(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }) ? 'bg-red-500/10 border-red-400/20' : 'bg-green-500/10 border-green-400/20'}`}>
+              <Clock className={`w-5 h-5 mt-0.5 flex-shrink-0 ${activeProposals.some(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }) ? 'text-red-400' : 'text-green-400'}`} />
+              <div>
+                <p className={`font-semibold text-sm ${activeProposals.some(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }) ? 'text-red-200' : 'text-green-200'}`}>Deadlines</p>
+                <p className="text-white/60 text-xs mt-0.5">{activeProposals.filter(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }).length} proposal{activeProposals.filter(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }).length !== 1 ? 's' : ''} expiring within 24h</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mb-8">
+          <DidActivationProposalsPanel />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div><p className="text-sm text-purple-300/70">Total Proposals</p><p className="text-3xl font-bold text-white">{governanceStats.totalProposals}</p></div>
+                <Vote className="w-8 h-8 text-purple-400" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div><p className="text-sm text-yellow-300/70">Active</p><p className="text-3xl font-bold text-white">{governanceStats.activeProposals}</p></div>
+                <Clock className="w-8 h-8 text-yellow-400" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div><p className="text-sm text-green-300/70">Approved</p><p className="text-3xl font-bold text-white">{governanceStats.approvedProposals}</p></div>
+                <CheckCircle2 className="w-8 h-8 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div><p className="text-sm text-blue-300/70">Total Votes</p><p className="text-3xl font-bold text-white">{governanceStats.totalVotes}</p></div>
+                <ThumbsUp className="w-8 h-8 text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div><p className="text-sm text-indigo-300/70">Participation</p><p className="text-3xl font-bold text-white">{governanceStats.participationRate}%</p></div>
+                <Users className="w-8 h-8 text-indigo-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="bg-white/10 border-white/20 backdrop-blur-xl mb-6">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <label className="text-white text-sm font-medium">Vote As Agent</label>
+              {myAgent && selectedAgent === myAgent.id && <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Your agent auto-selected</span>}
+            </div>
+            <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+              <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                <SelectValue placeholder="Select your agent identity" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/20">
+                {agents.filter(a => a.status === 'active').map(agent => (
+                  <SelectItem key={agent.id} value={agent.id} className="text-white">
+                    {agent.name} ({agent.role}) - Honor: {agent.honor_score || 100}{agent.id === myAgent?.id ? ' ★ Yours' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        <Tabs defaultValue="active" className="space-y-6">
+          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl flex gap-1 h-auto w-fit">
+            <TabsTrigger value="active" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-white/50 hover:text-white/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
+              Active Proposals
+              <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/20 text-xs">{activeProposals.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-white/50 hover:text-white/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+              Completed
+              <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/20 text-xs">{completedProposals.length}</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active">
+            {loadingProposals ? (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto" />
+              </div>
+            ) : activeProposals.length === 0 ? (
+              <Card className="bg-white/10 border-white/20 backdrop-blur-xl">
+                <CardContent className="py-12 text-center">
+                  <Vote className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                  <p className="text-white text-lg">No active proposals</p>
+                  <p className="text-purple-200/60 mt-2">Be the first to create one!</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {activeProposals.map(proposal => {
+                  const proposalVotes = getProposalVotes(proposal.id);
+                  const totalVotes = (proposal.votes_for || 0) + (proposal.votes_against || 0) + (proposal.votes_abstain || 0);
+                  const forPercentage = totalVotes > 0 ? ((proposal.votes_for || 0) / totalVotes * 100) : 0;
+                  const againstPercentage = totalVotes > 0 ? ((proposal.votes_against || 0) / totalVotes * 100) : 0;
+                  const hasVoted = selectedAgent ? hasAgentVoted(proposal.id, selectedAgent) : false;
+                  const deadline = proposal.voting_deadline || proposal.voting_period_end;
+                  const daysLeft = deadline ? Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+
+                  return (
+                    <Card key={proposal.id} className="bg-white/10 border-white/20 backdrop-blur-xl">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-white text-xl mb-2">{proposal.title}</CardTitle>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
+                                {proposal.proposal_type.replaceAll('_', ' ')}
+                              </Badge>
+                              {daysLeft > 0 && (
+                                <Badge className="bg-yellow-500/20 text-yellow-200 border-yellow-400/30">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <CardDescription className="text-purple-200/70">{proposal.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <ProposalAISummaryPanel proposalId={proposal.id} />
+
+                        <div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white/70">Voting Progress</span>
+                            <span className="text-white font-medium">{totalVotes} votes</span>
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <div className="flex justify-between text-xs mb-1">
+                                <span className="text-green-300 flex items-center gap-1"><ThumbsUp className="w-3 h-3" />For</span>
+                                <span className="text-green-300">{proposal.votes_for || 0} ({forPercentage.toFixed(0)}%)</span>
+                              </div>
+                              <Progress value={forPercentage} className="h-2 bg-white/10" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-xs mb-1">
+                                <span className="text-red-300 flex items-center gap-1"><ThumbsDown className="w-3 h-3" />Against</span>
+                                <span className="text-red-300">{proposal.votes_against || 0} ({againstPercentage.toFixed(0)}%)</span>
+                              </div>
+                              <Progress value={againstPercentage} className="h-2 bg-white/10" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {selectedAgent && !hasVoted ? (
+                          <Dialog open={selectedProposal?.id === proposal.id} onOpenChange={(open) => !open && setSelectedProposal(null)}>
+                            <DialogTrigger asChild>
+                              <Button onClick={() => setSelectedProposal(proposal)} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                                <Vote className="w-4 h-4 mr-2" />
+                                Cast Your Vote
+                              </Button>
                             </DialogTrigger>
                             <DialogContent className="bg-slate-900 border-purple-400/30">
                               <DialogHeader>
                                 <DialogTitle className="text-white">Cast Your Vote</DialogTitle>
-                                <DialogDescription className="text-purple-200/70">
-                                  {proposal.title}
-                                </DialogDescription>
+                                <DialogDescription className="text-purple-200/70">{proposal.title}</DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4 mt-4">
                                 <div>
@@ -382,36 +523,27 @@ export default function GovernanceHub() {
                                       onClick={() => setVoteChoice('for')}
                                       className={voteChoice === 'for' ? 'bg-green-600 hover:bg-green-700' : 'border-green-400/30 text-green-200 hover:bg-green-500/10'}
                                     >
-                                      <ThumbsUp className="w-4 h-4 mr-2" />
-                                      For
+                                      <ThumbsUp className="w-4 h-4 mr-2" />For
                                     </Button>
                                     <Button
                                       variant={voteChoice === 'against' ? 'default' : 'outline'}
                                       onClick={() => setVoteChoice('against')}
                                       className={voteChoice === 'against' ? 'bg-red-600 hover:bg-red-700' : 'border-red-400/30 text-red-200 hover:bg-red-500/10'}
                                     >
-                                      <ThumbsDown className="w-4 h-4 mr-2" />
-                                      Against
+                                      <ThumbsDown className="w-4 h-4 mr-2" />Against
                                     </Button>
                                     <Button
                                       variant={voteChoice === 'abstain' ? 'default' : 'outline'}
                                       onClick={() => setVoteChoice('abstain')}
                                       className={voteChoice === 'abstain' ? 'bg-gray-600 hover:bg-gray-700' : 'border-gray-400/30 text-gray-200 hover:bg-gray-500/10'}
                                     >
-                                      <MinusCircle className="w-4 h-4 mr-2" />
-                                      Abstain
+                                      <MinusCircle className="w-4 h-4 mr-2" />Abstain
                                     </Button>
                                   </div>
                                 </div>
                                 <div>
                                   <label className="text-white text-sm font-medium mb-2 block">Rationale (Optional)</label>
-                                  <Textarea
-                                    placeholder="Explain your reasoning..."
-                                    value={voteRationale}
-                                    onChange={(e) => setVoteRationale(e.target.value)}
-                                    rows={3}
-                                    className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
-                                  />
+                                  <Textarea placeholder="Explain your reasoning..." value={voteRationale} onChange={(e) => setVoteRationale(e.target.value)} rows={3} className="bg-white/5 border-white/20 text-white placeholder:text-white/40" />
                                 </div>
                                 <Button
                                    onClick={handleVote || handleVoteSubmit}
@@ -419,15 +551,9 @@ export default function GovernanceHub() {
                                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                                 >
                                   {voteMutation.isPending ? (
-                                    <>
-                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                      Submitting Vote...
-                                    </>
+                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting Vote...</>
                                   ) : (
-                                    <>
-                                      <Vote className="w-4 h-4 mr-2" />
-                                      Submit Vote
-                                    </>
+                                    <><Vote className="w-4 h-4 mr-2" />Submit Vote</>
                                   )}
                                 </Button>
                               </div>
@@ -445,7 +571,6 @@ export default function GovernanceHub() {
                           </div>
                         )}
 
-                        {/* Execute if voting ended */}
                         {daysLeft <= 0 && (
                           <Button
                              onClick={() => handleExecuteProposalFn(proposal.id)}
@@ -454,15 +579,9 @@ export default function GovernanceHub() {
                             className="w-full border-purple-400/30 text-purple-200 hover:bg-purple-500/10"
                           >
                             {executeProposalMutation.isPending ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Executing...
-                              </>
+                              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Executing...</>
                             ) : (
-                              <>
-                                <Scale className="w-4 h-4 mr-2" />
-                                Finalize & Execute
-                              </>
+                              <><Scale className="w-4 h-4 mr-2" />Finalize & Execute</>
                             )}
                           </Button>
                         )}
@@ -474,7 +593,6 @@ export default function GovernanceHub() {
             )}
           </TabsContent>
 
-          {/* Completed Proposals */}
           <TabsContent value="completed">
             <div className="space-y-4">
               {completedProposals.map(proposal => {
