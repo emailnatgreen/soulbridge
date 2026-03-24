@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,10 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3, Shield, Sparkles } from 'lucide-react';
 import TreasuryPanel from '../components/TreasuryPanel';
 import AskAxiButton from '@/components/AskAxiButton';
 import RealTimeEconomyPanel from '@/components/economic/RealTimeEconomyPanel';
+
+const openAxi = (msg) => {
+  window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
+};
 
 export default function EconomyPage() {
     const { data: agents = [] } = useQuery({
