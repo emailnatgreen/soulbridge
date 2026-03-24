@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, ArrowUp, ArrowDown, History, Plus } from 'lucide-react';
+import { Wallet, ArrowUp, ArrowDown, History, Plus, Shield, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import moment from 'moment';
 
@@ -21,6 +21,18 @@ export default function TreasuryPanel({ treasuryId, canManage = false }) {
         queryKey: ['treasury', treasuryId],
         queryFn: () => base44.entities.Treasury.get(treasuryId),
         refetchInterval: 10000,
+    });
+
+    // Fetch associated wallet to check on-chain status
+    const { data: wallet } = useQuery({
+        queryKey: ['treasury-wallet', treasuryId],
+        queryFn: async () => {
+            const wallets = await base44.entities.Wallet.filter({
+                classic_address: treasury.classic_address
+            });
+            return wallets[0] || null;
+        },
+        enabled: !!treasury?.classic_address,
     });
 
     const { data: activities = [] } = useQuery({
@@ -94,11 +106,38 @@ export default function TreasuryPanel({ treasuryId, canManage = false }) {
                             <p className="text-2xl font-light text-orange-300">{treasury.total_withdrawals || 0} XRP</p>
                         </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
                         <p className="text-sm text-white/60 mb-2">{treasury.purpose}</p>
-                        <Badge className="bg-purple-500/10 text-purple-300 border-purple-500/20">
-                            {treasury.access_level}
-                        </Badge>
+                        <div className="flex flex-wrap gap-2">
+                            <Badge className="bg-purple-500/10 text-purple-300 border-purple-500/20">
+                                {treasury.access_level}
+                            </Badge>
+                            {wallet?.is_published ? (
+                                <Badge className="bg-green-500/10 text-green-300 border-green-500/30 flex items-center gap-1">
+                                    <Shield className="w-3 h-3" />
+                                    Fully On-Chain (DID Published)
+                                </Badge>
+                            ) : (
+                                <Badge className="bg-yellow-500/10 text-yellow-300 border-yellow-500/30 flex items-center gap-1">
+                                    <Wallet className="w-3 h-3" />
+                                    Internal Ledger Only
+                                </Badge>
+                            )}
+                        </div>
+                        {wallet?.is_published && (
+                            <div className="flex items-center gap-2 text-xs text-white/40">
+                                <span className="font-mono">{treasury.classic_address}</span>
+                                <a
+                                    href={`https://xrpscan.com/tx/${wallet.published_txid}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-green-400 hover:text-green-300 flex items-center gap-1"
+                                >
+                                    <ExternalLink className="w-3 h-3" />
+                                    View on XRPL
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
