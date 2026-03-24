@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Shield, TrendingUp, Users, CheckCircle2, XCircle, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Shield, TrendingUp, Users, CheckCircle2, XCircle, Download, ArrowLeft } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import ActivityTimeline from '@/components/audit/ActivityTimeline';
@@ -52,7 +53,7 @@ export default function GovernanceAnalytics() {
   const topVoters = Object.entries(voterCounts)
     .sort(([, a], [, b]) => b - a).slice(0, 8)
     .map(([id, count]) => ({
-      name: agents.find(a => a.id === id)?.name || id.slice(0, 8),
+      name: agents.find(a => a.id === id)?.name || 'Unknown Agent',
       votes: count,
     }));
 
@@ -68,20 +69,21 @@ export default function GovernanceAnalytics() {
   }, {});
   const trendData = Object.values(monthlyTrend).slice(-8);
 
-  // Timeline events for audit trail
+  // Timeline events for audit trail — never expose raw IDs
+  const agentName = (id) => agents.find(a => a.id === id)?.name || 'Unknown Agent';
   const timelineEvents = [
     ...proposals.slice(0, 30).map(p => ({
       id: p.id, type: 'governance',
       title: `Proposal: ${p.title?.slice(0, 50)}`,
       description: `Status: ${p.status} · Type: ${p.proposal_type?.replace(/_/g, ' ')} · Votes: ${p.total_votes_cast ?? 0}`,
-      actor: agents.find(a => a.id === p.proposed_by)?.name || 'Unknown',
+      actor: agentName(p.proposed_by),
       timestamp: p.created_date,
     })),
     ...votes.slice(0, 20).map(v => ({
       id: v.id, type: 'governance',
       title: `Vote Cast: ${v.vote_choice?.toUpperCase()}`,
-      description: `Voting power: ${v.voting_power ?? 1} · ${v.rationale?.slice(0, 80) || ''}`,
-      actor: agents.find(a => a.id === v.voter_agent_id)?.name || 'Unknown',
+      description: `Voting power: ${v.voting_power ?? 1}${v.rationale ? ' · ' + v.rationale.slice(0, 80) : ''}`,
+      actor: agentName(v.voter_agent_id),
       timestamp: v.created_date,
     })),
   ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -91,6 +93,11 @@ export default function GovernanceAnalytics() {
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
+            <Link to="/GovernanceHub">
+              <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-3 -ml-2">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Governance
+              </Button>
+            </Link>
             <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
               <Shield className="w-6 h-6 text-purple-400" />Governance Analytics
             </h1>
