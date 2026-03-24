@@ -17,6 +17,29 @@ const openAxi = (msg) => {
 };
 
 export default function EconomyPage() {
+    const [identity, setIdentity] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [myAgent, setMyAgent] = useState(null);
+
+    // Load identity and user
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem('soulbridge_identity');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed?.connected) setIdentity(parsed);
+            }
+        } catch (e) {}
+
+        base44.auth.me().then(async (u) => {
+            if (!u) return;
+            setCurrentUser(u);
+            const agents = await base44.entities.Agent.list();
+            const mine = agents.find(a => a.created_by === u.email);
+            if (mine) setMyAgent(mine);
+        }).catch(() => {});
+    }, []);
+
     const { data: agents = [] } = useQuery({
         queryKey: ['agents'],
         queryFn: () => base44.entities.Agent.list('-honor_score', 100),
