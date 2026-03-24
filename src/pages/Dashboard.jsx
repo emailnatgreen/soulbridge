@@ -35,11 +35,9 @@ export default function Dashboard() {
         const parsed = JSON.parse(stored);
         if (parsed?.connected) {
           setIdentity(parsed);
-          return;
         }
       }
     } catch (e) {}
-    navigate('/Home');
   }, []);
 
   const handleDisconnect = () => {
@@ -55,7 +53,18 @@ export default function Dashboard() {
       : identity.did
     : '';
 
-  if (!identity) return null;
+  if (!identity) return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+      <div className="text-center space-y-4 p-8">
+        <Shield className="w-12 h-12 text-purple-400 mx-auto" />
+        <h2 className="text-white text-xl font-semibold">No Identity Connected</h2>
+        <p className="text-white/50 text-sm">Please connect your DID to access the dashboard.</p>
+        <Link to="/" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg px-4 py-2 text-sm hover:opacity-90 transition">
+          <Home className="w-4 h-4" /> Go to Entry Gate
+        </Link>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
