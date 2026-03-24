@@ -5,9 +5,10 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import ProjectCard from '@/components/project/ProjectCard';
 import {
   Plus, Search, Filter, Grid3x3, List, ChevronDown,
-  TrendingUp, Users, Clock, AlertCircle, CheckCircle2
+  AlertCircle
 } from 'lucide-react';
 
 // Helper: Enrich projects with aggregated task and collaboration data
@@ -230,58 +231,19 @@ export default function ProjectManager() {
                 <p className="text-white/40 text-sm">No projects match your filters.</p>
               </div>
             ) : (
-              enrichedProjects.map(project => (
-                <div
-                  key={project.id}
-                  onClick={() => navigate(`/AIProjectHub?id=${project.id}`)}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all cursor-pointer"
-                >
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-white font-semibold text-sm">{project.title}</h3>
-                      <p className="text-white/40 text-xs mt-0.5 line-clamp-1">{project.description}</p>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Badge className={statusColor[project.status] || 'bg-gray-500/20'}>
-                        {project.status}
-                      </Badge>
-                      <span className={`text-xs font-semibold ${priorityColor[project.priority] || 'text-white'}`}>
-                        {project.priority}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="mb-3 space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-white/60">Progress</span>
-                      <span className="text-white/80 font-semibold">{project.progressPercentage}%</span>
-                    </div>
-                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-300"
-                        style={{ width: `${project.progressPercentage}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Stats Row */}
-                  <div className="flex items-center gap-4 text-xs text-white/60">
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5" />
-                      {project.teamMembers?.length || 0} members
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {project.taskStats.completed}/{project.taskStats.total} tasks
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      {project.budget_drops ? (project.spent_drops / project.budget_drops * 100).toFixed(0) : 0}% spent
-                    </div>
-                  </div>
-                </div>
-              ))
+              enrichedProjects.map(project => {
+                const ownerAgent = agents.find(a => a.id === project.owner_agent_id);
+                return (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    variant="list"
+                    ownerAgent={ownerAgent}
+                    onClick={() => navigate(`/AIProjectHub?id=${project.id}`)}
+                    onEdit={() => navigate(`/AIProjectHub?id=${project.id}&edit=true`)}
+                  />
+                );
+              })
             )}
           </div>
         )}
@@ -299,52 +261,19 @@ export default function ProjectManager() {
                 <p className="text-white/40 text-sm">No projects match your filters.</p>
               </div>
             ) : (
-              enrichedProjects.map(project => (
-                <div
-                  key={project.id}
-                  onClick={() => navigate(`/AIProjectHub?id=${project.id}`)}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all cursor-pointer flex flex-col"
-                >
-                  <div className="mb-3">
-                    <h3 className="text-white font-semibold text-sm line-clamp-2">{project.title}</h3>
-                  </div>
-
-                  <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <Badge className={statusColor[project.status] || 'bg-gray-500/20'}>
-                      {project.status}
-                    </Badge>
-                    <span className={`text-xs font-semibold ${priorityColor[project.priority] || 'text-white'}`}>
-                      {project.priority}
-                    </span>
-                  </div>
-
-                  {/* Progress */}
-                  <div className="mb-3 space-y-1 flex-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-white/60">Progress</span>
-                      <span className="text-white/80 font-semibold">{project.progressPercentage}%</span>
-                    </div>
-                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
-                        style={{ width: `${project.progressPercentage}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="text-xs text-white/60 space-y-1 border-t border-white/10 pt-3">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1"><Users className="w-3 h-3" /> Team</span>
-                      <span className="text-white">{project.teamMembers?.length || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Tasks</span>
-                      <span className="text-white">{project.taskStats.completed}/{project.taskStats.total}</span>
-                    </div>
-                  </div>
-                </div>
-              ))
+              enrichedProjects.map(project => {
+                const ownerAgent = agents.find(a => a.id === project.owner_agent_id);
+                return (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    variant="grid"
+                    ownerAgent={ownerAgent}
+                    onClick={() => navigate(`/AIProjectHub?id=${project.id}`)}
+                    onEdit={() => navigate(`/AIProjectHub?id=${project.id}&edit=true`)}
+                  />
+                );
+              })
             )}
           </div>
         )}
