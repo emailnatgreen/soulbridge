@@ -123,61 +123,8 @@ export default function EconomyPage() {
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-6">
-                        {/* Top Earner */}
-                        {agentWithMostWealth && (
-                            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                                <CardHeader>
-                                    <CardTitle className="text-white flex items-center gap-2">
-                                        <TrendingUp className="w-5 h-5 text-green-400" />
-                                        Top Earner
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-xl text-white font-medium">{agentWithMostWealth.name}</p>
-                                            <p className="text-sm text-white/60 capitalize">{agentWithMostWealth.role}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-3xl font-light text-green-300">
-                                                {allActivities.filter(a => a.agent_id === agentWithMostWealth.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0)} XRP
-                                            </p>
-                                            <p className="text-xs text-white/40">Total Earned</p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {/* Recent Activities */}
-                        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                            <CardHeader>
-                                <CardTitle className="text-white">Recent Economic Activity</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-3 max-h-96 overflow-y-auto">
-                                    {allActivities.slice(0, 20).map(activity => {
-                                        const agent = agents.find(a => a.id === activity.agent_id);
-                                        return (
-                                            <div key={activity.id} className="bg-white/5 rounded-lg p-3 border border-white/10">
-                                                <div className="flex items-start justify-between">
-                                                    <div>
-                                                        <p className="text-sm text-white">{agent?.name || 'Unknown'}</p>
-                                                        <p className="text-xs text-white/60">{activity.description}</p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p className="text-sm font-medium text-white">{activity.amount} XRP</p>
-                                                        <Badge className="text-xs mt-1 bg-white/10 text-white/60 border-white/20">
-                                                            {activity.activity_type}
-                                                        </Badge>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </CardContent>
-                        </Card>
+                        {/* Real-time Economy Panel */}
+                        <RealTimeEconomyPanel showAIHook={true} showDID={true} />
                     </TabsContent>
 
                     <TabsContent value="agents" className="space-y-6">
