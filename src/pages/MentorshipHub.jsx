@@ -321,7 +321,7 @@ function MentorCard({ profile, mentor, onRequest }) {
         <div className="flex flex-wrap gap-1">
           {profile.expertise_areas?.slice(0, 3).map((skill, idx) => (
             <Badge key={idx} variant="outline" className="border-purple-500/30 text-purple-300 text-xs">
-              {skill}
+              {typeof skill === 'object' ? (skill.skill_name || skill.skill_id || 'Skill') : skill}
             </Badge>
           ))}
         </div>
