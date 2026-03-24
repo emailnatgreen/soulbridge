@@ -6,6 +6,7 @@ import TaskList from './TaskList';
 import MilestonesSection from './MilestonesSection';
 import RisksSection from './RisksSection';
 import ResourcesBudgetSection from './ResourcesBudgetSection';
+import ActivityLogCommunicationSection from './ActivityLogCommunicationSection';
 import {
   Shield, Users, CheckCircle2, Coins, Calendar, Target, 
   TrendingUp, AlertCircle, X, FileText, Lightbulb
@@ -285,6 +286,9 @@ export default function ProjectDetailView({
 
             {/* Resources & Budget */}
             <ResourcesBudgetSection project={project} agents={agents || []} />
+
+            {/* Activity Log & Communication */}
+            <ActivityLogCommunicationSection project={project} agents={agents || []} />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-4 border-t border-white/10">
