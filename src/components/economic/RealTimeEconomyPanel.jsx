@@ -76,13 +76,29 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
   });
   const totalVolume = recentTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  // Agent wealth calculation
+  // Helper to resolve agent from activity (using enriched matching)
+  const resolveAgent = (activity) => {
+    return agents.find(a => a.id === activity.agent_id) || 
+           agents.find(a => a.name === activity.agent_id) ||
+           agents.find(a => a.classic_address === activity.agent_id) ||
+           agents.find(a => a.wallet_id === activity.agent_id) ||
+           agents.find(a => a.external_classic_addresses?.includes(activity.agent_id)) ||
+           agents.find(a => a.classic_address === activity.agent_id);
+  };
+
+  // Agent wealth calculation using enriched resolution
   const agentWealthMap = agents.reduce((acc, agent) => {
     const earnings = economicActivities
-      .filter(a => a.agent_id === agent.id && ['earned', 'resource_sold', 'treasury_deposit'].includes(a.activity_type))
+      .filter(a => {
+        const resolved = resolveAgent(a);
+        return (resolved?.id === agent.id || a.agent_id === agent.id) && ['earned', 'resource_sold', 'treasury_deposit'].includes(a.activity_type);
+      })
       .reduce((sum, a) => sum + (a.amount || 0), 0);
     const spending = economicActivities
-      .filter(a => a.agent_id === agent.id && ['spent', 'resource_acquired', 'treasury_withdrawal'].includes(a.activity_type))
+      .filter(a => {
+        const resolved = resolveAgent(a);
+        return (resolved?.id === agent.id || a.agent_id === agent.id) && ['spent', 'resource_acquired', 'treasury_withdrawal'].includes(a.activity_type);
+      })
       .reduce((sum, a) => sum + (a.amount || 0), 0);
     acc[agent.id] = {
       agent,
@@ -309,38 +325,7 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
         <CardContent>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {recentActivities.map((activity) => {
-              // Try multiple matching strategies for agent lookup
-              let agent = agents.find(a => a.id === activity.agent_id) || 
-                         agents.find(a => a.name === activity.agent_id) ||
-                         agents.find(a => a.classic_address === activity.agent_id) ||
-                         agents.find(a => a.wallet_id === activity.agent_id);
-              
-              // Try external wallet links by address
-              if (!agent) {
-                agent = agents.find(a => a.external_classic_addresses?.includes(activity.agent_id));
-              }
-              
-              // If still not found by agent lookup, try wallet address and map to owner agent
-              if (!agent && wallets.length > 0) {
-                const wallet = wallets.find(w => w.classic_address === activity.agent_id);
-                if (wallet && wallet.owner_id) {
-                  agent = agents.find(a => a.id === wallet.owner_id);
-                }
-              }
-              
-              // Try checking if agent_id itself is an external address
-              if (!agent) {
-                agent = agents.find(a => a.external_classic_addresses?.some(addr => addr === activity.agent_id));
-              }
-
-              // Last resort: search for agent by any related address or field
-              if (!agent && activity.agent_id) {
-                agent = agents.find(a => 
-                  a.classic_address === activity.agent_id || 
-                  a.external_classic_addresses?.includes(activity.agent_id) ||
-                  a.name?.toLowerCase() === activity.agent_id?.toLowerCase()
-                );
-              }
+              const agent = resolveAgent(activity);
               const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
               
               return (
