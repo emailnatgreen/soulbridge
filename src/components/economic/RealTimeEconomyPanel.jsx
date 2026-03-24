@@ -312,7 +312,8 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
               // Try multiple matching strategies for agent lookup
               let agent = agents.find(a => a.id === activity.agent_id) || 
                          agents.find(a => a.name === activity.agent_id) ||
-                         agents.find(a => a.classic_address === activity.agent_id);
+                         agents.find(a => a.classic_address === activity.agent_id) ||
+                         agents.find(a => a.wallet_id === activity.agent_id);
               
               // Try external wallet links by address
               if (!agent) {
@@ -331,6 +332,15 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
               if (!agent) {
                 agent = agents.find(a => a.external_classic_addresses?.some(addr => addr === activity.agent_id));
               }
+
+              // Last resort: search for agent by any related address or field
+              if (!agent && activity.agent_id) {
+                agent = agents.find(a => 
+                  a.classic_address === activity.agent_id || 
+                  a.external_classic_addresses?.includes(activity.agent_id) ||
+                  a.name?.toLowerCase() === activity.agent_id?.toLowerCase()
+                );
+              }
               const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
               
               return (
@@ -346,7 +356,11 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-white text-sm">{agent?.name || 'Unknown'}</span>
+                      <span className={`text-sm ${
+                        agent ? 'text-white font-medium' : 'text-white/60 italic'
+                      }`}>
+                        {agent?.name || (activity.agent_id ? activity.agent_id.slice(0, 12) + '...' : 'Unknown Agent')}
+                      </span>
                       {agent?.wallet_id && (
                         <Shield className="w-3 h-3 text-blue-400/60" />
                       )}
