@@ -370,7 +370,7 @@ export default function Home() {
                 <span className="text-amber-500/60 font-mono text-[10px] flex-shrink-0">{String(i+1).padStart(2,'0')}</span>
                 {law}
               </div>
-            ))
+            ))}
           </div>
         </div>
 
