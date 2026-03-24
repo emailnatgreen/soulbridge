@@ -135,8 +135,17 @@ export default function GovernanceHub() {
     try {
       await createProposalMutation.mutateAsync({
         proposer_agent_id: myAgent.id,
+        title: proposalTitle,
+        description: proposalDescription,
+        proposal_type: proposalType,
+        voting_period_days: votingPeriod
+      });
+    } finally {
+      setCreatingProposal(false);
+    }
+  };
 
-
+  const getProposalVotes = (proposalId) => {
     return allVotes.filter(v => v.proposal_id === proposalId);
   };
 
@@ -307,6 +316,16 @@ export default function GovernanceHub() {
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                     size="lg"
                   >
+                    {creatingProposal ? (
+                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating Proposal...</>
+                    ) : (
+                      <><Sparkles className="w-5 h-5 mr-2" />Submit for Vote</>
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            </div>
           </div>
         </div>
 
