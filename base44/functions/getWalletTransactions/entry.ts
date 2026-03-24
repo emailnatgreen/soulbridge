@@ -24,16 +24,33 @@ Deno.serve(async (req) => {
     }
 
     // Transform transactions for display
-    const transactions = data.transactions.map(tx => ({
-      hash: tx.hash,
-      Account: tx.Account,
-      Destination: tx.Destination,
-      Amount: tx.Amount || '0',
-      TransactionType: tx.TransactionType,
-      close_time_iso: tx.close_time_iso,
-      Fee: tx.Fee,
-      Sequence: tx.Sequence
-    }));
+    const transactions = data.transactions
+      .map(tx => {
+        // Parse amount correctly - handle both string and object formats
+        let amount = 0;
+        if (tx.Amount) {
+          if (typeof tx.Amount === 'string') {
+            amount = parseFloat(tx.Amount) / 1_000_000; // Convert drops to XRP
+          } else if (typeof tx.Amount === 'object' && tx.Amount.value) {
+            amount = parseFloat(tx.Amount.value);
+          }
+        }
+
+        // Safely handle Destination field
+        const destination = tx.Destination || null;
+
+        return {
+          hash: tx.hash || 'unknown',
+          Account: tx.Account || null,
+          Destination: destination,
+          Amount: isNaN(amount) ? 0 : amount,
+          TransactionType: tx.TransactionType || 'Unknown',
+          close_time_iso: tx.close_time_iso || new Date().toISOString(),
+          Fee: tx.Fee ? (typeof tx.Fee === 'string' ? parseFloat(tx.Fee) / 1_000_000 : parseFloat(tx.Fee)) : 0,
+          Sequence: tx.Sequence || 0
+        };
+      })
+      .filter(tx => tx.hash !== 'unknown'); // Remove invalid entries
 
     return Response.json({ transactions });
   } catch (error) {
