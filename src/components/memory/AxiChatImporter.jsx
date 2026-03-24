@@ -75,8 +75,8 @@ export default function AxiChatImporter({ onImported }) {
     setSaving(false);
     setSavedBundle(bundleIndex);
     if (onImported) onImported();
-    // Auto-delete this bundle from AxiChat
-    await deleteBundleFromChat(bundleIndex);
+    // Auto-delete this bundle from AxiChat (pass snapshot before state update)
+    await deleteBundleFromChat(bundleIndex, allMessages);
   };
 
   const deleteBundleFromChat = async (idx, currentMsgs) => {
