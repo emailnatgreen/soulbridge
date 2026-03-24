@@ -70,8 +70,22 @@ export default function GovernanceHub() {
 
   const createProposalMutation = useMutation({
     mutationFn: async (proposalData) => {
-      const response = await base44.functions.invoke('createGovernanceProposal', proposalData);
-      return response.data;
+      const deadline = new Date();
+      deadline.setDate(deadline.getDate() + (proposalData.voting_period_days || 7));
+      return await base44.entities.GovernanceProposal.create({
+        title: proposalData.title,
+        description: proposalData.description,
+        proposal_type: proposalData.proposal_type,
+        proposed_by: proposalData.proposer_agent_id,
+        status: 'active',
+        voting_period_end: deadline.toISOString(),
+        quorum_required: 50,
+        pass_threshold: 60,
+        votes_for: 0,
+        votes_against: 0,
+        votes_abstain: 0,
+        total_votes_cast: 0,
+      });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
@@ -276,14 +290,13 @@ export default function GovernanceHub() {
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-900 border-white/20">
-                        <SelectItem value="constitutional_amendment" className="text-white">Constitutional Amendment</SelectItem>
-                        <SelectItem value="budget_allocation" className="text-white">Budget Allocation</SelectItem>
-                        <SelectItem value="policy_change" className="text-white">Policy Change</SelectItem>
-                        <SelectItem value="project_approval" className="text-white">Project Approval</SelectItem>
-                        <SelectItem value="agent_role_change" className="text-white">Agent Role Change</SelectItem>
-                        <SelectItem value="treasury_management" className="text-white">Treasury Management</SelectItem>
-                        <SelectItem value="community_initiative" className="text-white">Community Initiative</SelectItem>
-                        <SelectItem value="other" className="text-white">Other</SelectItem>
+                        <SelectItem value="project_funding" className="text-white">Project Funding</SelectItem>
+                        <SelectItem value="treasury_allocation" className="text-white">Treasury Allocation</SelectItem>
+                        <SelectItem value="law_amendment" className="text-white">Law Amendment</SelectItem>
+                        <SelectItem value="role_adjustment" className="text-white">Role Adjustment</SelectItem>
+                        <SelectItem value="agent_discipline" className="text-white">Agent Discipline</SelectItem>
+                        <SelectItem value="resource_policy" className="text-white">Resource Policy</SelectItem>
+                        <SelectItem value="general" className="text-white">General</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
