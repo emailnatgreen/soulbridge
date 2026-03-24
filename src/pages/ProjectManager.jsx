@@ -2,14 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import ProjectCard from '@/components/project/ProjectCard';
-import {
-  Plus, Search, Filter, Grid3x3, List, ChevronDown,
-  AlertCircle
-} from 'lucide-react';
+import ProjectFilters from '@/components/project/ProjectFilters';
+import { Plus, AlertCircle } from 'lucide-react';
 
 // Helper: Enrich projects with aggregated task and collaboration data
 const enrichProjects = (projects, tasks, collaborations, agents) => {
@@ -43,9 +39,9 @@ const enrichProjects = (projects, tasks, collaborations, agents) => {
 
 export default function ProjectManager() {
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
-  const [statusFilter, setStatusFilter] = useState('all'); // all, active, planning, completed, cancelled
-  const [priorityFilter, setPriorityFilter] = useState('all'); // all, low, medium, high, critical
+  const [viewMode, setViewMode] = useState('list');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
   const [ownerFilter, setOwnerFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -90,31 +86,6 @@ export default function ProjectManager() {
     });
   }, [projects, tasks, collaborations, agents, statusFilter, priorityFilter, ownerFilter, searchQuery]);
 
-  const uniqueOwners = useMemo(() => {
-    return [...new Set(projects.map(p => p.owner_agent_id))].map(id => 
-      agents.find(a => a.id === id)
-    ).filter(Boolean);
-  }, [projects, agents]);
-
-  const statusOptions = ['all', 'planning', 'recruiting', 'active', 'on_hold', 'completed', 'cancelled'];
-  const priorityOptions = ['all', 'low', 'medium', 'high', 'critical'];
-
-  const statusColor = {
-    planning: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    recruiting: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-    active: 'bg-green-500/20 text-green-300 border-green-500/30',
-    on_hold: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-    completed: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    cancelled: 'bg-red-500/20 text-red-300 border-red-500/30',
-  };
-
-  const priorityColor = {
-    low: 'text-gray-400',
-    medium: 'text-blue-400',
-    high: 'text-orange-400',
-    critical: 'text-red-400',
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       {/* Header */}
@@ -135,83 +106,20 @@ export default function ProjectManager() {
 
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
 
-        {/* FilterBar */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Search */}
-            <div className="flex-1 min-w-xs relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search projects by title or description..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blue-400/50"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-400/50 appearance-none cursor-pointer"
-            >
-              {statusOptions.map(s => (
-                <option key={s} value={s} className="bg-slate-900">{s === 'all' ? 'All Status' : s}</option>
-              ))}
-            </select>
-
-            {/* Priority Filter */}
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-400/50 appearance-none cursor-pointer"
-            >
-              {priorityOptions.map(p => (
-                <option key={p} value={p} className="bg-slate-900">{p === 'all' ? 'All Priority' : p}</option>
-              ))}
-            </select>
-
-            {/* Owner Filter */}
-            <select
-              value={ownerFilter}
-              onChange={(e) => setOwnerFilter(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-400/50 appearance-none cursor-pointer"
-            >
-              <option value="all" className="bg-slate-900">All Owners</option>
-              {uniqueOwners.map(owner => (
-                <option key={owner.id} value={owner.id} className="bg-slate-900">{owner.name}</option>
-              ))}
-            </select>
-
-            {/* View Toggle */}
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded transition ${viewMode === 'list' ? 'bg-blue-500/30 text-blue-300' : 'text-white/40 hover:text-white'}`}
-                title="List view"
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded transition ${viewMode === 'grid' ? 'bg-blue-500/30 text-blue-300' : 'text-white/40 hover:text-white'}`}
-                title="Grid view"
-              >
-                <Grid3x3 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Active filters summary */}
-          <div className="flex items-center gap-2 flex-wrap text-xs text-white/60">
-            <Filter className="w-3.5 h-3.5" />
-            <span>Filters:</span>
-            {statusFilter !== 'all' && <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">{statusFilter}</Badge>}
-            {priorityFilter !== 'all' && <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30">{priorityFilter}</Badge>}
-            {ownerFilter !== 'all' && <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">{agents.find(a => a.id === ownerFilter)?.name || 'Unknown'}</Badge>}
-            {searchQuery && <Badge className="bg-green-500/20 text-green-300 border-green-500/30">"{searchQuery}"</Badge>}
-          </div>
-        </div>
+        {/* ProjectFilters Component */}
+        <ProjectFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          priorityFilter={priorityFilter}
+          onPriorityChange={setPriorityFilter}
+          ownerFilter={ownerFilter}
+          onOwnerChange={setOwnerFilter}
+          agents={agents}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
 
         {/* Results Summary */}
         <div className="flex items-center justify-between">
