@@ -140,13 +140,32 @@ export default function GovernanceHub() {
     setVotingPeriod(7);
   };
 
+  const handleVoteSubmit = async () => {
+    if (!voteChoice || !selectedProposal || !selectedAgent) return;
+    await voteMutation.mutateAsync({
+      proposal_id: selectedProposal.id,
+      voter_agent_id: selectedAgent,
+      vote_choice: voteChoice,
+      rationale: voteRationale
+    });
+  };
+
+  const handleExecuteProposalFn = async (proposalId) => {
+    await executeProposalMutation.mutateAsync(proposalId);
+  };
+
+  // Update handlers
+  useEffect(() => {
+    setHandleVote(() => handleVoteSubmit);
+    setHandleExecuteProposal(() => handleExecuteProposalFn);
+  }, [selectedProposal, selectedAgent, voteChoice, voteRationale]);
+
   const handleCreateProposal = async () => {
     if (!myAgent || !proposalTitle || !proposalDescription || !proposalType) {
       toast.error('Please fill in all required fields and ensure you have an agent identity');
       return;
     }
 
-    setCreatingProposal(true);
     try {
       await createProposalMutation.mutateAsync({
         proposer_agent_id: myAgent.id,
@@ -155,8 +174,8 @@ export default function GovernanceHub() {
         proposal_type: proposalType,
         voting_period_days: votingPeriod
       });
-    } finally {
-      setCreatingProposal(false);
+    } catch (error) {
+      console.error('Proposal creation error:', error);
     }
   };
 
