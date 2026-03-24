@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Vote, Users, CheckCircle2, XCircle, Scale, TrendingUp, AlertCircle, ThumbsUp, ThumbsDown, MinusCircle, Sparkles, ShieldCheck, Clock, ArrowLeft, BarChart3, Activity, Bug, Shield, Bot } from 'lucide-react';
+import { Loader2, Vote, Users, CheckCircle2, XCircle, Scale, TrendingUp, AlertCircle, ThumbsUp, ThumbsDown, MinusCircle, Sparkles, ShieldCheck, Clock, ArrowLeft, BarChart3, Activity, Bug, Shield, Bot, Diamond } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
