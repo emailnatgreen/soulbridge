@@ -693,8 +693,8 @@ export default function GovernanceHub() {
                                   />
                                 </div>
                                 <Button
-                                  onClick={handleVote}
-                                  disabled={!voteChoice || voteMutation.isPending}
+                                   onClick={handleVote || handleVoteSubmit}
+                                   disabled={!voteChoice || voteMutation.isPending}
                                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                                 >
                                   {voteMutation.isPending ? (
@@ -727,8 +727,8 @@ export default function GovernanceHub() {
                         {/* Execute if voting ended */}
                         {daysLeft <= 0 && (
                           <Button
-                            onClick={() => handleExecuteProposal(proposal.id)}
-                            disabled={executeProposalMutation.isPending}
+                             onClick={() => handleExecuteProposalFn(proposal.id)}
+                             disabled={executeProposalMutation.isPending}
                             variant="outline"
                             className="w-full border-purple-400/30 text-purple-200 hover:bg-purple-500/10"
                           >
