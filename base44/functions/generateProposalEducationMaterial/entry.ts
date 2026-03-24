@@ -9,9 +9,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'proposal_id required' }, { status: 400 });
     }
 
-    const proposals = await base44.entities.GovernanceProposal.filter({
-      id: proposal_id
-    });
+    let proposals = [];
+    try {
+      proposals = await base44.entities.GovernanceProposal.filter({ id: proposal_id });
+    } catch (e) {
+      return Response.json({ error: 'Proposal not found' }, { status: 404 });
+    }
 
     if (proposals.length === 0) {
       return Response.json({ error: 'Proposal not found' }, { status: 404 });
