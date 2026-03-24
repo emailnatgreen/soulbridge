@@ -92,7 +92,7 @@ export default function Landing() {
   });
 
   const handleDisconnectDID = () => {
-    localStorage.clear();
+    localStorage.removeItem('soulbridge_identity');
     if (window.__soulbridge) {
       delete window.__soulbridge.identity;
       delete window.__soulbridge.lastSignal;
