@@ -334,7 +334,7 @@ export default function WalletCard({ wallet, onRefresh }) {
                         <DialogHeader>
                             <DialogTitle>Transaction History - {wallet.name}</DialogTitle>
                         </DialogHeader>
-                        <WalletTransactionHistory wallet={wallet} />
+                        <WalletTransactionHistory walletId={wallet.id} walletAddress={wallet.classic_address} />
                     </DialogContent>
                 </Dialog>
             </CardContent>
