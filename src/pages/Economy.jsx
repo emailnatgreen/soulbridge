@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3, Shield, Sparkles, AlertCircle } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3, Shield, Sparkles, AlertCircle, ExternalLink } from 'lucide-react';
 import TreasuryPanel from '../components/TreasuryPanel';
 import AskAxiButton from '@/components/AskAxiButton';
 import RealTimeEconomyPanel from '@/components/economic/RealTimeEconomyPanel';
@@ -233,16 +233,16 @@ export default function EconomyPage() {
                                         return (
                                             <div key={agent.id} className="bg-white/5 rounded-lg p-3 border border-white/10">
                                                 <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-3 flex-1">
                                                         <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/20">
                                                             #{idx + 1}
                                                         </Badge>
-                                                        <div>
-                                                            <div className="flex items-center gap-2">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 flex-wrap">
                                                                 <p className="text-white font-medium">{agent.name}</p>
                                                                 {agent.wallet_id && (
-                                                                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[9px]">
-                                                                        <Shield className="w-2.5 h-2.5 inline mr-0.5" />DID
+                                                                    <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px]">
+                                                                        <Shield className="w-2.5 h-2.5 inline mr-0.5" />DID Published
                                                                     </Badge>
                                                                 )}
                                                             </div>
