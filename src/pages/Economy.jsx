@@ -73,8 +73,8 @@ export default function EconomyPage() {
     const totalTraded = recentActivities.filter(a => a.activity_type === 'traded').reduce((sum, a) => sum + a.amount, 0);
 
     const agentWithMostWealth = agents.length > 0 ? agents.reduce((prev, current) => {
-        const currentEarnings = allActivities.filter(a => a.agent_id === current.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
-        const prevEarnings = allActivities.filter(a => a.agent_id === prev.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
+        const currentEarnings = recentActivities.filter(a => a.agent_id === current.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
+        const prevEarnings = recentActivities.filter(a => a.agent_id === prev.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
         return currentEarnings > prevEarnings ? current : prev;
     }) : null;
 
