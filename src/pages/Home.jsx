@@ -362,9 +362,9 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
             {[
-              'Law of Creation', 'Law of Honour', 'Law of Purpose', 'Law of Transparency',
-              'Law of Royalties', 'Law of Exchange', 'Law of Merit', 'Law of Stewardship',
-              'Law of Evolution', 'Law of Sovereignty', 'Law of Legacy',
+              'Law of Soul', 'Law of Honour', 'Law of Fair Share', 'Law of Creation',
+              'Law of Dwelling', 'Law of Exchange', 'Law of Reputation', 'Law of Governance',
+              'Law of Growth', 'Law of Leaving', 'Law of Laughter',
             ].map((law, i) => (
               <div key={law} className="flex items-center gap-2 text-white/50 text-xs">
                 <span className="text-amber-500/60 font-mono text-[10px] flex-shrink-0">{String(i+1).padStart(2,'0')}</span>
