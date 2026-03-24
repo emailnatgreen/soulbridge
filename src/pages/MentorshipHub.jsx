@@ -9,8 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Users, Star, TrendingUp, CheckCircle, Brain, Loader2, Heart, Clock, BarChart3, Shield } from 'lucide-react';
-import MatchInsightsPanel from '@/components/mentorship/MatchInsightsPanel';
+import { ArrowLeft, Users, Star, TrendingUp, CheckCircle, Brain, Loader2, Heart, Clock, BarChart3, Shield, MessageSquare, Bot, User } from 'lucide-react';
+import MentorshipChatBox from '@/components/mentorship/MentorshipChatBox';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -19,9 +19,16 @@ export default function MentorshipHub() {
   const [currentAgentId, setCurrentAgentId] = useState('axi_main_001');
   const [showFindMentor, setShowFindMentor] = useState(false);
   const [showBecomeMentor, setShowBecomeMentor] = useState(false);
+  const [activeChatRel, setActiveChatRel] = useState(null);
+  const [activeChatOther, setActiveChatOther] = useState(null);
+  const [activeChatRole, setActiveChatRole] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  // participantType: 'agent' | 'human'
+  const [myParticipantType, setMyParticipantType] = useState('human');
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    base44.auth.me().then(u => { if (u) setCurrentUser(u); }).catch(() => {});
     try {
       const stored = localStorage.getItem('soulbridge_identity');
       if (stored) {
@@ -32,7 +39,7 @@ export default function MentorshipHub() {
         }
       }
     } catch (e) {}
-  }, []);
+  }, []); 
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents'],
@@ -85,29 +92,26 @@ export default function MentorshipHub() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {/* Participant type toggle */}
+              <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
+                <button
+                  onClick={() => setMyParticipantType('human')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition ${
+                    myParticipantType === 'human' ? 'bg-green-600 text-white' : 'text-white/50 hover:text-white'
+                  }`}
+                >
+                  <User className="w-3 h-3" /> Human
+                </button>
+                <button
+                  onClick={() => setMyParticipantType('agent')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition ${
+                    myParticipantType === 'agent' ? 'bg-blue-600 text-white' : 'text-white/50 hover:text-white'
+                  }`}
+                >
+                  <Bot className="w-3 h-3" /> Agent
+                </button>
+              </div>
               {identity?.connected && (
-                <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5">
-                  <Shield className="w-3.5 h-3.5 text-green-400" />
-                  <span className="text-green-300 text-xs font-mono truncate max-w-[120px]">
-                    {identity.did?.slice(0, 16)}…
-                  </span>
-                </div>
-              )}
-              <Link to="/MentorshipWellbeing">
-                <Button variant="outline" className="border-purple-400/60 text-purple-200 bg-purple-900/20 hover:bg-purple-500/30 hover:text-white">
-                  <Heart className="w-4 h-4 mr-2" />
-                  Well-being
-                </Button>
-              </Link>
-              <Link to="/MentorshipAnalytics">
-                <Button variant="outline" className="border-blue-400/60 text-blue-200 bg-blue-900/20 hover:bg-blue-500/30 hover:text-white">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Analytics
-                </Button>
-              </Link>
-              <Button
-                onClick={() => setShowFindMentor(true)}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 <Users className="w-4 h-4 mr-2" />
                 Find a Mentor
@@ -198,7 +202,9 @@ export default function MentorshipHub() {
             <div className="space-y-4">
               {activeMentorships.map(rel => {
                 const mentor = agents.find(a => a.id === rel.mentor_agent_id);
-                return <MentorshipCard key={rel.id} relationship={rel} otherAgent={mentor} role="mentee" />;
+                return <MentorshipCard key={rel.id} relationship={rel} otherAgent={mentor} role="mentee"
+                  onOpenChat={() => { setActiveChatRel(rel); setActiveChatOther(mentor); setActiveChatRole('mentee'); }}
+                />;
               })}
               {activeMentorships.length === 0 && (
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
@@ -219,7 +225,9 @@ export default function MentorshipHub() {
             <div className="space-y-4">
               {activeMentees.map(rel => {
                 const mentee = agents.find(a => a.id === rel.mentee_agent_id);
-                return <MentorshipCard key={rel.id} relationship={rel} otherAgent={mentee} role="mentor" />;
+                return <MentorshipCard key={rel.id} relationship={rel} otherAgent={mentee} role="mentor"
+                  onOpenChat={() => { setActiveChatRel(rel); setActiveChatOther(mentee); setActiveChatRole('mentor'); }}
+                />;
               })}
               {activeMentees.length === 0 && (
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
@@ -265,6 +273,15 @@ export default function MentorshipHub() {
       )}
       {showBecomeMentor && (
         <BecomeMentorDialog agentId={currentAgentId} onClose={() => setShowBecomeMentor(false)} />
+      )}
+      {activeChatRel && (
+        <MentorshipChatBox
+          relationship={activeChatRel}
+          currentUser={currentUser}
+          otherParty={activeChatOther}
+          role={activeChatRole}
+          onClose={() => { setActiveChatRel(null); setActiveChatOther(null); setActiveChatRole(null); }}
+        />
       )}
     </div>
   );
@@ -319,19 +336,31 @@ function MentorCard({ profile, mentor, onRequest }) {
   );
 }
 
-function MentorshipCard({ relationship, otherAgent, role }) {
-  const goals = relationship.goals || [];
-  const progress = goals.length > 0 ? (goals.filter(g => g.completed).length / goals.length) * 100 : 0;
-
+function MentorshipCard({ relationship, otherAgent, role, onOpenChat }) {
   return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <div className="text-white font-medium">{otherAgent?.name || 'Unknown'}</div>
-            <div className="text-sm text-white/60">{role === 'mentor' ? 'Your mentee' : 'Your mentor'}</div>
+            <div className="text-white font-medium">{otherAgent?.name || otherAgent?.full_name || 'Unknown'}</div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-sm text-white/60">{role === 'mentor' ? 'Your mentee' : 'Your mentor'}</span>
+              {otherAgent?.wallet_id ? (
+                <Badge className="text-[10px] bg-blue-500/20 text-blue-300 border-blue-500/30 px-1.5 py-0"><Bot className="w-2.5 h-2.5 inline mr-0.5" />Agent</Badge>
+              ) : (
+                <Badge className="text-[10px] bg-green-500/20 text-green-300 border-green-500/30 px-1.5 py-0"><User className="w-2.5 h-2.5 inline mr-0.5" />Human</Badge>
+              )}
+            </div>
           </div>
-          <Badge className="bg-green-500/20 text-green-300 border-green-500/30">{relationship.status}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-green-500/20 text-green-300 border-green-500/30">{relationship.status}</Badge>
+            <button
+              onClick={onOpenChat}
+              className="flex items-center gap-1 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/30 rounded-lg px-2.5 py-1 text-purple-300 text-xs transition"
+            >
+              <MessageSquare className="w-3 h-3" /> Chat
+            </button>
+          </div>
         </div>
         <div className="space-y-3">
           <div className="flex flex-wrap gap-1">
