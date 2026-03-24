@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import FilterBar from '@/components/filters/FilterBar';
 import { toast } from 'sonner';
 import MemoryReviewPanel from '@/components/axi/MemoryReviewPanel';
+import AxiChatImporter from '@/components/memory/AxiChatImporter';
 
 const TYPE_COLORS = {
   conversation_snippet: 'bg-blue-900/40 text-blue-300 border-blue-700/40',
@@ -118,6 +119,8 @@ export default function MemoryBrowser() {
             );
           })}
         </div>
+
+        <AxiChatImporter onImported={() => queryClient.invalidateQueries({ queryKey: ['memories-browser'] })} />
 
         <div className="rounded-2xl border border-violet-600/50 bg-slate-800/40 backdrop-blur p-5">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
