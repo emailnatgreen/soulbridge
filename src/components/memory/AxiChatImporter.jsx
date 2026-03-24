@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Brain, Loader2, CheckCircle, Download } from 'lucide-react';
+import { Brain, Loader2, CheckCircle, Download, Trash2 } from 'lucide-react';
 
 const BUNDLE_SIZE = 1000;
 
@@ -21,6 +21,9 @@ export default function AxiChatImporter({ onImported }) {
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(0);
   const [savedBundle, setSavedBundle] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deletedBundles, setDeletedBundles] = useState(new Set());
+  const [convoRef, setConvoRef] = useState(null);
 
   const totalBundles = Math.ceil(allMessages.length / BUNDLE_SIZE);
   const bundleStart = bundleIndex * BUNDLE_SIZE;
@@ -36,6 +39,7 @@ export default function AxiChatImporter({ onImported }) {
         .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
       if (!unified.length) { setAllMessages([]); setLoading(false); return; }
       const convo = await base44.agents.getConversation(unified[0].id);
+      setConvoRef(convo);
       const msgs = (convo.messages || []).filter(m => m.content && m.role !== 'system');
       setAllMessages(msgs);
       setBundleIndex(0);
@@ -71,6 +75,32 @@ export default function AxiChatImporter({ onImported }) {
     setSaving(false);
     setSavedBundle(bundleIndex);
     if (onImported) onImported();
+    // Auto-delete this bundle from AxiChat
+    await deleteBundleFromChat(bundleIndex);
+  };
+
+  const deleteBundleFromChat = async (idx) => {
+    if (!convoRef) return;
+    setDeleting(true);
+    try {
+      const start = idx * BUNDLE_SIZE;
+      const end = Math.min(start + BUNDLE_SIZE, allMessages.length);
+      const toRemove = new Set(allMessages.slice(start, end).map(m => m.id || m.created_date + m.content?.slice(0, 20)));
+      // Get fresh conversation to get all messages including system ones
+      const fresh = await base44.agents.getConversation(convoRef.id);
+      const remaining = (fresh.messages || []).filter(m => {
+        const key = m.id || m.created_date + m.content?.slice(0, 20);
+        return !toRemove.has(key);
+      });
+      await base44.agents.updateConversation(convoRef.id, { messages: remaining });
+      // Update local state - remove the deleted bundle messages
+      setAllMessages(prev => prev.filter((_, i) => i < start || i >= end));
+      setDeletedBundles(prev => new Set([...prev, idx]));
+      setBundleIndex(i => Math.min(i, Math.ceil((allMessages.length - (end - start)) / BUNDLE_SIZE) - 1));
+    } catch (err) {
+      console.error('Failed to delete bundle from chat:', err);
+    }
+    setDeleting(false);
   };
 
   return (
