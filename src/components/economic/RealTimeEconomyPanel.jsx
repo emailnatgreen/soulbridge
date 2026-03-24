@@ -60,10 +60,16 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
     refetchInterval: 5000,
   });
 
-  // Calculate real-time metrics
+  // Calculate real-time metrics (last 24 hours only, exclude simulated data)
   const totalTreasuryBalance = treasuries.reduce((sum, t) => sum + (t.total_balance || 0), 0);
-  const completedTransactions = transactions.filter(t => t.status === 'completed');
-  const totalVolume = completedTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+  const twentyFourHoursAgo = moment().subtract(24, 'hours').toDate();
+  const recentTransactions = transactions.filter(t => {
+    const txDate = new Date(t.created_date);
+    return t.status === 'completed' && 
+           txDate >= twentyFourHoursAgo && 
+           !t.description?.toLowerCase().includes('sim');
+  });
+  const totalVolume = recentTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
 
   // Agent wealth calculation
   const agentWealthMap = agents.reduce((acc, agent) => {
