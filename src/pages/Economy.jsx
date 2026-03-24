@@ -234,9 +234,10 @@ export default function EconomyPage() {
                                     {agents.map((agent, idx) => {
                                         const agentWallet = wallets.find(w => w.id === agent.wallet_id);
                                         const agentActivities = allActivities.filter(a => a.agent_id === agent.id);
-                                        const earnings = agentActivities.filter(a => a.activity_type === 'earned').reduce((sum, a) => sum + (a.amount || 0), 0);
-                                        const spending = agentActivities.filter(a => a.activity_type === 'spent').reduce((sum, a) => sum + (a.amount || 0), 0);
-                                        const net = earnings - spending;
+                                        const earnedActivities = agentActivities.filter(a => ['earned', 'resource_sold', 'treasury_deposit'].includes(a.activity_type));
+                                        const spentActivities = agentActivities.filter(a => ['spent', 'resource_acquired', 'treasury_withdrawal'].includes(a.activity_type));
+                                        const earnings = earnedActivities.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
+                                        const spending = spentActivities.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
                                         const walletBalance = agentWallet?.balance || 0;
 
                                         return (
