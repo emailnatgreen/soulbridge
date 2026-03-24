@@ -3,7 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, ChevronUp, UserPlus } from 'lucide-react';
+import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, ChevronUp, UserPlus, Brain } from 'lucide-react';
+import SaveToMemoryPanel from '@/components/axi/SaveToMemoryPanel';
 import AgentPicker from '@/components/axi/AgentPicker';
 import { useNavigate } from 'react-router-dom';
 import MessageBubble from '@/components/MessageBubble';
@@ -32,6 +33,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
   const [userAgentId, setUserAgentId] = useState(null);
   const [localSpeakerAgentId, setLocalSpeakerAgentId] = useState(null);
   const [showAgentPicker, setShowAgentPicker] = useState(false);
+  const [showMemorySave, setShowMemorySave] = useState(false);
 
   const messagesEndRef = useRef(null);
   const unsubscribeRef = useRef(null);
@@ -413,6 +415,9 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                 alt="SoulBridge"
                 className="w-8 h-8 rounded-lg object-contain"
               />
+              <Button variant="ghost" size="icon" onClick={() => setShowMemorySave(p => !p)} className={`text-white/50 hover:text-white hover:bg-white/10 h-8 w-8 ${showMemorySave ? 'text-violet-300 bg-violet-500/20' : ''}`} title="Save history to Memory Browser">
+                <Brain className="w-3.5 h-3.5" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:block">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
@@ -471,6 +476,12 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
           {/* Input area */}
           <div className="p-4 border-t border-slate-700/50 flex-shrink-0 space-y-2 relative">
+            {showMemorySave && (
+              <SaveToMemoryPanel
+                messages={allMessages}
+                onClose={() => setShowMemorySave(false)}
+              />
+            )}
             {showAgentPicker && (
               <AgentPicker
                 activeAgentIds={activeAgents.map(a => a.id)}
