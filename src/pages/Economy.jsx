@@ -243,6 +243,45 @@ export default function EconomyPage() {
                     </TabsContent>
 
                     <TabsContent value="treasuries" className="space-y-6">
+                        {/* DID & AI Header for Treasuries */}
+                        <Card className="bg-gradient-to-r from-amber-900/40 to-orange-900/30 border-amber-500/30">
+                            <CardContent className="p-4">
+                                <div className="flex items-center justify-between flex-wrap gap-3">
+                                    <div className="flex items-center gap-3">
+                                        {identity?.connected ? (
+                                            <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-1.5">
+                                                <Shield className="w-4 h-4 text-green-400" />
+                                                <span className="text-green-300 text-xs font-mono">{identity.did?.slice(0, 16)}…</span>
+                                                <Badge className="bg-green-500/20 text-green-300 text-[10px]">Verified</Badge>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
+                                                <AlertCircle className="w-4 h-4 text-yellow-400" />
+                                                <span className="text-yellow-300 text-xs">DID Not Connected</span>
+                                            </div>
+                                        )}
+                                        
+                                        {myAgent && (
+                                            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-1.5">
+                                                <Wallet className="w-4 h-4 text-amber-400" />
+                                                <span className="text-amber-300 text-xs">{myAgent.name}</span>
+                                                <span className="text-amber-400/50 text-[10px]">· Treasury Monitor</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => openAxi(`Review Treasury health. Total treasuries: ${treasuries.length}. Combined balance: ${treasuries.reduce((sum, t) => sum + (t.total_balance || 0), 0).toFixed(2)} XRP. Check if balances are sufficient for committed obligations, assess sustainability, and flag any concerns.`)}
+                                        className="border-amber-400/40 text-amber-300 bg-amber-900/20 hover:bg-amber-500/20 text-xs gap-1.5"
+                                    >
+                                        <Sparkles className="w-3.5 h-3.5" /> AI Treasury Review
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+
                         {treasuries.map(treasury => (
                             <TreasuryPanel 
                                 key={treasury.id}
