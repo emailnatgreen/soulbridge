@@ -4,6 +4,7 @@ import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home } from 'lucide-react
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from '@/api/base44Client';
+import GenesisSealBadge from '@/components/GenesisSealBadge';
 
 // Global signal emitter — attach to window so anything can call it
 if (typeof window !== 'undefined') {
@@ -122,6 +123,9 @@ export default function Dashboard() {
           <h2 className="text-3xl font-light text-white">Welcome, Traveller</h2>
           <p className="text-white/40 text-sm font-mono break-all max-w-xl mx-auto">{identity.did}</p>
         </div>
+
+        {/* Genesis Seal */}
+        <GenesisSealBadge />
 
         {/* Top Widgets */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn } from 'lucide-react';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
+import GenesisSealBadge from '@/components/GenesisSealBadge';
 
 if (!window.__soulbridge) window.__soulbridge = {};
 
@@ -226,6 +227,9 @@ export default function Landing() {
               className="w-full max-w-md mx-auto"
             />
           </div>
+
+          {/* Genesis Seal */}
+          <GenesisSealBadge />
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
