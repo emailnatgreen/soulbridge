@@ -43,9 +43,11 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
     );
   }
 
+  // Filter to show only meaningful XRP transfers (exclude fee-only system transactions)
   const validTransactions = transactions.filter(tx => {
-    const isValidAmount = typeof tx.Amount === 'number' && !isNaN(tx.Amount) && tx.Amount >= 0;
-    return isValidAmount && (tx.Account || tx.Destination);
+    const isValidAmount = typeof tx.Amount === 'number' && !isNaN(tx.Amount) && tx.Amount > 0;
+    const notSystemOnly = !['DIDSet', 'SignerListSet', 'AccountSet', 'SetFee'].includes(tx.TransactionType);
+    return isValidAmount && notSystemOnly && (tx.Account || tx.Destination);
   });
 
   return (
@@ -60,7 +62,8 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
         {validTransactions.length === 0 ? (
           <div className="text-center py-8">
             <Clock className="w-10 h-10 text-white/20 mx-auto mb-3" />
-            <p className="text-white/40 text-sm">No transactions found</p>
+            <p className="text-white/40 text-sm">No XRP transfers found</p>
+            <p className="text-white/20 text-xs mt-2">Only fee-only system transactions on this wallet</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -69,7 +72,6 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
               const amount = tx.Amount || 0;
               const recipient = tx.Destination || 'Unknown';
               const sender = tx.Account || 'Unknown';
-              const isZeroValue = amount === 0;
 
               return (
                 <div
@@ -84,7 +86,7 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
                     )}
                     <div className="flex-1">
                       <p className="text-sm font-medium text-white capitalize">
-                        {isZeroValue ? tx.TransactionType : (isOutgoing ? 'Sent' : 'Received')} XRP
+                        {isOutgoing ? 'Sent' : 'Received'} XRP
                       </p>
                       <p className="text-xs text-white/50 font-mono mt-0.5">
                         {isOutgoing ? `To: ${recipient?.slice(0, 12)}...` : `From: ${sender?.slice(0, 12)}...`}
@@ -99,7 +101,7 @@ export default function WalletTransactionHistory({ walletId, walletAddress }) {
                       {isOutgoing ? '-' : '+'}{amount.toFixed(6)} XRP
                     </p>
                     <p className="text-xs text-white/40 mt-0.5">
-                      {isZeroValue ? 'Fee Only' : tx.TransactionType}
+                      {tx.TransactionType}
                     </p>
                   </div>
                 </div>
