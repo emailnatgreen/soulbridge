@@ -103,8 +103,13 @@ export default function GovernanceHub() {
 
   const voteMutation = useMutation({
     mutationFn: async (voteData) => {
-      const response = await base44.functions.invoke('castGovernanceVote', voteData);
-      return response.data;
+      try {
+        const response = await base44.functions.invoke('castGovernanceVote', voteData);
+        return response.data;
+      } catch (e) {
+        console.error('Vote submission error:', e);
+        throw e;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['governance-proposals'] });
