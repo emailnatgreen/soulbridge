@@ -187,7 +187,7 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
             </div>
             <div className="text-2xl font-bold text-white">{totalVolume.toFixed(2)} XRP</div>
             <div className="text-xs text-blue-400 flex items-center gap-1 mt-1">
-              {completedTransactions.length} txns
+              {recentTransactions.length} txns
             </div>
           </CardContent>
         </Card>
