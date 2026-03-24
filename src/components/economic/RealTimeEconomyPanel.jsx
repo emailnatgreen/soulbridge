@@ -304,7 +304,10 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
         <CardContent>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {recentActivities.map((activity) => {
-              const agent = agents.find(a => a.id === activity.agent_id);
+              // Try multiple matching strategies for agent lookup
+              const agent = agents.find(a => a.id === activity.agent_id) || 
+                           agents.find(a => a.name === activity.agent_id) ||
+                           agents.find(a => a.classic_address === activity.agent_id);
               const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
               
               return (
