@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import GenesisSealBadge from '@/components/GenesisSealBadge';
 import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
@@ -215,6 +214,9 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Genesis Seal */}
+        {identity?.connected && <GenesisSealBadge />}
 
         {/* Live Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
