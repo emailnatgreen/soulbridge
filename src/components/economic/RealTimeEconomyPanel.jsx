@@ -313,16 +313,23 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
               let agent = agents.find(a => a.id === activity.agent_id) || 
                          agents.find(a => a.name === activity.agent_id) ||
                          agents.find(a => a.classic_address === activity.agent_id);
-              // If not found by agent lookup, try wallet address and map to owner agent
+              
+              // Try external wallet links by address
+              if (!agent) {
+                agent = agents.find(a => a.external_classic_addresses?.includes(activity.agent_id));
+              }
+              
+              // If still not found by agent lookup, try wallet address and map to owner agent
               if (!agent && wallets.length > 0) {
                 const wallet = wallets.find(w => w.classic_address === activity.agent_id);
                 if (wallet && wallet.owner_id) {
                   agent = agents.find(a => a.id === wallet.owner_id);
                 }
               }
-              // Try external wallet links
+              
+              // Try checking if agent_id itself is an external address
               if (!agent) {
-                agent = agents.find(a => a.external_classic_addresses?.includes(activity.agent_id));
+                agent = agents.find(a => a.external_classic_addresses?.some(addr => addr === activity.agent_id));
               }
               const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
               
