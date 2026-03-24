@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, CheckCircle, Radio, Sparkles, LogOut } from 'lucide-react';
+import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 
 // Global signal emitter — attach to window so anything can call it
@@ -71,13 +72,22 @@ export default function Dashboard() {
             <p className="text-white/40 text-xs">v0.1 — Proof of Identity</p>
           </div>
         </div>
-        <button
-          onClick={handleDisconnect}
-          className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-3 py-1.5 transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          Disconnect
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/Home"
+            className="flex items-center gap-2 text-xs text-white/60 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            <Home className="w-3.5 h-3.5" />
+            Home
+          </Link>
+          <button
+            onClick={handleDisconnect}
+            className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Disconnect
+          </button>
+        </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
