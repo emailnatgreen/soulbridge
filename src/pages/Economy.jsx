@@ -250,7 +250,7 @@ export default function EconomyPage() {
                                                         <div className="flex-1">
                                                             <div className="flex items-center gap-2 flex-wrap">
                                                                 <p className="text-white font-medium">{agent.name}</p>
-                                                                {agent.wallet_id && (
+                                                                {agentWallet?.is_published && (
                                                                     <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px]">
                                                                         <Shield className="w-2.5 h-2.5 inline mr-0.5" />DID Published
                                                                     </Badge>
