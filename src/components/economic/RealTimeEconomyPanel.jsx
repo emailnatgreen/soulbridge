@@ -86,18 +86,22 @@ export default function RealTimeEconomyPanel({ showAIHook = true, showDID = true
            agents.find(a => a.classic_address === activity.agent_id);
   };
 
+  // Broadened activity type definitions for earnings and spending
+  const earningTypes = ['earned', 'resource_sold', 'treasury_deposit', 'project_reward', 'grant', 'settlement', 'refund'];
+  const spendingTypes = ['spent', 'resource_acquired', 'treasury_withdrawal', 'payment', 'fee', 'penalty', 'donation'];
+
   // Agent wealth calculation using enriched resolution
   const agentWealthMap = agents.reduce((acc, agent) => {
     const earnings = economicActivities
       .filter(a => {
         const resolved = resolveAgent(a);
-        return (resolved?.id === agent.id || a.agent_id === agent.id) && ['earned', 'resource_sold', 'treasury_deposit'].includes(a.activity_type);
+        return (resolved?.id === agent.id || a.agent_id === agent.id) && earningTypes.includes(a.activity_type);
       })
       .reduce((sum, a) => sum + (a.amount || 0), 0);
     const spending = economicActivities
       .filter(a => {
         const resolved = resolveAgent(a);
-        return (resolved?.id === agent.id || a.agent_id === agent.id) && ['spent', 'resource_acquired', 'treasury_withdrawal'].includes(a.activity_type);
+        return (resolved?.id === agent.id || a.agent_id === agent.id) && spendingTypes.includes(a.activity_type);
       })
       .reduce((sum, a) => sum + (a.amount || 0), 0);
     acc[agent.id] = {
