@@ -379,10 +379,10 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
-                { label: 'My Agents', path: '/Agents', icon: Users },
-                { label: 'Vote', path: '/GovernanceHub', icon: Vote },
-                { label: 'Wallets', path: '/Wallets', icon: Landmark },
-                { label: 'Notifications', path: '/Notifications', icon: Bell },
+                { label: 'My Agents', path: '/Agents', icon: Users, count: stats.agents },
+                { label: 'Active Votes', path: '/GovernanceHub', icon: Vote, count: proposals.filter(p => p.status === 'active').length },
+                { label: 'Wallets', path: '/Wallets', icon: Landmark, count: stats.dids },
+                { label: 'Notifications', path: '/Notifications', icon: Bell, count: null },
               ].map(item => (
                 <button
                   key={item.label}
@@ -390,6 +390,9 @@ export default function Home() {
                   className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-3 text-center transition"
                 >
                   <item.icon className="w-4 h-4 text-purple-300 mx-auto mb-1" />
+                  {item.count !== null && (
+                    <div className="text-white font-bold text-base">{loading ? '…' : item.count}</div>
+                  )}
                   <span className="text-white/70 text-xs">{item.label}</span>
                 </button>
               ))}
