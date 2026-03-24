@@ -7,10 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3, Shield, Sparkles, AlertCircle, ExternalLink } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Wallet, Package, BarChart3, Shield, Sparkles, AlertCircle, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import TreasuryPanel from '../components/TreasuryPanel';
 import AskAxiButton from '@/components/AskAxiButton';
 import RealTimeEconomyPanel from '@/components/economic/RealTimeEconomyPanel';
+import WalletTransactionHistory from '@/components/WalletTransactionHistory';
 
 const openAxi = (msg) => {
   window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
@@ -20,6 +21,7 @@ export default function EconomyPage() {
     const [identity, setIdentity] = useState(null);
     const [currentUser, setCurrentUser] = useState(null);
     const [myAgent, setMyAgent] = useState(null);
+    const [expandedAgent, setExpandedAgent] = useState(null);
 
     // Load identity and user
     useEffect(() => {
@@ -240,31 +242,46 @@ export default function EconomyPage() {
                                         const spending = spentActivities.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
                                         const walletBalance = agentWallet?.balance || 0;
 
+                                        const isExpanded = expandedAgent === agent.id;
                                         return (
-                                            <div key={agent.id} className="bg-white/5 rounded-lg p-3 border border-white/10">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3 flex-1">
-                                                        <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/20">
-                                                            #{idx + 1}
-                                                        </Badge>
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <p className="text-white font-medium">{agent.name}</p>
-                                                                {agentWallet?.is_published && (
-                                                                    <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px]">
-                                                                        <Shield className="w-2.5 h-2.5 inline mr-0.5" />DID Published
-                                                                    </Badge>
-                                                                )}
+                                            <div key={agent.id} className="bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+                                                <div className="p-3 cursor-pointer hover:bg-white/8 transition-colors" onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3 flex-1">
+                                                            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/20">
+                                                                #{idx + 1}
+                                                            </Badge>
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <p className="text-white font-medium">{agent.name}</p>
+                                                                    {agentWallet?.is_published && (
+                                                                        <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px]">
+                                                                            <Shield className="w-2.5 h-2.5 inline mr-0.5" />DID Published
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-xs text-white/60">{agent.role}</p>
                                                             </div>
-                                                            <p className="text-xs text-white/60">{agent.role}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="text-right">
+                                                                <p className="text-lg font-medium text-white">{walletBalance.toFixed(2)} XRP</p>
+                                                                <p className="text-xs text-white/40">Balance</p>
+                                                                <p className="text-xs text-white/50 mt-1">{earnings.toFixed(2)} earned • {spending.toFixed(2)} spent</p>
+                                                            </div>
+                                                            {agentWallet?.classic_address && (
+                                                                <div className="text-white/60">
+                                                                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <p className="text-lg font-medium text-white">{walletBalance.toFixed(2)} XRP</p>
-                                                        <p className="text-xs text-white/40">Balance</p>
-                                                        <p className="text-xs text-white/50 mt-1">{earnings.toFixed(2)} earned • {spending.toFixed(2)} spent</p>
-                                                    </div>
                                                 </div>
+                                                {isExpanded && agentWallet?.classic_address && (
+                                                    <div className="border-t border-white/10 p-3 bg-black/20">
+                                                        <WalletTransactionHistory walletId={agent.wallet_id} walletAddress={agentWallet.classic_address} />
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}
