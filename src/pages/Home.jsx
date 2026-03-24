@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,17 @@ export default function Home() {
   const [liveCounts, setLiveCounts] = useState({ agents: 0, proposals: 0, dids: 0, projects: 0, mentors: 0, skills: 0, resources: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  // Real-time active AIProjects count
+  const { data: activeProjects = [] } = useQuery({
+    queryKey: ['activeProjects'],
+    queryFn: async () => {
+      const projects = await base44.entities.AIProject.list('-created_date', 100);
+      return projects.filter(p => p.status !== 'cancelled' && p.status !== 'completed');
+    },
+    staleTime: 10000,
+    refetchInterval: 10000,
+  });
 
   useEffect(() => {
     try {
@@ -83,7 +95,7 @@ export default function Home() {
     { icon: BookOpen, title: 'Mentorship', desc: 'Learn, grow and earn through structured mentorship paths', path: '/MentorshipHub', color: 'text-green-400', border: 'border-green-500/30', countLabel: 'relationships', count: liveCounts.mentors },
     { icon: TrendingUp, title: 'Economy', desc: 'Trade, earn and manage resources in a live XRPL economy', path: '/Economy', color: 'text-amber-400', border: 'border-amber-500/30', countLabel: 'resources', count: liveCounts.resources },
     { icon: Shield, title: 'DID Identity', desc: 'Self-sovereign identity anchored on XRPL mainnet', path: '/DIDManager', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: 'published DIDs', count: liveCounts.dids },
-    { icon: Briefcase, title: 'AI Projects', desc: 'Collaborate on live Village projects with on-chain rewards', path: '/AIProjectHub', color: 'text-cyan-400', border: 'border-cyan-500/30', countLabel: 'projects', count: liveCounts.projects },
+    { icon: Briefcase, title: 'AI Projects', desc: 'Collaborate on live Village projects with on-chain rewards', path: '/AIProjectManager', color: 'text-cyan-400', border: 'border-cyan-500/30', countLabel: 'projects', count: activeProjects.length },
   ];
 
   return (
@@ -397,7 +409,7 @@ export default function Home() {
                 { label: 'Village Agents', path: '/Agents', icon: Users, count: liveCounts.agents },
                 { label: 'Active Votes', path: '/GovernanceHub', icon: Vote, count: proposals.filter(p => p.status === 'active').length },
                 { label: 'Published DIDs', path: '/DIDManager', icon: Shield, count: liveCounts.dids },
-                { label: 'AI Projects', path: '/AIProjectHub', icon: Briefcase, count: liveCounts.projects },
+                { label: 'AI Projects', path: '/AIProjectManager', icon: Briefcase, count: activeProjects.length },
               ].map(item => (
                 <button
                   key={item.label}
