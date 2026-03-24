@@ -155,9 +155,51 @@ export default function EconomyPage() {
                     </TabsContent>
 
                     <TabsContent value="agents" className="space-y-6">
+                        {/* DID & AI Header for Agent Wealth */}
+                        <Card className="bg-gradient-to-r from-blue-900/40 to-purple-900/30 border-blue-500/30">
+                            <CardContent className="p-4">
+                                <div className="flex items-center justify-between flex-wrap gap-3">
+                                    <div className="flex items-center gap-3">
+                                        {identity?.connected ? (
+                                            <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-1.5">
+                                                <Shield className="w-4 h-4 text-green-400" />
+                                                <span className="text-green-300 text-xs font-mono">{identity.did?.slice(0, 16)}…</span>
+                                                <Badge className="bg-green-500/20 text-green-300 text-[10px]">Verified</Badge>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
+                                                <AlertCircle className="w-4 h-4 text-yellow-400" />
+                                                <span className="text-yellow-300 text-xs">DID Not Connected</span>
+                                            </div>
+                                        )}
+                                        
+                                        {myAgent && (
+                                            <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-1.5">
+                                                <Shield className="w-4 h-4 text-blue-400" />
+                                                <span className="text-blue-300 text-xs">{myAgent.name}</span>
+                                                <span className="text-blue-400/50 text-[10px]">· {myAgent.role}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => openAxi(`Analyze Agent Wealth rankings. Total agents: ${agents.length}. Top earner: ${agentWithMostWealth?.name || 'N/A'} with ${agentWithMostWealth ? allActivities.filter(a => a.agent_id === agentWithMostWealth.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0).toFixed(2) : 0} XRP. Assess wealth distribution, identify any concentration risks, and check for Law 3 (Fair Share) compliance.`)}
+                                        className="border-blue-400/40 text-blue-300 bg-blue-900/20 hover:bg-blue-500/20 text-xs gap-1.5"
+                                    >
+                                        <Sparkles className="w-3.5 h-3.5" /> AI Wealth Analysis
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+
                         <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                             <CardHeader>
-                                <CardTitle className="text-white">Agent Economic Rankings</CardTitle>
+                                <CardTitle className="text-white flex items-center gap-2">
+                                    <TrendingUp className="w-5 h-5 text-green-400" />
+                                    Agent Wealth Rankings
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2">
@@ -174,13 +216,20 @@ export default function EconomyPage() {
                                                             #{idx + 1}
                                                         </Badge>
                                                         <div>
-                                                            <p className="text-white font-medium">{agent.name}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-white font-medium">{agent.name}</p>
+                                                                {agent.wallet_id && (
+                                                                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[9px]">
+                                                                        <Shield className="w-2.5 h-2.5 inline mr-0.5" />DID
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                             <p className="text-xs text-white/60">{agent.role}</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className={`text-lg font-medium ${net >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-                                                            {net} XRP
+                                                            {net >= 0 ? '+' : ''}{net} XRP
                                                         </p>
                                                         <p className="text-xs text-white/40">{earnings} earned • {spending} spent</p>
                                                     </div>
