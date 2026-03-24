@@ -50,9 +50,14 @@ export default function EconomyPage() {
         queryFn: () => base44.entities.Treasury.list(),
     });
 
+    const { data: wallets = [] } = useQuery({
+        queryKey: ['wallets'],
+        queryFn: () => base44.entities.Wallet.list(),
+    });
+
     const { data: allActivities = [] } = useQuery({
         queryKey: ['all-economic-activities'],
-        queryFn: () => base44.entities.EconomicActivity.list('-created_date', 50),
+        queryFn: () => base44.entities.EconomicActivity.list('-created_date', 500),
     });
 
     // Filter to only show recent real activities (last 7 days, exclude simulated/test data)
@@ -226,9 +231,11 @@ export default function EconomyPage() {
                             <CardContent>
                                 <div className="space-y-2">
                                     {agents.map((agent, idx) => {
-                                        const earnings = recentActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
-                                        const spending = recentActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
+                                        const agentWallet = wallets.find(w => w.owner_id === agent.id);
+                                        const earnings = allActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'earned').reduce((sum, a) => sum + a.amount, 0);
+                                        const spending = allActivities.filter(a => a.agent_id === agent.id && a.activity_type === 'spent').reduce((sum, a) => sum + a.amount, 0);
                                         const net = earnings - spending;
+                                        const walletBalance = agentWallet?.balance || 0;
 
                                         return (
                                             <div key={agent.id} className="bg-white/5 rounded-lg p-3 border border-white/10">
