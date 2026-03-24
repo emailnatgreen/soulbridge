@@ -15,7 +15,7 @@ function extractKeywords(text) {
   )].slice(0, 8);
 }
 
-export default function SaveToMemoryPanel({ messages, onClose }) {
+export default function SaveToMemoryPanel({ messages, conversation, onClose, onDeleted }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -55,6 +55,22 @@ export default function SaveToMemoryPanel({ messages, onClose }) {
     }
     setSaving(false);
     setSaved(true);
+    // Now delete this bundle from the conversation
+    if (conversation) {
+      try {
+        const bundleMsgs = bundle;
+        const sigSet = new Set(bundleMsgs.map(m => (m.created_date || '') + '||' + (m.content || '').slice(0, 40)));
+        const fresh = await base44.agents.getConversation(conversation.id);
+        const remaining = (fresh.messages || []).filter(m => {
+          const sig = (m.created_date || '') + '||' + (m.content || '').slice(0, 40);
+          return !sigSet.has(sig);
+        });
+        await base44.agents.updateConversation(conversation.id, { messages: remaining });
+        if (onDeleted) onDeleted(remaining);
+      } catch (err) {
+        console.error('Failed to delete bundle from chat:', err);
+      }
+    }
   };
 
   return (
