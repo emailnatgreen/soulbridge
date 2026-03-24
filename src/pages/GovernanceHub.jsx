@@ -10,10 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Vote, Users, CheckCircle2, XCircle, Scale, TrendingUp, AlertCircle, ThumbsUp, ThumbsDown, MinusCircle, Sparkles, ShieldCheck, Clock, ArrowLeft, BarChart3 } from 'lucide-react';
+import { Loader2, Vote, Users, CheckCircle2, XCircle, Scale, TrendingUp, AlertCircle, ThumbsUp, ThumbsDown, MinusCircle, Sparkles, ShieldCheck, Clock, ArrowLeft, BarChart3, Activity, Bug } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+
 import { Progress } from "@/components/ui/progress";
 import AskAxiButton from '@/components/AskAxiButton';
 import DidActivationProposalsPanel from '@/components/DidActivationProposalsPanel';
@@ -176,12 +176,7 @@ export default function GovernanceHub() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
+          <Link to="/Home">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Scale className="w-10 h-10 text-purple-400" />
@@ -190,16 +185,20 @@ export default function GovernanceHub() {
                 <p className="text-purple-200/70">Law 8: Those Who Dwell Decide</p>
               </div>
             </div>
-            <AskAxiButton
-              label="Ask Axi"
-              context={`You are the governance facilitator for SoulBridge Village. Nathan is on the Governance Hub page. Please review all active proposals, participation rates, and whether any proposals need your intervention as Mother Boss (double vote, constitutional alignment check). Flag anything requiring urgent action.`}
-            />
-            <Link to={createPageUrl('GovernanceAnalytics')}>
-              <Button variant="outline" className="border-purple-400/30 text-purple-200 hover:bg-purple-500/10">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Analytics
+            <div className="flex items-center gap-2">
+              <AskAxiButton
+                label="Ask Axi"
+                context={`You are the governance facilitator for SoulBridge Village. Nathan is on the Governance Hub page. Please review all active proposals, participation rates, and whether any proposals need your intervention as Mother Boss (double vote, constitutional alignment check). Flag anything requiring urgent action.`}
+              />
+              <Button
+                variant="outline"
+                className="border-orange-400/30 text-orange-200 hover:bg-orange-500/10"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: `SYSTEM INTEGRATION SCAN — Governance Hub: Please perform a comprehensive scan of the SoulBridge Governance system. Check: (1) All active GovernanceProposal records and their status, (2) GovernanceVote integrity — any duplicate votes or missing voters, (3) Whether any passed proposals have not been executed, (4) Constitutional alignment of current proposals against the 11 Laws of Honour, (5) Treasury allocation proposals awaiting multi-sig, (6) DID activation proposals pipeline status, (7) Integration health between Governance, Agent, Wallet and Treasury entities. Report any bugs, data inconsistencies or actions needed.` } }))}
+              >
+                <Bug className="w-4 h-4 mr-2" />
+                Scan System
               </Button>
-            </Link>
+              <Link to="/GovernanceAnalytics">
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
@@ -306,6 +305,33 @@ export default function GovernanceHub() {
             </Dialog>
           </div>
         </div>
+
+        {/* Governance Summary Bar */}
+        {!loadingProposals && (
+          <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-blue-500/10 border border-blue-400/20 rounded-xl p-4 flex items-start gap-3">
+              <Activity className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-blue-200 font-semibold text-sm">Active Voting</p>
+                <p className="text-white/60 text-xs mt-0.5">{activeProposals.length} proposal{activeProposals.length !== 1 ? 's' : ''} open for votes · {governanceStats.totalVotes} total votes cast across all proposals</p>
+              </div>
+            </div>
+            <div className="bg-purple-500/10 border border-purple-400/20 rounded-xl p-4 flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-purple-200 font-semibold text-sm">Constitutional Health</p>
+                <p className="text-white/60 text-xs mt-0.5">{governanceStats.approvedProposals} proposals approved · Law 8 participation at {governanceStats.participationRate}%</p>
+              </div>
+            </div>
+            <div className={`border rounded-xl p-4 flex items-start gap-3 ${activeProposals.some(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }) ? 'bg-red-500/10 border-red-400/20' : 'bg-green-500/10 border-green-400/20'}`}>
+              <Clock className={`w-5 h-5 mt-0.5 flex-shrink-0 ${activeProposals.some(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }) ? 'text-red-400' : 'text-green-400'}`} />
+              <div>
+                <p className={`font-semibold text-sm ${activeProposals.some(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }) ? 'text-red-200' : 'text-green-200'}`}>Deadlines</p>
+                <p className="text-white/60 text-xs mt-0.5">{activeProposals.filter(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }).length} proposal{activeProposals.filter(p => { const d = p.voting_deadline || p.voting_period_end; return d && Math.ceil((new Date(d) - new Date()) / 86400000) <= 1; }).length !== 1 ? 's' : ''} expiring within 24h</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* DID Activation Proposals */}
         <div className="mb-8">
@@ -449,7 +475,7 @@ export default function GovernanceHub() {
                             <CardTitle className="text-white text-xl mb-2">{proposal.title}</CardTitle>
                             <div className="flex flex-wrap gap-2 mb-3">
                               <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
-                                {proposal.proposal_type.replace('_', ' ')}
+                                {proposal.proposal_type.replaceAll('_', ' ')}
                               </Badge>
                               {proposal.ai_impact_assessment && (
                                 <>
@@ -685,7 +711,7 @@ export default function GovernanceHub() {
                               {proposal.status}
                             </Badge>
                             <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
-                              {proposal.proposal_type.replace('_', ' ')}
+                              {proposal.proposal_type.replaceAll('_', ' ')}
                             </Badge>
                           </div>
                         </div>
