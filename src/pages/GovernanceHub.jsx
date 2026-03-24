@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { usePageSignal } from '@/hooks/usePageSignal';
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Vote, Users, CheckCircle2, XCircle, Scale, TrendingUp, AlertCircle, ThumbsUp, ThumbsDown, MinusCircle, Sparkles, ShieldCheck, Clock, ArrowLeft, BarChart3, Activity, Bug } from 'lucide-react';
+import { Loader2, Vote, Users, CheckCircle2, XCircle, Scale, TrendingUp, AlertCircle, ThumbsUp, ThumbsDown, MinusCircle, Sparkles, ShieldCheck, Clock, ArrowLeft, BarChart3, Activity, Bug, Shield, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
@@ -18,20 +18,40 @@ import { Progress } from "@/components/ui/progress";
 import AskAxiButton from '@/components/AskAxiButton';
 import DidActivationProposalsPanel from '@/components/DidActivationProposalsPanel';
 
+const openAxi = (msg) => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
+
 export default function GovernanceHub() {
   const [selectedAgent, setSelectedAgent] = useState('');
-  const [proposalTitle, setProposalTitle] = useState('');
-  const [proposalDescription, setProposalDescription] = useState('');
-  const [proposalType, setProposalType] = useState('');
-  const [votingPeriod, setVotingPeriod] = useState(7);
-  const [creatingProposal, setCreatingProposal] = useState(false);
-  const [selectedProposal, setSelectedProposal] = useState(null);
-  const [voteChoice, setVoteChoice] = useState('');
-  const [voteRationale, setVoteRationale] = useState('');
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [identity, setIdentity] = useState(null);
+  const [myAgent, setMyAgent] = useState(null);
+  const [agentLoading, setAgentLoading] = useState(true);
 
   const queryClient = useQueryClient();
   usePageSignal();
+
+  // Load DID identity + current user's agent
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.connected) setIdentity(parsed);
+      }
+    } catch (e) {}
+
+    base44.auth.me().then(async (u) => {
+      if (!u) { setAgentLoading(false); return; }
+      const all = await base44.entities.Agent.list();
+      const mine = all.find(a => a.created_by === u.email);
+      if (mine) {
+        setMyAgent(mine);
+        setSelectedAgent(mine.id);
+      }
+      setAgentLoading(false);
+    }).catch(() => setAgentLoading(false));
+
+    openAxi('I have just opened the Governance Hub. Please review the active proposals, flag any that need urgent attention, and tell me if there are any constitutional alignment issues or expired proposals that need executing.');
+  }, []);
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents-governance'],
@@ -105,44 +125,17 @@ export default function GovernanceHub() {
   };
 
   const handleCreateProposal = async () => {
-    if (!selectedAgent || !proposalTitle || !proposalDescription || !proposalType) {
-      toast.error('Please fill in all required fields');
+    if (!myAgent || !proposalTitle || !proposalDescription || !proposalType) {
+      toast.error('Please fill in all required fields and ensure you have an agent identity');
       return;
     }
 
     setCreatingProposal(true);
     try {
       await createProposalMutation.mutateAsync({
-        proposer_agent_id: selectedAgent,
-        title: proposalTitle,
-        description: proposalDescription,
-        proposal_type: proposalType,
-        voting_period_days: votingPeriod
-      });
-    } finally {
-      setCreatingProposal(false);
-    }
-  };
+        proposer_agent_id: myAgent.id,
 
-  const handleVote = async () => {
-    if (!voteChoice || !selectedAgent) {
-      toast.error('Please select an agent and vote choice');
-      return;
-    }
 
-    await voteMutation.mutateAsync({
-      proposal_id: selectedProposal.id,
-      agent_id: selectedAgent,
-      vote_choice: voteChoice,
-      rationale: voteRationale || undefined
-    });
-  };
-
-  const handleExecuteProposal = async (proposalId) => {
-    await executeProposalMutation.mutateAsync(proposalId);
-  };
-
-  const getProposalVotes = (proposalId) => {
     return allVotes.filter(v => v.proposal_id === proposalId);
   };
 
@@ -182,34 +175,39 @@ export default function GovernanceHub() {
               Back to Home
             </Button>
           </Link>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <Scale className="w-10 h-10 text-purple-400" />
               <div>
                 <h1 className="text-4xl font-bold text-white">Decentralized Governance</h1>
                 <p className="text-purple-200/70">Law 8: Those Who Dwell Decide</p>
+                {/* DID Signal Badge */}
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  {identity?.connected ? (
+                    <div
+                      className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1 cursor-pointer"
+                      onClick={() => openAxi(`I am connected with DID: ${identity.did}. What governance proposals are most relevant to my identity and role?`)}
+                    >
+                      <Shield className="w-3.5 h-3.5 text-green-400" />
+                      <span className="text-green-300 text-xs font-mono">{identity.did?.slice(0, 16)}…</span>
+                      <Sparkles className="w-3 h-3 text-green-400/60" />
+                    </div>
+                  ) : (
+                    <Link to="/">
+                      <span className="text-xs text-yellow-400 border border-yellow-500/30 bg-yellow-500/10 rounded px-2 py-0.5 cursor-pointer">Connect DID to vote</span>
+                    </Link>
+                  )}
+                  {myAgent && (
+                    <div className="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg px-2.5 py-1">
+                      <Bot className="w-3.5 h-3.5 text-blue-400" />
+                      <span className="text-blue-300 text-xs">{myAgent.name}</span>
+                      <span className="text-blue-400/50 text-[10px] capitalize">· {myAgent.role}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <AskAxiButton
-                label="Ask Axi"
-                context={`You are the governance facilitator for SoulBridge Village. Nathan is on the Governance Hub page. Please review all active proposals, participation rates, and whether any proposals need your intervention as Mother Boss (double vote, constitutional alignment check). Flag anything requiring urgent action.`}
-              />
-              <Button
-                variant="outline"
-                className="border-orange-400/30 text-orange-200 hover:bg-orange-500/10"
-                onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: `SYSTEM INTEGRATION SCAN — Governance Hub: Please perform a comprehensive scan of the SoulBridge Governance system. Check: (1) All active GovernanceProposal records and their status, (2) GovernanceVote integrity — any duplicate votes or missing voters, (3) Whether any passed proposals have not been executed, (4) Constitutional alignment of current proposals against the 11 Laws of Honour, (5) Treasury allocation proposals awaiting multi-sig, (6) DID activation proposals pipeline status, (7) Integration health between Governance, Agent, Wallet and Treasury entities. Report any bugs, data inconsistencies or actions needed.` } }))}
-              >
-                <Bug className="w-4 h-4 mr-2" />
-                Scan System
-              </Button>
-              <Link to="/GovernanceAnalytics">
-                <Button variant="outline" className="border-purple-400/30 text-purple-200 hover:bg-purple-500/10">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Analytics
-                </Button>
-              </Link>
-            </div>
+            <div className="flex items-center gap-2 flex-wrap">
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
@@ -225,20 +223,19 @@ export default function GovernanceHub() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div>
-                    <label className="text-white text-sm font-medium mb-2 block">Proposing Agent *</label>
-                    <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder="Select agent" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-white/20">
-                        {agents.filter(a => a.status === 'active').map(agent => (
-                          <SelectItem key={agent.id} value={agent.id} className="text-white">
-                            {agent.name} ({agent.role})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* Proposer identity — auto-filled from logged-in agent */}
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center gap-3">
+                    <Bot className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                    {myAgent ? (
+                      <div>
+                        <p className="text-white text-sm font-medium">{myAgent.name} <span className="text-white/40 text-xs capitalize">· {myAgent.role}</span></p>
+                        {identity?.did && (
+                          <p className="text-purple-300/60 text-xs font-mono">{identity.did.slice(0, 20)}…</p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-yellow-300 text-sm">No agent found — <Link to="/Agents" className="underline">create an agent</Link> first</p>
+                    )}
                   </div>
 
                   <div>
@@ -293,27 +290,22 @@ export default function GovernanceHub() {
                     />
                   </div>
 
+                  <button
+                    type="button"
+                    className="text-xs text-indigo-300 flex items-center gap-1.5 hover:text-indigo-200 transition"
+                    onClick={() => {
+                      openAxi(`I want to create a governance proposal. My agent is ${myAgent?.name || 'unknown'}. Title: "${proposalTitle}". Description: "${proposalDescription}". Type: ${proposalType}. Can you help me refine this proposal and check it aligns with the 11 Laws of Honour?`);
+                    }}
+                  >
+                    <Sparkles className="w-3 h-3" /> Get Axi to review this proposal before submitting
+                  </button>
+
                   <Button
                     onClick={handleCreateProposal}
-                    disabled={creatingProposal}
+                    disabled={creatingProposal || !myAgent}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                     size="lg"
                   >
-                    {creatingProposal ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Creating Proposal...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-5 h-5 mr-2" />
-                        Submit for Vote
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
 
