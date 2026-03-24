@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,18 +9,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Users, Star, TrendingUp, CheckCircle, Brain, Loader2, Heart, Award, Target, Clock, BarChart3 } from 'lucide-react';
-import AskAxiButton from '@/components/AskAxiButton';
+import { ArrowLeft, Users, Star, TrendingUp, CheckCircle, Brain, Loader2, Heart, Clock, BarChart3, Shield } from 'lucide-react';
 import MatchInsightsPanel from '@/components/mentorship/MatchInsightsPanel';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 
 export default function MentorshipHub() {
-  const [currentAgentId] = useState('axi_main_001');
+  const [identity, setIdentity] = useState(null);
+  const [currentAgentId, setCurrentAgentId] = useState('axi_main_001');
   const [showFindMentor, setShowFindMentor] = useState(false);
   const [showBecomeMentor, setShowBecomeMentor] = useState(false);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.connected) {
+          setIdentity(parsed);
+          setCurrentAgentId(parsed.agentId || parsed.did || 'axi_main_001');
+        }
+      }
+    } catch (e) {}
+  }, []);
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents'],
@@ -32,43 +44,38 @@ export default function MentorshipHub() {
     queryFn: () => base44.entities.MentorProfile.list()
   });
 
-  const { data: myRelationships = [] } = useQuery({
+  const { data: myRelationships = { asMentor: [], asMentee: [] } } = useQuery({
     queryKey: ['myMentorships', currentAgentId],
     queryFn: async () => {
-      const asMentor = await base44.entities.MentorshipRelationship.filter({ 
-        mentor_agent_id: currentAgentId 
-      });
-      const asMentee = await base44.entities.MentorshipRelationship.filter({ 
-        mentee_agent_id: currentAgentId 
-      });
+      const [asMentor, asMentee] = await Promise.all([
+        base44.entities.MentorshipRelationship.filter({ mentor_agent_id: currentAgentId }),
+        base44.entities.MentorshipRelationship.filter({ mentee_agent_id: currentAgentId }),
+      ]);
       return { asMentor, asMentee };
     }
   });
 
   const { data: matches = [] } = useQuery({
     queryKey: ['mentorMatches', currentAgentId],
-    queryFn: () => base44.entities.MentorshipMatch.filter({ 
-      mentee_agent_id: currentAgentId,
-      status: 'pending'
-    })
+    queryFn: () => base44.entities.MentorshipMatch.filter({ mentee_agent_id: currentAgentId, status: 'pending' })
   });
 
-  const activeMentorships = myRelationships?.asMentee?.filter(r => r.status === 'active') || [];
-  const activeMentees = myRelationships?.asMentor?.filter(r => r.status === 'active') || [];
+  const activeMentorships = myRelationships.asMentee?.filter(r => r.status === 'active') || [];
+  const activeMentees = myRelationships.asMentor?.filter(r => r.status === 'active') || [];
   const myMentorProfile = mentorProfiles.find(mp => mp.agent_id === currentAgentId);
 
   const avgMentorRating = mentorProfiles.length > 0
-    ? mentorProfiles.reduce((sum, mp) => sum + mp.mentor_rating, 0) / mentorProfiles.length
+    ? (mentorProfiles.reduce((sum, mp) => sum + (mp.mentor_rating || 0), 0) / mentorProfiles.length)
     : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-4">
-              <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+              <Link to="/Home">
+                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
               </Link>
@@ -77,35 +84,39 @@ export default function MentorshipHub() {
                 <p className="text-sm text-purple-300/60">Law 9: Every Soul May Become More</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <AskAxiButton
-                label="Ask Axi"
-                context={`You are viewing the Mentorship Hub. Nathan wants your assessment of the current mentorship ecosystem. Review active mentorships, available mentors, pending matches, and any agents who need mentoring support. Make recommendations aligned with Law 9 (Every Soul May Become More).`}
-              />
-              <Link to={createPageUrl('MentorshipWellbeing')}>
-                <Button variant="outline" className="border-white/20 text-white">
+            <div className="flex items-center gap-2 flex-wrap">
+              {identity?.connected && (
+                <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5">
+                  <Shield className="w-3.5 h-3.5 text-green-400" />
+                  <span className="text-green-300 text-xs font-mono truncate max-w-[120px]">
+                    {identity.did?.slice(0, 16)}…
+                  </span>
+                </div>
+              )}
+              <Link to="/MentorshipWellbeing">
+                <Button variant="outline" className="border-purple-400/60 text-purple-200 bg-purple-900/20 hover:bg-purple-500/30 hover:text-white">
                   <Heart className="w-4 h-4 mr-2" />
                   Well-being
                 </Button>
               </Link>
-              <Link to={createPageUrl('MentorshipAnalytics')}>
-                <Button variant="outline" className="border-white/20 text-white">
+              <Link to="/MentorshipAnalytics">
+                <Button variant="outline" className="border-blue-400/60 text-blue-200 bg-blue-900/20 hover:bg-blue-500/30 hover:text-white">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Analytics
                 </Button>
               </Link>
-              <Button 
+              <Button
                 onClick={() => setShowFindMentor(true)}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 <Users className="w-4 h-4 mr-2" />
                 Find a Mentor
               </Button>
               {!myMentorProfile && (
-                <Button 
+                <Button
                   onClick={() => setShowBecomeMentor(true)}
                   variant="outline"
-                  className="border-white/20 text-white"
+                  className="border-green-400/60 text-green-200 bg-green-900/20 hover:bg-green-500/30 hover:text-white"
                 >
                   <Heart className="w-4 h-4 mr-2" />
                   Become a Mentor
@@ -118,10 +129,10 @@ export default function MentorshipHub() {
 
       <div className="max-w-7xl mx-auto p-6">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Available Mentors</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs text-white/60">Available Mentors</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-purple-400">
@@ -129,28 +140,25 @@ export default function MentorshipHub() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">My Mentorships</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs text-white/60">My Mentorships</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-blue-400">{activeMentorships.length}</div>
             </CardContent>
           </Card>
-
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Mentees</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs text-white/60">Mentees</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-400">{activeMentees.length}</div>
             </CardContent>
           </Card>
-
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Avg Rating</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs text-white/60">Avg Rating</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-amber-400">{avgMentorRating.toFixed(1)}/5</div>
@@ -171,7 +179,7 @@ export default function MentorshipHub() {
               {mentorProfiles.filter(mp => mp.is_available && mp.agent_id !== currentAgentId).map(profile => {
                 const mentor = agents.find(a => a.id === profile.agent_id);
                 return (
-                  <MentorCard 
+                  <MentorCard
                     key={profile.agent_id}
                     profile={profile}
                     mentor={mentor}
@@ -179,6 +187,9 @@ export default function MentorshipHub() {
                   />
                 );
               })}
+              {mentorProfiles.filter(mp => mp.is_available).length === 0 && (
+                <div className="col-span-3 text-center py-12 text-white/40">No available mentors yet.</div>
+              )}
             </div>
           </TabsContent>
 
@@ -186,14 +197,7 @@ export default function MentorshipHub() {
             <div className="space-y-4">
               {activeMentorships.map(rel => {
                 const mentor = agents.find(a => a.id === rel.mentor_agent_id);
-                return (
-                  <MentorshipCard 
-                    key={rel.id}
-                    relationship={rel}
-                    otherAgent={mentor}
-                    role="mentee"
-                  />
-                );
+                return <MentorshipCard key={rel.id} relationship={rel} otherAgent={mentor} role="mentee" />;
               })}
               {activeMentorships.length === 0 && (
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
@@ -201,7 +205,7 @@ export default function MentorshipHub() {
                     <Users className="w-16 h-16 text-purple-400 mx-auto mb-4" />
                     <h3 className="text-white text-xl font-medium mb-2">No Active Mentorships</h3>
                     <p className="text-white/60 mb-6">Find a mentor to accelerate your growth</p>
-                    <Button onClick={() => setShowFindMentor(true)} className="bg-purple-600">
+                    <Button onClick={() => setShowFindMentor(true)} className="bg-purple-600 hover:bg-purple-700">
                       Find a Mentor
                     </Button>
                   </CardContent>
@@ -214,14 +218,7 @@ export default function MentorshipHub() {
             <div className="space-y-4">
               {activeMentees.map(rel => {
                 const mentee = agents.find(a => a.id === rel.mentee_agent_id);
-                return (
-                  <MentorshipCard 
-                    key={rel.id}
-                    relationship={rel}
-                    otherAgent={mentee}
-                    role="mentor"
-                  />
-                );
+                return <MentorshipCard key={rel.id} relationship={rel} otherAgent={mentee} role="mentor" />;
               })}
               {activeMentees.length === 0 && (
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
@@ -230,7 +227,7 @@ export default function MentorshipHub() {
                     <h3 className="text-white text-xl font-medium mb-2">No Mentees Yet</h3>
                     <p className="text-white/60 mb-6">Share your wisdom by becoming a mentor</p>
                     {!myMentorProfile && (
-                      <Button onClick={() => setShowBecomeMentor(true)} className="bg-green-600">
+                      <Button onClick={() => setShowBecomeMentor(true)} className="bg-green-600 hover:bg-green-700">
                         Become a Mentor
                       </Button>
                     )}
@@ -243,12 +240,7 @@ export default function MentorshipHub() {
           <TabsContent value="matches">
             <div className="space-y-4">
               {matches.map(match => (
-                <AIMatchCard 
-                  key={match.id}
-                  match={match}
-                  agents={agents}
-                  currentAgentId={currentAgentId}
-                />
+                <AIMatchCard key={match.id} match={match} agents={agents} currentAgentId={currentAgentId} />
               ))}
               {matches.length === 0 && (
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
@@ -256,7 +248,7 @@ export default function MentorshipHub() {
                     <Brain className="w-16 h-16 text-blue-400 mx-auto mb-4" />
                     <h3 className="text-white text-xl font-medium mb-2">No AI Matches Yet</h3>
                     <p className="text-white/60 mb-6">Let AI find your perfect mentor</p>
-                    <Button onClick={() => setShowFindMentor(true)} className="bg-blue-600">
+                    <Button onClick={() => setShowFindMentor(true)} className="bg-blue-600 hover:bg-blue-700">
                       Get AI Recommendations
                     </Button>
                   </CardContent>
@@ -268,42 +260,34 @@ export default function MentorshipHub() {
       </div>
 
       {showFindMentor && (
-        <FindMentorDialog 
-          agentId={currentAgentId}
-          onClose={() => setShowFindMentor(false)}
-        />
+        <FindMentorDialog agentId={currentAgentId} onClose={() => setShowFindMentor(false)} />
       )}
-
       {showBecomeMentor && (
-        <BecomeMentorDialog 
-          agentId={currentAgentId}
-          onClose={() => setShowBecomeMentor(false)}
-        />
+        <BecomeMentorDialog agentId={currentAgentId} onClose={() => setShowBecomeMentor(false)} />
       )}
     </div>
   );
 }
 
 function MentorCard({ profile, mentor, onRequest }) {
-  const capacityPercentage = (profile.current_mentees / profile.max_mentees) * 100;
+  const capacityPercentage = profile.max_mentees ? (profile.current_mentees / profile.max_mentees) * 100 : 0;
 
   return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-white">{mentor?.name || 'Unknown'}</CardTitle>
-            <div className="text-sm text-white/60 mt-1">{mentor?.role}</div>
+            <CardTitle className="text-white">{mentor?.name || 'Unknown Agent'}</CardTitle>
+            <div className="text-sm text-white/60 mt-1 capitalize">{mentor?.role}</div>
           </div>
           <div className="flex items-center gap-1">
             <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-            <span className="text-white font-medium">{profile.mentor_rating}</span>
+            <span className="text-white font-medium">{profile.mentor_rating || '—'}</span>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-white/70 line-clamp-2">{profile.bio}</p>
-        
         <div className="flex flex-wrap gap-1">
           {profile.expertise_areas?.slice(0, 3).map((skill, idx) => (
             <Badge key={idx} variant="outline" className="border-purple-500/30 text-purple-300 text-xs">
@@ -311,28 +295,21 @@ function MentorCard({ profile, mentor, onRequest }) {
             </Badge>
           ))}
         </div>
-
         <div className="pt-2 border-t border-white/10 space-y-2">
           <div className="flex justify-between text-xs text-white/60">
             <span>Capacity</span>
-            <span>{profile.current_mentees}/{profile.max_mentees}</span>
+            <span>{profile.current_mentees || 0}/{profile.max_mentees || 3}</span>
           </div>
           <Progress value={capacityPercentage} className="h-1" />
         </div>
-
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="text-white/60">
-            {profile.past_mentorships_count} mentorships
-          </div>
-          <div className="text-white/60">
-            {profile.success_rate}% success
-          </div>
+        <div className="grid grid-cols-2 gap-2 text-xs text-white/60">
+          <div>{profile.past_mentorships_count || 0} mentorships</div>
+          <div>{profile.success_rate || 0}% success</div>
         </div>
-
-        <Button 
+        <Button
           onClick={onRequest}
-          className="w-full bg-purple-600 hover:bg-purple-700"
-          disabled={profile.current_mentees >= profile.max_mentees}
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+          disabled={(profile.current_mentees || 0) >= (profile.max_mentees || 3)}
         >
           Request Mentorship
         </Button>
@@ -342,7 +319,8 @@ function MentorCard({ profile, mentor, onRequest }) {
 }
 
 function MentorshipCard({ relationship, otherAgent, role }) {
-  const progress = relationship.goals?.filter(g => g.completed).length / (relationship.goals?.length || 1) * 100;
+  const goals = relationship.goals || [];
+  const progress = goals.length > 0 ? (goals.filter(g => g.completed).length / goals.length) * 100 : 0;
 
   return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
@@ -352,18 +330,14 @@ function MentorshipCard({ relationship, otherAgent, role }) {
             <div className="text-white font-medium">{otherAgent?.name || 'Unknown'}</div>
             <div className="text-sm text-white/60">{role === 'mentor' ? 'Your mentee' : 'Your mentor'}</div>
           </div>
-          <Badge className="bg-green-500/20 text-green-400">{relationship.status}</Badge>
+          <Badge className="bg-green-500/20 text-green-300 border-green-500/30">{relationship.status}</Badge>
         </div>
-
         <div className="space-y-3">
           <div className="flex flex-wrap gap-1">
             {relationship.focus_areas?.map((area, idx) => (
-              <Badge key={idx} variant="outline" className="border-white/20 text-white/70 text-xs">
-                {area}
-              </Badge>
+              <Badge key={idx} variant="outline" className="border-white/20 text-white/70 text-xs">{area}</Badge>
             ))}
           </div>
-
           <div>
             <div className="flex justify-between text-sm mb-2">
               <span className="text-white/60">Goals Progress</span>
@@ -371,7 +345,6 @@ function MentorshipCard({ relationship, otherAgent, role }) {
             </div>
             <Progress value={progress} className="h-2" />
           </div>
-
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-blue-400" />
@@ -379,7 +352,7 @@ function MentorshipCard({ relationship, otherAgent, role }) {
             </div>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-green-400" />
-              <span className="text-white/70">{relationship.total_hours?.toFixed(1) || 0}h total</span>
+              <span className="text-white/70">{(relationship.total_hours || 0).toFixed(1)}h total</span>
             </div>
           </div>
         </div>
@@ -393,7 +366,7 @@ function AIMatchCard({ match, agents, currentAgentId }) {
 
   const requestMutation = useMutation({
     mutationFn: async (mentorId) => {
-      const matchedMentor = match.recommended_mentors.find(m => m.mentor_agent_id === mentorId);
+      const matchedMentor = match.recommended_mentors?.find(m => m.mentor_agent_id === mentorId);
       const response = await base44.functions.invoke('requestMentorship', {
         mentor_agent_id: mentorId,
         mentee_agent_id: currentAgentId,
@@ -431,9 +404,9 @@ function AIMatchCard({ match, agents, currentAgentId }) {
                   size="sm"
                   onClick={() => requestMutation.mutate(rec.mentor_agent_id)}
                   disabled={requestMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Request
+                  {requestMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Request'}
                 </Button>
               </div>
               <p className="text-sm text-white/70 mb-3">{rec.reasoning}</p>
@@ -482,20 +455,17 @@ function FindMentorDialog({ agentId, onClose }) {
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-white/70 mb-2 block">
-              What skill or area do you want to focus on?
-            </label>
+            <label className="text-sm text-white/70 mb-2 block">What skill or area do you want to focus on?</label>
             <Input
               value={skillFocus}
               onChange={(e) => setSkillFocus(e.target.value)}
               placeholder="e.g., Machine Learning, Project Management..."
-              className="bg-white/5 border-white/10 text-white"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
           </div>
           {matchResult?.styleSuccessRates && Object.keys(matchResult.styleSuccessRates).length > 0 && (
             <MatchInsightsPanel styleSuccessRates={matchResult.styleSuccessRates} />
           )}
-
           <Button
             onClick={() => findMutation.mutate()}
             disabled={findMutation.isPending}
@@ -504,7 +474,6 @@ function FindMentorDialog({ agentId, onClose }) {
             {findMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Brain className="w-4 h-4 mr-2" />}
             {matchResult ? 'Re-run Matching' : 'Find AI Matches'}
           </Button>
-
           {matchResult && (
             <p className="text-center text-xs text-white/40">
               {matchResult.totalMatchesCreated} match{matchResult.totalMatchesCreated !== 1 ? 'es' : ''} created — check the <strong className="text-white/60">AI Matches</strong> tab
@@ -526,7 +495,7 @@ function BecomeMentorDialog({ agentId, onClose }) {
       await base44.entities.MentorProfile.create({
         agent_id: agentId,
         is_available: true,
-        expertise_areas: expertise.split(',').map(e => e.trim()),
+        expertise_areas: expertise.split(',').map(e => e.trim()).filter(Boolean),
         max_mentees: 3,
         bio
       });
@@ -551,7 +520,7 @@ function BecomeMentorDialog({ agentId, onClose }) {
               value={expertise}
               onChange={(e) => setExpertise(e.target.value)}
               placeholder="AI, Machine Learning, Leadership..."
-              className="bg-white/5 border-white/10 text-white"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
           </div>
           <div>
@@ -560,12 +529,12 @@ function BecomeMentorDialog({ agentId, onClose }) {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Share your approach to mentoring..."
-              className="bg-white/5 border-white/10 text-white h-24"
+              className="bg-white/5 border-white/10 text-white h-24 placeholder:text-white/30"
             />
           </div>
           <Button
             onClick={() => createMutation.mutate()}
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || !expertise.trim()}
             className="w-full bg-green-600 hover:bg-green-700"
           >
             {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
