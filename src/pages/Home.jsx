@@ -239,19 +239,9 @@ export default function Home() {
             {loading ? (
               <div className="space-y-2">{[1,2,3,4].map(i => <div key={i} className="h-10 bg-white/5 rounded-lg animate-pulse" />)}</div>
             ) : transactions.length === 0 ? (
-              <div className="space-y-2">
-                {agents.slice(0, 4).map(a => (
-                  <div key={a.id} className="flex items-center gap-3 bg-white/5 rounded-xl p-2.5">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500/40 to-pink-500/40 flex items-center justify-center flex-shrink-0">
-                      <Users className="w-3 h-3 text-purple-300" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-xs truncate">Agent <span className="text-purple-300">{a.name}</span> active</p>
-                      <p className="text-white/30 text-[10px]">DID · {a.role}</p>
-                    </div>
-                    <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
-                  </div>
-                ))}
+              <div className="text-center py-6">
+                <Activity className="w-6 h-6 text-white/20 mx-auto mb-2" />
+                <p className="text-white/30 text-xs">No on-chain activity recorded yet.</p>
               </div>
             ) : (
               <div className="space-y-2">
