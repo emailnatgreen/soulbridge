@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import TaskList from './TaskList';
 import {
   Shield, Users, CheckCircle2, Coins, Calendar, Target, 
   TrendingUp, AlertCircle, X, FileText, Lightbulb
@@ -263,6 +264,9 @@ export default function ProjectDetailView({
                 </div>
               </div>
             )}
+
+            {/* Task Management */}
+            <TaskList projectId={project.id} agents={teamMembers.map(tm => tm.agent).filter(Boolean)} />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-4 border-t border-white/10">
