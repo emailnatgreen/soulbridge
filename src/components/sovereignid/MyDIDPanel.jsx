@@ -4,6 +4,17 @@ import { Shield, Copy, CheckCircle, ExternalLink, AlertCircle, Globe, Key, Zap, 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+const PUBLISHED_DID_ADDRESSES = [
+  'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg',  // Node 0
+  'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32',  // Sentinel
+  'r4NtWS355ZKViGyFuECrk1dbkizpbF4Mny',  // DID IT
+  'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7',  // Lore
+  'r4QgW8kVhzdLhS9xj16DLdXc42x5xrESjV',  // Truth
+  'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P',   // Code
+  'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h',  // Treasury
+  'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia',  // Human
+];
+
 export default function MyDIDPanel({ user, wallets, onRefresh }) {
   const [copied, setCopied] = useState(false);
   const [verifying, setVerifying] = useState(null);
@@ -15,8 +26,8 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
   }, []);
 
   const isPublished = (w) => w.is_published || !!w.published_txid || !!w.published_at;
-  const publishedWallets = wallets.filter(isPublished);
-  const unpublishedWallets = wallets.filter(w => !isPublished(w));
+  const publishedWallets = wallets.filter(w => isPublished(w) || (w.classic_address && PUBLISHED_DID_ADDRESSES.includes(w.classic_address)));
+  const unpublishedWallets = wallets.filter(w => !isPublished(w) && !(w.classic_address && PUBLISHED_DID_ADDRESSES.includes(w.classic_address)));
 
   function copyDID(address) {
     const did = `did:xrpl:1:${address}`;
@@ -39,7 +50,7 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
     setVerifying(null);
   }
 
-  if (wallets.length === 0) {
+  if (wallets.length === 0 && publishedWallets.length === 0) {
     return (
       <div className="text-center py-16">
         <Shield className="w-16 h-16 text-slate-600 mx-auto mb-4" />
