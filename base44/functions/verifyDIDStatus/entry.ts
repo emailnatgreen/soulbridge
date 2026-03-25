@@ -67,13 +67,13 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           method: 'ledger_entry',
-          params: [{ did: { Account: classic_address }, ledger_index: 'validated' }],
+          params: [{ did: classic_address, ledger_index: 'validated' }],
         }),
       });
       const didData = await didRes.json();
-      console.log('DID ledger_entry raw:', JSON.stringify(didData.result));
-      didPublished = !didData.result?.error;
-      didNode = didData.result?.node;
+      const rawResult = didData.result;
+      didPublished = !rawResult?.error;
+      didNode = rawResult?.node;
     } catch(e) {
       console.error('DID check failed:', e.message);
     }
@@ -81,8 +81,6 @@ Deno.serve(async (req) => {
     return Response.json({
       did: `did:xrpl:${classic_address}`,
       network: isTestnet ? 'testnet' : 'mainnet',
-      _debug_did_node: didNode,
-      _debug_did_published: didPublished,
       verification: {
         account_exists: true,
         did_active: didPublished,
