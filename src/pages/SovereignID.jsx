@@ -35,10 +35,7 @@ export default function SovereignID() {
     if (me) {
       const allWallets = await base44.entities.Wallet.list('-created_date', 200);
       const ws = allWallets.filter(w =>
-        w.classic_address && (
-          w.owner_id === me.id ||
-          w.metadata?.is_constitutional_node === true
-        )
+        w.classic_address && w.owner_id === me.id
       );
       setWallets(ws);
     }
