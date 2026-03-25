@@ -108,12 +108,12 @@ export default function MyWalletsPanel({ user, wallets, onRefresh }) {
           </div>
 
           <div className="border-t border-slate-800 px-5 py-3 flex flex-wrap gap-2 bg-slate-900/50">
-            <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 text-xs gap-1"
+            <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1"
               onClick={() => refreshBalance(wallet)} disabled={refreshing === wallet.id}>
               <RefreshCw className={`w-3 h-3 ${refreshing === wallet.id ? 'animate-spin' : ''}`} />
               Refresh Balance
             </Button>
-            <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 text-xs gap-1"
+            <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1"
               onClick={() => window.open(`https://livenet.xrpl.org/accounts/${wallet.classic_address}`, '_blank')}>
               <ExternalLink className="w-3 h-3" /> View on XRPL
             </Button>

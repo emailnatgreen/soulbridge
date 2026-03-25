@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Shield, Copy, CheckCircle, ExternalLink, AlertCircle, Globe, Key, Zap } from 'lucide-react';
+import { Shield, Copy, CheckCircle, ExternalLink, AlertCircle, Globe, Key, Zap, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -8,6 +8,11 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
   const [copied, setCopied] = useState(false);
   const [verifying, setVerifying] = useState(null);
   const [verifyResult, setVerifyResult] = useState({});
+  const [agents, setAgents] = useState([]);
+
+  useEffect(() => {
+    base44.entities.Agent.list().then(setAgents).catch(() => {});
+  }, []);
 
   const publishedWallets = wallets.filter(w => w.is_published);
   const unpublishedWallets = wallets.filter(w => !w.is_published);
@@ -46,6 +51,8 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
     );
   }
 
+  const getLinkedAgent = (walletId) => agents.find(a => a.wallet_id === walletId);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -79,6 +86,7 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
                 onVerify={verifyDID}
                 verifying={verifying === wallet.id}
                 verifyResult={verifyResult[wallet.id]}
+                linkedAgent={getLinkedAgent(wallet.id)}
               />
             ))}
           </div>
@@ -111,7 +119,7 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
   );
 }
 
-function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResult }) {
+function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResult, linkedAgent }) {
   const did = `did:xrpl:1:${wallet.classic_address}`;
   const didUrl = `https://soulbridge.base44.app/SharedDidView?address=${wallet.classic_address}`;
 
@@ -153,6 +161,22 @@ function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResu
         )}
       </div>
 
+      {linkedAgent ? (
+        <div className="bg-purple-900/20 border border-purple-700/30 rounded-lg p-3 flex items-center gap-3">
+          <User className="w-4 h-4 text-purple-400 flex-shrink-0" />
+          <div>
+            <div className="text-sm font-semibold text-purple-300">{linkedAgent.name}</div>
+            <div className="text-xs text-slate-400">{linkedAgent.role} · {linkedAgent.status}</div>
+          </div>
+          <Badge className="ml-auto bg-purple-900/50 text-purple-400 border-purple-700/50 text-xs">Agent Linked</Badge>
+        </div>
+      ) : (
+        <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-3 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-amber-400" />
+          <span className="text-sm text-amber-300">No agent linked to this DID</span>
+        </div>
+      )}
+
       {verifyResult && (
         <div className={`rounded-lg p-3 text-sm ${verifyResult.error ? 'bg-red-900/30 border border-red-700/50 text-red-400' : 'bg-green-900/30 border border-green-700/50 text-green-300'}`}>
           {verifyResult.error ? `Error: ${verifyResult.error}` : (
@@ -165,16 +189,16 @@ function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResu
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 hover:text-white text-xs gap-1"
+        <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1"
           onClick={() => onCopy(wallet.classic_address)}>
           {copied === wallet.classic_address ? <CheckCircle className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
           {copied === wallet.classic_address ? 'Copied!' : 'Copy DID'}
         </Button>
-        <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 hover:text-white text-xs gap-1"
+        <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1"
           onClick={() => window.open(didUrl, '_blank')}>
           <Globe className="w-3 h-3" /> View Public Profile
         </Button>
-        <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 hover:text-white text-xs gap-1"
+        <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1"
           onClick={() => onVerify(wallet)} disabled={verifying}>
           <Zap className="w-3 h-3" /> {verifying ? 'Verifying...' : 'Verify On-Chain'}
         </Button>
