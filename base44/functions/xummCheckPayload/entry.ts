@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('xumm_api_key');
     const apiSecret = Deno.env.get('xume_secret_key');
 
-    const res = await fetch(`https://xumm.app/api/v1/platform/payload/${payload_id}`, {
+    const res = await fetch(`https://xaman.app/api/v1/platform/payload/${payload_id}`, {
       headers: {
         'X-API-Key': apiKey,
         'X-API-Secret': apiSecret,

@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       },
     };
 
-    const res = await fetch('https://xumm.app/api/v1/platform/payload', {
+    const res = await fetch('https://xaman.app/api/v1/platform/payload', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
