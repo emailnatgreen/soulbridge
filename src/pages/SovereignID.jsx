@@ -33,8 +33,8 @@ export default function SovereignID() {
     if (me) {
       const ws = me.role === 'admin'
         ? (await base44.entities.Wallet.list('-created_date', 100)).filter(w => w.owner_id !== 'axi_main_001')
-        : await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 50);
-      setWallets(ws.filter(w => w.classic_address && !w.notes?.includes('REVOKED')));
+        : await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 100);
+      setWallets(ws.filter(w => w.classic_address));
     }
     setLoading(false);
   }
