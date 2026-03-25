@@ -214,7 +214,7 @@ export default function CreateDID() {
         </Card>
 
         {/* Step Content */}
-        {currentStep === 1 && (
+        {currentStep === 1 && !createDIDMutation.isPending && (
           <Card>
             <CardHeader>
               <CardTitle>DID Information</CardTitle>
@@ -291,7 +291,20 @@ export default function CreateDID() {
           </Card>
         )}
 
-        {currentStep === 2 && qrData && (
+        {createDIDMutation.isPending && (
+          <Card>
+            <CardContent className="py-16 flex flex-col items-center justify-center gap-4">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-indigo-200 rounded-full"></div>
+                <div className="absolute top-0 left-0 w-16 h-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+              </div>
+              <p className="text-gray-600 font-medium">Generating QR Code...</p>
+              <p className="text-sm text-gray-400">Contacting Xaman, please wait</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!createDIDMutation.isPending && currentStep === 2 && qrData && (
           <Card>
             <CardHeader>
               <CardTitle>Scan QR Code with Xaman</CardTitle>
