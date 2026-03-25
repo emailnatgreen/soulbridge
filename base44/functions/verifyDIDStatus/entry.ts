@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
     const isTestnet = network === 'testnet';
     const rpcUrl = isTestnet
-      ? 'https://s.altnet.rippletest.net:51234'
+      ? 'https://testnet.xrpl-labs.com'
       : 'https://xrplcluster.com';
 
     const accountRes = await fetch(rpcUrl, {
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
           : 'Wallet is active on XRPL but DID not yet published on-chain. Use "Publish DID On-Chain" to publish.',
       },
       did_data: didPublished && didNode ? {
-        uri: didNode.URI ? decodeURIComponent(didNode.URI) : null,
+        uri: didNode.URI ? new TextDecoder().decode(new Uint8Array(didNode.URI.match(/.{1,2}/g).map(b => parseInt(b, 16)))) : null,
         document: didNode.DIDDocument || null,
         data: didNode.Data || null,
       } : null,
