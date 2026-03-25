@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Copy, CheckCircle, ExternalLink, User, Fingerprint, FileJson, AlertTriangle, Shield, Clock, Info, UserPlus, Edit3, History, Search, Activity, Link2, Upload, Sparkles, Home } from 'lucide-react';
+import { Copy, CheckCircle, ExternalLink, User, Fingerprint, FileJson, AlertTriangle, Shield, Clock, Info, UserPlus, Edit3, History, Search, Activity, Link2, Upload, Sparkles, Home, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AgentManagementDialog from '../components/AgentManagementDialog';
 import AuditLogViewer from '../components/AuditLogViewer';
@@ -51,6 +51,8 @@ export default function DIDManager() {
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [selectedWalletForPublish, setSelectedWalletForPublish] = useState(null);
   const [verifyingWalletId, setVerifyingWalletId] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [walletToDelete, setWalletToDelete] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -164,6 +166,17 @@ export default function DIDManager() {
       toast.error(message);
       console.error('Verification error:', error);
     }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (walletId) => base44.entities.Wallet.delete(walletId),
+    onSuccess: () => {
+      toast.success('DID deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      setDeleteDialogOpen(false);
+      setWalletToDelete(null);
+    },
+    onError: () => toast.error('Failed to delete DID')
   });
 
   const requestActivationMutation = useMutation({
@@ -646,13 +659,23 @@ export default function DIDManager() {
                                </DialogFooter>
                              </DialogContent>
                            </Dialog>
-                           </div>
-                          </div>
 
-                          {/* Metadata */}
+                           <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                            onClick={() => { setWalletToDelete(wallet); setDeleteDialogOpen(true); }}
+                           >
+                            <Trash2 className="w-3 h-3 mr-2" />
+                            Delete DID
+                           </Button>
+                           </div>
+                           </div>
+
+                           {/* Metadata */}
                           <div className="text-xs text-gray-500 border-t pt-2">
                           Created: {new Date(wallet.created_date).toLocaleDateString()}
-                        </div>
+                          </div>
                       </CardContent>
                     </Card>
                   );
@@ -781,6 +804,40 @@ export default function DIDManager() {
                         </Tabs>
 
 
+
+        {/* Delete DID Confirmation Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <Trash2 className="w-5 h-5" />
+                Delete DID
+              </DialogTitle>
+              <DialogDescription>
+                This will permanently remove this DID record from SoulBridge. This cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            {walletToDelete && (
+              <div className="space-y-3 py-2">
+                <div className="bg-red-50 border border-red-200 rounded p-3">
+                  <div className="text-sm font-medium text-gray-700">{walletToDelete.name || 'Unnamed DID'}</div>
+                  <div className="text-xs text-gray-500 mt-1">did:xrpl:{walletToDelete.classic_address}</div>
+                </div>
+                <p className="text-sm text-gray-600">Are you sure you want to delete this DID?</p>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteMutation.mutate(walletToDelete?.id)}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete DID'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Publish DID Dialog */}
         <PublishDIDDialog
