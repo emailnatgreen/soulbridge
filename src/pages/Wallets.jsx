@@ -84,9 +84,16 @@ export default function WalletsPage() {
     createWallet.mutate({ name, network });
   };
 
-  const handleAddExisting = () => {
+  const handleAddExisting = async () => {
     if (!name.trim() || !classicAddress.trim()) {
       toast.error('Please enter a wallet name and address');
+      return;
+    }
+    // Check if wallet with this address already exists
+    const existing = await base44.entities.Wallet.filter({ classic_address: classicAddress.trim() });
+    if (existing && existing.length > 0) {
+      toast.info(`Wallet already registered: ${existing[0].name || classicAddress}`);
+      resetForm();
       return;
     }
     base44.entities.Wallet.create({
@@ -161,6 +168,13 @@ export default function WalletsPage() {
   const autoSaveXummWallet = async (account) => {
     const walletName = name.trim() || `XUMM Wallet (${account.slice(0, 8)}...)`;
     try {
+      // Check if wallet with this address already exists
+      const existing = await base44.entities.Wallet.filter({ classic_address: account });
+      if (existing && existing.length > 0) {
+        toast.info(`Wallet already registered: ${existing[0].name || account}`);
+        setTimeout(() => resetForm(), 1500);
+        return;
+      }
       await base44.entities.Wallet.create({
         owner_id: user?.id || user?.email || '',
         name: walletName,
@@ -170,7 +184,6 @@ export default function WalletsPage() {
       });
       queryClient.invalidateQueries({ queryKey: ['wallets'] });
       toast.success(`Wallet "${walletName}" added successfully!`);
-      // Small delay so user sees success state, then close
       setTimeout(() => resetForm(), 1800);
     } catch (err) {
       toast.error('Wallet imported but failed to save — please click Add Wallet');
