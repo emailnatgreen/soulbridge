@@ -5,25 +5,35 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 const NODE_COLORS = {
-  purple: 'border-purple-700/40 bg-purple-900/10',
+  white: 'border-slate-700/40 bg-slate-900/10',
+  red: 'border-red-700/40 bg-red-900/10',
+  orange: 'border-orange-700/40 bg-orange-900/10',
+  yellow: 'border-yellow-700/40 bg-yellow-900/10',
   green: 'border-green-700/40 bg-green-900/10',
   blue: 'border-blue-700/40 bg-blue-900/10',
-  amber: 'border-amber-700/40 bg-amber-900/10',
-  rose: 'border-rose-700/40 bg-rose-900/10',
+  purple: 'border-purple-700/40 bg-purple-900/10',
+  gray: 'border-gray-700/40 bg-gray-900/10',
   cyan: 'border-cyan-700/40 bg-cyan-900/10',
   indigo: 'border-indigo-700/40 bg-indigo-900/10',
   teal: 'border-teal-700/40 bg-teal-900/10',
+  amber: 'border-amber-700/40 bg-amber-900/10',
+  rose: 'border-rose-700/40 bg-rose-900/10',
 };
 
 const BADGE_COLORS = {
-  purple: 'bg-purple-900/50 text-purple-300 border-purple-700/50',
+  white: 'bg-slate-900/50 text-slate-300 border-slate-700/50',
+  red: 'bg-red-900/50 text-red-300 border-red-700/50',
+  orange: 'bg-orange-900/50 text-orange-300 border-orange-700/50',
+  yellow: 'bg-yellow-900/50 text-yellow-300 border-yellow-700/50',
   green: 'bg-green-900/50 text-green-300 border-green-700/50',
   blue: 'bg-blue-900/50 text-blue-300 border-blue-700/50',
-  amber: 'bg-amber-900/50 text-amber-300 border-amber-700/50',
-  rose: 'bg-rose-900/50 text-rose-300 border-rose-700/50',
+  purple: 'bg-purple-900/50 text-purple-300 border-purple-700/50',
+  gray: 'bg-gray-900/50 text-gray-300 border-gray-700/50',
   cyan: 'bg-cyan-900/50 text-cyan-300 border-cyan-700/50',
   indigo: 'bg-indigo-900/50 text-indigo-300 border-indigo-700/50',
   teal: 'bg-teal-900/50 text-teal-300 border-teal-700/50',
+  amber: 'bg-amber-900/50 text-amber-300 border-amber-700/50',
+  rose: 'bg-rose-900/50 text-rose-300 border-rose-700/50',
 };
 
 const PUBLISHED_DID_ADDRESSES = [
