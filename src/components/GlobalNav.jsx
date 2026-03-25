@@ -67,6 +67,7 @@ const NAV_GROUPS = [
   {
     label: 'DID & Identity',
     links: [
+      { label: '⭐ Sovereign ID', path: '/SovereignID', icon: Shield },
       { label: 'DID Manager', path: '/DIDManager', icon: Shield },
       { label: 'DID Registry', path: '/DIDRegistry', icon: Database },
       { label: 'DID Analytics', path: '/DIDAnalytics', icon: Activity },
