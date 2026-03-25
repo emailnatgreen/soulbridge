@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
     const isTestnet = network === 'testnet';
     const rpcUrl = isTestnet
-      ? 'https://testnet.xrpl-labs.com'
+      ? 'https://s.altnet.rippletest.net:51234'
       : 'https://xrplcluster.com';
 
     const accountRes = await fetch(rpcUrl, {
@@ -59,21 +59,30 @@ Deno.serve(async (req) => {
       : 0;
 
     // Check for DID object on-chain
-    const didRes = await fetch(rpcUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        method: 'ledger_entry',
-        params: [{ did: { account: classic_address }, ledger_index: 'current' }],
-      }),
-    });
-    const didData = await didRes.json();
-    const didPublished = !didData.result?.error;
-    const didNode = didData.result?.node;
+    let didPublished = false;
+    let didNode = null;
+    try {
+      const didRes = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'ledger_entry',
+          params: [{ did: { Account: classic_address }, ledger_index: 'validated' }],
+        }),
+      });
+      const didData = await didRes.json();
+      console.log('DID ledger_entry raw:', JSON.stringify(didData.result));
+      didPublished = !didData.result?.error;
+      didNode = didData.result?.node;
+    } catch(e) {
+      console.error('DID check failed:', e.message);
+    }
 
     return Response.json({
       did: `did:xrpl:${classic_address}`,
       network: isTestnet ? 'testnet' : 'mainnet',
+      _debug_did_node: didNode,
+      _debug_did_published: didPublished,
       verification: {
         account_exists: true,
         did_active: didPublished,
