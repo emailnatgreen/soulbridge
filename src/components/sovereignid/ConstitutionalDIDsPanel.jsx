@@ -40,7 +40,9 @@ export default function ConstitutionalDIDsPanel() {
       base44.entities.Agent.list(),
     ]).then(([ws, ags]) => {
       const constitutional = ws.filter(w =>
-        w.classic_address && w.metadata?.is_constitutional_node === true
+        w.classic_address &&
+        w.metadata?.is_constitutional_node === true &&
+        (w.is_published || w.published_txid || w.published_at)
       );
       setWallets(constitutional);
       setAgents(ags);
@@ -99,7 +101,7 @@ export default function ConstitutionalDIDsPanel() {
           <Shield className="w-5 h-5 text-purple-400" /> Core Constitutional DIDs
         </h2>
         <p className="text-slate-400 text-sm">
-          The foundational nodes of the SoulBridge constitutional field — {wallets.length} registered.
+          {wallets.length} published constitutional nodes active on the XRPL mainnet.
         </p>
       </div>
 
@@ -131,9 +133,10 @@ export default function ConstitutionalDIDsPanel() {
                 </div>
               </div>
 
-              <div className="bg-slate-900/60 rounded-lg p-2.5">
+              <div className="bg-slate-900/60 rounded-lg p-2.5 space-y-1">
                 <div className="text-slate-500 text-xs mb-0.5">DID</div>
                 <div className="font-mono text-xs text-purple-300 break-all">{did}</div>
+                <div className="text-slate-500 text-xs">Balance: <span className="text-white">{wallet.balance ?? 0} XRP</span> · Published: <span className="text-green-400">{wallet.published_at ? new Date(wallet.published_at).toLocaleDateString('en-GB') : '—'}</span></div>
               </div>
 
               {agent ? (
