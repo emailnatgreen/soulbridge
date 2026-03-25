@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { Shield, Wallet, Plus, Activity, Lock, ChevronRight, ArrowLeft, Home } from 'lucide-react';
+import { Shield, Wallet, Plus, Activity, Lock, ChevronRight, ArrowLeft, Home, Globe } from 'lucide-react';
+import ConstitutionalDIDsPanel from '@/components/sovereignid/ConstitutionalDIDsPanel';
 import MyDIDPanel from '@/components/sovereignid/MyDIDPanel';
 import MyWalletsPanel from '@/components/sovereignid/MyWalletsPanel';
 import CreateLinkDIDPanel from '@/components/sovereignid/CreateLinkDIDPanel';
@@ -11,6 +12,7 @@ import ActivityLogPanel from '@/components/sovereignid/ActivityLogPanel';
 const TABS = [
   { id: 'did', label: 'My DID', icon: Shield },
   { id: 'wallets', label: 'My Wallets', icon: Wallet },
+  { id: 'constitutional', label: 'Constitutional DIDs', icon: Globe },
   { id: 'create', label: 'Create / Link DID', icon: Plus },
   { id: 'security', label: 'Security & Privacy', icon: Lock },
   { id: 'activity', label: 'Activity Log', icon: Activity },
@@ -114,6 +116,7 @@ export default function SovereignID() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         {activeTab === 'did' && <MyDIDPanel user={user} wallets={wallets} onRefresh={loadData} />}
         {activeTab === 'wallets' && <MyWalletsPanel user={user} wallets={wallets} onRefresh={loadData} />}
+        {activeTab === 'constitutional' && <ConstitutionalDIDsPanel />}
         {activeTab === 'create' && <CreateLinkDIDPanel user={user} wallets={wallets} onRefresh={loadData} onTabChange={setActiveTab} />}
         {activeTab === 'security' && <SecurityPrivacyPanel user={user} wallets={wallets} />}
         {activeTab === 'activity' && <ActivityLogPanel user={user} wallets={wallets} />}
