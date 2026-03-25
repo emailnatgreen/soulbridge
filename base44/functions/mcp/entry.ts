@@ -43,13 +43,15 @@ Deno.serve(async (req) => {
         return Response.json({ error: `XUMM failed: ${data.error?.code || 'Unknown'}` }, { status: 500 });
       }
 
+      console.log('Xaman create response:', JSON.stringify(data));
+
       return Response.json({
         success: true,
         result: {
           uuid: data.uuid,
           qr: data.refs?.qr_png,
           qr_png: data.refs?.qr_png,
-          expires: data.payload.expires_at
+          expires: data.payload?.expires_at || null
         }
       });
 
