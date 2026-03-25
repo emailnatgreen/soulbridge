@@ -14,8 +14,9 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
     base44.entities.Agent.list().then(setAgents).catch(() => {});
   }, []);
 
-  const publishedWallets = wallets.filter(w => w.is_published);
-  const unpublishedWallets = wallets.filter(w => !w.is_published);
+  const isPublished = (w) => w.is_published || !!w.published_txid || !!w.published_at;
+  const publishedWallets = wallets.filter(isPublished);
+  const unpublishedWallets = wallets.filter(w => !isPublished(w));
 
   function copyDID(address) {
     const did = `did:xrpl:1:${address}`;
