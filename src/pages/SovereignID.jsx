@@ -33,10 +33,14 @@ export default function SovereignID() {
     const me = await base44.auth.me();
     setUser(me);
     if (me) {
-      const ws = me.role === 'admin'
-        ? (await base44.entities.Wallet.list('-created_date', 100)).filter(w => w.owner_id !== 'axi_main_001')
-        : await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 100);
-      setWallets(ws.filter(w => w.classic_address));
+      const allWallets = await base44.entities.Wallet.list('-created_date', 200);
+      const ws = allWallets.filter(w =>
+        w.classic_address && (
+          w.owner_id === me.id ||
+          w.metadata?.is_constitutional_node === true
+        )
+      );
+      setWallets(ws);
     }
     setLoading(false);
   }
