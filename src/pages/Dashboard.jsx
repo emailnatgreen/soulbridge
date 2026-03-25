@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home } from 'lucide-react';
+import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home, Wallet, Globe, ArrowRight, Key } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from '@/api/base44Client';
@@ -21,6 +21,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [identity, setIdentity] = useState(null);
   const [signals, setSignals] = useState([]);
+  const [wallets, setWallets] = useState([]);
+  const [walletsLoading, setWalletsLoading] = useState(true);
 
   // Fetch signals from database + listen for real-time updates
   useEffect(() => {
@@ -47,11 +49,24 @@ export default function Dashboard() {
       const stored = localStorage.getItem('soulbridge_identity');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed?.connected) {
-          setIdentity(parsed);
-        }
+        if (parsed?.connected) setIdentity(parsed);
       }
     } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    async function loadWallets() {
+      setWalletsLoading(true);
+      try {
+        const me = await base44.auth.me();
+        if (me) {
+          const ws = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 10);
+          setWallets(ws);
+        }
+      } catch (e) {}
+      setWalletsLoading(false);
+    }
+    loadWallets();
   }, []);
 
   const handleDisconnect = () => {
@@ -185,6 +200,63 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* DID & Wallet Widget */}
+        <Card className="bg-white/5 border-purple-500/30 backdrop-blur-xl">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Key className="w-5 h-5 text-purple-400" />
+                <h3 className="text-white font-semibold">DID & Wallets</h3>
+              </div>
+              <Link to="/SovereignID"
+                className="flex items-center gap-1.5 bg-purple-700 hover:bg-purple-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">
+                Manage Identity <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+            {walletsLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : wallets.length === 0 ? (
+              <div className="text-center py-6">
+                <Wallet className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                <p className="text-white/40 text-sm">No wallets found.</p>
+                <Link to="/SovereignID" className="inline-flex items-center gap-1 mt-2 text-purple-400 hover:text-purple-300 text-xs underline">Create your first wallet</Link>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {wallets.map(w => (
+                  <div key={w.id} className="flex items-center justify-between py-2.5 px-3 bg-white/5 rounded-xl border border-white/10">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${w.is_published ? 'bg-green-400 animate-pulse' : 'bg-amber-400'}`} />
+                      <div>
+                        <div className="text-white text-sm font-medium">{w.name || 'Unnamed Wallet'}</div>
+                        <div className="text-white/40 text-xs font-mono">{w.classic_address?.slice(0,10)}...{w.classic_address?.slice(-6)}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-white text-sm font-semibold">{w.balance || 0} XRP</div>
+                      <div className={`text-xs ${w.is_published ? 'text-green-400' : 'text-amber-400'}`}>
+                        {w.is_published ? 'DID Active' : 'No DID'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex gap-2 pt-2">
+                  <Link to="/SovereignID"
+                    className="flex-1 text-center bg-purple-700 hover:bg-purple-600 text-white text-xs font-medium py-2 rounded-lg transition">
+                    Manage Sovereign ID
+                  </Link>
+                  <Link to="/Wallets"
+                    className="flex-1 text-center bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-lg transition">
+                    Wallets Page
+                  </Link>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Axi Panel */}
         <Card className="bg-white/5 border-indigo-500/30 backdrop-blur-xl">
