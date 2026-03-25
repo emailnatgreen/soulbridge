@@ -14,9 +14,10 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
     base44.entities.Agent.list().then(setAgents).catch(() => {});
   }, []);
 
+  const PUBLISHED_DIDS = ['rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', 'r4QgW8kVhzdLhS9xj16DLdXc42x5xrESjV']; // Lore, Truth
   const isPublished = (w) => w.is_published || !!w.published_txid || !!w.published_at;
-  const publishedWallets = wallets.filter(isPublished);
-  const unpublishedWallets = wallets.filter(w => !isPublished(w));
+  const publishedWallets = wallets.filter(w => isPublished(w) || (w.classic_address && PUBLISHED_DIDS.includes(w.classic_address)));
+  const unpublishedWallets = wallets.filter(w => !isPublished(w) && !(w.classic_address && PUBLISHED_DIDS.includes(w.classic_address)));
 
   function copyDID(address) {
     const did = `did:xrpl:1:${address}`;
@@ -39,7 +40,7 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
     setVerifying(null);
   }
 
-  if (wallets.length === 0) {
+  if (wallets.length === 0 && publishedWallets.length === 0) {
     return (
       <div className="text-center py-16">
         <Shield className="w-16 h-16 text-slate-600 mx-auto mb-4" />
