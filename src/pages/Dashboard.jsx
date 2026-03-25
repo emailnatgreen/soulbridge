@@ -178,7 +178,7 @@ export default function Dashboard() {
                        <span className="text-white/70 font-mono text-xs">{sig.signal_type || sig.type || 'event'}</span>
                        {sig.page_name && <span className="text-white/40 text-xs">• {sig.page_name}</span>}
                      </div>
-                     <span className="text-white/30 text-xs">{sig.time || new Date(sig.created_date).toLocaleTimeString()}</span>
+                     <span className="text-white/30 text-xs">{sig.time || (() => { const d = new Date(sig.created_date); const now = new Date(); const isToday = d.toDateString() === now.toDateString(); const yesterday = new Date(now); yesterday.setDate(now.getDate()-1); const isYesterday = d.toDateString() === yesterday.toDateString(); const prefix = isToday ? 'Today ' : isYesterday ? 'Yesterday ' : d.toLocaleDateString('en-GB', {day:'numeric',month:'short'}) + ' '; return prefix + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}); })()}</span>
                    </div>
                  ))}
               </div>
