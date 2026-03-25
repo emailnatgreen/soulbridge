@@ -52,6 +52,11 @@ Deno.serve(async (req) => {
     const wallet = await base44.asServiceRole.entities.Wallet.get(wallet_id);
     if (!wallet) return Response.json({ error: 'Wallet not found' }, { status: 404 });
 
+    // SECURITY: Verify the requesting user owns this wallet
+    if (wallet.owner_id !== user.id) {
+      return Response.json({ error: 'Access denied: You do not own this wallet' }, { status: 403 });
+    }
+
     // Build DID document URI - use provided or default to app URL
     const uri = did_uri || `https://soulbridge.base44.app/SharedDidView?address=${wallet.classic_address}`;
     

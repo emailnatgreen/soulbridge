@@ -12,11 +12,14 @@ Deno.serve(async (req) => {
     let classic_address = body.classic_address;
     let network = body.network || 'testnet';
 
-    // Support wallet_id lookup
+    // Support wallet_id lookup — use service role but verify ownership
     if (!classic_address && body.wallet_id) {
-      const wallet = await base44.entities.Wallet.get(body.wallet_id);
+      const wallet = await base44.asServiceRole.entities.Wallet.get(body.wallet_id);
       if (!wallet) {
         return Response.json({ error: 'Wallet not found' }, { status: 404 });
+      }
+      if (wallet.owner_id !== user.id) {
+        return Response.json({ error: 'Access denied: You do not own this wallet' }, { status: 403 });
       }
       classic_address = wallet.classic_address;
       network = wallet.network || 'testnet';

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 async function decryptSeed(encryptedData, iv, salt) {
     const masterKey = Deno.env.get('WALLET_ENCRYPTION_KEY');
