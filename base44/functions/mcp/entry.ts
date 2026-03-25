@@ -19,11 +19,7 @@ Deno.serve(async (req) => {
       const { address, name, profileUrl, instruction } = params;
 
       const txjson = {
-        TransactionType: "Payment",
-        Account: address,
-        Destination: address,
-        Amount: "1",
-        Fee: "12"
+        TransactionType: "SignIn"
       };
 
       const xamanRes = await fetch('https://xaman.app/api/v1/platform/payload', {
