@@ -26,6 +26,17 @@ const BADGE_COLORS = {
   teal: 'bg-teal-900/50 text-teal-300 border-teal-700/50',
 };
 
+const PUBLISHED_DID_ADDRESSES = [
+  'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg',  // Node 0
+  'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32',  // Sentinel
+  'r4NtWS355ZKViGyFuECrk1dbkizpbF4Mny',  // DID IT
+  'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7',  // Lore
+  'r4QgW8kVhzdLhS9xj16DLdXc42x5xrESjV',  // Truth
+  'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P',   // Code
+  'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h',  // Treasury
+  'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia',  // Human
+];
+
 export default function ConstitutionalDIDsPanel() {
   const [wallets, setWallets] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -40,9 +51,7 @@ export default function ConstitutionalDIDsPanel() {
       base44.entities.Agent.list(),
     ]).then(([ws, ags]) => {
       const constitutional = ws.filter(w =>
-        w.classic_address &&
-        w.metadata?.is_constitutional_node === true &&
-        (w.is_published || w.published_txid || w.published_at)
+        w.classic_address && PUBLISHED_DID_ADDRESSES.includes(w.classic_address)
       );
       setWallets(constitutional);
       setAgents(ags);
@@ -101,7 +110,7 @@ export default function ConstitutionalDIDsPanel() {
           <Shield className="w-5 h-5 text-purple-400" /> Core Constitutional DIDs
         </h2>
         <p className="text-slate-400 text-sm">
-          {wallets.length} published constitutional nodes active on the XRPL mainnet.
+          {wallets.length} of {PUBLISHED_DID_ADDRESSES.length} published constitutional nodes active on XRPL mainnet.
         </p>
       </div>
 
