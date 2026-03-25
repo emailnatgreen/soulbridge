@@ -60,8 +60,10 @@ export default function DIDManager() {
   });
 
   const { data: wallets = [], isLoading: walletsLoading } = useQuery({
-    queryKey: ['wallets', user?.id],
-    queryFn: () => base44.entities.Wallet.filter({ owner_id: user?.id }),
+    queryKey: ['wallets', user?.id, user?.role],
+    queryFn: () => user?.role === 'admin'
+      ? base44.entities.Wallet.list('-created_date', 100)
+      : base44.entities.Wallet.filter({ owner_id: user?.id }),
     enabled: !!user?.id,
   });
 
