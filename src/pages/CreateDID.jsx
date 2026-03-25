@@ -86,7 +86,6 @@ export default function CreateDID() {
   });
 
   const startPolling = (uuid) => {
-    setCurrentStep(3);
     const interval = setInterval(async () => {
       try {
         const response = await checkStatusMutation.mutateAsync(uuid);
