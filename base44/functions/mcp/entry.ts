@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
@@ -26,12 +26,12 @@ Deno.serve(async (req) => {
         Fee: "12"
       };
 
-      const basicAuth = btoa(`${apiKey}:${apiSecret}`);
-      const xamanRes = await fetch('https://xumm.app/api/v1/platform/payload', {
+      const xamanRes = await fetch('https://xaman.app/api/v1/platform/payload', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Basic ${basicAuth}`
+          'X-API-Key': apiKey,
+          'X-API-Secret': apiSecret
         },
         body: JSON.stringify({ txjson })
       });
@@ -47,18 +47,18 @@ Deno.serve(async (req) => {
         success: true,
         result: {
           uuid: data.uuid,
-          qr: data.refs.qrpng,
-          qr_png: data.refs.qrpng,
+          qr: data.refs?.qr_png,
+          qr_png: data.refs?.qr_png,
           expires: data.payload.expires_at
         }
       });
 
     } else if (tool === 'check_status') {
       const { uuid } = params;
-      const basicAuth = btoa(`${apiKey}:${apiSecret}`);
-      const xamanRes = await fetch(`https://xumm.app/api/v1/platform/payload/${uuid}`, {
+      const xamanRes = await fetch(`https://xaman.app/api/v1/platform/payload/${uuid}`, {
         headers: {
-          'Authorization': `Basic ${basicAuth}`
+          'X-API-Key': apiKey,
+          'X-API-Secret': apiSecret
         }
       });
 
@@ -67,10 +67,10 @@ Deno.serve(async (req) => {
       return Response.json({
         success: true,
         result: {
-          signed: status.payload.response?.signed ?? false,
-          resolved: status.payload.response ? true : false,
-          transaction: status.payload.response?.txn_type === 'SigningResult' ? status.payload.response?.tx_json?.hash : null,
-          account: status.payload.response?.account || null
+          signed: status.response?.dispatched_result === 'tesSUCCESS' || status.meta?.resolved === true && !!status.response?.txid,
+          resolved: status.meta?.resolved ?? false,
+          transaction: status.response?.txid || null,
+          account: status.response?.account || null
         }
       });
 
