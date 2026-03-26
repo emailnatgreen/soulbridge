@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
+import OctagonMillUI from '@/components/OctagonMillUI';
 
 // ── Signal emitter (global, shared) ──────────────────────────────────────────
 if (typeof window !== 'undefined') {
@@ -220,6 +221,9 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        {/* ── Octagon Mill ── */}
+        <OctagonMillUI />
 
         {/* ── Axi Agent Interface ── */}
         <div className="bg-white/5 border border-indigo-500/20 rounded-2xl p-5">
