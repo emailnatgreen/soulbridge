@@ -20,11 +20,15 @@ const ENDPOINTS = ['https://xrplcluster.com/', 'https://s1.ripple.com:51234/', '
 async function xrplFetch(body) {
   for (const url of ENDPOINTS) {
     try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 5000);
       const r = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
+      clearTimeout(timer);
       const data = await r.json();
       if (data?.result) return data;
     } catch (_) {}
@@ -171,6 +175,8 @@ export default function OctagonMillUI() {
 
   useEffect(() => {
     fetchAll();
+    // Auto-refresh balances every 30 seconds
+    const refreshTimer = setInterval(fetchAll, 30000);
     // Live ledger index via WebSocket
     const ws = new WebSocket('wss://xrplcluster.com');
     ws.onopen = () => ws.send(JSON.stringify({ command: 'subscribe', streams: ['ledger'] }));
@@ -178,7 +184,7 @@ export default function OctagonMillUI() {
       try { const m = JSON.parse(e.data); if (m.ledger_index) setLedger(m.ledger_index); } catch (_) {}
     };
     ws.onerror = () => {};
-    return () => ws.close();
+    return () => { clearInterval(refreshTimer); ws.close(); };
   }, []);
 
   return (
