@@ -30,9 +30,6 @@ export default function Dashboard() {
           <Shield className="w-12 h-12 text-red-400 mx-auto" />
           <h2 className="text-white text-xl font-semibold">Admin Access Only</h2>
           <p className="text-white/50 text-sm">This dashboard is restricted to administrators.</p>
-          <div className="flex justify-center">
-            <BraidNodeIndicators />
-          </div>
           <Link to="/" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg px-4 py-2 text-sm hover:opacity-90 transition">
             <Home className="w-4 h-4" /> Go to Home
           </Link>
@@ -108,9 +105,6 @@ export default function Dashboard() {
         <Shield className="w-12 h-12 text-purple-400 mx-auto" />
         <h2 className="text-white text-xl font-semibold">No Identity Connected</h2>
         <p className="text-white/50 text-sm">Please connect your DID to access the dashboard.</p>
-        <div className="flex justify-center">
-          <BraidNodeIndicators />
-        </div>
         <Link to="/" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg px-4 py-2 text-sm hover:opacity-90 transition">
           <Home className="w-4 h-4" /> Go to Entry Gate
         </Link>
