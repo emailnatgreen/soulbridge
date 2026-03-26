@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home, Wallet, Globe, ArrowRight, Key } from 'lucide-react';
-import BraidNodeIndicators from '@/components/BraidNodeIndicators';
+
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from '@/api/base44Client';
@@ -127,8 +127,7 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
-        {/* 8-Node Braid Status */}
-        <BraidNodeIndicators />
+
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
