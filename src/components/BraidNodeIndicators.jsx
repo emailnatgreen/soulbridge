@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { BRAID_NODES } from '@/lib/braidNodes';
 
+// Renders exactly 8 canonical braid node indicators — no more, no less
 export default function BraidNodeIndicators() {
   const [statuses, setStatuses] = useState({});
 
