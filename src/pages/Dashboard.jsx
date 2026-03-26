@@ -234,7 +234,6 @@ export default function Dashboard() {
                 {wallets.map(w => (
                   <div key={w.id} className="flex items-center justify-between py-2.5 px-3 bg-white/5 rounded-xl border border-white/10">
                     <div className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${w.is_published ? 'bg-green-400 animate-pulse' : 'bg-amber-400'}`} />
                       <div>
                         <div className="text-white text-sm font-medium">{w.name || 'Unnamed Wallet'}</div>
                         <div className="text-white/40 text-xs font-mono">{w.classic_address?.slice(0,10)}...{w.classic_address?.slice(-6)}</div>
