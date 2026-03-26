@@ -3,15 +3,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    // Entity automation — no user session; extract proposal from payload.data
+    const body = await req.json();
+    const proposal = body.data || body;
+    const proposal_id = proposal.id;
+    const proposal_title = proposal.title;
+    const proposal_type = proposal.proposal_type;
+    const proposed_by = proposal.proposed_by;
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { proposal_id, proposal_title, proposal_type, proposed_by } = await req.json();
-
-    if (!proposal_id || !proposal_title || !proposal_type || !proposed_by) {
+    if (!proposal_id || !proposal_title) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
