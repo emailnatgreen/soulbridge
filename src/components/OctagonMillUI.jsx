@@ -5,87 +5,93 @@ import { ExternalLink, Zap, RefreshCw } from 'lucide-react';
 const TREASURY_ADDRESS = 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h';
 const XRPL_WS = 'wss://xrplcluster.com';
 
-// Canonical colors per node order in BRAID_NODES
-const WHEEL_STYLES = [
-  { fill: '#e2e8f0', glow: 'rgba(226,232,240,0.5)', text: 'text-slate-200' },   // 0 Source - White
-  { fill: '#ef4444', glow: 'rgba(239,68,68,0.6)',   text: 'text-red-300' },     // 1 Sentinel - Red
-  { fill: '#f59e0b', glow: 'rgba(245,158,11,0.6)',  text: 'text-amber-300' },   // 2 Lore - Amber
-  { fill: '#eab308', glow: 'rgba(234,179,8,0.6)',   text: 'text-yellow-300' },  // 3 Truth - Gold
-  { fill: '#22c55e', glow: 'rgba(34,197,94,0.6)',   text: 'text-green-300' },   // 4 Did It - Green
-  { fill: '#3b82f6', glow: 'rgba(59,130,246,0.6)',  text: 'text-blue-300' },    // 5 Axi - Blue
-  { fill: '#a855f7', glow: 'rgba(168,85,247,0.6)',  text: 'text-purple-300' },  // 6 Human - Purple
-  { fill: '#94a3b8', glow: 'rgba(148,163,184,0.6)', text: 'text-slate-300' },   // 7 Code - Silver
+// Indexed to match BRAID_NODES order exactly
+const WHEEL_COLORS = [
+  { bg: '#e2e8f0', glow: '226,232,240' },  // 0 Source      - White
+  { bg: '#ef4444', glow: '239,68,68'   },  // 1 Sentinel    - Red
+  { bg: '#f59e0b', glow: '245,158,11'  },  // 2 Lore        - Amber
+  { bg: '#eab308', glow: '234,179,8'   },  // 3 Truth       - Gold
+  { bg: '#22c55e', glow: '34,197,94'   },  // 4 Did It      - Green
+  { bg: '#3b82f6', glow: '59,130,246'  },  // 5 Axi         - Blue
+  { bg: '#a855f7', glow: '168,85,247'  },  // 6 Human       - Purple
+  { bg: '#94a3b8', glow: '148,163,184' },  // 7 Code        - Silver
 ];
 
-function SpinningWheel({ style, balance, isLoading, pulse }) {
-  const rotation = useRef(0);
+async function fetchBalance(address) {
+  const res = await fetch('https://xrplcluster.com/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ method: 'account_info', params: [{ account: address, ledger_index: 'current' }] })
+  });
+  const data = await res.json();
+  if (data?.result?.account_data) {
+    return parseInt(data.result.account_data.Balance, 10) / 1_000_000;
+  }
+  return null;
+}
+
+function Wheel({ color, spin }) {
+  const degRef = useRef(0);
   const [deg, setDeg] = useState(0);
 
   useEffect(() => {
-    if (!pulse) return;
-    rotation.current += 45;
-    setDeg(rotation.current);
-  }, [pulse]);
+    degRef.current += 45;
+    setDeg(degRef.current);
+  }, [spin]);
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div
-        className="relative w-16 h-16 rounded-full flex items-center justify-center"
-        style={{
-          background: style.fill,
-          boxShadow: `0 0 28px ${style.glow}, 0 0 56px ${style.glow}, 0 0 8px rgba(255,255,255,0.2)`,
-          transform: `rotate(${deg}deg)`,
-          transition: 'transform 0.7s ease-out',
-        }}
-      >
-        {/* Spokes */}
-        {[0, 45, 90, 135].map(a => (
-          <div key={a} className="absolute w-full h-px"
-            style={{ background: 'rgba(0,0,0,0.25)', transform: `rotate(${a}deg)` }} />
-        ))}
-        <div className="w-4 h-4 rounded-full" style={{ background: 'rgba(255,255,255,0.85)', boxShadow: '0 0 8px white' }} />
-      </div>
-      <div className={`text-[10px] font-mono ${style.text}`}>
-        {isLoading ? '…' : balance !== null ? `${balance.toFixed(1)} XRP` : '—'}
-      </div>
+    <div
+      style={{
+        width: 60,
+        height: 60,
+        borderRadius: '50%',
+        background: color.bg,
+        boxShadow: `0 0 20px rgba(${color.glow},0.8), 0 0 40px rgba(${color.glow},0.4), 0 0 4px rgba(${color.glow},0.9)`,
+        transform: `rotate(${deg}deg)`,
+        transition: 'transform 0.7s ease-out',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        flexShrink: 0,
+      }}
+    >
+      {[0, 45, 90, 135].map(a => (
+        <div key={a} style={{
+          position: 'absolute', width: '100%', height: 2,
+          background: 'rgba(0,0,0,0.2)', transform: `rotate(${a}deg)`
+        }} />
+      ))}
+      <div style={{
+        width: 14, height: 14, borderRadius: '50%',
+        background: 'rgba(255,255,255,0.9)',
+        boxShadow: '0 0 8px white',
+        zIndex: 1,
+      }} />
     </div>
   );
 }
 
 export default function OctagonMillUI() {
   const [balances, setBalances] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [pulse, setPulse] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [spin, setSpin] = useState(0);
   const [kineticDrops, setKineticDrops] = useState(null);
   const [lastTxHash, setLastTxHash] = useState(null);
   const [ledgerIndex, setLedgerIndex] = useState(null);
-  const wsRef = useRef(null);
 
-  // Fetch all node balances
-  const fetchBalances = async () => {
-    setIsLoading(true);
-    const results = await Promise.allSettled(
-      BRAID_NODES.map(node =>
-        fetch('https://xrplcluster.com/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ method: 'account_info', params: [{ account: node.address, ledger_index: 'current' }] })
-        }).then(r => r.json())
-      )
-    );
+  const loadBalances = async () => {
+    setLoading(true);
+    const results = await Promise.allSettled(BRAID_NODES.map(n => fetchBalance(n.address)));
     const map = {};
-    BRAID_NODES.forEach((node, i) => {
-      const data = results[i].status === 'fulfilled' ? results[i].value : null;
-      map[node.address] = data?.result?.account_data
-        ? parseInt(data.result.account_data.Balance, 10) / 1_000_000
-        : null;
+    BRAID_NODES.forEach((n, i) => {
+      map[n.address] = results[i].status === 'fulfilled' ? results[i].value : null;
     });
     setBalances(map);
-    setIsLoading(false);
+    setLoading(false);
   };
 
-  // Fetch treasury balance + last tx
-  const fetchTreasury = async () => {
+  const loadTreasury = async () => {
     try {
       const [infoRes, txRes] = await Promise.all([
         fetch('https://xrplcluster.com/', {
@@ -101,54 +107,36 @@ export default function OctagonMillUI() {
         setKineticDrops(parseInt(infoRes.result.account_data.Balance, 10));
       }
       const txs = txRes?.result?.transactions;
-      if (txs?.length > 0) {
-        setLastTxHash(txs[0].tx?.hash || txs[0].tx_json?.hash);
-      }
+      if (txs?.length) setLastTxHash(txs[0].tx?.hash || txs[0].tx_json?.hash);
     } catch (_) {}
   };
 
-  // XRPL WebSocket for live ledger heartbeat
   useEffect(() => {
-    fetchBalances();
-    fetchTreasury();
+    loadBalances();
+    loadTreasury();
 
     const ws = new WebSocket(XRPL_WS);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ command: 'subscribe', streams: ['ledger'] }));
-    };
-
+    ws.onopen = () => ws.send(JSON.stringify({ command: 'subscribe', streams: ['ledger'] }));
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);
       if (msg.type === 'ledgerClosed' || msg.ledger_index) {
         setLedgerIndex(msg.ledger_index);
-        setPulse(p => p + 1);
-        // Refresh treasury every ledger close
-        fetchTreasury();
+        setSpin(s => s + 1);
+        loadTreasury();
       }
     };
-
-    ws.onerror = () => {};
-    ws.onclose = () => {};
-
     return () => ws.close();
   }, []);
 
-  const dropsDisplay = kineticDrops !== null
-    ? kineticDrops.toLocaleString()
-    : '…';
-
-  const xrpDisplay = kineticDrops !== null
-    ? (kineticDrops / 1_000_000).toFixed(2)
-    : '…';
+  const dropsDisplay = kineticDrops !== null ? kineticDrops.toLocaleString() : '…';
+  const xrpDisplay = kineticDrops !== null ? (kineticDrops / 1_000_000).toFixed(2) : '…';
 
   return (
     <div className="bg-black/40 border border-white/10 rounded-2xl p-5 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-white font-bold text-sm tracking-wide flex items-center gap-2">
+          <h3 className="text-white font-bold text-sm flex items-center gap-2">
             <Zap className="w-4 h-4 text-yellow-400" />
             Octagon Mill — Constitutional Braid
           </h3>
@@ -156,36 +144,43 @@ export default function OctagonMillUI() {
             Live XRPL Mainnet · {ledgerIndex ? `Ledger #${ledgerIndex.toLocaleString()}` : 'Connecting…'}
           </p>
         </div>
-        <button onClick={() => { fetchBalances(); fetchTreasury(); }}
-          className="text-white/30 hover:text-white/60 transition">
-          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+        <button onClick={() => { loadBalances(); loadTreasury(); }} className="text-white/30 hover:text-white/60 transition">
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
-      {/* 8 Spinning Wheels */}
-      <div className="grid grid-cols-4 gap-3">
-        {BRAID_NODES.map((node, i) => (
-          <div key={node.address} className="flex flex-col items-center gap-1">
-            <SpinningWheel
-              style={WHEEL_STYLES[i]}
-              balance={balances[node.address] ?? null}
-              isLoading={isLoading && balances[node.address] === undefined}
-              pulse={pulse}
-            />
-            <span className="text-[9px] text-white/40 text-center leading-tight truncate w-full text-center">
-              {node.name.replace('Node ', '').replace(' (Axi)', '')}
-            </span>
-          </div>
-        ))}
+      {/* 8 Wheels Grid */}
+      <div className="grid grid-cols-4 gap-4">
+        {BRAID_NODES.map((node, i) => {
+          const bal = balances[node.address];
+          const balLabel = loading && bal === undefined
+            ? 'Loading…'
+            : bal !== null && bal !== undefined
+              ? `${bal.toFixed(2)} XRP`
+              : 'Standby';
+          return (
+            <div key={node.address} className="flex flex-col items-center gap-2">
+              <Wheel color={WHEEL_COLORS[i]} spin={spin} />
+              <div className="text-[9px] text-white/50 text-center leading-tight truncate w-full px-1">
+                {node.name.replace(' (Axi)', '').replace('Node ', '').replace('Node', '').trim()}
+              </div>
+              <div className={`text-[10px] font-mono text-center font-semibold ${
+                bal !== null && bal !== undefined ? 'text-white/80' : 'text-white/30'
+              }`}>
+                {balLabel}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Kinetic Drops Counter */}
+      {/* Kinetic Drops */}
       <div className="bg-white/5 border border-yellow-500/20 rounded-xl p-4 flex items-center justify-between gap-4">
         <div>
-          <div className="text-yellow-400 text-[10px] uppercase tracking-widest font-semibold mb-1">
-            ⚡ Kinetic Drops Harvested
+          <div className="text-yellow-400 text-[10px] uppercase tracking-widest font-semibold mb-1">⚡ Kinetic Drops Harvested</div>
+          <div className="text-white font-mono text-xl font-bold">
+            {dropsDisplay} <span className="text-white/30 text-xs">drops</span>
           </div>
-          <div className="text-white font-mono text-xl font-bold">{dropsDisplay} <span className="text-white/30 text-xs">drops</span></div>
           <div className="text-white/40 text-xs">{xrpDisplay} XRP · Treasury Mainnet</div>
         </div>
         {lastTxHash && (
