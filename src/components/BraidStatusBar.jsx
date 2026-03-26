@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-
-const NODES = [
-  { address: 'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', emoji: '⚪', label: 'Source',  dot: 'bg-slate-300' },
-  { address: 'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32', emoji: '🔴', label: 'Sentinel', dot: 'bg-red-500'    },
-  { address: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', emoji: '🟠', label: 'Lore',     dot: 'bg-amber-500'  },
-  { address: 'r4QgW8kVhzdLhS9xj16DLdXc42x5xrESjV', emoji: '🟡', label: 'Truth',    dot: 'bg-yellow-400' },
-  { address: 'r4NtWS355ZKViGyFuECrk1dbkizpbF4Mny',  emoji: '🟢', label: 'Did It',  dot: 'bg-green-500'  },
-  { address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h',  emoji: '🔵', label: 'Axi',     dot: 'bg-blue-500'   },
-  { address: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia',  emoji: '🟣', label: 'Human',   dot: 'bg-purple-500' },
-  { address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P',   emoji: '⚙️',  label: 'Code',    dot: 'bg-gray-400'   },
-];
+import { BRAID_NODES } from '@/lib/braidNodes';
 
 export default function BraidStatusBar() {
   const [statuses, setStatuses] = useState({});
@@ -41,7 +31,7 @@ export default function BraidStatusBar() {
   return (
     <Link to="/SovereignID?tab=constitutional" className="block">
       <div className="flex items-center gap-1.5 px-2 py-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-600 transition" title="8-Node Braid — click to view Constitutional DIDs">
-        {NODES.map(node => {
+        {BRAID_NODES.map(node => {
           const st = statuses[node.address];
           const isActive = st?.active;
           return (

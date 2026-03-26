@@ -4,19 +4,7 @@ import { Shield, User, Copy, CheckCircle, AlertCircle, ExternalLink, Zap, Loader
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-// Canonical Rainbow of the Braid — address → node identity & color
-const CANONICAL_NODES = [
-  { address: 'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', name: 'Node 0 — Source',    emoji: '⚪️', color: 'white'  },
-  { address: 'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32', name: 'Sentinel Node',      emoji: '🔴', color: 'red'    },
-  { address: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', name: 'Lore Node',           emoji: '🟠', color: 'amber'  },
-  { address: 'r4QgW8kVhzdLhS9xj16DLdXc42x5xrESjV', name: 'Truth Weaver',        emoji: '🟡', color: 'yellow' },
-  { address: 'r4NtWS355ZKViGyFuECrk1dbkizpbF4Mny',  name: 'Did It Node',         emoji: '🟢', color: 'green'  },
-  { address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h',  name: 'Soulbridge (Axi)',    emoji: '🔵', color: 'blue'   },
-  { address: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia',  name: 'Human Node',          emoji: '🟣', color: 'purple' },
-  { address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P',   name: 'Code Node',           emoji: '⚙️',  color: 'gray'   },
-];
-
-const ADDRESS_MAP = Object.fromEntries(CANONICAL_NODES.map(n => [n.address, n]));
+import { BRAID_NODES as CANONICAL_NODES, BRAID_MAP as ADDRESS_MAP } from '@/lib/braidNodes';
 
 const CARD_STYLES = {
   white:  'border-slate-400/60 bg-slate-800/20',
