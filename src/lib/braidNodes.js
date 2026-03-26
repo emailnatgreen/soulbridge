@@ -1,6 +1,6 @@
 // Canonical 8-Node Braid constants — single source of truth
 export const BRAID_NODES = [
-  { address: 'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', name: 'Node 0 — Source',    emoji: '⚪', color: 'white',  dot: 'bg-slate-300'  },
+  { address: 'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', name: 'Node 0 (Source)',    emoji: '⚪', color: 'white',  dot: 'bg-slate-300'  },
   { address: 'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32', name: 'Sentinel Node',      emoji: '🔴', color: 'red',    dot: 'bg-red-500'    },
   { address: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', name: 'Lore Node',           emoji: '🟠', color: 'amber',  dot: 'bg-amber-500'  },
   { address: 'r4QgW8kVhzdLhS9xj16DLdXc42x5xrESjV', name: 'Truth Weaver',        emoji: '🟡', color: 'yellow', dot: 'bg-yellow-400' },
