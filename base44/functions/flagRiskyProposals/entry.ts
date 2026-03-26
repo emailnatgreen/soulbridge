@@ -3,11 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    // Scheduled automation — no user session, runs as service role
 
     const activeProposals = await base44.asServiceRole.entities.GovernanceProposal.filter({
       status: 'active'
@@ -47,16 +43,14 @@ Deno.serve(async (req) => {
       }
 
       // Risk factor 5: Proposed by new or low-honor agent
-      const proposer = await base44.asServiceRole.entities.Agent.filter({
-        id: proposal.proposed_by
-      });
-
-      if (proposer.length > 0) {
-        const agent = proposer[0];
-        if ((agent.honor_score || 100) < 60) {
-          riskFactors.push('Proposer has low honor score');
-          riskScore += 20;
-        }
+      if (proposal.proposed_by) {
+        try {
+          const proposers = await base44.asServiceRole.entities.Agent.filter({ name: proposal.proposed_by });
+          if (proposers.length > 0 && (proposers[0].honor_score || 100) < 60) {
+            riskFactors.push('Proposer has low honor score');
+            riskScore += 20;
+          }
+        } catch (_) { /* skip if agent lookup fails */ }
       }
 
       // Risk factor 6: Missing AI assessment
