@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home, Wallet, Globe, ArrowRight, Key } from 'lucide-react';
 
@@ -19,6 +20,22 @@ if (typeof window !== 'undefined') {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+        <div className="text-center space-y-4 p-8">
+          <Shield className="w-12 h-12 text-red-400 mx-auto" />
+          <h2 className="text-white text-xl font-semibold">Admin Access Only</h2>
+          <p className="text-white/50 text-sm">This dashboard is restricted to administrators.</p>
+          <Link to="/" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg px-4 py-2 text-sm hover:opacity-90 transition">
+            <Home className="w-4 h-4" /> Go to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
   const [identity, setIdentity] = useState(null);
   const [signals, setSignals] = useState([]);
   const [wallets, setWallets] = useState([]);
