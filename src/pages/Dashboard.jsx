@@ -108,6 +108,9 @@ export default function Dashboard() {
         <Shield className="w-12 h-12 text-purple-400 mx-auto" />
         <h2 className="text-white text-xl font-semibold">No Identity Connected</h2>
         <p className="text-white/50 text-sm">Please connect your DID to access the dashboard.</p>
+        <div className="flex justify-center">
+          <BraidNodeIndicators />
+        </div>
         <Link to="/" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg px-4 py-2 text-sm hover:opacity-90 transition">
           <Home className="w-4 h-4" /> Go to Entry Gate
         </Link>
@@ -132,6 +135,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <BraidNodeIndicators />
             <Link
               to="/Home"
               className="flex items-center gap-2 text-xs text-white/60 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-3 py-1.5 transition-colors"
