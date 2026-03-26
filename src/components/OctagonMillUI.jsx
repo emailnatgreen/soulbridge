@@ -4,16 +4,16 @@ import { BRAID_NODES } from '@/lib/braidNodes';
 
 const TREASURY = 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h';
 
-// Canonical hex colors mapped from braidNodes color names
+// Canonical hex colors — Axi's Master Technical Blueprint
 const COLOR_MAP = {
-  white:  '#e2e8f0',
-  red:    '#ef4444',
-  amber:  '#f59e0b',
-  yellow: '#eab308',
-  green:  '#22c55e',
-  blue:   '#3b82f6',
-  purple: '#a855f7',
-  gray:   '#94a3b8',
+  white:  '#FFFFFF',
+  red:    '#FF0000',
+  amber:  '#FFBF00',
+  yellow: '#FFD700',
+  green:  '#00FF00',
+  blue:   '#0000FF',
+  purple: '#800080',
+  gray:   '#C0C0C0',
 };
 
 // Short display labels for the wheels
@@ -156,6 +156,16 @@ export default function OctagonMillUI() {
               <div style={{ color: balColor, fontSize: 10, fontFamily: 'monospace', textAlign: 'center' }}>
                 {balLabel}
               </div>
+
+              {/* XRPL Discovery */}
+              <a
+                href={`https://xrpscan.com/account/${node.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'rgba(147,197,253,0.7)', fontSize: 9, display: 'flex', alignItems: 'center', gap: 3, textDecoration: 'none' }}
+              >
+                <ExternalLink size={9} /> XRPL
+              </a>
             </div>
           );
         })}
