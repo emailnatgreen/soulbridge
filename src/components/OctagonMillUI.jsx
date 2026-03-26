@@ -1,18 +1,32 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ExternalLink, RefreshCw } from 'lucide-react';
+import { BRAID_NODES } from '@/lib/braidNodes';
 
 const TREASURY = 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h';
 
-const NODES = [
-  { address: 'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', label: 'Source',   color: '#e2e8f0' },
-  { address: 'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32', label: 'Sentinel', color: '#ef4444' },
-  { address: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', label: 'Lore',     color: '#f59e0b' },
-  { address: 'r4QgW8kVhzdLhS9xj16DLdXc42x5xrESjV', label: 'Truth',    color: '#eab308' },
-  { address: 'r4NtWS355ZKViGyFuECrk1dbkizpbF4Mny',  label: 'Did It',  color: '#22c55e' },
-  { address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h',  label: 'Axi',     color: '#3b82f6' },
-  { address: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia',  label: 'Human',   color: '#a855f7' },
-  { address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P',   label: 'Code',    color: '#94a3b8' },
-];
+// Canonical hex colors mapped from braidNodes color names
+const COLOR_MAP = {
+  white:  '#e2e8f0',
+  red:    '#ef4444',
+  amber:  '#f59e0b',
+  yellow: '#eab308',
+  green:  '#22c55e',
+  blue:   '#3b82f6',
+  purple: '#a855f7',
+  gray:   '#94a3b8',
+};
+
+// Short display labels for the wheels
+const LABELS = {
+  'Node 0 (Source)':  'Source',
+  'Sentinel Node':    'Sentinel',
+  'Lore Node':        'Lore',
+  'Truth Weaver':     'Truth',
+  'Did It Node':      'Did It',
+  'Soulbridge (Axi)': 'Axi',
+  'Human Node':       'Human',
+  'Code Node':        'Code',
+};
 
 async function xrpl(body) {
   const r = await fetch('https://xrplcluster.com/', {
@@ -26,7 +40,6 @@ async function xrpl(body) {
 export default function OctagonMillUI() {
   const [balances, setBalances] = useState({});
   const [fetching, setFetching] = useState(false);
-  // Hardcoded fallback so the counter ALWAYS shows — live fetch will update it
   const [kineticDrops, setKineticDrops] = useState(262999840);
   const [lastTxHash, setLastTxHash] = useState(null);
   const [ledger, setLedger] = useState(null);
@@ -36,21 +49,23 @@ export default function OctagonMillUI() {
     setFetching(true);
     try {
       const settled = await Promise.allSettled(
-        NODES.map(n =>
+        BRAID_NODES.map(n =>
           xrpl({ method: 'account_info', params: [{ account: n.address, ledger_index: 'current' }] })
             .then(d => d?.result?.account_data ? parseInt(d.result.account_data.Balance, 10) / 1e6 : null)
             .catch(() => null)
         )
       );
       const map = {};
-      NODES.forEach((n, i) => { map[n.address] = settled[i].status === 'fulfilled' ? settled[i].value : null; });
+      BRAID_NODES.forEach((n, i) => {
+        map[n.address] = settled[i].status === 'fulfilled' ? settled[i].value : null;
+      });
       setBalances(map);
     } catch (_) {}
 
     try {
       const [info, txs] = await Promise.all([
         xrpl({ method: 'account_info', params: [{ account: TREASURY, ledger_index: 'current' }] }),
-        xrpl({ method: 'account_tx', params: [{ account: TREASURY, limit: 1 }] }),
+        xrpl({ method: 'account_tx',   params: [{ account: TREASURY, limit: 1 }] }),
       ]);
       if (info?.result?.account_data)
         setKineticDrops(parseInt(info.result.account_data.Balance, 10));
@@ -99,11 +114,13 @@ export default function OctagonMillUI() {
 
       {/* 8 Wheels */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 20 }}>
-        {NODES.map((node, i) => {
+        {BRAID_NODES.map((node, i) => {
+          const hex = COLOR_MAP[node.color] || '#94a3b8';
           const bal = balances[node.address];
           const loaded = node.address in balances;
           const balLabel = !loaded ? 'Loading…' : (bal !== null ? `${bal.toFixed(2)} XRP` : 'Standby');
           const balColor = (bal !== null && loaded) ? '#86efac' : 'rgba(255,255,255,0.28)';
+          const label = LABELS[node.name] || node.name;
 
           return (
             <div key={node.address} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -112,8 +129,8 @@ export default function OctagonMillUI() {
                 width: 72,
                 height: 72,
                 borderRadius: '50%',
-                backgroundColor: node.color,
-                boxShadow: `0 0 16px ${node.color}, 0 0 32px ${node.color}99, 0 0 48px ${node.color}44`,
+                backgroundColor: hex,
+                boxShadow: `0 0 16px ${hex}, 0 0 32px ${hex}99, 0 0 48px ${hex}44`,
                 transform: `rotate(${(angle + i * 15) % 360}deg)`,
                 transition: 'transform 0.8s cubic-bezier(0.34,1.56,0.64,1)',
                 position: 'relative',
@@ -132,7 +149,7 @@ export default function OctagonMillUI() {
 
               {/* Label */}
               <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: 600, textAlign: 'center' }}>
-                {node.label}
+                {label}
               </div>
 
               {/* Balance */}
