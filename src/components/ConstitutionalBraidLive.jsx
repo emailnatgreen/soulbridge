@@ -21,16 +21,8 @@ async function fetchXRPLBalance(address) {
   return { balance: 0, active: false };
 }
 
-// All 8 nodes pre-seeded as active for live demo
-const DEFAULT_ACTIVE = new Set(BRAID_NODES.map(n => n.address));
-
 export default function ConstitutionalBraidLive({ compact = false }) {
-  const [nodeData, setNodeData] = useState(
-    // Pre-seed known anchors as active so demo never opens with all-red
-    Object.fromEntries(BRAID_NODES.map(n => [n.address, { balance: 0, active: DEFAULT_ACTIVE.has(n.address) }]))
-  );
-  const [loading, setLoading] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState(null);
+  const [nodeData, setNodeData] = useState({});
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -107,8 +99,10 @@ export default function ConstitutionalBraidLive({ compact = false }) {
                 <div className="text-xs text-white/30">Querying…</div>
               ) : isActive ? (
                 <div className="text-xs text-green-400 font-semibold">{info.balance.toFixed(2)} XRP · Active</div>
+              ) : info === undefined ? (
+                <div className="text-xs text-white/30">Querying…</div>
               ) : (
-                <div className="text-xs text-green-400 font-semibold">0.00 XRP · Active</div>
+                <div className="text-xs text-amber-400 font-semibold">Standby</div>
               )}
             </div>
           );
