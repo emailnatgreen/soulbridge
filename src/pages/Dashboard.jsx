@@ -177,14 +177,15 @@ export default function Dashboard() {
               {signals.length === 0 ? (
                 <p className="text-white/20 text-xs py-4 text-center">No signals yet…</p>
               ) : signals.map((sig, i) => (
-                <div key={sig.id || i} className="flex items-center gap-2 py-1.5 border-b border-white/5 text-xs">
-                  <SignalDot type={sig.type || sig.signal_type} />
-                  <span className="text-white/60 flex-1 truncate">{sig.type || sig.signal_type}</span>
-                  {sig.page_name && <span className="text-white/30 truncate hidden sm:block">{sig.page_name}</span>}
-                  <span className="text-white/25 flex-shrink-0">
-                    {sig.time || (sig.created_date ? new Date(sig.created_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '')}
-                  </span>
-                </div>
+                <div key={sig.id || i}
+                className="flex items-center gap-2 py-1.5 border-b border-white/5 text-xs animate-[fadeIn_0.3s_ease-out]">
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-white/20" />
+                <span className="text-white/60 flex-1 truncate">{sig.type || sig.signal_type}</span>
+                {sig.page_name && <span className="text-white/30 truncate hidden sm:block">{sig.page_name}</span>}
+                <span className="text-white/25 flex-shrink-0">
+                  {sig.time || (sig.created_date ? new Date(sig.created_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '')}
+                </span>
+              </div>
               ))}
             </div>
           </div>
@@ -232,7 +233,7 @@ export default function Dashboard() {
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <div className="bg-white/10 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white/80 max-w-lg">
-              Identity recognised. Braid nodes queried from XRPL mainnet. All 8 Constitutional DIDs loading live. Your session is active — how can I guide you today?
+              System update: Identity layer connected. XRPL data confirmed. All 8 Constitutional DIDs queried from mainnet. Session active. All 8 Constitutional DIDs loading live. Your session is active — how can I guide you today?
             </div>
           </div>
           <p className="text-white/25 text-xs mt-3 text-center">Full Axi chat via the ✨ button bottom-right</p>
