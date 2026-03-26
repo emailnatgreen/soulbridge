@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home, Wallet, Globe, ArrowRight, Key } from 'lucide-react';
+import BraidNodeIndicators from '@/components/BraidNodeIndicators';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from '@/api/base44Client';
@@ -98,7 +99,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
       {/* Header */}
-      <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl px-6 py-4">
+        <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <img
             src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
@@ -126,6 +128,9 @@ export default function Dashboard() {
             Disconnect
           </button>
         </div>
+        </div>
+        {/* 8-Node Braid Status — visible on first entry */}
+        <BraidNodeIndicators />
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">

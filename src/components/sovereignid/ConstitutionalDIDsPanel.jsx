@@ -7,25 +7,25 @@ import { Badge } from '@/components/ui/badge';
 import { BRAID_NODES as CANONICAL_NODES, BRAID_MAP as ADDRESS_MAP } from '@/lib/braidNodes';
 
 const CARD_STYLES = {
-  white:  'border-slate-400/60 bg-slate-800/20',
-  red:    'border-red-500/60 bg-red-950/20',
-  amber:  'border-amber-500/60 bg-amber-950/20',
-  yellow: 'border-yellow-400/60 bg-yellow-950/20',
-  green:  'border-green-500/60 bg-green-950/20',
-  blue:   'border-blue-500/60 bg-blue-950/20',
-  purple: 'border-purple-500/60 bg-purple-950/20',
-  gray:   'border-gray-400/60 bg-gray-800/20',
+  white:  'border-slate-300 bg-slate-800/30 shadow-[0_0_12px_rgba(148,163,184,0.15)]',
+  red:    'border-red-500 bg-red-950/30 shadow-[0_0_12px_rgba(239,68,68,0.2)]',
+  amber:  'border-amber-500 bg-amber-950/30 shadow-[0_0_12px_rgba(245,158,11,0.2)]',
+  yellow: 'border-yellow-400 bg-yellow-950/30 shadow-[0_0_12px_rgba(250,204,21,0.2)]',
+  green:  'border-green-500 bg-green-950/30 shadow-[0_0_12px_rgba(34,197,94,0.2)]',
+  blue:   'border-blue-500 bg-blue-950/30 shadow-[0_0_12px_rgba(59,130,246,0.2)]',
+  purple: 'border-purple-500 bg-purple-950/30 shadow-[0_0_12px_rgba(168,85,247,0.2)]',
+  gray:   'border-gray-400 bg-gray-800/30 shadow-[0_0_12px_rgba(156,163,175,0.15)]',
 };
 
 const BADGE_STYLES = {
-  white:  'bg-slate-800/60 text-slate-200 border-slate-500/50',
-  red:    'bg-red-900/50 text-red-300 border-red-600/50',
-  amber:  'bg-amber-900/50 text-amber-300 border-amber-600/50',
-  yellow: 'bg-yellow-900/50 text-yellow-200 border-yellow-500/50',
-  green:  'bg-green-900/50 text-green-300 border-green-600/50',
-  blue:   'bg-blue-900/50 text-blue-300 border-blue-600/50',
-  purple: 'bg-purple-900/50 text-purple-300 border-purple-600/50',
-  gray:   'bg-gray-800/50 text-gray-300 border-gray-500/50',
+  white:  'bg-slate-700 text-slate-100 border-slate-400',
+  red:    'bg-red-900 text-red-200 border-red-500',
+  amber:  'bg-amber-900 text-amber-200 border-amber-500',
+  yellow: 'bg-yellow-900 text-yellow-100 border-yellow-400',
+  green:  'bg-green-900 text-green-200 border-green-500',
+  blue:   'bg-blue-900 text-blue-200 border-blue-500',
+  purple: 'bg-purple-900 text-purple-200 border-purple-500',
+  gray:   'bg-gray-800 text-gray-200 border-gray-400',
 };
 
 export default function ConstitutionalDIDsPanel() {
@@ -112,8 +112,8 @@ export default function ConstitutionalDIDsPanel() {
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h3 className="font-semibold text-white flex items-center gap-2">
-                    <span className="text-lg">{emoji}</span>
-                    {name}
+                    <span className="text-xl">{emoji}</span>
+                    <span className={`font-bold ${color === 'white' ? 'text-slate-200' : color === 'red' ? 'text-red-300' : color === 'amber' ? 'text-amber-300' : color === 'yellow' ? 'text-yellow-300' : color === 'green' ? 'text-green-300' : color === 'blue' ? 'text-blue-300' : color === 'purple' ? 'text-purple-300' : 'text-gray-300'}`}>{name}</span>
                   </h3>
                   {wallet?.name && wallet.name !== name && (
                     <p className="text-slate-500 text-xs mt-0.5 ml-7">{wallet.name}</p>
