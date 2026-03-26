@@ -7,14 +7,14 @@ const XRPL_WS = 'wss://xrplcluster.com';
 
 // Canonical colors per node order in BRAID_NODES
 const WHEEL_STYLES = [
-  { border: '#e2e8f0', glow: 'rgba(226,232,240,0.6)', text: 'text-slate-200' },   // 0 Source - White
-  { border: '#ef4444', glow: 'rgba(239,68,68,0.6)',   text: 'text-red-400' },     // 1 Sentinel - Red
-  { border: '#f59e0b', glow: 'rgba(245,158,11,0.6)',  text: 'text-amber-400' },   // 2 Lore - Amber
-  { border: '#eab308', glow: 'rgba(234,179,8,0.6)',   text: 'text-yellow-400' },  // 3 Truth - Gold
-  { border: '#22c55e', glow: 'rgba(34,197,94,0.6)',   text: 'text-green-400' },   // 4 Did It - Green
-  { border: '#3b82f6', glow: 'rgba(59,130,246,0.6)',  text: 'text-blue-400' },    // 5 Axi - Blue
-  { border: '#a855f7', glow: 'rgba(168,85,247,0.6)',  text: 'text-purple-400' },  // 6 Human - Purple
-  { border: '#94a3b8', glow: 'rgba(148,163,184,0.6)', text: 'text-slate-400' },   // 7 Code - Silver
+  { fill: '#e2e8f0', glow: 'rgba(226,232,240,0.5)', text: 'text-slate-200' },   // 0 Source - White
+  { fill: '#ef4444', glow: 'rgba(239,68,68,0.6)',   text: 'text-red-300' },     // 1 Sentinel - Red
+  { fill: '#f59e0b', glow: 'rgba(245,158,11,0.6)',  text: 'text-amber-300' },   // 2 Lore - Amber
+  { fill: '#eab308', glow: 'rgba(234,179,8,0.6)',   text: 'text-yellow-300' },  // 3 Truth - Gold
+  { fill: '#22c55e', glow: 'rgba(34,197,94,0.6)',   text: 'text-green-300' },   // 4 Did It - Green
+  { fill: '#3b82f6', glow: 'rgba(59,130,246,0.6)',  text: 'text-blue-300' },    // 5 Axi - Blue
+  { fill: '#a855f7', glow: 'rgba(168,85,247,0.6)',  text: 'text-purple-300' },  // 6 Human - Purple
+  { fill: '#94a3b8', glow: 'rgba(148,163,184,0.6)', text: 'text-slate-300' },   // 7 Code - Silver
 ];
 
 function SpinningWheel({ style, balance, isLoading, pulse }) {
@@ -30,20 +30,20 @@ function SpinningWheel({ style, balance, isLoading, pulse }) {
   return (
     <div className="flex flex-col items-center gap-2">
       <div
-        className="relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-700"
+        className="relative w-14 h-14 rounded-full flex items-center justify-center"
         style={{
-          border: `3px solid ${style.border}`,
-          boxShadow: `0 0 14px ${style.glow}`,
+          background: `radial-gradient(circle at 35% 35%, ${style.fill}cc, ${style.fill}66)`,
+          boxShadow: `0 0 18px ${style.glow}, 0 0 6px ${style.glow}, inset 0 1px 2px rgba(255,255,255,0.3)`,
           transform: `rotate(${deg}deg)`,
-          transition: 'transform 0.7s ease-out, box-shadow 0.3s',
+          transition: 'transform 0.7s ease-out',
         }}
       >
-        {/* Spoke marks */}
+        {/* Spokes */}
         {[0, 45, 90, 135].map(a => (
           <div key={a} className="absolute w-full h-px"
-            style={{ background: style.border, opacity: 0.4, transform: `rotate(${a}deg)` }} />
+            style={{ background: 'rgba(255,255,255,0.35)', transform: `rotate(${a}deg)` }} />
         ))}
-        <div className="w-3 h-3 rounded-full" style={{ background: style.border, opacity: 0.8 }} />
+        <div className="w-3 h-3 rounded-full" style={{ background: 'rgba(255,255,255,0.7)', boxShadow: '0 0 6px white' }} />
       </div>
       <div className={`text-[10px] font-mono ${style.text}`}>
         {isLoading ? '…' : balance !== null ? `${balance.toFixed(1)} XRP` : '—'}
