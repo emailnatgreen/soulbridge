@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home, Wallet, Globe, ArrowRight, Key } from 'lucide-react';
 import BraidNodeIndicators from '@/components/BraidNodeIndicators';
@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from '@/api/base44Client';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 
-// Global signal emitter — attach to window so anything can call it
 if (typeof window !== 'undefined') {
   window.__soulbridge = window.__soulbridge || {};
   window.__soulbridge.signals = window.__soulbridge.signals || [];
@@ -25,7 +24,6 @@ export default function Dashboard() {
   const [wallets, setWallets] = useState([]);
   const [walletsLoading, setWalletsLoading] = useState(true);
 
-  // Fetch signals from database + listen for real-time updates
   useEffect(() => {
     const loadSignals = async () => {
       try {
@@ -37,7 +35,7 @@ export default function Dashboard() {
       }
     };
     loadSignals();
-    const interval = setInterval(loadSignals, 10000); // Poll every 10s
+    const interval = setInterval(loadSignals, 10000);
     window.addEventListener('signal-update', loadSignals);
     return () => {
       clearInterval(interval);
@@ -101,35 +99,35 @@ export default function Dashboard() {
       {/* Header */}
       <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl px-6 py-4">
         <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <img
-            src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
-            alt="SoulBridge"
-            className="w-9 h-9 rounded-lg object-contain"
-          />
-          <div>
-            <h1 className="text-white font-semibold text-lg leading-tight">SoulBridge Dashboard</h1>
-            <p className="text-white/40 text-xs">v0.1 — Proof of Identity</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+              alt="SoulBridge"
+              className="w-9 h-9 rounded-lg object-contain"
+            />
+            <div>
+              <h1 className="text-white font-semibold text-lg leading-tight">SoulBridge Dashboard</h1>
+              <p className="text-white/40 text-xs">v0.1 — Proof of Identity</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/Home"
+              className="flex items-center gap-2 text-xs text-white/60 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-3 py-1.5 transition-colors"
+            >
+              <Home className="w-3.5 h-3.5" />
+              Home
+            </Link>
+            <button
+              onClick={handleDisconnect}
+              className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-3 py-1.5 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Disconnect
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/Home"
-            className="flex items-center gap-2 text-xs text-white/60 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-3 py-1.5 transition-colors"
-          >
-            <Home className="w-3.5 h-3.5" />
-            Home
-          </Link>
-          <button
-            onClick={handleDisconnect}
-            className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-3 py-1.5 transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Disconnect
-          </button>
-        </div>
-        </div>
-        {/* 8-Node Braid Status — visible on first entry */}
+        {/* 8-Node Braid Status */}
         <BraidNodeIndicators />
       </div>
 
@@ -149,7 +147,6 @@ export default function Dashboard() {
 
         {/* Top Widgets */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
           {/* Widget 1 — Identity Status */}
           <Card className="bg-white/5 border-green-500/30 backdrop-blur-xl">
             <CardContent className="pt-6 space-y-3">
@@ -192,15 +189,26 @@ export default function Dashboard() {
                   <p className="text-white/30 text-xs py-2">Waiting for signals…</p>
                 )}
                 {signals.map((sig) => (
-                   <div key={sig.id} className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
-                     <div className="flex items-center gap-2">
-                       <span>✅</span>
-                       <span className="text-white/70 font-mono text-xs">{sig.signal_type || sig.type || 'event'}</span>
-                       {sig.page_name && <span className="text-white/40 text-xs">• {sig.page_name}</span>}
-                     </div>
-                     <span className="text-white/30 text-xs">{sig.time || (() => { const d = new Date(sig.created_date); const now = new Date(); const isToday = d.toDateString() === now.toDateString(); const yesterday = new Date(now); yesterday.setDate(now.getDate()-1); const isYesterday = d.toDateString() === yesterday.toDateString(); const prefix = isToday ? 'Today ' : isYesterday ? 'Yesterday ' : d.toLocaleDateString('en-GB', {day:'numeric',month:'short'}) + ' '; return prefix + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}); })()}</span>
-                   </div>
-                 ))}
+                  <div key={sig.id} className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span>✅</span>
+                      <span className="text-white/70 font-mono text-xs">{sig.signal_type || sig.type || 'event'}</span>
+                      {sig.page_name && <span className="text-white/40 text-xs">• {sig.page_name}</span>}
+                    </div>
+                    <span className="text-white/30 text-xs">
+                      {sig.time || (() => {
+                        const d = new Date(sig.created_date);
+                        const now = new Date();
+                        const isToday = d.toDateString() === now.toDateString();
+                        const yesterday = new Date(now);
+                        yesterday.setDate(now.getDate() - 1);
+                        const isYesterday = d.toDateString() === yesterday.toDateString();
+                        const prefix = isToday ? 'Today ' : isYesterday ? 'Yesterday ' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ';
+                        return prefix + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                      })()}
+                    </span>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -233,11 +241,9 @@ export default function Dashboard() {
               <div className="space-y-2">
                 {wallets.map(w => (
                   <div key={w.id} className="flex items-center justify-between py-2.5 px-3 bg-white/5 rounded-xl border border-white/10">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <div className="text-white text-sm font-medium">{w.name || 'Unnamed Wallet'}</div>
-                        <div className="text-white/40 text-xs font-mono">{w.classic_address?.slice(0,10)}...{w.classic_address?.slice(-6)}</div>
-                      </div>
+                    <div>
+                      <div className="text-white text-sm font-medium">{w.name || 'Unnamed Wallet'}</div>
+                      <div className="text-white/40 text-xs font-mono">{w.classic_address?.slice(0, 10)}...{w.classic_address?.slice(-6)}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-white text-sm font-semibold">{w.balance || 0} XRP</div>
