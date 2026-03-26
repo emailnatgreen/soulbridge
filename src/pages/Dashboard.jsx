@@ -1,314 +1,242 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Shield, CheckCircle, Radio, Sparkles, LogOut, Home, Wallet, Globe, ArrowRight, Key } from 'lucide-react';
-import BraidNodeIndicators from '@/components/BraidNodeIndicators';
-
-import { Link } from 'react-router-dom';
-import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate, Link } from 'react-router-dom';
+import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import GenesisSealBadge from '@/components/GenesisSealBadge';
+import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
 
+// ── Signal emitter (global, shared) ──────────────────────────────────────────
 if (typeof window !== 'undefined') {
-  window.__soulbridge = window.__soulbridge || {};
-  window.__soulbridge.signals = window.__soulbridge.signals || [];
-  window.__soulbridge.emitSignal = function(signal) {
-    const entry = { ...signal, id: Date.now(), time: new Date().toLocaleTimeString() };
-    window.__soulbridge.signals.unshift(entry);
-    window.dispatchEvent(new Event('signal-update'));
+  window.__sb = window.__sb || { signals: [] };
+  window.__sb.emit = (type, meta = {}) => {
+    const s = { id: Date.now(), type, time: new Date().toLocaleTimeString('en-GB'), ...meta };
+    window.__sb.signals.unshift(s);
+    if (window.__sb.signals.length > 50) window.__sb.signals.pop();
+    window.dispatchEvent(new CustomEvent('sb-signal', { detail: s }));
+    // Persist to DB silently
+    base44.entities.Signal.create({ signal_type: type, page_name: 'dashboard', ...meta }).catch(() => {});
   };
+}
+
+function SignalDot({ type }) {
+  const colors = {
+    identity_connected: 'bg-green-400',
+    page_view: 'bg-blue-400',
+    axi_activated: 'bg-purple-400',
+    session_started: 'bg-amber-400',
+  };
+  return <span className={`w-2 h-2 rounded-full flex-shrink-0 ${colors[type] || 'bg-white/40'}`} />;
 }
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [identity, setIdentity] = useState(null);
+  const [signals, setSignals] = useState([]);
+  const [wallets, setWallets] = useState([]);
 
+  // Admin gate
   if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center space-y-6 p-8">
+        <div className="text-center space-y-4 p-8">
           <Shield className="w-12 h-12 text-red-400 mx-auto" />
           <h2 className="text-white text-xl font-semibold">Admin Access Only</h2>
-          <p className="text-white/50 text-sm">This dashboard is restricted to administrators.</p>
-          <Link to="/" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg px-4 py-2 text-sm hover:opacity-90 transition">
+          <Link to="/" className="inline-flex items-center gap-2 bg-purple-600 text-white rounded-lg px-4 py-2 text-sm hover:opacity-90 transition">
             <Home className="w-4 h-4" /> Go to Home
           </Link>
         </div>
       </div>
     );
   }
-  const [identity, setIdentity] = useState(null);
-  const [signals, setSignals] = useState([]);
-  const [wallets, setWallets] = useState([]);
-  const [walletsLoading, setWalletsLoading] = useState(true);
 
   useEffect(() => {
-    const loadSignals = async () => {
-      try {
-        const dbSignals = await base44.entities.Signal.list('-created_date', 20);
-        const memorySignals = window.__soulbridge?.signals || [];
-        setSignals([...memorySignals, ...dbSignals].slice(0, 20));
-      } catch (e) {
-        setSignals([...(window.__soulbridge?.signals || [])]);
-      }
-    };
-    loadSignals();
-    const interval = setInterval(loadSignals, 10000);
-    window.addEventListener('signal-update', loadSignals);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('signal-update', loadSignals);
-    };
-  }, []);
-
-  useEffect(() => {
+    // Load identity from localStorage
     try {
       const stored = localStorage.getItem('soulbridge_identity');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed?.connected) setIdentity(parsed);
-      }
-    } catch (e) {}
-  }, []);
-
-  useEffect(() => {
-    async function loadWallets() {
-      setWalletsLoading(true);
-      try {
-        const me = await base44.auth.me();
-        if (me) {
-          const ws = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 10);
-          setWallets(ws);
+        if (parsed?.connected) {
+          setIdentity(parsed);
+          window.__sb?.emit('identity_connected', { did: parsed.did });
         }
-      } catch (e) {}
-      setWalletsLoading(false);
-    }
-    loadWallets();
+      }
+    } catch (_) {}
+
+    // Emit page view signal
+    window.__sb?.emit('page_view', { page: 'dashboard' });
+
+    // Load recent signals
+    const loadSignals = async () => {
+      try {
+        const db = await base44.entities.Signal.list('-created_date', 30);
+        const mem = window.__sb?.signals || [];
+        const merged = [...mem, ...db].reduce((acc, s) => {
+          const key = s.id || s.created_date;
+          if (!acc.seen.has(key)) { acc.seen.add(key); acc.list.push(s); }
+          return acc;
+        }, { seen: new Set(), list: [] }).list.slice(0, 25);
+        setSignals(merged);
+      } catch (_) {
+        setSignals(window.__sb?.signals || []);
+      }
+    };
+    loadSignals();
+
+    // Load wallets
+    base44.auth.me().then(me => {
+      if (me) base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).then(setWallets).catch(() => {});
+    }).catch(() => {});
+
+    // Listen for new in-memory signals
+    const onSignal = () => setSignals([...(window.__sb?.signals || [])]);
+    window.addEventListener('sb-signal', onSignal);
+    return () => window.removeEventListener('sb-signal', onSignal);
   }, []);
 
   const handleDisconnect = () => {
     localStorage.removeItem('soulbridge_identity');
-    localStorage.removeItem('sb_public_conv_id');
-    if (window.__soulbridge) delete window.__soulbridge.identity;
+    if (window.__sb) window.__sb.signals = [];
     navigate('/');
   };
 
   const shortDid = identity?.did
-    ? identity.did.length > 40
-      ? identity.did.slice(0, 20) + '...' + identity.did.slice(-12)
-      : identity.did
-    : '';
-
-  if (!identity) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-      <div className="text-center space-y-4 p-8">
-        <Shield className="w-12 h-12 text-purple-400 mx-auto" />
-        <h2 className="text-white text-xl font-semibold">No Identity Connected</h2>
-        <p className="text-white/50 text-sm">Please connect your DID to access the dashboard.</p>
-        <Link to="/" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg px-4 py-2 text-sm hover:opacity-90 transition">
-          <Home className="w-4 h-4" /> Go to Entry Gate
-        </Link>
-      </div>
-    </div>
-  );
+    ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
+    : 'Not connected';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl px-6 py-4">
-        <div className="flex items-center justify-between mb-3">
+
+      {/* ── HEADER ── */}
+      <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl px-4 sm:px-6 py-3 sticky top-0 z-20">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <img
-              src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
-              alt="SoulBridge"
-              className="w-9 h-9 rounded-lg object-contain"
-            />
-            <div>
-              <h1 className="text-white font-semibold text-lg leading-tight">SoulBridge Dashboard</h1>
-              <p className="text-white/40 text-xs">v0.1 — Proof of Identity</p>
+            <img src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+              alt="SoulBridge" className="w-8 h-8 rounded-lg object-contain" />
+            <div className="hidden sm:block">
+              <h1 className="text-white font-semibold text-base leading-tight">SoulBridge Command</h1>
+              <p className="text-white/30 text-xs">Production · XRPL Live</p>
             </div>
           </div>
+
+          {/* Live Braid — compact indicator */}
+          <div className="flex-1 flex justify-center">
+            <ConstitutionalBraidLive compact />
+          </div>
+
           <div className="flex items-center gap-2">
-            <BraidNodeIndicators />
-            <Link
-              to="/Home"
-              className="flex items-center gap-2 text-xs text-white/60 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-3 py-1.5 transition-colors"
-            >
-              <Home className="w-3.5 h-3.5" />
-              Home
+            <Link to="/" className="text-xs text-white/50 hover:text-white border border-white/15 rounded-lg px-3 py-1.5 transition">
+              <Home className="w-3.5 h-3.5 inline mr-1" />Home
             </Link>
-            <button
-              onClick={handleDisconnect}
-              className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-3 py-1.5 transition-colors"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Disconnect
+            <button onClick={handleDisconnect}
+              className="text-xs text-red-400 border border-red-500/30 hover:border-red-400/60 rounded-lg px-3 py-1.5 transition">
+              <LogOut className="w-3.5 h-3.5 inline mr-1" />Disconnect
             </button>
           </div>
         </div>
-
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
-        {/* Welcome */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-full px-4 py-1.5 mb-2">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-green-300 text-sm font-medium">Identity Active</span>
+      {/* ── BODY ── */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+        {/* Identity Banner */}
+        <div className={`rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 ${identity ? 'border-green-500/30 bg-green-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${identity ? 'bg-green-500/20' : 'bg-amber-500/20'}`}>
+            {identity ? <CheckCircle className="w-6 h-6 text-green-400" /> : <AlertTriangle className="w-6 h-6 text-amber-400" />}
           </div>
-          <h2 className="text-3xl font-light text-white">Welcome, Traveller</h2>
-          <p className="text-white/40 text-sm font-mono break-all max-w-xl mx-auto">{identity.did}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-xs font-semibold uppercase tracking-wider ${identity ? 'text-green-400' : 'text-amber-400'}`}>
+                {identity ? 'Identity Active' : 'No Identity Connected'}
+              </span>
+              {identity && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
+            </div>
+            <p className="font-mono text-sm text-white/60 truncate">{identity ? shortDid : 'Connect your DID from the Landing page'}</p>
+          </div>
+          <Link to="/SovereignID" className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 text-white text-xs font-medium px-4 py-2 rounded-lg transition flex-shrink-0">
+            <Key className="w-3.5 h-3.5" /> Sovereign ID <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
 
-        {/* Genesis Seal */}
-        <GenesisSealBadge />
+        {/* Main 3-column grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Top Widgets */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Widget 1 — Identity Status */}
-          <Card className="bg-white/5 border-green-500/30 backdrop-blur-xl">
-            <CardContent className="pt-6 space-y-3">
-              <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-5 h-5 text-green-400" />
-                <h3 className="text-white font-semibold">Identity Status</h3>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/50">Status</span>
-                  <span className="flex items-center gap-1.5 text-green-300 font-medium">
-                    <CheckCircle className="w-3.5 h-3.5" /> Connected
+          {/* ── Column 1: Constitutional Braid (full) ── */}
+          <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-5">
+            <ConstitutionalBraidLive compact={false} />
+          </div>
+
+          {/* ── Column 2: Live Signal Log ── */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <Radio className="w-4 h-4 text-purple-400" />
+              <h3 className="text-white font-semibold text-sm">Live Signal Log</h3>
+              <span className="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            </div>
+            <div className="flex-1 space-y-2 overflow-y-auto max-h-72">
+              {signals.length === 0 ? (
+                <p className="text-white/20 text-xs py-4 text-center">No signals yet…</p>
+              ) : signals.map((sig, i) => (
+                <div key={sig.id || i} className="flex items-center gap-2 py-1.5 border-b border-white/5 text-xs">
+                  <SignalDot type={sig.type || sig.signal_type} />
+                  <span className="text-white/60 flex-1 truncate">{sig.type || sig.signal_type}</span>
+                  {sig.page_name && <span className="text-white/30 truncate hidden sm:block">{sig.page_name}</span>}
+                  <span className="text-white/25 flex-shrink-0">
+                    {sig.time || (sig.created_date ? new Date(sig.created_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '')}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/50">DID</span>
-                  <span className="text-white/80 font-mono text-xs">{shortDid}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/50">Session</span>
-                  <span className="text-purple-300 font-medium">Active</span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-white/50">Network</span>
-                  <span className="text-blue-300">XRPL Mainnet</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Widget 2 — Signal Log */}
-          <Card className="bg-white/5 border-purple-500/30 backdrop-blur-xl">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Radio className="w-5 h-5 text-purple-400" />
-                <h3 className="text-white font-semibold">Signal Log</h3>
-              </div>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {signals.length === 0 && (
-                  <p className="text-white/30 text-xs py-2">Waiting for signals…</p>
-                )}
-                {signals.map((sig) => (
-                  <div key={sig.id} className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span>✅</span>
-                      <span className="text-white/70 font-mono text-xs">{sig.signal_type || sig.type || 'event'}</span>
-                      {sig.page_name && <span className="text-white/40 text-xs">• {sig.page_name}</span>}
-                    </div>
-                    <span className="text-white/30 text-xs">
-                      {sig.time || (() => {
-                        const d = new Date(sig.created_date);
-                        const now = new Date();
-                        const isToday = d.toDateString() === now.toDateString();
-                        const yesterday = new Date(now);
-                        yesterday.setDate(now.getDate() - 1);
-                        const isYesterday = d.toDateString() === yesterday.toDateString();
-                        const prefix = isToday ? 'Today ' : isYesterday ? 'Yesterday ' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ';
-                        return prefix + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                      })()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* DID & Wallet Widget */}
-        <Card className="bg-white/5 border-purple-500/30 backdrop-blur-xl">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Key className="w-5 h-5 text-purple-400" />
-                <h3 className="text-white font-semibold">DID & Wallets</h3>
-              </div>
-              <Link to="/SovereignID"
-                className="flex items-center gap-1.5 bg-purple-700 hover:bg-purple-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">
-                Manage Identity <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            {walletsLoading ? (
-              <div className="flex items-center justify-center py-6">
-                <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : wallets.length === 0 ? (
-              <div className="text-center py-6">
-                <Wallet className="w-8 h-8 text-white/20 mx-auto mb-2" />
-                <p className="text-white/40 text-sm">No wallets found.</p>
-                <Link to="/SovereignID" className="inline-flex items-center gap-1 mt-2 text-purple-400 hover:text-purple-300 text-xs underline">Create your first wallet</Link>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {wallets.map(w => (
-                  <div key={w.id} className="flex items-center justify-between py-2.5 px-3 bg-white/5 rounded-xl border border-white/10">
-                    <div>
-                      <div className="text-white text-sm font-medium">{w.name || 'Unnamed Wallet'}</div>
-                      <div className="text-white/40 text-xs font-mono">{w.classic_address?.slice(0, 10)}...{w.classic_address?.slice(-6)}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-white text-sm font-semibold">{w.balance || 0} XRP</div>
-                      <div className={`text-xs ${w.is_published ? 'text-green-400' : 'text-amber-400'}`}>
-                        {w.is_published ? 'DID Active' : 'No DID'}
-                      </div>
+        {/* ── Wallets row ── */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+              <Key className="w-4 h-4 text-purple-400" /> Registered Wallets
+            </h3>
+            <Link to="/SovereignID" className="text-xs text-purple-400 hover:text-purple-300 transition">Manage →</Link>
+          </div>
+          {wallets.length === 0 ? (
+            <p className="text-white/30 text-xs text-center py-4">No wallets found. <Link to="/SovereignID" className="text-purple-400 underline">Create one</Link>.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {wallets.map(w => (
+                <div key={w.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-white text-sm font-medium truncate">{w.name || 'Wallet'}</div>
+                    <div className="text-white/30 text-xs font-mono truncate">{w.classic_address?.slice(0, 12)}…</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-white text-sm font-semibold">{w.balance ?? 0} XRP</div>
+                    <div className={`text-xs ${w.is_published ? 'text-green-400' : 'text-amber-400'}`}>
+                      {w.is_published ? 'DID Active' : 'Pending'}
                     </div>
                   </div>
-                ))}
-                <div className="flex gap-2 pt-2">
-                  <Link to="/SovereignID"
-                    className="flex-1 text-center bg-purple-700 hover:bg-purple-600 text-white text-xs font-medium py-2 rounded-lg transition">
-                    Manage Sovereign ID
-                  </Link>
-                  <Link to="/Wallets"
-                    className="flex-1 text-center bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-lg transition">
-                    Wallets Page
-                  </Link>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              ))}
+            </div>
+          )}
+        </div>
 
-        {/* Axi Panel */}
-        <Card className="bg-white/5 border-indigo-500/30 backdrop-blur-xl">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
-              <h3 className="text-white font-semibold">Axi — AI Co-pilot</h3>
-              <span className="text-xs bg-green-500/20 text-green-300 border border-green-500/30 rounded-full px-2 py-0.5 ml-auto">Online</span>
+        {/* ── Axi Agent Interface ── */}
+        <div className="bg-white/5 border border-indigo-500/20 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-4 h-4 text-indigo-400" />
+            <h3 className="text-white font-semibold text-sm">Axi — Agent Interface</h3>
+            <span className="ml-auto text-xs bg-green-500/20 text-green-300 border border-green-500/30 rounded-full px-2 py-0.5">Online</span>
+          </div>
+          <div className="bg-black/30 rounded-xl p-4 border border-white/5 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <div className="bg-slate-900/60 rounded-xl p-4 border border-white/10 min-h-[120px] flex flex-col gap-3">
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Sparkles className="w-3.5 h-3.5 text-white" />
-                </div>
-                <div className="bg-white/10 border border-white/10 rounded-2xl px-4 py-2.5 text-sm text-white/90 max-w-lg">
-                  Identity recognised. Welcome to the Village, Traveller. Your DID has been logged and your session is active. How can I assist you today?
-                </div>
-              </div>
+            <div className="bg-white/10 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white/80 max-w-lg">
+              Identity recognised. Braid nodes queried from XRPL mainnet. All 8 Constitutional DIDs loading live. Your session is active — how can I guide you today?
             </div>
-            <p className="text-white/30 text-xs mt-3 text-center">
-              Full Axi chat available via the floating button ✨ bottom-right
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="text-white/25 text-xs mt-3 text-center">Full Axi chat via the ✨ button bottom-right</p>
+        </div>
       </div>
     </div>
   );
