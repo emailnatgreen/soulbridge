@@ -3,7 +3,6 @@ import { BRAID_NODES } from '@/lib/braidNodes';
 import { Link } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 
-// Fetches live XRPL balance for a given classic address (mainnet public API)
 async function fetchXRPLBalance(address) {
   const res = await fetch('https://xrplcluster.com/', {
     method: 'POST',
@@ -44,7 +43,7 @@ export default function ConstitutionalBraidLive({ compact = false }) {
 
   useEffect(() => {
     loadAll();
-    const interval = setInterval(loadAll, 5 * 60 * 1000); // refresh every 5 min
+    const interval = setInterval(loadAll, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loadAll]);
 
@@ -56,12 +55,13 @@ export default function ConstitutionalBraidLive({ compact = false }) {
           <span className="text-white/40 text-[10px] uppercase tracking-widest mr-1 hidden sm:block">Braid</span>
           {BRAID_NODES.map(node => {
             const info = nodeData[node.address];
-            const isActive = info?.active;
+            // published nodes always show active; live fetch upgrades the tooltip with balance
+            const isActive = info?.active || node.published;
             return (
               <span
                 key={node.address}
                 className={`w-2.5 h-2.5 rounded-full block ${node.dot} transition-opacity ${isActive ? 'opacity-90 animate-pulse' : 'opacity-30'}`}
-                title={`${node.name}: ${isActive ? `Active · ${info?.balance?.toFixed(1)} XRP` : loading ? 'Loading…' : 'Standby'}`}
+                title={`${node.name}: ${info?.active ? `Active · ${info?.balance?.toFixed(1)} XRP` : node.published ? 'Published · DID Active' : loading ? 'Loading…' : 'Standby'}`}
               />
             );
           })}
@@ -71,7 +71,6 @@ export default function ConstitutionalBraidLive({ compact = false }) {
     );
   }
 
-  // Full panel view
   return (
     <div className="space-y-4 animate-[fadeIn_0.4s_ease-out]">
       <div className="flex items-center justify-between">
@@ -85,12 +84,12 @@ export default function ConstitutionalBraidLive({ compact = false }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {BRAID_NODES.map(node => {
           const info = nodeData[node.address];
-          const isActive = info?.active;
+          const isActive = info?.active || node.published;
           return (
             <div key={node.address}
               className={`rounded-xl border p-3 space-y-1 transition-all duration-200 cursor-default
                 ${isActive
-                  ? 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10 hover:shadow-[0_0_12px_rgba(255,255,255,0.06)]'
+                  ? 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
                   : 'border-white/5 bg-white/[0.02] hover:border-white/10'}`}>
               <div className="flex items-center gap-2">
                 <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${node.dot} ${isActive ? 'opacity-100 animate-pulse' : 'opacity-20'}`} />
@@ -99,10 +98,10 @@ export default function ConstitutionalBraidLive({ compact = false }) {
               <div className="text-xs text-white/40 font-mono truncate">{node.address.slice(0, 8)}…</div>
               {loading ? (
                 <div className="text-xs text-white/30">Querying…</div>
-              ) : isActive ? (
+              ) : info?.active ? (
                 <div className="text-xs text-green-400 font-semibold">{info.balance.toFixed(2)} XRP · Active</div>
-              ) : info === undefined ? (
-                <div className="text-xs text-white/30">Querying…</div>
+              ) : node.published ? (
+                <div className="text-xs text-blue-400 font-semibold">DID Published · Mainnet</div>
               ) : (
                 <div className="text-xs text-amber-400 font-semibold">Standby</div>
               )}
