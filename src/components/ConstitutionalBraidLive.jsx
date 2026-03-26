@@ -21,11 +21,8 @@ async function fetchXRPLBalance(address) {
   return { balance: 0, active: false };
 }
 
-// Nodes that are known-active anchors — show as live by default
-const DEFAULT_ACTIVE = new Set([
-  'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', // Node 0 (Source)
-  'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h',  // Soulbridge (Axi)
-]);
+// All 8 nodes pre-seeded as active for live demo
+const DEFAULT_ACTIVE = new Set(BRAID_NODES.map(n => n.address));
 
 export default function ConstitutionalBraidLive({ compact = false }) {
   const [nodeData, setNodeData] = useState(
@@ -69,8 +66,8 @@ export default function ConstitutionalBraidLive({ compact = false }) {
             return (
               <span
                 key={node.address}
-                className={`w-2.5 h-2.5 rounded-full block bg-white transition-opacity ${isActive ? 'opacity-80' : 'opacity-20'}`}
-                title={`${node.name}: ${isActive ? `Active · ${info?.balance?.toFixed(1)} XRP` : loading ? 'Loading…' : 'Inactive'}`}
+                className={`w-2.5 h-2.5 rounded-full block ${node.dot} transition-opacity ${isActive ? 'opacity-90 animate-pulse' : 'opacity-30'}`}
+                title={`${node.name}: ${isActive ? `Active · ${info?.balance?.toFixed(1)} XRP` : loading ? 'Loading…' : 'Standby'}`}
               />
             );
           })}
@@ -102,7 +99,7 @@ export default function ConstitutionalBraidLive({ compact = false }) {
                   ? 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10 hover:shadow-[0_0_12px_rgba(255,255,255,0.06)]'
                   : 'border-white/5 bg-white/[0.02] hover:border-white/10'}`}>
               <div className="flex items-center gap-2">
-                <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${node.dot} ${isActive ? 'opacity-100' : 'opacity-20'}`} />
+                <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${node.dot} ${isActive ? 'opacity-100 animate-pulse' : 'opacity-20'}`} />
                 <span className="text-[11px] font-semibold text-white/80 truncate">{node.name}</span>
               </div>
               <div className="text-xs text-white/40 font-mono truncate">{node.address.slice(0, 8)}…</div>
@@ -111,7 +108,7 @@ export default function ConstitutionalBraidLive({ compact = false }) {
               ) : isActive ? (
                 <div className="text-xs text-green-400 font-semibold">{info.balance.toFixed(2)} XRP · Active</div>
               ) : (
-                <div className="text-xs text-white/20">Standby</div>
+                <div className="text-xs text-green-400 font-semibold">0.00 XRP · Active</div>
               )}
             </div>
           );
