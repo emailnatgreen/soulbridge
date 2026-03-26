@@ -23,6 +23,8 @@ async function fetchXRPLBalance(address) {
 
 export default function ConstitutionalBraidLive({ compact = false }) {
   const [nodeData, setNodeData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(null);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
