@@ -1,21 +1,18 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
     
-    // Handle both direct invocation and entity automation payload
+    // Entity automation payload: { event, data, old_data }
+    // Direct invocation payload: { signal_id, alert_summary, governance_focus }
     const signal_id = payload.signal_id || payload.event?.entity_id || payload.data?.id;
     const { alert_summary, governance_focus } = payload;
 
-    if (!signal_id) {
-      return Response.json({ error: 'signal_id or event.entity_id required' }, { status: 400 });
-    }
-
-    // Use entity data directly if available (entity automation), otherwise minimal fallback
+    // Use entity data directly if provided, otherwise build a minimal signal object
     const signal = payload.data || {
-      id: signal_id,
+      id: signal_id || 'unknown',
       page_name: 'AI Intelligence Alert',
       timestamp: new Date().toISOString(),
       metadata: { findings: 'Signal processing alert', implications: 'Requires governance review' }
