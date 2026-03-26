@@ -13,27 +13,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'signal_id or event.entity_id required' }, { status: 400 });
     }
 
-    // Fetch the Signal (AI Intel alert)
-    let signals;
-    try {
-      signals = await base44.asServiceRole.entities.Signal.filter({ id: signal_id });
-      if (!signals.length) {
-        // Fallback: try fetching directly if filter returns empty
-        console.warn(`Signal ${signal_id} not found in filter, attempting direct fetch`);
-        return Response.json({ error: 'Signal not found' }, { status: 404 });
-      }
-    } catch (err) {
-      console.warn(`Failed to fetch Signal ${signal_id}:`, err.message);
-      // Don't fail hard—create proposal with minimal metadata
-      signals = [{ 
-        id: signal_id,
-        page_name: 'AI Intelligence Alert',
-        timestamp: new Date().toISOString(),
-        metadata: { findings: 'Signal processing alert', implications: 'Requires governance review' }
-      }];
-    }
-
-    const signal = signals[0];
+    // Use entity data directly if available (entity automation), otherwise minimal fallback
+    const signal = payload.data || {
+      id: signal_id,
+      page_name: 'AI Intelligence Alert',
+      timestamp: new Date().toISOString(),
+      metadata: { findings: 'Signal processing alert', implications: 'Requires governance review' }
+    };
     const metadata = signal.metadata || {};
 
     // Create draft GovernanceProposal
