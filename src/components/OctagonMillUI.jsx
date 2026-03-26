@@ -105,10 +105,28 @@ function NodeWheel({ node, balance, loaded }) {
         }} />
       </div>
 
-      {/* Node name */}
-      <div style={{ color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textAlign: 'center' }}>
+      {/* Node name + Crown for Human Node */}
+      <div style={{ color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        {node.id === 6 && <span style={{ fontSize: 13 }}>👑</span>}
         {node.label}
       </div>
+      {/* 51% Authority badge for Human Node */}
+      {node.id === 6 && (
+        <div style={{
+          background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+          border: '1px solid #c084fc',
+          borderRadius: 6,
+          padding: '2px 6px',
+          fontSize: 9,
+          fontWeight: 800,
+          color: '#fff',
+          letterSpacing: '0.08em',
+          textAlign: 'center',
+          boxShadow: '0 0 8px rgba(168,85,247,0.6)',
+        }}>
+          51% AUTHORITY
+        </div>
+      )}
 
       {/* Live balance */}
       <div style={{ color: balColor, fontSize: 10, fontFamily: 'monospace', textAlign: 'center', minHeight: 14 }}>
