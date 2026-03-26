@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/lib/AuthContext';
 import {
   Home, Menu, X, BarChart3, Users, Vote, Briefcase, Archive, Calendar,
   Settings, Image, Brain, Wallet, Globe, Shield, BookOpen, Zap,
@@ -143,6 +144,9 @@ function NavGroup({ group, isOpen: defaultOpen = false, onNavigate }) {
 
 export default function GlobalNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
+
+  if (!user || user.role !== 'admin') return null;
 
   return (
     <>
