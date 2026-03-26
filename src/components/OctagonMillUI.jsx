@@ -30,10 +30,10 @@ function SpinningWheel({ style, balance, isLoading, pulse }) {
   return (
     <div className="flex flex-col items-center gap-2">
       <div
-        className="relative w-14 h-14 rounded-full flex items-center justify-center"
+        className="relative w-16 h-16 rounded-full flex items-center justify-center"
         style={{
-          background: `radial-gradient(circle at 35% 35%, ${style.fill}cc, ${style.fill}66)`,
-          boxShadow: `0 0 18px ${style.glow}, 0 0 6px ${style.glow}, inset 0 1px 2px rgba(255,255,255,0.3)`,
+          background: style.fill,
+          boxShadow: `0 0 28px ${style.glow}, 0 0 56px ${style.glow}, 0 0 8px rgba(255,255,255,0.2)`,
           transform: `rotate(${deg}deg)`,
           transition: 'transform 0.7s ease-out',
         }}
@@ -41,9 +41,9 @@ function SpinningWheel({ style, balance, isLoading, pulse }) {
         {/* Spokes */}
         {[0, 45, 90, 135].map(a => (
           <div key={a} className="absolute w-full h-px"
-            style={{ background: 'rgba(255,255,255,0.35)', transform: `rotate(${a}deg)` }} />
+            style={{ background: 'rgba(0,0,0,0.25)', transform: `rotate(${a}deg)` }} />
         ))}
-        <div className="w-3 h-3 rounded-full" style={{ background: 'rgba(255,255,255,0.7)', boxShadow: '0 0 6px white' }} />
+        <div className="w-4 h-4 rounded-full" style={{ background: 'rgba(255,255,255,0.85)', boxShadow: '0 0 8px white' }} />
       </div>
       <div className={`text-[10px] font-mono ${style.text}`}>
         {isLoading ? '…' : balance !== null ? `${balance.toFixed(1)} XRP` : '—'}
