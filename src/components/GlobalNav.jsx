@@ -9,6 +9,7 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import GlobalSearchBar from '@/components/search/GlobalSearchBar';
+import BraidStatusBar from '@/components/BraidStatusBar';
 
 const NAV_GROUPS = [
   {
@@ -173,6 +174,9 @@ export default function GlobalNav() {
           </div>
           <div className="mt-4">
             <GlobalSearchBar className="w-full" />
+          </div>
+          <div className="mt-3">
+            <BraidStatusBar />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
