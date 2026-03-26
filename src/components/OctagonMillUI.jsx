@@ -15,13 +15,21 @@ const NODES = [
   { id: 7, label: 'Sentinel', hex: '#FF0000', address: 'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32' },
 ];
 
+const ENDPOINTS = ['https://xrplcluster.com/', 'https://s1.ripple.com:51234/', 'https://s2.ripple.com:51234/'];
+
 async function xrplFetch(body) {
-  const r = await fetch('https://xrplcluster.com/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return r.json();
+  for (const url of ENDPOINTS) {
+    try {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+      if (data?.result) return data;
+    } catch (_) {}
+  }
+  return null;
 }
 
 // Individual spinning wheel — self-contained so animation is isolated per node
