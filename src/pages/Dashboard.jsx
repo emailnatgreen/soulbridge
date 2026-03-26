@@ -126,7 +126,7 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link to="/" className="text-xs text-white/50 hover:text-white border border-white/15 rounded-lg px-3 py-1.5 transition">
+            <Link to="/Home" className="text-xs text-white/50 hover:text-white border border-white/15 rounded-lg px-3 py-1.5 transition">
               <Home className="w-3.5 h-3.5 inline mr-1" />Home
             </Link>
             <button onClick={handleDisconnect}
