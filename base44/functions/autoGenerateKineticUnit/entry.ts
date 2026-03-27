@@ -12,6 +12,11 @@ const KU_TYPE_MAP = {
   Wallet: 'did_publication',
   MentorshipSession: 'mentorship_session',
   KnowledgeContribution: 'knowledge_contribution',
+  AgentSkill: 'skill_development',
+  Transaction: 'economic_exchange',
+  CollaborativeSession: 'collaborative_action',
+  ResourcePurchase: 'resource_trade',
+  AgentMessage: 'agent_message',
 };
 
 // Resolve the agent_id from entity data depending on entity type.
@@ -23,8 +28,12 @@ async function resolveAgentId(entityName, data, base44) {
   if (entityName === 'ProjectTask') return data.assigned_agent_id || data.agent_id;
   if (entityName === 'MentorshipSession') return data.mentor_agent_id || data.agent_id;
   if (entityName === 'KnowledgeContribution') return data.author_agent_id || data.contributor_agent_id || data.agent_id;
+  if (entityName === 'AgentSkill') return data.agent_id;
+  if (entityName === 'Transaction') return data.sender_agent_id || data.from_agent_id || data.agent_id;
+  if (entityName === 'CollaborativeSession') return data.host_agent_id || data.organizer_agent_id || data.created_by_agent_id || data.agent_id;
+  if (entityName === 'ResourcePurchase') return data.buyer_agent_id || data.agent_id;
+  if (entityName === 'AgentMessage') return data.sender_agent_id || data.from_agent_id || data.agent_id;
   if (entityName === 'Wallet') {
-    // Wallet.owner_id is a platform User ID — resolve to Agent via classic_address or wallet_id
     const agents = await base44.asServiceRole.entities.Agent.filter({ classic_address: data.classic_address });
     if (agents.length > 0) return agents[0].id;
     const byWalletId = await base44.asServiceRole.entities.Agent.filter({ wallet_id: data.id });
