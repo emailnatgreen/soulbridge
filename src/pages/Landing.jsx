@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn } from 'lucide-react';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
+import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 
 if (!window.__soulbridge) window.__soulbridge = {};
@@ -230,6 +231,9 @@ export default function Landing() {
 
           {/* Genesis Seal */}
           <GenesisSealBadge />
+
+          {/* Kinetic Grid Public Overview */}
+          <KineticPublicOverview />
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">

@@ -38,6 +38,7 @@ const NAV_GROUPS = [
     links: [
       { label: 'Governance Hub', path: '/GovernanceHub', icon: Vote },
       { label: '⚖️ Voting Dashboard', path: '/GovernanceVotingDashboard', icon: Vote },
+      { label: '🌀 Kinetic Grid', path: '/KineticGridDashboard', icon: Activity },
       { label: 'Treasury Proposals', path: '/TreasuryAllocationProposal', icon: Landmark },
       { label: 'Treasury Signing', path: '/TreasurySigningHelper', icon: Zap },
       { label: 'Risk Register', path: '/RiskRegister', icon: Shield },
@@ -87,12 +88,6 @@ const NAV_GROUPS = [
       { label: 'Diplomacy', path: '/DiplomacyHub', icon: Swords },
       { label: 'Social Network', path: '/SocialNetwork', icon: Users },
       { label: 'Covenant Echoes', path: '/CovenantEchoes', icon: Star },
-    ]
-  },
-  {
-    label: 'Kinetic Grid',
-    links: [
-      { label: '🌀 Kinetic Dashboard', path: '/KineticGridDashboard', icon: Activity },
     ]
   },
   {
