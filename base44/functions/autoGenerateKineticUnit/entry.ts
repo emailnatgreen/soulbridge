@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
       triggered_by: 'entity_event',
     });
 
-    return Response.json({ status: 'success', ku_type: kuType, agent_id: agentId, result });
+    return Response.json({ status: 'success', ku_type: kuType, agent_id: agentId, result: result?.data ?? null });
 
   } catch (error) {
     // Best-effort error log
