@@ -1,0 +1,88 @@
+{
+  "name": "MWTPPacket",
+  "type": "object",
+  "properties": {
+    "packet_version": {
+      "type": "string",
+      "default": "1.0",
+      "description": "MWTP protocol version"
+    },
+    "layer": {
+      "type": "string",
+      "enum": [
+        "micro",
+        "meso",
+        "macro"
+      ],
+      "default": "micro",
+      "description": "Micro = KU source packaging, Meso = aggregated flow, Macro = grid-level summary"
+    },
+    "hashed_agent_id": {
+      "type": "string",
+      "description": "Privacy-preserving SHA-256 hash of the originating agent ID"
+    },
+    "hashed_event_context": {
+      "type": "string",
+      "description": "Privacy-preserving hash of the trigger event context string"
+    },
+    "ku_count": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of Kinetic Units contained in this packet"
+    },
+    "ku_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "References to KineticUnit IDs packaged in this transmission"
+    },
+    "total_weighted_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Aggregate weighted kinetic score for all KUs in this packet"
+    },
+    "packet_timestamp": {
+      "type": "string",
+      "description": "ISO timestamp of packet creation (millisecond precision)"
+    },
+    "transmission_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "transmitted",
+        "received",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Current transmission status of this MWTP packet"
+    },
+    "received_by_engine": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the Mill Wheel Engine has confirmed receipt"
+    },
+    "engine_ingest_timestamp": {
+      "type": "string",
+      "description": "When the Mill Wheel Engine ingested this packet"
+    },
+    "integrity_checksum": {
+      "type": "string",
+      "description": "Hash of the full packet payload for tamper detection"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project context (if KUs are project-scoped)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional routing and diagnostic metadata"
+    }
+  },
+  "required": [
+    "layer",
+    "hashed_agent_id",
+    "hashed_event_context",
+    "packet_timestamp"
+  ]
+}

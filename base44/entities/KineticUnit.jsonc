@@ -1,0 +1,95 @@
+{
+  "name": "KineticUnit",
+  "type": "object",
+  "properties": {
+    "ku_type": {
+      "type": "string",
+      "enum": [
+        "governance_vote",
+        "task_completion",
+        "agent_message",
+        "skill_development",
+        "economic_exchange",
+        "mentorship_session",
+        "knowledge_contribution",
+        "did_publication",
+        "resource_trade",
+        "collaborative_action"
+      ],
+      "description": "The category of meaningful digital action this KU represents"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "The agent that generated this Kinetic Unit"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Associated project (if applicable)"
+    },
+    "trigger_event": {
+      "type": "string",
+      "description": "The exact system event that triggered generation of this KU (e.g. 'GovernanceVote.create', 'ProjectTask.complete')"
+    },
+    "trigger_entity_id": {
+      "type": "string",
+      "description": "ID of the entity that triggered this KU"
+    },
+    "weight": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Calibrated weighting multiplier for this KU type (base 1.0)"
+    },
+    "raw_score": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Raw kinetic score before weighting"
+    },
+    "weighted_score": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Final weighted kinetic score (raw_score * weight)"
+    },
+    "mwtp_packet_id": {
+      "type": "string",
+      "description": "Reference to the MWTP packet that transported this KU"
+    },
+    "mwtp_layer": {
+      "type": "string",
+      "enum": [
+        "micro",
+        "meso",
+        "macro"
+      ],
+      "default": "micro",
+      "description": "Which layer of the MWTP this KU was processed at"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "packaged",
+        "transmitted",
+        "ingested",
+        "processed"
+      ],
+      "default": "generated",
+      "description": "Lifecycle status of this KU through the Kinetic Grid pipeline"
+    },
+    "constitutional_laws": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Laws of Honour this KU action aligns with"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context captured at generation time"
+    }
+  },
+  "required": [
+    "ku_type",
+    "agent_id",
+    "trigger_event"
+  ]
+}
