@@ -37,6 +37,7 @@ const NAV_GROUPS = [
     label: 'Governance',
     links: [
       { label: 'Governance Hub', path: '/GovernanceHub', icon: Vote },
+      { label: '⚖️ Voting Dashboard', path: '/GovernanceVotingDashboard', icon: Vote },
       { label: 'Treasury Proposals', path: '/TreasuryAllocationProposal', icon: Landmark },
       { label: 'Treasury Signing', path: '/TreasurySigningHelper', icon: Zap },
       { label: 'Risk Register', path: '/RiskRegister', icon: Shield },
