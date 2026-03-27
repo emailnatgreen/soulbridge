@@ -1,0 +1,51 @@
+{
+  "name": "GovernanceLimits",
+  "type": "object",
+  "properties": {
+    "limit_name": {
+      "type": "string",
+      "description": "Identifier for this limit (e.g., 'max_auto_trade_usd', 'kinetic_threshold')"
+    },
+    "value": {
+      "type": "number",
+      "description": "Numeric value of the limit"
+    },
+    "currency": {
+      "type": "string",
+      "default": "RLUSD",
+      "description": "Currency this limit applies to"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable explanation of this limit"
+    },
+    "applies_to_nodes": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Node IDs this limit applies to (0-7)"
+    },
+    "requires_human_approval_above": {
+      "type": "number",
+      "description": "Transactions above this value require Node 6 (Human) approval"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this limit is currently enforced"
+    },
+    "set_by": {
+      "type": "string",
+      "description": "Who set this limit (e.g., 'Governor_Nathan', 'Council')"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional configuration data"
+    }
+  },
+  "required": [
+    "limit_name",
+    "value"
+  ]
+}

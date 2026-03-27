@@ -7,7 +7,7 @@ import OrderPanel from '@/components/dex/OrderPanel';
 import SignalsPanel from '@/components/dex/SignalsPanel';
 import OrderBook from '@/components/dex/OrderBook';
 import PortfolioPanel from '@/components/dex/PortfolioPanel';
-import { TrendingUp, TrendingDown, Activity, Wifi, ArrowLeft, Zap, BookOpen, RefreshCw, PieChart } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Wifi, ArrowLeft, Zap, BookOpen, RefreshCw, PieChart, ShieldCheck } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 
@@ -17,6 +17,7 @@ export default function ArisDex() {
   const [selectedPairId, setSelectedPairId] = useState(null);
   const [rightTab, setRightTab] = useState('book'); // 'book' | 'signals' | 'portfolio'
   const [refreshing, setRefreshing] = useState(false);
+  const [approving, setApproving] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: pairs = [], refetch: refetchPairs } = useQuery({
@@ -61,6 +62,18 @@ export default function ArisDex() {
       toast.error('Refresh failed');
     }
     setRefreshing(false);
+  };
+
+  const handleGovernorApprove = async () => {
+    setApproving(true);
+    try {
+      // Register heartbeat first to confirm Human Node presence
+      await base44.functions.invoke('humanNodeHeartbeat', { action: 'ping' });
+      toast.success('✅ Governor approved. Human Node heartbeat registered. Treasury movements cleared.', { duration: 5000 });
+    } catch (err) {
+      toast.error('Governor approval failed: ' + (err?.message || 'Unknown error'));
+    }
+    setApproving(false);
   };
 
   return (
@@ -108,6 +121,16 @@ export default function ArisDex() {
 
         {/* Right controls */}
         <div className="ml-auto flex items-center gap-3">
+          {/* Governor's Approve — Veto Protocol [4.2] */}
+          <button
+            onClick={handleGovernorApprove}
+            disabled={approving}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded border border-purple-500/60 bg-purple-900/30 text-purple-300 hover:bg-purple-700/50 hover:text-white transition-colors disabled:opacity-50"
+            title="Governor's Approve — Human Node 51% Veto Protocol"
+          >
+            <ShieldCheck className={`w-3.5 h-3.5 ${approving ? 'animate-pulse' : ''}`} />
+            {approving ? 'Approving…' : 'Governor Approve'}
+          </button>
           <button
             onClick={handleManualRefresh}
             disabled={refreshing}
