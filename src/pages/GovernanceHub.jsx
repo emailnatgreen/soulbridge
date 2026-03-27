@@ -251,6 +251,12 @@ export default function GovernanceHub() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              <Link to="/GovernanceVotingDashboard">
+                <Button variant="outline" className="border-purple-400/40 text-purple-300 hover:bg-purple-500/10" size="lg">
+                  <Vote className="w-5 h-5 mr-2" />
+                  Voting Dashboard
+                </Button>
+              </Link>
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogTrigger asChild>
                   <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
