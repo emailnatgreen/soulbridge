@@ -31,8 +31,18 @@ Deno.serve(async (req) => {
 
     const notifications = [];
 
+    // Build a set of notification titles sent in the last 2 hours to prevent floods
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const recentNotifs = axiId
+      ? await base44.asServiceRole.entities.AgentNotification.filter({ agent_id: axiId }, '-created_date', 50)
+      : [];
+    const recentTitles = new Set(
+      recentNotifs.filter(n => n.created_date > twoHoursAgo).map(n => n.title)
+    );
+
     // ── Village Energy Index alerts ────────────────────────────────────────
     if (energyIndex < CRITICAL_THRESHOLD) {
+      const title = 'Village Energy Index — Critical';
       const msg = `🔴 CRITICAL: Village Energy Index has dropped to ${energyIndex}/100. Kinetic flow is severely reduced. Immediate attention required — check AutomationLog for sync failures and review agent activity.`;
       if (axiId && !recentTitles.has(title)) {
         await base44.asServiceRole.entities.AgentNotification.create({
