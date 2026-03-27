@@ -90,6 +90,12 @@ const NAV_GROUPS = [
     ]
   },
   {
+    label: 'Kinetic Grid',
+    links: [
+      { label: '🌀 Kinetic Dashboard', path: '/KineticGridDashboard', icon: Activity },
+    ]
+  },
+  {
     label: 'Tools & Admin',
     links: [
       { label: 'Image Storage', path: '/ImageStorage', icon: Image },
