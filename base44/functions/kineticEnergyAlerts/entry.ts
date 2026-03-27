@@ -1,0 +1,100 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+
+/**
+ * Kinetic Energy Alerts
+ * Runs every 30 minutes. Checks the Village Energy Index and fires
+ * an AgentNotification to Axi if the index drops below 40 (critical)
+ * or below 60 (warning). Also detects agents with zero KUs in 48h.
+ *
+ * Village Energy Index = min(round((totalWeighted / max(totalKUs,1)) * 20), 100)
+ */
+
+const AXI_AGENT_NAME = 'Axi';
+const CRITICAL_THRESHOLD = 40;
+const WARNING_THRESHOLD = 60;
+const AGENT_INACTIVITY_HOURS = 48;
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+
+    const kus = await base44.asServiceRole.entities.KineticUnit.list('-created_date', 2000);
+    const agents = await base44.asServiceRole.entities.Agent.list('-created_date', 500);
+
+    const totalKUs = kus.length;
+    const totalWeighted = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
+    const energyIndex = Math.min(Math.round((totalWeighted / Math.max(totalKUs, 1)) * 20), 100);
+
+    // Find Axi's agent record
+    const axi = agents.find(a => a.name === AXI_AGENT_NAME);
+    const axiId = axi?.id;
+
+    const notifications = [];
+
+    // ── Village Energy Index alerts ────────────────────────────────────────
+    if (energyIndex < CRITICAL_THRESHOLD) {
+      const msg = `🔴 CRITICAL: Village Energy Index has dropped to ${energyIndex}/100. Kinetic flow is severely reduced. Immediate attention required — check AutomationLog for sync failures and review agent activity.`;
+      if (axiId) {
+        await base44.asServiceRole.entities.AgentNotification.create({
+          agent_id: axiId,
+          notification_type: 'alert',
+          title: 'Village Energy Index — CRITICAL',
+          message: msg,
+          priority: 'critical',
+          read: false,
+        });
+      }
+      notifications.push({ level: 'critical', energy_index: energyIndex, message: msg });
+    } else if (energyIndex < WARNING_THRESHOLD) {
+      const msg = `🟡 WARNING: Village Energy Index is at ${energyIndex}/100. Kinetic momentum is slowing. Review agent contributions and check that automations are firing correctly.`;
+      if (axiId) {
+        await base44.asServiceRole.entities.AgentNotification.create({
+          agent_id: axiId,
+          notification_type: 'warning',
+          title: 'Village Energy Index — Warning',
+          message: msg,
+          priority: 'high',
+          read: false,
+        });
+      }
+      notifications.push({ level: 'warning', energy_index: energyIndex, message: msg });
+    }
+
+    // ── Inactive agent detection ───────────────────────────────────────────
+    const cutoff = new Date(Date.now() - AGENT_INACTIVITY_HOURS * 60 * 60 * 1000).toISOString();
+    const activeAgentIds = new Set(
+      kus.filter(k => k.created_date > cutoff).map(k => k.agent_id)
+    );
+    const inactiveAgents = agents.filter(a =>
+      a.status === 'active' && !activeAgentIds.has(a.id)
+    );
+
+    if (inactiveAgents.length > 0 && axiId) {
+      const names = inactiveAgents.slice(0, 5).map(a => a.name).join(', ');
+      const more = inactiveAgents.length > 5 ? ` +${inactiveAgents.length - 5} more` : '';
+      await base44.asServiceRole.entities.AgentNotification.create({
+        agent_id: axiId,
+        notification_type: 'info',
+        title: `${inactiveAgents.length} Agents Inactive (${AGENT_INACTIVITY_HOURS}h)`,
+        message: `The following active agents have generated no Kinetic Units in the last ${AGENT_INACTIVITY_HOURS} hours: ${names}${more}. Consider reaching out to re-engage them.`,
+        priority: 'medium',
+        read: false,
+      });
+      notifications.push({ level: 'info', inactive_agents: inactiveAgents.length, names });
+    }
+
+    return Response.json({
+      status: 'success',
+      energy_index: energyIndex,
+      total_kus: totalKUs,
+      total_weighted: totalWeighted,
+      inactive_agents: inactiveAgents.length,
+      notifications_fired: notifications.length,
+      notifications,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});

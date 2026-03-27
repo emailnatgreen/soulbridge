@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Star, Briefcase, Award, Zap, Globe, MessageCircle, Edit, ExternalLink, CheckCircle2, TrendingUp, TrendingDown, Minus, Users, BookOpen, Target, Vote, ShoppingBag, Brain, Sparkles } from 'lucide-react';
 import SkillTrajectoryInsights from '../components/agent/SkillTrajectoryInsights';
+import AgentKUProfile from '../components/kinetic/AgentKUProfile';
 import AgentMatchingProjects from '../components/AgentMatchingProjects';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -229,6 +230,9 @@ export default function AgentProfile() {
           </TabsList>
 
           <TabsContent value="performance" className="space-y-6">
+            {/* Kinetic Journey Mirror — always visible */}
+            <AgentKUProfile agentId={agentId} />
+
             {performanceMetrics ? (
               <>
                 {/* Overall Performance */}

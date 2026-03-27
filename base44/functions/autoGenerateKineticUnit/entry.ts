@@ -10,6 +10,8 @@ const KU_TYPE_MAP = {
   GovernanceVote: 'governance_vote',
   ProjectTask: 'task_completion',
   Wallet: 'did_publication',
+  MentorshipSession: 'mentorship_session',
+  KnowledgeContribution: 'knowledge_contribution',
 };
 
 // Resolve the agent_id from entity data depending on entity type.
@@ -19,14 +21,15 @@ const KU_TYPE_MAP = {
 async function resolveAgentId(entityName, data, base44) {
   if (entityName === 'GovernanceVote') return data.voter_agent_id || data.agent_id;
   if (entityName === 'ProjectTask') return data.assigned_agent_id || data.agent_id;
+  if (entityName === 'MentorshipSession') return data.mentor_agent_id || data.agent_id;
+  if (entityName === 'KnowledgeContribution') return data.author_agent_id || data.contributor_agent_id || data.agent_id;
   if (entityName === 'Wallet') {
-    // Try to find an Agent whose wallet_id or classic_address matches this wallet
+    // Wallet.owner_id is a platform User ID — resolve to Agent via classic_address or wallet_id
     const agents = await base44.asServiceRole.entities.Agent.filter({ classic_address: data.classic_address });
     if (agents.length > 0) return agents[0].id;
-    // Fallback: find by wallet_id match
     const byWalletId = await base44.asServiceRole.entities.Agent.filter({ wallet_id: data.id });
     if (byWalletId.length > 0) return byWalletId[0].id;
-    return null; // Cannot resolve — skip KU generation
+    return null;
   }
   return null;
 }
