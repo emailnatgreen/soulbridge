@@ -12,11 +12,22 @@ const KU_TYPE_MAP = {
   Wallet: 'did_publication',
 };
 
-// Resolve the agent_id from entity data depending on entity type
-function resolveAgentId(entityName, data) {
+// Resolve the agent_id from entity data depending on entity type.
+// NOTE: Wallet.owner_id is a platform User ID, NOT an Agent ID.
+// We store it and let kineticGridIntegration skip unknown agent IDs safely,
+// OR resolve via Agent lookup below.
+async function resolveAgentId(entityName, data, base44) {
   if (entityName === 'GovernanceVote') return data.voter_agent_id || data.agent_id;
   if (entityName === 'ProjectTask') return data.assigned_agent_id || data.agent_id;
-  if (entityName === 'Wallet') return data.owner_id || data.agent_id;
+  if (entityName === 'Wallet') {
+    // Try to find an Agent whose wallet_id or classic_address matches this wallet
+    const agents = await base44.asServiceRole.entities.Agent.filter({ classic_address: data.classic_address });
+    if (agents.length > 0) return agents[0].id;
+    // Fallback: find by wallet_id match
+    const byWalletId = await base44.asServiceRole.entities.Agent.filter({ wallet_id: data.id });
+    if (byWalletId.length > 0) return byWalletId[0].id;
+    return null; // Cannot resolve — skip KU generation
+  }
   return null;
 }
 
@@ -36,7 +47,7 @@ Deno.serve(async (req) => {
       return Response.json({ status: 'skipped', reason: `no KU type for ${entityName}` });
     }
 
-    const agentId = resolveAgentId(entityName, data);
+    const agentId = await resolveAgentId(entityName, data, base44);
     if (!agentId) {
       return Response.json({ status: 'skipped', reason: 'could not resolve agent_id from entity data' });
     }

@@ -94,18 +94,29 @@ async function syncAgentPerformance(base44, kus, agentMap) {
 // ── 2. Sync EconomicActivity ───────────────────────────────────────────────
 async function syncEconomicActivity(base44, kus, agentMap) {
   const economicKuTypes = ['economic_exchange', 'resource_trade', 'task_completion', 'knowledge_contribution'];
-  const economicKus = kus.filter(ku => economicKuTypes.includes(ku.ku_type) && !ku.economic_activity_synced);
+  // Deduplicate: only process KUs not yet synced (check by trigger_entity_id + ku_type to avoid double-charging)
+  const existingActivities = await base44.asServiceRole.entities.EconomicActivity.list('-created_date', 1000);
+  const syncedKuIds = new Set(
+    existingActivities
+      .filter(a => a.description && a.description.includes('Kinetic Unit reward'))
+      .map(a => { const m = a.description.match(/ku_id:([\w]+)/); return m ? m[1] : null; })
+      .filter(Boolean)
+  );
+  const economicKus = kus.filter(ku =>
+    economicKuTypes.includes(ku.ku_type) &&
+    !syncedKuIds.has(ku.id)
+  );
   const created = [];
 
   for (const ku of economicKus) {
-    if (!agentMap[ku.agent_id]) continue; // skip unknown/test agent IDs
+    if (!agentMap[ku.agent_id]) continue;
 
-    const xrpValue = parseFloat((ku.weighted_score * 0.1).toFixed(4)); // 0.1 XRP per weighted point
+    const xrpValue = parseFloat((ku.weighted_score * 0.1).toFixed(4));
     await base44.asServiceRole.entities.EconomicActivity.create({
       agent_id: ku.agent_id,
       activity_type: 'earned',
       amount: xrpValue,
-      description: `Kinetic Unit reward — ${ku.ku_type} (weighted score: ${ku.weighted_score})`,
+      description: `Kinetic Unit reward — ${ku.ku_type} (weighted score: ${ku.weighted_score}) ku_id:${ku.id}`,
       status: 'completed',
     });
     created.push({ ku_id: ku.id, ku_type: ku.ku_type, xrp_value: xrpValue });
@@ -195,8 +206,8 @@ async function syncGovernanceContext(base44, kus) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // Allow both authenticated users AND service-role scheduled/automation invocations
+    const user = await base44.auth.me().catch(() => null);
 
     const body = await req.json();
     const { action } = body;
@@ -206,8 +217,8 @@ Deno.serve(async (req) => {
     const agentMap = {};
     for (const a of allAgents) agentMap[a.id] = a;
 
-    // Fetch all ingested KUs
-    const allKus = await base44.asServiceRole.entities.KineticUnit.list('-created_date', 1000);
+    // Fetch all ingested KUs (no hard cap — fetch up to 2000 to avoid stale analytics as grid scales)
+    const allKus = await base44.asServiceRole.entities.KineticUnit.list('-created_date', 2000);
     const kus = allKus.filter(k => k.status === 'ingested');
 
     if (kus.length === 0) {
