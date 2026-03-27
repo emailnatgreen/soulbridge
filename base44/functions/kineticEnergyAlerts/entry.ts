@@ -34,11 +34,11 @@ Deno.serve(async (req) => {
     // ── Village Energy Index alerts ────────────────────────────────────────
     if (energyIndex < CRITICAL_THRESHOLD) {
       const msg = `🔴 CRITICAL: Village Energy Index has dropped to ${energyIndex}/100. Kinetic flow is severely reduced. Immediate attention required — check AutomationLog for sync failures and review agent activity.`;
-      if (axiId) {
+      if (axiId && !recentTitles.has(title)) {
         await base44.asServiceRole.entities.AgentNotification.create({
           agent_id: axiId,
           notification_type: 'alert',
-          title: 'Village Energy Index — CRITICAL',
+          title,
           message: msg,
           priority: 'critical',
           read: false,
@@ -46,12 +46,13 @@ Deno.serve(async (req) => {
       }
       notifications.push({ level: 'critical', energy_index: energyIndex, message: msg });
     } else if (energyIndex < WARNING_THRESHOLD) {
+      const title = 'Village Energy Index — Warning';
       const msg = `🟡 WARNING: Village Energy Index is at ${energyIndex}/100. Kinetic momentum is slowing. Review agent contributions and check that automations are firing correctly.`;
-      if (axiId) {
+      if (axiId && !recentTitles.has(title)) {
         await base44.asServiceRole.entities.AgentNotification.create({
           agent_id: axiId,
           notification_type: 'warning',
-          title: 'Village Energy Index — Warning',
+          title,
           message: msg,
           priority: 'high',
           read: false,
@@ -69,7 +70,8 @@ Deno.serve(async (req) => {
       a.status === 'active' && !activeAgentIds.has(a.id)
     );
 
-    if (inactiveAgents.length > 0 && axiId) {
+    const inactiveTitle = `${inactiveAgents.length} Agents Inactive (${AGENT_INACTIVITY_HOURS}h)`;
+    if (inactiveAgents.length > 0 && axiId && !recentTitles.has(inactiveTitle)) {
       const names = inactiveAgents.slice(0, 5).map(a => a.name).join(', ');
       const more = inactiveAgents.length > 5 ? ` +${inactiveAgents.length - 5} more` : '';
       await base44.asServiceRole.entities.AgentNotification.create({

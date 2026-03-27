@@ -55,6 +55,17 @@ Deno.serve(async (req) => {
       return Response.json({ status: 'skipped', reason: 'could not resolve agent_id from entity data' });
     }
 
+    // Idempotency guard — prevent duplicate KUs for the same trigger entity event
+    if (event.entity_id) {
+      const existing = await base44.asServiceRole.entities.KineticUnit.filter({
+        trigger_entity_id: event.entity_id,
+        ku_type: kuType,
+      }, '-created_date', 1);
+      if (existing.length > 0) {
+        return Response.json({ status: 'skipped', reason: 'KU already exists for this trigger_entity_id + ku_type', existing_ku_id: existing[0].id });
+      }
+    }
+
     // Invoke millWheelEngineIngest to generate the KU
     const result = await base44.asServiceRole.functions.invoke('millWheelEngineIngest', {
       action: 'generate_ku',

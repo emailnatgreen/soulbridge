@@ -47,11 +47,13 @@ async function syncAgentPerformance(base44, kus, agentMap) {
   const now = new Date().toISOString();
   const periodStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
+  // Fetch ALL performance records ONCE before loop — avoids O(n²) queries
+  const allPerfRecords = await base44.asServiceRole.entities.AgentPerformanceMetrics.list('-created_date', 500);
+
   for (const [agentId, data] of Object.entries(byAgent)) {
     if (!agentMap[agentId]) continue; // skip unknown/test agent IDs
 
-    const existing = await base44.asServiceRole.entities.AgentPerformanceMetrics.list();
-    const record = existing.find(r => r.agent_id === agentId);
+    const record = allPerfRecords.find(r => r.agent_id === agentId);
 
     const patch = {
       agent_id: agentId,
