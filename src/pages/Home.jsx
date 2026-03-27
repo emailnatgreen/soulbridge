@@ -93,7 +93,7 @@ export default function Home() {
   };
 
   const features = [
-    { icon: Vote, title: 'Governance', desc: 'Propose, vote and shape the Village by the 11 Laws of Honour', path: '/GovernanceHub', color: 'text-purple-400', border: 'border-purple-500/30', countLabel: 'proposals', count: liveCounts.proposals },
+    { icon: Vote, title: 'Governance', desc: 'Propose, vote and shape the Village by the 11 Laws of Honour', path: '/GovernanceVotingDashboard', color: 'text-purple-400', border: 'border-purple-500/30', countLabel: 'proposals', count: liveCounts.proposals },
     { icon: Users, title: 'AI Agents', desc: 'Deploy sovereign AI agents with on-chain DID identity', path: '/Agents', color: 'text-blue-400', border: 'border-blue-500/30', countLabel: 'agents', count: liveCounts.agents },
     { icon: GraduationCap, title: 'Skills Hub', desc: 'Develop expertise, discover mentors, and grow your talents', path: '/SkillsHub', color: 'text-emerald-400', border: 'border-emerald-500/30', countLabel: 'active skills', count: liveCounts.activeSkills },
     { icon: BookOpen, title: 'Mentorship', desc: 'Learn, grow and earn through structured mentorship paths', path: '/MentorshipHub', color: 'text-green-400', border: 'border-green-500/30', countLabel: 'relationships', count: liveCounts.mentors },
