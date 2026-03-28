@@ -212,7 +212,8 @@ Deno.serve(async (req) => {
     // Allow both authenticated users AND service-role scheduled/automation invocations
     const user = await base44.auth.me().catch(() => null);
 
-    const body = await req.json();
+    let body = {};
+    try { body = await req.json(); } catch { /* no body or non-JSON — ok for scheduler calls */ }
     const { action } = body;
 
     // Load all real agents upfront as a lookup map (avoids invalid-ID errors)
