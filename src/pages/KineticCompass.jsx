@@ -240,7 +240,7 @@ export default function KineticCompass() {
   const energyIndex = Math.min(Math.round((kus.reduce((s, k) => s + (k.weighted_score || 1), 0) / Math.max(kus.length, 1)) * 20), 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 p-3 sm:p-4 md:p-8">
       {/* Back nav */}
       <div className="max-w-5xl mx-auto mb-4">
         <Link to="/" className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-300 text-sm transition-colors">
@@ -250,30 +250,30 @@ export default function KineticCompass() {
 
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-white mb-1 flex items-center justify-center gap-3">
+        <h1 className="text-xl sm:text-3xl font-bold text-white mb-1 flex items-center justify-center gap-2 sm:gap-3">
           <Zap className="w-8 h-8 text-yellow-400" /> Kinetic Compass
         </h1>
         <p className="text-slate-400 text-sm">Real-time Village energy, personal flow, and governance pulse</p>
         {myDID && (
           <p className="text-xs text-slate-500 font-mono mt-1" title={myDID}>DID: {myDID.slice(0, 30)}…</p>
         )}
-        <div className="flex justify-center gap-6 mt-4">
+        <div className="flex justify-center gap-4 sm:gap-6 mt-3 sm:mt-4">
           <div className="text-center">
-            <p className="text-xl font-bold text-yellow-400">{energyIndex}</p>
+            <p className="text-lg sm:text-xl font-bold text-yellow-400">{energyIndex}</p>
             <p className="text-xs text-slate-400">Energy Index</p>
           </div>
           <div className="text-center">
-            <p className="text-xl font-bold text-white">{kus.length}</p>
+            <p className="text-lg sm:text-xl font-bold text-white">{kus.length}</p>
             <p className="text-xs text-slate-400">Total KUs</p>
           </div>
           <div className="text-center">
-            <p className="text-xl font-bold text-green-400">{totalAgents}</p>
+            <p className="text-lg sm:text-xl font-bold text-green-400">{totalAgents}</p>
             <p className="text-xs text-slate-400">Active Agents</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <VillageHearth kus={kus} />
         <div className="space-y-6">
           {myAgent && <PersonalCompass kus={kus} agents={agents} agentId={myAgent.id} />}

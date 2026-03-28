@@ -32,7 +32,7 @@ export default function LoreCard() {
   return (
     <div className="bg-gradient-to-br from-amber-950/50 via-purple-950/40 to-slate-950/60 border border-amber-500/25 rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="p-5 sm:p-7 pb-4">
+      <div className="p-4 sm:p-7 pb-4">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/30 to-orange-500/20 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
             <BookOpen className="w-5 h-5 text-amber-300" />
@@ -61,7 +61,7 @@ export default function LoreCard() {
       </div>
 
       {/* 11 Laws */}
-      <div className="border-t border-white/8 px-5 sm:px-7 pt-4 pb-5">
+      <div className="border-t border-white/8 px-4 sm:px-7 pt-4 pb-5">
         <button
           onClick={() => setExpanded(e => !e)}
           className="flex items-center gap-2 text-amber-300 text-xs font-semibold uppercase tracking-widest mb-3 hover:text-amber-200 transition"
@@ -80,7 +80,7 @@ export default function LoreCard() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-2">
             {LAWS.map(l => (
               <div key={l.n} className="flex gap-2.5 bg-white/4 rounded-lg p-3 border border-white/6">
                 <span className="text-amber-500/60 font-mono text-[10px] leading-tight flex-shrink-0 mt-0.5">{l.n}</span>
@@ -96,7 +96,7 @@ export default function LoreCard() {
 
       {/* Chat CTA */}
       {loreNode && (
-        <div className="border-t border-white/8 px-5 sm:px-7 py-4 bg-black/20">
+        <div className="border-t border-white/8 px-4 sm:px-7 py-4 bg-black/20">
           <button
             onClick={() => setShowChat(true)}
             className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-700/40 to-orange-700/30 hover:from-amber-600/50 hover:to-orange-600/40 border border-amber-500/30 hover:border-amber-400/50 text-amber-200 text-sm font-medium rounded-xl py-3 transition-all"

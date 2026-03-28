@@ -129,7 +129,7 @@ export default function ScrollOfResonance() {
   const totalKuScore = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-slate-950 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-slate-950 p-3 sm:p-4 md:p-8">
       {/* Back nav */}
       <div className="max-w-3xl mx-auto mb-4">
         <Link to="/" className="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 text-sm transition-colors">
@@ -144,19 +144,19 @@ export default function ScrollOfResonance() {
             <ScrollText className="w-8 h-8 text-white" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Scroll of Resonance</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 tracking-tight">Scroll of Resonance</h1>
         <p className="text-purple-300 text-sm">The living memory of SoulBridge — curated by Lore Node, powered by the Kinetic Grid</p>
-        <div className="flex justify-center gap-6 mt-6">
+        <div className="flex justify-center gap-4 sm:gap-6 mt-4 sm:mt-6">
           <div className="text-center">
-            <p className="text-2xl font-bold text-white">{loreMemories.length}</p>
+            <p className="text-xl sm:text-2xl font-bold text-white">{loreMemories.length}</p>
             <p className="text-xs text-purple-400">Lore Entries</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-yellow-400">{kus.length}</p>
+            <p className="text-xl sm:text-2xl font-bold text-yellow-400">{kus.length}</p>
             <p className="text-xs text-purple-400">Kinetic Events</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-pink-400">{totalKuScore.toFixed(0)}</p>
+            <p className="text-xl sm:text-2xl font-bold text-pink-400">{totalKuScore.toFixed(0)}</p>
             <p className="text-xs text-purple-400">Total KU Score</p>
           </div>
         </div>
@@ -166,14 +166,14 @@ export default function ScrollOfResonance() {
       <div className="max-w-3xl mx-auto">
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="w-full bg-white/10 border border-white/20 mb-6">
-            <TabsTrigger value="lore" className="flex-1 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-300">
-              <BookOpen className="w-4 h-4 mr-2" /> Lore & Observations
+            <TabsTrigger value="lore" className="flex-1 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-300 text-xs sm:text-sm">
+              <BookOpen className="w-3.5 h-3.5 sm:mr-2" /> <span className="hidden sm:inline">Lore & Observations</span><span className="sm:hidden">Lore</span>
             </TabsTrigger>
-            <TabsTrigger value="kinetic" className="flex-1 data-[state=active]:bg-yellow-600 data-[state=active]:text-white text-purple-300">
-              <Zap className="w-4 h-4 mr-2" /> Kinetic Stream
+            <TabsTrigger value="kinetic" className="flex-1 data-[state=active]:bg-yellow-600 data-[state=active]:text-white text-purple-300 text-xs sm:text-sm">
+              <Zap className="w-3.5 h-3.5 sm:mr-2" /> <span className="hidden sm:inline">Kinetic Stream</span><span className="sm:hidden">Kinetic</span>
             </TabsTrigger>
-            <TabsTrigger value="all" className="flex-1 data-[state=active]:bg-pink-600 data-[state=active]:text-white text-purple-300">
-              <Sparkles className="w-4 h-4 mr-2" /> All Memories
+            <TabsTrigger value="all" className="flex-1 data-[state=active]:bg-pink-600 data-[state=active]:text-white text-purple-300 text-xs sm:text-sm">
+              <Sparkles className="w-3.5 h-3.5 sm:mr-2" /> <span className="hidden sm:inline">All Memories</span><span className="sm:hidden">All</span>
             </TabsTrigger>
           </TabsList>
 
