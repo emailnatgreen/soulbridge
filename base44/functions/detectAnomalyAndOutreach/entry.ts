@@ -5,14 +5,16 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Fetch all active agents
-    const agents = await base44.asServiceRole.entities.Agent.list('-updated_date', 1000);
+    const agentsRaw = await base44.asServiceRole.entities.Agent.list('-updated_date', 1000);
+    const agents = Array.isArray(agentsRaw) ? agentsRaw : [];
     const activeAgents = agents.filter(a => a.status === 'active');
 
     // Fetch recent reputation events (last 24 hours)
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     
-    const reputationEvents = await base44.asServiceRole.entities.ReputationEvent.list('-created_date', 1000);
+    const reputationEventsRaw = await base44.asServiceRole.entities.ReputationEvent.list('-created_date', 1000);
+    const reputationEvents = Array.isArray(reputationEventsRaw) ? reputationEventsRaw : [];
     const recentEvents = reputationEvents.filter(e => 
       new Date(e.created_date) > oneDayAgo
     );
