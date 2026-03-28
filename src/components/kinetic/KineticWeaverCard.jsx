@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { Zap, Eye, Sparkles } from 'lucide-react';
+import { Zap, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/utils';
 
@@ -54,12 +54,14 @@ export default function KineticWeaverCard() {
         </div>
 
         {kw && (
-          <Link to={createPageUrl('AgentProfile') + '?id=' + kw.id}>
-            <Button size="sm" className="w-full bg-gradient-to-r from-yellow-600/30 to-orange-600/30 border border-yellow-500/30 text-yellow-300 hover:from-yellow-600/50 hover:to-orange-600/50">
-              <Eye className="w-3 h-3 mr-2" />
-              View Full Profile
-            </Button>
-          </Link>
+          <Button
+            size="sm"
+            className="w-full bg-gradient-to-r from-yellow-600/30 to-orange-600/30 border border-yellow-500/30 text-yellow-300 hover:from-yellow-600/50 hover:to-orange-600/50"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-agent', { detail: { agentId: kw.id, message: `I'd like to speak with the Kinetic Weaver about the Kinetic Grid.` } }))}
+          >
+            <MessageCircle className="w-3 h-3 mr-2" />
+            Chat with Kinetic Weaver
+          </Button>
         )}
       </div>
     </div>
