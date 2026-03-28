@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import KineticDiscussion from '@/components/kinetic/KineticDiscussion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -128,6 +130,13 @@ export default function ScrollOfResonance() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-slate-950 p-4 md:p-8">
+      {/* Back nav */}
+      <div className="max-w-3xl mx-auto mb-4">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 text-sm transition-colors">
+          ← Back to Home
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="text-center mb-10 max-w-2xl mx-auto">
         <div className="flex justify-center mb-4">
@@ -180,6 +189,8 @@ export default function ScrollOfResonance() {
             <MemoryScroll memories={memories} />
           </TabsContent>
         </Tabs>
+
+        <KineticDiscussion context="ScrollOfResonance" />
       </div>
     </div>
   );

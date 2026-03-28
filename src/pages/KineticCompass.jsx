@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import KineticDiscussion from '@/components/kinetic/KineticDiscussion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -239,6 +241,13 @@ export default function KineticCompass() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 p-4 md:p-8">
+      {/* Back nav */}
+      <div className="max-w-5xl mx-auto mb-4">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-300 text-sm transition-colors">
+          ← Back to Home
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-1 flex items-center justify-center gap-3">
@@ -271,6 +280,8 @@ export default function KineticCompass() {
           <GovernanceFlowVisualizer proposals={proposals} kus={kus} />
         </div>
       </div>
+
+      <KineticDiscussion context="KineticCompass" />
     </div>
   );
 }
