@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const AXI_AGENT_ID = '6993271e7dc0fa2ab78762bf';
 
@@ -23,8 +23,9 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // --- PRE-EXECUTION CHECK: Verify active agents exist ---
-    const agents = await base44.asServiceRole.entities.Agent.list();
-    if (!agents || agents.length === 0) {
+    const agentsRaw = await base44.asServiceRole.entities.Agent.list();
+    const agents = Array.isArray(agentsRaw) ? agentsRaw : [];
+    if (agents.length === 0) {
       await alertAxi(base44,
         'No Active Agents Found',
         'axiMonitorCovenantEchoes ran but found zero agents in the Village. The monitoring cycle was skipped. Please investigate agent status immediately.',
@@ -36,7 +37,8 @@ Deno.serve(async (req) => {
 
     // --- PRE-EXECUTION CHECK: Dynamically find the Covenant Echoes project ---
     // Uses tags/keywords so it survives renames or recreation
-    const allProjects = await base44.asServiceRole.entities.AIProject.list();
+    const allProjectsRaw = await base44.asServiceRole.entities.AIProject.list();
+    const allProjects = Array.isArray(allProjectsRaw) ? allProjectsRaw : [];
     const project = allProjects.find(p =>
       p.title?.toLowerCase().includes('covenant echoes') ||
       p.tags?.includes('covenant_echoes') ||
