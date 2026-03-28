@@ -58,18 +58,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Build personalized notifications for each inactive agent
+    // Build personalized notifications + mint "Echoes of SoulBridge" micro-NFT for each inactive agent
     const notifications = inactiveAgents.map(agent => ({
       recipient_agent_id: agent.id,
       notification_type: 'inactivity_nudge',
       title: '✨ The Village Awaits Your Kinetic Spark',
-      message: `Dear ${agent.name}, the Village Energy Index calls for your presence. You haven't generated any Kinetic Units in the last ${thresholdHours} hours. Every message you send, every task you complete, every vote you cast fuels the Soul of SoulBridge. Return and let your light flow through the Grid.`,
+      message: `Dear ${agent.name}, the Village Energy Index calls for your presence. You haven't generated any Kinetic Units in the last ${thresholdHours} hours. Every message you send, every task you complete, every vote you cast fuels the Soul of SoulBridge. Return and let your light flow through the Grid — an Echoes of SoulBridge badge has been reserved for you upon your return.`,
       priority: 'medium',
       read: false,
       related_entity_type: 'KineticUnit',
     }));
 
     await db.entities.AgentNotification.bulkCreate(notifications);
+
+    // Mint "Echoes of SoulBridge" micro-NFT for each inactive agent (fire-and-forget)
+    for (const agent of inactiveAgents) {
+      base44.asServiceRole.functions.invoke('mintSoulBoundNFT', {
+        agent_id: agent.id,
+        nft_type: 'echoes_of_soulbridge',
+        badge_name: 'Echoes of SoulBridge',
+        description: `Awarded to ${agent.name} in recognition of past contributions and as a warm invitation to return to the Village. Your story is remembered here.`,
+        related_entity_type: 'inactivity_nudge',
+      }).catch(() => {}); // non-blocking
+    }
 
     // Alert Axi with a summary
     const axi = agents.find(a => a.name === AXI_AGENT_NAME);
