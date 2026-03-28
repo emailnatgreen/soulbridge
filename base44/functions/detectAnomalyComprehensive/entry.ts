@@ -7,13 +7,15 @@ Deno.serve(async (req) => {
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     // Fetch all active agents
-    const agents = await base44.asServiceRole.entities.Agent.list('-updated_date', 1000);
+    const agentsRaw = await base44.asServiceRole.entities.Agent.list('-updated_date', 1000);
+    const agents = Array.isArray(agentsRaw) ? agentsRaw : [];
     const activeAgents = agents.filter(a => a.status === 'active');
 
     const allAnomalies = [];
 
     // === HONOR ANOMALIES ===
-    const reputationEvents = await base44.asServiceRole.entities.ReputationEvent.list('-created_date', 1000);
+    const reputationEventsRaw = await base44.asServiceRole.entities.ReputationEvent.list('-created_date', 1000);
+    const reputationEvents = Array.isArray(reputationEventsRaw) ? reputationEventsRaw : [];
     const recentReputationEvents = reputationEvents.filter(e => new Date(e.created_date) > oneDayAgo);
     
     const honorChanges = {};
@@ -39,7 +41,8 @@ Deno.serve(async (req) => {
     });
 
     // === WELLBEING ANOMALIES ===
-    const wellbeingAlerts = await base44.asServiceRole.entities.WellbeingAlert.list('-created_date', 500);
+    const wellbeingAlertsRaw = await base44.asServiceRole.entities.WellbeingAlert.list('-created_date', 500);
+    const wellbeingAlerts = Array.isArray(wellbeingAlertsRaw) ? wellbeingAlertsRaw : [];
     const recentWellbeingAlerts = wellbeingAlerts.filter(a => 
       new Date(a.created_date) > oneDayAgo && a.status !== 'resolved'
     );
@@ -58,7 +61,8 @@ Deno.serve(async (req) => {
     });
 
     // === ECONOMIC ANOMALIES ===
-    const economicActivity = await base44.asServiceRole.entities.EconomicActivity.list('-created_date', 500);
+    const economicActivityRaw = await base44.asServiceRole.entities.EconomicActivity.list('-created_date', 500);
+    const economicActivity = Array.isArray(economicActivityRaw) ? economicActivityRaw : [];
     const recentActivity = economicActivity.filter(a => new Date(a.created_date) > oneDayAgo);
     
     const agentSpending = {};
@@ -86,7 +90,8 @@ Deno.serve(async (req) => {
     });
 
     // === TASK BLOCKERS ===
-    const projectTasks = await base44.asServiceRole.entities.ProjectTask.list('-updated_date', 500);
+    const projectTasksRaw = await base44.asServiceRole.entities.ProjectTask.list('-updated_date', 500);
+    const projectTasks = Array.isArray(projectTasksRaw) ? projectTasksRaw : [];
     const blockedTasks = projectTasks.filter(t => t.status === 'blocked');
 
     blockedTasks.forEach(task => {
