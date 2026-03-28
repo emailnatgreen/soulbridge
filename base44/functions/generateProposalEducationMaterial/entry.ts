@@ -3,7 +3,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { proposal_id } = await req.json();
+    const body = await req.json();
+
+    // Support both direct calls ({ proposal_id }) and entity automation payloads ({ event, data })
+    const proposal_id = body.proposal_id || body.event?.entity_id || body.data?.id;
 
     if (!proposal_id) {
       return Response.json({ error: 'proposal_id required' }, { status: 400 });
