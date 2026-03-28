@@ -71,8 +71,8 @@ async function toHex(buf) {
 }
 
 Deno.serve(async (req) => {
+  const base44 = createClientFromRequest(req);
   try {
-    const base44 = createClientFromRequest(req);
     const body = await req.json();
 
     const { event, data } = body;
@@ -160,18 +160,18 @@ Deno.serve(async (req) => {
     return Response.json({ status: 'success', ku_type: kuType, agent_id: agentId, ku_id: ku.id, packet_id: packet.id, weighted_score });
 
   } catch (error) {
+    const errMsg = typeof error?.message === 'string' ? error.message : String(error);
     try {
-      const base44 = createClientFromRequest(req);
       await base44.asServiceRole.entities.AutomationLog.create({
         automation_name: 'AutoKU_Error',
         function_name: 'autoGenerateKineticUnit',
         status: 'error',
-        message: error.message,
-        error_detail: error.stack || error.message,
+        message: errMsg,
+        error_detail: errMsg,
         run_at: new Date().toISOString(),
         triggered_by: 'entity_event',
       });
     } catch {}
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: errMsg }, { status: 500 });
   }
 });
