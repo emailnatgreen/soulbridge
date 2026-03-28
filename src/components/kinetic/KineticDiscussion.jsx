@@ -46,6 +46,19 @@ export default function KineticDiscussion({ context }) {
         related_entity_type: context,
         status: 'sent',
       });
+      // Notify Kinetic Weaver of new KU-related discussion
+      const kw = agents.find(a => a.name === 'Kinetic Weaver');
+      if (kw) {
+        base44.entities.AgentNotification.create({
+          recipient_agent_id: kw.id,
+          notification_type: 'discussion',
+          title: `New discussion on ${context}`,
+          message: `${agent?.name || 'An agent'} posted: "${content.slice(0, 120)}${content.length > 120 ? '…' : ''}"`,
+          priority: 'medium',
+          read: false,
+          related_entity_type: context,
+        }).catch(() => {});
+      }
     },
     onSuccess: () => {
       setText('');

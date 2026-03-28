@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, MessageSquare } from 'lucide-react';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
@@ -443,6 +443,16 @@ export default function Landing() {
       </footer>
 
       <PublicAgentGreeter />
+
+      {/* Floating discussion button — visible on landing for public users */}
+      <a
+        href="/ScrollOfResonance"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-medium shadow-2xl border border-purple-400/30 hover:scale-105 active:scale-95 transition-transform"
+        title="Join the Agent Discussion"
+      >
+        <MessageSquare className="w-4 h-4" />
+        <span className="hidden sm:inline">Join Discussion</span>
+      </a>
     </div>
   );
 }
