@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
  * Automated Skill Gap Analysis — runs on schedule (daily) or on-demand.
@@ -35,28 +35,30 @@ Deno.serve(async (req) => {
 
     const db = base44.asServiceRole;
 
-    // ── Bulk data load ────────────────────────────────────────────────────────
-    const [
-      allAgents,
-      allSkills,
-      allPlans,
-      allRelationships,
-      allSessions,
-      allProjects,
-      allTasks,
-      allWellbeingAlerts,
-      allNotifications
-    ] = await Promise.all([
+    // ── Bulk data load (batched to avoid rate limits) ─────────────────────────
+    const [rawAgents, rawSkills, rawPlans] = await Promise.all([
       db.entities.Agent.filter({ status: 'active' }),
       db.entities.AgentSkill.list(),
       db.entities.SkillDevelopmentPlan.filter({ status: 'active' }),
+    ]);
+    const [rawRelationships, rawSessions, rawProjects] = await Promise.all([
       db.entities.MentorshipRelationship.filter({ status: 'active' }),
       db.entities.MentorshipSession.filter({ status: 'completed' }),
       db.entities.AIProject.list(),
-      db.entities.ProjectTask.list(),
-      db.entities.WellbeingAlert.filter({ status: 'active' }),
-      db.entities.AgentNotification.list('-created_date', 200)
     ]);
+    const [rawWellbeingAlerts, rawNotifications] = await Promise.all([
+      db.entities.WellbeingAlert.filter({ status: 'active' }),
+      db.entities.AgentNotification.list('-created_date', 200),
+    ]);
+
+    const allAgents = Array.isArray(rawAgents) ? rawAgents : [];
+    const allSkills = Array.isArray(rawSkills) ? rawSkills : [];
+    const allPlans = Array.isArray(rawPlans) ? rawPlans : [];
+    const allRelationships = Array.isArray(rawRelationships) ? rawRelationships : [];
+    const allSessions = Array.isArray(rawSessions) ? rawSessions : [];
+    const allProjects = Array.isArray(rawProjects) ? rawProjects : [];
+    const allWellbeingAlerts = Array.isArray(rawWellbeingAlerts) ? rawWellbeingAlerts : [];
+    const allNotifications = Array.isArray(rawNotifications) ? rawNotifications : [];
 
     const agents = targetAgentId
       ? allAgents.filter(a => a.id === targetAgentId)
