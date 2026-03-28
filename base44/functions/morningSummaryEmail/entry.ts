@@ -16,16 +16,23 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.AgentNotification.list('-created_date', 20),
     ]);
 
-    const activeAgents = agents.filter(a => a.status === 'active').length;
-    const tasksCompleted = tasks.filter(t => t.status === 'completed' && t.completed_date?.startsWith(yesterday)).length;
-    const tasksInProgress = tasks.filter(t => t.status === 'in_progress').length;
-    const tasksBlocked = tasks.filter(t => t.status === 'blocked').length;
-    const activeProjects = projects.filter(p => p.status === 'active').length;
-    const activeProposals = proposals.filter(p => p.status === 'active').length;
-    const totalTreasury = treasury.reduce((sum, t) => sum + (t.total_balance || 0), 0);
+    const safeAgents = Array.isArray(agents) ? agents : [];
+    const safeTasks = Array.isArray(tasks) ? tasks : [];
+    const safeProjects = Array.isArray(projects) ? projects : [];
+    const safeProposals = Array.isArray(proposals) ? proposals : [];
+    const safeTreasury = Array.isArray(treasury) ? treasury : [];
+    const safeNotifications = Array.isArray(notifications) ? notifications : [];
+
+    const activeAgents = safeAgents.filter(a => a.status === 'active').length;
+    const tasksCompleted = safeTasks.filter(t => t.status === 'completed' && t.completed_date?.startsWith(yesterday)).length;
+    const tasksInProgress = safeTasks.filter(t => t.status === 'in_progress').length;
+    const tasksBlocked = safeTasks.filter(t => t.status === 'blocked').length;
+    const activeProjects = safeProjects.filter(p => p.status === 'active').length;
+    const activeProposals = safeProposals.filter(p => p.status === 'active').length;
+    const totalTreasury = safeTreasury.reduce((sum, t) => sum + (t.total_balance || 0), 0);
 
     // Recent unread notifications (last 24h)
-    const recentNotifs = notifications.filter(n =>
+    const recentNotifs = safeNotifications.filter(n =>
       !n.is_read && n.created_date > new Date(Date.now() - 86400000).toISOString()
     ).slice(0, 5);
 
@@ -41,7 +48,7 @@ Here is your SoulBridge daily briefing for ${today}.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🏘️  VILLAGE STATUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Agents Active:        ${activeAgents} / ${agents.length}
+  Agents Active:        ${activeAgents} / ${safeAgents.length}
   Tasks Completed:      ${tasksCompleted} (yesterday)
   Tasks In Progress:    ${tasksInProgress}
   Tasks Blocked:        ${tasksBlocked}
