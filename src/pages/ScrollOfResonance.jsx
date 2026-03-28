@@ -61,7 +61,7 @@ function MemoryScroll({ memories }) {
 }
 
 function KineticStream({ kus, agents }) {
-  const agentMap = Object.fromEntries(agents.map(a => [a.id, a.name]));
+  const agentMap = Object.fromEntries(agents.map(a => [a.id, { name: a.name, did: a.classic_address || a.wallet_id }]));
   return (
     <div className="space-y-3">
       {kus.length === 0 && (
@@ -75,7 +75,14 @@ function KineticStream({ kus, agents }) {
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${KU_COLORS[ku.ku_type] || 'bg-slate-100 text-slate-700'}`}>
                 {ku.ku_type?.replace(/_/g, ' ')}
               </span>
-              <span className="text-sm font-medium truncate">{agentMap[ku.agent_id] || 'Unknown Agent'}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium truncate">{agentMap[ku.agent_id]?.name || 'Unknown Agent'}</span>
+                {agentMap[ku.agent_id]?.did && (
+                  <span className="text-[10px] text-muted-foreground font-mono truncate" title={agentMap[ku.agent_id].did}>
+                    {agentMap[ku.agent_id].did.slice(0, 20)}…
+                  </span>
+                )}
+              </div>
               <span className="text-xs text-muted-foreground ml-auto">
                 {new Date(ku.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
               </span>

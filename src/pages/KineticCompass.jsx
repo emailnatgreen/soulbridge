@@ -232,6 +232,7 @@ export default function KineticCompass() {
 
   // Find agent record for logged-in user
   const myAgent = useMemo(() => agents.find(a => a.created_by === user?.email), [agents, user]);
+  const myDID = myAgent?.classic_address || myAgent?.wallet_id;
 
   const totalAgents = new Set(kus.map(k => k.agent_id)).size;
   const energyIndex = Math.min(Math.round((kus.reduce((s, k) => s + (k.weighted_score || 1), 0) / Math.max(kus.length, 1)) * 20), 100);
@@ -244,6 +245,9 @@ export default function KineticCompass() {
           <Zap className="w-8 h-8 text-yellow-400" /> Kinetic Compass
         </h1>
         <p className="text-slate-400 text-sm">Real-time Village energy, personal flow, and governance pulse</p>
+        {myDID && (
+          <p className="text-xs text-slate-500 font-mono mt-1" title={myDID}>DID: {myDID.slice(0, 30)}…</p>
+        )}
         <div className="flex justify-center gap-6 mt-4">
           <div className="text-center">
             <p className="text-xl font-bold text-yellow-400">{energyIndex}</p>
