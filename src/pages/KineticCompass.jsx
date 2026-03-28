@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import KineticDiscussion from '@/components/kinetic/KineticDiscussion';
+import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -281,7 +281,7 @@ export default function KineticCompass() {
         </div>
       </div>
 
-      <KineticDiscussion context="KineticCompass" />
+      <KineticWeaverCard />
     </div>
   );
 }
