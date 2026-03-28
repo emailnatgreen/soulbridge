@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
 import { Zap, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createPageUrl } from '@/utils';
 
 /**
  * A simple informational card introducing the Kinetic Weaver agent.
@@ -57,7 +55,16 @@ export default function KineticWeaverCard() {
           <Button
             size="sm"
             className="w-full bg-gradient-to-r from-yellow-600/30 to-orange-600/30 border border-yellow-500/30 text-yellow-300 hover:from-yellow-600/50 hover:to-orange-600/50"
-            onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-agent', { detail: { agentId: kw.id, message: `I'd like to speak with the Kinetic Weaver about the Kinetic Grid.` } }))}
+            onClick={() => {
+              // On Landing (no Layout/AxiChat), redirect to login then back
+              if (window.location.pathname === '/') {
+                base44.auth.redirectToLogin(window.location.pathname);
+                return;
+              }
+              window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
+                detail: { agentId: kw.id, message: `I'd like to speak with the Kinetic Weaver about the Kinetic Grid.` }
+              }));
+            }}
           >
             <MessageCircle className="w-3 h-3 mr-2" />
             Chat with Kinetic Weaver

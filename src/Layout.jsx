@@ -12,8 +12,8 @@ const AxiChat = lazy(() => import('@/components/AxiChat'));
 // Pages where Talk to Axi should NOT appear (public/landing pages)
 const PUBLIC_PAGES = ['EditLanding', 'Terms', 'Support'];
 
-// Pages where the floating Axi button should be hidden (has its own full chat UI)
-const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub'];
+// Pages where the floating Axi button should be hidden (has its own full chat UI or uses card-based chat)
+const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass'];
 
 export default function Layout({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
