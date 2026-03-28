@@ -27,6 +27,7 @@ import GovernanceHub from './pages/GovernanceHub';
 import ProjectSanctuary from './pages/ProjectSanctuary';
 import SovereignID from './pages/SovereignID';
 import KineticGridDashboard from './pages/KineticGridDashboard';
+import ScrollOfResonance from './pages/ScrollOfResonance';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -102,6 +103,7 @@ const AuthenticatedApp = () => {
       <Route path="/ProjectSanctuary" element={<LayoutWrapper currentPageName="ProjectSanctuary"><ProjectSanctuary /></LayoutWrapper>} />
       <Route path="/SovereignID" element={<LayoutWrapper currentPageName="SovereignID"><SovereignID /></LayoutWrapper>} />
       <Route path="/KineticGridDashboard" element={<LayoutWrapper currentPageName="KineticGridDashboard"><KineticGridDashboard /></LayoutWrapper>} />
+      <Route path="/ScrollOfResonance" element={<LayoutWrapper currentPageName="ScrollOfResonance"><ScrollOfResonance /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
