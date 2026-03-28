@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
+
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import GenesisSealBadge from '@/components/GenesisSealBadge';
@@ -437,8 +437,6 @@ export default function Home() {
         )}
 
       </div>
-
-      <KineticWeaverCard />
 
       <footer className="border-t border-white/10 bg-black/20 py-5 mt-10">
         <div className="max-w-6xl mx-auto px-4 text-center space-y-1">

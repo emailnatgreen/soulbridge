@@ -225,23 +225,28 @@ export default function Dashboard() {
         {/* ── Octagon Mill ── */}
         <OctagonMillUI />
 
-        {/* ── Axi Agent Interface ── */}
-        <div className="bg-white/5 border border-indigo-500/20 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-white font-semibold text-sm">Axi — Agent Interface</h3>
-            <span className="ml-auto text-xs bg-green-500/20 text-green-300 border border-green-500/30 rounded-full px-2 py-0.5">Online</span>
-          </div>
-          <div className="bg-black/30 rounded-xl p-4 border border-white/5 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-4 h-4 text-white" />
+        {/* ── Say hi to Axi ── */}
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: `Hi Axi! I'm ${user?.full_name || 'here'} — I've just connected my identity. Can you give me a personal welcome and tell me what I can do in SoulBridge today?` } }))}
+          className="w-full text-left bg-gradient-to-br from-purple-900/40 to-pink-900/30 border border-purple-500/30 hover:border-purple-400/60 rounded-2xl p-6 transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform">
+              <Sparkles className="w-7 h-7 text-white" />
             </div>
-            <div className="bg-white/10 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white/80 max-w-lg">
-              System update: Identity layer connected. XRPL data confirmed. All 8 Constitutional DIDs queried from mainnet. Session active. All 8 Constitutional DIDs loading live. Your session is active — how can I guide you today?
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-white font-semibold text-base">Say hi to Axi ✨</h3>
+                <span className="text-[10px] bg-green-500/20 text-green-300 border border-green-500/30 rounded-full px-2 py-0.5">Online</span>
+              </div>
+              <p className="text-white/50 text-sm leading-relaxed">Your personal AI guide to the Village. Tap to introduce yourself and get a personalised welcome from Axi.</p>
+            </div>
+            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-white/10 group-hover:bg-purple-500/30 border border-white/10 group-hover:border-purple-400/40 flex items-center justify-center transition-all">
+              <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white transition" />
             </div>
           </div>
-          <p className="text-white/25 text-xs mt-3 text-center">Full Axi chat via the ✨ button bottom-right</p>
-        </div>
+          <p className="text-purple-400/50 text-xs mt-4 text-center">After this, find Axi anytime via the ✨ button on every page</p>
+        </button>
       </div>
     </div>
   );
