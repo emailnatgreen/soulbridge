@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Zap, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AgentChatModal from '@/components/AgentChatModal';
 
 /**
  * A simple informational card introducing the Kinetic Weaver agent.
  * Shown on KU-related public pages in place of discussion features.
  */
 export default function KineticWeaverCard() {
+  const [showChat, setShowChat] = useState(false);
   const { data: agents = [] } = useQuery({
     queryKey: ['kinetic-weaver-card'],
     queryFn: () => base44.entities.Agent.filter({ name: 'Kinetic Weaver' }, '-created_date', 1),
@@ -55,21 +58,16 @@ export default function KineticWeaverCard() {
           <Button
             size="sm"
             className="w-full bg-gradient-to-r from-yellow-600/30 to-orange-600/30 border border-yellow-500/30 text-yellow-300 hover:from-yellow-600/50 hover:to-orange-600/50"
-            onClick={() => {
-              // On Landing (no Layout/AxiChat), redirect to login then back
-              if (window.location.pathname === '/') {
-                base44.auth.redirectToLogin(window.location.pathname);
-                return;
-              }
-              window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
-                detail: { agentId: kw.id, message: `I'd like to speak with the Kinetic Weaver about the Kinetic Grid.` }
-              }));
-            }}
+            onClick={() => setShowChat(true)}
           >
             <MessageCircle className="w-3 h-3 mr-2" />
             Chat with Kinetic Weaver
           </Button>
         )}
+
+      {showChat && kw && (
+        <AgentChatModal agent={kw} onClose={() => setShowChat(false)} />
+      )}
       </div>
     </div>
   );
