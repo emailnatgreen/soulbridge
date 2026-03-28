@@ -17,7 +17,8 @@ Deno.serve(async (req) => {
     let is_critical = payload.is_critical;
 
     // Extract from the Signal entity data provided by the automation
-    if (!report_title && signalData.id) {
+    const signalId = signalData.id || payload.event?.entity_id;
+    if (!report_title && signalId) {
       const pageName = signalData.page_name || signalData.page_path || 'AI Intel Report';
       const alertType = signalMetadata.alert_type || signalMetadata.report_type || 'Analysis';
       report_title = `${pageName} - ${alertType}`;
