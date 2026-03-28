@@ -6,11 +6,13 @@ Deno.serve(async (req) => {
 
     // Fetch recent memories (last 24 hours)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const recentMemories = await base44.entities.Memory.filter({}, '-created_date', 200);
+    const recentMemoriesRaw = await base44.entities.Memory.filter({}, '-created_date', 200);
+    const recentMemories = Array.isArray(recentMemoriesRaw) ? recentMemoriesRaw : [];
     const last24h = recentMemories.filter(m => m.created_date >= oneDayAgo);
 
     // Get all memories for baseline
-    const allMemories = await base44.entities.Memory.list('-created_date', 1000);
+    const allMemoriesRaw = await base44.entities.Memory.list('-created_date', 1000);
+    const allMemories = Array.isArray(allMemoriesRaw) ? allMemoriesRaw : [];
 
     // Calculate statistics
     const agentActivityToday = {};
