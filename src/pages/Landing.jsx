@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap } from 'lucide-react';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
+import LoreCard from '@/components/LoreCard';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
@@ -255,6 +256,9 @@ export default function Landing() {
               ))}
             </div>
           </div>
+
+          {/* ── Lore Card ─────────────────────────────── */}
+          <LoreCard />
 
           {/* ── Public Gateway: Scroll & Compass ─────────────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
