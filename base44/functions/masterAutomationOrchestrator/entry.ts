@@ -19,6 +19,7 @@ const GATE_TASKS = [
   { fn: 'kineticEnergyAlerts',        minGapMs: 25 * 60 * 1000,       label: 'Kinetic Energy Alerts' },
   { fn: 'automatedSkillGapAnalysis',  minGapMs: 22 * 60 * 60 * 1000,  label: 'Skill Gap Analysis' },
   { fn: 'monitorGovernanceCompliance', minGapMs: 22 * 60 * 60 * 1000, label: 'Governance Compliance' },
+  { fn: 'monitorAgentInactivity',     minGapMs: 12 * 60 * 60 * 1000,  label: 'Agent Inactivity Monitor' },
 ];
 
 async function shouldRun(db, functionName, minGapMs) {

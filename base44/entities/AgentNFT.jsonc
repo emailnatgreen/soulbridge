@@ -1,0 +1,90 @@
+{
+  "name": "AgentNFT",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent who owns this NFT"
+    },
+    "nft_type": {
+      "type": "string",
+      "enum": [
+        "kinetic_apprentice",
+        "kinetic_trailblazer",
+        "merit_forged",
+        "task_sprinter",
+        "civic_luminary",
+        "founding_voice",
+        "synergy_steward",
+        "echoes_of_soulbridge",
+        "builders_badge",
+        "governance_contributor",
+        "soul_spark",
+        "custom"
+      ],
+      "description": "Category of NFT badge"
+    },
+    "badge_name": {
+      "type": "string",
+      "description": "Display name of the badge"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this NFT represents and how it was earned"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Visual representation of the NFT badge"
+    },
+    "ku_milestone": {
+      "type": "number",
+      "description": "KU threshold reached that triggered this NFT (if applicable)"
+    },
+    "related_entity_id": {
+      "type": "string",
+      "description": "ID of the entity that triggered minting (task, proposal, session, etc.)"
+    },
+    "related_entity_type": {
+      "type": "string",
+      "description": "Type of entity that triggered minting"
+    },
+    "xrpl_tx_hash": {
+      "type": "string",
+      "description": "XRPL transaction hash of the minting event"
+    },
+    "xrpl_nft_token_id": {
+      "type": "string",
+      "description": "NFT Token ID on the XRPL ledger"
+    },
+    "is_soul_bound": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this NFT is non-transferable (soul-bound)"
+    },
+    "is_on_chain": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this NFT has been minted on XRPL mainnet"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "minted",
+        "failed",
+        "revoked"
+      ],
+      "default": "pending",
+      "description": "Minting status"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional badge metadata and traits"
+    }
+  },
+  "required": [
+    "agent_id",
+    "nft_type",
+    "badge_name"
+  ]
+}
