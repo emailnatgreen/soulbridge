@@ -50,15 +50,15 @@ function NodeWheel({ node, balance, loaded }) {
   const g = node.hex;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
 
       {/* ── Spinning Wheel ── */}
-      <div style={{ position: 'relative', width: 90, height: 90, flexShrink: 0 }}>
+      <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>
         {/* Outer glow ring */}
         <div style={{
-          position: 'absolute', inset: -6,
+          position: 'absolute', inset: -5,
           borderRadius: '50%',
-          boxShadow: `0 0 20px ${g}, 0 0 40px ${g}99, 0 0 70px ${g}44`,
+          boxShadow: `0 0 16px ${g}, 0 0 32px ${g}99, 0 0 56px ${g}44`,
           pointerEvents: 'none',
         }} />
         {/* Spinning disc */}
@@ -70,35 +70,19 @@ function NodeWheel({ node, balance, loaded }) {
           boxShadow: `inset 0 0 12px rgba(0,0,0,0.35)`,
         }}>
           {/* Spoke H */}
-          <div style={{
-            position: 'absolute', left: 0, right: 0, top: '50%',
-            height: 4, background: 'rgba(0,0,0,0.3)',
-            transform: 'translateY(-50%)',
-          }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 3, background: 'rgba(0,0,0,0.3)', transform: 'translateY(-50%)' }} />
           {/* Spoke V */}
-          <div style={{
-            position: 'absolute', top: 0, bottom: 0, left: '50%',
-            width: 4, background: 'rgba(0,0,0,0.3)',
-            transform: 'translateX(-50%)',
-          }} />
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 3, background: 'rgba(0,0,0,0.3)', transform: 'translateX(-50%)' }} />
           {/* Spoke diagonal 1 */}
-          <div style={{
-            position: 'absolute', left: 0, right: 0, top: '50%',
-            height: 4, background: 'rgba(0,0,0,0.15)',
-            transform: 'translateY(-50%) rotate(45deg)',
-          }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 3, background: 'rgba(0,0,0,0.15)', transform: 'translateY(-50%) rotate(45deg)' }} />
           {/* Spoke diagonal 2 */}
-          <div style={{
-            position: 'absolute', left: 0, right: 0, top: '50%',
-            height: 4, background: 'rgba(0,0,0,0.15)',
-            transform: 'translateY(-50%) rotate(-45deg)',
-          }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 3, background: 'rgba(0,0,0,0.15)', transform: 'translateY(-50%) rotate(-45deg)' }} />
         </div>
-        {/* Glowing hub — does NOT rotate */}
+        {/* Glowing hub */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 20, height: 20, borderRadius: '50%',
+          width: 16, height: 16, borderRadius: '50%',
           background: '#fff',
           boxShadow: '0 0 8px #fff, 0 0 20px rgba(255,255,255,0.8)',
           zIndex: 2,
@@ -214,9 +198,9 @@ export default function OctagonMillUI() {
     }}>
 
       {/* ── Header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+      <div className="flex items-start sm:items-center justify-between gap-3" style={{ marginBottom: 28 }}>
         <div>
-          <div style={{ color: '#fff', fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ color: '#fff', fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 20 }}>⚡</span>
             <span>Octagon Mill</span>
             <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>—</span>
@@ -239,6 +223,7 @@ export default function OctagonMillUI() {
             padding: '6px 10px',
             display: 'flex', alignItems: 'center', gap: 6,
             fontSize: 11,
+            flexShrink: 0,
           }}
         >
           <RefreshCw size={13} style={{ animation: fetching ? 'millSpin 0.8s linear infinite' : 'none' }} />
@@ -247,12 +232,7 @@ export default function OctagonMillUI() {
       </div>
 
       {/* ── 8 Node Wheels Grid ── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: 28,
-        marginBottom: 28,
-      }}>
+      <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 24, marginBottom: 28 }}>
         {NODES.map(node => (
           <NodeWheel
             key={node.address}
@@ -261,66 +241,6 @@ export default function OctagonMillUI() {
             loaded={node.address in balances}
           />
         ))}
-      </div>
-
-      {/* ── Kinetic Drops + Last TX ── */}
-      <div style={{
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(234,179,8,0.4)',
-        borderRadius: 14,
-        padding: '18px 20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16,
-      }}>
-        <div>
-          <div style={{
-            color: '#facc15', fontSize: 10,
-            textTransform: 'uppercase', letterSpacing: '0.12em',
-            fontWeight: 800, marginBottom: 6,
-          }}>
-            ⚡ Kinetic Drops Harvested
-          </div>
-          <div style={{ color: '#fff', fontFamily: 'monospace', fontSize: 24, fontWeight: 800, lineHeight: 1 }}>
-            {kineticDrops.toLocaleString()}
-            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: 400, marginLeft: 6 }}>drops</span>
-          </div>
-          <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, marginTop: 5 }}>
-            {(kineticDrops / 1e6).toFixed(2)} XRP · Treasury Mainnet
-          </div>
-        </div>
-
-        {lastTxHash ? (
-          <a
-            href={`https://xrpscan.com/tx/${lastTxHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: 'rgba(59,130,246,0.25)',
-              border: '1px solid rgba(59,130,246,0.5)',
-              color: '#93c5fd',
-              fontSize: 13, fontWeight: 700,
-              padding: '12px 20px',
-              borderRadius: 10,
-              textDecoration: 'none',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
-              boxShadow: '0 0 12px rgba(59,130,246,0.3)',
-            }}
-          >
-            Last TX <ExternalLink size={13} />
-          </a>
-        ) : (
-          <div style={{
-            color: 'rgba(255,255,255,0.25)', fontSize: 11,
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 8, padding: '10px 14px',
-          }}>
-            Fetching TX…
-          </div>
-        )}
       </div>
 
       <style>{`
