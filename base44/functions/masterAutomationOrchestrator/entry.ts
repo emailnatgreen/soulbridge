@@ -1,177 +1,118 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
- * Master automation orchestrator
- * Runs critical automations in small batches to avoid timeouts
- * Inlines signal processing to maintain service role authority
+ * Master Automation Gate-Keeper
+ *
+ * Runs at most 3 heavy functions concurrently.
+ * Uses AutomationLog idempotency: skips any function that already succeeded
+ * within its defined minimum interval.
+ *
+ * Groups (run sequentially within each group, groups fire in parallel up to limit=3):
+ *   GROUP A — Kinetic:    kineticEnergyAlerts (min 25 min gap)
+ *   GROUP B — Skill/Agent: automatedSkillGapAnalysis (min 22 hours gap)
+ *   GROUP C — Governance:  monitorGovernanceCompliance (min 22 hours gap)
  */
-Deno.serve(async (req) => {
+
+const CONCURRENCY_LIMIT = 3;
+
+const GATE_TASKS = [
+  { fn: 'kineticEnergyAlerts',        minGapMs: 25 * 60 * 1000,       label: 'Kinetic Energy Alerts' },
+  { fn: 'automatedSkillGapAnalysis',  minGapMs: 22 * 60 * 60 * 1000,  label: 'Skill Gap Analysis' },
+  { fn: 'monitorGovernanceCompliance', minGapMs: 22 * 60 * 60 * 1000, label: 'Governance Compliance' },
+];
+
+async function shouldRun(db, functionName, minGapMs) {
   try {
-    const base44 = createClientFromRequest(req);
-    const results = {
-      timestamp: new Date().toISOString(),
-      executions: [],
-      successes: 0,
-      failures: 0
-    };
+    const logs = await db.entities.AutomationLog.filter(
+      { function_name: functionName, status: 'success' },
+      '-run_at',
+      1
+    );
+    const arr = Array.isArray(logs) ? logs : [];
+    if (arr.length === 0) return true; // never run — go for it
+    const lastRunMs = new Date(arr[0].run_at).getTime();
+    return Date.now() - lastRunMs >= minGapMs;
+  } catch {
+    return true; // if we can't check, allow run
+  }
+}
 
-    // Get all Signals that need processing (limit to 10 per run for speed)
-    let signals = [];
-    try {
-      signals = await base44.asServiceRole.entities.Signal.list('-updated_date', 10);
-    } catch (err) {
-      console.warn('Failed to fetch signals:', err.message);
-      signals = [];
+async function runTask(db, base44, task) {
+  const run = await shouldRun(db, task.fn, task.minGapMs);
+  if (!run) {
+    return { fn: task.fn, status: 'skipped', reason: 'recently_ran' };
+  }
+
+  const start = Date.now();
+  try {
+    await base44.asServiceRole.functions.invoke(task.fn, {});
+    const durationMs = Date.now() - start;
+
+    await db.entities.AutomationLog.create({
+      automation_name: `GateKeeper → ${task.label}`,
+      function_name: task.fn,
+      status: 'success',
+      message: `Invoked by masterAutomationOrchestrator in ${durationMs}ms`,
+      duration_ms: durationMs,
+      run_at: new Date().toISOString(),
+      triggered_by: 'scheduler',
+    });
+
+    return { fn: task.fn, status: 'success', duration_ms: durationMs };
+  } catch (err) {
+    const errMsg = typeof err?.message === 'string' ? err.message : String(err);
+    const durationMs = Date.now() - start;
+
+    await db.entities.AutomationLog.create({
+      automation_name: `GateKeeper → ${task.label}`,
+      function_name: task.fn,
+      status: 'error',
+      message: errMsg,
+      error_detail: errMsg,
+      duration_ms: durationMs,
+      run_at: new Date().toISOString(),
+      triggered_by: 'scheduler',
+    }).catch(() => {});
+
+    return { fn: task.fn, status: 'failed', error: errMsg, duration_ms: durationMs };
+  }
+}
+
+Deno.serve(async (req) => {
+  const base44 = createClientFromRequest(req);
+  const db = base44.asServiceRole;
+
+  try {
+    const now = new Date().toISOString();
+
+    // Run up to CONCURRENCY_LIMIT tasks in parallel
+    const batches = [];
+    for (let i = 0; i < GATE_TASKS.length; i += CONCURRENCY_LIMIT) {
+      batches.push(GATE_TASKS.slice(i, i + CONCURRENCY_LIMIT));
     }
 
-    // Quick check: only fetch processed signals if we have signals to process
-    const processedSignals = new Set();
-    if (signals.length > 0) {
-      try {
-        // Only fetch VillagePages with signal metadata
-        const villagePages = await base44.asServiceRole.entities.VillagePage.filter(
-          { 'metadata.related_signal_id': { $exists: true } },
-          null,
-          10
-        );
-        villagePages.forEach(page => {
-          if (page.metadata?.related_signal_id) {
-            processedSignals.add(page.metadata.related_signal_id);
-          }
-        });
-      } catch (err) {
-        console.warn('Failed to fetch processed village pages:', err.message);
-      }
+    const results = [];
+    for (const batch of batches) {
+      const batchResults = await Promise.all(
+        batch.map(task => runTask(db, base44, task))
+      );
+      results.push(...batchResults);
     }
 
-    const unprocessedSignals = signals.filter(s => !processedSignals.has(s.id));
-
-    // Process only first 3 signals per run to stay within CPU limits
-    const maxSignalsPerRun = Math.min(3, unprocessedSignals.length);
-    
-    for (let i = 0; i < maxSignalsPerRun; i++) {
-      const signal = unprocessedSignals[i];
-      
-      // 1. Create memory from page signal
-      try {
-        await base44.asServiceRole.entities.Memory.create({
-          agent_id: 'axi',
-          type: 'observation',
-          content: `Signal: ${signal.page_name} at ${signal.timestamp}. Findings: ${signal.metadata?.findings || 'N/A'}`,
-          keywords: [signal.page_name?.toLowerCase() || 'signal', 'signal_processing'],
-          context: `Processed from Signal ID: ${signal.id}`,
-          importance: signal.metadata?.severity === 'high' ? 8 : 5,
-          related_entity_type: 'Signal',
-          related_entity_id: signal.id,
-        });
-        
-        results.executions.push({
-          function: 'processPageSignalToMemory',
-          signal_id: signal.id,
-          status: 'success'
-        });
-        results.successes++;
-      } catch (err) {
-        console.warn(`Memory creation failed for signal ${signal.id}:`, err.message);
-        results.executions.push({
-          function: 'processPageSignalToMemory',
-          signal_id: signal.id,
-          status: 'failed',
-          error: err.message
-        });
-        results.failures++;
-      }
-
-      // 2. Create VillagePage from signal
-      try {
-        const reportTitle = `${signal.page_name || 'AI Intel Report'} - ${signal.metadata?.alert_type || 'Analysis'}`;
-        const path = '/' + reportTitle
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '');
-
-        // Skip existence check to save query time
-        await base44.asServiceRole.entities.VillagePage.create({
-          name: reportTitle,
-          path,
-          category: 'governance',
-          status: 'active',
-          description: signal.metadata?.findings || `Report for ${signal.page_name}`,
-          is_public: signal.metadata?.severity === 'high' || signal.metadata?.severity === 'critical',
-          priority: signal.metadata?.severity === 'high' ? 'high' : 'medium',
-          metadata: {
-            related_signal_id: signal.id,
-            created_from: 'ai_intel_system',
-            created_at: new Date().toISOString(),
-            is_critical_report: signal.metadata?.severity === 'critical'
-          }
-        });
-
-        results.executions.push({
-          function: 'autoCreateVillagePageForReport',
-          signal_id: signal.id,
-          status: 'success'
-        });
-        results.successes++;
-      } catch (err) {
-        // Silently handle duplicate path errors
-        if (!err.message?.includes('path')) {
-          console.warn(`VillagePage creation failed for signal ${signal.id}:`, err.message);
-        }
-        results.failures++;
-      }
-
-      // 3. Create GovernanceProposal — only for genuine high/critical alerts, not routine system events
-      const isGovernanceWorthy =
-        (signal.signal_type === 'alert' || signal.signal_type === 'anomaly') &&
-        (signal.metadata?.severity === 'high' || signal.metadata?.severity === 'critical');
-
-      if (isGovernanceWorthy) {
-        try {
-          const proposalTitle = `[Draft] Governance Review: ${signal.page_name || 'AI Intel Alert'}`;
-          
-          await base44.asServiceRole.entities.GovernanceProposal.create({
-            title: proposalTitle,
-            description: `**Source Alert:** ${signal.page_name || 'AI Intelligence System'}\n**Related Signal ID:** ${signal.id}\n**Severity:** ${signal.metadata?.severity}\n**Findings:** ${signal.metadata?.findings || 'N/A'}`,
-            proposal_type: 'general',
-            proposed_by: 'axi_intelligence_system',
-            status: 'draft',
-            voting_period_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-            quorum_required: 50,
-            pass_threshold: 60
-          });
-
-          results.executions.push({
-            function: 'autoDraftGovernanceProposal',
-            signal_id: signal.id,
-            status: 'success'
-          });
-          results.successes++;
-        } catch (err) {
-          console.warn(`GovernanceProposal creation failed for signal ${signal.id}:`, err.message);
-          results.executions.push({
-            function: 'autoDraftGovernanceProposal',
-            signal_id: signal.id,
-            status: 'failed',
-            error: err.message
-          });
-          results.failures++;
-        }
-      }
-    }
-
-    // Skip invoking other functions to avoid cascading timeouts
-    // Each function handles its own scheduling
-
-    console.log(`Master orchestrator complete: ${results.successes} successes, ${results.failures} failures`);
+    const successes = results.filter(r => r.status === 'success').length;
+    const skipped   = results.filter(r => r.status === 'skipped').length;
+    const failures  = results.filter(r => r.status === 'failed').length;
 
     return Response.json({
       success: true,
-      summary: `Executed ${results.executions.length} tasks: ${results.successes} succeeded, ${results.failures} failed`,
-      results
+      summary: `Gate-keeper ran ${GATE_TASKS.length} tasks: ${successes} executed, ${skipped} skipped (idempotent), ${failures} failed`,
+      concurrency_limit: CONCURRENCY_LIMIT,
+      results,
+      timestamp: now,
     });
+
   } catch (error) {
-    console.error('Master orchestrator error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    const errMsg = typeof error?.message === 'string' ? error.message : String(error);
+    return Response.json({ error: errMsg }, { status: 500 });
   }
 });

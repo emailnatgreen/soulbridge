@@ -15,11 +15,13 @@ const WARNING_THRESHOLD = 60;
 const AGENT_INACTIVITY_HOURS = 48;
 
 Deno.serve(async (req) => {
+  const base44 = createClientFromRequest(req);
   try {
-    const base44 = createClientFromRequest(req);
 
-    const kus = await base44.asServiceRole.entities.KineticUnit.list('-created_date', 2000);
-    const agents = await base44.asServiceRole.entities.Agent.list('-created_date', 500);
+    const rawKus = await base44.asServiceRole.entities.KineticUnit.list('-created_date', 2000);
+    const rawAgents = await base44.asServiceRole.entities.Agent.list('-created_date', 500);
+    const kus = Array.isArray(rawKus) ? rawKus : [];
+    const agents = Array.isArray(rawAgents) ? rawAgents : [];
 
     const totalKUs = kus.length;
     const totalWeighted = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
@@ -107,6 +109,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    const errMsg = typeof error?.message === 'string' ? error.message : String(error);
+    return Response.json({ error: errMsg }, { status: 500 });
   }
 });
