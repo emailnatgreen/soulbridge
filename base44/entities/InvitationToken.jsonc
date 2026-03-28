@@ -1,0 +1,84 @@
+{
+  "name": "InvitationToken",
+  "type": "object",
+  "properties": {
+    "token_id": {
+      "type": "string",
+      "description": "Short readable token ID shown in the table"
+    },
+    "hash": {
+      "type": "string",
+      "description": "Full unique 64-char hex hash for the invite link"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "claimed",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "recipient_nickname": {
+      "type": "string",
+      "description": "e.g. Ripple Judge 1"
+    },
+    "kinetic_weight": {
+      "type": "number",
+      "default": 10,
+      "description": "Starting KU energy for this invite"
+    },
+    "usage_type": {
+      "type": "string",
+      "enum": [
+        "single",
+        "multi"
+      ],
+      "default": "single"
+    },
+    "max_claims": {
+      "type": "number",
+      "default": 1,
+      "description": "Max uses for multi-use links"
+    },
+    "claimed_count": {
+      "type": "number",
+      "default": 0
+    },
+    "auto_expire_hours": {
+      "type": "number",
+      "enum": [
+        1,
+        6,
+        24
+      ],
+      "description": "Auto-expire in hours (null = never)"
+    },
+    "expiration_date": {
+      "type": "string",
+      "description": "ISO datetime when token expires"
+    },
+    "did_binding_address": {
+      "type": "string",
+      "description": "Optional XRPL address this link is bound to"
+    },
+    "issued_by": {
+      "type": "string",
+      "description": "Email of the admin who issued this token"
+    },
+    "revoked_by": {
+      "type": "string",
+      "description": "Email of admin who revoked"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes for this invite"
+    }
+  },
+  "required": [
+    "hash",
+    "status",
+    "usage_type",
+    "issued_by"
+  ]
+}

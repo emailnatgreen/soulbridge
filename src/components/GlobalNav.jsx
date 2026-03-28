@@ -5,7 +5,7 @@ import {
   Settings, Image, Brain, Wallet, Globe, Shield, BookOpen, Zap,
   TrendingUp, Network, MessageSquare, Star, ChevronDown, ChevronRight,
   Swords, TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
-  FileText, ShoppingBag, Heart, Landmark, Database
+  FileText, ShoppingBag, Heart, Landmark, Database, Link2 as LinkIcon
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -97,6 +97,7 @@ const NAV_GROUPS = [
       { label: 'Memory Browser', path: '/MemoryBrowser', icon: Brain },
       { label: 'Integration Credits', path: '/IntegrationCreditDashboard', icon: Zap },
       { label: 'Admin Panel', path: '/Admin', icon: Settings },
+      { label: '🛡️ Invite Manager', path: '/InviteLinkManager', icon: LinkIcon },
       { label: 'System Dashboard', path: '/SystemDashboard', icon: Activity },
       { label: 'Axi Intelligence', path: '/AxiIntelligenceFeed', icon: Zap },
       { label: 'Ripple Dashboard', path: '/RippleDashboard', icon: Zap },
