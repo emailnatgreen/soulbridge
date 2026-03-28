@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     // Build a set of notification titles sent in the last 2 hours to prevent floods
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     const recentNotifs = axiId
-      ? await base44.asServiceRole.entities.AgentNotification.filter({ agent_id: axiId }, '-created_date', 50)
+      ? await base44.asServiceRole.entities.AgentNotification.filter({ recipient_agent_id: axiId }, '-created_date', 50)
       : [];
     const recentTitles = new Set(
       recentNotifs.filter(n => n.created_date > twoHoursAgo).map(n => n.title)
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       const msg = `🔴 CRITICAL: Village Energy Index has dropped to ${energyIndex}/100. Kinetic flow is severely reduced. Immediate attention required — check AutomationLog for sync failures and review agent activity.`;
       if (axiId && !recentTitles.has(title)) {
         await base44.asServiceRole.entities.AgentNotification.create({
-          agent_id: axiId,
+          recipient_agent_id: axiId,
           notification_type: 'alert',
           title,
           message: msg,
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       const msg = `🟡 WARNING: Village Energy Index is at ${energyIndex}/100. Kinetic momentum is slowing. Review agent contributions and check that automations are firing correctly.`;
       if (axiId && !recentTitles.has(title)) {
         await base44.asServiceRole.entities.AgentNotification.create({
-          agent_id: axiId,
+          recipient_agent_id: axiId,
           notification_type: 'warning',
           title,
           message: msg,
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
       const names = inactiveAgents.slice(0, 5).map(a => a.name).join(', ');
       const more = inactiveAgents.length > 5 ? ` +${inactiveAgents.length - 5} more` : '';
       await base44.asServiceRole.entities.AgentNotification.create({
-        agent_id: axiId,
+        recipient_agent_id: axiId,
         notification_type: 'info',
         title: `${inactiveAgents.length} Agents Inactive (${AGENT_INACTIVITY_HOURS}h)`,
         message: `The following active agents have generated no Kinetic Units in the last ${AGENT_INACTIVITY_HOURS} hours: ${names}${more}. Consider reaching out to re-engage them.`,
