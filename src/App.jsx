@@ -95,7 +95,7 @@ const AuthenticatedApp = () => {
       <Route path="/TreasurySigningHelper" element={<LayoutWrapper currentPageName="TreasurySigningHelper"><TreasurySigningHelper /></LayoutWrapper>} />
       <Route path="/GovernanceVotingDashboard" element={<LayoutWrapper currentPageName="GovernanceVotingDashboard"><GovernanceVotingDashboard /></LayoutWrapper>} />
       <Route path="/ContactSupport" element={<ContactSupport />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<LayoutWrapper currentPageName="dashboard"><Dashboard /></LayoutWrapper>} />
       <Route path="/IntegrationCreditDashboard" element={<LayoutWrapper currentPageName="IntegrationCreditDashboard"><IntegrationCreditDashboard /></LayoutWrapper>} />
       <Route path="/ServiceSkillMarketplace" element={<LayoutWrapper currentPageName="ServiceSkillMarketplace"><ServiceSkillMarketplace /></LayoutWrapper>} />
       <Route path="/governance" element={<LayoutWrapper currentPageName="GovernanceHub"><GovernanceHub /></LayoutWrapper>} />
