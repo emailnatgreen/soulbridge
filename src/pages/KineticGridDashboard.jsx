@@ -151,9 +151,16 @@ export default function KineticGridDashboard() {
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link to="/Home" className="text-white/40 hover:text-white/80 transition flex items-center gap-1 text-xs mr-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link to="/Home" className="text-white/40 hover:text-white/80 transition flex items-center gap-1 text-xs">
               <ArrowLeft className="w-4 h-4" /> Home
+            </Link>
+            <span className="text-white/20">|</span>
+            <Link to="/ScrollOfResonance" className="text-purple-400/70 hover:text-purple-300 transition text-xs font-medium">
+              📜 Scroll of Resonance
+            </Link>
+            <Link to="/KineticCompass" className="text-yellow-400/70 hover:text-yellow-300 transition text-xs font-medium">
+              ⚡ Kinetic Compass
             </Link>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
