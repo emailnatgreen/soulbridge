@@ -225,28 +225,64 @@ export default function Dashboard() {
         {/* ── Octagon Mill ── */}
         <OctagonMillUI />
 
-        {/* ── Say hi to Axi ── */}
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: `Hi Axi! I'm ${user?.full_name || 'here'} — I've just connected my identity. Can you give me a personal welcome and tell me what I can do in SoulBridge today?` } }))}
-          className="w-full text-left bg-gradient-to-br from-purple-900/40 to-pink-900/30 border border-purple-500/30 hover:border-purple-400/60 rounded-2xl p-6 transition-all group"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-7 h-7 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-white font-semibold text-base">Say hi to Axi ✨</h3>
-                <span className="text-[10px] bg-green-500/20 text-green-300 border border-green-500/30 rounded-full px-2 py-0.5">Online</span>
+        {/* ── Meet Axi ── */}
+        <div className="bg-gradient-to-br from-indigo-950/60 via-purple-950/60 to-pink-950/40 border border-purple-500/30 rounded-2xl p-6 space-y-5">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/40">
+                <Sparkles className="w-7 h-7 text-white" />
               </div>
-              <p className="text-white/50 text-sm leading-relaxed">Your personal AI guide to the Village. Tap to introduce yourself and get a personalised welcome from Axi.</p>
+              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-400 border-2 border-slate-950" />
             </div>
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-white/10 group-hover:bg-purple-500/30 border border-white/10 group-hover:border-purple-400/40 flex items-center justify-center transition-all">
-              <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white transition" />
+            <div>
+              <h3 className="text-white font-semibold text-lg leading-tight">Meet Axi</h3>
+              <p className="text-purple-300/70 text-xs">Your personal SoulBridge guide · Always online</p>
+            </div>
+            <span className="ml-auto text-[10px] bg-green-500/20 text-green-300 border border-green-500/30 rounded-full px-2.5 py-1">● Online</span>
+          </div>
+
+          {/* Axi intro message bubble */}
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <div className="bg-white/8 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 max-w-lg">
+              <p className="text-white/80 text-sm leading-relaxed">
+                Hi{user?.full_name ? ` ${user.full_name.split(' ')[0]}` : ''}! 👋 I'm Axi — your personal AI guide to the SoulBridge Village. I can help you navigate governance, manage your identity, track your agents, and understand everything happening on-chain. Ready to begin?
+              </p>
             </div>
           </div>
-          <p className="text-purple-400/50 text-xs mt-4 text-center">After this, find Axi anytime via the ✨ button on every page</p>
-        </button>
+
+          {/* Suggested openers */}
+          <div className="space-y-2">
+            <p className="text-white/30 text-xs uppercase tracking-widest">Start a conversation</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[
+                { label: 'Give me a personal welcome 🌟', msg: `Hi Axi! I'm ${user?.full_name || 'a new member'}. Can you give me a personal welcome to SoulBridge and tell me what I should do first?` },
+                { label: 'What can I do here? 🦭', msg: 'What are all the things I can do in SoulBridge? Give me a quick tour of the platform.' },
+                { label: 'How does governance work? 📜', msg: 'Can you explain how governance works in SoulBridge and how I can participate?' },
+              ].map(({ label, msg }) => (
+                <button
+                  key={label}
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }))}
+                  className="text-left bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-400/40 rounded-xl px-3 py-2.5 text-xs text-white/60 hover:text-white transition-all"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Main CTA */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: `Hi Axi! I'm ${user?.full_name || 'here'} — I've just connected my identity to SoulBridge. Can you give me a personal welcome and walk me through what I can do today?` } }))}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold text-sm rounded-xl py-3 transition-all shadow-lg shadow-purple-500/20"
+          >
+            <Sparkles className="w-4 h-4" /> Open chat with Axi
+          </button>
+          <p className="text-white/20 text-xs text-center">After this first chat, reach Axi anytime via the ✨ floating button on every page</p>
+        </div>
       </div>
     </div>
   );
