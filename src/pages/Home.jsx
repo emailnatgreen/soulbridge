@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import GenesisSealBadge from '@/components/GenesisSealBadge';
@@ -100,6 +101,7 @@ export default function Home() {
     { icon: TrendingUp, title: 'Economy', desc: 'Trade, earn and manage resources in a live XRPL economy', path: '/Economy', color: 'text-amber-400', border: 'border-amber-500/30', countLabel: 'resources', count: liveCounts.resources },
     { icon: Shield, title: 'DID Identity', desc: 'Self-sovereign identity anchored on XRPL mainnet', path: '/DIDManager', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: 'published DIDs', count: liveCounts.dids },
     { icon: Briefcase, title: 'AI Projects', desc: 'Collaborate on live Village projects with on-chain rewards', path: '/AIProjectManager', color: 'text-cyan-400', border: 'border-cyan-500/30', countLabel: 'projects', count: activeProjects.length },
+    { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
   ];
 
   return (
@@ -435,6 +437,8 @@ export default function Home() {
         )}
 
       </div>
+
+      <KineticWeaverCard />
 
       <footer className="border-t border-white/10 bg-black/20 py-5 mt-10">
         <div className="max-w-6xl mx-auto px-4 text-center space-y-1">

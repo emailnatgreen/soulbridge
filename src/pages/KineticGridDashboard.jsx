@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,7 +11,7 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { Activity, Zap, TrendingUp, Vote, Star, RefreshCw, Shield, Users } from 'lucide-react';
+import { Activity, Zap, TrendingUp, Vote, Star, RefreshCw, Shield, Users, ArrowLeft } from 'lucide-react';
 
 // KU type colour palette
 const KU_COLORS = {
@@ -150,6 +152,9 @@ export default function KineticGridDashboard() {
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
+            <Link to="/Home" className="text-white/40 hover:text-white/80 transition flex items-center gap-1 text-xs mr-1">
+              <ArrowLeft className="w-4 h-4" /> Home
+            </Link>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
@@ -438,6 +443,8 @@ export default function KineticGridDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        <KineticWeaverCard />
 
       </div>
     </div>
