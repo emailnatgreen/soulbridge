@@ -177,7 +177,8 @@ async function syncReputationScore(base44, kus, agentMap) {
 
 // ── 4. Enrich GovernanceProposal Context ──────────────────────────────────
 async function syncGovernanceContext(base44, kus) {
-  const activeProposals = await base44.asServiceRole.entities.GovernanceProposal.list();
+  const rawProposals = await base44.asServiceRole.entities.GovernanceProposal.list('-created_date', 200);
+  const activeProposals = Array.isArray(rawProposals) ? rawProposals : [];
   const open = activeProposals.filter(p => p.status === 'active');
   const enriched = [];
 
