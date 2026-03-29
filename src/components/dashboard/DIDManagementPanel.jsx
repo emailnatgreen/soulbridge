@@ -21,6 +21,7 @@ export default function DIDManagementPanel() {
   const [publishData, setPublishData] = useState(null); // { qr_png, qr_link, uuid }
   const [publishResult, setPublishResult] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [fundingId, setFundingId] = useState(null);
 
   const loadWallets = async () => {
     try {
@@ -165,23 +166,52 @@ export default function DIDManagementPanel() {
           {unpublishedWallets.length > 0 && mode === 'idle' && (
             <div className="space-y-2">
               <p className="text-white/40 text-xs uppercase tracking-widest">Wallets Awaiting DID Publication</p>
-              {unpublishedWallets.map(w => (
-                <div key={w.id} className="bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-white text-sm font-medium truncate">{w.name || 'Wallet'}</p>
-                      <p className="text-white/40 text-xs font-mono truncate">{w.classic_address?.slice(0, 20)}…</p>
+              {unpublishedWallets.map(w => {
+                const isFunded = (w.balance ?? 0) >= 2;
+                const isFunding = fundingId === w.id;
+                return (
+                  <div key={w.id} className="bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-white text-sm font-medium truncate">{w.name || 'Wallet'}</p>
+                          <p className="text-white/40 text-xs font-mono truncate">{w.classic_address?.slice(0, 20)}…</p>
+                        </div>
+                      </div>
+                      <span className={`text-xs flex-shrink-0 px-2 py-0.5 rounded-full border ${
+                        isFunded ? 'bg-green-500/10 text-green-300 border-green-500/20' : 'bg-red-500/10 text-red-300 border-red-500/20'
+                      }`}>{w.balance ?? 0} XRP</span>
                     </div>
+                    <div className="flex gap-2">
+                      {!isFunded && (
+                        <button
+                          onClick={async () => {
+                            setFundingId(w.id);
+                            try {
+                              await base44.functions.invoke('autoFundWallet', { wallet_id: w.id, classic_address: w.classic_address, network: w.network || 'testnet' });
+                              await loadWallets();
+                            } catch (_) {}
+                            setFundingId(null);
+                          }}
+                          disabled={isFunding}
+                          className="flex items-center gap-1.5 text-xs bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition disabled:opacity-50 flex-1"
+                        >
+                          {isFunding ? <><Loader2 className="w-3 h-3 animate-spin" /> Funding…</> : '⚡ Fund Wallet (Testnet)'}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { setSelectedWalletId(w.id); setMode('publish_select'); }}
+                        disabled={!isFunded}
+                        className="flex items-center gap-1.5 text-xs bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg transition flex-1 justify-center"
+                      >
+                        <Globe className="w-3 h-3" /> Publish DID
+                      </button>
+                    </div>
+                    {!isFunded && <p className="text-white/30 text-[10px]">Wallet needs at least 2 XRP to publish a DID on the XRPL ledger.</p>}
                   </div>
-                  <button
-                    onClick={() => { setSelectedWalletId(w.id); setMode('publish_select'); }}
-                    className="flex items-center gap-1.5 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition flex-shrink-0"
-                  >
-                    <Globe className="w-3 h-3" /> Publish DID
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
