@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Shield, Copy, CheckCircle, AlertCircle, Globe, Zap, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import DidVerificationBadge from '@/components/sovereignid/DidVerificationBadge';
+import DidVerificationCertificate from '@/components/sovereignid/DidVerificationCertificate';
 
 export default function UserDIDPanel({ wallets }) {
   const [copied, setCopied] = useState(false);
@@ -77,6 +79,8 @@ export default function UserDIDPanel({ wallets }) {
             {publishedWallets.map(wallet => {
               const linkedAgent = getLinkedAgent(wallet.id);
               const didUrl = `https://soulbridge.base44.app/SharedDidView?address=${wallet.classic_address}`;
+              const currentVerifyResult = verifyResult[wallet.id];
+              const isVerified = !!currentVerifyResult && !currentVerifyResult.error && currentVerifyResult.verification?.did_active;
               return (
                 <div key={wallet.id} className="bg-slate-900 border border-green-800/30 rounded-xl p-5 space-y-4">
                   <div className="flex items-start justify-between gap-3">
@@ -85,6 +89,7 @@ export default function UserDIDPanel({ wallets }) {
                         <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                         <span className="font-semibold text-white">{wallet.name || 'Primary Wallet'}</span>
                         <Badge className="bg-green-900/50 text-green-400 border-green-700/50 text-xs">{wallet.network}</Badge>
+                        {isVerified && <DidVerificationBadge />}
                       </div>
                       <div className="font-mono text-sm text-purple-300 break-all">did:xrpl:1:{wallet.classic_address}</div>
                     </div>
@@ -120,11 +125,13 @@ export default function UserDIDPanel({ wallets }) {
                     </div>
                   )}
 
-                  {verifyResult[wallet.id] && (
-                    <div className={`rounded-lg p-3 text-sm ${verifyResult[wallet.id].error ? 'bg-red-900/30 border border-red-700/50 text-red-400' : 'bg-green-900/30 border border-green-700/50 text-green-300'}`}>
-                      {verifyResult[wallet.id].error ? `Error: ${verifyResult[wallet.id].error}` : '✅ DID Active on XRPL'}
+                  {currentVerifyResult && (
+                    <div className={`rounded-lg p-3 text-sm ${currentVerifyResult.error ? 'bg-red-900/30 border border-red-700/50 text-red-400' : 'bg-green-900/30 border border-green-700/50 text-green-300'}`}>
+                      {currentVerifyResult.error ? `Error: ${currentVerifyResult.error}` : '✅ DID Active on XRPL'}
                     </div>
                   )}
+
+                  {isVerified && <DidVerificationCertificate wallet={wallet} verification={currentVerifyResult.verification} />}
 
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1" onClick={() => copyDID(wallet.classic_address)}>

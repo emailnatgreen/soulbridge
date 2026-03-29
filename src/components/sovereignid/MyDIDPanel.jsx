@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Shield, Copy, CheckCircle, ExternalLink, AlertCircle, Globe, Key, Zap, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import DidVerificationBadge from '@/components/sovereignid/DidVerificationBadge';
+import DidVerificationCertificate from '@/components/sovereignid/DidVerificationCertificate';
 
 export default function MyDIDPanel({ user, wallets, onRefresh }) {
   const [copied, setCopied] = useState(false);
@@ -124,17 +126,19 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
 function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResult, linkedAgent }) {
   const did = `did:xrpl:1:${wallet.classic_address}`;
   const didUrl = `https://soulbridge.base44.app/SharedDidView?address=${wallet.classic_address}`;
+  const isVerified = !!verifyResult && !verifyResult.error && verifyResult.verification?.did_active;
 
   return (
     <div className="bg-slate-900 border border-green-800/30 rounded-xl p-5 space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="font-semibold text-white">{wallet.name || 'Primary Wallet'}</span>
             <Badge className="bg-green-900/50 text-green-400 border-green-700/50 text-xs">
               {wallet.network}
             </Badge>
+            {isVerified && <DidVerificationBadge />}
           </div>
           <div className="font-mono text-sm text-purple-300 break-all">{did}</div>
         </div>
@@ -184,11 +188,13 @@ function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResu
           {verifyResult.error ? `Error: ${verifyResult.error}` : (
             <div className="space-y-1">
               <div>✅ DID Active on XRPL</div>
-              {verifyResult.balance && <div>Balance: {verifyResult.balance} XRP</div>}
+              {verifyResult.verification?.balance && <div>Balance: {verifyResult.verification.balance} XRP</div>}
             </div>
           )}
         </div>
       )}
+
+      {isVerified && <DidVerificationCertificate wallet={wallet} verification={verifyResult.verification} />}
 
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1"
