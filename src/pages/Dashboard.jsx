@@ -35,6 +35,9 @@ export default function Dashboard() {
   const [identity, setIdentity] = useState(null);
   const [signals, setSignals] = useState([]);
   const [wallets, setWallets] = useState([]);
+  const [invite, setInvite] = useState(null);
+  const [creatingWallet, setCreatingWallet] = useState(false);
+  const [walletCreated, setWalletCreated] = useState(false);
 
 
 
@@ -72,9 +75,23 @@ export default function Dashboard() {
     loadSignals();
 
     // Load wallets
-    base44.auth.me().then(me => {
+    const loadWallets = () => base44.auth.me().then(me => {
       if (me) base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).then(setWallets).catch(() => {});
     }).catch(() => {});
+    loadWallets();
+
+    // Invited user — auto-create a funded wallet
+    try {
+      const stored = localStorage.getItem('sb_invite_session');
+      if (stored) {
+        const inv = JSON.parse(stored);
+        setInvite(inv);
+        setCreatingWallet(true);
+        base44.functions.invoke('createWallet', { network: 'testnet', name: `${inv.recipient_nickname || 'Invited'}'s Wallet` })
+          .then(() => { setCreatingWallet(false); setWalletCreated(true); loadWallets(); localStorage.removeItem('sb_invite_session'); })
+          .catch(() => { setCreatingWallet(false); });
+      }
+    } catch (_) {}
 
     // Listen for new in-memory signals
     const onSignal = () => setSignals([...(window.__sb?.signals || [])]);
@@ -126,6 +143,32 @@ export default function Dashboard() {
 
       {/* ── BODY ── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+        {/* Invite Welcome Banner */}
+        {(invite || creatingWallet || walletCreated) && (
+          <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 p-5 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+              {creatingWallet ? (
+                <div className="w-4 h-4 border-2 border-purple-400/40 border-t-purple-300 rounded-full animate-spin" />
+              ) : (
+                <Sparkles className="w-5 h-5 text-purple-300" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold text-sm">
+                {creatingWallet ? 'Creating your wallet…' : walletCreated ? '🎉 Welcome to SoulBridge!' : `Welcome, ${invite?.recipient_nickname || 'Guest'}!`}
+              </p>
+              <p className="text-white/40 text-xs mt-0.5">
+                {creatingWallet ? 'Provisioning a testnet wallet with 1 XRP ready for DID activation' : walletCreated ? 'Your wallet is ready — publish your DID below to activate your identity' : 'Your personal invite session is active'}
+              </p>
+            </div>
+            {walletCreated && (
+              <Link to="/SovereignID" className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition flex-shrink-0">
+                Publish DID <ArrowRight className="w-3 h-3" />
+              </Link>
+            )}
+          </div>
+        )}
 
         {/* Identity Banner */}
         <div className={`rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 ${identity ? 'border-green-500/30 bg-green-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
