@@ -179,16 +179,18 @@ export default function Dashboard() {
   const hasInviteSession = !!(invite || (() => { try { return localStorage.getItem('sb_invite_session'); } catch(_){return null;} })());
   const isInviteePredid = hasInviteSession && !!(inviteWallet && !inviteWallet.is_published);
 
-  // When invite wallet publishes DID, clear the invite session
+  // Clear broken or completed invite sessions so admin/member dashboard can open normally
   useEffect(() => {
     if (!inviteWallet?.id) return;
-    // Re-check if the wallet has been published
     base44.entities.Wallet.filter({ classic_address: inviteWallet.classic_address }, '-created_date', 1)
       .then(res => {
-        if (res?.[0]?.is_published) {
+        const walletRecord = res?.[0];
+        if (!walletRecord || walletRecord.is_published || Number(walletRecord.balance || 0) <= 0) {
           localStorage.removeItem('sb_invite_session');
           localStorage.removeItem('sb_invite_wallet');
+          setInvite(null);
           setInviteWallet(null);
+          setWalletCreated(false);
         }
       }).catch(() => {});
   }, [inviteWallet?.classic_address]);

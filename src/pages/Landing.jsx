@@ -89,8 +89,18 @@ export default function Landing() {
     if (invite) {
       setInviteCode(invite.toUpperCase());
       setShowInviteEntry(true);
+      return;
     }
-  }, []);
+
+    try {
+      const inviteSession = localStorage.getItem('sb_invite_session');
+      const inviteWallet = localStorage.getItem('sb_invite_wallet');
+      const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
+      if (inviteSession && parsedWallet && !parsedWallet.is_published && Number(parsedWallet.balance || 0) > 0) {
+        navigate('/dashboard');
+      }
+    } catch (_) {}
+  }, [navigate]);
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
