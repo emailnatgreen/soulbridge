@@ -130,7 +130,7 @@ function CreateTokenForm({ onCreated, currentUser }) {
 
 function TokenRow({ token, onRevoke }) {
   const [copied, setCopied] = useState(false);
-  const inviteUrl = `${getAppUrl()}/join?token=${token.hash}`;
+  const inviteUrl = `${getAppUrl()}/?invite=${token.token_id}`;
 
   const isExpired = token.expiration_date && new Date(token.expiration_date) < new Date();
   const effectiveStatus = isExpired && token.status === 'active' ? 'expired' : token.status;

@@ -82,6 +82,15 @@ export default function Landing() {
   const [inviteCode, setInviteCode] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const invite = params.get('invite');
+    if (invite) {
+      setInviteCode(invite.toUpperCase());
+      setShowInviteEntry(true);
+    }
+  }, []);
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
