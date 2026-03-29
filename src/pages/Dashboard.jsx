@@ -123,6 +123,11 @@ export default function Dashboard() {
     ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
     : 'Not connected';
 
+  // Invitee = arrived via invite link, has a wallet, but hasn't published a DID yet
+  const hasPublishedDid = wallets.some(w => w.is_published);
+  const hasInviteSession = !!(invite || (() => { try { return localStorage.getItem('sb_invite_session'); } catch(_){return null;} })());
+  const isInviteePredid = hasInviteSession && wallets.length > 0 && !hasPublishedDid;
+
   function generateHash() {
     const arr = new Uint8Array(32);
     crypto.getRandomValues(arr);
@@ -241,16 +246,48 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Main 3-column grid */}
+        {/* ── DID Activation Hub (invitee pre-DID view) ── */}
+        {isInviteePredid && (
+          <div className="bg-gradient-to-br from-purple-900/60 to-indigo-900/40 border-2 border-purple-500/50 rounded-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/30 border border-purple-400/40 flex items-center justify-center">
+                <Key className="w-6 h-6 text-purple-300" />
+              </div>
+              <div>
+                <h2 className="text-white font-bold text-lg">🎉 Your Wallet is Ready!</h2>
+                <p className="text-purple-300 text-xs">Step 1 of 1 · Publish your DID to activate full citizenship</p>
+              </div>
+              <div className="ml-auto text-right">
+                <div className="text-2xl font-bold text-green-300">13.00 XRP</div>
+                <div className="text-green-400/70 text-xs">Pre-funded · Testnet</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center text-xs">
+              {[['✅','Wallet Created','Your XRPL address is live'],['✅','13 XRP Funded','Ready for DID reserve'],['⏳','Publish DID','One click away']].map(([icon,title,desc]) => (
+                <div key={title} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                  <div className="text-lg mb-1">{icon}</div>
+                  <div className="text-white font-semibold">{title}</div>
+                  <div className="text-white/40 mt-0.5">{desc}</div>
+                </div>
+              ))}
+            </div>
+            <Link to="/SovereignID" className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-base rounded-xl py-4 transition-all shadow-lg shadow-purple-500/30">
+              <Globe className="w-5 h-5" /> Publish My DID Now <ArrowRight className="w-5 h-5" />
+            </Link>
+            <p className="text-white/25 text-xs text-center">Publishing your DID anchors your identity on the XRPL ledger — this is what unlocks full Village participation</p>
+          </div>
+        )}
+
+        {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* ── Column 1: Constitutional Braid (full) ── */}
-          <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-5">
+          {/* ── Constitutional Braid ── */}
+          <div className={`bg-white/5 border border-white/10 rounded-2xl p-5 ${isInviteePredid ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
             <ConstitutionalBraidLive compact={false} />
           </div>
 
-          {/* ── Column 2: Live Signal Log ── */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col">
+          {/* ── Live Signal Log (hidden for pre-DID invitees) ── */}
+          {!isInviteePredid && <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <Radio className="w-4 h-4 text-purple-400" />
               <h3 className="text-white font-semibold text-sm">Live Signal Log</h3>
@@ -271,27 +308,32 @@ export default function Dashboard() {
               </div>
               ))}
             </div>
-          </div>
+          </div>}
         </div>
 
         {/* ── Wallets row ── */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-              <Key className="w-4 h-4 text-purple-400" /> Registered Wallets
+              <Key className="w-4 h-4 text-purple-400" /> {isInviteePredid ? 'Your Wallet' : 'Registered Wallets'}
             </h3>
-            <div className="flex items-center gap-2">
-              <Link to="/newcomer" className="flex items-center gap-1 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition">
-                <Plus className="w-3 h-3" /> Create Wallet
-              </Link>
-              <Link to="/SovereignID" className="text-xs text-purple-400 hover:text-purple-300 transition">Manage →</Link>
-            </div>
+            {!isInviteePredid && (
+              <div className="flex items-center gap-2">
+                <Link to="/newcomer" className="flex items-center gap-1 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition">
+                  <Plus className="w-3 h-3" /> Create Wallet
+                </Link>
+                <Link to="/SovereignID" className="text-xs text-purple-400 hover:text-purple-300 transition">Manage →</Link>
+              </div>
+            )}
           </div>
-          {wallets.length === 0 ? (
+          {(() => {
+            // For pre-DID invitees: only show their own (most recent) wallet
+            const displayWallets = isInviteePredid ? wallets.slice(0, 1) : wallets;
+            return displayWallets.length === 0 ? (
             <p className="text-white/30 text-xs text-center py-4">No wallets found. <Link to="/SovereignID" className="text-purple-400 underline">Create one</Link>.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {wallets.map(w => (
+              {displayWallets.map(w => (
                 <div key={w.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="text-white text-sm font-medium truncate">{w.name || 'Wallet'}</div>
@@ -310,11 +352,11 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-          )}
+          )})()}
         </div>
 
-        {/* ── My Village Invitations ── */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+        {/* ── My Village Invitations (hidden for pre-DID invitees) ── */}
+        {!isInviteePredid && <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-semibold text-sm flex items-center gap-2">
               <Users className="w-4 h-4 text-purple-400" /> My Village Invitations
@@ -407,7 +449,7 @@ export default function Dashboard() {
               ))}
             </div>
           ) : null}
-        </div>
+        </div>}
 
         {/* ── Octagon Mill ── */}
         <OctagonMillUI />
