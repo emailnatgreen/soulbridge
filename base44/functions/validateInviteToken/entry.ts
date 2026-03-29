@@ -45,60 +45,19 @@ async function encryptSeed(seed) {
   };
 }
 
-async function createPrefundedInviteWallet(base44, token) {
+async function createPrefundedInviteWallet(base44, token, user) {
   const client = new Client('wss://s.altnet.rippletest.net:51233');
   await client.connect();
 
-  const wallet = Wallet.generate();
-  const sponsorSeed = Deno.env.get('XRPL_SENDER_SEED') || Deno.env.get('NATHAN_GREEN_TESTNET_SEED');
-
-  if (!sponsorSeed) {
-    await client.disconnect();
-    throw new Error('Sponsor wallet seed not configured');
-  }
-
-  const sponsorWallet = Wallet.fromSeed(sponsorSeed);
-  const payment = {
-    TransactionType: 'Payment',
-    Account: sponsorWallet.classicAddress,
-    Destination: wallet.classicAddress,
-    Amount: '13000000'
-  };
-
-  const prepared = await client.autofill(payment);
-  const signed = sponsorWallet.sign(prepared);
-  const result = await client.submitAndWait(signed.tx_blob);
-
-  if (result.result.meta?.TransactionResult !== 'tesSUCCESS') {
-    await client.disconnect();
-    throw new Error(`Funding failed: ${result.result.meta?.TransactionResult || 'unknown error'}`);
-  }
-
-  let accountInfo = null;
-  for (let attempt = 0; attempt < 8; attempt++) {
-    try {
-      accountInfo = await client.request({
-        command: 'account_info',
-        account: wallet.classicAddress,
-        ledger_index: 'validated'
-      });
-      break;
-    } catch (error) {
-      if (attempt === 7) {
-        await client.disconnect();
-        throw new Error('Wallet was funded but is not yet visible on the network. Please try the invite again in a moment.');
-      }
-      await new Promise(resolve => setTimeout(resolve, 1500));
-    }
-  }
-
-  const balance = Number(accountInfo.result.account_data.Balance) / 1000000;
+  const funded = await client.fundWallet();
+  const wallet = funded.wallet;
+  const balance = Number(funded.balance || 0);
   await client.disconnect();
 
   const encrypted = await encryptSeed(wallet.seed);
 
   const walletRecord = await base44.asServiceRole.entities.Wallet.create({
-    owner_id: token.id,
+    owner_id: user.id,
     name: `${token.recipient_nickname || 'Invited'} Wallet`,
     classic_address: wallet.classicAddress,
     encrypted_seed: encrypted.encrypted,
@@ -121,6 +80,12 @@ async function createPrefundedInviteWallet(base44, token) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ valid: false, error: 'Please sign in before using an invite code' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { token_id } = body;
 
@@ -146,7 +111,7 @@ Deno.serve(async (req) => {
       return Response.json({ valid: false, error: 'This invite has expired' });
     }
 
-    const wallet = await createPrefundedInviteWallet(base44, token);
+    const wallet = await createPrefundedInviteWallet(base44, token, user);
 
     if (token.usage_type === 'single') {
       await base44.asServiceRole.entities.InvitationToken.update(token.id, {
