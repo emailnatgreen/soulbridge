@@ -1,0 +1,106 @@
+{
+  "name": "Synthesis",
+  "type": "object",
+  "properties": {
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "memory_bundle"
+      ],
+      "default": "memory_bundle",
+      "description": "What kind of source material was synthesized"
+    },
+    "source_memory_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Memory record IDs included in this synthesis"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent the synthesis belongs to"
+    },
+    "bundle_signature": {
+      "type": "string",
+      "description": "Stable signature for deduplicating synthesis runs"
+    },
+    "summary": {
+      "type": "string",
+      "description": "High-level semantic summary of the bundle"
+    },
+    "themes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Top recurring themes"
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "salience": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Key semantic entities extracted from the bundle"
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "relationship": {
+            "type": "string"
+          },
+          "strength": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Graph edges between extracted entities"
+    },
+    "retrieval_hints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Helpful phrases for future context retrieval"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Synthesis job status"
+    }
+  },
+  "required": [
+    "source_type",
+    "source_memory_ids",
+    "agent_id",
+    "bundle_signature",
+    "status"
+  ]
+}

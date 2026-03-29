@@ -44,6 +44,7 @@ export default function SaveToMemoryPanel({ messages, conversation, onClose, onD
         const keywords = extractKeywords(msg.content);
         return base44.entities.Memory.create({
           agent_id: 'axi',
+          user_id: msg.role === 'user' ? 'chat_user' : 'axi',
           type: 'conversation_snippet',
           content: msg.content,
           context: `AxiChat · ${msg.role} · ${msg.created_date ? new Date(msg.created_date).toLocaleDateString() : 'unknown date'}`,
