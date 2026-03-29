@@ -19,7 +19,7 @@ function generateTokenId() {
 }
 
 function getAppUrl() {
-  return window.location.origin;
+  return localStorage.getItem('sb_custom_domain') || window.location.origin;
 }
 
 const STATUS_STYLES = {
@@ -195,6 +195,17 @@ export default function InviteLinkManager() {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [customDomain, setCustomDomain] = useState(() => localStorage.getItem('sb_custom_domain') || '');
+  const [editingDomain, setEditingDomain] = useState(false);
+  const [domainInput, setDomainInput] = useState(localStorage.getItem('sb_custom_domain') || '');
+
+  const saveDomain = () => {
+    const val = domainInput.replace(/\/+$/, '');
+    localStorage.setItem('sb_custom_domain', val);
+    setCustomDomain(val);
+    setEditingDomain(false);
+    toast.success('Domain updated — new links will use this URL');
+  };
 
   const { data: tokens = [], isLoading, refetch } = useQuery({
     queryKey: ['invite-tokens'],
@@ -237,21 +248,31 @@ export default function InviteLinkManager() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: 'Active', value: stats.active, color: 'text-green-400', icon: '🟢' },
-            { label: 'Claimed', value: stats.claimed, color: 'text-blue-400', icon: '🔵' },
-            { label: 'Revoked', value: stats.revoked, color: 'text-red-400', icon: '🔴' },
-          ].map(s => (
-            <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-lg p-3 text-center">
-              <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-              <p className="text-xs text-slate-500">{s.icon} {s.label}</p>
+        {/* Domain Setting */}
+        <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center gap-2">
+          <span className="text-xs text-slate-400 flex-shrink-0">🌐 Invite Base URL:</span>
+          {editingDomain ? (
+            <div className="flex flex-1 gap-2">
+              <Input
+                className="bg-slate-800 border-slate-600 text-white text-xs font-mono flex-1"
+                value={domainInput}
+                onChange={e => setDomainInput(e.target.value)}
+                placeholder="https://yourdomain.com"
+                onKeyDown={e => e.key === 'Enter' && saveDomain()}
+                autoFocus
+              />
+              <Button size="sm" onClick={saveDomain} className="bg-green-600 hover:bg-green-500 text-white text-xs">Save</Button>
+              <Button size="sm" variant="outline" onClick={() => setEditingDomain(false)} className="border-slate-600 text-slate-400 text-xs">Cancel</Button>
             </div>
-          ))}
+          ) : (
+            <div className="flex flex-1 items-center gap-2">
+              <span className="text-xs font-mono text-yellow-300 flex-1 truncate">{customDomain || window.location.origin}</span>
+              <Button size="sm" variant="outline" onClick={() => { setDomainInput(customDomain || window.location.origin); setEditingDomain(true); }} className="border-slate-600 text-slate-400 hover:text-white text-xs">Edit</Button>
+            </div>
+          )}
         </div>
 
-        {/* Create Form */}
+        {/* Stats */}
         {showForm && <CreateTokenForm currentUser={user} onCreated={() => setShowForm(false)} />}
 
         {/* Filter */}
