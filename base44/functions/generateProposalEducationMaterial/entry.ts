@@ -3,20 +3,22 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
 
-    // Support both direct calls ({ proposal_id }) and entity automation payloads ({ event, data })
-    const proposal_id = body.proposal_id || body.event?.entity_id || body.data?.id;
+    let body = {};
+    try { body = await req.json(); } catch { /* no body — ok */ }
+
+    // Support direct calls ({ proposal_id }) and entity automation payloads ({ event, data })
+    const proposal_id = body.proposal_id || body.event?.entity_id || body.data?.id || body.id;
 
     if (!proposal_id) {
-      return Response.json({ error: 'proposal_id required' }, { status: 400 });
+      return Response.json({ error: 'proposal_id required', received_body: JSON.stringify(body) }, { status: 400 });
     }
 
     let proposals = [];
     try {
-      proposals = await base44.entities.GovernanceProposal.filter({ id: proposal_id });
+      proposals = await base44.asServiceRole.entities.GovernanceProposal.filter({ id: proposal_id });
     } catch (e) {
-      return Response.json({ error: 'Proposal not found' }, { status: 404 });
+      return Response.json({ error: 'Proposal not found', detail: e.message }, { status: 404 });
     }
 
     if (proposals.length === 0) {
