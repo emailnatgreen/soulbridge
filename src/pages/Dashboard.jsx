@@ -16,7 +16,7 @@ if (typeof window !== 'undefined') {
     if (window.__sb.signals.length > 50) window.__sb.signals.pop();
     window.dispatchEvent(new CustomEvent('sb-signal', { detail: s }));
     // Persist to DB silently
-    base44.entities.Signal.create({ signal_type: type, page_name: 'dashboard', ...meta }).catch(() => {});
+    base44.entities.Signal.create({ signal_type: type, page_name: 'dashboard', source: 'dashboard', ...meta }).catch(() => {});
   };
 }
 
