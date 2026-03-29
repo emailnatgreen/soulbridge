@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function WalletsPage() {
   const [showCreate, setShowCreate] = useState(false);
-  const [addMode, setAddMode] = useState('xumm'); // 'xumm' | 'manual'
+  const [addMode, setAddMode] = useState('xumm'); // 'xumm' | 'manual' | 'generate'
   const [name, setName] = useState('');
   const [network, setNetwork] = useState('mainnet');
   const [classicAddress, setClassicAddress] = useState('');
@@ -58,7 +58,7 @@ export default function WalletsPage() {
       toast.success('Wallet created successfully');
       setShowCreate(false);
       setName('');
-      setNetwork('testnet');
+      setNetwork('mainnet');
     },
     onError: (error) => {
       toast.error('Failed to create wallet');
@@ -97,11 +97,11 @@ export default function WalletsPage() {
       return;
     }
     base44.entities.Wallet.create({
-      name,
-      classic_address: classicAddress,
-      encrypted_seed: seed || undefined,
-      network,
-      balance: 0,
+     name,
+     classic_address: classicAddress,
+     encrypted_seed: seed || undefined,
+     network: addMode === 'manual' ? network : 'mainnet',
+     balance: 0,
     }).then(() => {
       queryClient.invalidateQueries({ queryKey: ['wallets'] });
       toast.success('Wallet added successfully');
@@ -179,7 +179,7 @@ export default function WalletsPage() {
         owner_id: user?.id || user?.email || '',
         name: walletName,
         classic_address: account,
-        network,
+        network: 'mainnet',
         balance: 0,
       });
       queryClient.invalidateQueries({ queryKey: ['wallets'] });
@@ -211,7 +211,7 @@ export default function WalletsPage() {
                 context="You are reviewing the XRPL Wallets dashboard for SoulBridge Village. As financial steward and Mother Boss, please assess: current wallet balances across all wallets, any wallets with critically low balances, whether testnet vs mainnet distribution is appropriate, and whether the wallet infrastructure adequately supports current Village operations. Flag any financial risks."
               />
               <Button 
-                onClick={() => { setAddMode('generate'); setShowCreate(true); }}
+               onClick={() => { setNetwork('mainnet'); setAddMode('generate'); setShowCreate(true); }}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -219,7 +219,7 @@ export default function WalletsPage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => { setAddMode('xumm'); setShowCreate(true); setXummQr(null); setXummResolved(false); }}
+                onClick={() => { setNetwork('mainnet'); setAddMode('xumm'); setShowCreate(true); setXummQr(null); setXummResolved(false); }}
                 className="border-white/10 text-white hover:bg-white/5"
               >
                 <QrCode className="w-4 h-4 mr-2" />
@@ -250,22 +250,32 @@ export default function WalletsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
 
-              {/* Common: Name + Network */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-purple-200/90">Wallet Name</Label>
                   <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="My Wallet" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-purple-200/90">Network</Label>
-                  <Select value={network} onValueChange={setNetwork}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mainnet">Mainnet</SelectItem>
-                      <SelectItem value="testnet">Testnet</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {addMode === 'generate' ? (
+                  <div className="space-y-2">
+                    <Label className="text-purple-200/90">Network</Label>
+                    <Select value={network} onValueChange={setNetwork}>
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mainnet">Mainnet</SelectItem>
+                        <SelectItem value="testnet">Testnet</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label className="text-purple-200/90">Network</Label>
+                    <div className="h-10 rounded-md border border-white/10 bg-white/5 px-3 flex items-center justify-between text-sm text-white">
+                      <span>Mainnet</span>
+                      <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20">Xumm</Badge>
+                    </div>
+                    <p className="text-xs text-white/40">Xumm imports are saved as mainnet wallets.</p>
+                  </div>
+                )}
               </div>
 
               {/* XUMM QR mode */}
