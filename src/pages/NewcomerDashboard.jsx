@@ -129,7 +129,7 @@ export default function NewcomerDashboard() {
                 </div>
               )}
               <div className="space-y-2 text-left">
-                {['Create your XRPL wallet (testnet)', 'Publish your Decentralised ID', 'Enter the Village as a Citizen'].map((item, i) => (
+                {['Auto-funded XRPL testnet wallet (13 XRP)', 'Publish your Decentralised ID on XRPL', 'Enter the Village as a Citizen'].map((item, i) => (
                   <div key={i} className="flex items-center gap-2 text-white/50 text-xs">
                     <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-white/30 text-[10px] font-bold flex-shrink-0">{i + 1}</div>
                     {item}
@@ -153,8 +153,14 @@ export default function NewcomerDashboard() {
               <div>
                 <h2 className="text-white text-lg font-semibold mb-2">Create Your Wallet</h2>
                 <p className="text-white/50 text-sm leading-relaxed">
-                  We'll generate a fresh XRPL testnet wallet for you. This will be your sovereign address on the Ledger.
+                  We'll generate a fresh XRPL testnet wallet for you and automatically fund it with <span className="text-yellow-300 font-semibold">13 XRP</span> — covering the full DID reserve requirement. No XRP needed from you.
                 </p>
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-left space-y-1">
+                  <p className="text-yellow-300 text-xs font-semibold">What happens next:</p>
+                  <p className="text-white/40 text-xs">✦ New XRPL testnet wallet generated</p>
+                  <p className="text-white/40 text-xs">✦ 13 XRP sponsored for your DID reserve</p>
+                  <p className="text-white/40 text-xs">✦ Ready to publish your sovereign identity</p>
+                </div>
               </div>
               {error && <p className="text-red-400 text-xs">{error}</p>}
               <Button

@@ -74,35 +74,33 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { name, network = 'mainnet', fund_from_treasury = true } = await req.json();
+        const { name, network = 'testnet' } = await req.json();
 
-        // Connect to XRPL
-        const networkUrl = 'wss://xrpl.ws';
+        // Connect to XRPL testnet
+        const networkUrl = 'wss://s.altnet.rippletest.net:51233';
         const client = new Client(networkUrl);
         await client.connect();
 
         // Generate new wallet
         const wallet = Wallet.generate();
 
-        // Fund new wallet from treasury if requested
-        if (fund_from_treasury && network === 'mainnet') {
-            const treasurySeed = Deno.env.get('XRPL_SENDER_SEED');
-            if (treasurySeed) {
-                try {
-                    const treasuryWallet = Wallet.fromSeed(treasurySeed);
-                    const payment = {
-                        TransactionType: 'Payment',
-                        Account: treasuryWallet.classicAddress,
-                        Destination: wallet.classicAddress,
-                        Amount: '2000000' // 2 XRP
-                    };
-                    const prepared = await client.autofill(payment);
-                    const signed = treasuryWallet.sign(prepared);
-                    await client.submitAndWait(signed.tx_blob);
-                    console.log(`✅ Funded ${wallet.classicAddress} with 2 XRP from treasury`);
-                } catch (error) {
-                    console.log('Treasury funding failed:', error.message);
-                }
+        // Auto-fund new wallet with 13 XRP from sponsor wallet for DID reserve
+        const sponsorSeed = Deno.env.get('XRPL_SENDER_SEED');
+        if (sponsorSeed) {
+            try {
+                const sponsorWallet = Wallet.fromSeed(sponsorSeed);
+                const payment = {
+                    TransactionType: 'Payment',
+                    Account: sponsorWallet.classicAddress,
+                    Destination: wallet.classicAddress,
+                    Amount: '13000000' // 13 XRP for DID reserve
+                };
+                const prepared = await client.autofill(payment);
+                const signed = sponsorWallet.sign(prepared);
+                await client.submitAndWait(signed.tx_blob);
+                console.log(`✅ Pre-funded ${wallet.classicAddress} with 13 XRP for DID reserve`);
+            } catch (fundError) {
+                console.log('Sponsor funding failed:', fundError.message);
             }
         }
 
@@ -132,7 +130,7 @@ Deno.serve(async (req) => {
             encrypted_seed: encrypted,
             encryption_iv: iv,
             encryption_salt: salt,
-            network: 'mainnet',
+            network: 'testnet',
             balance: balance,
             last_accessed: new Date().toISOString()
         });
