@@ -39,8 +39,11 @@ Deno.serve(async (req) => {
         if (!tx) return Response.json({ error: 'Transaction not found' }, { status: 404 });
         if (!tx.from_wallet_id) return Response.json({ error: 'No from_wallet_id on transaction' }, { status: 400 });
 
-        const fromWalletRecord = await base44.asServiceRole.entities.Wallet.get(tx.from_wallet_id);
+        const walletResults = await base44.asServiceRole.entities.Wallet.filter({ id: tx.from_wallet_id }, '-created_date', 1);
+        const fromWalletRecord = walletResults?.[0];
         if (!fromWalletRecord) return Response.json({ error: 'From wallet not found' }, { status: 404 });
+        console.log('Wallet fields present:', Object.keys(fromWalletRecord).join(', '));
+        console.log('Has encrypted_seed:', !!fromWalletRecord.encrypted_seed, '| Has iv:', !!fromWalletRecord.encryption_iv, '| Has salt:', !!fromWalletRecord.encryption_salt);
         if (!fromWalletRecord.classic_address) return Response.json({ error: 'From wallet has no XRPL address' }, { status: 400 });
 
         // Get seed: try full decryption if all params present, otherwise treat stored value as plaintext
