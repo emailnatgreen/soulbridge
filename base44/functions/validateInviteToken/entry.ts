@@ -74,11 +74,23 @@ async function createPrefundedInviteWallet(base44, token) {
     throw new Error(`Funding failed: ${result.result.meta?.TransactionResult || 'unknown error'}`);
   }
 
-  const accountInfo = await client.request({
-    command: 'account_info',
-    account: wallet.classicAddress,
-    ledger_index: 'validated'
-  });
+  let accountInfo = null;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    try {
+      accountInfo = await client.request({
+        command: 'account_info',
+        account: wallet.classicAddress,
+        ledger_index: 'validated'
+      });
+      break;
+    } catch (error) {
+      if (attempt === 7) {
+        await client.disconnect();
+        throw new Error('Wallet was funded but is not yet visible on the network. Please try the invite again in a moment.');
+      }
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+  }
 
   const balance = Number(accountInfo.result.account_data.Balance) / 1000000;
   await client.disconnect();
