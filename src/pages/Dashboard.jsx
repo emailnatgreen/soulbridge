@@ -649,7 +649,7 @@ export default function Dashboard() {
                         <div>
                           <p className="text-white text-sm font-medium">{wallet.name}</p>
                           <p className="text-white/40 text-xs font-mono break-all">{wallet.classic_address}</p>
-                          <p className="text-white/30 text-[10px] mt-1">Balance: {Number(wallet.balance || 0).toLocaleString('en-GB')} drops</p>
+                          <p className="text-white/30 text-[10px] mt-1">Balance: {Math.round(Number(wallet.balance || 0) * 1000000).toLocaleString('en-GB')} drops</p>
                         </div>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${wallet.is_published ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'}`}>
                           {wallet.is_published ? 'Published' : 'Not Published'}

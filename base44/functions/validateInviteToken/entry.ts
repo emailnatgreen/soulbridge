@@ -49,9 +49,38 @@ async function createPrefundedInviteWallet(base44, token, user) {
   const client = new Client('wss://s.altnet.rippletest.net:51233');
   await client.connect();
 
-  const funded = await client.fundWallet();
-  const wallet = funded.wallet;
-  const balance = Number(funded.balance || 0);
+  const wallet = Wallet.generate();
+  const sponsorSeed = Deno.env.get('XRPL_SENDER_SEED');
+  if (!sponsorSeed) {
+    throw new Error('XRPL_SENDER_SEED not configured');
+  }
+
+  const sponsorWallet = Wallet.fromSeed(sponsorSeed);
+  const payment = {
+    TransactionType: 'Payment',
+    Account: sponsorWallet.classicAddress,
+    Destination: wallet.classicAddress,
+    Amount: '13000000'
+  };
+
+  const prepared = await client.autofill(payment);
+  const signed = sponsorWallet.sign(prepared);
+  const submitResult = await client.submitAndWait(signed.tx_blob);
+  if (submitResult.result.meta.TransactionResult !== 'tesSUCCESS') {
+    await client.disconnect();
+    throw new Error(`Invite wallet funding failed: ${submitResult.result.meta.TransactionResult}`);
+  }
+
+  let balance = 13;
+  try {
+    const response = await client.request({
+      command: 'account_info',
+      account: wallet.classicAddress,
+      ledger_index: 'validated'
+    });
+    balance = Number(response.result.account_data.Balance || 0) / 1000000;
+  } catch (_) {}
+
   await client.disconnect();
 
   const encrypted = await encryptSeed(wallet.seed);
