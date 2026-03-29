@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
+import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import GenesisSealBadge from '@/components/GenesisSealBadge';
@@ -14,6 +15,8 @@ import {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [identity, setIdentity] = useState(null);
   const [hasInviteSession, setHasInviteSession] = useState(false);
   const [proposals, setProposals] = useState([]);
@@ -27,6 +30,7 @@ export default function Home() {
   const { data: activeProjects = [] } = useQuery({
     queryKey: ['activeProjects'],
     queryFn: async () => {
+      if (!isAdmin) return [];
       const projects = await base44.entities.AIProject.list('-created_date', 100);
       return projects.filter(p => p.status !== 'cancelled' && p.status !== 'completed');
     },
@@ -36,7 +40,7 @@ export default function Home() {
 
   const { data: signatures = [] } = useQuery({
     queryKey: ['nodeCovenantSignaturesHome'],
-    queryFn: () => base44.entities.NodeCovenantSignature.filter({ status: 'signed' }, '-signed_at', 50),
+    queryFn: () => isAdmin ? base44.entities.NodeCovenantSignature.filter({ status: 'signed' }, '-signed_at', 50) : [],
     staleTime: 10000,
     refetchInterval: 10000,
   });
@@ -71,15 +75,15 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const [proposalData, agentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData] = await Promise.all([
-          base44.entities.GovernanceProposal.list('-created_date', 5),
+          isAdmin ? base44.entities.GovernanceProposal.list('-created_date', 5) : Promise.resolve([]),
           base44.entities.Agent.list('-created_date', 6),
-          base44.entities.Wallet.filter({ is_published: true }, 'created_date', 1000),
-          base44.entities.EconomicActivity.list('-created_date', 8).catch(() => []),
-          base44.entities.AIProject.list('-created_date', 100).catch(() => []),
-          base44.entities.MentorshipRelationship.list('-created_date', 100).catch(() => []),
-          base44.entities.Skill.list('-created_date', 100).catch(() => []),
-          base44.entities.Resource.list('-created_date', 100).catch(() => []),
-          base44.entities.AgentSkill?.list?.('-created_date', 500).catch(() => []),
+          base44.entities.Wallet.filter({ is_published: true, network: 'mainnet' }, 'created_date', 1000),
+          isAdmin ? base44.entities.EconomicActivity.list('-created_date', 8).catch(() => []) : Promise.resolve([]),
+          isAdmin ? base44.entities.AIProject.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
+          isAdmin ? base44.entities.MentorshipRelationship.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
+          isAdmin ? base44.entities.Skill.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
+          isAdmin ? base44.entities.Resource.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
+          isAdmin ? base44.entities.AgentSkill?.list?.('-created_date', 500).catch(() => []) : Promise.resolve([]),
         ]);
         setProposals(proposalData || []);
         setAgents(agentData || []);
@@ -98,7 +102,7 @@ export default function Home() {
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [isAdmin]);
 
   const statusColor = {
     active: 'bg-green-500/20 text-green-300 border-green-500/30',
@@ -239,6 +243,7 @@ export default function Home() {
         {identity?.connected && <GenesisSealBadge />}
 
         {/* Live Stats */}
+        {isAdmin && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', path: '/Agents' },
@@ -253,6 +258,7 @@ export default function Home() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Features Grid */}
         <div>
@@ -260,7 +266,7 @@ export default function Home() {
             <Zap className="w-3 h-3" /> Platform Features
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map(f => (
+            {features.filter(f => isAdmin || ['AI Agents', 'DID Identity'].includes(f.title)).map(f => (
               <button
                 key={f.title}
                 onClick={() => navigate(f.path)}
@@ -281,6 +287,7 @@ export default function Home() {
         </div>
 
         {/* Real-time On-Chain Activity + Governance */}
+        {isAdmin && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* Live On-Chain Activity */}
@@ -356,6 +363,7 @@ export default function Home() {
             )}
           </div>
         </div>
+        )}
 
         {/* Village Agents */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
@@ -432,9 +440,11 @@ export default function Home() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
                 { label: 'Village Agents', path: '/Agents', icon: Users, count: liveCounts.agents },
-                { label: 'Active Votes', path: '/GovernanceHub', icon: Vote, count: proposals.filter(p => p.status === 'active').length },
                 { label: 'Published DIDs', path: '/DIDManager', icon: Shield, count: liveCounts.dids },
-                { label: 'AI Projects', path: '/AIProjectManager', icon: Briefcase, count: activeProjects.length },
+                ...(isAdmin ? [
+                  { label: 'Active Votes', path: '/GovernanceHub', icon: Vote, count: proposals.filter(p => p.status === 'active').length },
+                  { label: 'AI Projects', path: '/AIProjectManager', icon: Briefcase, count: activeProjects.length },
+                ] : []),
               ].map(item => (
                 <button
                   key={item.label}
