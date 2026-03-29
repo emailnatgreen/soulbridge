@@ -131,20 +131,32 @@ export default function Dashboard() {
     return () => window.removeEventListener('sb-signal', onSignal);
   }, []);
 
-  const handlePublishDID = async () => {
-    if (!inviteWallet?.id) return;
+  const [publishingWalletId, setPublishingWalletId] = useState(null);
+
+  const handlePublishDID = async (walletId) => {
+    const targetId = walletId || inviteWallet?.id;
+    if (!targetId) return;
     setPublishingDid(true);
+    setPublishingWalletId(targetId);
     setPublishError('');
     try {
-      await base44.functions.invoke('publishDID', { wallet_id: inviteWallet.id });
-      const updated = { ...inviteWallet, is_published: true };
-      localStorage.setItem('sb_invite_wallet', JSON.stringify(updated));
-      localStorage.removeItem('sb_invite_session');
-      setInviteWallet(updated);
+      await base44.functions.invoke('publishDID', { wallet_id: targetId });
+      // If it's the invite wallet, update localStorage
+      if (inviteWallet?.id === targetId) {
+        const updated = { ...inviteWallet, is_published: true };
+        localStorage.setItem('sb_invite_wallet', JSON.stringify(updated));
+        localStorage.removeItem('sb_invite_session');
+        setInviteWallet(updated);
+      }
+      // Refresh wallets list
+      base44.auth.me().then(me => {
+        if (me) base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).then(setWallets).catch(() => {});
+      }).catch(() => {});
     } catch (e) {
       setPublishError(e?.response?.data?.error || 'Failed to publish DID. Please try again.');
     }
     setPublishingDid(false);
+    setPublishingWalletId(null);
   };
 
   const handleDisconnect = () => {
@@ -400,12 +412,12 @@ export default function Dashboard() {
                     {w.is_published ? (
                       <div className="text-xs text-green-400">DID Active</div>
                     ) : isInviteePredid ? (
-                      <button onClick={handlePublishDID} disabled={publishingDid} className="flex items-center gap-1 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md transition disabled:opacity-50">
-                        <Globe className="w-3 h-3" /> {publishingDid ? 'Publishing…' : 'Publish DID'}
+                      <button onClick={() => handlePublishDID(w.id)} disabled={publishingWalletId === w.id} className="flex items-center gap-1 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md transition disabled:opacity-50">
+                        <Globe className="w-3 h-3" /> {publishingWalletId === w.id ? 'Publishing…' : 'Publish DID'}
                       </button>
                     ) : (
-                      <button onClick={handlePublishDID} disabled={publishingDid} className="flex items-center gap-1 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md transition disabled:opacity-50">
-                        <Globe className="w-3 h-3" /> {publishingDid ? 'Publishing…' : 'Publish DID'}
+                      <button onClick={() => handlePublishDID(w.id)} disabled={publishingWalletId === w.id} className="flex items-center gap-1 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md transition disabled:opacity-50">
+                        <Globe className="w-3 h-3" /> {publishingWalletId === w.id ? 'Publishing…' : 'Publish DID'}
                       </button>
                     )}
                   </div>
