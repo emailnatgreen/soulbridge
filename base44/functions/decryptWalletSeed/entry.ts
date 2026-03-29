@@ -81,18 +81,27 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Wallet not found' }, { status: 404 });
         }
 
-        // Verify ownership
-        if (walletData.owner_id !== user.id) {
+        // Verify ownership or admin
+        const isAdmin = user.role === 'admin';
+        if (walletData.owner_id && walletData.owner_id !== user.id && !isAdmin) {
             await logWalletAccess(base44, wallet_id, user.id, user.email, 'decrypt', false, 'Access denied - not owner');
             return Response.json({ error: 'Access denied: You do not own this wallet' }, { status: 403 });
         }
 
-        // Decrypt the seed
-        const seed = await decryptSeed(
-            walletData.encrypted_seed,
-            walletData.encryption_iv,
-            walletData.encryption_salt
-        );
+        // Decrypt or return plaintext seed
+        let seed;
+        if (walletData.encrypted_seed && walletData.encryption_iv && walletData.encryption_salt) {
+            seed = await decryptSeed(
+                walletData.encrypted_seed,
+                walletData.encryption_iv,
+                walletData.encryption_salt
+            );
+        } else if (walletData.encrypted_seed) {
+            // Stored as plaintext
+            seed = walletData.encrypted_seed;
+        } else {
+            return Response.json({ error: 'No seed stored for this wallet' }, { status: 400 });
+        }
 
         // Update last accessed
         await base44.asServiceRole.entities.Wallet.update(wallet_id, {
