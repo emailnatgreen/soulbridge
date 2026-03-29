@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle, Plus, Globe } from 'lucide-react';
+import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle, Plus, Globe, Copy, Users, Zap } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
 import OctagonMillUI from '@/components/OctagonMillUI';
@@ -38,6 +38,12 @@ export default function Dashboard() {
   const [invite, setInvite] = useState(null);
   const [creatingWallet, setCreatingWallet] = useState(false);
   const [walletCreated, setWalletCreated] = useState(false);
+  const [myInvites, setMyInvites] = useState([]);
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteNickname, setInviteNickname] = useState('');
+  const [inviteNotes, setInviteNotes] = useState('');
+  const [creatingInvite, setCreatingInvite] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
 
 
 
@@ -93,6 +99,14 @@ export default function Dashboard() {
       }
     } catch (_) {}
 
+    // Load my invites
+    base44.auth.me().then(me => {
+      if (me?.email) {
+        base44.entities.InvitationToken.filter({ issued_by: me.email }, '-created_date', 50)
+          .then(setMyInvites).catch(() => {});
+      }
+    }).catch(() => {});
+
     // Listen for new in-memory signals
     const onSignal = () => setSignals([...(window.__sb?.signals || [])]);
     window.addEventListener('sb-signal', onSignal);
@@ -108,6 +122,44 @@ export default function Dashboard() {
   const shortDid = identity?.did
     ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
     : 'Not connected';
+
+  function generateHash() {
+    const arr = new Uint8Array(32);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  function generateTokenId() { return 'SB-' + Math.random().toString(36).substring(2, 6).toUpperCase(); }
+  function getAppUrl() { return localStorage.getItem('sb_custom_domain') || window.location.origin; }
+
+  const handleCreateInvite = async () => {
+    if (!inviteNickname.trim()) return;
+    setCreatingInvite(true);
+    const me = await base44.auth.me().catch(() => null);
+    await base44.entities.InvitationToken.create({
+      token_id: generateTokenId(),
+      hash: generateHash(),
+      status: 'active',
+      recipient_nickname: inviteNickname,
+      kinetic_weight: 10,
+      usage_type: 'single',
+      max_claims: 1,
+      claimed_count: 0,
+      notes: inviteNotes || undefined,
+      issued_by: me?.email,
+    });
+    const updated = await base44.entities.InvitationToken.filter({ issued_by: me?.email }, '-created_date', 50).catch(() => []);
+    setMyInvites(updated);
+    setInviteNickname('');
+    setInviteNotes('');
+    setShowInviteForm(false);
+    setCreatingInvite(false);
+  };
+
+  const copyInviteLink = (tokenId) => {
+    navigator.clipboard.writeText(`${getAppUrl()}/?invite=${tokenId}`);
+    setCopiedId(tokenId);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
@@ -259,6 +311,102 @@ export default function Dashboard() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* ── My Village Invitations ── */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+              <Users className="w-4 h-4 text-purple-400" /> My Village Invitations
+            </h3>
+            {myInvites.length > 0 && !showInviteForm && (
+              <button onClick={() => setShowInviteForm(true)} className="flex items-center gap-1 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition">
+                <Plus className="w-3 h-3" /> New Invite
+              </button>
+            )}
+          </div>
+
+          {/* Create form */}
+          {showInviteForm && (
+            <div className="bg-white/5 border border-purple-500/30 rounded-xl p-4 mb-4 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-white/40 mb-1 block">Who are you inviting? *</label>
+                  <input
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-400/60 transition"
+                    placeholder="e.g. My colleague Sarah"
+                    value={inviteNickname}
+                    onChange={e => setInviteNickname(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-white/40 mb-1 block">Note (optional)</label>
+                  <input
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-400/60 transition"
+                    placeholder="e.g. Blockchain researcher"
+                    value={inviteNotes}
+                    onChange={e => setInviteNotes(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleCreateInvite} disabled={creatingInvite || !inviteNickname.trim()} className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition disabled:opacity-50">
+                  {creatingInvite ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  {creatingInvite ? 'Creating…' : 'Issue Invite'}
+                </button>
+                <button onClick={() => setShowInviteForm(false)} className="text-xs text-white/40 hover:text-white/70 transition px-3">Cancel</button>
+              </div>
+              <p className="text-white/20 text-xs">They'll receive a funded testnet wallet + DID onboarding path automatically.</p>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {myInvites.length === 0 && !showInviteForm ? (
+            <div className="text-center py-8 space-y-4">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/20 flex items-center justify-center mx-auto">
+                <Users className="w-6 h-6 text-purple-300" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-white/60 text-sm font-medium">Your Gateway Awaits</p>
+                <p className="text-white/30 text-xs max-w-xs mx-auto">Invite someone to SoulBridge. They receive a funded wallet and a guided DID path, honouring <span className="text-purple-400">Law 9: Growth</span>.</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 max-w-sm mx-auto text-xs">
+                {[['🧬','Law 1: Soul'],['🔨','Law 4: Creation'],['🌱','Law 9: Growth']].map(([icon, label]) => (
+                  <div key={label} className="bg-white/5 border border-white/10 rounded-lg p-2">
+                    <div>{icon}</div><div className="text-white/50 mt-1">{label}</div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setShowInviteForm(true)} className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-medium px-5 py-2.5 rounded-lg transition mx-auto">
+                <Plus className="w-3 h-3" /> Create My First Invite
+              </button>
+            </div>
+          ) : myInvites.length > 0 ? (
+            <div className="space-y-2">
+              {myInvites.map(t => (
+                <div key={t.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-white text-sm font-mono">{t.token_id}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${ t.status === 'active' ? 'bg-green-500/20 text-green-400 border-green-500/30' : t.status === 'claimed' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30' }`}>
+                        {t.status === 'claimed' ? '✓ Joined' : t.status.charAt(0).toUpperCase() + t.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className="flex gap-3 text-xs text-white/30 mt-0.5">
+                      <span>👤 {t.recipient_nickname || '—'}</span>
+                      <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-yellow-400" />{t.kinetic_weight ?? 10} KU</span>
+                    </div>
+                  </div>
+                  {t.status === 'active' && (
+                    <button onClick={() => copyInviteLink(t.token_id)} className="flex items-center gap-1 text-xs bg-white/10 hover:bg-white/15 text-white/60 hover:text-white border border-white/15 px-3 py-1.5 rounded-lg transition">
+                      {copiedId === t.token_id ? <CheckCircle className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                      {copiedId === t.token_id ? 'Copied!' : 'Copy Link'}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         {/* ── Octagon Mill ── */}
