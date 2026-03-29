@@ -169,6 +169,9 @@ export default function Landing() {
           kinetic_weight: data.kinetic_weight,
           notes: data.notes,
         }));
+        if (data.wallet) {
+          localStorage.setItem('sb_invite_wallet', JSON.stringify(data.wallet));
+        }
         navigate('/dashboard');
       }
     } catch (e) {
