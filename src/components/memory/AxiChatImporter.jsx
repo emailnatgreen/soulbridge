@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Brain, Loader2, CheckCircle, Download, Trash2 } from 'lucide-react';
@@ -25,10 +25,6 @@ export default function AxiChatImporter({ onImported }) {
   const [deletedBundles, setDeletedBundles] = useState(new Set());
   const [convoRef, setConvoRef] = useState(null);
 
-  const axiAgentId = useMemo(() => {
-    const memoryAgent = allMessages.find(msg => msg.agent_id)?.agent_id;
-    return memoryAgent || 'axi';
-  }, [allMessages]);
 
   const totalBundles = Math.ceil(allMessages.length / BUNDLE_SIZE);
   const bundleStart = bundleIndex * BUNDLE_SIZE;
@@ -61,12 +57,13 @@ export default function AxiChatImporter({ onImported }) {
     setProgress(0);
     setSavedBundle(null);
     let done = 0;
+    let savedCount = 0;
     const BATCH = 20;
     for (let i = 0; i < bundle.length; i += BATCH) {
       const chunk = bundle.slice(i, i + BATCH);
-      await Promise.all(chunk.map(msg =>
+      const results = await Promise.all(chunk.map(msg =>
         base44.entities.Memory.create({
-          agent_id: axiAgentId,
+          agent_id: 'axi',
           type: 'conversation_snippet',
           content: msg.content,
           context: `AxiChat · ${msg.role} · ${msg.created_date ? new Date(msg.created_date).toLocaleDateString() : 'unknown'}`,
@@ -77,13 +74,17 @@ export default function AxiChatImporter({ onImported }) {
           return null;
         })
       ));
+      savedCount += results.filter(Boolean).length;
       done += chunk.length;
       setProgress(done);
     }
     setSaving(false);
+    if (savedCount === 0) {
+      setSavedBundle(null);
+      return;
+    }
     setSavedBundle(bundleIndex);
     if (onImported) onImported();
-    // Auto-delete this bundle from AxiChat (pass snapshot before state update)
     await deleteBundleFromChat(bundleIndex, allMessages);
   };
 
@@ -101,14 +102,10 @@ export default function AxiChatImporter({ onImported }) {
         const sig = (m.created_date || '') + '||' + (m.content || '').slice(0, 40);
         return !sigSet.has(sig);
       });
-      const localRemaining = msgs.filter((_, i) => i < start || i >= end);
-      setConvoRef({ ...fresh, messages: remaining });
-      // Update local state - remove the deleted bundle
-      const newMsgs = localRemaining;
-      setAllMessages(newMsgs);
-      setDeletedBundles(prev => new Set([...prev, idx]));
-      const newTotal = Math.ceil(newMsgs.length / BUNDLE_SIZE);
-      setBundleIndex(i => Math.min(i, Math.max(0, newTotal - 1)));
+      if (remaining.length === fresh.messages.length) {
+        return;
+      }
+      console.warn('Bundle deletion from AxiChat is not supported safely from this screen yet.');
     } catch (err) {
       console.error('Failed to delete bundle from chat:', err);
     }
@@ -191,7 +188,6 @@ export default function AxiChatImporter({ onImported }) {
               <CheckCircle className="w-4 h-4" />
               <span>
                 Bundle {bundleIndex + 1} saved to Memory
-                {deletedBundles.has(bundleIndex) ? ' & deleted from AxiChat ✓' : deleting ? ' — deleting from chat…' : ''}
               </span>
             </div>
           )}

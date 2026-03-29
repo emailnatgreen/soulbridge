@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Brain, X, Loader2, CheckCircle } from 'lucide-react';
@@ -26,10 +26,6 @@ export default function SaveToMemoryPanel({ messages, conversation, onClose, onD
   const msgCount = messages.length;
   const bundleEnd = Math.min(bundleStart + BUNDLE_SIZE, msgCount);
   const bundle = messages.slice(bundleStart, bundleEnd);
-  const axiAgentId = useMemo(() => {
-    const memoryAgent = messages.find(msg => msg.agent_id)?.agent_id;
-    return memoryAgent || 'axi';
-  }, [messages]);
 
   const handleSave = async () => {
     if (!bundle.length) return;
@@ -39,14 +35,15 @@ export default function SaveToMemoryPanel({ messages, conversation, onClose, onD
     setTotal(bundle.length);
 
     let saved = 0;
+    let savedCount = 0;
     const BATCH = 20;
     for (let i = 0; i < bundle.length; i += BATCH) {
       const chunk = bundle.slice(i, i + BATCH);
-      await Promise.all(chunk.map(msg => {
-        if (!msg.content || msg.role === 'system') return Promise.resolve();
+      const results = await Promise.all(chunk.map(msg => {
+        if (!msg.content || msg.role === 'system') return Promise.resolve(null);
         const keywords = extractKeywords(msg.content);
         return base44.entities.Memory.create({
-          agent_id: axiAgentId,
+          agent_id: 'axi',
           type: 'conversation_snippet',
           content: msg.content,
           context: `AxiChat · ${msg.role} · ${msg.created_date ? new Date(msg.created_date).toLocaleDateString() : 'unknown date'}`,
@@ -57,26 +54,12 @@ export default function SaveToMemoryPanel({ messages, conversation, onClose, onD
           return null;
         });
       }));
+      savedCount += results.filter(Boolean).length;
       saved += chunk.length;
       setProgress(saved);
     }
     setSaving(false);
-    setSaved(true);
-    // Now delete this bundle from the conversation
-    if (conversation) {
-      try {
-        const bundleMsgs = bundle;
-        const sigSet = new Set(bundleMsgs.map(m => (m.created_date || '') + '||' + (m.content || '').slice(0, 40)));
-        const fresh = await base44.agents.getConversation(conversation.id);
-        const remaining = (fresh.messages || []).filter(m => {
-          const sig = (m.created_date || '') + '||' + (m.content || '').slice(0, 40);
-          return !sigSet.has(sig);
-        });
-        if (onDeleted) onDeleted(remaining);
-      } catch (err) {
-        console.error('Failed to delete bundle from chat:', err);
-      }
-    }
+    setSaved(savedCount > 0);
   };
 
   return (
@@ -136,7 +119,7 @@ export default function SaveToMemoryPanel({ messages, conversation, onClose, onD
       {saved && (
         <div className="flex items-center gap-2 text-green-400 text-xs">
           <CheckCircle className="w-4 h-4" />
-          <span>Saved {bundle.length} memories successfully!</span>
+          <span>Saved bundle to Memory Browser.</span>
         </div>
       )}
 
