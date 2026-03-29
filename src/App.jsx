@@ -30,6 +30,7 @@ import KineticGridDashboard from './pages/KineticGridDashboard';
 import ScrollOfResonance from './pages/ScrollOfResonance';
 import KineticCompass from './pages/KineticCompass';
 import InviteLinkManager from './pages/InviteLinkManager';
+import MyVillageGateway from './pages/MyVillageGateway';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -109,6 +110,7 @@ const AuthenticatedApp = () => {
       <Route path="/ScrollOfResonance" element={<LayoutWrapper currentPageName="ScrollOfResonance"><ScrollOfResonance /></LayoutWrapper>} />
       <Route path="/KineticCompass" element={<LayoutWrapper currentPageName="KineticCompass"><KineticCompass /></LayoutWrapper>} />
       <Route path="/InviteLinkManager" element={<LayoutWrapper currentPageName="InviteLinkManager"><InviteLinkManager /></LayoutWrapper>} />
+      <Route path="/MyVillageGateway" element={<LayoutWrapper currentPageName="MyVillageGateway"><MyVillageGateway /></LayoutWrapper>} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
