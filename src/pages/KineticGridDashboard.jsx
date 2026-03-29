@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
+import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -198,6 +199,8 @@ export default function KineticGridDashboard() {
           <StatCard label="MWTP Packets" value={packets.length} sub={`micro:${layerCounts.micro} meso:${layerCounts.meso}`} color="text-blue-300" Icon={Activity} />
           <StatCard label="Proposals Enriched" value={enrichedProposals.length} sub={`of ${proposals.length} total`} color="text-green-300" Icon={Vote} />
         </div>
+
+        <KineticEnergyVisualizer kus={kus} />
 
         {/* KU Flow Over Time + Type Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
