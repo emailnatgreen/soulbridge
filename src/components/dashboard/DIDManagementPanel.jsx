@@ -33,9 +33,7 @@ export default function DIDManagementPanel() {
   const refreshBalance = async (wallet) => {
     setRefreshingId(wallet.id);
     try {
-      const res = await base44.functions.invoke('getBalance', { classic_address: wallet.classic_address, network: wallet.network || 'testnet' });
-      const balance = res.data?.balance ?? res.data?.xrp_balance ?? 0;
-      await base44.entities.Wallet.update(wallet.id, { balance: parseFloat(balance) });
+      await base44.functions.invoke('getBalance', { wallet_id: wallet.id });
       await loadWallets();
     } catch (_) {}
     setRefreshingId(null);
