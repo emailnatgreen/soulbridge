@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import {
   Shield, Globe, Plus, CheckCircle, AlertTriangle,
-  Loader2, ExternalLink, ArrowRight, QrCode, RefreshCw
+  Loader2, ExternalLink, ArrowRight, QrCode, RefreshCw, Copy, Wallet
 } from 'lucide-react';
 
 // Modes: idle | creating | publish_select | publish_qr | done
@@ -22,6 +22,12 @@ export default function DIDManagementPanel() {
   const [publishResult, setPublishResult] = useState(null);
   const [checking, setChecking] = useState(false);
   const [fundingId, setFundingId] = useState(null);
+  const [fundWallet, setFundWallet] = useState(null); // wallet being funded
+  const [fundMode, setFundMode] = useState(null); // 'options' | 'xumm'
+  const [xummFundData, setXummFundData] = useState(null);
+  const [xummFundLoading, setXummFundLoading] = useState(false);
+  const [xummFundResult, setXummFundResult] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   const loadWallets = async () => {
     try {
@@ -185,36 +191,12 @@ export default function DIDManagementPanel() {
                     </div>
                     <div className="flex gap-2">
                       {!isFunded && (
-                        <>
-                          <button
-                            onClick={async () => {
-                              setFundingId(w.id + '_testnet');
-                              try {
-                                await base44.functions.invoke('autoFundWallet', { wallet_id: w.id, classic_address: w.classic_address, network: 'testnet' });
-                                await loadWallets();
-                              } catch (_) {}
-                              setFundingId(null);
-                            }}
-                            disabled={isFunding}
-                            className="flex items-center gap-1.5 text-xs bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition disabled:opacity-50 flex-1 justify-center"
-                          >
-                            {fundingId === w.id + '_testnet' ? <><Loader2 className="w-3 h-3 animate-spin" /> Funding…</> : '⚡ Fund (Testnet)'}
-                          </button>
-                          <button
-                            onClick={async () => {
-                              setFundingId(w.id + '_mainnet');
-                              try {
-                                await base44.functions.invoke('autoFundWallet', { wallet_id: w.id, classic_address: w.classic_address, network: 'mainnet' });
-                                await loadWallets();
-                              } catch (_) {}
-                              setFundingId(null);
-                            }}
-                            disabled={isFunding}
-                            className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition disabled:opacity-50 flex-1 justify-center"
-                          >
-                            {fundingId === w.id + '_mainnet' ? <><Loader2 className="w-3 h-3 animate-spin" /> Funding…</> : '🌐 Fund (Mainnet)'}
-                          </button>
-                        </>
+                        <button
+                          onClick={() => { setFundWallet(w); setFundMode('options'); setXummFundData(null); setXummFundResult(null); }}
+                          className="flex items-center gap-1.5 text-xs bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition flex-1 justify-center"
+                        >
+                          <Wallet className="w-3 h-3" /> Fund Wallet
+                        </button>
                       )}
                       <button
                         onClick={() => { setSelectedWalletId(w.id); setMode('publish_select'); }}
@@ -228,6 +210,103 @@ export default function DIDManagementPanel() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* ── Fund Options Modal ── */}
+          {fundMode && fundWallet && (
+            <div className="bg-black/30 border border-amber-500/20 rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-white font-semibold text-sm flex items-center gap-2"><Wallet className="w-4 h-4 text-amber-400" /> Fund: {fundWallet.name || 'Wallet'}</h4>
+                <button onClick={() => { setFundMode(null); setFundWallet(null); setXummFundData(null); }} className="text-white/30 hover:text-white text-xs">✕</button>
+              </div>
+              <p className="text-white/40 text-xs font-mono">{fundWallet.classic_address}</p>
+
+              {fundMode === 'options' && (
+                <div className="space-y-2">
+                  {/* Testnet Faucet */}
+                  <button
+                    onClick={async () => {
+                      setFundingId(fundWallet.id + '_testnet');
+                      try {
+                        await base44.functions.invoke('autoFundWallet', { classic_address: fundWallet.classic_address, network: 'testnet' });
+                        await loadWallets();
+                        setFundMode(null); setFundWallet(null);
+                      } catch (_) {}
+                      setFundingId(null);
+                    }}
+                    disabled={fundingId === fundWallet.id + '_testnet'}
+                    className="w-full flex items-center gap-3 bg-amber-600/10 hover:bg-amber-600/20 border border-amber-500/20 rounded-xl px-4 py-3 text-left transition disabled:opacity-50"
+                  >
+                    <span className="text-xl">⚡</span>
+                    <div>
+                      <p className="text-amber-300 text-sm font-medium">{fundingId === fundWallet.id + '_testnet' ? 'Requesting funds…' : 'Testnet Faucet'}</p>
+                      <p className="text-white/30 text-xs">Auto-fund from the XRPL Testnet faucet — free, instant</p>
+                    </div>
+                    {fundingId === fundWallet.id + '_testnet' && <Loader2 className="w-4 h-4 text-amber-300 animate-spin ml-auto" />}
+                  </button>
+
+                  {/* Xumm QR */}
+                  <button
+                    onClick={async () => {
+                      setXummFundLoading(true);
+                      setFundMode('xumm');
+                      try {
+                        const res = await base44.functions.invoke('fundWalletXumm', { classic_address: fundWallet.classic_address, amount: 10 });
+                        setXummFundData(res.data);
+                      } catch (e) {
+                        setXummFundResult({ error: e?.response?.data?.error || e.message });
+                      }
+                      setXummFundLoading(false);
+                    }}
+                    className="w-full flex items-center gap-3 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/20 rounded-xl px-4 py-3 text-left transition"
+                  >
+                    <span className="text-xl">📱</span>
+                    <div>
+                      <p className="text-blue-300 text-sm font-medium">Send via Xumm (Mainnet)</p>
+                      <p className="text-white/30 text-xs">Scan a QR code to send XRP from your Xumm wallet</p>
+                    </div>
+                  </button>
+
+                  {/* Manual copy */}
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(fundWallet.classic_address);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-left transition"
+                  >
+                    {copied ? <CheckCircle className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-white/40" />}
+                    <div>
+                      <p className="text-white text-sm font-medium">{copied ? 'Address Copied!' : 'Manual Transfer'}</p>
+                      <p className="text-white/30 text-xs">Copy address and send XRP from any wallet or exchange</p>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {fundMode === 'xumm' && (
+                <div className="space-y-3">
+                  <button onClick={() => setFundMode('options')} className="text-white/40 hover:text-white text-xs">← Back</button>
+                  {xummFundLoading && <div className="flex items-center justify-center py-6"><Loader2 className="w-6 h-6 text-blue-400 animate-spin" /></div>}
+                  {xummFundData?.qr_png && (
+                    <div className="text-center space-y-3">
+                      <p className="text-white/50 text-xs">Scan with Xumm to send 10 XRP to this wallet</p>
+                      <img src={xummFundData.qr_png} alt="Xumm QR" className="w-48 h-48 mx-auto rounded-xl border border-white/10" />
+                      {xummFundData.qr_link && (
+                        <a href={xummFundData.qr_link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-blue-400 text-xs underline">
+                          Open in Xumm <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                      <button onClick={() => { loadWallets(); setFundMode(null); setFundWallet(null); }} className="w-full bg-white/10 hover:bg-white/15 text-white text-xs rounded-lg py-2 transition">
+                        Done — Refresh Balances
+                      </button>
+                    </div>
+                  )}
+                  {xummFundResult?.error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{xummFundResult.error}</p>}
+                </div>
+              )}
             </div>
           )}
 
