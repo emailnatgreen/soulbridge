@@ -271,13 +271,32 @@ export default function Dashboard() {
         {hasInviteSession ? (
           <div className="max-w-lg mx-auto space-y-6 pt-4">
 
+            {/* Private Dashboard Header */}
+            <div className="bg-white/5 border border-purple-500/20 rounded-2xl px-5 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">Your Private Dashboard</p>
+                  <p className="text-white/30 text-xs">Only you can see this</p>
+                </div>
+              </div>
+              {inviteWallet?.classic_address && (
+                <div className="text-right">
+                  <p className="text-white/20 text-[10px] uppercase tracking-widest">Your DID Address</p>
+                  <p className="text-purple-300 font-mono text-xs">{inviteWallet.classic_address.slice(0,16)}…</p>
+                </div>
+              )}
+            </div>
+
             {/* Welcome card */}
             <div className="text-center space-y-3">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mx-auto shadow-2xl shadow-purple-500/40">
                 <Sparkles className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white">Welcome{invite?.recipient_nickname ? `, ${invite.recipient_nickname}` : ''}! 🎉</h2>
-              <p className="text-white/50 text-sm">You've been invited to SoulBridge Village. Follow the steps below to activate your on-chain identity.</p>
+              <p className="text-white/50 text-sm">Activate your on-chain identity to enter the public SoulBridge Village.</p>
             </div>
 
             {/* Steps */}
