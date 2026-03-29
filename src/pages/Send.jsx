@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from '@/components/ui/slider';
 import { ArrowLeft, Send, Loader2, Wallet, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -39,7 +40,7 @@ export default function SendPage() {
     enabled: !!user
   });
 
-  const activeWallets = wallets.filter(w => w.classic_address);
+  const activeWallets = wallets;
   const selectedFromWallet = activeWallets.find(w => w.id === formData.from_wallet_id);
 
   const createTransaction = useMutation({
@@ -203,7 +204,7 @@ export default function SendPage() {
               </div>
 
               {/* Amount */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label htmlFor="amount" className="text-purple-200/90">
                   Amount (XRP) <span className="text-red-400">*</span>
                 </Label>
@@ -218,6 +219,22 @@ export default function SendPage() {
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-2xl font-light"
                   required
                 />
+                {selectedFromWallet && (selectedFromWallet.balance || 0) > 0 && (
+                  <div className="space-y-1">
+                    <Slider
+                      min={0}
+                      max={Math.max(0, (selectedFromWallet.balance || 0) - 10)}
+                      step={0.01}
+                      value={[parseFloat(formData.amount) || 0]}
+                      onValueChange={([val]) => setFormData({ ...formData, amount: val.toFixed(6) })}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-white/30">
+                      <span>0 XRP</span>
+                      <span className="text-purple-300/60">max sendable: {Math.max(0, (selectedFromWallet.balance || 0) - 10).toFixed(2)} XRP</span>
+                    </div>
+                  </div>
+                )}
                 {remainingBalance !== null && (
                   <p className={`text-xs ${remainingBalance < 0 ? 'text-red-400' : 'text-purple-300/50'}`}>
                     Balance after send: ~{remainingBalance.toFixed(4)} XRP
