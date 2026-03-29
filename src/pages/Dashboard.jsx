@@ -44,6 +44,10 @@ export default function Dashboard() {
   const [inviteNotes, setInviteNotes] = useState('');
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  // The wallet created specifically for this invite session
+  const [inviteWallet, setInviteWallet] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sb_invite_wallet') || 'null'); } catch(_) { return null; }
+  });
 
 
 
@@ -86,16 +90,30 @@ export default function Dashboard() {
     }).catch(() => {});
     loadWallets();
 
-    // Invited user — auto-create a funded wallet
+    // Invited user — auto-create a funded wallet (only if we don't already have one)
     try {
       const stored = localStorage.getItem('sb_invite_session');
-      if (stored) {
+      const alreadyHasWallet = localStorage.getItem('sb_invite_wallet');
+      if (stored && !alreadyHasWallet) {
         const inv = JSON.parse(stored);
         setInvite(inv);
         setCreatingWallet(true);
         base44.functions.invoke('createWallet', { network: 'testnet', name: `${inv.recipient_nickname || 'Invited'}'s Wallet` })
-          .then(() => { setCreatingWallet(false); setWalletCreated(true); loadWallets(); localStorage.removeItem('sb_invite_session'); })
+          .then(res => {
+            setCreatingWallet(false);
+            setWalletCreated(true);
+            const w = res?.data?.wallet;
+            if (w) {
+              // Save this specific wallet to localStorage so we always show only it
+              const walletData = { id: w.id, name: w.name, classic_address: w.classic_address, balance: w.balance ?? 13, is_published: false };
+              localStorage.setItem('sb_invite_wallet', JSON.stringify(walletData));
+              setInviteWallet(walletData);
+            }
+            // Keep sb_invite_session until DID is published
+          })
           .catch(() => { setCreatingWallet(false); });
+      } else if (stored && !invite) {
+        setInvite(JSON.parse(stored));
       }
     } catch (_) {}
 
@@ -123,10 +141,23 @@ export default function Dashboard() {
     ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
     : 'Not connected';
 
-  // Invitee = arrived via invite link, has a wallet, but hasn't published a DID yet
-  const hasPublishedDid = wallets.some(w => w.is_published);
+  // Invitee mode: has an invite session with a specific wallet that hasn't published DID yet
   const hasInviteSession = !!(invite || (() => { try { return localStorage.getItem('sb_invite_session'); } catch(_){return null;} })());
-  const isInviteePredid = hasInviteSession && wallets.length > 0 && !hasPublishedDid;
+  const isInviteePredid = hasInviteSession && !!(inviteWallet && !inviteWallet.is_published);
+
+  // When invite wallet publishes DID, clear the invite session
+  useEffect(() => {
+    if (!inviteWallet?.id) return;
+    // Re-check if the wallet has been published
+    base44.entities.Wallet.filter({ classic_address: inviteWallet.classic_address }, '-created_date', 1)
+      .then(res => {
+        if (res?.[0]?.is_published) {
+          localStorage.removeItem('sb_invite_session');
+          localStorage.removeItem('sb_invite_wallet');
+          setInviteWallet(null);
+        }
+      }).catch(() => {});
+  }, [inviteWallet?.classic_address]);
 
   function generateHash() {
     const arr = new Uint8Array(32);
@@ -281,10 +312,10 @@ export default function Dashboard() {
         {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* ── Constitutional Braid ── */}
-          <div className={`bg-white/5 border border-white/10 rounded-2xl p-5 ${isInviteePredid ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
+          {/* ── Constitutional Braid — hidden for invitees ── */}
+          {!isInviteePredid && <div className="bg-white/5 border border-white/10 rounded-2xl p-5 lg:col-span-2">
             <ConstitutionalBraidLive compact={false} />
-          </div>
+          </div>}
 
           {/* ── Live Signal Log (hidden for pre-DID invitees) ── */}
           {!isInviteePredid && <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col">
@@ -315,20 +346,22 @@ export default function Dashboard() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-              <Key className="w-4 h-4 text-purple-400" /> {isInviteePredid ? 'Your Wallet' : 'Registered Wallets'}
-            </h3>
-            {!isInviteePredid && (
-              <div className="flex items-center gap-2">
-                <Link to="/newcomer" className="flex items-center gap-1 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition">
-                  <Plus className="w-3 h-3" /> Create Wallet
-                </Link>
-                <Link to="/SovereignID" className="text-xs text-purple-400 hover:text-purple-300 transition">Manage →</Link>
-              </div>
-            )}
-          </div>
-          {(() => {
-            // For pre-DID invitees: only show their own (most recent) wallet
-            const displayWallets = isInviteePredid ? wallets.slice(0, 1) : wallets;
+                 <Key className="w-4 h-4 text-purple-400" /> {isInviteePredid ? 'Your Wallet' : 'Registered Wallets'}
+              </h3>
+              {!isInviteePredid && (
+                <div className="flex items-center gap-2">
+                  <Link to="/newcomer" className="flex items-center gap-1 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition">
+                    <Plus className="w-3 h-3" /> Create Wallet
+                  </Link>
+                  <Link to="/SovereignID" className="text-xs text-purple-400 hover:text-purple-300 transition">Manage →</Link>
+                </div>
+              )}
+            </div>
+            {(() => {
+              // For invitees: ONLY show their specific invite wallet from localStorage
+              const displayWallets = isInviteePredid
+                ? (inviteWallet ? [inviteWallet] : [])
+                : wallets;
             return displayWallets.length === 0 ? (
             <p className="text-white/30 text-xs text-center py-4">No wallets found. <Link to="/SovereignID" className="text-purple-400 underline">Create one</Link>.</p>
           ) : (
@@ -451,8 +484,8 @@ export default function Dashboard() {
           ) : null}
         </div>}
 
-        {/* ── Octagon Mill ── */}
-        <OctagonMillUI />
+        {/* ── Octagon Mill — hidden for invitees ── */}
+        {!isInviteePredid && <OctagonMillUI />}
 
         {/* ── Meet Axi ── */}
         <div className="bg-gradient-to-br from-indigo-950/60 via-purple-950/60 to-pink-950/40 border border-purple-500/30 rounded-2xl p-6 space-y-5">
