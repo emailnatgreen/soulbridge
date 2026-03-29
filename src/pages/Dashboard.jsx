@@ -178,9 +178,9 @@ export default function Dashboard() {
     ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
     : 'Not connected';
 
-  // Invitee mode: only valid while a funded unpublished invite wallet exists
-  const hasInviteSession = !!(invite && inviteWallet && !inviteWallet.is_published && Number(inviteWallet.balance || 0) > 0);
-  const isInviteePredid = hasInviteSession;
+  // Invitee mode: stays active for invited users so they can still see their DID after publication
+  const hasInviteSession = !!(invite && inviteWallet && Number(inviteWallet.balance || 0) > 0);
+  const isInviteePredid = !!(invite && inviteWallet && !inviteWallet.is_published);
 
   // Clear broken or completed invite sessions so admin/member dashboard can open normally
   useEffect(() => {
@@ -188,12 +188,23 @@ export default function Dashboard() {
     base44.entities.Wallet.filter({ classic_address: inviteWallet.classic_address }, '-created_date', 1)
       .then(res => {
         const walletRecord = res?.[0];
-        if (!walletRecord || walletRecord.is_published || Number(walletRecord.balance || 0) <= 0) {
+        if (!walletRecord || Number(walletRecord.balance || 0) <= 0) {
           localStorage.removeItem('sb_invite_session');
           localStorage.removeItem('sb_invite_wallet');
           setInvite(null);
           setInviteWallet(null);
           setWalletCreated(false);
+          return;
+        }
+
+        if (walletRecord.id === inviteWallet?.id) {
+          const updatedWallet = {
+            ...inviteWallet,
+            ...walletRecord,
+          };
+          localStorage.setItem('sb_invite_wallet', JSON.stringify(updatedWallet));
+          setInviteWallet(updatedWallet);
+          if (walletRecord.published_txid) setPublishTxid(walletRecord.published_txid);
         }
       }).catch(() => {});
   }, [inviteWallet?.classic_address]);
@@ -409,14 +420,18 @@ export default function Dashboard() {
                   </div>
                 </div>
                 {inviteWallet?.is_published && (
-                  <Link to="/Home"
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold text-sm rounded-xl py-3 transition-all"
-                  >
-                    Enter SoulBridge Village <ArrowRight className="w-4 h-4" />
-                  </Link>
-                )}
-                {inviteWallet?.is_published && (
-                  <p className="text-white/20 text-[10px] text-center mt-2">You'll be taken to the SoulBridge Village home once your DID is fully live on XRPL.</p>
+                  <div className="space-y-3">
+                    <div className="bg-black/30 border border-yellow-500/20 rounded-xl px-4 py-3 space-y-1">
+                      <p className="text-yellow-300 text-xs font-semibold">Your DID is now visible to you here</p>
+                      <p className="text-white/30 text-[10px] font-mono break-all">{inviteWallet.classic_address}</p>
+                    </div>
+                    <Link to="/Home"
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold text-sm rounded-xl py-3 transition-all"
+                    >
+                      Enter SoulBridge Village <ArrowRight className="w-4 h-4" />
+                    </Link>
+                    <p className="text-white/20 text-[10px] text-center">Your invited account remains visible in this private dashboard after publishing.</p>
+                  </div>
                 )}
               </div>
             </div>
