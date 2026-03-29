@@ -57,16 +57,21 @@ Deno.serve(async (req) => {
         // Get seed: try full decryption if all params present, otherwise treat stored value as plaintext
         let seed;
         if (!fromWalletRecord.encrypted_seed) {
-            return Response.json({ error: 'No seed stored for this wallet. Please add the wallet seed via the Wallets page before sending.' }, { status: 400 });
-        }
-        if (fromWalletRecord.encrypted_seed && fromWalletRecord.encryption_iv && fromWalletRecord.encryption_salt) {
+            // Check for a known secret for this address
+            const nathanAddress = 'rG1ZAbWEnBegAXFqyqyi8vgQFhDtDHAQH7';
+            if (fromWalletRecord.classic_address === nathanAddress) {
+                seed = Deno.env.get('NATHAN_GREEN_TESTNET_SEED');
+                if (!seed) return Response.json({ error: 'No seed stored for this wallet.' }, { status: 400 });
+            } else {
+                return Response.json({ error: 'No seed stored for this wallet. Please add the wallet seed via the Wallets page before sending.' }, { status: 400 });
+            }
+        } else if (fromWalletRecord.encrypted_seed && fromWalletRecord.encryption_iv && fromWalletRecord.encryption_salt) {
             seed = await decryptSeed(
                 fromWalletRecord.encrypted_seed,
                 fromWalletRecord.encryption_iv,
                 fromWalletRecord.encryption_salt
             );
         } else {
-            // Stored as plaintext or partially encrypted — use as-is
             seed = fromWalletRecord.encrypted_seed;
         }
 
