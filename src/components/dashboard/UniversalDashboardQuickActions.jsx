@@ -31,11 +31,11 @@ export default function UniversalDashboardQuickActions({ hasInviteSession, invit
       ]
     : [
         {
-          title: 'Manage your identity',
-          description: 'Create, fund, and publish your DID from one place.',
+          title: 'Open Sovereign ID',
+          description: 'Go straight to your personal DID page, certificates, wallets, and privacy controls.',
           action: (
-            <Link to="/SovereignID" className="inline-flex items-center gap-2 text-sm text-purple-300 hover:text-purple-200">
-              <KeyRound className="w-4 h-4" /> Open Sovereign ID
+            <Link to="/SovereignID" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-medium text-white hover:from-purple-500 hover:to-pink-500">
+              <KeyRound className="w-4 h-4" /> Open my identity
             </Link>
           )
         },

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { Shield, Wallet, Plus, Activity, Lock, ChevronRight, ArrowLeft, Home, Globe } from 'lucide-react';
-import ConstitutionalDIDsPanel from '@/components/sovereignid/ConstitutionalDIDsPanel';
+import { Shield, Wallet, Plus, Activity, Lock, ArrowLeft, Home } from 'lucide-react';
 import MyDIDPanel from '@/components/sovereignid/MyDIDPanel';
 import MyWalletsPanel from '@/components/sovereignid/MyWalletsPanel';
 import UserDIDPanel from '@/components/sovereignid/UserDIDPanel';
@@ -14,7 +13,6 @@ import ActivityLogPanel from '@/components/sovereignid/ActivityLogPanel';
 const ADMIN_TABS = [
   { id: 'did', label: 'My DID', icon: Shield },
   { id: 'wallets', label: 'My Wallets', icon: Wallet },
-  { id: 'constitutional', label: 'Constitutional DIDs', icon: Globe },
   { id: 'create', label: 'Create / Link DID', icon: Plus },
   { id: 'security', label: 'Security & Privacy', icon: Lock },
   { id: 'activity', label: 'Activity Log', icon: Activity },
@@ -23,7 +21,6 @@ const ADMIN_TABS = [
 const USER_TABS = [
   { id: 'did', label: 'My DID', icon: Shield },
   { id: 'wallets', label: 'My Wallets', icon: Wallet },
-  { id: 'constitutional', label: 'Constitutional DIDs', icon: Globe },
   { id: 'security', label: 'Security & Privacy', icon: Lock },
   { id: 'activity', label: 'Activity Log', icon: Activity },
 ];
@@ -76,7 +73,7 @@ export default function SovereignID() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Sovereign Identity</h1>
-                <p className="text-slate-400 text-sm">Your self-sovereign DID & XRPL wallet management</p>
+                <p className="text-slate-400 text-sm">Your personal DID, certificates, wallets, and privacy controls</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -127,9 +124,13 @@ export default function SovereignID() {
 
       {/* Content */}
       <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="mb-6 rounded-2xl border border-purple-500/20 bg-gradient-to-r from-purple-900/30 to-slate-900 p-5">
+          <p className="text-xs uppercase tracking-[0.25em] text-purple-300/60 mb-2">Private identity space</p>
+          <h2 className="text-xl font-semibold text-white">Only your identity details are shown here</h2>
+          <p className="text-sm text-slate-400 mt-2">This page is focused on your own DID records, wallet activity, verification certificates, and privacy settings.</p>
+        </div>
         {activeTab === 'did' && (isAdmin ? <MyDIDPanel user={user} wallets={wallets} onRefresh={loadData} /> : <UserDIDPanel wallets={wallets} />)}
         {activeTab === 'wallets' && (isAdmin ? <MyWalletsPanel user={user} wallets={wallets} onRefresh={loadData} /> : <UserWalletsPanel wallets={wallets} />)}
-        {activeTab === 'constitutional' && <ConstitutionalDIDsPanel />}
         {activeTab === 'create' && isAdmin && <CreateLinkDIDPanel user={user} wallets={wallets} onRefresh={loadData} onTabChange={setActiveTab} />}
         {activeTab === 'security' && <SecurityPrivacyPanel user={user} wallets={wallets} />}
         {activeTab === 'activity' && <ActivityLogPanel user={user} wallets={wallets} />}
