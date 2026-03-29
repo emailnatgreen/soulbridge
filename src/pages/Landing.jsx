@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key } from 'lucide-react';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreCard from '@/components/LoreCard';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
@@ -78,6 +78,10 @@ export default function Landing() {
   const navigate = useNavigate();
   const inactivityRef = useRef(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [showInviteEntry, setShowInviteEntry] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState('');
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
@@ -139,6 +143,30 @@ export default function Landing() {
     };
     fetchStats();
   }, []);
+
+  const handleInviteSubmit = async () => {
+    if (!inviteCode.trim()) return;
+    setInviteLoading(true);
+    setInviteError('');
+    try {
+      const res = await base44.functions.invoke('validateInviteToken', { token_id: inviteCode.trim().toUpperCase() });
+      const data = res.data;
+      if (!data.valid) {
+        setInviteError(data.error || 'Invalid code');
+      } else {
+        localStorage.setItem('sb_invite_session', JSON.stringify({
+          token_id: data.token_id,
+          recipient_nickname: data.recipient_nickname,
+          kinetic_weight: data.kinetic_weight,
+          notes: data.notes,
+        }));
+        navigate('/newcomer');
+      }
+    } catch (e) {
+      setInviteError('Could not validate code');
+    }
+    setInviteLoading(false);
+  };
 
   const handleConnectDID = () => {
     setDidError('');
@@ -433,6 +461,47 @@ export default function Landing() {
           </div>
 
           <KineticWeaverCard />
+
+          {/* Discreet Invite Entry */}
+          <div className="text-center">
+            {!showInviteEntry ? (
+              <button
+                onClick={() => setShowInviteEntry(true)}
+                className="text-white/25 hover:text-white/50 text-xs transition-colors flex items-center gap-1.5 mx-auto"
+              >
+                <Key className="w-3 h-3" /> Have an invite code?
+              </button>
+            ) : (
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 max-w-xs mx-auto space-y-3">
+                <p className="text-white/50 text-xs">Enter your invite code</p>
+                <input
+                  type="text"
+                  value={inviteCode}
+                  onChange={e => { setInviteCode(e.target.value.toUpperCase()); setInviteError(''); }}
+                  onKeyDown={e => e.key === 'Enter' && handleInviteSubmit()}
+                  placeholder="e.g. SB-XXXX"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder:text-white/25 text-sm text-center tracking-widest focus:outline-none focus:border-purple-400/60 transition-all"
+                  autoFocus
+                />
+                {inviteError && <p className="text-red-400 text-xs">{inviteError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowInviteEntry(false); setInviteCode(''); setInviteError(''); }}
+                    className="flex-1 text-white/30 text-xs hover:text-white/50 transition-colors py-2"
+                  >
+                    Cancel
+                  </button>
+                  <Button
+                    onClick={handleInviteSubmit}
+                    disabled={inviteLoading || !inviteCode.trim()}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs h-8"
+                  >
+                    {inviteLoading ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" /> : 'Enter →'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <p className="text-white/25 text-[10px] sm:text-xs text-center">
             Experimental AI Agent Research Platform · Pre-authorisation technical testing phase
