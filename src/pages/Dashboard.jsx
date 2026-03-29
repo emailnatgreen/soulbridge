@@ -442,11 +442,9 @@ export default function Dashboard() {
                       <p className="text-white/30 text-[10px] font-mono break-all">{inviteWallet.classic_address}</p>
                       {publishTxid && <p className="text-white/50 text-[10px] font-mono break-all">Testnet TX: {publishTxid}</p>}
                     </div>
-                    <Link to="/Home"
-                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold text-sm rounded-xl py-3 transition-all"
-                    >
-                      Enter SoulBridge Village <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <div className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-600/40 to-orange-600/40 text-white font-bold text-sm rounded-xl py-3 border border-yellow-500/30">
+                      SoulBridge Village access unlocked <ArrowRight className="w-4 h-4" />
+                    </div>
                     <p className="text-white/20 text-[10px] text-center">Your invited account remains visible in this private dashboard after publishing.</p>
                   </div>
                 )}
