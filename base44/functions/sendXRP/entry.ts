@@ -39,11 +39,19 @@ Deno.serve(async (req) => {
         if (!tx) return Response.json({ error: 'Transaction not found' }, { status: 404 });
         if (!tx.from_wallet_id) return Response.json({ error: 'No from_wallet_id on transaction' }, { status: 400 });
 
-        const walletResults = await base44.asServiceRole.entities.Wallet.filter({ id: tx.from_wallet_id }, '-created_date', 1);
-        const fromWalletRecord = walletResults?.[0];
+        let fromWalletRecord = await base44.asServiceRole.entities.Wallet.get(tx.from_wallet_id);
         if (!fromWalletRecord) return Response.json({ error: 'From wallet not found' }, { status: 404 });
-        console.log('Wallet fields present:', Object.keys(fromWalletRecord).join(', '));
-        console.log('Has encrypted_seed:', !!fromWalletRecord.encrypted_seed, '| Has iv:', !!fromWalletRecord.encryption_iv, '| Has salt:', !!fromWalletRecord.encryption_salt);
+
+        // If this wallet has no seed, try to find another record with same classic_address that does have a seed
+        if (!fromWalletRecord.encrypted_seed && fromWalletRecord.classic_address) {
+            const alternatives = await base44.asServiceRole.entities.Wallet.filter({ classic_address: fromWalletRecord.classic_address }, '-created_date', 20);
+            const seeded = alternatives.find(w => w.encrypted_seed && w.id !== fromWalletRecord.id);
+            if (seeded) {
+                console.log('Found seeded alternative wallet:', seeded.id, seeded.name);
+                fromWalletRecord = seeded;
+            }
+        }
+        console.log('Using wallet:', fromWalletRecord.id, '| name:', fromWalletRecord.name, '| Has seed:', !!fromWalletRecord.encrypted_seed);
         if (!fromWalletRecord.classic_address) return Response.json({ error: 'From wallet has no XRPL address' }, { status: 400 });
 
         // Get seed: try full decryption if all params present, otherwise treat stored value as plaintext
