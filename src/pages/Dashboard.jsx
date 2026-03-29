@@ -50,6 +50,9 @@ export default function Dashboard() {
   });
   const [publishingDid, setPublishingDid] = useState(false);
   const [publishError, setPublishError] = useState('');
+  const [publishTxid, setPublishTxid] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sb_invite_wallet') || 'null')?.published_txid || null; } catch(_) { return null; }
+  });
 
   useEffect(() => {
     // Load identity from localStorage
@@ -140,24 +143,26 @@ export default function Dashboard() {
     setPublishingWalletId(targetId);
     setPublishError('');
     try {
-      await base44.functions.invoke('publishDID', { wallet_id: targetId });
+      const res = await base44.functions.invoke('publishDID', { wallet_id: targetId });
+      const txid = res?.data?.txid || res?.data?.tx_hash || null;
       // If it's the invite wallet, update localStorage
       if (inviteWallet?.id === targetId) {
-        const updated = { ...inviteWallet, is_published: true };
+        const updated = { ...inviteWallet, is_published: true, published_txid: txid };
         localStorage.setItem('sb_invite_wallet', JSON.stringify(updated));
         localStorage.removeItem('sb_invite_session');
         setInviteWallet(updated);
+        if (txid) setPublishTxid(txid);
       }
       // Refresh wallets list
       base44.auth.me().then(me => {
         if (me) base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).then(setWallets).catch(() => {});
       }).catch(() => {});
-    } catch (e) {
+      } catch (e) {
       setPublishError(e?.response?.data?.error || 'Failed to publish DID. Please try again.');
-    }
-    setPublishingDid(false);
-    setPublishingWalletId(null);
-  };
+      }
+      setPublishingDid(false);
+      setPublishingWalletId(null);
+      };
 
   const handleDisconnect = () => {
     localStorage.removeItem('soulbridge_identity');
@@ -316,7 +321,20 @@ export default function Dashboard() {
                   </div>
                   {inviteWallet?.is_published && <span className="text-xs bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-1 rounded-full">Active</span>}
                 </div>
-                {publishError && <p className="text-red-400 text-xs mb-3">{publishError}</p>}
+                {inviteWallet?.is_published && publishTxid && (
+                  <div className="mt-3 bg-black/30 border border-green-500/20 rounded-xl px-4 py-3 space-y-1">
+                    <p className="text-green-400 text-xs font-semibold">✅ Published on XRPL Testnet</p>
+                    <p className="text-white/30 text-[10px] font-mono break-all">{publishTxid}</p>
+                    <a
+                      href={`https://testnet.xrpl.org/transactions/${publishTxid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 underline"
+                    >
+                      View on XRPL Testnet Explorer →
+                    </a>
+                  </div>
+                )}
                 {!inviteWallet?.is_published && inviteWallet && (
                   <button
                     onClick={() => handlePublishDID(inviteWallet.id)}
@@ -347,6 +365,9 @@ export default function Dashboard() {
                   >
                     Enter SoulBridge Village <ArrowRight className="w-4 h-4" />
                   </Link>
+                )}
+                {inviteWallet?.is_published && (
+                  <p className="text-white/20 text-[10px] text-center mt-2">You'll be taken to the SoulBridge Village home — your DID is now live on XRPL Testnet.</p>
                 )}
               </div>
             </div>
