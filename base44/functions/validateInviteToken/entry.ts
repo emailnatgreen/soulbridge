@@ -49,24 +49,19 @@ async function createPrefundedInviteWallet(base44, token, user) {
   const client = new Client('wss://s.altnet.rippletest.net:51233');
   await client.connect();
 
-  const wallet = Wallet.generate();
   const sponsorSeed = Deno.env.get('XRPL_SENDER_SEED');
   if (!sponsorSeed) {
     throw new Error('XRPL_SENDER_SEED not configured');
   }
 
   const sponsorWallet = Wallet.fromSeed(sponsorSeed);
-  const activation = await client.fundWallet(wallet);
-  if (!activation?.wallet?.classicAddress) {
-    await client.disconnect();
-    throw new Error('Invite wallet activation failed');
-  }
+  const wallet = Wallet.generate();
 
   const payment = {
     TransactionType: 'Payment',
     Account: sponsorWallet.classicAddress,
     Destination: wallet.classicAddress,
-    Amount: '3000000'
+    Amount: '13000000'
   };
 
   const prepared = await client.autofill(payment);
