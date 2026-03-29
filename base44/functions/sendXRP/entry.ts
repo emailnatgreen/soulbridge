@@ -56,13 +56,7 @@ Deno.serve(async (req) => {
             // Seed was stored as plaintext (no encryption)
             seed = fromWalletRecord.encrypted_seed;
         } else {
-            // Fallback to env var
-            const envSeed = Deno.env.get('XRPL_TREASURY_SEED') || Deno.env.get('XRPL_SENDER_SEED');
-            if (envSeed) {
-                seed = envSeed;
-            } else {
-                return Response.json({ error: 'No seed available for this wallet.' }, { status: 400 });
-            }
+            return Response.json({ error: 'No seed stored for this wallet. Please add the wallet seed via the Wallets page before sending.' }, { status: 400 });
         }
 
         // Always trim the seed to remove any accidental whitespace/newlines
