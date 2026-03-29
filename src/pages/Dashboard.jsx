@@ -252,9 +252,11 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link to="/Home" className="text-xs text-white/50 hover:text-white border border-white/15 rounded-lg px-3 py-1.5 transition">
-              <Home className="w-3.5 h-3.5 inline mr-1" />Home
-            </Link>
+            {!hasInviteSession && (
+              <Link to="/Home" className="text-xs text-white/50 hover:text-white border border-white/15 rounded-lg px-3 py-1.5 transition">
+                <Home className="w-3.5 h-3.5 inline mr-1" />Home
+              </Link>
+            )}
             <button onClick={handleDisconnect}
               className="text-xs text-red-400 border border-red-500/30 hover:border-red-400/60 rounded-lg px-3 py-1.5 transition">
               <LogOut className="w-3.5 h-3.5 inline mr-1" />Disconnect
@@ -316,7 +318,7 @@ export default function Dashboard() {
                 <div className="flex-1">
                   <p className="text-white font-semibold text-sm">Step 1 — Wallet Created</p>
                   <p className="text-white/40 text-xs mt-0.5">
-                    {creatingWallet ? 'Creating your XRPL wallet…' : inviteWallet ? `${inviteWallet.classic_address?.slice(0,16)}… · 13 XRP funded` : 'Pending…'}
+                    {creatingWallet ? 'Creating your XRPL wallet…' : inviteWallet ? `${inviteWallet.classic_address?.slice(0,16)}… · Live wallet ready` : 'Pending…'}
                   </p>
                 </div>
               </div>
@@ -343,15 +345,15 @@ export default function Dashboard() {
                 </div>
                 {inviteWallet?.is_published && publishTxid && (
                   <div className="mt-3 bg-black/30 border border-green-500/20 rounded-xl px-4 py-3 space-y-1">
-                    <p className="text-green-400 text-xs font-semibold">✅ Published on XRPL Testnet</p>
+                    <p className="text-green-400 text-xs font-semibold">✅ Published on XRPL Live</p>
                     <p className="text-white/30 text-[10px] font-mono break-all">{publishTxid}</p>
                     <a
-                      href={`https://testnet.xrpl.org/transactions/${publishTxid}`}
+                      href={`https://livenet.xrpl.org/transactions/${publishTxid}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 underline"
                     >
-                      View on XRPL Testnet Explorer →
+                      View on XRPL Live Explorer →
                     </a>
                   </div>
                 )}
@@ -387,12 +389,12 @@ export default function Dashboard() {
                   </Link>
                 )}
                 {inviteWallet?.is_published && (
-                  <p className="text-white/20 text-[10px] text-center mt-2">You'll be taken to the SoulBridge Village home — your DID is now live on XRPL Testnet.</p>
+                  <p className="text-white/20 text-[10px] text-center mt-2">You'll be taken to the SoulBridge Village home once your DID is fully live on XRPL.</p>
                 )}
               </div>
             </div>
 
-            <p className="text-white/20 text-xs text-center">Your invite was issued by SoulBridge · XRPL Testnet · Secure &amp; Encrypted</p>
+            <p className="text-white/20 text-xs text-center">Your invite was issued by SoulBridge · XRPL Live · Secure &amp; Encrypted</p>
           </div>
 
         ) : (

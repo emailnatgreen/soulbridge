@@ -15,6 +15,7 @@ import {
 export default function Home() {
   const navigate = useNavigate();
   const [identity, setIdentity] = useState(null);
+  const [hasInviteSession, setHasInviteSession] = useState(false);
   const [proposals, setProposals] = useState([]);
   const [agents, setAgents] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -47,8 +48,15 @@ export default function Home() {
         const parsed = JSON.parse(stored);
         if (parsed?.connected) setIdentity(parsed);
       }
+      const inviteSession = localStorage.getItem('sb_invite_session');
+      const inviteWallet = localStorage.getItem('sb_invite_wallet');
+      const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
+      if (inviteSession && (!parsedWallet || !parsedWallet.is_published)) {
+        setHasInviteSession(true);
+        navigate('/dashboard');
+      }
     } catch (e) {}
-  }, []);
+  }, [navigate]);
 
   // Helper to resolve agent from activity
   const resolveAgent = (activity) => {
