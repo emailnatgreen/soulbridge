@@ -185,20 +185,36 @@ export default function DIDManagementPanel() {
                     </div>
                     <div className="flex gap-2">
                       {!isFunded && (
-                        <button
-                          onClick={async () => {
-                            setFundingId(w.id);
-                            try {
-                              await base44.functions.invoke('autoFundWallet', { wallet_id: w.id, classic_address: w.classic_address, network: w.network || 'testnet' });
-                              await loadWallets();
-                            } catch (_) {}
-                            setFundingId(null);
-                          }}
-                          disabled={isFunding}
-                          className="flex items-center gap-1.5 text-xs bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition disabled:opacity-50 flex-1"
-                        >
-                          {isFunding ? <><Loader2 className="w-3 h-3 animate-spin" /> Funding…</> : '⚡ Fund Wallet (Testnet)'}
-                        </button>
+                        <>
+                          <button
+                            onClick={async () => {
+                              setFundingId(w.id + '_testnet');
+                              try {
+                                await base44.functions.invoke('autoFundWallet', { wallet_id: w.id, classic_address: w.classic_address, network: 'testnet' });
+                                await loadWallets();
+                              } catch (_) {}
+                              setFundingId(null);
+                            }}
+                            disabled={isFunding}
+                            className="flex items-center gap-1.5 text-xs bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition disabled:opacity-50 flex-1 justify-center"
+                          >
+                            {fundingId === w.id + '_testnet' ? <><Loader2 className="w-3 h-3 animate-spin" /> Funding…</> : '⚡ Fund (Testnet)'}
+                          </button>
+                          <button
+                            onClick={async () => {
+                              setFundingId(w.id + '_mainnet');
+                              try {
+                                await base44.functions.invoke('autoFundWallet', { wallet_id: w.id, classic_address: w.classic_address, network: 'mainnet' });
+                                await loadWallets();
+                              } catch (_) {}
+                              setFundingId(null);
+                            }}
+                            disabled={isFunding}
+                            className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition disabled:opacity-50 flex-1 justify-center"
+                          >
+                            {fundingId === w.id + '_mainnet' ? <><Loader2 className="w-3 h-3 animate-spin" /> Funding…</> : '🌐 Fund (Mainnet)'}
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={() => { setSelectedWalletId(w.id); setMode('publish_select'); }}
