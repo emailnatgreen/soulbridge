@@ -55,7 +55,7 @@ export default function Home() {
       const inviteSession = localStorage.getItem('sb_invite_session');
       const inviteWallet = localStorage.getItem('sb_invite_wallet');
       const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
-      if (inviteSession && (!parsedWallet || !parsedWallet.is_published)) {
+      if (inviteSession && parsedWallet) {
         setHasInviteSession(true);
         navigate('/dashboard');
       }

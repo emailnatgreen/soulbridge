@@ -96,7 +96,7 @@ export default function Landing() {
       const inviteSession = localStorage.getItem('sb_invite_session');
       const inviteWallet = localStorage.getItem('sb_invite_wallet');
       const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
-      if (inviteSession && parsedWallet && !parsedWallet.is_published && Number(parsedWallet.balance || 0) > 0) {
+      if (inviteSession && parsedWallet && Number(parsedWallet.balance || 0) > 0) {
         navigate('/dashboard');
       }
     } catch (_) {}

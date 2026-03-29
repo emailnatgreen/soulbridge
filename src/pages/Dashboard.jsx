@@ -386,12 +386,12 @@ export default function Dashboard() {
                     <p className="text-green-400 text-xs font-semibold">✅ Published on XRPL Live</p>
                     <p className="text-white/30 text-[10px] font-mono break-all">{publishTxid}</p>
                     <a
-                      href={`https://livenet.xrpl.org/transactions/${publishTxid}`}
+                      href={`https://${inviteWallet?.network === 'testnet' ? 'testnet' : 'livenet'}.xrpl.org/transactions/${publishTxid}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 underline"
                     >
-                      View on XRPL Live Explorer →
+                      View on XRPL {inviteWallet?.network === 'testnet' ? 'Testnet' : 'Live'} Explorer →
                     </a>
                   </div>
                 )}
@@ -424,6 +424,7 @@ export default function Dashboard() {
                     <div className="bg-black/30 border border-yellow-500/20 rounded-xl px-4 py-3 space-y-1">
                       <p className="text-yellow-300 text-xs font-semibold">Your DID is now visible to you here</p>
                       <p className="text-white/30 text-[10px] font-mono break-all">{inviteWallet.classic_address}</p>
+                      {publishTxid && <p className="text-white/50 text-[10px] font-mono break-all">Testnet TX: {publishTxid}</p>}
                     </div>
                     <Link to="/Home"
                       className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold text-sm rounded-xl py-3 transition-all"
