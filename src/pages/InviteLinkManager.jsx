@@ -128,7 +128,7 @@ function CreateTokenForm({ onCreated, currentUser }) {
   );
 }
 
-function TokenRow({ token, onRevoke }) {
+function TokenRow({ token, onRevoke, onDelete }) {
   const [copied, setCopied] = useState(false);
   const inviteUrl = `${getAppUrl()}/?invite=${token.token_id}`;
 
@@ -184,6 +184,11 @@ function TokenRow({ token, onRevoke }) {
             <Shield className="w-3 h-3" /> Revoke
           </Button>
         )}
+        {(token.status === 'claimed' || token.status === 'revoked') && (
+          <Button size="sm" variant="outline" className="border-red-800 text-red-400 hover:bg-red-900/30 text-xs gap-1" onClick={() => onDelete(token)}>
+            <Trash2 className="w-3 h-3" /> Delete
+          </Button>
+        )}
         <span className="text-xs text-slate-600 hidden sm:block">{new Date(token.created_date).toLocaleDateString('en-GB')}</span>
       </div>
     </div>
@@ -218,6 +223,19 @@ export default function InviteLinkManager() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['invite-tokens'] }); toast.success('🛡️ Sentinel Node: Token revoked'); },
   });
 
+  const { mutate: deleteToken } = useMutation({
+    mutationFn: (token) => base44.entities.InvitationToken.delete(token.id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['invite-tokens'] }); toast.success('Token deleted'); },
+  });
+
+  const deleteAllClaimed = async () => {
+    const claimed = tokens.filter(t => t.status === 'claimed');
+    if (claimed.length === 0) { toast.info('No claimed tokens to delete'); return; }
+    await Promise.all(claimed.map(t => base44.entities.InvitationToken.delete(t.id)));
+    qc.invalidateQueries({ queryKey: ['invite-tokens'] });
+    toast.success(`🗑️ Deleted ${claimed.length} claimed token${claimed.length > 1 ? 's' : ''}`);
+  };
+
   const filtered = filterStatus === 'all' ? tokens : tokens.filter(t => t.status === filterStatus);
 
   const stats = {
@@ -242,6 +260,11 @@ export default function InviteLinkManager() {
             <Button size="sm" variant="outline" className="border-slate-700 text-slate-400 hover:text-white gap-1" onClick={() => refetch()}>
               <RefreshCw className="w-3 h-3" /> Refresh
             </Button>
+            {stats.claimed > 0 && (
+              <Button size="sm" variant="outline" className="border-red-800 text-red-400 hover:bg-red-900/30 gap-1" onClick={deleteAllClaimed}>
+                <Trash2 className="w-3 h-3" /> Delete All Claimed ({stats.claimed})
+              </Button>
+            )}
             <Button size="sm" className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold gap-1" onClick={() => setShowForm(v => !v)}>
               <Plus className="w-4 h-4" /> {showForm ? 'Cancel' : 'Issue Invite'}
             </Button>
@@ -295,7 +318,7 @@ export default function InviteLinkManager() {
             </div>
           ) : (
             filtered.map(token => (
-              <TokenRow key={token.id} token={token} onRevoke={revoke} />
+              <TokenRow key={token.id} token={token} onRevoke={revoke} onDelete={deleteToken} />
             ))
           )}
         </div>
