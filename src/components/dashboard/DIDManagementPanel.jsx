@@ -175,16 +175,15 @@ export default function DIDManagementPanel() {
                       <RefreshCw className={`w-3 h-3 ${refreshingId === w.id ? 'animate-spin' : ''}`} />
                     </button>
                     <span className="text-xs bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5 rounded-full">DID Active</span>
-                    {w.published_txid && (
-                      <a
-                        href={`https://${w.network === 'mainnet' ? '' : 'testnet.'}xrpl.org/transactions/${w.published_txid}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-white/30 hover:text-white/70 transition"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
+                    <a
+                      href={`https://${w.network === 'mainnet' ? 'livenet' : 'testnet'}.xrpl.org/accounts/${w.classic_address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white/30 hover:text-white/70 transition"
+                      title="View wallet on XRPL Explorer"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
                   </div>
                 </div>
               ))}
