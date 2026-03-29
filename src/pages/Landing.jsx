@@ -169,7 +169,7 @@ export default function Landing() {
           kinetic_weight: data.kinetic_weight,
           notes: data.notes,
         }));
-        navigate('/dashboard');
+        navigate('/newcomer');
       }
     } catch (e) {
       setInviteError('Could not validate code');
