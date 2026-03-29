@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from '@/components/ui/slider';
-import { ArrowLeft, Send, Loader2, Wallet, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Wallet, ArrowRight, Globe, FlaskConical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
@@ -18,10 +18,12 @@ export default function SendPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const preselectedWalletId = urlParams.get('from_wallet_id') || '';
 
+  const [network, setNetwork] = useState('mainnet');
   const [formData, setFormData] = useState({
     from_wallet_id: preselectedWalletId,
     recipient_name: '',
     recipient_address: '',
+    from_address: '',
     amount: '',
     note: '',
     destination_tag: ''
@@ -40,8 +42,9 @@ export default function SendPage() {
     enabled: !!user
   });
 
-  const activeWallets = wallets;
-  const selectedFromWallet = activeWallets.find(w => w.id === formData.from_wallet_id);
+  const activeWallets = wallets.filter(w => w.network === network);
+  const selectedFromWallet = activeWallets.find(w => w.classic_address === formData.from_address) || activeWallets.find(w => w.id === formData.from_wallet_id);
+
 
   const createTransaction = useMutation({
     mutationFn: async (data) => {
@@ -77,10 +80,13 @@ export default function SendPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.from_wallet_id) {
-      toast.error('Please select a sending wallet');
+    if (!formData.from_address) {
+      toast.error('Please enter a sending address');
       return;
     }
+    // Try to match from_address to a wallet id
+    const matchedWallet = activeWallets.find(w => w.classic_address === formData.from_address);
+    if (matchedWallet) formData.from_wallet_id = matchedWallet.id;
     if (!formData.recipient_address || !formData.amount) {
       toast.error('Please fill in recipient address and amount');
       return;
@@ -123,32 +129,50 @@ export default function SendPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
 
-              {/* From Wallet */}
-              <div className="space-y-2">
-                <Label className="text-purple-200/90">
-                  From Wallet <span className="text-red-400">*</span>
-                </Label>
-                <Select
-                  value={formData.from_wallet_id}
-                  onValueChange={(val) => setFormData({ ...formData, from_wallet_id: val })}
+              {/* Network Toggle */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setNetwork('mainnet'); setFormData(f => ({ ...f, from_address: '', from_wallet_id: '' })); }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                    network === 'mainnet'
+                      ? 'bg-green-500/20 border-green-500/50 text-green-300'
+                      : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'
+                  }`}
                 >
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                    <SelectValue placeholder="Select sending wallet..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeWallets.map(w => (
-                      <SelectItem key={w.id} value={w.id}>
-                        {w.name} — {w.balance?.toFixed(4) || '0.0000'} XRP ({w.network})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Globe className="w-4 h-4" /> Mainnet
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setNetwork('testnet'); setFormData(f => ({ ...f, from_address: '', from_wallet_id: '' })); }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                    network === 'testnet'
+                      ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
+                      : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'
+                  }`}
+                >
+                  <FlaskConical className="w-4 h-4" /> Testnet
+                </button>
+              </div>
+
+              {/* From Address */}
+              <div className="space-y-2">
+                <Label className="text-purple-200/90">From Address <span className="text-red-400">*</span></Label>
+                <Input
+                  value={formData.from_address}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const matched = activeWallets.find(w => w.classic_address === val);
+                    setFormData(f => ({ ...f, from_address: val, from_wallet_id: matched?.id || '' }));
+                  }}
+                  placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono text-sm"
+                />
                 {selectedFromWallet && (
                   <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2">
                     <Wallet className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                    <code className="text-xs text-purple-300/70 flex-1 truncate">{selectedFromWallet.classic_address}</code>
-                    <Badge variant="outline" className="text-xs border-white/20 text-white/60">{selectedFromWallet.network}</Badge>
-                    <span className="text-xs text-purple-300 font-semibold">{selectedFromWallet.balance?.toFixed(4)} XRP</span>
+                    <span className="text-xs text-purple-300 font-semibold">{selectedFromWallet.name}</span>
+                    <span className="ml-auto text-xs text-green-300 font-semibold">{selectedFromWallet.balance?.toFixed(4)} XRP</span>
                   </div>
                 )}
               </div>
@@ -160,25 +184,9 @@ export default function SendPage() {
                 </div>
               )}
 
-              {/* Recipient Address */}
+              {/* To Address */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="recipient_address" className="text-purple-200/90">
-                    To Address <span className="text-red-400">*</span>
-                  </Label>
-                  <Select onValueChange={handlePickRecipientWallet}>
-                    <SelectTrigger className="h-7 w-auto min-w-[160px] text-xs bg-white/5 border-white/10 text-purple-300 px-2">
-                      <SelectValue placeholder="Pick from my wallets" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {activeWallets.filter(w => w.id !== formData.from_wallet_id).map(w => (
-                        <SelectItem key={w.id} value={w.id}>
-                          {w.name} ({w.network})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Label htmlFor="recipient_address" className="text-purple-200/90">To Address <span className="text-red-400">*</span></Label>
                 <Input
                   id="recipient_address"
                   value={formData.recipient_address}
