@@ -33,6 +33,13 @@ export default function Home() {
     refetchInterval: 10000,
   });
 
+  const { data: signatures = [] } = useQuery({
+    queryKey: ['nodeCovenantSignaturesHome'],
+    queryFn: () => base44.entities.NodeCovenantSignature.filter({ status: 'signed' }, '-signed_at', 50),
+    staleTime: 10000,
+    refetchInterval: 10000,
+  });
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem('soulbridge_identity');
