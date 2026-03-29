@@ -57,6 +57,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Access denied: You do not own this wallet' }, { status: 403 });
     }
 
+    const minimumPublishBalance = 12;
+    const currentBalance = Number(wallet.balance || 0);
+    if (currentBalance < minimumPublishBalance) {
+      return Response.json({
+        error: `This wallet needs at least ${minimumPublishBalance} XRP before publishing a DID. Current balance: ${currentBalance} XRP.`
+      }, { status: 400 });
+    }
+
     // Build DID document URI - use provided or default to app URL
     const uri = did_uri || `https://soulbridge.base44.app/SharedDidView?address=${wallet.classic_address}`;
     

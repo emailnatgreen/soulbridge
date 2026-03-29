@@ -244,8 +244,7 @@ export default function DIDManagementPanel() {
                       )}
                       <button
                         onClick={() => { setSelectedWalletId(w.id); setMode('publish_select'); }}
-                        disabled={!isFunded}
-                        className="flex items-center gap-1.5 text-xs bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg transition flex-1 justify-center"
+                        className="flex items-center gap-1.5 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition flex-1 justify-center"
                       >
                         <Globe className="w-3 h-3" /> Publish DID
                       </button>
@@ -395,6 +394,18 @@ export default function DIDManagementPanel() {
                   ))}
                 </select>
               </div>
+              {selectedWalletId && (() => {
+                const selectedWallet = unpublishedWallets.find(w => w.id === selectedWalletId);
+                const currentBalance = selectedWallet?.balance ?? 0;
+                const needsFunding = currentBalance < 12;
+                return (
+                  <div className={`rounded-xl border px-4 py-3 text-xs ${needsFunding ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-green-500/10 border-green-500/20 text-green-300'}`}>
+                    {needsFunding
+                      ? `This wallet currently has ${currentBalance} XRP. Fund it to at least 12 XRP before signing the DID publish transaction.`
+                      : `This wallet has ${currentBalance} XRP and is ready for DID publication.`}
+                  </div>
+                );
+              })()}
               <button
                 onClick={handleStartPublish}
                 disabled={!selectedWalletId || publishing}
