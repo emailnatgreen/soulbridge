@@ -6,6 +6,9 @@ import DIDManagementPanel from '@/components/dashboard/DIDManagementPanel';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
 import OctagonMillUI from '@/components/OctagonMillUI';
+import UniversalDashboardHero from '@/components/dashboard/UniversalDashboardHero';
+import UniversalDashboardQuickActions from '@/components/dashboard/UniversalDashboardQuickActions';
+import UniversalDashboardStatus from '@/components/dashboard/UniversalDashboardStatus';
 
 // ── Signal emitter (global, shared) ──────────────────────────────────────────
 if (typeof window !== 'undefined') {
@@ -269,6 +272,28 @@ export default function Dashboard() {
 
       {/* ── BODY ── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <UniversalDashboardHero
+          hasInviteSession={hasInviteSession}
+          inviteWallet={inviteWallet}
+          invite={invite}
+        />
+
+        <UniversalDashboardStatus
+          hasInviteSession={hasInviteSession}
+          identity={identity}
+          wallets={wallets}
+          myInvites={myInvites}
+          myTransactions={myTransactions}
+          inviteWallet={inviteWallet}
+        />
+
+        <UniversalDashboardQuickActions
+          hasInviteSession={hasInviteSession}
+          inviteWallet={inviteWallet}
+          onPublish={handlePublishDID}
+          publishingDid={publishingDid}
+          publishingWalletId={publishingWalletId}
+        />
 
         {/* ════════════════════════════════════════
             INVITED USER — clean onboarding view
@@ -413,24 +438,6 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* Identity Banner */}
-            <div className={`rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 ${identity ? 'border-green-500/30 bg-green-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${identity ? 'bg-green-500/20' : 'bg-amber-500/20'}`}>
-                {identity ? <CheckCircle className="w-6 h-6 text-green-400" /> : <AlertTriangle className="w-6 h-6 text-amber-400" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-xs font-semibold uppercase tracking-wider ${identity ? 'text-green-400' : 'text-amber-400'}`}>
-                    {identity ? 'Identity Active' : 'No Identity Connected'}
-                  </span>
-                  {identity && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
-                </div>
-                <p className="font-mono text-sm text-white/60 truncate">{identity ? shortDid : 'Connect your DID from the Landing page'}</p>
-              </div>
-              <Link to="/SovereignID" className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 text-white text-xs font-medium px-4 py-2 rounded-lg transition flex-shrink-0">
-                <Key className="w-3.5 h-3.5" /> Sovereign ID <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
 
             {/* Main grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
