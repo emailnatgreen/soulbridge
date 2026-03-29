@@ -1,0 +1,62 @@
+{
+  "name": "NodeCovenantSignature",
+  "type": "object",
+  "properties": {
+    "node_address": {
+      "type": "string",
+      "description": "Canonical XRPL address of the braid node"
+    },
+    "node_name": {
+      "type": "string",
+      "description": "Display name of the node"
+    },
+    "wallet_id": {
+      "type": "string",
+      "description": "Wallet record used to sign"
+    },
+    "signed_by_user_id": {
+      "type": "string",
+      "description": "User who initiated the covenant signing"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "signed",
+        "expired"
+      ],
+      "default": "pending"
+    },
+    "xumm_payload_id": {
+      "type": "string",
+      "description": "Xaman payload UUID for signing"
+    },
+    "signature_message": {
+      "type": "string",
+      "description": "Human-readable covenant message signed by the node"
+    },
+    "signature_hash": {
+      "type": "string",
+      "description": "Hex hash or identifier returned from signing flow"
+    },
+    "signed_at": {
+      "type": "string",
+      "description": "ISO timestamp when the node signed"
+    },
+    "xrpl_account": {
+      "type": "string",
+      "description": "XRPL account confirmed by Xaman during signing"
+    },
+    "xrpl_txid": {
+      "type": "string",
+      "description": "XRPL transaction hash if available from the signer response"
+    }
+  },
+  "required": [
+    "node_address",
+    "node_name",
+    "wallet_id",
+    "status",
+    "signature_message"
+  ]
+}

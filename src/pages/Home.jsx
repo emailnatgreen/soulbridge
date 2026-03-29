@@ -102,6 +102,7 @@ export default function Home() {
     { icon: Shield, title: 'DID Identity', desc: 'Self-sovereign identity anchored on XRPL mainnet', path: '/DIDManager', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: 'published DIDs', count: liveCounts.dids },
     { icon: Briefcase, title: 'AI Projects', desc: 'Collaborate on live Village projects with on-chain rewards', path: '/AIProjectManager', color: 'text-cyan-400', border: 'border-cyan-500/30', countLabel: 'projects', count: activeProjects.length },
     { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
+    { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length },
   ];
 
   return (

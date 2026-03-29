@@ -87,6 +87,7 @@ const NAV_GROUPS = [
       { label: 'Village Map', path: '/Village', icon: Map },
       { label: 'Diplomacy', path: '/DiplomacyHub', icon: Swords },
       { label: 'Social Network', path: '/SocialNetwork', icon: Users },
+      { label: 'Node Covenant', path: '/NodeCovenant', icon: Shield },
       { label: 'Covenant Echoes', path: '/CovenantEchoes', icon: Star },
     ]
   },
