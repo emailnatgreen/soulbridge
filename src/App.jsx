@@ -30,7 +30,7 @@ import KineticGridDashboard from './pages/KineticGridDashboard';
 import ScrollOfResonance from './pages/ScrollOfResonance';
 import KineticCompass from './pages/KineticCompass';
 import InviteLinkManager from './pages/InviteLinkManager';
-import NewcomerDashboard from './pages/NewcomerDashboard';
+
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -109,7 +109,7 @@ const AuthenticatedApp = () => {
       <Route path="/ScrollOfResonance" element={<LayoutWrapper currentPageName="ScrollOfResonance"><ScrollOfResonance /></LayoutWrapper>} />
       <Route path="/KineticCompass" element={<LayoutWrapper currentPageName="KineticCompass"><KineticCompass /></LayoutWrapper>} />
       <Route path="/InviteLinkManager" element={<LayoutWrapper currentPageName="InviteLinkManager"><InviteLinkManager /></LayoutWrapper>} />
-      <Route path="/newcomer" element={<NewcomerDashboard />} />
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
