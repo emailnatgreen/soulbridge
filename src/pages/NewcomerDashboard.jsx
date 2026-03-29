@@ -8,7 +8,7 @@ import { Sparkles, Wallet, Shield, CheckCircle, ArrowRight, Key } from 'lucide-r
 export default function NewcomerDashboard() {
   const navigate = useNavigate();
   const [invite, setInvite] = useState(null);
-  const [step, setStep] = useState('welcome'); // welcome | wallet | did | done
+  const [step, setStep] = useState('wallet'); // wallet | did | done
   const [loading, setLoading] = useState(false);
   const [walletAddress, setWalletAddress] = useState(null);
   const [didPublished, setDidPublished] = useState(false);
@@ -61,7 +61,6 @@ export default function NewcomerDashboard() {
   if (!invite) return null;
 
   const steps = [
-    { key: 'welcome', label: 'Welcome' },
     { key: 'wallet', label: 'Create Wallet' },
     { key: 'did', label: 'Publish DID' },
     { key: 'done', label: 'Enter Village' },
