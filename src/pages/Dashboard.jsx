@@ -131,6 +131,22 @@ export default function Dashboard() {
     return () => window.removeEventListener('sb-signal', onSignal);
   }, []);
 
+  const handlePublishDID = async () => {
+    if (!inviteWallet?.id) return;
+    setPublishingDid(true);
+    setPublishError('');
+    try {
+      await base44.functions.invoke('publishDID', { wallet_id: inviteWallet.id });
+      const updated = { ...inviteWallet, is_published: true };
+      localStorage.setItem('sb_invite_wallet', JSON.stringify(updated));
+      localStorage.removeItem('sb_invite_session');
+      setInviteWallet(updated);
+    } catch (e) {
+      setPublishError(e?.response?.data?.error || 'Failed to publish DID. Please try again.');
+    }
+    setPublishingDid(false);
+  };
+
   const handleDisconnect = () => {
     localStorage.removeItem('soulbridge_identity');
     if (window.__sb) window.__sb.signals = [];
@@ -302,14 +318,21 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            <Link to="/SovereignID" className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-base rounded-xl py-4 transition-all shadow-lg shadow-purple-500/30">
-              <Globe className="w-5 h-5" /> Publish My DID Now <ArrowRight className="w-5 h-5" />
-            </Link>
+            {publishError && <p className="text-red-400 text-xs text-center">{publishError}</p>}
+            <button
+              onClick={handlePublishDID}
+              disabled={publishingDid}
+              className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-base rounded-xl py-4 transition-all shadow-lg shadow-purple-500/30 disabled:opacity-60"
+            >
+              {publishingDid
+                ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Publishing to XRPL…</>
+                : <><Globe className="w-5 h-5" /> Publish My DID Now <ArrowRight className="w-5 h-5" /></>}
+            </button>
             <p className="text-white/25 text-xs text-center">Publishing your DID anchors your identity on the XRPL ledger — this is what unlocks full Village participation</p>
-          </div>
-        )}
+            </div>
+            )}
 
-        {/* Main grid */}
+            {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* ── Constitutional Braid — hidden for invitees ── */}
@@ -373,9 +396,13 @@ export default function Dashboard() {
                     <div className="text-white/30 text-xs font-mono truncate">{w.classic_address?.slice(0, 12)}…</div>
                   </div>
                   <div className="text-right flex-shrink-0 space-y-1">
-                    <div className="text-white text-sm font-semibold">{w.balance ?? 0} XRP</div>
+                    <div className="text-white text-sm font-semibold">{w.balance > 0 ? w.balance : isInviteePredid ? 13 : 0} XRP</div>
                     {w.is_published ? (
                       <div className="text-xs text-green-400">DID Active</div>
+                    ) : isInviteePredid ? (
+                      <button onClick={handlePublishDID} disabled={publishingDid} className="flex items-center gap-1 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md transition disabled:opacity-50">
+                        <Globe className="w-3 h-3" /> {publishingDid ? 'Publishing…' : 'Publish DID'}
+                      </button>
                     ) : (
                       <Link to="/SovereignID" className="flex items-center gap-1 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md transition">
                         <Globe className="w-3 h-3" /> Publish DID
