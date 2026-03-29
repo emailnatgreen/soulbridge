@@ -55,7 +55,7 @@ export default function NewcomerDashboard() {
   };
 
   const handleEnterVillage = () => {
-    navigate('/dashboard');
+    navigate('/SovereignID');
   };
 
   if (!invite) return null;
