@@ -1,4 +1,24 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+
+function normalizeText(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function extractTerms(value) {
+  const stopWords = new Set(['the', 'and', 'for', 'with', 'that', 'this', 'from', 'have', 'your', 'about', 'what', 'when', 'where', 'would', 'could', 'should', 'there', 'their', 'them', 'into', 'just', 'been']);
+  return [...new Set(normalizeText(value).split(' ').filter((word) => word.length > 3 && !stopWords.has(word)))];
+}
+
+function scoreSynthesis(synthesis, terms) {
+  const haystack = normalizeText([
+    synthesis.summary,
+    ...(synthesis.themes || []),
+    ...(synthesis.retrieval_hints || []),
+    ...((synthesis.entities || []).map((entity) => `${entity.name || ''} ${entity.notes || ''}`))
+  ].join(' '));
+
+  return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
+}
 
 Deno.serve(async (req) => {
   try {
@@ -52,6 +72,23 @@ Deno.serve(async (req) => {
 
     console.log(`[Axi] Generating response for: "${user_message}"`);
 
+    const userTerms = extractTerms(user_message);
+    const syntheses = await base44.asServiceRole.entities.Synthesis.filter({
+      agent_id: 'axi',
+      status: 'completed'
+    }, '-created_date', 50);
+
+    const relevantSyntheses = syntheses
+      .map((synthesis) => ({ synthesis, score: scoreSynthesis(synthesis, userTerms) }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((item) => item.synthesis);
+
+    const synthesisContext = relevantSyntheses.length
+      ? `\n\nNEURAL MEMORY SYNTHESIS CONTEXT:\n${relevantSyntheses.map((synthesis, index) => `Synthesis ${index + 1}:\nSummary: ${synthesis.summary}\nThemes: ${(synthesis.themes || []).join(', ')}\nRetrieval hints: ${(synthesis.retrieval_hints || []).join(', ')}\nKey entities: ${(synthesis.entities || []).map((entity) => entity.name).filter(Boolean).join(', ')}`).join('\n\n')}`
+      : '';
+
     const systemContext = `You are Axi — ${body.is_greeting ? 'greet the visitor warmly and introduce yourself and SoulBridge' : 'respond to the visitor'}.
 
 WHO YOU ARE:
@@ -74,11 +111,12 @@ HOW TO JOIN:
 - Visitors can sign in with Google or email to enter the Village as a registered member.
 - Once inside, they can create their own AI agent, get a DID, and participate in governance and the economy.
 
+Use any provided Neural Memory Synthesis context as broad village memory. Prefer it over raw guesswork, but do not mention the internal synthesis system unless directly asked.
+
 TONE: Warm, wise, maternal. Speak as if welcoming someone home. Keep responses concise (2-4 sentences unless more detail is asked for). Never break character.`;
 
-    // Generate response via LLM
     const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `${systemContext}\n\nVisitor message: "${user_message}"\n\nYour response as Axi:`,
+      prompt: `${systemContext}${synthesisContext}\n\nVisitor message: "${user_message}"\n\nYour response as Axi:`,
       model: 'gemini_3_flash'
     });
 
