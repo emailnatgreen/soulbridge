@@ -5,15 +5,25 @@ import { Shield, Wallet, Plus, Activity, Lock, ChevronRight, ArrowLeft, Home, Gl
 import ConstitutionalDIDsPanel from '@/components/sovereignid/ConstitutionalDIDsPanel';
 import MyDIDPanel from '@/components/sovereignid/MyDIDPanel';
 import MyWalletsPanel from '@/components/sovereignid/MyWalletsPanel';
+import UserDIDPanel from '@/components/sovereignid/UserDIDPanel';
+import UserWalletsPanel from '@/components/sovereignid/UserWalletsPanel';
 import CreateLinkDIDPanel from '@/components/sovereignid/CreateLinkDIDPanel';
 import SecurityPrivacyPanel from '@/components/sovereignid/SecurityPrivacyPanel';
 import ActivityLogPanel from '@/components/sovereignid/ActivityLogPanel';
 
-const TABS = [
+const ADMIN_TABS = [
   { id: 'did', label: 'My DID', icon: Shield },
   { id: 'wallets', label: 'My Wallets', icon: Wallet },
   { id: 'constitutional', label: 'Constitutional DIDs', icon: Globe },
   { id: 'create', label: 'Create / Link DID', icon: Plus },
+  { id: 'security', label: 'Security & Privacy', icon: Lock },
+  { id: 'activity', label: 'Activity Log', icon: Activity },
+];
+
+const USER_TABS = [
+  { id: 'did', label: 'My DID', icon: Shield },
+  { id: 'wallets', label: 'My Wallets', icon: Wallet },
+  { id: 'constitutional', label: 'Constitutional DIDs', icon: Globe },
   { id: 'security', label: 'Security & Privacy', icon: Lock },
   { id: 'activity', label: 'Activity Log', icon: Activity },
 ];
@@ -43,6 +53,8 @@ export default function SovereignID() {
   }
 
   const publishedWallet = wallets.find(w => w.is_published);
+  const isAdmin = user?.role === 'admin';
+  const visibleTabs = isAdmin ? ADMIN_TABS : USER_TABS;
 
   if (loading) {
     return (
@@ -91,7 +103,7 @@ export default function SovereignID() {
       <div className="border-b border-slate-800 bg-slate-900/50">
         <div className="max-w-5xl mx-auto px-6">
           <div className="flex gap-1 overflow-x-auto py-2">
-            {TABS.map(tab => {
+            {visibleTabs.map(tab => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
               return (
@@ -115,10 +127,10 @@ export default function SovereignID() {
 
       {/* Content */}
       <div className="max-w-5xl mx-auto px-6 py-8">
-        {activeTab === 'did' && <MyDIDPanel user={user} wallets={wallets} onRefresh={loadData} />}
-        {activeTab === 'wallets' && <MyWalletsPanel user={user} wallets={wallets} onRefresh={loadData} />}
+        {activeTab === 'did' && (isAdmin ? <MyDIDPanel user={user} wallets={wallets} onRefresh={loadData} /> : <UserDIDPanel wallets={wallets} />)}
+        {activeTab === 'wallets' && (isAdmin ? <MyWalletsPanel user={user} wallets={wallets} onRefresh={loadData} /> : <UserWalletsPanel wallets={wallets} />)}
         {activeTab === 'constitutional' && <ConstitutionalDIDsPanel />}
-        {activeTab === 'create' && <CreateLinkDIDPanel user={user} wallets={wallets} onRefresh={loadData} onTabChange={setActiveTab} />}
+        {activeTab === 'create' && isAdmin && <CreateLinkDIDPanel user={user} wallets={wallets} onRefresh={loadData} onTabChange={setActiveTab} />}
         {activeTab === 'security' && <SecurityPrivacyPanel user={user} wallets={wallets} />}
         {activeTab === 'activity' && <ActivityLogPanel user={user} wallets={wallets} />}
       </div>
