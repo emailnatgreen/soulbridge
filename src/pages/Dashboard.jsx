@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle, Plus, Globe } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
 import OctagonMillUI from '@/components/OctagonMillUI';
@@ -198,7 +198,12 @@ export default function Dashboard() {
             <h3 className="text-white font-semibold text-sm flex items-center gap-2">
               <Key className="w-4 h-4 text-purple-400" /> Registered Wallets
             </h3>
-            <Link to="/SovereignID" className="text-xs text-purple-400 hover:text-purple-300 transition">Manage →</Link>
+            <div className="flex items-center gap-2">
+              <Link to="/newcomer" className="flex items-center gap-1 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition">
+                <Plus className="w-3 h-3" /> Create Wallet
+              </Link>
+              <Link to="/SovereignID" className="text-xs text-purple-400 hover:text-purple-300 transition">Manage →</Link>
+            </div>
           </div>
           {wallets.length === 0 ? (
             <p className="text-white/30 text-xs text-center py-4">No wallets found. <Link to="/SovereignID" className="text-purple-400 underline">Create one</Link>.</p>
@@ -210,11 +215,15 @@ export default function Dashboard() {
                     <div className="text-white text-sm font-medium truncate">{w.name || 'Wallet'}</div>
                     <div className="text-white/30 text-xs font-mono truncate">{w.classic_address?.slice(0, 12)}…</div>
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right flex-shrink-0 space-y-1">
                     <div className="text-white text-sm font-semibold">{w.balance ?? 0} XRP</div>
-                    <div className={`text-xs ${w.is_published ? 'text-green-400' : 'text-amber-400'}`}>
-                      {w.is_published ? 'DID Active' : 'Pending'}
-                    </div>
+                    {w.is_published ? (
+                      <div className="text-xs text-green-400">DID Active</div>
+                    ) : (
+                      <Link to="/SovereignID" className="flex items-center gap-1 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md transition">
+                        <Globe className="w-3 h-3" /> Publish DID
+                      </Link>
+                    )}
                   </div>
                 </div>
               ))}
