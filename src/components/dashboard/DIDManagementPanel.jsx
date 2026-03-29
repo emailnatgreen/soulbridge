@@ -322,7 +322,19 @@ export default function DIDManagementPanel() {
 
                         {isThisFundOpen && fundMode === 'xumm' && (
                           <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4 text-center space-y-3">
-                            <p className="text-blue-300 text-xs font-medium">Xumm / Xaman compatible funding request</p>
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-blue-300 text-xs font-medium">Xumm / Xaman compatible funding request</p>
+                              <button
+                                onClick={() => {
+                                  setFundMode('options');
+                                  setXummFundData(null);
+                                  setXummFundResult(null);
+                                }}
+                                className="text-[10px] text-white/50 hover:text-white transition"
+                              >
+                                Back
+                              </button>
+                            </div>
                             <p className="text-white/30 text-[10px]">Scan this QR code in Xumm/Xaman to send the required 12 XRP.</p>
                             {xummFundLoading && (
                               <div className="flex items-center justify-center py-4">
@@ -333,14 +345,12 @@ export default function DIDManagementPanel() {
                               <img src={xummFundData.qr_png} alt="Xumm funding QR" className="w-44 h-44 mx-auto rounded-xl border border-white/10 bg-white p-2" />
                             )}
                             {xummFundData?.qr_link && (
-                              <a
-                                href={xummFundData.qr_link}
-                                target="_blank"
-                                rel="noreferrer"
+                              <button
+                                onClick={() => window.open(xummFundData.qr_link, '_blank', 'noopener,noreferrer')}
                                 className="inline-flex items-center gap-1.5 text-blue-300 hover:text-blue-200 text-xs underline"
                               >
                                 Open in Xumm / Xaman App <ExternalLink className="w-3 h-3" />
-                              </a>
+                              </button>
                             )}
                           </div>
                         )}
