@@ -67,10 +67,13 @@ async function createPrefundedInviteWallet(base44, token, user) {
   const prepared = await client.autofill(payment);
   const signed = sponsorWallet.sign(prepared);
   const submitResult = await client.submitAndWait(signed.tx_blob);
-  if (submitResult.result.meta.TransactionResult !== 'tesSUCCESS') {
+  const txResult = submitResult?.result?.meta?.TransactionResult;
+  if (txResult !== 'tesSUCCESS') {
     await client.disconnect();
-    throw new Error(`Invite wallet funding failed: ${submitResult.result.meta.TransactionResult}`);
+    throw new Error(`Invite wallet funding failed: ${txResult || 'unknown_error'}`);
   }
+
+  await new Promise(resolve => setTimeout(resolve, 1500));
 
   let balance = 13;
   try {
@@ -80,7 +83,10 @@ async function createPrefundedInviteWallet(base44, token, user) {
       ledger_index: 'validated'
     });
     balance = Number(response.result.account_data.Balance || 0) / 1000000;
-  } catch (_) {}
+  } catch (error) {
+    await client.disconnect();
+    throw new Error(`Invite wallet created but not yet visible on ledger: ${error.message}`);
+  }
 
   await client.disconnect();
 
