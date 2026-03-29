@@ -169,7 +169,7 @@ export default function CreateLinkDIDPanel({ user, wallets, onRefresh, onTabChan
                 return (
                   <div className={`rounded-lg border p-3 text-sm ${needsFunding ? 'bg-amber-900/30 border-amber-700/50 text-amber-300' : 'bg-green-900/30 border-green-700/50 text-green-300'}`}>
                     {needsFunding
-                      ? `This wallet has ${currentBalance} XRP. Please fund it to at least 12 XRP before publishing the DID.`
+                      ? `This wallet has ${currentBalance} XRP. Funding must be completed in My Wallets before publishing the DID.`
                       : `This wallet has ${currentBalance} XRP and is ready to publish.`}
                   </div>
                 );
@@ -177,7 +177,7 @@ export default function CreateLinkDIDPanel({ user, wallets, onRefresh, onTabChan
 
               {!publishData && !publishResult && (
                 <Button className="bg-purple-600 hover:bg-purple-700" onClick={startPublish}
-                  disabled={!selectedWallet || publishing}>
+                  disabled={!selectedWallet || publishing || ((unpublished.find(w => w.id === selectedWallet)?.balance ?? 0) < 12)}>
                   {publishing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating QR...</> : 'Generate Xaman QR Code'}
                 </Button>
               )}

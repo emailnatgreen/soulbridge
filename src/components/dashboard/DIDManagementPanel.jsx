@@ -243,10 +243,16 @@ export default function DIDManagementPanel() {
                         </button>
                       )}
                       <button
-                        onClick={() => { setSelectedWalletId(w.id); setMode('publish_select'); }}
+                        onClick={() => {
+                          if (!isFunded) {
+                            setFundWallet(w); setFundMode('options'); setXummFundData(null); setXummFundResult(null);
+                          } else {
+                            setSelectedWalletId(w.id); setMode('publish_select');
+                          }
+                        }}
                         className="flex items-center gap-1.5 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition flex-1 justify-center"
                       >
-                        <Globe className="w-3 h-3" /> Publish DID
+                        <Globe className="w-3 h-3" /> {isFunded ? 'Publish DID' : 'Fund to Publish'}
                       </button>
                     </div>
 
@@ -321,7 +327,7 @@ export default function DIDManagementPanel() {
                         </div>
                         )}
 
-                    {!isFunded && !isThisFundOpen && <p className="text-white/30 text-[10px]">Wallet needs at least 2 XRP to publish a DID on the XRPL ledger.</p>}
+                    {!isFunded && !isThisFundOpen && <p className="text-white/30 text-[10px]">Wallet needs at least 12 XRP before DID publication, so open funding first.</p>}
                   </div>
                 );
               })}
