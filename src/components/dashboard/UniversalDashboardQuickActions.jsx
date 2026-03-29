@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Globe, KeyRound, Users } from 'lucide-react';
 
-export default function UniversalDashboardQuickActions({ hasInviteSession, inviteWallet, onPublish, publishingDid, publishingWalletId }) {
+export default function UniversalDashboardQuickActions({ hasInviteSession, inviteWallet, onPublish, publishingDid, publishingWalletId, isAdmin }) {
   const cards = hasInviteSession
     ? [
         {
@@ -39,7 +39,7 @@ export default function UniversalDashboardQuickActions({ hasInviteSession, invit
             </Link>
           )
         },
-        {
+        ...(isAdmin ? [{
           title: 'Invite someone in',
           description: 'Create a clean invite link and bring new members into the platform.',
           action: (
@@ -47,7 +47,7 @@ export default function UniversalDashboardQuickActions({ hasInviteSession, invit
               <Users className="w-4 h-4" /> Open invites
             </Link>
           )
-        }
+        }] : [])
       ];
 
   return (

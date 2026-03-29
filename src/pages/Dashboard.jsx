@@ -274,7 +274,14 @@ export default function Dashboard() {
               alt="SoulBridge" className="w-8 h-8 rounded-lg object-contain" />
             <div className="hidden sm:block">
               <h1 className="text-white font-semibold text-base leading-tight">SoulBridge Command</h1>
-              <p className="text-white/30 text-xs">Production · XRPL Live</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-white/30 text-xs">Production · XRPL Live</p>
+                {(inviteWallet?.classic_address || identity?.did || wallets?.[0]?.classic_address) && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] text-purple-200">
+                    DID Signal: {(inviteWallet?.classic_address || identity?.did || wallets?.[0]?.classic_address || '').toString().replace('did:xrpl:1:', '').slice(0, 10)}...
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -320,6 +327,7 @@ export default function Dashboard() {
           onPublish={handlePublishDID}
           publishingDid={publishingDid}
           publishingWalletId={publishingWalletId}
+          isAdmin={user?.role === 'admin'}
         />
 
         {/* ════════════════════════════════════════
