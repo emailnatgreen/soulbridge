@@ -43,21 +43,25 @@ Deno.serve(async (req) => {
         if (!fromWalletRecord) return Response.json({ error: 'From wallet not found' }, { status: 404 });
         if (!fromWalletRecord.classic_address) return Response.json({ error: 'From wallet has no XRPL address' }, { status: 400 });
 
-        // Get seed - try encrypted first, then fall back to env vars for treasury wallets
+        // Get seed: encrypted (has iv+salt), plaintext (no iv), or env var fallback
         let seed;
         if (fromWalletRecord.encrypted_seed && fromWalletRecord.encryption_iv && fromWalletRecord.encryption_salt) {
+            // Properly encrypted
             seed = await decryptSeed(
                 fromWalletRecord.encrypted_seed,
                 fromWalletRecord.encryption_iv,
                 fromWalletRecord.encryption_salt
             );
+        } else if (fromWalletRecord.encrypted_seed && !fromWalletRecord.encryption_iv) {
+            // Seed was stored as plaintext (no encryption)
+            seed = fromWalletRecord.encrypted_seed;
         } else {
-            // Treasury or special wallets use env var seeds - try multiple possible secret names
-            const treasurySeed = Deno.env.get('XRPL_TREASURY_SEED') || Deno.env.get('XRPL_SENDER_SEED');
-            if (treasurySeed) {
-                seed = treasurySeed;
+            // Fallback to env var
+            const envSeed = Deno.env.get('XRPL_TREASURY_SEED') || Deno.env.get('XRPL_SENDER_SEED');
+            if (envSeed) {
+                seed = envSeed;
             } else {
-                return Response.json({ error: 'No seed available for this wallet. Please set XRPL_SENDER_SEED in your environment secrets.' }, { status: 400 });
+                return Response.json({ error: 'No seed available for this wallet.' }, { status: 400 });
             }
         }
 

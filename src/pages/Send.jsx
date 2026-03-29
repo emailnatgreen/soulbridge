@@ -84,9 +84,9 @@ export default function SendPage() {
       toast.error('Please enter a sending address');
       return;
     }
-    // Try to match from_address to a wallet id
-    const matchedWallet = activeWallets.find(w => w.classic_address === formData.from_address);
-    if (matchedWallet) formData.from_wallet_id = matchedWallet.id;
+    // Try to match from_address to a wallet id (search ALL wallets, not just filtered)
+    const matchedWallet = wallets.find(w => w.classic_address === formData.from_address);
+    const submissionData = { ...formData, from_wallet_id: matchedWallet?.id || formData.from_wallet_id };
     if (!formData.recipient_address || !formData.amount) {
       toast.error('Please fill in recipient address and amount');
       return;
@@ -95,7 +95,7 @@ export default function SendPage() {
       toast.error('Amount must be greater than 0');
       return;
     }
-    createTransaction.mutate(formData);
+    createTransaction.mutate(submissionData);
   };
 
   const handlePickRecipientWallet = (walletId) => {
