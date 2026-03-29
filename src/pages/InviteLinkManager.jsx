@@ -15,7 +15,7 @@ function generateHash() {
 }
 
 function generateTokenId() {
-  return 'SBT-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  return 'SB-' + Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
 function getAppUrl() {
