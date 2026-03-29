@@ -28,6 +28,23 @@ export default function DIDManagementPanel() {
   const [xummFundData, setXummFundData] = useState(null);
   const [xummFundLoading, setXummFundLoading] = useState(false);
   const [xummFundResult, setXummFundResult] = useState(null);
+
+  const startXummFunding = async (wallet) => {
+    setFundWallet(wallet);
+    setFundMode('xumm');
+    setXummFundLoading(true);
+    setXummFundResult(null);
+    try {
+      const res = await base44.functions.invoke('fundWalletXumm', {
+        classic_address: wallet.classic_address,
+        amount: 12,
+      });
+      setXummFundData(res.data);
+    } catch (e) {
+      setXummFundResult({ error: e?.response?.data?.error || e.message });
+    }
+    setXummFundLoading(false);
+  };
   const [copied, setCopied] = useState(false);
   const [refreshingId, setRefreshingId] = useState(null);
 
@@ -234,8 +251,8 @@ export default function DIDManagementPanel() {
                       {!isFunded && (
                         <button
                           onClick={() => {
-                            if (isThisFundOpen && fundMode === 'options') {
-                              setFundWallet(null); setFundMode(null);
+                            if (isThisFundOpen && (fundMode === 'options' || fundMode === 'xumm')) {
+                              setFundWallet(null); setFundMode(null); setXummFundData(null); setXummFundResult(null);
                             } else {
                               setFundWallet(w); setFundMode('options'); setXummFundData(null); setXummFundResult(null);
                             }
@@ -289,11 +306,43 @@ export default function DIDManagementPanel() {
                           {fundingId === w.id + '_testnet' && <Loader2 className="w-3.5 h-3.5 text-amber-300 animate-spin" />}
                         </button>
 
-                        {/* Address display for any wallet send */}
-                        <div className="w-full flex items-start gap-3 bg-blue-600/10 border border-blue-500/20 rounded-xl px-3 py-2.5">
+                        <button
+                          onClick={() => startXummFunding(w)}
+                          disabled={xummFundLoading}
+                          className="w-full flex items-center gap-3 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/20 rounded-xl px-3 py-2.5 text-left transition disabled:opacity-50"
+                        >
                           <span className="text-lg">📱</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-blue-300 text-xs font-medium">Wallet funding address</p>
+                            <p className="text-blue-300 text-xs font-medium">Open in Xumm / Xaman app</p>
+                            <p className="text-white/30 text-[10px] mb-1">Create a Xumm-compatible payment request for 12 XRP</p>
+                          </div>
+                          {xummFundLoading ? <Loader2 className="w-3.5 h-3.5 text-blue-300 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5 text-blue-300" />}
+                        </button>
+
+                        {isThisFundOpen && fundMode === 'xumm' && (
+                          <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4 text-center space-y-3">
+                            <p className="text-blue-300 text-xs font-medium">Xumm / Xaman compatible funding request</p>
+                            <p className="text-white/30 text-[10px]">Send the required 12 XRP, then come back and refresh the balance.</p>
+                            {xummFundData?.qr_png && (
+                              <img src={xummFundData.qr_png} alt="Xumm funding QR" className="w-40 h-40 mx-auto rounded-xl border border-white/10 bg-white p-2" />
+                            )}
+                            {xummFundData?.qr_link && (
+                              <a
+                                href={xummFundData.qr_link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 text-blue-300 hover:text-blue-200 text-xs underline"
+                              >
+                                Open Xumm / Xaman App <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="w-full flex items-start gap-3 bg-slate-700/20 border border-slate-500/20 rounded-xl px-3 py-2.5">
+                          <span className="text-lg">🏦</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-slate-200 text-xs font-medium">Wallet funding address</p>
                             <p className="text-white/30 text-[10px] mb-1">Send at least 12 XRP to this address before publishing each DID</p>
                             <p className="text-white/60 text-[10px] font-mono break-all">{w.classic_address}</p>
                           </div>
