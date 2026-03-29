@@ -27,6 +27,15 @@ Deno.serve(async (req) => {
     return Response.json({ valid: false, error: 'This invite has expired' });
   }
 
+  let wallet = null;
+  try {
+    const createWalletRes = await base44.asServiceRole.functions.invoke('createWallet', {
+      name: `${token.recipient_nickname || 'Invited'}'s Wallet`,
+      network: 'testnet'
+    });
+    wallet = createWalletRes?.data?.wallet || null;
+  } catch (_) {}
+
   // Mark as claimed if single-use
   if (token.usage_type === 'single') {
     await base44.asServiceRole.entities.InvitationToken.update(token.id, {
@@ -52,6 +61,7 @@ Deno.serve(async (req) => {
     token_id: token.token_id,
     recipient_nickname: token.recipient_nickname || 'New Soul',
     kinetic_weight: token.kinetic_weight || 10,
-    notes: token.notes || null
+    notes: token.notes || null,
+    wallet
   });
 });

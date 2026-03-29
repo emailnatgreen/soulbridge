@@ -54,6 +54,11 @@ export default function Dashboard() {
   const [publishTxid, setPublishTxid] = useState(() => {
     try { return JSON.parse(localStorage.getItem('sb_invite_wallet') || 'null')?.published_txid || null; } catch(_) { return null; }
   });
+  const [grantFocusCards] = useState([
+    'Ripple Spring Grant readiness',
+    'Invite-to-wallet automation live',
+    'Private builder widgets coming next'
+  ]);
 
   useEffect(() => {
     // Load identity from localStorage
@@ -94,30 +99,17 @@ export default function Dashboard() {
     }).catch(() => {});
     loadWallets();
 
-    // Invited user — auto-create a funded wallet (only if we don't already have one)
+    // Invited user — wallet is now created when the invite is claimed
     try {
       const stored = localStorage.getItem('sb_invite_session');
       const alreadyHasWallet = localStorage.getItem('sb_invite_wallet');
-      if (stored && !alreadyHasWallet) {
+      if (stored) {
         const inv = JSON.parse(stored);
         setInvite(inv);
-        setCreatingWallet(true);
-        base44.functions.invoke('createWallet', { network: 'testnet', name: `${inv.recipient_nickname || 'Invited'}'s Wallet` })
-          .then(res => {
-            setCreatingWallet(false);
-            setWalletCreated(true);
-            const w = res?.data?.wallet;
-            if (w) {
-              // Save this specific wallet to localStorage so we always show only it
-              const walletData = { id: w.id, name: w.name, classic_address: w.classic_address, balance: w.balance ?? 13, is_published: false };
-              localStorage.setItem('sb_invite_wallet', JSON.stringify(walletData));
-              setInviteWallet(walletData);
-            }
-            // Keep sb_invite_session until DID is published
-          })
-          .catch(() => { setCreatingWallet(false); });
-      } else if (stored && !invite) {
-        setInvite(JSON.parse(stored));
+        if (alreadyHasWallet) {
+          setInviteWallet(JSON.parse(alreadyHasWallet));
+          setWalletCreated(true);
+        }
       }
     } catch (_) {}
 
@@ -400,6 +392,15 @@ export default function Dashboard() {
              FULL ADMIN / MEMBER DASHBOARD
              ════════════════════════════════════════ */
           <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {grantFocusCards.map((item) => (
+                <div key={item} className="rounded-2xl border border-purple-500/20 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-widest text-purple-300/60 mb-2">Current focus</p>
+                  <p className="text-sm font-medium text-white">{item}</p>
+                </div>
+              ))}
+            </div>
+
             {/* Identity Banner */}
             <div className={`rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 ${identity ? 'border-green-500/30 bg-green-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${identity ? 'bg-green-500/20' : 'bg-amber-500/20'}`}>

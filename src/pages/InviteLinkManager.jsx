@@ -295,6 +295,24 @@ export default function InviteLinkManager() {
           )}
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Auto wallet funding</p>
+            <p className="text-white text-sm font-semibold">Enabled on invite claim</p>
+            <p className="text-slate-400 text-xs mt-1">Each claimed invite now creates a testnet wallet and preloads 13 XRP.</p>
+          </div>
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Funding source</p>
+            <p className="text-white text-sm font-semibold">Nathan Green testnet wallet</p>
+            <p className="text-slate-400 text-xs mt-1">Using the existing secure testnet funding secret already configured in the app.</p>
+          </div>
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Next step for invitee</p>
+            <p className="text-white text-sm font-semibold">Publish DID</p>
+            <p className="text-slate-400 text-xs mt-1">After claim, the private dashboard can move straight into DID activation.</p>
+          </div>
+        </div>
+
         {/* Stats */}
         {showForm && <CreateTokenForm currentUser={user} onCreated={() => setShowForm(false)} />}
 
