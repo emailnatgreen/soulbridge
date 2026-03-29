@@ -48,8 +48,8 @@ export default function Dashboard() {
   const [inviteWallet, setInviteWallet] = useState(() => {
     try { return JSON.parse(localStorage.getItem('sb_invite_wallet') || 'null'); } catch(_) { return null; }
   });
-
-
+  const [publishingDid, setPublishingDid] = useState(false);
+  const [publishError, setPublishError] = useState('');
 
   useEffect(() => {
     // Load identity from localStorage
