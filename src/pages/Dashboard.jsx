@@ -175,9 +175,9 @@ export default function Dashboard() {
     ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
     : 'Not connected';
 
-  // Invitee mode: has an invite session with a specific wallet that hasn't published DID yet
-  const hasInviteSession = !!(invite || (() => { try { return localStorage.getItem('sb_invite_session'); } catch(_){return null;} })());
-  const isInviteePredid = hasInviteSession && !!(inviteWallet && !inviteWallet.is_published);
+  // Invitee mode: only valid while a funded unpublished invite wallet exists
+  const hasInviteSession = !!(invite && inviteWallet && !inviteWallet.is_published && Number(inviteWallet.balance || 0) > 0);
+  const isInviteePredid = hasInviteSession;
 
   // Clear broken or completed invite sessions so admin/member dashboard can open normally
   useEffect(() => {
