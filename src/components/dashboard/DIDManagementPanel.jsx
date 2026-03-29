@@ -28,6 +28,18 @@ export default function DIDManagementPanel() {
   const [xummFundLoading, setXummFundLoading] = useState(false);
   const [xummFundResult, setXummFundResult] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [refreshingId, setRefreshingId] = useState(null);
+
+  const refreshBalance = async (wallet) => {
+    setRefreshingId(wallet.id);
+    try {
+      const res = await base44.functions.invoke('getBalance', { classic_address: wallet.classic_address, network: wallet.network || 'testnet' });
+      const balance = res.data?.balance ?? res.data?.xrp_balance ?? 0;
+      await base44.entities.Wallet.update(wallet.id, { balance: parseFloat(balance) });
+      await loadWallets();
+    } catch (_) {}
+    setRefreshingId(null);
+  };
 
   const loadWallets = async () => {
     try {
@@ -151,6 +163,15 @@ export default function DIDManagementPanel() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5 rounded-full">{w.balance ?? 0} XRP</span>
+                    <button
+                      onClick={() => refreshBalance(w)}
+                      disabled={refreshingId === w.id}
+                      title="Refresh balance"
+                      className="text-white/30 hover:text-white/70 transition disabled:opacity-40"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${refreshingId === w.id ? 'animate-spin' : ''}`} />
+                    </button>
                     <span className="text-xs bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5 rounded-full">DID Active</span>
                     {w.published_txid && (
                       <a
@@ -186,9 +207,19 @@ export default function DIDManagementPanel() {
                           <p className="text-white/40 text-xs font-mono truncate">{w.classic_address?.slice(0, 22)}…</p>
                         </div>
                       </div>
-                      <span className={`text-xs flex-shrink-0 px-2 py-0.5 rounded-full border ${
-                        isFunded ? 'bg-green-500/10 text-green-300 border-green-500/20' : 'bg-red-500/10 text-red-300 border-red-500/20'
-                      }`}>{w.balance ?? 0} XRP</span>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                          isFunded ? 'bg-green-500/10 text-green-300 border-green-500/20' : 'bg-red-500/10 text-red-300 border-red-500/20'
+                        }`}>{w.balance ?? 0} XRP</span>
+                        <button
+                          onClick={() => refreshBalance(w)}
+                          disabled={refreshingId === w.id}
+                          title="Refresh balance"
+                          className="text-white/30 hover:text-white/70 transition disabled:opacity-40"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${refreshingId === w.id ? 'animate-spin' : ''}`} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Action buttons */}
