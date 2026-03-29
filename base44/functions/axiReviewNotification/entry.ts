@@ -54,8 +54,8 @@ Deno.serve(async (req) => {
         }
 
         // Find Axi's agent record
-        const axiAgents = await base44.asServiceRole.entities.Agent.filter({ name: 'Axi' });
-        const axi = axiAgents[0];
+        const axiAgents = await base44.asServiceRole.entities.Agent.list('-created_date', 500);
+        const axi = axiAgents.find(agent => agent.name === 'Axi' || agent.id === 'axi');
         if (!axi) {
             return Response.json({ skipped: true, reason: 'Axi agent not found' });
         }

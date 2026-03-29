@@ -68,6 +68,59 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
       if (!isOpen) setIsOpen(true);
     };
 
+    const handlePrefilledOpen = async (event) => {
+      const { message, conversationId, agentId, agentName, agentRole } = event.detail || {};
+      if (message) {
+        setInput(message);
+        if (onMessageCleared) onMessageCleared();
+      }
+      if (agentId) {
+        setLocalSpeakerAgentId(agentId);
+      }
+      if (!conversationId) {
+        setIsOpen(true);
+        return;
+      }
+      try {
+         if (unsubscribeRef.current) unsubscribeRef.current();
+
+         const convo = await base44.agents.getConversation(conversationId);
+         setConversation(convo);
+         const all = convo.messages || [];
+         setAllMessages(all);
+         setMessages(all.slice(-PAGE_SIZE));
+         setPage(1);
+
+         try {
+           const agentConvo = await base44.entities.AgentConversation.filter({ id: conversationId }, '', 1);
+           if (agentConvo && agentConvo.length > 0 && agentConvo[0].participant_agent_ids?.length > 0) {
+             const agents = await Promise.all(
+               agentConvo[0].participant_agent_ids.map(id => base44.entities.Agent.filter({ id }, '', 1).then(arr => arr?.[0]))
+             );
+             setActiveAgents(agents.filter(Boolean));
+           } else {
+             setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
+           }
+         } catch (err) {
+           console.error('Failed to load persisted agents:', err);
+           setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
+         }
+
+         unsubscribeRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
+           const all = [...data.messages];
+           setAllMessages(all);
+           setPage(prev => {
+             setMessages(all.slice(-PAGE_SIZE * prev));
+             return prev;
+           });
+         });
+         setIsOpen(true);
+       } catch (err) {
+         console.error('Failed to load conversation:', err);
+         setInitError(true);
+       }
+    };
+
     const handleAgentChat = async (event) => {
        try {
          const { conversationId, agentId, agentName, agentRole } = event.detail;
@@ -114,11 +167,13 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
     window.addEventListener('open-axi', handleOpenAxi);
     window.addEventListener('open-axi-with-agent', handleAgentChat);
+    window.addEventListener('open-axi-with-message', handlePrefilledOpen);
     return () => {
       window.removeEventListener('open-axi', handleOpenAxi);
       window.removeEventListener('open-axi-with-agent', handleAgentChat);
+      window.removeEventListener('open-axi-with-message', handlePrefilledOpen);
     };
-  }, [isOpen, conversation]);
+  }, [isOpen, conversation, onMessageCleared, setIsOpen]);
 
 
 
@@ -232,19 +287,16 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
   }, [isOpen, retryKey]);
 
-  // Handle prefilled message and speaker agent when chat opens
+  // Handle speaker agent when chat opens
   useEffect(() => {
-    if (prefilledMessage && conversation) {
-      base44.agents.addMessage(conversation, { 
-        role: 'user', 
-        content: prefilledMessage
-      }).catch(err => console.error('Failed to add prefilled message:', err));
+    if (prefilledMessage) {
+      setInput(prefilledMessage);
       if (onMessageCleared) onMessageCleared();
     }
     if (speakerAgentId) {
       setLocalSpeakerAgentId(speakerAgentId);
     }
-  }, [prefilledMessage, conversation, speakerAgentId, onMessageCleared]);
+  }, [prefilledMessage, speakerAgentId, onMessageCleared]);
 
   // Clear prefilled message and speaker agent state when closing chat
   useEffect(() => {

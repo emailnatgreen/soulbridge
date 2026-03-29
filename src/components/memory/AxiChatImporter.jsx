@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Brain, Loader2, CheckCircle, Download, Trash2 } from 'lucide-react';
@@ -24,6 +24,11 @@ export default function AxiChatImporter({ onImported }) {
   const [deleting, setDeleting] = useState(false);
   const [deletedBundles, setDeletedBundles] = useState(new Set());
   const [convoRef, setConvoRef] = useState(null);
+
+  const axiAgentId = useMemo(() => {
+    const memoryAgent = allMessages.find(msg => msg.agent_id)?.agent_id;
+    return memoryAgent || 'axi';
+  }, [allMessages]);
 
   const totalBundles = Math.ceil(allMessages.length / BUNDLE_SIZE);
   const bundleStart = bundleIndex * BUNDLE_SIZE;
@@ -61,13 +66,16 @@ export default function AxiChatImporter({ onImported }) {
       const chunk = bundle.slice(i, i + BATCH);
       await Promise.all(chunk.map(msg =>
         base44.entities.Memory.create({
-          agent_id: 'axi_main_001',
+          agent_id: axiAgentId,
           type: 'conversation_snippet',
           content: msg.content,
           context: `AxiChat · ${msg.role} · ${msg.created_date ? new Date(msg.created_date).toLocaleDateString() : 'unknown'}`,
           keywords: extractKeywords(msg.content),
           importance,
-        }).catch(() => null)
+        }).catch((error) => {
+          console.error('Failed to save memory snippet:', error);
+          return null;
+        })
       ));
       done += chunk.length;
       setProgress(done);
@@ -93,9 +101,10 @@ export default function AxiChatImporter({ onImported }) {
         const sig = (m.created_date || '') + '||' + (m.content || '').slice(0, 40);
         return !sigSet.has(sig);
       });
-      await base44.agents.updateConversation(convoRef.id, { messages: remaining });
+      const localRemaining = msgs.filter((_, i) => i < start || i >= end);
+      setConvoRef({ ...fresh, messages: remaining });
       // Update local state - remove the deleted bundle
-      const newMsgs = msgs.filter((_, i) => i < start || i >= end);
+      const newMsgs = localRemaining;
       setAllMessages(newMsgs);
       setDeletedBundles(prev => new Set([...prev, idx]));
       const newTotal = Math.ceil(newMsgs.length / BUNDLE_SIZE);

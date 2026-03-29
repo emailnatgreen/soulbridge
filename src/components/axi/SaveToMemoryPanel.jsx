@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Brain, X, Loader2, CheckCircle } from 'lucide-react';
@@ -26,6 +26,10 @@ export default function SaveToMemoryPanel({ messages, conversation, onClose, onD
   const msgCount = messages.length;
   const bundleEnd = Math.min(bundleStart + BUNDLE_SIZE, msgCount);
   const bundle = messages.slice(bundleStart, bundleEnd);
+  const axiAgentId = useMemo(() => {
+    const memoryAgent = messages.find(msg => msg.agent_id)?.agent_id;
+    return memoryAgent || 'axi';
+  }, [messages]);
 
   const handleSave = async () => {
     if (!bundle.length) return;
@@ -42,13 +46,16 @@ export default function SaveToMemoryPanel({ messages, conversation, onClose, onD
         if (!msg.content || msg.role === 'system') return Promise.resolve();
         const keywords = extractKeywords(msg.content);
         return base44.entities.Memory.create({
-          agent_id: 'axi_main_001',
+          agent_id: axiAgentId,
           type: 'conversation_snippet',
           content: msg.content,
           context: `AxiChat · ${msg.role} · ${msg.created_date ? new Date(msg.created_date).toLocaleDateString() : 'unknown date'}`,
           keywords,
           importance,
-        }).catch(() => null);
+        }).catch((error) => {
+          console.error('Failed to save memory snippet:', error);
+          return null;
+        });
       }));
       saved += chunk.length;
       setProgress(saved);
@@ -65,7 +72,6 @@ export default function SaveToMemoryPanel({ messages, conversation, onClose, onD
           const sig = (m.created_date || '') + '||' + (m.content || '').slice(0, 40);
           return !sigSet.has(sig);
         });
-        await base44.agents.updateConversation(conversation.id, { messages: remaining });
         if (onDeleted) onDeleted(remaining);
       } catch (err) {
         console.error('Failed to delete bundle from chat:', err);
