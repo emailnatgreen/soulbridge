@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle, Plus, Globe, Copy, Users, Zap } from 'lucide-react';
+import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle, Plus, Globe, Copy, Users, Zap, Wallet } from 'lucide-react';
 import DIDManagementPanel from '@/components/dashboard/DIDManagementPanel';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [creatingWallet, setCreatingWallet] = useState(false);
   const [walletCreated, setWalletCreated] = useState(false);
   const [myInvites, setMyInvites] = useState([]);
+  const [myTransactions, setMyTransactions] = useState([]);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteNickname, setInviteNickname] = useState('');
   const [inviteNotes, setInviteNotes] = useState('');
@@ -94,8 +95,15 @@ export default function Dashboard() {
     loadSignals();
 
     // Load wallets
-    const loadWallets = () => base44.auth.me().then(me => {
-      if (me) base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).then(setWallets).catch(() => {});
+    const loadWallets = () => base44.auth.me().then(async me => {
+      if (!me) return;
+      const myWallets = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []);
+      setWallets(myWallets || []);
+
+      const walletIds = (myWallets || []).map(w => w.id).filter(Boolean);
+      const txResults = await Promise.all(walletIds.map(id => base44.entities.Transaction.filter({ from_wallet_id: id }, '-created_date', 20).catch(() => [])));
+      const mergedTransactions = txResults.flat().sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0)).slice(0, 20);
+      setMyTransactions(mergedTransactions);
     }).catch(() => {});
     loadWallets();
 
@@ -451,6 +459,55 @@ export default function Dashboard() {
 
             {/* DID Management Panel */}
             <DIDManagementPanel />
+
+            {/* My Transaction History */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-purple-400" /> My Transaction History
+                </h3>
+                <Link to="/TransactionHistory" className="text-xs text-purple-300 hover:text-purple-200 transition">View all</Link>
+              </div>
+              {myTransactions.length === 0 ? (
+                <div className="text-center py-8 space-y-3">
+                  <Wallet className="w-10 h-10 mx-auto text-white/20" />
+                  <p className="text-white/40 text-sm">No transactions found for your wallets yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {myTransactions.map((tx) => {
+                    const wallet = wallets.find(w => w.id === tx.from_wallet_id);
+                    return (
+                      <div key={tx.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-purple-500/15 flex items-center justify-center flex-shrink-0">
+                          <Wallet className="w-4 h-4 text-purple-300" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-white text-sm font-medium truncate">{tx.recipient_name || tx.recipient_address}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${
+                              tx.status === 'completed'
+                                ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                                : tx.status === 'failed'
+                                  ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                                  : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                            }`}>
+                              {tx.status}
+                            </span>
+                          </div>
+                          <div className="flex gap-3 text-xs text-white/30 mt-0.5 flex-wrap">
+                            <span>{tx.amount} XRP</span>
+                            {wallet?.name && <span>From {wallet.name}</span>}
+                            {tx.created_date && <span>{new Date(tx.created_date).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' })}</span>}
+                          </div>
+                          {tx.note && <p className="text-xs text-white/40 mt-1 truncate">{tx.note}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* My Village Invitations */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
