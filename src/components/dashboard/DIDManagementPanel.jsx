@@ -199,7 +199,7 @@ export default function DIDManagementPanel() {
             <div className="space-y-3">
               <p className="text-white/40 text-xs uppercase tracking-widest">Wallets Awaiting DID Publication</p>
               {unpublishedWallets.map(w => {
-                const isFunded = (w.balance ?? 0) >= 2;
+                const isFunded = (w.balance ?? 0) >= 12;
                 const isThisFundOpen = fundWallet?.id === w.id;
                 return (
                   <div key={w.id} className="bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 space-y-3">
@@ -293,8 +293,8 @@ export default function DIDManagementPanel() {
                         <div className="w-full flex items-start gap-3 bg-blue-600/10 border border-blue-500/20 rounded-xl px-3 py-2.5">
                           <span className="text-lg">📱</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-blue-300 text-xs font-medium">Send XRP from Xumm or Any Wallet</p>
-                            <p className="text-white/30 text-[10px] mb-1">Send any amount to this address — we recommend at least 3 XRP to cover reserves and fees</p>
+                            <p className="text-blue-300 text-xs font-medium">Wallet funding address</p>
+                            <p className="text-white/30 text-[10px] mb-1">Send at least 12 XRP to this address before publishing each DID</p>
                             <p className="text-white/60 text-[10px] font-mono break-all">{w.classic_address}</p>
                           </div>
                         </div>
@@ -310,8 +310,8 @@ export default function DIDManagementPanel() {
                         >
                           {copied ? <CheckCircle className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-white/30" />}
                           <div>
-                            <p className="text-white text-xs font-medium">{copied ? 'Address Copied!' : 'Manual Transfer'}</p>
-                            <p className="text-white/30 text-[10px]">Copy address &amp; send from any wallet or exchange</p>
+                            <p className="text-white text-xs font-medium">{copied ? 'Address Copied!' : 'Copy funding address'}</p>
+                            <p className="text-white/30 text-[10px]">Use this address in Xumm, another wallet, or an exchange transfer</p>
                           </div>
                         </button>
 
@@ -332,7 +332,7 @@ export default function DIDManagementPanel() {
                         </div>
                         )}
 
-                    {!isFunded && !isThisFundOpen && <p className="text-white/30 text-[10px]">Wallet needs at least 12 XRP before DID publication, so open funding first.</p>}
+                    {!isFunded && !isThisFundOpen && <p className="text-white/30 text-[10px]">This DID needs a minimum of 12 XRP before it can be published, so open funding first.</p>}
                   </div>
                 );
               })}
@@ -412,7 +412,7 @@ export default function DIDManagementPanel() {
                 return (
                   <div className={`rounded-xl border px-4 py-3 text-xs ${needsFunding ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-green-500/10 border-green-500/20 text-green-300'}`}>
                     {needsFunding
-                      ? `This wallet currently has ${currentBalance} XRP. Fund it to at least 12 XRP before signing the DID publish transaction.`
+                      ? `This wallet currently has ${currentBalance} XRP. It needs a minimum of 12 XRP before signing the DID publish transaction.`
                       : `This wallet has ${currentBalance} XRP and is ready for DID publication.`}
                   </div>
                 );
