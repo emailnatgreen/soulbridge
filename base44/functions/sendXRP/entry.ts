@@ -43,20 +43,20 @@ Deno.serve(async (req) => {
         if (!fromWalletRecord) return Response.json({ error: 'From wallet not found' }, { status: 404 });
         if (!fromWalletRecord.classic_address) return Response.json({ error: 'From wallet has no XRPL address' }, { status: 400 });
 
-        // Get seed: encrypted (has iv+salt), plaintext (no iv), or env var fallback
+        // Get seed: try full decryption if all params present, otherwise treat stored value as plaintext
         let seed;
+        if (!fromWalletRecord.encrypted_seed) {
+            return Response.json({ error: 'No seed stored for this wallet. Please add the wallet seed via the Wallets page before sending.' }, { status: 400 });
+        }
         if (fromWalletRecord.encrypted_seed && fromWalletRecord.encryption_iv && fromWalletRecord.encryption_salt) {
-            // Properly encrypted
             seed = await decryptSeed(
                 fromWalletRecord.encrypted_seed,
                 fromWalletRecord.encryption_iv,
                 fromWalletRecord.encryption_salt
             );
-        } else if (fromWalletRecord.encrypted_seed && !fromWalletRecord.encryption_iv) {
-            // Seed was stored as plaintext (no encryption)
-            seed = fromWalletRecord.encrypted_seed;
         } else {
-            return Response.json({ error: 'No seed stored for this wallet. Please add the wallet seed via the Wallets page before sending.' }, { status: 400 });
+            // Stored as plaintext or partially encrypted — use as-is
+            seed = fromWalletRecord.encrypted_seed;
         }
 
         // Always trim the seed to remove any accidental whitespace/newlines
