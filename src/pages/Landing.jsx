@@ -185,7 +185,7 @@ export default function Landing() {
         navigate('/dashboard');
       }
     } catch (e) {
-      setInviteError('Could not validate code');
+      setInviteError(e?.response?.data?.error || 'Could not validate code');
     }
     setInviteLoading(false);
   };
