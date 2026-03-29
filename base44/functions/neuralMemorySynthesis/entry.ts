@@ -14,11 +14,6 @@ function buildSignature(memories) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const payload = await req.json();
     const eventData = payload?.data || payload;
     const memoryId = eventData?.id;
