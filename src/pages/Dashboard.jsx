@@ -687,42 +687,50 @@ export default function Dashboard() {
             <OctagonMillUI />
 
             {/* Meet Axi */}
-            <div className="bg-gradient-to-br from-indigo-950/60 via-purple-950/60 to-pink-950/40 border border-purple-500/30 rounded-2xl p-6 space-y-5">
-              <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-indigo-950/60 via-purple-950/60 to-pink-950/40 border border-purple-500/30 rounded-2xl p-4 sm:p-6 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="relative">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/40">
                     <Sparkles className="w-7 h-7 text-white" />
                   </div>
                   <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-400 border-2 border-slate-950" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <h3 className="text-white font-semibold text-lg leading-tight">Meet Axi</h3>
-                  <p className="text-purple-300/70 text-xs">Your personal SoulBridge guide · Always online</p>
+                  <p className="text-purple-300/70 text-xs">{hasInviteSession ? 'Your onboarding guide · Here to help you publish and enter' : 'Your personal SoulBridge guide · Always online'}</p>
                 </div>
-                <span className="ml-auto text-[10px] bg-green-500/20 text-green-300 border border-green-500/30 rounded-full px-2.5 py-1">● Online</span>
+                <span className="self-start sm:self-auto text-[10px] bg-green-500/20 text-green-300 border border-green-500/30 rounded-full px-2.5 py-1">● Online</span>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
-                <div className="bg-white/8 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 max-w-lg">
+                <div className="bg-white/8 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 max-w-2xl">
                   <p className="text-white/80 text-sm leading-relaxed">
-                    Hi{user?.full_name ? ` ${user.full_name.split(' ')[0]}` : ''}! 👋 I'm Axi — your personal AI guide to the SoulBridge Village. I can help you navigate governance, manage your identity, track your agents, and understand everything happening on-chain. Ready to begin?
+                    {hasInviteSession
+                      ? `Hi${invite?.recipient_nickname ? ` ${invite.recipient_nickname}` : ''}! 👋 I'm Axi — I can help you finish your DID setup, understand what happens next, and guide you into SoulBridge step by step.`
+                      : `Hi${user?.full_name ? ` ${user.full_name.split(' ')[0]}` : ''}! 👋 I'm Axi — your personal AI guide to the SoulBridge Village. I can help you navigate governance, manage your identity, track your agents, and understand everything happening on-chain. Ready to begin?`}
                   </p>
                 </div>
               </div>
               <div className="space-y-2">
                 <p className="text-white/30 text-xs uppercase tracking-widest">Start a conversation</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {[
-                    { label: 'Give me a personal welcome 🌟', msg: `Hi Axi! I'm ${user?.full_name || 'a new member'}. Can you give me a personal welcome to SoulBridge and tell me what I should do first?` },
-                    { label: 'What can I do here? 🦭', msg: 'What are all the things I can do in SoulBridge? Give me a quick tour of the platform.' },
-                    { label: 'How does governance work? 📜', msg: 'Can you explain how governance works in SoulBridge and how I can participate?' },
-                  ].map(({ label, msg }) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {(hasInviteSession
+                    ? [
+                        { label: 'Help me publish my DID', msg: `Hi Axi! I joined through an invite and I want help publishing my DID${inviteWallet?.classic_address ? ` for wallet ${inviteWallet.classic_address}` : ''}. Walk me through it simply.` },
+                        { label: 'What happens after setup?', msg: 'Once my DID is published, what can I do next in SoulBridge? Give me a simple next-step guide.' },
+                        { label: 'Explain my invite access', msg: 'Please explain what my invite gives me access to and what this private onboarding area is for.' },
+                      ]
+                    : [
+                        { label: 'Give me a personal welcome 🌟', msg: `Hi Axi! I'm ${user?.full_name || 'a new member'}. Can you give me a personal welcome to SoulBridge and tell me what I should do first?` },
+                        { label: 'What can I do here? 🦭', msg: 'What are all the things I can do in SoulBridge? Give me a quick tour of the platform.' },
+                        { label: 'How does governance work? 📜', msg: 'Can you explain how governance works in SoulBridge and how I can participate?' },
+                      ]).map(({ label, msg }) => (
                     <button
                       key={label}
                       onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }))}
-                      className="text-left bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-400/40 rounded-xl px-3 py-2.5 text-xs text-white/60 hover:text-white transition-all"
+                      className="text-left bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-400/40 rounded-xl px-3 py-2.5 text-xs text-white/60 hover:text-white transition-all min-h-[56px]"
                     >
                       {label}
                     </button>
@@ -730,10 +738,10 @@ export default function Dashboard() {
                 </div>
               </div>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: `Hi Axi! I'm ${user?.full_name || 'here'} — I've just connected my identity to SoulBridge. Can you give me a personal welcome and walk me through what I can do today?` } }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: hasInviteSession ? `Hi Axi! I joined through an invite${invite?.recipient_nickname ? ` as ${invite.recipient_nickname}` : ''}. Please help me complete my DID onboarding and show me what to do next.` : `Hi Axi! I'm ${user?.full_name || 'here'} — I've just connected my identity to SoulBridge. Can you give me a personal welcome and walk me through what I can do today?` } }))}
                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold text-sm rounded-xl py-3 transition-all shadow-lg shadow-purple-500/20"
               >
-                <Sparkles className="w-4 h-4" /> Open chat with Axi
+                <Sparkles className="w-4 h-4" /> {hasInviteSession ? 'Open onboarding chat with Axi' : 'Open chat with Axi'}
               </button>
             </div>
           </>
