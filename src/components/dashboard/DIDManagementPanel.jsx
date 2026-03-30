@@ -64,12 +64,25 @@ export default function DIDManagementPanel() {
 
   const loadWallets = async () => {
     try {
-      const me = await base44.auth.me();
-      if (me) {
+      const me = await base44.auth.me().catch(() => null);
+      let localIdentity = null;
+      try {
+        localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
+      } catch (_) {}
+
+      if (me?.id) {
         const ws = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20);
         setWallets(ws || []);
+      } else if (localIdentity?.did) {
+        const didAddress = String(localIdentity.did).split(':').pop();
+        const ws = await base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20);
+        setWallets(ws || []);
+      } else {
+        setWallets([]);
       }
-    } catch (_) {}
+    } catch (_) {
+      setWallets([]);
+    }
     setLoading(false);
   };
 

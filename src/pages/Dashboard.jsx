@@ -356,7 +356,7 @@ export default function Dashboard() {
 
         <UniversalDashboardStatus
           hasInviteSession={hasInviteSession}
-          identity={identity}
+          identity={identity || (inviteWallet?.classic_address ? { did: `did:xrpl:1:${inviteWallet.classic_address}` } : null)}
           wallets={wallets}
           myInvites={myInvites}
           myTransactions={myTransactions}
