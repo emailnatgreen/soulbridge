@@ -227,6 +227,13 @@ export default function Dashboard() {
     ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
     : 'Not connected';
 
+  // Resolve display name: platform user > localStorage profile > invite nickname
+  const profileName = (() => {
+    try { return JSON.parse(localStorage.getItem('sb_identity_profile') || 'null')?.name; } catch(_) { return null; }
+  })();
+  const displayName = user?.full_name || profileName || invite?.recipient_nickname || '';
+  const firstName = displayName ? displayName.split(' ')[0] : '';
+
   // Invitee mode — admins always see the full dashboard, never the invite onboarding
   const rawInviteSession = !!(invite && inviteWallet && Number(inviteWallet.balance || 0) > 0);
   const isInviteePredid = !!(invite && inviteWallet && !inviteWallet.is_published);
@@ -788,7 +795,7 @@ export default function Dashboard() {
                   <p className="text-white/80 text-sm leading-relaxed">
                     {hasInviteSession
                       ? `Hi${invite?.recipient_nickname ? ` ${invite.recipient_nickname}` : ''}! 👋 I'm Axi — I can help you finish your DID setup, understand what happens next, and guide you into SoulBridge step by step.`
-                      : `Hi${user?.full_name ? ` ${user.full_name.split(' ')[0]}` : ''}! 👋 I'm Axi — your personal AI guide to the SoulBridge Village. I can help you navigate governance, manage your identity, track your agents, and understand everything happening on-chain. Ready to begin?`}
+                      : `Hi${firstName ? ` ${firstName}` : ''}! 👋 I'm Axi — your personal AI guide to the SoulBridge Village. I can help you navigate governance, manage your identity, track your agents, and understand everything happening on-chain. Ready to begin?`}
                   </p>
                 </div>
               </div>
@@ -802,7 +809,7 @@ export default function Dashboard() {
                         { label: 'Explain my invite access', msg: 'Please explain what my invite gives me access to and what this private onboarding area is for.' },
                       ]
                     : [
-                        { label: 'Give me a personal welcome 🌟', msg: `Hi Axi! I'm ${user?.full_name || 'a new member'}. Can you give me a personal welcome to SoulBridge and tell me what I should do first?` },
+                        { label: 'Give me a personal welcome 🌟', msg: `Hi Axi! I'm ${displayName || 'a new member'}. Can you give me a personal welcome to SoulBridge and tell me what I should do first?` },
                         { label: 'What can I do here? 🦭', msg: 'What are all the things I can do in SoulBridge? Give me a quick tour of the platform.' },
                         { label: 'How does governance work? 📜', msg: 'Can you explain how governance works in SoulBridge and how I can participate?' },
                       ]).map(({ label, msg }) => (
@@ -817,7 +824,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: hasInviteSession ? `Hi Axi! I joined through an invite${invite?.recipient_nickname ? ` as ${invite.recipient_nickname}` : ''}. Please help me complete my DID onboarding and show me what to do next.` : `Hi Axi! I'm ${user?.full_name || 'here'} — I've just connected my identity to SoulBridge. Can you give me a personal welcome and walk me through what I can do today?` } }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: hasInviteSession ? `Hi Axi! I joined through an invite${invite?.recipient_nickname ? ` as ${invite.recipient_nickname}` : ''}. Please help me complete my DID onboarding and show me what to do next.` : `Hi Axi! I'm ${displayName || 'here'} — I've just connected my identity to SoulBridge. Can you give me a personal welcome and walk me through what I can do today?` } }))}
                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold text-sm rounded-xl py-3 transition-all shadow-lg shadow-purple-500/20"
               >
                 <Sparkles className="w-4 h-4" /> {hasInviteSession ? 'Open onboarding chat with Axi' : 'Open chat with Axi'}
