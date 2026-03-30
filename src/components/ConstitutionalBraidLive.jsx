@@ -1,42 +1,17 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { BRAID_NODES } from '@/lib/braidNodes';
+import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 
-// Use testnet endpoint which supports CORS from browser origins
-const XRPL_ENDPOINTS = [
-  'https://s.altnet.rippletest.net:51234/',
-  'https://testnet.xrpl-labs.com/',
-];
-
-async function fetchXRPLBalance(address) {
-  for (const url of XRPL_ENDPOINTS) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 6000);
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          method: 'account_info',
-          params: [{ account: address, ledger_index: 'current' }]
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
-      const data = await res.json();
-      if (data?.result?.account_data) {
-        const drops = parseInt(data.result.account_data.Balance, 10);
-        return { balance: drops / 1_000_000, active: true };
-      }
-      // Account not found on this network — still valid, just not funded here
-      return { balance: 0, active: false };
-    } catch (_) {
-      // Try next endpoint
-    }
+// Fetch all balances in one call via backend proxy (avoids browser CORS issues with XRPL mainnet)
+async function fetchAllBalances(addresses) {
+  try {
+    const res = await base44.functions.invoke('xrplProxy', { addresses });
+    return res.data?.balances || {};
+  } catch (_) {
+    return {};
   }
-  // All endpoints failed — return gracefully
-  return { balance: 0, active: false };
 }
 
 export default function ConstitutionalBraidLive({ compact = false }) {
@@ -60,14 +35,11 @@ export default function ConstitutionalBraidLive({ compact = false }) {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const results = await Promise.allSettled(
-      BRAID_NODES.map(node => fetchXRPLBalance(node.address))
-    );
+    const addresses = BRAID_NODES.map(n => n.address);
+    const balances = await fetchAllBalances(addresses);
     const map = {};
-    BRAID_NODES.forEach((node, i) => {
-      map[node.address] = results[i].status === 'fulfilled'
-        ? results[i].value
-        : { balance: 0, active: false };
+    BRAID_NODES.forEach(node => {
+      map[node.address] = balances[node.address] || { balance: 0, active: false };
     });
     setNodeData(map);
     setLastRefresh(new Date());

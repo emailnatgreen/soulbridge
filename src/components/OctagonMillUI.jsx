@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ExternalLink, RefreshCw } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const TREASURY = 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h';
 
@@ -15,29 +16,23 @@ const NODES = [
   { id: 7, label: 'Sentinel', hex: '#FF0000', address: 'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32' },
 ];
 
-// Use CORS-friendly endpoints (testnet supports browser origins)
-const ENDPOINTS = [
-  'https://s.altnet.rippletest.net:51234/',
-  'https://testnet.xrpl-labs.com/',
-];
-
-async function xrplFetch(body) {
-  for (const url of ENDPOINTS) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 6000);
-      const r = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
-      const data = await r.json();
-      if (data?.result) return data;
-    } catch (_) {}
+// Use backend proxy to call XRPL mainnet (avoids browser CORS issues)
+async function xrplProxyBatch(addresses) {
+  try {
+    const res = await base44.functions.invoke('xrplProxy', { addresses });
+    return res.data?.balances || {};
+  } catch (_) {
+    return {};
   }
-  return null;
+}
+
+async function xrplProxyRpc(method, params) {
+  try {
+    const res = await base44.functions.invoke('xrplProxy', { method, params });
+    return res.data?.result || null;
+  } catch (_) {
+    return null;
+  }
 }
 
 // Individual spinning wheel — self-contained so animation is isolated per node
@@ -150,29 +145,25 @@ export default function OctagonMillUI() {
   const fetchAll = useCallback(async () => {
     setFetching(true);
 
-    // All 8 node balances in parallel
-    const settled = await Promise.allSettled(
-      NODES.map(n =>
-        xrplFetch({ method: 'account_info', params: [{ account: n.address, ledger_index: 'current' }] })
-          .then(d => d?.result?.account_data ? parseInt(d.result.account_data.Balance, 10) / 1e6 : null)
-          .catch(() => null)
-      )
-    );
+    // All 8 node balances in one batch call via backend proxy
+    const addresses = NODES.map(n => n.address);
+    const balanceData = await xrplProxyBatch(addresses);
     const map = {};
-    NODES.forEach((n, i) => {
-      map[n.address] = settled[i].status === 'fulfilled' ? settled[i].value : null;
+    NODES.forEach(n => {
+      const info = balanceData[n.address];
+      map[n.address] = info?.active ? info.balance : null;
     });
     setBalances(map);
 
-    // Treasury balance + last TX hash
+    // Treasury balance + last TX hash via backend proxy
     try {
-      const [info, txs] = await Promise.all([
-        xrplFetch({ method: 'account_info', params: [{ account: TREASURY, ledger_index: 'current' }] }),
-        xrplFetch({ method: 'account_tx',   params: [{ account: TREASURY, limit: 1 }] }),
+      const [infoResult, txsResult] = await Promise.all([
+        xrplProxyRpc('account_info', [{ account: TREASURY, ledger_index: 'current' }]),
+        xrplProxyRpc('account_tx', [{ account: TREASURY, limit: 1 }]),
       ]);
-      if (info?.result?.account_data)
-        setKinetic(parseInt(info.result.account_data.Balance, 10));
-      const t = txs?.result?.transactions;
+      if (infoResult?.account_data)
+        setKinetic(parseInt(infoResult.account_data.Balance, 10));
+      const t = txsResult?.transactions;
       if (t?.length) setLastTx(t[0].tx?.hash || t[0].tx_json?.hash);
     } catch (_) {}
 
@@ -181,19 +172,9 @@ export default function OctagonMillUI() {
 
   useEffect(() => {
     fetchAll();
-    // Auto-refresh balances every 5 minutes (not 30s — avoids CORS flood)
-    const refreshTimer = setInterval(fetchAll, 5 * 60 * 1000);
-    // Live ledger index via WebSocket (use testnet WS which supports browser CORS)
-    let ws;
-    try {
-      ws = new WebSocket('wss://s.altnet.rippletest.net:51233');
-      ws.onopen = () => ws.send(JSON.stringify({ command: 'subscribe', streams: ['ledger'] }));
-      ws.onmessage = e => {
-        try { const m = JSON.parse(e.data); if (m.ledger_index) setLedger(m.ledger_index); } catch (_) {}
-      };
-      ws.onerror = () => {};
-    } catch (_) {}
-    return () => { clearInterval(refreshTimer); if (ws) ws.close(); };
+    // Auto-refresh balances every 2 minutes via backend proxy
+    const refreshTimer = setInterval(fetchAll, 2 * 60 * 1000);
+    return () => clearInterval(refreshTimer);
   }, []);
 
   return (
