@@ -111,18 +111,21 @@ export default function Dashboard() {
     // Load wallets — admins see all, regular users see only their own
     const loadWallets = async () => {
       const me = await base44.auth.me().catch(() => null);
-      const earlyAdmin = me?.role === 'admin';
       let localIdentity = null;
-      try {
-        localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
-      } catch (_) {}
+      try { localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch (_) {}
+      const localDid = localIdentity?.did;
+      const localAddr = localDid ? String(localDid).replace(/^did:xrpl:(?:1:)?/, '') : null;
+
+      // Admin = platform admin OR admin DID in localStorage
+      const ADMIN_ADDRS = ['rL1W8aBjXscSHgkiBKQJyYeU9YBpWo2jqz', 'rG1ZAbWEnBegAXFqyqyi8vgQFhDtDHAQH7'];
+      const earlyAdmin = me?.role === 'admin' || ADMIN_ADDRS.includes(localAddr || '');
 
       let myWallets = [];
       if (earlyAdmin) {
         // Admin sees ALL wallets for the full operational picture
         myWallets = await base44.entities.Wallet.list('-created_date', 50).catch(() => []);
       } else {
-        const didAddress = localIdentity?.did ? String(localIdentity.did).split(':').pop() : null;
+        const didAddress = localDid ? String(localDid).split(':').pop() : null;
         const [ownerWallets, didWallets] = await Promise.all([
           me?.id ? base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []) : Promise.resolve([]),
           didAddress ? base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20).catch(() => []) : Promise.resolve([]),
@@ -162,8 +165,14 @@ export default function Dashboard() {
     } catch (_) {}
 
     // Load invites — admins see all, regular users see only their own
-    base44.auth.me().then(async me => {
-      const earlyAdmin = me?.role === 'admin';
+    const loadInvites = async () => {
+      const me = await base44.auth.me().catch(() => null);
+      let lid = null;
+      try { lid = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch (_) {}
+      const la = lid?.did ? String(lid.did).replace(/^did:xrpl:(?:1:)?/, '') : null;
+      const ADMIN_ADDRS2 = ['rL1W8aBjXscSHgkiBKQJyYeU9YBpWo2jqz', 'rG1ZAbWEnBegAXFqyqyi8vgQFhDtDHAQH7'];
+      const earlyAdmin = me?.role === 'admin' || ADMIN_ADDRS2.includes(la || '');
+
       if (earlyAdmin) {
         // Admin sees ALL invites
         const invites = await base44.entities.InvitationToken.list('-created_date', 50).catch(() => []);
@@ -176,19 +185,9 @@ export default function Dashboard() {
         const flattened = (walletResults || []).flat().filter(w => w?.network === 'testnet');
         const uniqueWallets = flattened.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
         setClaimedInviteWallets(uniqueWallets);
-      } else if (me?.email) {
-        const invites = await base44.entities.InvitationToken.filter({ issued_by: me.email }, '-created_date', 50).catch(() => []);
-        setMyInvites(invites || []);
-
-        const claimed = (invites || []).filter(token => token.status === 'claimed');
-        const walletResults = await Promise.all(
-          claimed.map(token => base44.entities.Wallet.filter({ name: `${token.recipient_nickname || 'Invited'} Wallet` }, '-created_date', 5).catch(() => []))
-        ).catch(() => []);
-        const flattened = (walletResults || []).flat().filter(w => w?.network === 'testnet');
-        const uniqueWallets = flattened.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
-        setClaimedInviteWallets(uniqueWallets);
       }
-    }).catch(() => {});
+    };
+    loadInvites();
 
     // Listen for new in-memory signals
     const onSignal = () => setSignals([...(window.__sb?.signals || [])]);
