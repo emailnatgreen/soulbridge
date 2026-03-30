@@ -57,14 +57,6 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const hasToken = urlParams.has('token') || urlParams.has('base44_token');
-      const isEditorPreview = urlParams.has('_preview_token');
-      if (window.location.pathname !== '/' && !hasToken && !isEditorPreview) {
-        navigateToLogin();
-        return null;
-      }
     }
   }
 
