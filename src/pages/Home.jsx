@@ -57,7 +57,6 @@ export default function Home() {
       const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
       if (inviteSession && parsedWallet) {
         setHasInviteSession(true);
-        navigate('/dashboard');
       }
     } catch (e) {}
   }, [navigate]);
