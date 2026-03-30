@@ -36,7 +36,15 @@ function SignalDot({ type }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoadingAuth, navigateToLogin } = useAuth();
-  const [identity, setIdentity] = useState(null);
+  const [identity, setIdentity] = useState(() => {
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      const parsed = stored ? JSON.parse(stored) : null;
+      return parsed?.connected ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  });
   const [signals, setSignals] = useState([]);
   const [wallets, setWallets] = useState([]);
   const [invite, setInvite] = useState(null);
@@ -271,20 +279,20 @@ export default function Dashboard() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !identity) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center px-6 text-white">
         <div className="max-w-md w-full rounded-2xl border border-white/10 bg-white/5 p-6 text-center space-y-4">
           <Shield className="w-10 h-10 text-purple-300 mx-auto" />
           <div>
-            <h2 className="text-xl font-semibold">Sign in required</h2>
-            <p className="text-sm text-white/50 mt-2">Live mode is still opening without your authenticated session, so the real DID dashboard cannot load yet.</p>
+            <h2 className="text-xl font-semibold">DID required</h2>
+            <p className="text-sm text-white/50 mt-2">Connect your DID on the landing page first, then enter the Village from there.</p>
           </div>
           <button
-            onClick={navigateToLogin}
+            onClick={() => navigate('/')}
             className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3 text-sm font-semibold text-white"
           >
-            Sign in to load dashboard
+            Return to landing page
           </button>
         </div>
       </div>
@@ -355,7 +363,7 @@ export default function Dashboard() {
           onPublish={handlePublishDID}
           publishingDid={publishingDid}
           publishingWalletId={publishingWalletId}
-          isAdmin={user?.role === 'admin'}
+          isAdmin={isAuthenticated && user?.role === 'admin'}
         />
 
         {/* ════════════════════════════════════════
