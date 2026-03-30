@@ -5,6 +5,7 @@ import {
   Loader2, ExternalLink, ArrowRight, QrCode, RefreshCw, Copy, Wallet
 } from 'lucide-react';
 import DIDWalletEditor from '@/components/dashboard/DIDWalletEditor';
+import { hasAdminAccess } from '@/lib/adminAccess';
 
 // Modes: idle | creating | publish_select | publish_qr | done
 export default function DIDManagementPanel() {
@@ -70,11 +71,18 @@ export default function DIDManagementPanel() {
         localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
       } catch (_) {}
 
-      if (me?.id) {
+      const identityDid = localIdentity?.did;
+      const isAdmin = hasAdminAccess({ user: me, identityDid });
+
+      if (isAdmin) {
+        // Admin sees ALL wallets
+        const ws = await base44.entities.Wallet.list('-created_date', 50);
+        setWallets(ws || []);
+      } else if (me?.id) {
         const ws = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20);
         setWallets(ws || []);
-      } else if (localIdentity?.did) {
-        const didAddress = String(localIdentity.did).split(':').pop();
+      } else if (identityDid) {
+        const didAddress = String(identityDid).split(':').pop();
         const ws = await base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20);
         setWallets(ws || []);
       } else {
