@@ -6,6 +6,7 @@ import { Sparkles } from 'lucide-react';
 import GlobalNav from '@/components/GlobalNav';
 import ChatLoader from '@/components/axi/ChatLoader';
 import { usePageSignal } from '@/hooks/usePageSignal';
+import { useAuth } from '@/lib/AuthContext';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
 
@@ -22,12 +23,14 @@ export default function Layout({ children, currentPageName }) {
   const [everOpened, setEverOpened] = useState(false);
   const [prefilledAxiMessage, setPrefilledAxiMessage] = useState(null);
   const [speakerAgentId, setSpeakerAgentId] = useState(null);
+  const { user, isAuthenticated } = useAuth();
 
   // Trigger comprehensive page signal for Jukebox Brain
   usePageSignal();
 
   const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
   const isNoFloatPage = NO_FLOAT_PAGES.includes(currentPageName);
+  const showAdminSidebar = isAuthenticated && user?.role === 'admin';
 
   const handleToggle = () => {
     if (!everOpened) setEverOpened(true);
@@ -84,7 +87,7 @@ export default function Layout({ children, currentPageName }) {
         }}
       />
       {/* Page Content */}
-      <div className="relative z-10 lg:ml-64">
+      <div className={`relative z-10 ${showAdminSidebar ? 'lg:ml-64' : ''}`}>
         {children}
       </div>
 
