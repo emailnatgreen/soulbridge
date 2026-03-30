@@ -89,12 +89,9 @@ export default function PublicAgentGreeter() {
     localStorage.removeItem(CONV_KEY);
     createConversation();
 
-    // Poll every 4s for new messages
-    pollRef.current = setInterval(() => {
-      if (convIdRef.current) loadMessages(convIdRef.current);
-    }, 4000);
-
-    return () => clearInterval(pollRef.current);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, [isOpen]);
 
   const loadMessages = async (convId) => {
@@ -131,6 +128,11 @@ export default function PublicAgentGreeter() {
       });
 
       await loadMessages(convId);
+
+      if (pollRef.current) clearInterval(pollRef.current);
+      pollRef.current = setInterval(() => {
+        if (convIdRef.current) loadMessages(convIdRef.current);
+      }, 10000);
     } catch (err) {
       console.error('Failed to create conversation:', err);
     } finally {

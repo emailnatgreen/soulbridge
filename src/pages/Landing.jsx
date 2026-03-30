@@ -192,7 +192,7 @@ export default function Landing() {
 
   const handleConnectDID = () => {
     setDidError('');
-    if (!did.trim()) { setDidError('Please enter a DID'); return; }
+    if (!did.trim()) { setDidError('Please enter your DID wallet address'); return; }
     if (!did.trim().startsWith('did:')) { setDidError('Invalid DID format — must start with did:'); return; }
     const identity = { did: did.trim(), connected: true, timestamp: Date.now() };
     window.__soulbridge.identity = identity;
@@ -200,7 +200,6 @@ export default function Landing() {
     emitSignal({ type: 'identity_connected', did: did.trim(), timestamp: Date.now() });
     window.dispatchEvent(new CustomEvent('did-connected', { detail: { did: did.trim() } }));
     setDidConnected(identity);
-    setTimeout(() => navigate('/dashboard'), 1200);
   };
 
   return (
@@ -376,7 +375,7 @@ export default function Landing() {
                     value={did}
                     onChange={e => { setDid(e.target.value); setDidError(''); }}
                     onKeyDown={e => e.key === 'Enter' && handleConnectDID()}
-                    placeholder="Enter your DID to begin"
+                    placeholder="Enter your DID wallet to begin"
                     className="w-full bg-white/10 border border-white/20 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-purple-400/60 focus:bg-white/15 transition-all"
                   />
                   {didError && <p className="text-red-400 text-xs">{didError}</p>}
@@ -385,7 +384,7 @@ export default function Landing() {
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-11 gap-2 text-sm"
                   >
                     <Link2 className="w-4 h-4" />
-                    Connect Identity
+                    Connect DID
                   </Button>
                 </div>
               ) : (
