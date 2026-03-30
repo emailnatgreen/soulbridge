@@ -158,9 +158,11 @@ export default function GlobalNav() {
       return null;
     }
   })();
+  const hasIdentity = !!(identity?.did || identity?.connected);
   const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
 
-  if (!isAuthenticated || !user) return null;
+  // Show nav for platform-authenticated users OR DID-connected users
+  if (!isAuthenticated && !hasIdentity) return null;
 
   return (
     <>

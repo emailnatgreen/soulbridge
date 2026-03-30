@@ -227,13 +227,16 @@ export default function Dashboard() {
     ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
     : 'Not connected';
 
-  // Invitee mode
-  const hasInviteSession = !!(invite && inviteWallet && Number(inviteWallet.balance || 0) > 0);
+  // Invitee mode — admins always see the full dashboard, never the invite onboarding
+  const rawInviteSession = !!(invite && inviteWallet && Number(inviteWallet.balance || 0) > 0);
   const isInviteePredid = !!(invite && inviteWallet && !inviteWallet.is_published);
 
   // Admin = Base44 admin role OR admin DID
   const identityDid = identity?.did || (inviteWallet?.classic_address ? `did:xrpl:1:${inviteWallet.classic_address}` : wallets?.[0]?.classic_address ? `did:xrpl:1:${wallets[0].classic_address}` : null);
   const isAdmin = hasAdminAccess({ user, identityDid });
+
+  // Admins always see the full dashboard, never the invite onboarding view
+  const hasInviteSession = rawInviteSession && !isAdmin;
 
   // Clear broken or completed invite sessions so admin/member dashboard can open normally
   useEffect(() => {

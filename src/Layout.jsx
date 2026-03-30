@@ -38,7 +38,8 @@ export default function Layout({ children, currentPageName }) {
       return null;
     }
   })();
-  const showAdminSidebar = isAuthenticated && hasAdminAccess({ user, identityDid: identity?.did });
+  const hasIdentity = !!(identity?.did || identity?.connected);
+  const showAdminSidebar = (isAuthenticated || hasIdentity) && hasAdminAccess({ user, identityDid: identity?.did });
 
   const handleToggle = () => {
     if (!everOpened) setEverOpened(true);
