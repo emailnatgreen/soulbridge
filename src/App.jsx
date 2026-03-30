@@ -21,7 +21,6 @@ import TreasurySigningHelper from './pages/TreasurySigningHelper';
 import GovernanceVotingDashboard from './pages/GovernanceVotingDashboard';
 import ContactSupport from './pages/ContactSupport';
 import Dashboard from './pages/Dashboard';
-import DIDManager from './pages/DIDManager';
 import IntegrationCreditDashboard from './pages/IntegrationCreditDashboard';
 import ServiceSkillMarketplace from './pages/ServiceSkillMarketplace';
 import GovernanceHub from './pages/GovernanceHub';
@@ -91,7 +90,7 @@ const AuthenticatedApp = () => {
       <Route path="/TreasurySigningHelper" element={<LayoutWrapper currentPageName="TreasurySigningHelper"><TreasurySigningHelper /></LayoutWrapper>} />
       <Route path="/GovernanceVotingDashboard" element={<LayoutWrapper currentPageName="GovernanceVotingDashboard"><GovernanceVotingDashboard /></LayoutWrapper>} />
       <Route path="/ContactSupport" element={<ContactSupport />} />
-      <Route path="/dashboard" element={<LayoutWrapper currentPageName="DIDManager"><DIDManager /></LayoutWrapper>} />
+      <Route path="/dashboard" element={<LayoutWrapper currentPageName="dashboard"><Dashboard /></LayoutWrapper>} />
       <Route path="/IntegrationCreditDashboard" element={<LayoutWrapper currentPageName="IntegrationCreditDashboard"><IntegrationCreditDashboard /></LayoutWrapper>} />
       <Route path="/ServiceSkillMarketplace" element={<LayoutWrapper currentPageName="ServiceSkillMarketplace"><ServiceSkillMarketplace /></LayoutWrapper>} />
       <Route path="/governance" element={<LayoutWrapper currentPageName="GovernanceHub"><GovernanceHub /></LayoutWrapper>} />
