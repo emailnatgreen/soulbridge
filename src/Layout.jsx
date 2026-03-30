@@ -7,6 +7,7 @@ import GlobalNav from '@/components/GlobalNav';
 import ChatLoader from '@/components/axi/ChatLoader';
 import { usePageSignal } from '@/hooks/usePageSignal';
 import { useAuth } from '@/lib/AuthContext';
+import { hasAdminAccess } from '@/lib/adminAccess';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
 
@@ -30,7 +31,14 @@ export default function Layout({ children, currentPageName }) {
 
   const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
   const isNoFloatPage = NO_FLOAT_PAGES.includes(currentPageName);
-  const showAdminSidebar = isAuthenticated && user?.role === 'admin';
+  const identity = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
+    } catch (_) {
+      return null;
+    }
+  })();
+  const showAdminSidebar = isAuthenticated && hasAdminAccess({ user, identityDid: identity?.did });
 
   const handleToggle = () => {
     if (!everOpened) setEverOpened(true);

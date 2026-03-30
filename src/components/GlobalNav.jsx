@@ -10,6 +10,7 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import GlobalSearchBar from '@/components/search/GlobalSearchBar';
+import { hasAdminAccess } from '@/lib/adminAccess';
 
 
 const NAV_GROUPS = [
@@ -150,6 +151,14 @@ function NavGroup({ group, isOpen: defaultOpen = false, onNavigate }) {
 export default function GlobalNav() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
+  const identity = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
+    } catch (_) {
+      return null;
+    }
+  })();
+  const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
 
   if (!isAuthenticated || !user) return null;
 
@@ -187,7 +196,7 @@ export default function GlobalNav() {
 
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
-          {NAV_GROUPS.filter(group => !group.adminOnly || user?.role === 'admin').map((group, i) => (
+          {NAV_GROUPS.filter(group => !group.adminOnly || isAdmin).map((group, i) => (
             <NavGroup key={group.label} group={group} isOpen={i === 0} />
           ))}
         </div>
@@ -216,7 +225,7 @@ export default function GlobalNav() {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
-              {NAV_GROUPS.filter(group => !group.adminOnly || user?.role === 'admin').map((group, i) => (
+              {NAV_GROUPS.filter(group => !group.adminOnly || isAdmin).map((group, i) => (
                 <NavGroup
                   key={group.label}
                   group={group}

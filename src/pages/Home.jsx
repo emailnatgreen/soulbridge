@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 import { Badge } from "@/components/ui/badge";
+import { hasAdminAccess } from '@/lib/adminAccess';
 import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
@@ -16,7 +17,7 @@ import {
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
   const [identity, setIdentity] = useState(null);
   const [hasInviteSession, setHasInviteSession] = useState(false);
   const [proposals, setProposals] = useState([]);
