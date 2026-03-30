@@ -148,9 +148,9 @@ function NavGroup({ group, isOpen: defaultOpen = false, onNavigate }) {
 
 export default function GlobalNav() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
-  if (!user || user.role !== 'admin') return null;
+  if (!isAuthenticated || !user || user.role !== 'admin') return null;
 
   return (
     <>

@@ -99,6 +99,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
+      setAuthError(null);
     }
   };
 
