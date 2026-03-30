@@ -178,7 +178,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
 
   useEffect(() => {
-    if (!isOpen || initialized.current) return;
+    if (!isAuthenticated || !isOpen || initialized.current) return;
     initialized.current = true;
 
     const init = async () => {
@@ -285,7 +285,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     init();
 
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
-  }, [isOpen, retryKey]);
+  }, [isAuthenticated, isOpen, retryKey]);
 
   // Handle speaker agent when chat opens
   useEffect(() => {

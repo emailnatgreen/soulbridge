@@ -94,7 +94,7 @@ export default function Layout({ children, currentPageName }) {
       <Toaster />
 
       {/* AxiChat for authenticated users */}
-      {!isPublicPage && !NO_CHAT_PAGES.includes(currentPageName) && (
+      {isAuthenticated && !isPublicPage && !NO_CHAT_PAGES.includes(currentPageName) && (
         <Suspense fallback={null}>
           <AxiChat 
             isOpen={isOpen} 
@@ -108,7 +108,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Floating Axi button for authenticated users */}
-      {!isPublicPage && !isNoFloatPage && (
+      {isAuthenticated && !isPublicPage && !isNoFloatPage && (
         <button
           onClick={handleToggle}
           className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center justify-center shadow-2xl border border-purple-400/30 transition-transform hover:scale-110 active:scale-95"
@@ -119,7 +119,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* ChatLoader — listens for JukeboxDecision events */}
-      <ChatLoader />
+      {isAuthenticated && <ChatLoader />}
     </div>
   );
 }
