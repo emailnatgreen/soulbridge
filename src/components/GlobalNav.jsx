@@ -93,6 +93,7 @@ const NAV_GROUPS = [
   },
   {
     label: 'Tools & Admin',
+    adminOnly: true,
     links: [
       { label: 'Image Storage', path: '/ImageStorage', icon: Image },
       { label: 'Memory Browser', path: '/MemoryBrowser', icon: Brain },
@@ -150,7 +151,7 @@ export default function GlobalNav() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
-  if (!isAuthenticated || !user || user.role !== 'admin') return null;
+  if (!isAuthenticated || !user) return null;
 
   return (
     <>
@@ -186,7 +187,7 @@ export default function GlobalNav() {
 
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
-          {NAV_GROUPS.map((group, i) => (
+          {NAV_GROUPS.filter(group => !group.adminOnly || user?.role === 'admin').map((group, i) => (
             <NavGroup key={group.label} group={group} isOpen={i === 0} />
           ))}
         </div>
@@ -215,7 +216,7 @@ export default function GlobalNav() {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
-              {NAV_GROUPS.map((group, i) => (
+              {NAV_GROUPS.filter(group => !group.adminOnly || user?.role === 'admin').map((group, i) => (
                 <NavGroup
                   key={group.label}
                   group={group}
