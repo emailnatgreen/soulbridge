@@ -124,9 +124,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    // Use clean pathname only (no preview query params) to avoid redirect loops after OAuth
-    const cleanNextUrl = window.location.origin + window.location.pathname;
-    base44.auth.redirectToLogin(cleanNextUrl);
+    // Always return to landing after login on live mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const isEditorPreview = urlParams.has('_preview_token');
+    const nextUrl = isEditorPreview
+      ? window.location.origin + window.location.pathname
+      : window.location.origin + '/';
+
+    base44.auth.redirectToLogin(nextUrl);
   };
 
   return (
