@@ -27,10 +27,7 @@ async function xrplFetch(body) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
-    // Allow even unauthenticated DID-only users to query XRPL
-
+    // Read the body first — no auth required for read-only XRPL queries
     const { method, params, addresses } = await req.json();
 
     // Batch mode: fetch balances for multiple addresses at once
