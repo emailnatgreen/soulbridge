@@ -3,20 +3,39 @@ import { BRAID_NODES } from '@/lib/braidNodes';
 import { Link } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 
+// Use testnet endpoint which supports CORS from browser origins
+const XRPL_ENDPOINTS = [
+  'https://s.altnet.rippletest.net:51234/',
+  'https://testnet.xrpl-labs.com/',
+];
+
 async function fetchXRPLBalance(address) {
-  const res = await fetch('https://xrplcluster.com/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      method: 'account_info',
-      params: [{ account: address, ledger_index: 'current' }]
-    })
-  });
-  const data = await res.json();
-  if (data?.result?.account_data) {
-    const drops = parseInt(data.result.account_data.Balance, 10);
-    return { balance: drops / 1_000_000, active: true };
+  for (const url of XRPL_ENDPOINTS) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6000);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'account_info',
+          params: [{ account: address, ledger_index: 'current' }]
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      const data = await res.json();
+      if (data?.result?.account_data) {
+        const drops = parseInt(data.result.account_data.Balance, 10);
+        return { balance: drops / 1_000_000, active: true };
+      }
+      // Account not found on this network — still valid, just not funded here
+      return { balance: 0, active: false };
+    } catch (_) {
+      // Try next endpoint
+    }
   }
+  // All endpoints failed — return gracefully
   return { balance: 0, active: false };
 }
 
