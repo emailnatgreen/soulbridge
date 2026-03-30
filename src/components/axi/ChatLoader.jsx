@@ -1,9 +1,13 @@
 import React, { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function ChatLoader() {
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const unsubscribe = base44.entities.JukeboxDecision.subscribe((event) => {
       if (event.type === 'create' && event.data) {
         const { id, action, agent_id, message, conversation_id } = event.data;
@@ -24,7 +28,7 @@ export default function ChatLoader() {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [isAuthenticated]);
 
   return null;
 }

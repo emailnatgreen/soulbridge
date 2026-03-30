@@ -41,19 +41,17 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
   // Fetch user and assign agent ID on mount
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const assignUserAgent = async () => {
-      try {
-        const user = await base44.auth.me();
-        if (user) {
-          const agentId = user.role === 'admin' ? 'admin-agent' : 'user-agent';
-          setUserAgentId(agentId);
-        }
-      } catch (err) {
-        console.error('Failed to fetch user:', err);
+      const user = await base44.auth.me();
+      if (user) {
+        const agentId = user.role === 'admin' ? 'admin-agent' : 'user-agent';
+        setUserAgentId(agentId);
       }
     };
     assignUserAgent();
-  }, []);
+  }, [isAuthenticated]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -102,7 +100,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
              setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
            }
          } catch (err) {
-           console.error('Failed to load persisted agents:', err);
            setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
          }
 
@@ -116,7 +113,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
          });
          setIsOpen(true);
        } catch (err) {
-         console.error('Failed to load conversation:', err);
+         
          setInitError(true);
        }
     };
@@ -146,7 +143,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
              setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
            }
          } catch (err) {
-           console.error('Failed to load persisted agents:', err);
            setActiveAgents(agentId && agentId !== 'axi' ? [{ id: agentId, name: agentName, role: agentRole }] : []);
          }
          
@@ -160,7 +156,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
          });
          setIsOpen(true);
        } catch (err) {
-         console.error('Failed to load conversation:', err);
+         
          setInitError(true);
        }
      };
@@ -233,7 +229,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
             if (existing && existing.length > 0) {
               const agentConvo = existing[0];
               setAgentConvoId(agentConvo.id);
-              console.log('[AxiChat] Found AgentConversation:', agentConvo.id, 'participants:', agentConvo.participant_agent_ids);
               if (agentConvo.participant_agent_ids?.length > 0) {
                 const agents = await Promise.all(
                   agentConvo.participant_agent_ids.map(id => 
@@ -254,7 +249,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
               setActiveAgents([]);
             }
           } catch (err) {
-            console.error('Failed to init agent conversation:', err);
             setActiveAgents([]);
           }
         };
@@ -275,7 +269,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
           if (unsubscribeRef.current) unsubscribeRef.current();
         };
       } catch (err) {
-        console.error('Axi init error:', err);
         setInitError(true);
         initialized.current = false;
       } finally {
@@ -328,18 +321,16 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
       // Also trigger each active agent to respond
       if (activeAgents.length > 0) {
-        console.log('[AxiChat] Triggering responses from agents:', activeAgents.map(a => a.name));
         activeAgents.forEach(agent => {
           base44.functions.invoke('generateAgentResponse', {
             conversation_id: conversation.id,
             user_message: msg,
             agent_id: agent.id,
             agent_name: agent.name
-          }).catch(err => console.error(`Failed to get response from ${agent.name}:`, err));
+          }).catch(() => {});
         });
       }
     } catch (err) {
-      console.error('Send error:', err);
       setInput(msg);
     } finally {
       setSending(false);
@@ -378,7 +369,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
         });
       }
     } catch (err) {
-      console.error('[AxiChat] Error adding agent:', err);
     }
   }, [agentConvoId, conversation]);
 
@@ -407,7 +397,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
         });
       }
     } catch (err) {
-      console.error('[AxiChat] Error removing agent:', err);
     }
   }, [agentConvoId, conversation]);
 
