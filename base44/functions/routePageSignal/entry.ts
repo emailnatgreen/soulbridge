@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
@@ -14,12 +14,15 @@ Deno.serve(async (req) => {
       metadata 
     } = body;
 
-    // Authenticate user context
+    // Authenticate user context only when a user session exists
     let user = null;
-    try {
-      user = await base44.auth.me();
-    } catch (e) {
-      // Continue without user for public pages
+    const authHeader = req.headers.get('authorization');
+    if (authHeader) {
+      try {
+        user = await base44.auth.me();
+      } catch (e) {
+        user = null;
+      }
     }
 
     // Create comprehensive Signal record for Jukebox Brain

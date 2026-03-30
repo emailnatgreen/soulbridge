@@ -47,6 +47,13 @@ Deno.serve(async (req) => {
     }
 
     // Fetch agent
+    if (agent_id === 'axi') {
+      return Response.json({
+        status: 'skipped',
+        reason: 'System agent axi does not map to an Agent record',
+      });
+    }
+
     const agents = await db.entities.Agent.filter({ id: agent_id }, '-created_date', 1);
     const agent = Array.isArray(agents) ? agents[0] : null;
     if (!agent) {
