@@ -194,8 +194,11 @@ export default function Dashboard() {
 
   const handleDisconnect = () => {
     localStorage.removeItem('soulbridge_identity');
+    localStorage.removeItem('sb_invite_session');
+    localStorage.removeItem('sb_invite_wallet');
     if (window.__sb) window.__sb.signals = [];
     navigate('/');
+    window.location.reload();
   };
 
   const shortDid = identity?.did

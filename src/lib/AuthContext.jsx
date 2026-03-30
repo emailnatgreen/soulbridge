@@ -52,12 +52,22 @@ export const AuthProvider = ({ children }) => {
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated
+        const storedDidIdentity = (() => {
+          try {
+            const stored = localStorage.getItem('soulbridge_identity');
+            const parsed = stored ? JSON.parse(stored) : null;
+            return parsed?.connected ? parsed : null;
+          } catch (_) {
+            return null;
+          }
+        })();
+
         if (refreshedToken) {
           await checkUserAuth();
         } else {
           setUser(null);
           setIsLoadingAuth(false);
-          setIsAuthenticated(false);
+          setIsAuthenticated(!!storedDidIdentity);
         }
         setIsLoadingPublicSettings(false);
       } catch (appError) {
@@ -111,9 +121,18 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     } catch (error) {
       console.error('User auth check failed:', error);
+      const storedDidIdentity = (() => {
+        try {
+          const stored = localStorage.getItem('soulbridge_identity');
+          const parsed = stored ? JSON.parse(stored) : null;
+          return parsed?.connected ? parsed : null;
+        } catch (_) {
+          return null;
+        }
+      })();
       setUser(null);
       setIsLoadingAuth(false);
-      setIsAuthenticated(false);
+      setIsAuthenticated(!!storedDidIdentity);
       setAuthError(null);
     }
   };
