@@ -317,7 +317,7 @@ export default function Dashboard() {
                 <p className="text-white/30 text-xs">Production · XRPL Live</p>
                 {(inviteWallet?.classic_address || identity?.did || wallets?.[0]?.classic_address) && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] text-purple-200">
-                    DID Signal: {(inviteWallet?.classic_address || identity?.did || wallets?.[0]?.classic_address || '').toString().replace('did:xrpl:1:', '').slice(0, 10)}...
+                    DID Signal: {identity?.did || (inviteWallet?.classic_address ? `did:xrpl:1:${inviteWallet.classic_address}` : wallets?.[0]?.classic_address ? `did:xrpl:1:${wallets[0].classic_address}` : '')}
                   </span>
                 )}
               </div>
