@@ -10,6 +10,7 @@ import UniversalDashboardHero from '@/components/dashboard/UniversalDashboardHer
 import UniversalDashboardQuickActions from '@/components/dashboard/UniversalDashboardQuickActions';
 import UniversalDashboardStatus from '@/components/dashboard/UniversalDashboardStatus';
 import IdentityRecognitionCard from '@/components/dashboard/IdentityRecognitionCard';
+import { hasAdminAccess } from '@/lib/adminAccess';
 
 // ── Signal emitter (global, shared) ──────────────────────────────────────────
 if (typeof window !== 'undefined') {
@@ -226,9 +227,13 @@ export default function Dashboard() {
     ? identity.did.slice(0, 18) + '…' + identity.did.slice(-10)
     : 'Not connected';
 
-  // Invitee mode: stays active for invited users so they can still see their DID after publication
+  // Invitee mode
   const hasInviteSession = !!(invite && inviteWallet && Number(inviteWallet.balance || 0) > 0);
   const isInviteePredid = !!(invite && inviteWallet && !inviteWallet.is_published);
+
+  // Admin = Base44 admin role OR admin DID
+  const identityDid = identity?.did || (inviteWallet?.classic_address ? `did:xrpl:1:${inviteWallet.classic_address}` : wallets?.[0]?.classic_address ? `did:xrpl:1:${wallets[0].classic_address}` : null);
+  const isAdmin = hasAdminAccess({ user, identityDid });
 
   // Clear broken or completed invite sessions so admin/member dashboard can open normally
   useEffect(() => {
@@ -389,7 +394,7 @@ export default function Dashboard() {
           onPublish={handlePublishDID}
           publishingDid={publishingDid}
           publishingWalletId={publishingWalletId}
-          isAdmin={isAuthenticated && user?.role === 'admin'}
+          isAdmin={isAdmin}
         />
 
         {/* ════════════════════════════════════════
@@ -533,46 +538,51 @@ export default function Dashboard() {
              FULL ADMIN / MEMBER DASHBOARD
              ════════════════════════════════════════ */
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {grantFocusCards.map((item) => (
-                <div key={item} className="rounded-2xl border border-purple-500/20 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-widest text-purple-300/60 mb-2">Current focus</p>
-                  <p className="text-sm font-medium text-white">{item}</p>
-                </div>
-              ))}
-            </div>
-
-
-            {/* Main grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 lg:col-span-2">
-                <ConstitutionalBraidLive compact={false} />
-              </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col">
-                <div className="flex items-center gap-2 mb-4">
-                  <Radio className="w-4 h-4 text-purple-400" />
-                  <h3 className="text-white font-semibold text-sm">Live Signal Log</h3>
-                  <span className="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                </div>
-                <div className="flex-1 space-y-2 overflow-y-auto max-h-72">
-                  {signals.length === 0 ? (
-                    <p className="text-white/20 text-xs py-4 text-center">No signals yet…</p>
-                  ) : signals.map((sig, i) => (
-                    <div key={sig.id || i}
-                    className="flex items-center gap-2 py-1.5 border-b border-white/5 text-xs animate-[fadeIn_0.3s_ease-out]">
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-white/20" />
-                    <span className="text-white/60 flex-1 truncate">{sig.type || sig.signal_type}</span>
-                    {sig.page_name && <span className="text-white/30 truncate hidden sm:block">{sig.page_name}</span>}
-                    <span className="text-white/25 flex-shrink-0">
-                      {sig.time || (sig.created_date ? new Date(sig.created_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '')}
-                    </span>
+            {/* Admin-only: Grant focus cards */}
+            {isAdmin && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {grantFocusCards.map((item) => (
+                  <div key={item} className="rounded-2xl border border-purple-500/20 bg-white/5 p-4">
+                    <p className="text-xs uppercase tracking-widest text-purple-300/60 mb-2">Current focus</p>
+                    <p className="text-sm font-medium text-white">{item}</p>
                   </div>
-                  ))}
+                ))}
+              </div>
+            )}
+
+
+            {/* Admin-only: Braid + Signal Log */}
+            {isAdmin && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 lg:col-span-2">
+                  <ConstitutionalBraidLive compact={false} />
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Radio className="w-4 h-4 text-purple-400" />
+                    <h3 className="text-white font-semibold text-sm">Live Signal Log</h3>
+                    <span className="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                  </div>
+                  <div className="flex-1 space-y-2 overflow-y-auto max-h-72">
+                    {signals.length === 0 ? (
+                      <p className="text-white/20 text-xs py-4 text-center">No signals yet…</p>
+                    ) : signals.map((sig, i) => (
+                      <div key={sig.id || i}
+                      className="flex items-center gap-2 py-1.5 border-b border-white/5 text-xs animate-[fadeIn_0.3s_ease-out]">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-white/20" />
+                      <span className="text-white/60 flex-1 truncate">{sig.type || sig.signal_type}</span>
+                      {sig.page_name && <span className="text-white/30 truncate hidden sm:block">{sig.page_name}</span>}
+                      <span className="text-white/25 flex-shrink-0">
+                        {sig.time || (sig.created_date ? new Date(sig.created_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '')}
+                      </span>
+                    </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* DID Management Panel */}
+            {/* DID Management Panel — all users */}
             <DIDManagementPanel />
 
             {/* My Transaction History */}
@@ -703,6 +713,8 @@ export default function Dashboard() {
               ) : null}
             </div>
 
+            {/* Admin-only: Invited DID Verification */}
+            {isAdmin && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-semibold text-sm flex items-center gap-2">
@@ -745,8 +757,10 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+            )}
 
-            <OctagonMillUI />
+            {/* Admin-only: Octagon Mill */}
+            {isAdmin && <OctagonMillUI />}
 
             {/* Meet Axi */}
             <div className="bg-gradient-to-br from-indigo-950/60 via-purple-950/60 to-pink-950/40 border border-purple-500/30 rounded-2xl p-4 sm:p-6 space-y-5">
