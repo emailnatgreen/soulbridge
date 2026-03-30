@@ -9,6 +9,7 @@ import OctagonMillUI from '@/components/OctagonMillUI';
 import UniversalDashboardHero from '@/components/dashboard/UniversalDashboardHero';
 import UniversalDashboardQuickActions from '@/components/dashboard/UniversalDashboardQuickActions';
 import UniversalDashboardStatus from '@/components/dashboard/UniversalDashboardStatus';
+import IdentityRecognitionCard from '@/components/dashboard/IdentityRecognitionCard';
 
 // ── Signal emitter (global, shared) ──────────────────────────────────────────
 if (typeof window !== 'undefined') {
@@ -345,6 +346,8 @@ export default function Dashboard() {
 
       {/* ── BODY ── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <IdentityRecognitionCard user={user} />
+
         <UniversalDashboardHero
           hasInviteSession={hasInviteSession}
           inviteWallet={inviteWallet}
