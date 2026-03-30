@@ -1,4 +1,22 @@
-export const ADMIN_DID = 'did:xrpl:1:rL1W8aBjXscSHgkiBKQJyYeU9YBpWo2jqz';
+// All admin XRPL addresses — both editor and live DIDs
+const ADMIN_ADDRESSES = [
+  'rL1W8aBjXscSHgkiBKQJyYeU9YBpWo2jqz',
+  'rG1ZAbWEnBegAXFqyqyi8vgQFhDtDHAQH7',
+];
+
+export const ADMIN_DID = 'did:xrpl:1:' + ADMIN_ADDRESSES[0];
+
+/** Extract the raw XRPL address from any DID format */
+function extractAddress(did) {
+  if (!did) return '';
+  const s = String(did).trim();
+  // Handle did:xrpl:1:rXXX or did:xrpl:rXXX
+  const match = s.match(/^did:xrpl:(?:1:)?(.+)$/);
+  if (match) return match[1];
+  // If it's already a raw address starting with 'r'
+  if (s.startsWith('r')) return s;
+  return s;
+}
 
 export function normalizeDid(value) {
   if (!value) return '';
@@ -11,9 +29,9 @@ export function buildDidFromAddress(address) {
 }
 
 export function isAdminByDid(identityDid, classicAddress) {
-  const did = normalizeDid(identityDid);
-  const derivedDid = buildDidFromAddress(classicAddress);
-  return did === ADMIN_DID || derivedDid === ADMIN_DID;
+  const addr1 = extractAddress(identityDid);
+  const addr2 = classicAddress ? String(classicAddress).trim() : '';
+  return ADMIN_ADDRESSES.includes(addr1) || ADMIN_ADDRESSES.includes(addr2);
 }
 
 export function hasAdminAccess({ user, identityDid, classicAddress }) {
