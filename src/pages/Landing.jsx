@@ -97,7 +97,7 @@ export default function Landing() {
       const inviteWallet = localStorage.getItem('sb_invite_wallet');
       const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
       if (inviteSession && parsedWallet && Number(parsedWallet.balance || 0) > 0) {
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (_) {}
   }, [navigate]);
@@ -182,7 +182,7 @@ export default function Landing() {
         if (data.wallet) {
           localStorage.setItem('sb_invite_wallet', JSON.stringify(data.wallet));
         }
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (e) {
       setInviteError(e?.response?.data?.error || 'Could not validate code');
