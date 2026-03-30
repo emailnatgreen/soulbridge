@@ -115,13 +115,15 @@ export default function Dashboard() {
         localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
       } catch (_) {}
 
-      let myWallets = [];
-      if (me?.id) {
-        myWallets = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []);
-      } else if (localIdentity?.did) {
-        const didAddress = String(localIdentity.did).split(':').pop();
-        myWallets = await base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20).catch(() => []);
-      }
+      const didAddress = localIdentity?.did ? String(localIdentity.did).split(':').pop() : null;
+      const [ownerWallets, didWallets] = await Promise.all([
+        me?.id ? base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []) : Promise.resolve([]),
+        didAddress ? base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20).catch(() => []) : Promise.resolve([]),
+      ]);
+
+      const myWallets = [...(ownerWallets || []), ...(didWallets || [])].filter(
+        (wallet, index, array) => array.findIndex(item => item.id === wallet.id) === index
+      );
 
       setWallets(myWallets || []);
 
