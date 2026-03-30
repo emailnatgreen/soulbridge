@@ -108,16 +108,28 @@ export default function Dashboard() {
     loadSignals();
 
     // Load wallets
-    const loadWallets = () => base44.auth.me().then(async me => {
-      if (!me) return;
-      const myWallets = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []);
+    const loadWallets = async () => {
+      const me = await base44.auth.me().catch(() => null);
+      let localIdentity = null;
+      try {
+        localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
+      } catch (_) {}
+
+      let myWallets = [];
+      if (me?.id) {
+        myWallets = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []);
+      } else if (localIdentity?.did) {
+        const didAddress = String(localIdentity.did).split(':').pop();
+        myWallets = await base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20).catch(() => []);
+      }
+
       setWallets(myWallets || []);
 
       const walletIds = (myWallets || []).map(w => w.id).filter(Boolean);
       const txResults = await Promise.all(walletIds.map(id => base44.entities.Transaction.filter({ from_wallet_id: id }, '-created_date', 20).catch(() => [])));
       const mergedTransactions = txResults.flat().sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0)).slice(0, 20);
       setMyTransactions(mergedTransactions);
-    }).catch(() => {});
+    };
     loadWallets();
 
     // Invited user — wallet is now created when the invite is claimed
@@ -183,9 +195,15 @@ export default function Dashboard() {
         if (txid) setPublishTxid(txid);
       }
       // Refresh wallets list
-      base44.auth.me().then(me => {
-        if (me) base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).then(setWallets).catch(() => {});
-      }).catch(() => {});
+      const me = await base44.auth.me().catch(() => null);
+      let refreshedWallets = [];
+      if (me?.id) {
+        refreshedWallets = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []);
+      } else if (identity?.did) {
+        const didAddress = String(identity.did).split(':').pop();
+        refreshedWallets = await base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20).catch(() => []);
+      }
+      setWallets(refreshedWallets || []);
       } catch (e) {
       setPublishError(e?.response?.data?.error || 'Failed to publish DID. Please try again.');
       }
