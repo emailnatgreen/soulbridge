@@ -15,10 +15,24 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkAppState();
+
+    const handleFocus = () => checkAppState();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') checkAppState();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   const checkAppState = async () => {
     try {
+      const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
       setIsLoadingPublicSettings(true);
       setAuthError(null);
       
@@ -29,7 +43,7 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'X-App-Id': appParams.appId
         },
-        token: appParams.token, // Include token if available
+        token: refreshedToken,
         interceptResponses: true
       });
       
@@ -38,9 +52,10 @@ export const AuthProvider = ({ children }) => {
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
+        if (refreshedToken) {
           await checkUserAuth();
         } else {
+          setUser(null);
           setIsLoadingAuth(false);
           setIsAuthenticated(false);
         }
