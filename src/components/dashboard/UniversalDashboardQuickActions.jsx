@@ -31,11 +31,11 @@ export default function UniversalDashboardQuickActions({ hasInviteSession, invit
       ]
     : [
         {
-          title: 'Open dashboard DID tools',
-          description: 'Stay inside the live member dashboard where your real DID wallet and publish flow already exist.',
+          title: 'Go to village home',
+          description: 'Return to the main SoulBridge home and continue from your core dashboard flow.',
           action: (
-            <Link to="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-medium text-white hover:from-purple-500 hover:to-pink-500">
-              <KeyRound className="w-4 h-4" /> Open live dashboard
+            <Link to="/Home" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-medium text-white hover:from-purple-500 hover:to-pink-500">
+              <ArrowRight className="w-4 h-4" /> Open home
             </Link>
           )
         },
