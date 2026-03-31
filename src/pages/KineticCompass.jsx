@@ -232,8 +232,15 @@ export default function KineticCompass() {
     queryFn: () => base44.entities.GovernanceProposal.list('-created_date', 50),
   });
 
-  // Find agent record for logged-in user
-  const myAgent = useMemo(() => agents.find(a => a.created_by === user?.email), [agents, user]);
+  // Find agent record for logged-in user — check created_by, email match, or external addresses
+  const myAgent = useMemo(() => {
+    if (!user?.email) return null;
+    return agents.find(a =>
+      a.created_by === user.email ||
+      a.name?.toLowerCase() === user.full_name?.toLowerCase() ||
+      (a.external_classic_addresses || []).some(addr => addr === user.email)
+    ) || null;
+  }, [agents, user]);
   const myDID = myAgent?.classic_address || myAgent?.wallet_id;
 
   const totalAgents = new Set(kus.map(k => k.agent_id)).size;
@@ -276,12 +283,23 @@ export default function KineticCompass() {
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <VillageHearth kus={kus} />
         <div className="space-y-6">
-          {myAgent && <PersonalCompass kus={kus} agents={agents} agentId={myAgent.id} />}
+          {myAgent ? (
+            <PersonalCompass kus={kus} agents={agents} agentId={myAgent.id} />
+          ) : (
+            <Card className="border-slate-600 bg-slate-800/50">
+              <CardContent className="p-6 text-center space-y-2">
+                <Target className="w-8 h-8 text-slate-500 mx-auto" />
+                <p className="text-slate-300 font-medium">Personal Compass</p>
+                <p className="text-slate-500 text-sm">No agent profile linked to your account yet. Once you have an active agent, your personal kinetic stats will appear here.</p>
+              </CardContent>
+            </Card>
+          )}
           <GovernanceFlowVisualizer proposals={proposals} kus={kus} />
         </div>
+        <div className="mt-6">
+          <KineticWeaverCard />
+        </div>
       </div>
-
-      <KineticWeaverCard />
     </div>
   );
 }
