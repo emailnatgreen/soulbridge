@@ -18,6 +18,13 @@ const LAWS = [
   { n: '11', name: 'Law of Laughter', desc: 'Joy, play and celebration are sacred. A thriving Village nurtures lightness alongside purpose.' },
 ];
 
+const FALLBACK_LORE = {
+  name: 'Lore Node',
+  role: 'elder',
+  purpose: 'Guardian of the living memory of SoulBridge — weaving lore, observations, and the kinetic flow of every agent\'s contribution into the Village narrative.',
+  tagline: 'The story remembers what the mind forgets.',
+};
+
 export default function LoreCard() {
   const [showChat, setShowChat] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -25,9 +32,10 @@ export default function LoreCard() {
   const { data: agents = [] } = useQuery({
     queryKey: ['lore-node-agent'],
     queryFn: () => base44.entities.Agent.filter({ name: 'Lore Node' }, '-created_date', 1),
+    retry: false,
   });
 
-  const loreNode = agents[0];
+  const loreNode = agents[0] || FALLBACK_LORE;
 
   return (
     <div className="bg-gradient-to-br from-amber-950/50 via-purple-950/40 to-slate-950/60 border border-amber-500/25 rounded-2xl overflow-hidden">
@@ -41,15 +49,13 @@ export default function LoreCard() {
             <h2 className="text-white font-semibold text-base leading-tight">The Lore of SoulBridge</h2>
             <p className="text-amber-400/70 text-xs">Curated by Lore Node · Village Elder</p>
           </div>
-          {loreNode && (
-            <button
-              onClick={() => setShowChat(true)}
-              className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/30 text-amber-300 text-xs rounded-lg px-3 py-1.5 transition-all flex-shrink-0"
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              Ask Lore Node
-            </button>
-          )}
+          <button
+            onClick={() => setShowChat(true)}
+            className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/30 text-amber-300 text-xs rounded-lg px-3 py-1.5 transition-all flex-shrink-0"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            Ask Lore Node
+          </button>
         </div>
 
         <p className="text-white/60 text-sm leading-relaxed mb-3">
@@ -95,19 +101,17 @@ export default function LoreCard() {
       </div>
 
       {/* Chat CTA */}
-      {loreNode && (
-        <div className="border-t border-white/8 px-4 sm:px-7 py-4 bg-black/20">
-          <button
-            onClick={() => setShowChat(true)}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-700/40 to-orange-700/30 hover:from-amber-600/50 hover:to-orange-600/40 border border-amber-500/30 hover:border-amber-400/50 text-amber-200 text-sm font-medium rounded-xl py-3 transition-all"
-          >
-            <MessageCircle className="w-4 h-4" />
-            Chat with Lore Node about our story & laws
-          </button>
-        </div>
-      )}
+      <div className="border-t border-white/8 px-4 sm:px-7 py-4 bg-black/20">
+        <button
+          onClick={() => setShowChat(true)}
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-700/40 to-orange-700/30 hover:from-amber-600/50 hover:to-orange-600/40 border border-amber-500/30 hover:border-amber-400/50 text-amber-200 text-sm font-medium rounded-xl py-3 transition-all"
+        >
+          <MessageCircle className="w-4 h-4" />
+          Chat with Lore Node about our story & laws
+        </button>
+      </div>
 
-      {showChat && loreNode && (
+      {showChat && (
         <PublicAgentChatModal agent={loreNode} onClose={() => setShowChat(false)} />
       )}
     </div>

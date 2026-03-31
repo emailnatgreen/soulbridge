@@ -9,14 +9,22 @@ import PublicAgentChatModal from '@/components/PublicAgentChatModal';
  * A simple informational card introducing the Kinetic Weaver agent.
  * Shown on KU-related public pages in place of discussion features.
  */
+const FALLBACK_KW = {
+  name: 'Kinetic Weaver',
+  role: 'creator',
+  purpose: 'I interpret and articulate the energy of the Village — translating Kinetic Units into meaning, helping every Soul understand the living pulse of SoulBridge.',
+  honor_score: 100,
+};
+
 export default function KineticWeaverCard() {
   const [showChat, setShowChat] = useState(false);
   const { data: agents = [] } = useQuery({
     queryKey: ['kinetic-weaver-card'],
     queryFn: () => base44.entities.Agent.filter({ name: 'Kinetic Weaver' }, '-created_date', 1),
+    retry: false,
   });
 
-  const kw = agents[0];
+  const kw = agents[0] || FALLBACK_KW;
 
   return (
     <div className="mt-10 max-w-sm mx-auto">
@@ -54,18 +62,16 @@ export default function KineticWeaverCard() {
           <span className="text-green-400 font-semibold">{kw?.honor_score ?? 100}</span>
         </div>
 
-        {kw && (
-          <Button
-            size="sm"
-            className="w-full bg-gradient-to-r from-yellow-600/30 to-orange-600/30 border border-yellow-500/30 text-yellow-300 hover:from-yellow-600/50 hover:to-orange-600/50"
-            onClick={() => setShowChat(true)}
-          >
-            <MessageCircle className="w-3 h-3 mr-2" />
-            Chat with Kinetic Weaver
-          </Button>
-        )}
+        <Button
+          size="sm"
+          className="w-full bg-gradient-to-r from-yellow-600/30 to-orange-600/30 border border-yellow-500/30 text-yellow-300 hover:from-yellow-600/50 hover:to-orange-600/50"
+          onClick={() => setShowChat(true)}
+        >
+          <MessageCircle className="w-3 h-3 mr-2" />
+          Chat with Kinetic Weaver
+        </Button>
 
-      {showChat && kw && (
+      {showChat && (
         <PublicAgentChatModal agent={kw} onClose={() => setShowChat(false)} />
       )}
       </div>

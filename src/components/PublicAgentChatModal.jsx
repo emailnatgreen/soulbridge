@@ -43,16 +43,20 @@ export default function PublicAgentChatModal({ agent, onClose }) {
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      const convId = `public-agent-${agent.id}-${Date.now()}`;
+      const convId = `public-agent-${agent.id || agent.name}-${Date.now()}`;
       convIdRef.current = convId;
 
-      // Send a greeting prompt via axiRespond
+      // Send a greeting prompt via agent-specific chat function
       const greetingPrompt = `[SYSTEM] You are now speaking as ${agent.name} (role: ${agent.role || 'citizen'}). ${agent.purpose || ''}. A visitor has opened a chat with you. Greet them warmly in character. Keep it brief (2-3 sentences).`;
 
       try {
-        await base44.functions.invoke('axiRespond', {
+        await base44.functions.invoke('agentPublicChat', {
           conversation_id: convId,
           user_message: greetingPrompt,
+          agent_name: agent.name,
+          agent_role: agent.role,
+          agent_purpose: agent.purpose,
+          agent_tagline: agent.tagline,
           is_greeting: true,
         });
         await loadMessages(convId);
@@ -78,9 +82,13 @@ export default function PublicAgentChatModal({ agent, onClose }) {
     setInput('');
     setSending(true);
     try {
-      await base44.functions.invoke('axiRespond', {
+      await base44.functions.invoke('agentPublicChat', {
         conversation_id: convIdRef.current,
         user_message: text,
+        agent_name: agent.name,
+        agent_role: agent.role,
+        agent_purpose: agent.purpose,
+        agent_tagline: agent.tagline,
       });
       await loadMessages(convIdRef.current);
     } catch (err) {
@@ -89,7 +97,7 @@ export default function PublicAgentChatModal({ agent, onClose }) {
     } finally {
       setSending(false);
     }
-  }, [input, sending, loadMessages]);
+  }, [input, sending, loadMessages, agent]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
