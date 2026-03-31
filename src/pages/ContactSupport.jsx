@@ -1,10 +1,13 @@
 import React from 'react';
 import InquiryForm from '@/components/InquiryForm';
+import PublicMobileNav from '@/components/PublicMobileNav';
 import { Mail, Shield, Zap } from 'lucide-react';
 
 export default function ContactSupport() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950 flex items-center justify-center px-4 py-16">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950">
+            <PublicMobileNav />
+            <div className="flex items-center justify-center px-4 py-16">
             <div className="w-full max-w-lg">
                 {/* Header */}
                 <div className="text-center mb-10">
@@ -42,6 +45,7 @@ export default function ContactSupport() {
                 <p className="text-center text-slate-600 text-xs mt-6">
                     Replies are sent to your email from the SoulBridge support team.
                 </p>
+            </div>
             </div>
         </div>
     );

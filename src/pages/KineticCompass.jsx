@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import PublicMobileNav from '@/components/PublicMobileNav';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -249,13 +250,9 @@ export default function KineticCompass() {
   const energyIndex = Math.min(Math.round((kus.reduce((s, k) => s + (k.weighted_score || 1), 0) / Math.max(kus.length, 1)) * 20), 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 p-3 sm:p-4 md:p-8">
-      {/* Back nav */}
-      <div className="max-w-5xl mx-auto mb-4">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-300 text-sm transition-colors">
-          ← Back to Home
-        </Link>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+      <PublicMobileNav />
+      <div className="p-3 sm:p-4 md:p-8">
 
       {/* Header */}
       <div className="text-center mb-8">
@@ -301,6 +298,7 @@ export default function KineticCompass() {
         <div className="mt-6">
           <KineticWeaverCard />
         </div>
+      </div>
       </div>
     </div>
   );

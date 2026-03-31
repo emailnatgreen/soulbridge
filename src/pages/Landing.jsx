@@ -153,11 +153,9 @@ export default function Landing() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [agents, wallets] = await Promise.all([
-          base44.entities.Agent.list('created_date', 1000),
-          base44.entities.Wallet.filter({ is_published: true }, 'created_date', 1000)
-        ]);
-        setStats({ agents: agents.length, dids: wallets.length });
+        const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
+        const data = res?.data || {};
+        setStats({ agents: (data.agents || []).length, dids: data.wallets_count || 0 });
       } catch (e) {}
     };
     fetchStats();

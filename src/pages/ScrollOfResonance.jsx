@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import PublicMobileNav from '@/components/PublicMobileNav';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -144,13 +145,9 @@ export default function ScrollOfResonance() {
   const totalKuScore = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-slate-950 p-3 sm:p-4 md:p-8">
-      {/* Back nav */}
-      <div className="max-w-3xl mx-auto mb-4">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 text-sm transition-colors">
-          ← Back to Home
-        </Link>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-slate-950">
+      <PublicMobileNav />
+      <div className="p-3 sm:p-4 md:p-8">
 
       {/* Header */}
       <div className="text-center mb-10 max-w-2xl mx-auto">
@@ -212,6 +209,7 @@ export default function ScrollOfResonance() {
         </Tabs>
 
         <KineticWeaverCard />
+      </div>
       </div>
     </div>
   );
