@@ -52,21 +52,27 @@ export default function Home() {
     refetchInterval: 10000,
   });
 
+  // Re-check identity and invite session on mount and on storage changes
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('soulbridge_identity');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.connected) setIdentity(parsed);
-      }
-      const inviteSession = localStorage.getItem('sb_invite_session');
-      const inviteWallet = localStorage.getItem('sb_invite_wallet');
-      const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
-      if (inviteSession && parsedWallet) {
-        setHasInviteSession(true);
-      }
-    } catch (e) {}
-  }, [navigate]);
+    const syncIdentity = () => {
+      try {
+        const stored = localStorage.getItem('soulbridge_identity');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.connected) setIdentity(parsed);
+        }
+        const inviteSession = localStorage.getItem('sb_invite_session');
+        const inviteWallet = localStorage.getItem('sb_invite_wallet');
+        const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
+        if (inviteSession && parsedWallet) {
+          setHasInviteSession(true);
+        }
+      } catch (e) {}
+    };
+    syncIdentity();
+    window.addEventListener('storage', syncIdentity);
+    return () => window.removeEventListener('storage', syncIdentity);
+  }, []);
 
   // Helper to resolve agent from activity
   const resolveAgent = (activity) => {
