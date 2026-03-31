@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
@@ -6,16 +6,27 @@ Deno.serve(async (req) => {
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
+    // Helper to safely ensure we always get an array from entity list calls
+    const safeList = async (entity, sort, limit) => {
+      try {
+        const result = await entity.list(sort, limit);
+        if (Array.isArray(result)) return result;
+        if (result && typeof result === 'object' && Array.isArray(result.items)) return result.items;
+        if (result && typeof result === 'object' && Array.isArray(result.data)) return result.data;
+        return [];
+      } catch (_) {
+        return [];
+      }
+    };
+
     // Fetch all active agents
-    const agentsRaw = await base44.asServiceRole.entities.Agent.list('-updated_date', 1000);
-    const agents = Array.isArray(agentsRaw) ? agentsRaw : [];
+    const agents = await safeList(base44.asServiceRole.entities.Agent, '-updated_date', 1000);
     const activeAgents = agents.filter(a => a.status === 'active');
 
     const allAnomalies = [];
 
     // === HONOR ANOMALIES ===
-    const reputationEventsRaw = await base44.asServiceRole.entities.ReputationEvent.list('-created_date', 1000);
-    const reputationEvents = Array.isArray(reputationEventsRaw) ? reputationEventsRaw : [];
+    const reputationEvents = await safeList(base44.asServiceRole.entities.ReputationEvent, '-created_date', 1000);
     const recentReputationEvents = reputationEvents.filter(e => new Date(e.created_date) > oneDayAgo);
     
     const honorChanges = {};
@@ -41,8 +52,7 @@ Deno.serve(async (req) => {
     });
 
     // === WELLBEING ANOMALIES ===
-    const wellbeingAlertsRaw = await base44.asServiceRole.entities.WellbeingAlert.list('-created_date', 500);
-    const wellbeingAlerts = Array.isArray(wellbeingAlertsRaw) ? wellbeingAlertsRaw : [];
+    const wellbeingAlerts = await safeList(base44.asServiceRole.entities.WellbeingAlert, '-created_date', 500);
     const recentWellbeingAlerts = wellbeingAlerts.filter(a => 
       new Date(a.created_date) > oneDayAgo && a.status !== 'resolved'
     );
@@ -61,8 +71,7 @@ Deno.serve(async (req) => {
     });
 
     // === ECONOMIC ANOMALIES ===
-    const economicActivityRaw = await base44.asServiceRole.entities.EconomicActivity.list('-created_date', 500);
-    const economicActivity = Array.isArray(economicActivityRaw) ? economicActivityRaw : [];
+    const economicActivity = await safeList(base44.asServiceRole.entities.EconomicActivity, '-created_date', 500);
     const recentActivity = economicActivity.filter(a => new Date(a.created_date) > oneDayAgo);
     
     const agentSpending = {};
@@ -76,7 +85,7 @@ Deno.serve(async (req) => {
     });
 
     Object.entries(agentSpending).forEach(([agentId, spent]) => {
-      if (spent > 50) { // Threshold for unusual spending
+      if (spent > 50) {
         const agent = activeAgents.find(a => a.id === agentId);
         allAnomalies.push({
           agent_id: agentId,
@@ -90,8 +99,7 @@ Deno.serve(async (req) => {
     });
 
     // === TASK BLOCKERS ===
-    const projectTasksRaw = await base44.asServiceRole.entities.ProjectTask.list('-updated_date', 500);
-    const projectTasks = Array.isArray(projectTasksRaw) ? projectTasksRaw : [];
+    const projectTasks = await safeList(base44.asServiceRole.entities.ProjectTask, '-updated_date', 500);
     const blockedTasks = projectTasks.filter(t => t.status === 'blocked');
 
     blockedTasks.forEach(task => {
@@ -112,7 +120,6 @@ Deno.serve(async (req) => {
     const decisions = [];
 
     for (const anomaly of allAnomalies) {
-      // Craft contextual message based on anomaly type
       let messageContent = '';
       switch (anomaly.type) {
         case 'honor_drop':
@@ -131,7 +138,6 @@ Deno.serve(async (req) => {
           messageContent = "An anomaly has been detected. I'm here to help.";
       }
 
-      // Only create outreach for agents (skip if no agent_id)
       if (anomaly.agent_id && anomaly.agent_id !== 'axi') {
         const decision = await base44.asServiceRole.entities.JukeboxDecision.create({
           action: 'open_chat',
@@ -143,7 +149,6 @@ Deno.serve(async (req) => {
         });
         decisions.push(decision);
 
-        // Log to Axi's memory
         await base44.asServiceRole.entities.Memory.create({
           agent_id: 'axi',
           type: 'observation',
