@@ -8,7 +8,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { page } = await req.json();
+    const body = await req.json();
+    const { page } = body;
 
     if (page === 'landing') {
       const [agents, wallets, kus] = await Promise.all([
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
     }
 
     if (page === 'agent_lookup') {
-      const { agent_name } = await req.json().catch(() => ({}));
+      const { agent_name } = body || {};
       const agents = await base44.asServiceRole.entities.Agent.filter(
         { name: agent_name },
         '-created_date',
