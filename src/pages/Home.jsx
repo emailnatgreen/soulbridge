@@ -181,15 +181,14 @@ export default function Home() {
                 <span className="text-green-300 text-[10px] sm:text-xs">DID Connected</span>
               </div>
             )}
-            {identity?.connected ? (
-              <Button
-                onClick={() => navigate('/dashboard')}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-8 gap-1.5 text-xs px-3"
-              >
-                <ArrowRight className="w-3.5 h-3.5" />
-                Dashboard
-              </Button>
-            ) : (
+            <Button
+              onClick={() => navigate('/dashboard')}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-8 gap-1.5 text-xs px-3"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+              Dashboard
+            </Button>
+            {!identity?.connected && (
               <Button
                 onClick={() => navigate('/')}
                 className="bg-purple-600 hover:bg-purple-700 text-white h-8 text-xs px-3 gap-1.5"
