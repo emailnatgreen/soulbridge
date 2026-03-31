@@ -361,19 +361,19 @@ export default function Dashboard() {
       {/* ── HEADER ── */}
       <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl px-4 sm:px-6 py-3 sticky top-0 z-20">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <img src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
-              alt="SoulBridge" className="w-8 h-8 rounded-lg object-contain" />
-            <div className="hidden sm:block">
-              <h1 className="text-white font-semibold text-base leading-tight">SoulBridge Command</h1>
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-white/30 text-xs">Production · XRPL Live</p>
-                {(inviteWallet?.classic_address || identity?.did || wallets?.[0]?.classic_address) && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] text-purple-200">
-                    DID Signal: {identity?.did || (inviteWallet?.classic_address ? `did:xrpl:1:${inviteWallet.classic_address}` : wallets?.[0]?.classic_address ? `did:xrpl:1:${wallets[0].classic_address}` : '')}
-                  </span>
-                )}
-              </div>
+              alt="SoulBridge" className="w-8 h-8 rounded-lg object-contain flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-white font-semibold text-sm sm:text-base leading-tight">SoulBridge</h1>
+              {(inviteWallet?.classic_address || identity?.did || wallets?.[0]?.classic_address) ? (
+                <span className="inline-flex items-center gap-1 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-[9px] sm:text-[10px] text-green-200 max-w-full mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                  <span className="truncate">DID: {identity?.did || (inviteWallet?.classic_address ? `did:xrpl:1:${inviteWallet.classic_address}` : wallets?.[0]?.classic_address ? `did:xrpl:1:${wallets[0].classic_address}` : '')}</span>
+                </span>
+              ) : (
+                <p className="text-white/30 text-[10px] sm:text-xs">Production · XRPL Live</p>
+              )}
             </div>
           </div>
 
