@@ -198,13 +198,7 @@ export default function ScrollOfResonance() {
           </TabsContent>
 
           <TabsContent value="all">
-            <MemoryScroll memories={memories.filter(m => {
-              const kw = m.keywords || [];
-              if (kw.includes('system_alert') || kw.includes('automation_error') || kw.includes('anomaly_detection')) return false;
-              if (m.content && m.content.startsWith('[Anomaly:')) return false;
-              if (m.content && m.content.startsWith('Critical Automation Alert:')) return false;
-              return true;
-            })} />
+            <MemoryScroll memories={memories} />
           </TabsContent>
         </Tabs>
 

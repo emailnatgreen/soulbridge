@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ScrollText, Zap, Mail } from 'lucide-react';
 
 const PUBLIC_LINKS = [
@@ -9,12 +9,14 @@ const PUBLIC_LINKS = [
 
 export default function PublicMobileNav() {
   const currentPath = window.location.pathname;
+  const navigate = useNavigate();
 
   return (
     <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-lg border-b border-white/10 px-3 py-2 flex items-center gap-2 sm:gap-3">
       <button
-        onClick={() => { window.location.href = '/'; }}
-        className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium transition-colors flex-shrink-0 bg-transparent border-none cursor-pointer"
+        type="button"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/'); }}
+        className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium transition-colors flex-shrink-0 bg-transparent border-none cursor-pointer p-0"
       >
         <ArrowLeft className="w-4 h-4" />
         <img
