@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ScrollText, Zap, Mail } from 'lucide-react';
+import { ArrowLeft, ScrollText, Zap, Mail, Home } from 'lucide-react';
 
 const PUBLIC_LINKS = [
   { label: 'Scroll', path: '/ScrollOfResonance', icon: ScrollText },
@@ -12,18 +12,18 @@ export default function PublicMobileNav() {
 
   return (
     <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-lg border-b border-white/10 px-3 py-2 flex items-center gap-2 sm:gap-3">
-      <Link
-        to="/"
+      <a
+        href="/"
         className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium transition-colors flex-shrink-0"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <Home className="w-4 h-4" />
         <img
           src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
           alt="SB"
           className="w-5 h-5 rounded object-contain"
         />
         <span className="hidden sm:inline">SoulBridge</span>
-      </Link>
+      </a>
 
       <div className="flex-1" />
 
