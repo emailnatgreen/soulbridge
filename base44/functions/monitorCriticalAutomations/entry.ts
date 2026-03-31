@@ -24,15 +24,17 @@ Deno.serve(async (req) => {
       console.warn(`[monitorCriticalAutomations] Could not retrieve last successful run timestamp: ${logErr.message}`);
     }
 
-    // Query AutomationLog for errors/warnings since last run
+    // Query AutomationLog for errors/warnings since last run (capped to 10 to avoid rate limits)
     const criticalLogs = await base44.asServiceRole.entities.AutomationLog.filter(
       { status: { "$in": ["error", "warning"] }, run_at: { "$gt": lastRunTimestamp } },
       'run_at',
-      100
+      10
     );
 
     const processedAlerts = [];
-    for (const log_entry of criticalLogs) {
+    // Process max 5 alerts per run to stay within rate limits
+    const logsToProcess = criticalLogs.slice(0, 5);
+    for (const log_entry of logsToProcess) {
       try {
         const automation_name = log_entry.automation_name;
         const function_name = log_entry.function_name;
@@ -44,7 +46,7 @@ Deno.serve(async (req) => {
 
         const alert_message = `Critical Automation Alert: ${automation_name} (${function_name}) reported ${status} at ${log_timestamp}.\nMessage: ${message}\nDetails: ${error_detail}`;
         
-        // 1. Create a Memory entry for Axi
+        // Create a Memory entry for Axi
         await base44.asServiceRole.entities.Memory.create({
           agent_id: AXI_AGENT_ID,
           type: "observation",
@@ -56,7 +58,10 @@ Deno.serve(async (req) => {
           related_entity_type: "AutomationLog"
         });
 
-        // 2. Create an AgentNotification for Axi
+        // Small delay between creates to avoid rate limits
+        await new Promise(r => setTimeout(r, 300));
+
+        // Create an AgentNotification for Axi
         await base44.asServiceRole.entities.AgentNotification.create({
           recipient_agent_id: AXI_AGENT_ID,
           notification_type: "system",
@@ -67,6 +72,8 @@ Deno.serve(async (req) => {
           related_entity_type: "AutomationLog",
           sender_agent_id: AXI_AGENT_ID
         });
+
+        await new Promise(r => setTimeout(r, 300));
 
         processedAlerts.push({ log_id, status: "success" });
       } catch (innerError) {
