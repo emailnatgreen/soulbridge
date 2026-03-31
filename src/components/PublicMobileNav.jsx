@@ -12,9 +12,9 @@ export default function PublicMobileNav() {
 
   return (
     <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-lg border-b border-white/10 px-3 py-2 flex items-center gap-2 sm:gap-3">
-      <a
-        href="/"
-        className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium transition-colors flex-shrink-0"
+      <button
+        onClick={() => { window.location.href = '/'; }}
+        className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium transition-colors flex-shrink-0 bg-transparent border-none cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
         <img
@@ -23,7 +23,7 @@ export default function PublicMobileNav() {
           className="w-5 h-5 rounded object-contain"
         />
         <span className="text-xs sm:text-sm">SoulBridge</span>
-      </a>
+      </button>
 
       <div className="flex-1" />
 
