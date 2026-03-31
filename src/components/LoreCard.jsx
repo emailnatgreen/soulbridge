@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import AgentChatModal from '@/components/AgentChatModal';
+import PublicAgentChatModal from '@/components/PublicAgentChatModal';
 import { BookOpen, MessageCircle, Star } from 'lucide-react';
 
 const LAWS = [
@@ -108,7 +108,7 @@ export default function LoreCard() {
       )}
 
       {showChat && loreNode && (
-        <AgentChatModal agent={loreNode} onClose={() => setShowChat(false)} />
+        <PublicAgentChatModal agent={loreNode} onClose={() => setShowChat(false)} />
       )}
     </div>
   );

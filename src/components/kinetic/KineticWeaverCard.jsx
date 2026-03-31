@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Zap, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import AgentChatModal from '@/components/AgentChatModal';
+import PublicAgentChatModal from '@/components/PublicAgentChatModal';
 
 /**
  * A simple informational card introducing the Kinetic Weaver agent.
@@ -66,7 +66,7 @@ export default function KineticWeaverCard() {
         )}
 
       {showChat && kw && (
-        <AgentChatModal agent={kw} onClose={() => setShowChat(false)} />
+        <PublicAgentChatModal agent={kw} onClose={() => setShowChat(false)} />
       )}
       </div>
     </div>
