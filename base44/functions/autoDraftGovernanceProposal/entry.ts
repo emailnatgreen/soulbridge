@@ -3,11 +3,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const payload = await req.json();
+    let payload = {};
+    try { payload = await req.json(); } catch { /* empty body */ }
     
     // Entity automation payload: { event, data, old_data }
     // Direct invocation payload: { signal_id, alert_summary, governance_focus }
-    const signal_id = payload.signal_id || payload.event?.entity_id || payload.data?.id;
+    const signal_id = payload.signal_id || payload?.event?.entity_id || payload?.data?.id || payload?.id;
+
+    if (!signal_id) {
+      return Response.json({ error: 'signal_id required', received_keys: Object.keys(payload || {}) }, { status: 400 });
+    }
     const { alert_summary, governance_focus } = payload;
 
     // Use entity data directly if provided, otherwise build a minimal signal object
