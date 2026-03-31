@@ -115,24 +115,22 @@ function KineticStream({ kus, agents }) {
 export default function ScrollOfResonance() {
   const [tab, setTab] = useState('lore');
 
-  const { data: memories = [] } = useQuery({
-    queryKey: ['scroll-memories'],
-    queryFn: () => base44.entities.Memory.filter(
-      {},
-      '-created_date',
-      50
-    ),
+  const { data: scrollData } = useQuery({
+    queryKey: ['scroll-page-data'],
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('publicPageData', { page: 'scroll' });
+        return res?.data || { memories: [], kus: [], agents: [] };
+      } catch (_) {
+        return { memories: [], kus: [], agents: [] };
+      }
+    },
+    retry: false,
   });
 
-  const { data: kus = [] } = useQuery({
-    queryKey: ['scroll-kus'],
-    queryFn: () => base44.entities.KineticUnit.list('-created_date', 100),
-  });
-
-  const { data: agents = [] } = useQuery({
-    queryKey: ['scroll-agents'],
-    queryFn: () => base44.entities.Agent.list('-created_date', 200),
-  });
+  const memories = scrollData?.memories || [];
+  const kus = scrollData?.kus || [];
+  const agents = scrollData?.agents || [];
 
   // Filter to lore-worthy types, excluding internal system alerts and automation errors
   const loreMemories = memories.filter(m => {

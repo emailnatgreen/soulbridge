@@ -216,21 +216,23 @@ function GovernanceFlowVisualizer({ proposals, kus }) {
 export default function KineticCompass() {
   const { user } = useAuth();
 
-  const { data: kus = [] } = useQuery({
-    queryKey: ['compass-kus'],
-    queryFn: () => base44.entities.KineticUnit.list('-created_date', 1000),
+  const { data: compassData } = useQuery({
+    queryKey: ['compass-page-data'],
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('publicPageData', { page: 'compass' });
+        return res?.data || { kus: [], agents: [], proposals: [] };
+      } catch (_) {
+        return { kus: [], agents: [], proposals: [] };
+      }
+    },
     refetchInterval: 60_000,
+    retry: false,
   });
 
-  const { data: agents = [] } = useQuery({
-    queryKey: ['compass-agents'],
-    queryFn: () => base44.entities.Agent.list('-created_date', 200),
-  });
-
-  const { data: proposals = [] } = useQuery({
-    queryKey: ['compass-proposals'],
-    queryFn: () => base44.entities.GovernanceProposal.list('-created_date', 50),
-  });
+  const kus = compassData?.kus || [];
+  const agents = compassData?.agents || [];
+  const proposals = compassData?.proposals || [];
 
   // Find agent record for logged-in user — check created_by, email match, or external addresses
   const myAgent = useMemo(() => {

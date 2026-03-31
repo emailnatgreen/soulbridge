@@ -31,7 +31,15 @@ export default function LoreCard() {
 
   const { data: agents = [] } = useQuery({
     queryKey: ['lore-node-agent'],
-    queryFn: () => base44.entities.Agent.filter({ name: 'Lore Node' }, '-created_date', 1),
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
+        const all = res?.data?.agents || [];
+        return all.filter(a => a.name === 'Lore Node');
+      } catch (_) {
+        return [];
+      }
+    },
     retry: false,
   });
 

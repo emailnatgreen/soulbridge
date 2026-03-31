@@ -20,7 +20,15 @@ export default function KineticWeaverCard() {
   const [showChat, setShowChat] = useState(false);
   const { data: agents = [] } = useQuery({
     queryKey: ['kinetic-weaver-card'],
-    queryFn: () => base44.entities.Agent.filter({ name: 'Kinetic Weaver' }, '-created_date', 1),
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
+        const all = res?.data?.agents || [];
+        return all.filter(a => a.name === 'Kinetic Weaver');
+      } catch (_) {
+        return [];
+      }
+    },
     retry: false,
   });
 

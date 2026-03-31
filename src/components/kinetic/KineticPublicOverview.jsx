@@ -20,9 +20,17 @@ const KU_TYPE_COLORS = {
 export default function KineticPublicOverview() {
   const { data: kus = [] } = useQuery({
     queryKey: ['public-kinetic-kus'],
-    queryFn: () => base44.entities.KineticUnit.list('-created_date', 500),
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
+        return res?.data?.kus || [];
+      } catch (_) {
+        return [];
+      }
+    },
     staleTime: 60000,
     refetchInterval: 60000,
+    retry: false,
   });
 
   // Aggregated, anonymised metrics only
