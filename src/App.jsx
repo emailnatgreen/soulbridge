@@ -99,8 +99,8 @@ const AuthenticatedApp = () => {
       <Route path="/ProjectSanctuary" element={<LayoutWrapper currentPageName="ProjectSanctuary"><ProjectSanctuary /></LayoutWrapper>} />
       <Route path="/SovereignID" element={<LayoutWrapper currentPageName="SovereignID"><SovereignID /></LayoutWrapper>} />
       <Route path="/KineticGridDashboard" element={<LayoutWrapper currentPageName="KineticGridDashboard"><KineticGridDashboard /></LayoutWrapper>} />
-      <Route path="/ScrollOfResonance" element={<LayoutWrapper currentPageName="ScrollOfResonance"><ScrollOfResonance /></LayoutWrapper>} />
-      <Route path="/KineticCompass" element={<LayoutWrapper currentPageName="KineticCompass"><KineticCompass /></LayoutWrapper>} />
+      <Route path="/ScrollOfResonance" element={<ScrollOfResonance />} />
+      <Route path="/KineticCompass" element={<KineticCompass />} />
       <Route path="/InviteLinkManager" element={<LayoutWrapper currentPageName="InviteLinkManager"><InviteLinkManager /></LayoutWrapper>} />
       <Route path="/NodeCovenant" element={<LayoutWrapper currentPageName="NodeCovenant"><NodeCovenant /></LayoutWrapper>} />
 
