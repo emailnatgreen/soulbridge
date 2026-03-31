@@ -8,7 +8,12 @@ Deno.serve(async (req) => {
     try { body = await req.json(); } catch { /* no body — ok */ }
 
     // Support direct calls ({ proposal_id }) and entity automation payloads ({ event, data })
-    const proposal_id = body.proposal_id || body.event?.entity_id || body.data?.id || body.id;
+    // Entity automations send: { event: { type, entity_name, entity_id }, data: { ...entity fields } }
+    const proposal_id = body.proposal_id
+      || body?.event?.entity_id
+      || body?.data?.id
+      || body?.id
+      || (typeof body === 'string' ? null : Object.values(body || {}).find(v => v?.entity_id)?.entity_id);
 
     if (!proposal_id) {
       return Response.json({ error: 'proposal_id required', received_body: JSON.stringify(body) }, { status: 400 });
