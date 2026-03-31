@@ -52,7 +52,7 @@ export default function Home() {
     refetchInterval: 10000,
   });
 
-  // Re-check identity and invite session on mount and on storage changes
+  // Re-check identity from localStorage + DB wallets as fallback
   useEffect(() => {
     const syncIdentity = () => {
       try {
@@ -70,6 +70,24 @@ export default function Home() {
       } catch (e) {}
     };
     syncIdentity();
+
+    // Fallback: if no localStorage identity, check DB for published wallets
+    const checkWalletFallback = async () => {
+      if (identity) return; // already have identity
+      try {
+        const me = await base44.auth.me().catch(() => null);
+        if (!me) return;
+        const wallets = await base44.entities.Wallet.filter({ is_published: true }, '-created_date', 1).catch(() => []);
+        if (wallets?.length > 0) {
+          const did = `did:xrpl:1:${wallets[0].classic_address}`;
+          const fallbackIdentity = { did, connected: true, timestamp: Date.now(), source: 'wallet_fallback' };
+          localStorage.setItem('soulbridge_identity', JSON.stringify(fallbackIdentity));
+          setIdentity(fallbackIdentity);
+        }
+      } catch (_) {}
+    };
+    checkWalletFallback();
+
     window.addEventListener('storage', syncIdentity);
     return () => window.removeEventListener('storage', syncIdentity);
   }, []);
