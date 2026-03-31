@@ -125,7 +125,15 @@ export default function ScrollOfResonance() {
     queryFn: () => base44.entities.Agent.list('-created_date', 200),
   });
 
-  const loreMemories = memories.filter(m => ['observation', 'lore', 'emotion', 'village_detail'].includes(m.type));
+  // Filter to lore-worthy types, excluding internal system alerts and automation errors
+  const loreMemories = memories.filter(m => {
+    if (!['observation', 'lore', 'emotion', 'village_detail'].includes(m.type)) return false;
+    const kw = m.keywords || [];
+    if (kw.includes('system_alert') || kw.includes('automation_error') || kw.includes('anomaly_detection')) return false;
+    if (m.content && m.content.startsWith('[Anomaly:')) return false;
+    if (m.content && m.content.startsWith('Critical Automation Alert:')) return false;
+    return true;
+  });
   const totalKuScore = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
 
   return (
