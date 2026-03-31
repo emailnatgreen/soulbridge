@@ -17,8 +17,13 @@ import {
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
-  const [identity, setIdentity] = useState(null);
+  const [identity, setIdentity] = useState(() => {
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      const parsed = stored ? JSON.parse(stored) : null;
+      return parsed?.connected ? parsed : null;
+    } catch (_) { return null; }
+  });
   const [hasInviteSession, setHasInviteSession] = useState(false);
   const [proposals, setProposals] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -26,6 +31,7 @@ export default function Home() {
   const [liveCounts, setLiveCounts] = useState({ agents: 0, proposals: 0, dids: 0, projects: 0, mentors: 0, skills: 0, resources: 0, activeSkills: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
 
   // Real-time active AIProjects count
   const { data: activeProjects = [] } = useQuery({
