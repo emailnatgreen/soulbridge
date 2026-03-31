@@ -148,22 +148,31 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="flex-1 max-w-xs relative hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search agents, proposals..."
-              className="w-full bg-white/5 border border-white/10 rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-purple-400/50"
-            />
-          </div>
+          {/* DID Signal — visible on all sizes */}
+          {identity?.did && (
+            <div className="flex-1 min-w-0 px-2">
+              <span className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[9px] sm:text-[10px] text-purple-200 max-w-full">
+                <span className="truncate">DID: {identity.did}</span>
+              </span>
+            </div>
+          )}
+          {!identity?.did && (
+            <div className="flex-1 max-w-xs relative hidden sm:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search agents, proposals..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-purple-400/50"
+              />
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             {identity?.did && (
-              <div className="hidden md:flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5">
+              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5">
                 <CheckCircle className="w-3 h-3 text-green-400" />
-                <span className="text-green-300 text-xs">DID Connected</span>
+                <span className="text-green-300 text-[10px] sm:text-xs">DID Connected</span>
               </div>
             )}
             {identity?.connected ? (
@@ -177,9 +186,9 @@ export default function Home() {
             ) : (
               <Button
                 onClick={() => navigate('/')}
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 h-8 text-xs px-3"
+                className="bg-purple-600 hover:bg-purple-700 text-white h-8 text-xs px-3 gap-1.5"
               >
+                <Shield className="w-3 h-3" />
                 Connect DID
               </Button>
             )}
