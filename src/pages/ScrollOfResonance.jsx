@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import PublicMobileNav from '@/components/PublicMobileNav';
+
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -146,7 +146,11 @@ export default function ScrollOfResonance() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-slate-950">
-      <PublicMobileNav />
+      <div className="sticky top-0 z-[9999] bg-slate-900/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
+        <a href="/" style={{position:'relative',zIndex:9999,display:'inline-flex',alignItems:'center',gap:'8px',color:'rgba(255,255,255,0.8)',fontSize:'14px',fontWeight:500,textDecoration:'none'}}>
+          ← Back to SoulBridge
+        </a>
+      </div>
       <div className="p-3 sm:p-4 md:p-8">
 
       {/* Header */}

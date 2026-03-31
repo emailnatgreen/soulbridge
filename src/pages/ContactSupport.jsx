@@ -1,12 +1,16 @@
 import React from 'react';
 import InquiryForm from '@/components/InquiryForm';
-import PublicMobileNav from '@/components/PublicMobileNav';
+
 import { Mail, Shield, Zap } from 'lucide-react';
 
 export default function ContactSupport() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950">
-            <PublicMobileNav />
+            <div className="sticky top-0 z-[9999] bg-slate-900/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
+              <a href="/" style={{position:'relative',zIndex:9999,display:'inline-flex',alignItems:'center',gap:'8px',color:'rgba(255,255,255,0.8)',fontSize:'14px',fontWeight:500,textDecoration:'none'}}>
+                ← Back to SoulBridge
+              </a>
+            </div>
             <div className="flex items-center justify-center px-4 py-16">
             <div className="w-full max-w-lg">
                 {/* Header */}
