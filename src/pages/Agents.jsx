@@ -8,6 +8,7 @@ import { Plus, Users, Sparkles, Flame, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
+import BackToHomeButton from '../components/BackToHomeButton';
 
 export default function AgentsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -36,7 +37,8 @@ export default function AgentsPage() {
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+          <BackToHomeButton />
+          <div className="flex items-center justify-between mt-2">
             <div>
               <h1 className="text-3xl font-light tracking-tight text-white mb-1">
                 The <span className="font-semibold">Village</span>

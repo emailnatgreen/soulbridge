@@ -7,6 +7,7 @@ import MySkillsPanel from '@/components/skill/MySkillsPanel';
 import SkillDirectoryPanel from '@/components/skill/SkillDirectoryPanel';
 import DevelopmentPathsPanel from '@/components/skill/DevelopmentPathsPanel';
 import { BookOpen, Users, Map, Loader } from 'lucide-react';
+import BackToHomeButton from '../components/BackToHomeButton';
 
 export default function SkillsHub() {
   const [activeTab, setActiveTab] = useState('my-skills');
@@ -55,13 +56,16 @@ export default function SkillsHub() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       {/* Header */}
       <div className="border-b border-white/10 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-emerald-400" />
-              Skills Management Hub
-            </h1>
-            <p className="text-white/40 text-sm mt-0.5">Develop expertise, discover mentors, and grow your talents</p>
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <BackToHomeButton />
+          <div className="flex items-center justify-between mt-2">
+            <div>
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                <BookOpen className="w-6 h-6 text-emerald-400" />
+                Skills Management Hub
+              </h1>
+              <p className="text-white/40 text-sm mt-0.5">Develop expertise, discover mentors, and grow your talents</p>
+            </div>
           </div>
         </div>
       </div>
