@@ -63,42 +63,51 @@ function MemoryScroll({ memories }) {
 }
 
 function KineticStream({ kus, agents }) {
-  const agentMap = Object.fromEntries(agents.map(a => [a.id, { name: a.name, did: a.classic_address || a.wallet_id }]));
+  // Build lookup by both record ID and agent name (lowercase) since KUs may use either
+  const agentMap = {};
+  agents.forEach(a => {
+    const entry = { name: a.name, did: a.classic_address || a.wallet_id };
+    agentMap[a.id] = entry;
+    if (a.name) agentMap[a.name.toLowerCase()] = entry;
+  });
   return (
     <div className="space-y-3">
       {kus.length === 0 && (
         <p className="text-center text-muted-foreground py-12">No kinetic events recorded yet.</p>
       )}
-      {kus.map(ku => (
-        <div key={ku.id} className="flex items-center gap-3 p-3 rounded-lg border bg-white hover:bg-slate-50 transition-colors">
-          <Zap className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${KU_COLORS[ku.ku_type] || 'bg-slate-100 text-slate-700'}`}>
-                {ku.ku_type?.replace(/_/g, ' ')}
-              </span>
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-medium truncate">{agentMap[ku.agent_id]?.name || 'Unknown Agent'}</span>
-                {agentMap[ku.agent_id]?.did && (
-                  <span className="text-[10px] text-muted-foreground font-mono truncate" title={agentMap[ku.agent_id].did}>
-                    {agentMap[ku.agent_id].did.slice(0, 20)}…
-                  </span>
-                )}
+      {kus.map(ku => {
+        const agent = agentMap[ku.agent_id] || agentMap[ku.agent_id?.toLowerCase?.()] || null;
+        return (
+          <div key={ku.id} className="flex items-center gap-3 p-3 rounded-lg border bg-white hover:bg-slate-50 transition-colors">
+            <Zap className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${KU_COLORS[ku.ku_type] || 'bg-slate-100 text-slate-700'}`}>
+                  {ku.ku_type?.replace(/_/g, ' ')}
+                </span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-medium truncate">{agent?.name || ku.agent_id || 'Unknown Agent'}</span>
+                  {agent?.did && (
+                    <span className="text-[10px] text-muted-foreground font-mono truncate" title={agent.did}>
+                      {agent.did.slice(0, 20)}…
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {new Date(ku.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground ml-auto">
-                {new Date(ku.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-              </span>
+              {ku.constitutional_laws?.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">{ku.constitutional_laws.join(' · ')}</p>
+              )}
             </div>
-            {ku.constitutional_laws?.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">{ku.constitutional_laws.join(' · ')}</p>
-            )}
+            <div className="text-right flex-shrink-0">
+              <span className="text-sm font-bold text-yellow-600">{(ku.weighted_score || 1).toFixed(1)}</span>
+              <p className="text-xs text-muted-foreground">KU</p>
+            </div>
           </div>
-          <div className="text-right flex-shrink-0">
-            <span className="text-sm font-bold text-yellow-600">{(ku.weighted_score || 1).toFixed(1)}</span>
-            <p className="text-xs text-muted-foreground">KU</p>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
