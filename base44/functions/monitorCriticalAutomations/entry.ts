@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const AXI_AGENT_ID = "6993271e7dc0fa2ab78762bf"; // Axi's Agent ID
 

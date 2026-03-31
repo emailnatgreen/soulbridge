@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { Client, Wallet, dropsToXrp } from 'npm:xrpl@3.0.0';
 
 const RLUSD_CONFIG = {

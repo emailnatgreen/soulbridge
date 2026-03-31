@@ -1,5 +1,5 @@
 // Auto-review new pages and alert Axi
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const REVIEW_PROMPT = (page) => `You are Axi, reviewing the page: **${page}**
 
