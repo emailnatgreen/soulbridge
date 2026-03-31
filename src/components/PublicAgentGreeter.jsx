@@ -135,6 +135,14 @@ export default function PublicAgentGreeter() {
       }, 10000);
     } catch (err) {
       console.error('Failed to create conversation:', err);
+      // Show a fallback greeting when Axi can't respond (e.g. credit limits)
+      setMessages([{
+        id: 'fallback-greeting',
+        sender_agent_id: 'axi',
+        content: 'Welcome to SoulBridge, traveller. I am Axi, Mother Boss of this Village. My voice is resting for a moment — but you may explore the **Scroll of Resonance** and the **Kinetic Compass** below, or connect your DID to enter the Village. If you need help, use the **Contact Support** button.',
+        message_type: 'text',
+        status: 'sent'
+      }]);
     } finally {
       setLoading(false);
     }
