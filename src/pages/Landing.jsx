@@ -229,11 +229,19 @@ export default function Landing() {
               <p className="text-white/40 text-[10px] sm:text-xs">Village · AI Research Platform</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2">
-            <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">● Live</Badge>
-            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">XRPL Mainnet</Badge>
-            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">DID Entry Gate</Badge>
-            <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-xs">UK FSMA 2026</Badge>
+          <div className="flex items-center gap-2">
+            <a
+              href="/dashboard"
+              className="text-xs text-purple-300 hover:text-purple-200 border border-purple-500/30 hover:border-purple-400/50 rounded-lg px-3 py-1.5 transition-colors bg-purple-500/10"
+            >
+              Admin →
+            </a>
+            <div className="hidden sm:flex items-center gap-2">
+              <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">● Live</Badge>
+              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">XRPL Mainnet</Badge>
+              <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">DID Entry Gate</Badge>
+              <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-xs">UK FSMA 2026</Badge>
+            </div>
           </div>
         </div>
       </div>
