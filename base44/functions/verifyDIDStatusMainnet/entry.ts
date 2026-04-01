@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
       try {
         const body = JSON.stringify({
           method: 'account_info',
-          params: { account: classicAddress }
+          params: [{ account: classicAddress }]
         });
 
         const rpcPayload = {
