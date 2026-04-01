@@ -9,6 +9,33 @@ import AgentPicker from '@/components/axi/AgentPicker';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PAGE_SIZE = 30;
+const CONTEXT_MESSAGE_LIMIT = 8;
+
+function buildAgentContextBrief(messages, activeAgents, invitedAgent) {
+  const recentMessages = messages
+    .filter((message) => message?.content)
+    .slice(-CONTEXT_MESSAGE_LIMIT)
+    .map((message) => {
+      const label = message.role === 'user'
+        ? 'User'
+        : message.metadata?.sourceAgentId
+          ? activeAgents.find((agent) => agent.id === message.metadata.sourceAgentId)?.name || 'Agent'
+          : 'Axi';
+
+      return `${label}: ${message.content}`;
+    });
+
+  const activeAgentList = activeAgents.length > 0
+    ? activeAgents.map((agent) => `${agent.name} (${agent.role})`).join(', ')
+    : 'None';
+
+  return [
+    `Conversation briefing for ${invitedAgent.name} (${invitedAgent.role}).`,
+    `Already active agents in this chat: ${activeAgentList}.`,
+    'Recent conversation context:',
+    ...recentMessages
+  ].join('\n');
+}
 const MemoizedBubble = memo(MessageBubble);
 const PERSONAL_CONVERSATION_KEY = 'axi_personal_conversation_id';
 const PERSONAL_CONVERSATION_META_NAME = 'Personal Conversation with Axi';
@@ -129,7 +156,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         pendingMessageRef.current = '';
         const invitedAgents = activeAgents;
         const enrichedMessage = invitedAgents.length > 0
-          ? `${msg}\n\n[ACTIVE_AGENTS]\nThe following agents are currently present in this conversation and available to respond alongside Axi: ${invitedAgents.map((agent) => `${agent.name} (${agent.role})`).join(', ')}. Acknowledge their presence naturally when relevant.`
+          ? `${msg}\n\n[ACTIVE_AGENTS]\nThe following agents are currently present in this conversation and available to respond alongside Axi: ${invitedAgents.map((agent) => `${agent.name} (${agent.role})`).join(', ')}. Treat them as already present in the room and acknowledge them naturally when relevant.`
           : msg;
 
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
@@ -196,7 +223,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       return;
     }
 
-    setActiveAgents((prev) => [...prev, agent]);
+    const nextActiveAgents = [...activeAgents, agent];
+    setActiveAgents(nextActiveAgents);
     setShowAgentPicker(false);
 
     if (options.skipIntro) {
@@ -207,14 +235,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       id: `sys-${Date.now()}`,
       role: 'assistant',
       sender_agent_id: 'axi',
-      metadata: { sourceAgentId: agent.id },
       content: `${agent.name} (${agent.role}) joined this conversation.`,
-      message_type: 'text'
+      message_type: 'system'
     };
 
     setMessages((prev) => [...prev, joinMessage]);
 
-    const introPrompt = `Axi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly to the user and acknowledge that you are joining from this point forward.`;
+    const contextBrief = buildAgentContextBrief(messages, activeAgents, agent);
+    const introPrompt = `${contextBrief}\n\nAxi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly, acknowledge the current participants, and continue from this point forward without asking to be re-caught-up.`;
 
     const response = await base44.functions.invoke('generateAgentResponse', {
       conversation_id: convoRef.current.id,
