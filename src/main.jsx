@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
 import '@/index.css'
+import { queryClientInstance } from '@/lib/query-client'
 
 // Suppress MetaMask / Web3 browser extension errors that destabilise the editor
 window.addEventListener('unhandledrejection', (event) => {
@@ -20,6 +21,16 @@ window.addEventListener('error', (event) => {
     return false;
   }
 });
+
+const syncAppData = () => {
+  queryClientInstance.invalidateQueries();
+};
+
+window.addEventListener('focus', syncAppData);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') syncAppData();
+});
+window.addEventListener('online', syncAppData);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <App />

@@ -16,7 +16,9 @@ const shouldRetry = (failureCount, error) => {
 export const queryClientInstance = new QueryClient({
 	defaultOptions: {
 		queries: {
-			refetchOnWindowFocus: false,
+			refetchOnWindowFocus: true,
+			refetchOnReconnect: true,
+			staleTime: 0,
 			retry: shouldRetry,
 			retryDelay,
 		},

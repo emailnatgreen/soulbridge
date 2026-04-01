@@ -25,7 +25,9 @@ Deno.serve(async (req) => {
     const headers = new Headers(req.headers);
     const authHeader = (headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
-    const bearerValue = rawToken && rawToken !== 'undefined' && rawToken !== 'null' ? rawToken : '';
+    const bearerValue = rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken !== 'Bearer' ? rawToken : '';
+
+    const body = await req.json();
 
     if (bearerValue) {
       headers.set('authorization', `Bearer ${bearerValue}`);
@@ -33,7 +35,6 @@ Deno.serve(async (req) => {
       headers.delete('authorization');
     }
 
-    const body = await req.json();
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
       headers,
