@@ -17,7 +17,7 @@ const getLiveToken = () => normalizeToken(appParams.token) || normalizeToken(loc
 // Create a client that supports public access and always reads the latest token
 export const base44 = createClient({
   appId: appParams.appId,
-  token: getLiveToken,
+  token: getLiveToken(),
   functionsVersion: appParams.functionsVersion,
   serverUrl: '',
   requiresAuth: false,
