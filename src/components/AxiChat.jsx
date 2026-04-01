@@ -10,14 +10,16 @@ const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
 
 function isRecognizedUser() {
-  // Check platform token
   if (localStorage.getItem('base44_access_token') || localStorage.getItem('token')) return true;
-  // Check DID identity
   try {
     const id = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
     if (id?.did || id?.connected) return true;
   } catch (_) {}
   return false;
+}
+
+function hasPlatformToken() {
+  return !!(localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
 }
 
 export default function AxiChat({ isOpen, setIsOpen }) {
@@ -42,40 +44,52 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   // Init conversation when chat opens
   useEffect(() => {
     if (!isOpen || !isRecognizedUser()) return;
-    if (convo) return; // already have one
-    if (initAttempted.current && status === 'error') return; // wait for retry click
+    if (convo) return;
+    if (initAttempted.current && status === 'error') return;
 
     const init = async () => {
       setStatus('loading');
       initAttempted.current = true;
 
       try {
-        // Find existing unified conversation or create new one
-        const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-        const unified = conversations
-          .filter(c => c.metadata?.unified_axi_chat === true)
-          .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+        if (hasPlatformToken()) {
+          // Platform-authenticated user: use agent SDK
+          const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+          const unified = conversations
+            .filter(c => c.metadata?.unified_axi_chat === true)
+            .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
 
-        let conversation;
-        if (unified.length > 0) {
-          conversation = unified[0];
-        } else {
-          conversation = await base44.agents.createConversation({
-            agent_name: 'axi',
-            metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
+          let conversation;
+          if (unified.length > 0) {
+            conversation = unified[0];
+          } else {
+            conversation = await base44.agents.createConversation({
+              agent_name: 'axi',
+              metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
+            });
+          }
+
+          setConvo(conversation);
+          setStatus('ready');
+
+          if (unsubRef.current) unsubRef.current();
+          unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
+            const msgs = data.messages || [];
+            setMessages(msgs.slice(-PAGE_SIZE));
           });
+        } else {
+          // DID-only user: use direct backend function (no agent SDK)
+          const convId = localStorage.getItem('sb_axi_did_conv') || `did-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+          localStorage.setItem('sb_axi_did_conv', convId);
+          setConvo({ id: convId, _didMode: true });
+          setStatus('ready');
+
+          // Load existing messages
+          try {
+            const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
+            setMessages(res?.data?.messages || []);
+          } catch (_) {}
         }
-
-        setConvo(conversation);
-        setStatus('ready');
-
-        // Subscribe for real-time messages
-        if (unsubRef.current) unsubRef.current();
-        unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
-          const msgs = data.messages || [];
-          setMessages(msgs.slice(-PAGE_SIZE));
-        });
-
       } catch (err) {
         console.error('[AxiChat] Init failed:', err);
         setStatus('error');
@@ -103,10 +117,23 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     setInput('');
     setSending(true);
     try {
-      await base44.agents.addMessage(convo, { role: 'user', content: msg });
+      if (convo._didMode) {
+        // DID-only mode: use axiRespond directly
+        setMessages(prev => [...prev, { id: `user-${Date.now()}`, sender_agent_id: 'visitor', content: msg, message_type: 'text' }]);
+        const res = await base44.functions.invoke('axiRespond', {
+          conversation_id: convo.id,
+          user_message: msg
+        });
+        const axiReply = res?.data?.response;
+        if (axiReply) {
+          setMessages(prev => [...prev, { id: `axi-${Date.now()}`, sender_agent_id: 'axi', content: axiReply, message_type: 'text' }]);
+        }
+      } else {
+        await base44.agents.addMessage(convo, { role: 'user', content: msg });
+      }
     } catch (err) {
       console.error('[AxiChat] Send failed:', err);
-      setInput(msg); // restore on failure
+      setInput(msg);
     } finally {
       setSending(false);
     }
