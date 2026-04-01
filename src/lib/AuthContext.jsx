@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [appPublicSettings, setAppPublicSettings] = useState(null);
 
   useEffect(() => {
     checkAppState();
@@ -30,85 +30,75 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  const getStoredDidIdentity = () => {
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      const parsed = stored ? JSON.parse(stored) : null;
+      return parsed?.connected ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  };
+
   const checkAppState = async () => {
     try {
       const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
       setIsLoadingPublicSettings(true);
       setAuthError(null);
       
-      // First, check app public settings (with token if available)
-      // This will tell us if auth is required, user not registered, etc.
       const appClient = createAxiosClient({
         baseURL: `/api/apps/public`,
-        headers: {
-          'X-App-Id': appParams.appId
-        },
+        headers: { 'X-App-Id': appParams.appId },
         token: refreshedToken,
         interceptResponses: true
       });
+
+      // Safety timeout so spinner never gets stuck
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('App settings fetch timed out')), 10000)
+      );
       
       try {
-        const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
+        const publicSettings = await Promise.race([
+          appClient.get(`/prod/public-settings/by-id/${appParams.appId}`),
+          timeoutPromise
+        ]);
         setAppPublicSettings(publicSettings);
         
-        // If we got the app public settings successfully, check if user is authenticated
-        const storedDidIdentity = (() => {
-          try {
-            const stored = localStorage.getItem('soulbridge_identity');
-            const parsed = stored ? JSON.parse(stored) : null;
-            return parsed?.connected ? parsed : null;
-          } catch (_) {
-            return null;
-          }
-        })();
-
         if (refreshedToken) {
           await checkUserAuth();
         } else {
           setUser(null);
           setIsLoadingAuth(false);
-          setIsAuthenticated(!!storedDidIdentity);
+          setIsAuthenticated(!!getStoredDidIdentity());
         }
         setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
         
-        // Handle app-level errors
         if (appError.status === 403 && appError.data?.extra_data?.reason) {
           const reason = appError.data.extra_data.reason;
           if (reason === 'auth_required') {
-            setAuthError({
-              type: 'auth_required',
-              message: 'Authentication required'
-            });
+            setAuthError({ type: 'auth_required', message: 'Authentication required' });
           } else if (reason === 'user_not_registered') {
-            setAuthError({
-              type: 'user_not_registered',
-              message: 'User not registered for this app'
-            });
+            setAuthError({ type: 'user_not_registered', message: 'User not registered for this app' });
           } else {
-            setAuthError({
-              type: reason,
-              message: appError.message
-            });
+            setAuthError({ type: reason, message: appError.message });
           }
         } else {
-          setAuthError({
-            type: 'unknown',
-            message: appError.message || 'Failed to load app'
-          });
+          // For timeouts or unknown errors, don't block — just clear loading
+          setAuthError(null);
         }
         setIsLoadingPublicSettings(false);
         setIsLoadingAuth(false);
+        // Even on error, allow DID-only users through
+        setIsAuthenticated(!!getStoredDidIdentity());
       }
     } catch (error) {
       console.error('Unexpected error:', error);
-      setAuthError({
-        type: 'unknown',
-        message: error.message || 'An unexpected error occurred'
-      });
       setIsLoadingPublicSettings(false);
       setIsLoadingAuth(false);
+      setIsAuthenticated(!!getStoredDidIdentity());
     }
   };
 
@@ -121,18 +111,9 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     } catch (error) {
       console.error('User auth check failed:', error);
-      const storedDidIdentity = (() => {
-        try {
-          const stored = localStorage.getItem('soulbridge_identity');
-          const parsed = stored ? JSON.parse(stored) : null;
-          return parsed?.connected ? parsed : null;
-        } catch (_) {
-          return null;
-        }
-      })();
       setUser(null);
       setIsLoadingAuth(false);
-      setIsAuthenticated(!!storedDidIdentity);
+      setIsAuthenticated(!!getStoredDidIdentity());
       setAuthError(null);
     }
   };
@@ -142,16 +123,13 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     
     if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
       base44.auth.logout(window.location.href);
     } else {
-      // Just remove the token without redirect
       base44.auth.logout();
     }
   };
 
   const navigateToLogin = () => {
-    // Always return to landing after login on live mode
     const urlParams = new URLSearchParams(window.location.search);
     const isEditorPreview = urlParams.has('_preview_token');
     const nextUrl = isEditorPreview
