@@ -13,6 +13,8 @@ import AddAgentModal from '../components/AddAgentModal';
 
 const MemoizedMessageBubble = React.memo(MessageBubble);
 const PAGE_SIZE = 30;
+const PERSONAL_CONVERSATION_KEY = 'axi_personal_conversation_id';
+const PERSONAL_CONVERSATION_META_NAME = 'Personal Conversation with Axi';
 
 export default function AxiPage() {
   const location = useLocation();
@@ -57,22 +59,43 @@ export default function AxiPage() {
     setError(null);
     try {
       const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-      // Find all unified conversations, pick the oldest (first created) to avoid duplication
-      const unified = conversations.filter(c => c.metadata?.unified_axi_chat === true);
-      const unifiedConvo = unified.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
-      
-      let convo;
-      if (unifiedConvo) {
-        convo = await base44.agents.getConversation(unifiedConvo.id);
-      } else {
-        convo = await base44.agents.createConversation({
-          agent_name: 'axi',
-          metadata: { 
-            name: 'Unified Conversation with Axi - Mother Boss',
-            unified_axi_chat: true
-          }
-        });
+      const savedConversationId = localStorage.getItem(PERSONAL_CONVERSATION_KEY);
+
+      const isPersonalConversation = (conversation) => (
+        conversation?.metadata?.unified_axi_chat === true ||
+        conversation?.metadata?.personal_axi_chat === true ||
+        conversation?.metadata?.name === PERSONAL_CONVERSATION_META_NAME ||
+        conversation?.metadata?.name === 'Unified Conversation with Axi - Mother Boss'
+      );
+
+      let convo = null;
+      if (savedConversationId) {
+        const savedMatch = conversations.find(c => c.id === savedConversationId && isPersonalConversation(c));
+        if (savedMatch) {
+          convo = await base44.agents.getConversation(savedMatch.id);
+        }
       }
+
+      if (!convo) {
+        const personal = conversations
+          .filter(isPersonalConversation)
+          .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date));
+
+        if (personal[0]) {
+          convo = await base44.agents.getConversation(personal[0].id);
+        } else {
+          convo = await base44.agents.createConversation({
+            agent_name: 'axi',
+            metadata: {
+              name: PERSONAL_CONVERSATION_META_NAME,
+              unified_axi_chat: true,
+              personal_axi_chat: true
+            }
+          });
+        }
+      }
+
+      localStorage.setItem(PERSONAL_CONVERSATION_KEY, convo.id);
       
       setConversation(convo);
 
