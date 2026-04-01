@@ -262,7 +262,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
         // Step 4: Subscribe — this gives us messages without calling getConversation
         if (unsubscribeRef.current) unsubscribeRef.current();
         let firstSnapshot = true;
-        unsubscribeRef.current = await retryWithBackoff(() => base44.agents.subscribeToConversation(convoId, (data) => {
+        unsubscribeRef.current = base44.agents.subscribeToConversation(convoId, (data) => {
           const allMsgs = data.messages || [];
           if (firstSnapshot) {
             // First snapshot: only show last PAGE_SIZE messages
@@ -278,7 +278,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
               return allMsgs;
             });
           }
-        })) || unsubscribeRef.current;
+        });
 
       } catch (err) {
         console.error('[AxiChat] Init failed:', err);
