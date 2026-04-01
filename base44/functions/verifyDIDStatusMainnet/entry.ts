@@ -6,11 +6,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  * This is the true source of truth for DID verification.
  */
 Deno.serve(async (req) => {
-  // Multiple RPC endpoints for redundancy
+  // Reliable public XRPL RPC endpoints
   const RPC_ENDPOINTS = [
     'https://xrpl.ws',
-    'https://s1.ripple.com:51234',
-    'https://s2.ripple.com:51234'
+    'https://xrplcluster.com',
+    'https://rippled.mainnet.rippletestnet.com'
   ];
 
   const queryXRPL = async (classicAddress) => {
