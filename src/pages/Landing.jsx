@@ -155,7 +155,7 @@ export default function Landing() {
       try {
         const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
         const data = res?.data || {};
-        setStats({ agents: (data.agents || []).length, dids: data.wallets_count || 0 });
+        setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
       } catch (e) {}
     };
     fetchStats();

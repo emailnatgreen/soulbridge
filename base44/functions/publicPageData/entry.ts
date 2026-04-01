@@ -32,9 +32,29 @@ Deno.serve(async (req) => {
         base44.asServiceRole.entities.Wallet.filter({ is_published: true }, 'created_date', 1000),
         base44.asServiceRole.entities.KineticUnit.list('-created_date', 500),
       ]);
+
+      const normalizedAgents = agents.map(a => ({
+        id: a.id,
+        name: a.name,
+        role: a.role,
+        purpose: a.purpose,
+        tagline: a.tagline,
+        honor_score: a.honor_score,
+        avatar_url: a.avatar_url,
+        classic_address: a.classic_address,
+        wallet_id: a.wallet_id,
+        external_classic_addresses: a.external_classic_addresses || []
+      }));
+
+      const publishedDidCount = new Set([
+        ...wallets.map((wallet) => wallet.classic_address).filter(Boolean),
+        ...normalizedAgents.map((agent) => agent.classic_address).filter(Boolean),
+        ...normalizedAgents.flatMap((agent) => agent.external_classic_addresses || []).filter(Boolean)
+      ]).size;
+
       return Response.json({
-        agents: agents.map(a => ({ id: a.id, name: a.name, role: a.role, purpose: a.purpose, tagline: a.tagline, honor_score: a.honor_score, avatar_url: a.avatar_url, classic_address: a.classic_address })),
-        wallets_count: wallets.length,
+        agents: normalizedAgents,
+        wallets_count: publishedDidCount,
         kus,
       });
     }
