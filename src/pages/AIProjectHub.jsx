@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Send, CheckCircle2, Circle, Loader2, MessageSquare, ListTodo, Target, Users, Calendar, DollarSign, AlertCircle, Brain, Sparkles, TrendingUp, Shield, Zap } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import AgentMatcher from '../components/AgentMatcher';
 import AskAxiButton from '@/components/AskAxiButton';
 import MeritTaskAssigner from '../components/MeritTaskAssigner';
@@ -154,6 +153,26 @@ export default function AIProjectHub() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    const refreshProjectHubData = () => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['project-tasks', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['project-messages', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+      queryClient.invalidateQueries({ queryKey: ['all-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['recent-activities'] });
+      queryClient.invalidateQueries({ queryKey: ['economic-activities'] });
+    };
+
+    window.addEventListener('focus', refreshProjectHubData);
+    document.addEventListener('visibilitychange', refreshProjectHubData);
+
+    return () => {
+      window.removeEventListener('focus', refreshProjectHubData);
+      document.removeEventListener('visibilitychange', refreshProjectHubData);
+    };
+  }, [projectId, queryClient]);
+
   const handleSendMessage = () => {
     if (!messageInput.trim()) return;
     
@@ -192,7 +211,7 @@ export default function AIProjectHub() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
         <div className="max-w-7xl mx-auto">
-          <Link to={createPageUrl('Home')}>
+          <Link to="/Home">
             <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
@@ -307,7 +326,7 @@ export default function AIProjectHub() {
               <Brain className="w-16 h-16 text-purple-400 mx-auto mb-4" />
               <h2 className="text-xl text-white mb-2">Select a Project</h2>
               <p className="text-white/60 mb-6">Choose a project from the Project Manager to view detailed insights</p>
-              <Link to={createPageUrl('AIProjectManager')}>
+              <Link to="/AIProjectManager">
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
                   Go to Projects
                 </Button>
@@ -322,7 +341,7 @@ export default function AIProjectHub() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
       <div className="max-w-7xl mx-auto">
-        <Link to={createPageUrl('AIProjectManager')}>
+        <Link to="/AIProjectManager">
           <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Projects
