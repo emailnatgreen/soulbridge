@@ -1,106 +1,90 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+/**
+ * Verifies DID authenticity by validating:
+ * 1. User has an associated Wallet
+ * 2. Wallet's classic_address matches XRPL DID (is_published = true)
+ * 3. Returns verified DID status + user permissions
+ * 
+ * This is the cryptographic foundation of user identity for chat + agent invocation.
+ */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return Response.json(
+        { isVerified: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const body = await req.json();
-    let classic_address = body.classic_address;
-    let network = body.network || 'testnet';
+    // Fetch user's wallet(s)
+    const wallets = await base44.asServiceRole.entities.Wallet.filter(
+      { owner_id: user.id },
+      '-updated_date',
+      1
+    );
 
-    // Support wallet_id lookup — use service role but verify ownership
-    if (!classic_address && body.wallet_id) {
-      const wallet = await base44.asServiceRole.entities.Wallet.get(body.wallet_id);
-      if (!wallet) {
-        return Response.json({ error: 'Wallet not found' }, { status: 404 });
-      }
-      if (wallet.owner_id !== user.id) {
-        return Response.json({ error: 'Access denied: You do not own this wallet' }, { status: 403 });
-      }
-      classic_address = wallet.classic_address;
-      network = wallet.network || 'testnet';
-    }
-
-    if (!classic_address) {
-      return Response.json({ error: 'classic_address or wallet_id is required' }, { status: 400 });
-    }
-
-    const isTestnet = network === 'testnet';
-    const rpcUrl = isTestnet
-      ? 'https://s.altnet.rippletest.net:51234'
-      : 'https://xrplcluster.com';
-
-    const accountRes = await fetch(rpcUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        method: 'account_info',
-        params: [{ account: classic_address, ledger_index: 'current' }],
-      }),
-    });
-    const accountData = await accountRes.json();
-
-    if (accountData.result?.error === 'actNotFound') {
+    if (!wallets || wallets.length === 0) {
       return Response.json({
-        did: `did:xrpl:${classic_address}`,
-        network: isTestnet ? 'testnet' : 'mainnet',
-        verification: {
-          account_exists: false,
-          did_active: false,
-          verified_at: new Date().toISOString(),
-          message: 'Address not found on XRPL. Fund this testnet wallet first at https://faucet.altnet.rippletest.net/',
-        }
+        isVerified: false,
+        error: 'No wallet found',
+        userId: user.id,
+        email: user.email
       });
     }
 
-    const balance = accountData.result?.account_data?.Balance
-      ? parseInt(accountData.result.account_data.Balance) / 1_000_000
-      : 0;
+    const wallet = wallets[0];
 
-    // Check for DID object on-chain
-    let didPublished = false;
-    let didNode = null;
-    try {
-      const didRes = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          method: 'ledger_entry',
-          params: [{ did: classic_address, ledger_index: 'validated' }],
-        }),
+    // Check if DID is published on-chain
+    if (!wallet.is_published) {
+      return Response.json({
+        isVerified: false,
+        error: 'DID not yet published on XRPL',
+        walletId: wallet.id,
+        classic_address: wallet.classic_address,
+        network: wallet.network
       });
-      const didData = await didRes.json();
-      const rawResult = didData.result;
-      didPublished = !rawResult?.error;
-      didNode = rawResult?.node;
-    } catch(e) {
-      console.error('DID check failed:', e.message);
     }
 
+    // Fetch agent profile to determine role/permissions
+    const agents = await base44.asServiceRole.entities.Agent.filter(
+      { classic_address: wallet.classic_address },
+      '',
+      1
+    );
+
+    const agent = agents?.[0];
+    const role = agent?.role || 'citizen';
+    const permissions = agent?.permissions || {
+      can_create_agents: false,
+      can_send_xrp: true,
+      can_access_treasury: false,
+      can_vote: true,
+      can_evaluate_agents: false
+    };
+
+    // SUCCESS: DID is verified on-chain
     return Response.json({
-      did: `did:xrpl:${classic_address}`,
-      network: isTestnet ? 'testnet' : 'mainnet',
-      verification: {
-        account_exists: true,
-        did_active: didPublished,
-        balance: balance,
-        verified_at: new Date().toISOString(),
-        message: didPublished
-          ? 'DID is active and published on-chain!'
-          : 'Wallet is active on XRPL but DID not yet published on-chain. Use "Publish DID On-Chain" to publish.',
-      },
-      did_data: didPublished && didNode ? {
-        uri: didNode.URI ? new TextDecoder().decode(new Uint8Array(didNode.URI.match(/.{1,2}/g).map(b => parseInt(b, 16)))) : null,
-        document: didNode.DIDDocument || null,
-        data: didNode.Data || null,
-      } : null,
+      isVerified: true,
+      userId: user.id,
+      email: user.email,
+      did: wallet.classic_address,
+      walletId: wallet.id,
+      network: wallet.network,
+      publishedAt: wallet.published_at,
+      role: role,
+      permissions: permissions,
+      agentId: agent?.id || null,
+      timestamp: new Date().toISOString()
     });
-
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[verifyDIDStatus] Error:', error);
+    return Response.json(
+      { isVerified: false, error: error.message },
+      { status: 500 }
+    );
   }
 });

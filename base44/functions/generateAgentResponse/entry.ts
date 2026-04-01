@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
     const body = await req.json();
 
     const conversation_id = body.conversation_id;
@@ -10,6 +11,39 @@ Deno.serve(async (req) => {
     const agent_id = body.agent_id;
     const agent_name = body.agent_name;
     const includeContext = body.includeContext !== false; // Default true for priming
+
+    // STEP 2: DID Permission Check (Agent Invocation Bottleneck)
+    // Verify that the requesting user has a valid, published DID
+    let userDID = null;
+    let userRole = 'citizen';
+    if (user) {
+      const wallets = await base44.asServiceRole.entities.Wallet.filter(
+        { owner_id: user.id },
+        '-updated_date',
+        1
+      );
+      if (wallets?.length > 0 && wallets[0].is_published) {
+        userDID = wallets[0].classic_address;
+        // Fetch user's agent profile for role
+        const agents = await base44.asServiceRole.entities.Agent.filter(
+          { classic_address: userDID },
+          '',
+          1
+        );
+        if (agents?.length > 0) {
+          userRole = agents[0].role || 'citizen';
+        }
+      } else {
+        // User has no published DID — log and return error
+        console.warn(`[generateAgentResponse] User ${user.email} attempted agent invocation without published DID`);
+        return Response.json(
+          { error: 'DID verification required to invoke agents. Please publish your DID first.' },
+          { status: 403 }
+        );
+      }
+    } else {
+      return Response.json({ error: 'Unauthorized: User not authenticated' }, { status: 401 });
+    }
 
     if (!conversation_id || !user_message) {
       return Response.json({ error: 'Missing conversation_id or user_message' }, { status: 400 });
@@ -44,7 +78,28 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`[generateAgentResponse] Agent: ${agent.name}, Conversation: ${conversation_id}`);
+    // Log agent invocation for audit trail
+    try {
+      await base44.asServiceRole.entities.AutomationLog.create({
+        automation_name: 'agent_invocation',
+        function_name: 'generateAgentResponse',
+        status: 'success',
+        message: `User ${user.email} (${userRole}) invoked agent ${agent.name}`,
+        details: {
+          user_email: user.email,
+          user_did: userDID,
+          user_role: userRole,
+          agent_id: agent.id,
+          agent_name: agent.name,
+          conversation_id: conversation_id
+        },
+        run_at: new Date().toISOString()
+      });
+    } catch (auditErr) {
+      console.warn('[generateAgentResponse] Audit log failed:', auditErr.message);
+    }
+
+    console.log(`[generateAgentResponse] Agent: ${agent.name}, Conversation: ${conversation_id}, Invoked by: ${user.email} (${userRole})`);
 
     const systemPrompt = `You are "${agent.name}", a Village agent in SoulBridge.
 - Purpose: ${agent.purpose || 'To help the Village'}

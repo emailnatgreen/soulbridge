@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus } from 'lucide-react';
+import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import MessageBubble from '@/components/MessageBubble';
 import AgentPicker from '@/components/axi/AgentPicker';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDIDSignal } from '@/hooks/useDIDSignal';
 
 const PAGE_SIZE = 30;
 const CONTEXT_MESSAGE_LIMIT = 8;
@@ -50,6 +51,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [mode, setMode] = useState(null); // 'agent' | 'direct'
   const [showAgentPicker, setShowAgentPicker] = useState(false);
   const [activeAgents, setActiveAgents] = useState([]);
+  const [didAuthError, setDidAuthError] = useState(null);
+  const didSignal = useDIDSignal();
 
   const messagesEndRef = useRef(null);
   const convoRef = useRef(null);
@@ -217,14 +220,19 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   };
 
   const handleAddAgent = useCallback(async (agent, options = {}) => {
+    // DID Authorization Check (Step 2)
+    if (!didSignal?.isVerified) {
+      setDidAuthError('DID verification required to summon agents. Please publish your DID.');
+      setTimeout(() => setDidAuthError(null), 5000);
+      return;
+    }
+
     const alreadyActive = activeAgents.some((item) => item.id === agent.id);
     if (alreadyActive) {
       setShowAgentPicker(false);
       return;
     }
 
-    const nextActiveAgents = [...activeAgents, agent];
-    setActiveAgents(nextActiveAgents);
     setShowAgentPicker(false);
 
     if (options.skipIntro) {
@@ -381,6 +389,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
                 onAdd={handleAddAgent}
                 onClose={() => setShowAgentPicker(false)}
               />
+            </div>
+          )}
+
+          {/* DID Authorization Error Alert */}
+          {didAuthError && (
+            <div className="mx-3 mt-2 p-3 rounded-lg bg-red-900/30 border border-red-500/30 flex gap-2">
+              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-300">{didAuthError}</p>
             </div>
           )}
 
