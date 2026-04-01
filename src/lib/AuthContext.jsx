@@ -5,16 +5,6 @@ import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 
 const AuthContext = createContext();
 
-const getStoredDidIdentity = () => {
-  try {
-    const stored = localStorage.getItem('soulbridge_identity');
-    const parsed = stored ? JSON.parse(stored) : null;
-    return parsed?.connected ? parsed : null;
-  } catch (_) {
-    return null;
-  }
-};
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -43,39 +33,40 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = useCallback(async (silent = false) => {
-    if (!silent) {
-      setIsLoadingAuth(true);
-    }
+    if (!silent) setIsLoadingAuth(true);
     setAuthError(null);
 
-    const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
-    const hasDidIdentity = !!getStoredDidIdentity();
+    try {
+      const token = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
 
-    // If we have a token, try to get user info
-    if (refreshedToken) {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
+      if (token) {
+        // Has a platform token — try to get user info
+        try {
+          const currentUser = await base44.auth.me();
+          setUser(currentUser);
+        } catch (_) {
+          // me() failed (rate limit, timeout, etc.) — user stays null but still authenticated
+          setUser(null);
+        }
         setIsAuthenticated(true);
-      } catch (error) {
-        console.warn('[AuthContext] auth.me() failed:', error.message);
+      } else {
+        // No token at all
         setUser(null);
-        // Token exists but me() failed — still consider authenticated
-        // (token may be valid but rate-limited or temporarily unreachable)
-        setIsAuthenticated(true);
+        setIsAuthenticated(false);
       }
-    } else {
+    } catch (_) {
+      // Unexpected error — still mark as done
       setUser(null);
-      // No platform token — check DID identity
-      setIsAuthenticated(hasDidIdentity);
+      setIsAuthenticated(false);
+    } finally {
+      // ALWAYS clear loading — no matter what
+      setIsLoadingAuth(false);
+      initialCheckDone.current = true;
     }
 
-    // Auth loading is done — page can render now
-    setIsLoadingAuth(false);
-    initialCheckDone.current = true;
-
     // Fetch public settings in background (non-blocking)
-    fetchPublicSettings(refreshedToken);
+    const token = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
+    fetchPublicSettings(token);
   }, [fetchPublicSettings]);
 
   useEffect(() => {
@@ -96,17 +87,17 @@ export const AuthProvider = ({ children }) => {
     };
   }, [checkAppState]);
 
-  // Hard safety net: force loading off after 5 seconds
+  // Hard safety net: force loading off after 4 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isLoadingAuth) {
         console.warn('[AuthContext] Safety timeout — forcing loading off');
         setIsLoadingAuth(false);
         const hasToken = !!(appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
-        setIsAuthenticated(hasToken || !!getStoredDidIdentity());
+        if (hasToken) setIsAuthenticated(true);
         initialCheckDone.current = true;
       }
-    }, 5000);
+    }, 4000);
     return () => clearTimeout(timer);
   }, [isLoadingAuth]);
 
