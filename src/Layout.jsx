@@ -70,9 +70,15 @@ export default function Layout({ children, currentPageName }) {
             className="w-10 h-10 rounded-lg object-contain"
             style={{ imageRendering: 'crisp-edges' }}
           />
-          {/* Green DID verification spot */}
-          {didSignal?.isVerified && !didSignal?.loading && (
+          {/* DID verification indicator */}
+          {didSignal?.loading && (
+            <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse" title="Verifying DID..." />
+          )}
+          {!didSignal?.loading && didSignal?.isVerified && (
             <div className="w-2.5 h-2.5 bg-green-400 rounded-full shadow-lg" title={`DID Verified: ${didSignal?.did?.slice(0, 10)}...`} />
+          )}
+          {!didSignal?.loading && !didSignal?.isVerified && (
+            <div className="w-2.5 h-2.5 bg-red-400 rounded-full" title={`DID Error: ${didSignal?.error || 'Not verified'}`} />
           )}
         </div>
       )}
@@ -114,9 +120,15 @@ export default function Layout({ children, currentPageName }) {
             title={showAdminSidebar ? 'Open your admin Axi (DID: ' + (didSignal?.did?.slice(0, 10) || 'pending') + '...)' : 'Open your personal Axi'}
           >
             {showAdminSidebar ? <Shield className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
-            {/* Green DID verification indicator on button */}
-            {didSignal?.isVerified && !didSignal?.loading && (
+            {/* DID verification indicator badge on button */}
+            {didSignal?.loading && (
+              <Circle className="w-3 h-3 bg-yellow-400 fill-yellow-400 absolute bottom-0 right-0 rounded-full border border-white animate-pulse" />
+            )}
+            {!didSignal?.loading && didSignal?.isVerified && (
               <Circle className="w-3 h-3 bg-green-400 fill-green-400 absolute bottom-0 right-0 rounded-full border border-white" />
+            )}
+            {!didSignal?.loading && !didSignal?.isVerified && (
+              <Circle className="w-3 h-3 bg-red-400 fill-red-400 absolute bottom-0 right-0 rounded-full border border-white" />
             )}
           </button>
         </div>

@@ -370,9 +370,30 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               </div>
             </div>
             <div className="flex gap-1">
-              <Button variant="ghost" size="icon" onClick={() => setShowAgentPicker((value) => !value)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowAgentPicker((value) => !value)}
+                disabled={!didSignal?.isVerified && !didSignal?.loading}
+                className={`h-8 w-8 ${didSignal?.isVerified ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-red-400/60'}`}
+                title={didSignal?.isVerified ? 'Add agent' : 'DID verification required'}
+              >
                 <UserPlus className="w-3.5 h-3.5" />
               </Button>
+              {didSignal?.loading && (
+                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" title="Verifying DID..." />
+              )}
+              {!didSignal?.loading && !didSignal?.isVerified && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => didSignal.refresh()} 
+                  className="text-red-400 hover:text-red-300 hover:bg-red-950/30 h-8 w-8"
+                  title="Retry DID verification"
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                </Button>
+              )}
               <Button variant="ghost" size="icon" onClick={() => setIsExpanded(e => !e)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:flex">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
