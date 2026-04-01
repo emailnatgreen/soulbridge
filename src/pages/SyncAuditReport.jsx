@@ -6,34 +6,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 import FeedbackWidget from '@/components/feedback/FeedbackWidget';
 import { usePageSignal } from '@/hooks/usePageSignal';
-
-const auditRows = [
-  { page: 'AIProjectHub', status: 'partial', notes: 'Good query usage, but still has page-specific manual refresh logic.' },
-  { page: 'Home', status: 'partial', notes: 'Mix of React Query and manual useEffect loading; likely not fully live-safe.' },
-  { page: 'Agents', status: 'good', notes: 'Uses shared query keys and query loading cleanly.' },
-  { page: 'AgentMessaging', status: 'risky', notes: 'Uses older route helper and heavy polling patterns.' },
-  { page: 'GovernanceHub', status: 'partial', notes: 'Good queries and mutations, but some one-off auth/loading logic remains.' },
-  { page: 'ProjectManager', status: 'good', notes: 'Strong query-based loading with shared keys.' },
-  { page: 'VillageCalendar', status: 'good', notes: 'Query-driven and easy to refresh globally.' },
-  { page: 'Wallets', status: 'risky', notes: 'Uses older route helper and mixed direct create/query patterns.' },
-  { page: 'SovereignID', status: 'risky', notes: 'Manual loadData flow instead of shared query patterns.' },
-  { page: 'KineticGridDashboard', status: 'good', notes: 'Mostly query-driven with regular refresh.' },
-  { page: 'MemoryBrowser', status: 'good', notes: 'Query-driven and easy to keep in sync.' },
-  { page: 'ImageStorage', status: 'good', notes: 'Query-driven with proper invalidation after changes.' },
-  { page: 'ServiceSkillMarketplace', status: 'partial', notes: 'Uses refetch callbacks instead of broader shared invalidation.' },
-  { page: 'AgentWellbeing', status: 'partial', notes: 'Mostly query-driven, but older route helper remains.' },
-  { page: 'Economy', status: 'partial', notes: 'Live polling exists, but mixed manual auth setup remains.' },
-  { page: 'Admin', status: 'good', notes: 'Good subscription plus invalidation model.' },
-  { page: 'AxiCommandDashboard', status: 'good', notes: 'Can force global query refresh cleanly.' },
-  { page: 'RiskRegister', status: 'good', notes: 'Simple query/invalidation flow.' },
-  { page: 'SkillsHub', status: 'good', notes: 'Mostly standard query usage.' },
-  { page: 'MentorshipHub', status: 'partial', notes: 'Good query usage but manual identity bootstrap remains.' },
-  { page: 'SystemDashboard', status: 'good', notes: 'Heavily query-driven with polling.' },
-  { page: 'TreasuryDashboard', status: 'partial', notes: 'Query-driven but still mixes manual identity setup and old route helper.' },
-  { page: 'Notifications', status: 'good', notes: 'Good subscription + query invalidation.' },
-  { page: 'Village', status: 'partial', notes: 'Query-driven but uses older route helper and user-id assumptions.' },
-  { page: 'CollaborationHub', status: 'partial', notes: 'Good queries, but uses older route helper and weaker shared sync patterns.' },
-];
+import { getSyncAuditRows } from '@/lib/syncAuditPages';
 
 const statusConfig = {
   good: { label: 'Healthy', className: 'bg-green-500/15 text-green-300 border-green-500/30', icon: CheckCircle2 },
@@ -43,6 +16,8 @@ const statusConfig = {
 
 export default function SyncAuditReport() {
   usePageSignal();
+
+  const auditRows = getSyncAuditRows();
 
   const totals = {
     good: auditRows.filter(r => r.status === 'good').length,
@@ -61,7 +36,7 @@ export default function SyncAuditReport() {
               </Button>
             </Link>
             <h1 className="text-3xl font-semibold">Platform Sync Audit</h1>
-            <p className="text-white/50 mt-1">A first-pass view of which pages are in sync and which still need work.</p>
+            <p className="text-white/50 mt-1">An automatic view of all app pages, with known sync notes preserved where they already existed.</p>
           </div>
         </div>
 
@@ -75,7 +50,7 @@ export default function SyncAuditReport() {
 
         <Card className="bg-white/5 border-white/10">
           <CardHeader>
-            <CardTitle>Page-by-page status</CardTitle>
+            <CardTitle>Page-by-page status ({auditRows.length} total)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {auditRows.map((row) => {
