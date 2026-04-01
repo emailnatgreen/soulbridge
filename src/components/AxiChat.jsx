@@ -121,9 +121,10 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       }
     } catch (err) {
       console.error('[AxiChat] Send error:', err);
+      const errorMessage = err?.response?.data?.error || err?.message || 'Axi could not respond right now.';
       setMessages(prev => [...prev, {
         id: `err-${Date.now()}`, sender_agent_id: 'axi',
-        content: 'I could not respond right now. Please try again.',
+        content: errorMessage,
         message_type: 'text'
       }]);
     } finally {
