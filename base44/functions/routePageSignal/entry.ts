@@ -4,7 +4,8 @@ Deno.serve(async (req) => {
   try {
     const headers = new Headers(req.headers);
     const authHeader = (headers.get('authorization') || '').trim();
-    const bearerValue = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
+    const bearerValue = rawToken && rawToken !== 'undefined' && rawToken !== 'null' ? rawToken : '';
 
     if (bearerValue) {
       headers.set('authorization', `Bearer ${bearerValue}`);
