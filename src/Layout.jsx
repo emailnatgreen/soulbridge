@@ -39,8 +39,10 @@ export default function Layout({ children, currentPageName }) {
     }
   })();
   const hasIdentity = !!(identity?.did || identity?.connected);
-  // Recognized = platform-authenticated (token present) OR DID-connected identity
-  const isRecognized = isAuthenticated || hasIdentity;
+  // Check for token directly as a failsafe (AuthContext may still be loading)
+  const hasToken = !!(localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
+  // Recognized = platform-authenticated OR has token OR DID-connected identity
+  const isRecognized = isAuthenticated || hasToken || hasIdentity;
   const showAdminSidebar = isRecognized && hasAdminAccess({ user, identityDid: identity?.did });
 
   const handleToggle = () => {
