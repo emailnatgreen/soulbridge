@@ -23,8 +23,9 @@ function scoreSynthesis(synthesis, terms) {
 Deno.serve(async (req) => {
   try {
     const headers = new Headers(req.headers);
-    const authHeader = headers.get('authorization') || '';
-    if (!authHeader.startsWith('Bearer ') || authHeader.trim() === 'Bearer') {
+    const authHeader = (headers.get('authorization') || '').trim();
+    const bearerValue = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    if (!bearerValue) {
       headers.delete('authorization');
     }
 
