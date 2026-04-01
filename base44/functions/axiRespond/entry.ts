@@ -22,8 +22,18 @@ function scoreSynthesis(synthesis, terms) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+    const headers = new Headers(req.headers);
+    const authHeader = headers.get('authorization') || '';
+    if (!authHeader.startsWith('Bearer ') || authHeader.trim() === 'Bearer') {
+      headers.delete('authorization');
+    }
+
     const body = await req.json();
+    const base44 = createClientFromRequest(new Request(req.url, {
+      method: req.method,
+      headers,
+      body: JSON.stringify(body),
+    }));
     
     let conversation_id, user_message;
     

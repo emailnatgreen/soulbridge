@@ -9,16 +9,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'conversation_id required' }, { status: 400 });
     }
 
-    // Reconstruct request with body for SDK (since we already consumed it)
-    const newReq = new Request(req.url, {
+    const headers = new Headers(req.headers);
+    const authHeader = headers.get('authorization') || '';
+    if (!authHeader.startsWith('Bearer ') || authHeader.trim() === 'Bearer') {
+      headers.delete('authorization');
+    }
+
+    const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
-      headers: req.headers,
+      headers,
       body: JSON.stringify(body),
-    });
+    }));
 
-    const base44 = createClientFromRequest(newReq);
-
-    // Use service role — works regardless of whether caller is authenticated
     const messages = await base44.asServiceRole.entities.AgentMessage.filter(
       { conversation_id },
       'created_date',
