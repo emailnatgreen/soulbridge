@@ -19,40 +19,19 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
+  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null);
   const initialCheckDone = useRef(false);
 
-  const checkUserAuth = useCallback(async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      setIsAuthenticated(true);
-    } catch (error) {
-      setUser(null);
-      setIsAuthenticated(!!getStoredDidIdentity());
-    }
-    setIsLoadingAuth(false);
-  }, []);
-
-  const checkAppState = useCallback(async (silent = false) => {
-    if (!silent) {
-      setIsLoadingPublicSettings(true);
-      setIsLoadingAuth(true);
-    }
-    setAuthError(null);
-
-    const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
-
+  const fetchPublicSettings = useCallback(async (token) => {
     try {
       const appClient = createAxiosClient({
         baseURL: `/api/apps/public`,
         headers: { 'X-App-Id': appParams.appId },
-        token: refreshedToken,
+        token: token,
         interceptResponses: true
       });
-
       const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
       setAppPublicSettings(publicSettings);
     } catch (appError) {
@@ -60,27 +39,43 @@ export const AuthProvider = ({ children }) => {
         const reason = appError.data.extra_data.reason;
         setAuthError({ type: reason, message: appError.data?.message || reason });
       }
-      // Don't block on public settings failure — continue to auth check
     }
+  }, []);
 
-    setIsLoadingPublicSettings(false);
+  const checkAppState = useCallback(async (silent = false) => {
+    if (!silent) {
+      setIsLoadingAuth(true);
+    }
+    setAuthError(null);
 
+    const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
+
+    // Check user auth FIRST (this is what blocks the spinner)
     if (refreshedToken) {
-      await checkUserAuth();
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        setIsAuthenticated(true);
+      } catch (error) {
+        setUser(null);
+        setIsAuthenticated(!!getStoredDidIdentity());
+      }
     } else {
       setUser(null);
-      setIsLoadingAuth(false);
       setIsAuthenticated(!!getStoredDidIdentity());
     }
 
+    // Auth loading is done — page can render now
+    setIsLoadingAuth(false);
     initialCheckDone.current = true;
-  }, [checkUserAuth]);
+
+    // Fetch public settings in the background (non-blocking)
+    fetchPublicSettings(refreshedToken);
+  }, [fetchPublicSettings]);
 
   useEffect(() => {
-    // Run initial check
     checkAppState(false);
 
-    // On focus/visibility, only do silent refresh (no spinner)
     const handleFocus = () => {
       if (initialCheckDone.current) checkAppState(true);
     };
@@ -96,18 +91,17 @@ export const AuthProvider = ({ children }) => {
     };
   }, [checkAppState]);
 
-  // Hard safety net: force loading off after 5 seconds no matter what
+  // Hard safety net: force loading off after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-      if (!initialCheckDone.current) {
+      if (isLoadingAuth) {
+        setIsLoadingAuth(false);
         setIsAuthenticated(!!getStoredDidIdentity());
         initialCheckDone.current = true;
       }
     }, 5000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLoadingAuth]);
 
   const logout = useCallback((shouldRedirect = true) => {
     setUser(null);
