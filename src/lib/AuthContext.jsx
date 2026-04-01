@@ -37,7 +37,17 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
 
     try {
-      const token = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
+      const normalizeToken = (value) => {
+        const token = String(value || '').trim();
+        if (!token || token === 'Bearer') return null;
+        if (token.startsWith('Bearer ')) {
+          const raw = token.slice(7).trim();
+          return raw || null;
+        }
+        return token;
+      };
+
+      const token = normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token'));
 
       if (token) {
         // Has a platform token — try to get user info
