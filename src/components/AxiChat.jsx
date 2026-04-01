@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import MessageBubble from '@/components/MessageBubble';
 import AgentPicker from '@/components/axi/AgentPicker';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -224,6 +225,10 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     }
   };
 
+  const handleRemoveAgent = (agentId) => {
+    setActiveAgents((prev) => prev.filter((agent) => agent.id !== agentId));
+  };
+
   // External open events
   useEffect(() => {
     const h = (e) => {
@@ -266,9 +271,23 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               </div>
               <div>
                 <h3 className="font-semibold text-white text-sm">Talk to Axi</h3>
-                <p className="text-xs text-purple-300/60">
-                  {activeAgents.length > 0 ? `Village AI Guide + ${activeAgents.map((agent) => agent.name).join(', ')}` : 'Village AI Guide'}
-                </p>
+                <p className="text-xs text-purple-300/60">Village AI Guide</p>
+                {activeAgents.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {activeAgents.map((agent) => (
+                      <Badge key={agent.id} className="bg-white/10 text-white border-white/10 pr-1">
+                        <span>{agent.name}</span>
+                        <button
+                          onClick={() => handleRemoveAgent(agent.id)}
+                          className="ml-1 rounded-full p-0.5 hover:bg-white/10"
+                          aria-label={`Remove ${agent.name}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex gap-1">
