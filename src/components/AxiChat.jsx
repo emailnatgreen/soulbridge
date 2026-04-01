@@ -25,17 +25,16 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const messagesEndRef = useRef(null);
   const convoRef = useRef(null);
   const unsubRef = useRef(null);
-  const initDone = useRef(false);
+  const pendingMessageRef = useRef('');
 
   // Scroll to bottom
   useEffect(() => {
     if (messages.length) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  // Init when opened
+  // Init or reconnect when opened
   useEffect(() => {
-    if (!isOpen || initDone.current) return;
-    initDone.current = true;
+    if (!isOpen) return;
 
     const init = async () => {
       // Try agent SDK first and reconnect to the user's saved personal conversation
@@ -111,6 +110,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     try {
       if (mode === 'agent') {
         // Agent SDK mode: keep Axi active and also invite extra agents to respond
+        pendingMessageRef.current = '';
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: msg });
 
         const invitedAgents = activeAgents;
@@ -136,6 +136,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         }
       } else {
         // Direct mode fallback
+        pendingMessageRef.current = '';
         setMessages(prev => [...prev, {
           id: `u-${Date.now()}`, sender_agent_id: 'visitor',
           content: msg, message_type: 'text'
@@ -208,7 +209,13 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
   // External open events
   useEffect(() => {
-    const h = (e) => { setIsOpen(true); if (e.detail?.message) setInput(e.detail.message); };
+    const h = (e) => {
+      setIsOpen(true);
+      if (typeof e.detail?.message === 'string' && e.detail.message.trim()) {
+        pendingMessageRef.current = e.detail.message;
+        setInput((current) => current.trim() ? current : e.detail.message);
+      }
+    };
     window.addEventListener('open-axi', h);
     window.addEventListener('open-axi-with-agent', h);
     window.addEventListener('open-axi-with-message', h);
