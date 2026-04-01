@@ -8,16 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
-const CONV_KEY = 'sb_axi_conv_id';
-
-function getOrCreateConvId() {
-  let id = localStorage.getItem(CONV_KEY);
-  if (!id) {
-    id = `axi-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    localStorage.setItem(CONV_KEY, id);
-  }
-  return id;
-}
 
 export default function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -25,63 +15,106 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
+  const [mode, setMode] = useState(null); // 'agent' | 'direct'
 
   const messagesEndRef = useRef(null);
-  const convId = useRef(null);
-  const loaded = useRef(false);
+  const convoRef = useRef(null);
+  const unsubRef = useRef(null);
+  const initDone = useRef(false);
 
   // Scroll to bottom
   useEffect(() => {
     if (messages.length) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  // Load conversation when opened
+  // Init when opened
   useEffect(() => {
-    if (!isOpen || loaded.current) return;
-    loaded.current = true;
-    convId.current = getOrCreateConvId();
-    setReady(true);
+    if (!isOpen || initDone.current) return;
+    initDone.current = true;
 
-    // Load existing messages in background
-    base44.functions.invoke('getConversationMessages', { conversation_id: convId.current })
-      .then(res => setMessages(res?.data?.messages || []))
-      .catch(() => {});
+    const init = async () => {
+      // Try agent SDK first (preserves conversation history for compliance)
+      try {
+        const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+        const unified = conversations
+          .filter(c => c.metadata?.unified_axi_chat === true)
+          .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+
+        let conversation;
+        if (unified.length > 0) {
+          conversation = unified[0];
+        } else {
+          conversation = await base44.agents.createConversation({
+            agent_name: 'axi',
+            metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
+          });
+        }
+
+        convoRef.current = conversation;
+        setMode('agent');
+        setReady(true);
+
+        // Subscribe for real-time messages
+        if (unsubRef.current) unsubRef.current();
+        unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
+          setMessages((data.messages || []).slice(-PAGE_SIZE));
+        });
+        return;
+      } catch (err) {
+        console.warn('[AxiChat] Agent SDK unavailable, falling back to direct mode:', err?.message);
+      }
+
+      // Fallback: direct axiRespond mode (for DID-only / unauthenticated users)
+      const convId = localStorage.getItem('sb_axi_did_conv') || `did-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      localStorage.setItem('sb_axi_did_conv', convId);
+      convoRef.current = { id: convId };
+      setMode('direct');
+      setReady(true);
+
+      // Load existing messages
+      try {
+        const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
+        setMessages(res?.data?.messages || []);
+      } catch (_) {}
+    };
+
+    init();
+    return () => { if (unsubRef.current) unsubRef.current(); };
   }, [isOpen]);
 
-  // Send
+  // Send message
   const handleSend = async () => {
     const msg = input.trim();
-    if (!msg || sending || !convId.current) return;
+    if (!msg || sending || !convoRef.current) return;
     setInput('');
     setSending(true);
 
-    // Optimistic user message
-    setMessages(prev => [...prev, {
-      id: `u-${Date.now()}`,
-      sender_agent_id: 'visitor',
-      content: msg,
-      message_type: 'text'
-    }]);
-
     try {
-      const res = await base44.functions.invoke('axiRespond', {
-        conversation_id: convId.current,
-        user_message: msg
-      });
-      const reply = res?.data?.response;
-      if (reply) {
+      if (mode === 'agent') {
+        // Agent SDK mode: full compliance history preserved
+        await base44.agents.addMessage(convoRef.current, { role: 'user', content: msg });
+      } else {
+        // Direct mode fallback
         setMessages(prev => [...prev, {
-          id: `a-${Date.now()}`,
-          sender_agent_id: 'axi',
-          content: reply,
-          message_type: 'text'
+          id: `u-${Date.now()}`, sender_agent_id: 'visitor',
+          content: msg, message_type: 'text'
         }]);
+        const res = await base44.functions.invoke('axiRespond', {
+          conversation_id: convoRef.current.id,
+          user_message: msg
+        });
+        const reply = res?.data?.response;
+        if (reply) {
+          setMessages(prev => [...prev, {
+            id: `a-${Date.now()}`, sender_agent_id: 'axi',
+            content: reply, message_type: 'text'
+          }]);
+        }
       }
     } catch (err) {
       console.error('[AxiChat] Send error:', err);
       setMessages(prev => [...prev, {
-        id: `err-${Date.now()}`,
-        sender_agent_id: 'axi',
+        id: `err-${Date.now()}`, sender_agent_id: 'axi',
         content: 'I could not respond right now. Please try again.',
         message_type: 'text'
       }]);
