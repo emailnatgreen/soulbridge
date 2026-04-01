@@ -39,8 +39,8 @@ export default function Layout({ children, currentPageName }) {
     }
   })();
   const hasIdentity = !!(identity?.did || identity?.connected);
-  // Recognized = either platform-authenticated user OR DID-connected identity
-  const isRecognized = (isAuthenticated && user) || hasIdentity;
+  // Recognized = platform-authenticated (token present) OR DID-connected identity
+  const isRecognized = isAuthenticated || hasIdentity;
   const showAdminSidebar = isRecognized && hasAdminAccess({ user, identityDid: identity?.did });
 
   const handleToggle = () => {
