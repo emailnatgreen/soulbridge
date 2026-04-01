@@ -6,7 +6,61 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  * This is the true source of truth for DID verification.
  */
 Deno.serve(async (req) => {
-  const XRPL_MAINNET_RPC = 'https://xrpl.ws';
+  // Multiple RPC endpoints for redundancy
+  const RPC_ENDPOINTS = [
+    'https://xrpl.ws',
+    'https://s1.ripple.com:51234',
+    'https://s2.ripple.com:51234'
+  ];
+
+  const queryXRPL = async (classicAddress) => {
+    let lastError;
+    for (const endpoint of RPC_ENDPOINTS) {
+      try {
+        const rpcPayload = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'account_info',
+            params: {
+              account: classicAddress,
+              ledger_index: 'validated'
+            }
+          })
+        };
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        const rpcResponse = await fetch(endpoint, { ...rpcPayload, signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!rpcResponse.ok) {
+          throw new Error(`HTTP ${rpcResponse.status}`);
+        }
+
+        const rpcData = await rpcResponse.json();
+        
+        if (rpcData.error) {
+          throw new Error(rpcData.error.message);
+        }
+
+        if (rpcData.result?.account_data) {
+          return { success: true, data: rpcData.result.account_data };
+        }
+
+        throw new Error('No account data returned');
+      } catch (err) {
+        lastError = err;
+        console.warn(`[verifyDIDStatusMainnet] ${endpoint} failed:`, err.message);
+        continue; // Try next endpoint
+      }
+    }
+    
+    return { success: false, error: lastError?.message || 'All RPC endpoints failed' };
+  };
 
   try {
     const base44 = createClientFromRequest(req);
@@ -38,43 +92,20 @@ Deno.serve(async (req) => {
     const wallet = wallets[0];
     const classicAddress = wallet.classic_address;
 
-    // Query XRPL MAINNET directly via JSON-RPC
-    const rpcPayload = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'account_info',
-        params: {
-          account: classicAddress,
-          ledger_index: 'validated'
-        }
-      })
-    };
-
-    const rpcResponse = await fetch(XRPL_MAINNET_RPC, rpcPayload);
-    const rpcData = await rpcResponse.json();
-
-    if (rpcData.error) {
-      console.error('[verifyDIDStatusMainnet] XRPL RPC Error:', rpcData.error);
+    // Query XRPL mainnet with fallback RPC endpoints
+    const xrplResult = await queryXRPL(classicAddress);
+    
+    if (!xrplResult.success) {
+      console.error('[verifyDIDStatusMainnet] XRPL Query Error:', xrplResult.error);
       return Response.json({
         isVerified: false,
-        error: `Account not found on XRPL mainnet: ${rpcData.error.message}`,
+        error: `Failed to query XRPL: ${xrplResult.error}`,
         classic_address: classicAddress,
         network: 'mainnet'
       });
     }
 
-    const accountData = rpcData.result?.account_data;
-    if (!accountData) {
-      return Response.json({
-        isVerified: false,
-        error: 'Account not found on XRPL mainnet',
-        classic_address: classicAddress,
-        network: 'mainnet'
-      });
-    }
+    const accountData = xrplResult.data;
 
     // Account exists on mainnet — DID is verified
     // Update database flag if it wasn't already set
