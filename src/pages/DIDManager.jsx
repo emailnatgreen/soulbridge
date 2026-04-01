@@ -147,15 +147,16 @@ export default function DIDManager() {
     },
     onSuccess: (response, walletId) => {
       setVerifyingWalletId(null);
+      const data = response.data || response;
       setVerificationResults(prev => ({
         ...prev,
-        [walletId]: response.data
+        [walletId]: data
       }));
-      setCurrentVerification(response.data);
+      setCurrentVerification(data);
       setVerifyDialogOpen(true);
       
-      const v = response.data?.verification;
-      if (!v?.account_exists) {
+      const v = data?.verification;
+      if (!v || !v.account_exists) {
         toast.error('Account not found on XRPL');
       } else if (v?.did_active) {
         toast.success('✅ DID is published on XRPL');
