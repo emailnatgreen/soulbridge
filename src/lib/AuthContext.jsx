@@ -1,9 +1,19 @@
-import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 
 const AuthContext = createContext();
+
+const getStoredDidIdentity = () => {
+  try {
+    const stored = localStorage.getItem('soulbridge_identity');
+    const parsed = stored ? JSON.parse(stored) : null;
+    return parsed?.connected ? parsed : null;
+  } catch (_) {
+    return null;
+  }
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -12,41 +22,22 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null);
-  const checkedOnce = useRef(false);
+  const initialCheckDone = useRef(false);
 
-  useEffect(() => {
-    checkAppState();
-
-    const handleFocus = () => {
-      // Only re-check on focus if we already loaded once — don't re-show spinner
-      if (checkedOnce.current) checkAppState(true);
-    };
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && checkedOnce.current) checkAppState(true);
-    };
-
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
+  const checkUserAuth = useCallback(async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      setIsAuthenticated(true);
+    } catch (error) {
+      setUser(null);
+      setIsAuthenticated(!!getStoredDidIdentity());
+    }
+    setIsLoadingAuth(false);
   }, []);
 
-  const getStoredDidIdentity = () => {
-    try {
-      const stored = localStorage.getItem('soulbridge_identity');
-      const parsed = stored ? JSON.parse(stored) : null;
-      return parsed?.connected ? parsed : null;
-    } catch (_) {
-      return null;
-    }
-  };
-
-  const checkAppState = async (isRefresh = false) => {
-    // On refresh (focus/visibility), don't show the loading spinner again
-    if (!isRefresh) {
+  const checkAppState = useCallback(async (silent = false) => {
+    if (!silent) {
       setIsLoadingPublicSettings(true);
       setIsLoadingAuth(true);
     }
@@ -64,69 +55,61 @@ export const AuthProvider = ({ children }) => {
 
       const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
       setAppPublicSettings(publicSettings);
-
-      if (refreshedToken) {
-        await checkUserAuth();
-      } else {
-        setUser(null);
-        setIsLoadingAuth(false);
-        setIsAuthenticated(!!getStoredDidIdentity());
-      }
-      setIsLoadingPublicSettings(false);
-      checkedOnce.current = true;
     } catch (appError) {
-      console.error('App state check failed:', appError);
-
       if (appError.status === 403 && appError.data?.extra_data?.reason) {
         const reason = appError.data.extra_data.reason;
-        if (reason === 'auth_required') {
-          setAuthError({ type: 'auth_required', message: 'Authentication required' });
-        } else if (reason === 'user_not_registered') {
-          setAuthError({ type: 'user_not_registered', message: 'User not registered for this app' });
-        } else {
-          setAuthError({ type: reason, message: appError.message });
-        }
+        setAuthError({ type: reason, message: appError.data?.message || reason });
       }
-
-      // Always clear loading — never leave spinner stuck
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-      setIsAuthenticated(!!getStoredDidIdentity());
-      checkedOnce.current = true;
+      // Don't block on public settings failure — continue to auth check
     }
-  };
 
-  // Hard safety net: if loading states are still true after 8 seconds, force them off
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isLoadingPublicSettings || isLoadingAuth) {
-        console.warn('[AuthContext] Safety timeout — forcing loading states off');
-        setIsLoadingPublicSettings(false);
-        setIsLoadingAuth(false);
-        setIsAuthenticated(!!getStoredDidIdentity());
-        checkedOnce.current = true;
-      }
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, []);
+    setIsLoadingPublicSettings(false);
 
-  const checkUserAuth = async () => {
-    try {
-      setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-    } catch (error) {
-      console.error('User auth check failed:', error);
+    if (refreshedToken) {
+      await checkUserAuth();
+    } else {
       setUser(null);
       setIsLoadingAuth(false);
       setIsAuthenticated(!!getStoredDidIdentity());
-      setAuthError(null);
     }
-  };
 
-  const logout = (shouldRedirect = true) => {
+    initialCheckDone.current = true;
+  }, [checkUserAuth]);
+
+  useEffect(() => {
+    // Run initial check
+    checkAppState(false);
+
+    // On focus/visibility, only do silent refresh (no spinner)
+    const handleFocus = () => {
+      if (initialCheckDone.current) checkAppState(true);
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && initialCheckDone.current) checkAppState(true);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [checkAppState]);
+
+  // Hard safety net: force loading off after 5 seconds no matter what
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+      if (!initialCheckDone.current) {
+        setIsAuthenticated(!!getStoredDidIdentity());
+        initialCheckDone.current = true;
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const logout = useCallback((shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
     if (shouldRedirect) {
@@ -134,16 +117,16 @@ export const AuthProvider = ({ children }) => {
     } else {
       base44.auth.logout();
     }
-  };
+  }, []);
 
-  const navigateToLogin = () => {
+  const navigateToLogin = useCallback(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const isEditorPreview = urlParams.has('_preview_token');
     const nextUrl = isEditorPreview
       ? window.location.origin + window.location.pathname
       : window.location.origin + '/';
     base44.auth.redirectToLogin(nextUrl);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{
