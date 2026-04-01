@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
 const PERSONAL_CONVERSATION_KEY = 'axi_personal_conversation_id';
+const PERSONAL_CONVERSATION_META_NAME = 'Personal Conversation with Axi';
 
 export default function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -42,14 +43,20 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
         const savedConversationId = localStorage.getItem(PERSONAL_CONVERSATION_KEY);
 
+        const isPersonalConversation = (conversation) => (
+          conversation?.metadata?.unified_axi_chat === true ||
+          conversation?.metadata?.personal_axi_chat === true ||
+          conversation?.metadata?.name === PERSONAL_CONVERSATION_META_NAME
+        );
+
         let conversation = null;
         if (savedConversationId) {
-          conversation = conversations.find(c => c.id === savedConversationId) || null;
+          conversation = conversations.find(c => c.id === savedConversationId && isPersonalConversation(c)) || null;
         }
 
         if (!conversation) {
           const personal = conversations
-            .filter(c => c.metadata?.unified_axi_chat === true || c.metadata?.personal_axi_chat === true)
+            .filter(isPersonalConversation)
             .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date));
           conversation = personal[0] || null;
         }
@@ -57,7 +64,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         if (!conversation) {
           conversation = await base44.agents.createConversation({
             agent_name: 'axi',
-            metadata: { name: 'Personal Conversation with Axi', unified_axi_chat: true, personal_axi_chat: true }
+            metadata: { name: PERSONAL_CONVERSATION_META_NAME, unified_axi_chat: true, personal_axi_chat: true }
           });
         }
 
@@ -65,6 +72,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         convoRef.current = conversation;
         setMode('agent');
         setReady(true);
+        setMessages((conversation.messages || []).slice(-PAGE_SIZE));
 
         if (unsubRef.current) unsubRef.current();
         unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
