@@ -75,8 +75,18 @@ export const AuthProvider = ({ children }) => {
     }
 
     // Fetch public settings in background (non-blocking)
-    const token = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
-    fetchPublicSettings(token);
+    const normalizeToken = (value) => {
+      const token = String(value || '').trim();
+      if (!token || token === 'Bearer') return null;
+      if (token.startsWith('Bearer ')) {
+        const raw = token.slice(7).trim();
+        return raw || null;
+      }
+      return token;
+    };
+
+    const token = normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token'));
+    fetchPublicSettings(token || undefined);
   }, [fetchPublicSettings]);
 
   useEffect(() => {
