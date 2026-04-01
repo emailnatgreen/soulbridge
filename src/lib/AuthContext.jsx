@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
@@ -12,13 +12,17 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null);
+  const checkedOnce = useRef(false);
 
   useEffect(() => {
     checkAppState();
 
-    const handleFocus = () => checkAppState();
+    const handleFocus = () => {
+      // Only re-check on focus if we already loaded once — don't re-show spinner
+      if (checkedOnce.current) checkAppState(true);
+    };
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') checkAppState();
+      if (document.visibilityState === 'visible' && checkedOnce.current) checkAppState(true);
     };
 
     window.addEventListener('focus', handleFocus);
@@ -40,12 +44,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const checkAppState = async () => {
-    try {
-      const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
+  const checkAppState = async (isRefresh = false) => {
+    // On refresh (focus/visibility), don't show the loading spinner again
+    if (!isRefresh) {
       setIsLoadingPublicSettings(true);
-      setAuthError(null);
-      
+      setIsLoadingAuth(true);
+    }
+    setAuthError(null);
+
+    const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
+
+    try {
       const appClient = createAxiosClient({
         baseURL: `/api/apps/public`,
         headers: { 'X-App-Id': appParams.appId },
@@ -53,54 +62,53 @@ export const AuthProvider = ({ children }) => {
         interceptResponses: true
       });
 
-      // Safety timeout so spinner never gets stuck
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('App settings fetch timed out')), 10000)
-      );
-      
-      try {
-        const publicSettings = await Promise.race([
-          appClient.get(`/prod/public-settings/by-id/${appParams.appId}`),
-          timeoutPromise
-        ]);
-        setAppPublicSettings(publicSettings);
-        
-        if (refreshedToken) {
-          await checkUserAuth();
-        } else {
-          setUser(null);
-          setIsLoadingAuth(false);
-          setIsAuthenticated(!!getStoredDidIdentity());
-        }
-        setIsLoadingPublicSettings(false);
-      } catch (appError) {
-        console.error('App state check failed:', appError);
-        
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
-          const reason = appError.data.extra_data.reason;
-          if (reason === 'auth_required') {
-            setAuthError({ type: 'auth_required', message: 'Authentication required' });
-          } else if (reason === 'user_not_registered') {
-            setAuthError({ type: 'user_not_registered', message: 'User not registered for this app' });
-          } else {
-            setAuthError({ type: reason, message: appError.message });
-          }
-        } else {
-          // For timeouts or unknown errors, don't block — just clear loading
-          setAuthError(null);
-        }
-        setIsLoadingPublicSettings(false);
+      const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
+      setAppPublicSettings(publicSettings);
+
+      if (refreshedToken) {
+        await checkUserAuth();
+      } else {
+        setUser(null);
         setIsLoadingAuth(false);
-        // Even on error, allow DID-only users through
         setIsAuthenticated(!!getStoredDidIdentity());
       }
-    } catch (error) {
-      console.error('Unexpected error:', error);
+      setIsLoadingPublicSettings(false);
+      checkedOnce.current = true;
+    } catch (appError) {
+      console.error('App state check failed:', appError);
+
+      if (appError.status === 403 && appError.data?.extra_data?.reason) {
+        const reason = appError.data.extra_data.reason;
+        if (reason === 'auth_required') {
+          setAuthError({ type: 'auth_required', message: 'Authentication required' });
+        } else if (reason === 'user_not_registered') {
+          setAuthError({ type: 'user_not_registered', message: 'User not registered for this app' });
+        } else {
+          setAuthError({ type: reason, message: appError.message });
+        }
+      }
+
+      // Always clear loading — never leave spinner stuck
       setIsLoadingPublicSettings(false);
       setIsLoadingAuth(false);
       setIsAuthenticated(!!getStoredDidIdentity());
+      checkedOnce.current = true;
     }
   };
+
+  // Hard safety net: if loading states are still true after 8 seconds, force them off
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isLoadingPublicSettings || isLoadingAuth) {
+        console.warn('[AuthContext] Safety timeout — forcing loading states off');
+        setIsLoadingPublicSettings(false);
+        setIsLoadingAuth(false);
+        setIsAuthenticated(!!getStoredDidIdentity());
+        checkedOnce.current = true;
+      }
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const checkUserAuth = async () => {
     try {
@@ -121,7 +129,6 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-    
     if (shouldRedirect) {
       base44.auth.logout(window.location.href);
     } else {
@@ -135,14 +142,13 @@ export const AuthProvider = ({ children }) => {
     const nextUrl = isEditorPreview
       ? window.location.origin + window.location.pathname
       : window.location.origin + '/';
-
     base44.auth.redirectToLogin(nextUrl);
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
       isLoadingAuth,
       isLoadingPublicSettings,
       authError,
