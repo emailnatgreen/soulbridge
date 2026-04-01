@@ -36,10 +36,11 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 
 const normalizeToken = (value) => {
 	const token = String(value || '').trim();
-	if (!token || token === 'Bearer') return null;
+	if (!token || token === 'Bearer' || token === 'undefined' || token === 'null') return null;
 	if (token.startsWith('Bearer ')) {
 		const raw = token.slice(7).trim();
-		return raw || null;
+		if (!raw || raw === 'undefined' || raw === 'null') return null;
+		return raw;
 	}
 	return token;
 }

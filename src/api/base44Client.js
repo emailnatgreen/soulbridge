@@ -3,11 +3,11 @@ import { appParams } from '@/lib/app-params';
 
 const normalizeToken = (value) => {
   const token = String(value || '').trim();
-  if (!token) return undefined;
-  if (token === 'Bearer') return undefined;
+  if (!token || token === 'Bearer' || token === 'undefined' || token === 'null') return undefined;
   if (token.startsWith('Bearer ')) {
     const raw = token.slice(7).trim();
-    return raw || undefined;
+    if (!raw || raw === 'undefined' || raw === 'null') return undefined;
+    return raw;
   }
   return token;
 };
