@@ -104,6 +104,28 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       if (mode === 'agent') {
         // Agent SDK mode: full compliance history preserved
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: msg });
+
+        const invitedAgents = activeAgents;
+        for (const agent of invitedAgents) {
+          const response = await base44.functions.invoke('generateAgentResponse', {
+            conversation_id: convoRef.current.id,
+            user_message: msg,
+            agent_id: agent.id,
+            agent_name: agent.name
+          });
+
+          const agentReply = response?.data?.response;
+          if (agentReply) {
+            setMessages((prev) => [...prev, {
+              id: `agent-${agent.id}-${Date.now()}`,
+              role: 'assistant',
+              sender_agent_id: agent.id,
+              metadata: { sourceAgentId: agent.id },
+              content: agentReply,
+              message_type: 'text'
+            }]);
+          }
+        }
       } else {
         // Direct mode fallback
         setMessages(prev => [...prev, {
@@ -154,11 +176,52 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
     setMessages((prev) => [...prev, joinMessage]);
 
+    const introPrompt = `Axi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly to the user and acknowledge that you are joining from this point forward.`;
+
     if (mode === 'agent' && convoRef.current) {
       await base44.agents.addMessage(convoRef.current, {
         role: 'user',
         content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
       });
+
+      const response = await base44.functions.invoke('generateAgentResponse', {
+        conversation_id: convoRef.current.id,
+        user_message: introPrompt,
+        agent_id: agent.id,
+        agent_name: agent.name
+      });
+
+      const agentReply = response?.data?.response;
+      if (agentReply) {
+        setMessages((prev) => [...prev, {
+          id: `agent-${Date.now()}`,
+          role: 'assistant',
+          sender_agent_id: agent.id,
+          metadata: { sourceAgentId: agent.id },
+          content: agentReply,
+          message_type: 'text'
+        }]);
+      }
+      return;
+    }
+
+    const response = await base44.functions.invoke('generateAgentResponse', {
+      conversation_id: convoRef.current.id,
+      user_message: introPrompt,
+      agent_id: agent.id,
+      agent_name: agent.name
+    });
+
+    const agentReply = response?.data?.response;
+    if (agentReply) {
+      setMessages((prev) => [...prev, {
+        id: `agent-${Date.now()}`,
+        role: 'assistant',
+        sender_agent_id: agent.id,
+        metadata: { sourceAgentId: agent.id },
+        content: agentReply,
+        message_type: 'text'
+      }]);
     }
   };
 
