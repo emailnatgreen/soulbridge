@@ -199,7 +199,31 @@ export default function DIDManager() {
   });
 
   const handleVerifyDID = (walletId) => {
-    verifyMutation.mutate(walletId);
+    // Use the new mainnet verification function
+    setVerifyingWalletId(walletId);
+    base44.functions.invoke('verifyDIDStatusMainnet', {})
+      .then((response) => {
+        setVerifyingWalletId(null);
+        const data = response.data || response;
+        setVerificationResults(prev => ({
+          ...prev,
+          [walletId]: data
+        }));
+        setCurrentVerification(data);
+        setVerifyDialogOpen(true);
+        
+        if (data?.isVerified) {
+          toast.success('✅ DID verified on XRPL Mainnet!');
+        } else {
+          toast.error(data?.error || 'DID verification failed');
+        }
+      })
+      .catch((error) => {
+        setVerifyingWalletId(null);
+        const message = error?.response?.data?.message || error?.message || 'Verification failed';
+        toast.error(message);
+        console.error('Verification error:', error);
+      });
   };
 
   const handlePostPublishVerify = (walletId) => {
