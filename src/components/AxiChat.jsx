@@ -29,6 +29,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState('idle'); // idle | loading | ready | error
+  const inputRef = useRef('');
 
   const messagesEndRef = useRef(null);
   const unsubRef = useRef(null);
@@ -122,9 +123,11 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
   // Send message
   const handleSend = useCallback(async () => {
-    if (!input.trim() || !convo || sending) return;
-    const msg = input.trim();
+    const currentInput = inputRef.current || input;
+    if (!currentInput.trim() || !convo || sending) return;
+    const msg = currentInput.trim();
     setInput('');
+    inputRef.current = '';
     setSending(true);
     try {
       if (convo._didMode) {
@@ -241,7 +244,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
             <div className="flex gap-2">
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => { setInput(e.target.value); inputRef.current = e.target.value; }}
                 onKeyDown={handleKeyDown}
                 placeholder="Speak to Axi..."
                 className="bg-white/5 border-white/20 text-white placeholder:text-white/30 resize-none h-11 min-h-[44px]"
@@ -249,8 +252,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               />
               <Button
                 onClick={handleSend}
-                disabled={!input.trim() || sending || status !== 'ready'}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-11 px-4 flex-shrink-0"
+                disabled={sending || status !== 'ready'}
+                className={`h-11 px-4 flex-shrink-0 ${input.trim() ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : 'bg-slate-700 opacity-50'}`}
               >
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
