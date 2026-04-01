@@ -68,7 +68,11 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
         if (unsubRef.current) unsubRef.current();
         unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
-          setMessages((data.messages || []).slice(-PAGE_SIZE));
+          const baseMessages = (data.messages || []).slice(-PAGE_SIZE);
+          setMessages((prev) => {
+            const localAgentMessages = prev.filter((item) => item.metadata?.sourceAgentId && !baseMessages.some((msg) => msg.id === item.id));
+            return [...baseMessages, ...localAgentMessages];
+          });
         });
         return;
       } catch (err) {
@@ -102,7 +106,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
     try {
       if (mode === 'agent') {
-        // Agent SDK mode: full compliance history preserved
+        // Agent SDK mode: keep Axi active and also invite extra agents to respond
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: msg });
 
         const invitedAgents = activeAgents;
@@ -116,14 +120,18 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
           const agentReply = response?.data?.response;
           if (agentReply) {
-            setMessages((prev) => [...prev, {
-              id: `agent-${agent.id}-${Date.now()}`,
-              role: 'assistant',
-              sender_agent_id: agent.id,
-              metadata: { sourceAgentId: agent.id },
-              content: agentReply,
-              message_type: 'text'
-            }]);
+            setMessages((prev) => {
+              const exists = prev.some((item) => item.content === agentReply && item.metadata?.sourceAgentId === agent.id);
+              if (exists) return prev;
+              return [...prev, {
+                id: `agent-${agent.id}-${Date.now()}`,
+                role: 'assistant',
+                sender_agent_id: agent.id,
+                metadata: { sourceAgentId: agent.id },
+                content: agentReply,
+                message_type: 'text'
+              }];
+            });
           }
         }
       } else {
