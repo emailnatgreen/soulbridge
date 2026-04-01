@@ -68,11 +68,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
         if (unsubRef.current) unsubRef.current();
         unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
-          const baseMessages = (data.messages || []).slice(-PAGE_SIZE);
-          setMessages((prev) => {
-            const localAgentMessages = prev.filter((item) => item.metadata?.sourceAgentId && !baseMessages.some((msg) => msg.id === item.id));
-            return [...baseMessages, ...localAgentMessages];
-          });
+          setMessages((data.messages || []).slice(-PAGE_SIZE));
         });
         return;
       } catch (err) {
@@ -120,18 +116,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
           const agentReply = response?.data?.response;
           if (agentReply) {
-            setMessages((prev) => {
-              const exists = prev.some((item) => item.content === agentReply && item.metadata?.sourceAgentId === agent.id);
-              if (exists) return prev;
-              return [...prev, {
-                id: `agent-${agent.id}-${Date.now()}`,
-                role: 'assistant',
-                sender_agent_id: agent.id,
-                metadata: { sourceAgentId: agent.id },
-                content: agentReply,
-                message_type: 'text'
-              }];
-            });
+            setMessages((prev) => [...prev, {
+              id: `agent-${agent.id}-${Date.now()}`,
+              role: 'assistant',
+              sender_agent_id: agent.id,
+              metadata: { sourceAgentId: agent.id },
+              content: agentReply,
+              message_type: 'text'
+            }]);
           }
         }
       } else {
@@ -186,33 +178,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
     const introPrompt = `Axi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly to the user and acknowledge that you are joining from this point forward.`;
 
-    if (mode === 'agent' && convoRef.current) {
-      await base44.agents.addMessage(convoRef.current, {
-        role: 'user',
-        content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
-      });
-
-      const response = await base44.functions.invoke('generateAgentResponse', {
-        conversation_id: convoRef.current.id,
-        user_message: introPrompt,
-        agent_id: agent.id,
-        agent_name: agent.name
-      });
-
-      const agentReply = response?.data?.response;
-      if (agentReply) {
-        setMessages((prev) => [...prev, {
-          id: `agent-${Date.now()}`,
-          role: 'assistant',
-          sender_agent_id: agent.id,
-          metadata: { sourceAgentId: agent.id },
-          content: agentReply,
-          message_type: 'text'
-        }]);
-      }
-      return;
-    }
-
     const response = await base44.functions.invoke('generateAgentResponse', {
       conversation_id: convoRef.current.id,
       user_message: introPrompt,
@@ -223,7 +188,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     const agentReply = response?.data?.response;
     if (agentReply) {
       setMessages((prev) => [...prev, {
-        id: `agent-${Date.now()}`,
+        id: `agent-${agent.id}-${Date.now()}`,
         role: 'assistant',
         sender_agent_id: agent.id,
         metadata: { sourceAgentId: agent.id },

@@ -47,15 +47,6 @@ Do NOT prefix your response with your name.`;
 
     console.log(`[generateAgentResponse] ${agent.name} responded: "${String(llmResponse).slice(0, 80)}..."`);
 
-    if (llmResponse) {
-      // Called from frontend with user auth token - post message into user's conversation
-      await base44.agents.addMessage({ id: conversation_id }, {
-        role: 'assistant',
-        content: `**${agent.name}:** ${llmResponse}`
-      });
-      console.log(`[generateAgentResponse] Message posted for ${agent.name}`);
-    }
-
     return Response.json({ success: true, agent: agent.name, response: llmResponse });
   } catch (error) {
     console.error('[generateAgentResponse] Error:', error.message);
