@@ -16,18 +16,15 @@ Deno.serve(async (req) => {
     let lastError;
     for (const endpoint of RPC_ENDPOINTS) {
       try {
+        const body = JSON.stringify({
+          method: 'account_info',
+          params: { account: classicAddress }
+        });
+
         const rpcPayload = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'account_info',
-            params: {
-              account: classicAddress,
-              ledger_index: 'validated'
-            }
-          })
+          body
         };
 
         const controller = new AbortController();
@@ -43,14 +40,16 @@ Deno.serve(async (req) => {
         const rpcData = await rpcResponse.json();
         
         if (rpcData.error) {
-          throw new Error(rpcData.error.message);
+          throw new Error(rpcData.error.message || JSON.stringify(rpcData.error));
         }
 
-        if (rpcData.result?.account_data) {
-          return { success: true, data: rpcData.result.account_data };
+        // xrpl.ws returns result directly, not nested
+        const accountData = rpcData.result?.account_data || rpcData.account_data || rpcData.result;
+        if (accountData) {
+          return { success: true, data: accountData };
         }
 
-        throw new Error('No account data returned');
+        throw new Error('No account data in response');
       } catch (err) {
         lastError = err;
         console.warn(`[verifyDIDStatusMainnet] ${endpoint} failed:`, err.message);
