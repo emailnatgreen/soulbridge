@@ -199,35 +199,40 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
       };
 
       try {
-        let convo;
+        let convoId;
 
-        // Always find/create the user's own unified conversation
+        // Step 1: Find or create the conversation — only need the ID, not the full messages
         const conversations = await retryWithBackoff(() => base44.agents.listConversations({ agent_name: 'axi' }));
         const unified = conversations.filter(c => c.metadata?.unified_axi_chat === true);
         const existing = unified.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
+        
+        let convo;
         if (existing) {
-          convo = await retryWithBackoff(() => base44.agents.getConversation(existing.id));
+          convoId = existing.id;
+          // Don't call getConversation — it loads ALL 6000+ messages.
+          // We'll get recent messages from the subscription instead.
+          convo = existing;
         } else {
           convo = await retryWithBackoff(() => base44.agents.createConversation({
             agent_name: 'axi',
             metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
           }));
+          convoId = convo.id;
         }
         setConversation(convo);
-        // Only load the last PAGE_SIZE messages initially for speed
-        const allMsgs = convo.messages || [];
-        setMessages(allMsgs.slice(-PAGE_SIZE));
-        setAllMessages(allMsgs);
         
-        // Load or create AgentConversation and store its ID
-         const initAgentConvo = async () => {
-           try {
-             // Query all AgentConversations and find the one linked to this convo
-             const all = await retryWithBackoff(() => base44.entities.AgentConversation.list('-created_date', 50));
-             const existing = all?.filter(ac => ac.metadata?.conversation_id === convo.id);
+        // Step 2: Show empty state immediately, let subscription fill in messages
+        setMessages([]);
+        setAllMessages([]);
+        
+        // Step 3: Load AgentConversation participants (lightweight)
+        const initAgentConvo = async () => {
+          try {
+            const all = await retryWithBackoff(() => base44.entities.AgentConversation.list('-created_date', 50));
+            const existingAC = all?.filter(ac => ac.metadata?.conversation_id === convoId);
 
-            if (existing && existing.length > 0) {
-              const agentConvo = existing[0];
+            if (existingAC && existingAC.length > 0) {
+              const agentConvo = existingAC[0];
               setAgentConvoId(agentConvo.id);
               if (agentConvo.participant_agent_ids?.length > 0) {
                 const agents = await Promise.all(
@@ -238,12 +243,11 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
                 setActiveAgents(agents.filter(Boolean));
               }
             } else {
-              // Create new AgentConversation with metadata link
               const newConvo = await retryWithBackoff(() => base44.entities.AgentConversation.create({
                 title: convo.metadata?.name || 'Agent Conversation',
                 conversation_type: 'group',
                 participant_agent_ids: [],
-                metadata: { conversation_id: convo.id }
+                metadata: { conversation_id: convoId }
               }));
               setAgentConvoId(newConvo.id);
               setActiveAgents([]);
@@ -255,19 +259,27 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
         await initAgentConvo();
 
+        // Step 4: Subscribe — this gives us messages without calling getConversation
         if (unsubscribeRef.current) unsubscribeRef.current();
-        unsubscribeRef.current = await retryWithBackoff(() => base44.agents.subscribeToConversation(convo.id, (data) => {
-          const all = [...data.messages];
-          setAllMessages(all);
-          setPage(prev => {
-            setMessages(all.slice(-PAGE_SIZE * prev));
-            return prev;
-          });
+        let firstSnapshot = true;
+        unsubscribeRef.current = await retryWithBackoff(() => base44.agents.subscribeToConversation(convoId, (data) => {
+          const allMsgs = data.messages || [];
+          if (firstSnapshot) {
+            // First snapshot: only show last PAGE_SIZE messages
+            firstSnapshot = false;
+            setAllMessages(allMsgs);
+            setMessages(allMsgs.slice(-PAGE_SIZE));
+            setPage(1);
+          } else {
+            // Subsequent updates: only update if length changed (new message)
+            setAllMessages(prev => {
+              if (prev.length === allMsgs.length) return prev; // no change, skip re-render
+              setMessages(allMsgs.slice(-PAGE_SIZE));
+              return allMsgs;
+            });
+          }
         })) || unsubscribeRef.current;
 
-        return () => {
-          if (unsubscribeRef.current) unsubscribeRef.current();
-        };
       } catch (err) {
         console.error('[AxiChat] Init failed:', err);
         setInitError(true);
