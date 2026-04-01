@@ -153,14 +153,23 @@ Deno.serve(async (req) => {
       xrplData: {
         sequence: accountData.Sequence,
         balance: accountData.Balance,
-        flags: accountData.Flags
+        flags: accountData.Flags,
+        previousTxnID: accountData.PreviousTxnID,
+        previousTxnLgrSeq: accountData.PreviousTxnLgrSeq,
+        ledgerEntryType: accountData.LedgerEntryType
       },
       verification: {
         verified: true,
         account_exists: true,
         did_active: true,
         verified_at: new Date().toISOString(),
-        balance: (parseInt(accountData.Balance) / 1_000_000).toFixed(2) + ' XRP'
+        balance: (parseInt(accountData.Balance) / 1_000_000).toFixed(2) + ' XRP',
+        on_chain_proof: {
+          account: classicAddress,
+          ledger_sequence: accountData.LedgerIndex || 'current',
+          previous_txn: accountData.PreviousTxnID,
+          explorer_url: `https://xrpscan.com/account/${classicAddress}`
+        }
       },
       timestamp: new Date().toISOString()
     });
