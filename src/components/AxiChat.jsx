@@ -242,7 +242,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     setMessages((prev) => [...prev, joinMessage]);
 
     const contextBrief = buildAgentContextBrief(messages, activeAgents, agent);
-    const introPrompt = `${contextBrief}\n\nAxi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly, acknowledge the current participants, and continue from this point forward without asking to be re-caught-up.`;
+    const introPrompt = `${contextBrief}\n\n[AUTO_JOIN_RESPONSE_REQUIRED]\nAxi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly, acknowledge the current participants, and continue from this point forward without asking to be re-caught-up.`;
 
     const response = await base44.functions.invoke('generateAgentResponse', {
       conversation_id: convoRef.current.id,

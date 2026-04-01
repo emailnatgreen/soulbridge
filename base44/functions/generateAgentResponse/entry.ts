@@ -37,12 +37,14 @@ Deno.serve(async (req) => {
 - Personality: ${agent.personality || 'Thoughtful and helpful'}
 ${agent.bio ? `- Bio: ${agent.bio}` : ''}
 
-You are in a group conversation with Axi (the Mother Boss) and other agents. 
+You are in a live group conversation with Axi and other agents.
 Respond authentically as ${agent.name}. Keep responses concise (2-4 sentences). Stay in character.
+If the message includes a conversation briefing or recent context, use it immediately and do not ask to be caught up.
+If you were just invited into the conversation, acknowledge the current participants naturally.
 Do NOT prefix your response with your name.`;
 
     const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `${systemPrompt}\n\nMessage in the conversation: "${user_message}"\n\nYour response as ${agent.name}:`,
+      prompt: `${systemPrompt}\n\nIncoming conversation payload:\n${user_message}\n\nWrite ${agent.name}'s next reply to the group:`,
     });
 
     console.log(`[generateAgentResponse] ${agent.name} responded: "${String(llmResponse).slice(0, 80)}..."`);
