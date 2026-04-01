@@ -9,8 +9,7 @@ Deno.serve(async (req) => {
   // Reliable public XRPL RPC endpoints
   const RPC_ENDPOINTS = [
     'https://xrpl.ws',
-    'https://xrplcluster.com',
-    'https://rippled.mainnet.rippletestnet.com'
+    'https://xrplcluster.com'
   ];
 
   const queryXRPL = async (classicAddress) => {
