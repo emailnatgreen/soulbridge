@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+import FeedbackWidget from '@/components/feedback/FeedbackWidget';
 
 const auditRows = [
   { page: 'AIProjectHub', status: 'partial', notes: 'Good query usage, but still has page-specific manual refresh logic.' },
@@ -66,6 +67,8 @@ export default function SyncAuditReport() {
           <Card className="bg-white/5 border-white/10"><CardContent className="p-5"><div className="text-sm text-white/50">Partial pages</div><div className="text-3xl font-bold text-amber-300 mt-1">{totals.partial}</div></CardContent></Card>
           <Card className="bg-white/5 border-white/10"><CardContent className="p-5"><div className="text-sm text-white/50">Need work</div><div className="text-3xl font-bold text-red-300 mt-1">{totals.risky}</div></CardContent></Card>
         </div>
+
+        <FeedbackWidget pageName="SyncAuditReport" />
 
         <Card className="bg-white/5 border-white/10">
           <CardHeader>

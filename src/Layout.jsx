@@ -99,7 +99,7 @@ export default function Layout({ children, currentPageName }) {
       {recognized && !isPublic && !isNoFloat && !chatOpen && (
         <button
           onClick={() => setChatOpen(true)}
-          className={`fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[60] w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 ${showAdminSidebar ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 border-amber-300/30' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-purple-400/30'}`}
+          className={`fixed bottom-24 md:bottom-6 right-4 md:right-6 z-[10001] w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 ${showAdminSidebar ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 border-amber-300/30' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-purple-400/30'}`}
           title={showAdminSidebar ? 'Open your admin Axi' : 'Open your personal Axi'}
         >
           {showAdminSidebar ? <Shield className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}

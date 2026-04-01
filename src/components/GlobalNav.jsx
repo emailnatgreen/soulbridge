@@ -101,6 +101,7 @@ const NAV_GROUPS = [
       { label: 'Integration Credits', path: '/IntegrationCreditDashboard', icon: Zap },
       { label: 'Admin Panel', path: '/Admin', icon: Settings },
       { label: '🛡️ Invite Manager', path: '/InviteLinkManager', icon: LinkIcon },
+      { label: 'Sync Audit', path: '/SyncAuditReport', icon: Activity },
       { label: 'System Dashboard', path: '/SystemDashboard', icon: Activity },
       { label: 'Axi Intelligence', path: '/AxiIntelligenceFeed', icon: Zap },
       { label: 'Ripple Dashboard', path: '/RippleDashboard', icon: Zap },

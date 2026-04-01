@@ -50,8 +50,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         if (!conversation) {
           const personal = conversations
             .filter(c => c.metadata?.unified_axi_chat === true || c.metadata?.personal_axi_chat === true)
-            .sort((a, b) => new Date(a.updated_date || a.created_date) - new Date(b.updated_date || b.created_date));
-          conversation = personal[personal.length - 1] || null;
+            .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date));
+          conversation = personal[0] || null;
         }
 
         if (!conversation) {
