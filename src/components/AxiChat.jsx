@@ -127,9 +127,12 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       if (mode === 'agent') {
         // Agent SDK mode: keep Axi active and also invite extra agents to respond
         pendingMessageRef.current = '';
-        await base44.agents.addMessage(convoRef.current, { role: 'user', content: msg });
-
         const invitedAgents = activeAgents;
+        const enrichedMessage = invitedAgents.length > 0
+          ? `${msg}\n\n[ACTIVE_AGENTS]\nThe following agents are currently present in this conversation and available to respond alongside Axi: ${invitedAgents.map((agent) => `${agent.name} (${agent.role})`).join(', ')}. Acknowledge their presence naturally when relevant.`
+          : msg;
+
+        await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
         for (const agent of invitedAgents) {
           const response = await base44.functions.invoke('generateAgentResponse', {
             conversation_id: convoRef.current.id,
