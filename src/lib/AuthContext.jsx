@@ -39,10 +39,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const normalizeToken = (value) => {
         const token = String(value || '').trim();
-        if (!token || token === 'Bearer') return null;
+        if (!token || token === 'Bearer' || token === 'undefined' || token === 'null') return null;
         if (token.startsWith('Bearer ')) {
           const raw = token.slice(7).trim();
-          return raw || null;
+          if (!raw || raw === 'undefined' || raw === 'null') return null;
+          return raw;
         }
         return token;
       };
@@ -113,7 +114,17 @@ export const AuthProvider = ({ children }) => {
       if (isLoadingAuth) {
         console.warn('[AuthContext] Safety timeout — forcing loading off');
         setIsLoadingAuth(false);
-        const hasToken = !!(appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
+        const normalizeToken = (value) => {
+          const token = String(value || '').trim();
+          if (!token || token === 'Bearer' || token === 'undefined' || token === 'null') return null;
+          if (token.startsWith('Bearer ')) {
+            const raw = token.slice(7).trim();
+            if (!raw || raw === 'undefined' || raw === 'null') return null;
+            return raw;
+          }
+          return token;
+        };
+        const hasToken = !!(normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token')));
         if (hasToken) setIsAuthenticated(true);
         initialCheckDone.current = true;
       }
