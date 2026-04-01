@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 import FeedbackWidget from '@/components/feedback/FeedbackWidget';
+import { usePageSignal } from '@/hooks/usePageSignal';
 
 const auditRows = [
   { page: 'AIProjectHub', status: 'partial', notes: 'Good query usage, but still has page-specific manual refresh logic.' },
@@ -41,6 +42,8 @@ const statusConfig = {
 };
 
 export default function SyncAuditReport() {
+  usePageSignal();
+
   const totals = {
     good: auditRows.filter(r => r.status === 'good').length,
     partial: auditRows.filter(r => r.status === 'partial').length,
