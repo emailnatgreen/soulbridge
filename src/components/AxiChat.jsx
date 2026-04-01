@@ -41,13 +41,18 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
   // Fetch user and assign agent ID on mount
   useEffect(() => {
-    if (!isAuthenticated) return;
+    const hasToken = !!(localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
+    if (!isAuthenticated && !hasToken) return;
 
     const assignUserAgent = async () => {
-      const user = await base44.auth.me();
-      if (user) {
-        const agentId = user.role === 'admin' ? 'admin-agent' : 'user-agent';
-        setUserAgentId(agentId);
+      try {
+        const user = await base44.auth.me();
+        if (user) {
+          const agentId = user.role === 'admin' ? 'admin-agent' : 'user-agent';
+          setUserAgentId(agentId);
+        }
+      } catch (_) {
+        setUserAgentId('user-agent');
       }
     };
     assignUserAgent();
@@ -174,7 +179,8 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
 
   useEffect(() => {
-    if (!isAuthenticated || !isOpen) return;
+    const hasToken = !!(localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
+    if ((!isAuthenticated && !hasToken) || !isOpen) return;
     if (conversation && !initError) return; // already connected
     if (initError && !retryKey) return; // wait for manual retry
 
