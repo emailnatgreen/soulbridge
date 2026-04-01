@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const convoRef = useRef(null);
   const unsubRef = useRef(null);
   const pendingMessageRef = useRef('');
+  const processedSummonsRef = useRef(new Set());
 
   useEffect(() => {
     try {
@@ -185,12 +186,19 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const handleAddAgent = async (agent) => {
-    setActiveAgents((prev) => {
-      if (prev.some((item) => item.id === agent.id)) return prev;
-      return [...prev, agent];
-    });
+  const handleAddAgent = useCallback(async (agent, options = {}) => {
+    const alreadyActive = activeAgents.some((item) => item.id === agent.id);
+    if (alreadyActive) {
+      setShowAgentPicker(false);
+      return;
+    }
+
+    setActiveAgents((prev) => [...prev, agent]);
     setShowAgentPicker(false);
+
+    if (options.skipIntro) {
+      return;
+    }
 
     const joinMessage = {
       id: `sys-${Date.now()}`,
@@ -223,11 +231,41 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         message_type: 'text'
       }]);
     }
-  };
+  }, [activeAgents]);
 
   const handleRemoveAgent = (agentId) => {
     setActiveAgents((prev) => prev.filter((agent) => agent.id !== agentId));
   };
+
+  useEffect(() => {
+    const summonAgentFromMessage = async () => {
+      const latestMessage = messages[messages.length - 1];
+      if (!latestMessage?.content || latestMessage.role === 'user') return;
+      if (!latestMessage.content.includes('🔔 SUMMONING')) return;
+
+      const messageKey = latestMessage.id || `${latestMessage.content}-${messages.length}`;
+      if (processedSummonsRef.current.has(messageKey)) return;
+
+      const lines = latestMessage.content.split('\n').map((line) => line.trim()).filter(Boolean);
+      const summonLine = lines.find((line) => line.includes('🔔 SUMMONING'));
+      if (!summonLine) return;
+
+      const summonedName = summonLine.replace('🔔 SUMMONING', '').trim();
+      if (!summonedName) return;
+
+      const agents = await base44.entities.Agent.list('-created_date', 200);
+      const matchedAgent = (agents || []).find((agent) =>
+        agent.name?.trim().toLowerCase() === summonedName.toLowerCase()
+      );
+
+      processedSummonsRef.current.add(messageKey);
+
+      if (!matchedAgent || activeAgents.some((agent) => agent.id === matchedAgent.id)) return;
+      await handleAddAgent(matchedAgent, { skipIntro: false });
+    };
+
+    summonAgentFromMessage();
+  }, [messages, activeAgents, handleAddAgent]);
 
   // External open events
   useEffect(() => {
