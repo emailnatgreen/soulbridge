@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Sparkles, Send, Loader2, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus } from 'lucide-react';
 import MessageBubble from '@/components/MessageBubble';
+import AgentPicker from '@/components/axi/AgentPicker';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PAGE_SIZE = 30;
@@ -17,6 +18,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
   const [mode, setMode] = useState(null); // 'agent' | 'direct'
+  const [showAgentPicker, setShowAgentPicker] = useState(false);
+  const [activeAgents, setActiveAgents] = useState([]);
 
   const messagesEndRef = useRef(null);
   const convoRef = useRef(null);
@@ -136,6 +139,26 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
+  const handleAddAgent = async (agent) => {
+    setActiveAgents((prev) => [...prev, agent]);
+    setShowAgentPicker(false);
+
+    if (mode === 'agent' && convoRef.current) {
+      await base44.agents.addMessage(convoRef.current, {
+        role: 'user',
+        content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
+      });
+      return;
+    }
+
+    setMessages((prev) => [...prev, {
+      id: `sys-${Date.now()}`,
+      sender_agent_id: 'system',
+      content: `${agent.name} joined this chat.`,
+      message_type: 'system'
+    }]);
+  };
+
   // External open events
   useEffect(() => {
     const h = (e) => { setIsOpen(true); if (e.detail?.message) setInput(e.detail.message); };
@@ -172,10 +195,15 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               </div>
               <div>
                 <h3 className="font-semibold text-white text-sm">Talk to Axi</h3>
-                <p className="text-xs text-purple-300/60">Village AI Guide</p>
+                <p className="text-xs text-purple-300/60">
+                  {activeAgents.length > 0 ? `Village AI Guide + ${activeAgents.map((agent) => agent.name).join(', ')}` : 'Village AI Guide'}
+                </p>
               </div>
             </div>
             <div className="flex gap-1">
+              <Button variant="ghost" size="icon" onClick={() => setShowAgentPicker((value) => !value)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8">
+                <UserPlus className="w-3.5 h-3.5" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => setIsExpanded(e => !e)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:flex">
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </Button>
@@ -184,6 +212,16 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               </Button>
             </div>
           </div>
+
+          {showAgentPicker && (
+            <div className="px-3 pt-3">
+              <AgentPicker
+                activeAgentIds={activeAgents.map((agent) => agent.id)}
+                onAdd={handleAddAgent}
+                onClose={() => setShowAgentPicker(false)}
+              />
+            </div>
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
