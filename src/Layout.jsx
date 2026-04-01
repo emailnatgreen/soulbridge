@@ -39,7 +39,9 @@ export default function Layout({ children, currentPageName }) {
     }
   })();
   const hasIdentity = !!(identity?.did || identity?.connected);
-  const showAdminSidebar = (isAuthenticated || hasIdentity) && hasAdminAccess({ user, identityDid: identity?.did });
+  // Recognized = either platform-authenticated user OR DID-connected identity
+  const isRecognized = (isAuthenticated && user) || hasIdentity;
+  const showAdminSidebar = isRecognized && hasAdminAccess({ user, identityDid: identity?.did });
 
   const handleToggle = () => {
     if (!everOpened) setEverOpened(true);
@@ -104,8 +106,8 @@ export default function Layout({ children, currentPageName }) {
 
       <Toaster />
 
-      {/* AxiChat for authenticated users with real auth token */}
-      {isAuthenticated && user && !isPublicPage && !NO_CHAT_PAGES.includes(currentPageName) && (
+      {/* AxiChat for recognized users (platform auth OR DID identity) */}
+      {isRecognized && !isPublicPage && !NO_CHAT_PAGES.includes(currentPageName) && (
         <Suspense fallback={null}>
           <AxiChat 
             isOpen={isOpen} 
@@ -118,8 +120,8 @@ export default function Layout({ children, currentPageName }) {
         </Suspense>
       )}
 
-      {/* Floating Axi button — only for users with real auth token */}
-      {isAuthenticated && user && !isPublicPage && !isNoFloatPage && (
+      {/* Floating Axi button — for recognized users */}
+      {isRecognized && !isPublicPage && !isNoFloatPage && (
         <button
           onClick={handleToggle}
           className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[60] w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center justify-center shadow-2xl border border-purple-400/30 transition-transform hover:scale-110 active:scale-95"
@@ -130,7 +132,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* ChatLoader — listens for JukeboxDecision events */}
-      {isAuthenticated && user && <ChatLoader />}
+      {isRecognized && <ChatLoader />}
     </div>
   );
 }
