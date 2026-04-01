@@ -180,11 +180,12 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
   useEffect(() => {
     const hasToken = !!(localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
-    if ((!isAuthenticated && !hasToken) || !isOpen) return;
+    const isRecognized = isAuthenticated || hasToken;
+    if (!isRecognized || !isOpen) return;
     if (conversation && !initError) return; // already connected
-    if (initError && !retryKey) return; // wait for manual retry
 
     const init = async () => {
+      console.log('[AxiChat] Starting init, isAuthenticated:', isAuthenticated, 'hasToken:', hasToken);
       setLoading(true);
       setInitError(false);
       
