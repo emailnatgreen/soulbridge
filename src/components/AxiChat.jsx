@@ -51,9 +51,13 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       setStatus('loading');
       initAttempted.current = true;
 
+      const hasToken = hasPlatformToken();
+      console.log('[AxiChat] Init start. hasPlatformToken:', hasToken, 'recognized:', isRecognizedUser());
+
       try {
-        if (hasPlatformToken()) {
+        if (hasToken) {
           // Platform-authenticated user: use agent SDK
+          console.log('[AxiChat] Using agent SDK mode');
           const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
           const unified = conversations
             .filter(c => c.metadata?.unified_axi_chat === true)
@@ -79,6 +83,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
           });
         } else {
           // DID-only user: use direct backend function (no agent SDK)
+          console.log('[AxiChat] Using DID-only mode');
           const convId = localStorage.getItem('sb_axi_did_conv') || `did-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
           localStorage.setItem('sb_axi_did_conv', convId);
           setConvo({ id: convId, _didMode: true });
@@ -91,8 +96,13 @@ export default function AxiChat({ isOpen, setIsOpen }) {
           } catch (_) {}
         }
       } catch (err) {
-        console.error('[AxiChat] Init failed:', err);
-        setStatus('error');
+        console.error('[AxiChat] Init failed:', err?.message || err);
+        // Fall back to DID mode if agent SDK fails
+        console.log('[AxiChat] Falling back to DID mode after error');
+        const convId = localStorage.getItem('sb_axi_did_conv') || `did-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        localStorage.setItem('sb_axi_did_conv', convId);
+        setConvo({ id: convId, _didMode: true });
+        setStatus('ready');
       }
     };
 
