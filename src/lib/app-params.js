@@ -34,8 +34,29 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 	return null;
 }
 
+const normalizeToken = (value) => {
+	const token = String(value || '').trim();
+	if (!token || token === 'Bearer') return null;
+	if (token.startsWith('Bearer ')) {
+		const raw = token.slice(7).trim();
+		return raw || null;
+	}
+	return token;
+}
+
 const getStoredToken = () => {
-	return getAppParamValue("access_token", { removeFromUrl: true }) || storage.getItem('base44_access_token') || storage.getItem('token');
+	const token = normalizeToken(
+		getAppParamValue("access_token", { removeFromUrl: true }) || storage.getItem('base44_access_token') || storage.getItem('token')
+	);
+
+	if (!token) {
+		storage.removeItem('base44_access_token');
+		storage.removeItem('token');
+		return null;
+	}
+
+	storage.setItem('base44_access_token', token);
+	return token;
 }
 
 const getAppParams = () => {
