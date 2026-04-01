@@ -11,6 +11,7 @@ const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
 const PERSONAL_CONVERSATION_KEY = 'axi_personal_conversation_id';
 const PERSONAL_CONVERSATION_META_NAME = 'Personal Conversation with Axi';
+const ACTIVE_AGENTS_KEY = 'axi_active_agents';
 
 export default function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -26,6 +27,19 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const convoRef = useRef(null);
   const unsubRef = useRef(null);
   const pendingMessageRef = useRef('');
+
+  useEffect(() => {
+    try {
+      const savedAgents = JSON.parse(localStorage.getItem(ACTIVE_AGENTS_KEY) || '[]');
+      if (Array.isArray(savedAgents) && savedAgents.length > 0) {
+        setActiveAgents(savedAgents);
+      }
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(ACTIVE_AGENTS_KEY, JSON.stringify(activeAgents));
+  }, [activeAgents]);
 
   // Scroll to bottom
   useEffect(() => {
@@ -171,7 +185,10 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   };
 
   const handleAddAgent = async (agent) => {
-    setActiveAgents((prev) => [...prev, agent]);
+    setActiveAgents((prev) => {
+      if (prev.some((item) => item.id === agent.id)) return prev;
+      return [...prev, agent];
+    });
     setShowAgentPicker(false);
 
     const joinMessage = {
