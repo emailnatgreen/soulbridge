@@ -15,6 +15,17 @@ const getStoredDidIdentity = () => {
   }
 };
 
+// Promise.race helper with timeout
+const withTimeout = (promise, ms) => {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Auth timeout')), ms);
+    })
+  ]).finally(() => clearTimeout(timer));
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,14 +61,16 @@ export const AuthProvider = ({ children }) => {
 
     const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
 
-    // Check user auth FIRST (this is what blocks the spinner)
     if (refreshedToken) {
       try {
-        const currentUser = await base44.auth.me();
+        // 4-second timeout on auth.me() to prevent indefinite hangs
+        const currentUser = await withTimeout(base44.auth.me(), 4000);
         setUser(currentUser);
         setIsAuthenticated(true);
       } catch (error) {
+        console.warn('[AuthContext] auth.me() failed or timed out:', error.message);
         setUser(null);
+        // Still allow DID-based identity to pass through
         setIsAuthenticated(!!getStoredDidIdentity());
       }
     } else {
@@ -69,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoadingAuth(false);
     initialCheckDone.current = true;
 
-    // Fetch public settings in the background (non-blocking)
+    // Fetch public settings in background (non-blocking)
     fetchPublicSettings(refreshedToken);
   }, [fetchPublicSettings]);
 
@@ -90,18 +103,6 @@ export const AuthProvider = ({ children }) => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [checkAppState]);
-
-  // Hard safety net: force loading off after 5 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isLoadingAuth) {
-        setIsLoadingAuth(false);
-        setIsAuthenticated(!!getStoredDidIdentity());
-        initialCheckDone.current = true;
-      }
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [isLoadingAuth]);
 
   const logout = useCallback((shouldRedirect = true) => {
     setUser(null);
