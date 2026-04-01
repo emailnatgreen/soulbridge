@@ -15,17 +15,6 @@ const getStoredDidIdentity = () => {
   }
 };
 
-// Promise.race helper with timeout
-const withTimeout = (promise, ms) => {
-  let timer;
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error('Auth timeout')), ms);
-    })
-  ]).finally(() => clearTimeout(timer));
-};
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -60,22 +49,25 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
 
     const refreshedToken = appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token');
+    const hasDidIdentity = !!getStoredDidIdentity();
 
+    // If we have a token, try to get user info
     if (refreshedToken) {
       try {
-        // 4-second timeout on auth.me() to prevent indefinite hangs
-        const currentUser = await withTimeout(base44.auth.me(), 4000);
+        const currentUser = await base44.auth.me();
         setUser(currentUser);
         setIsAuthenticated(true);
       } catch (error) {
-        console.warn('[AuthContext] auth.me() failed or timed out:', error.message);
+        console.warn('[AuthContext] auth.me() failed:', error.message);
         setUser(null);
-        // Still allow DID-based identity to pass through
-        setIsAuthenticated(!!getStoredDidIdentity());
+        // Token exists but me() failed — still consider authenticated
+        // (token may be valid but rate-limited or temporarily unreachable)
+        setIsAuthenticated(true);
       }
     } else {
       setUser(null);
-      setIsAuthenticated(!!getStoredDidIdentity());
+      // No platform token — check DID identity
+      setIsAuthenticated(hasDidIdentity);
     }
 
     // Auth loading is done — page can render now
@@ -103,6 +95,20 @@ export const AuthProvider = ({ children }) => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [checkAppState]);
+
+  // Hard safety net: force loading off after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isLoadingAuth) {
+        console.warn('[AuthContext] Safety timeout — forcing loading off');
+        setIsLoadingAuth(false);
+        const hasToken = !!(appParams.token || localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
+        setIsAuthenticated(hasToken || !!getStoredDidIdentity());
+        initialCheckDone.current = true;
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [isLoadingAuth]);
 
   const logout = useCallback((shouldRedirect = true) => {
     setUser(null);
