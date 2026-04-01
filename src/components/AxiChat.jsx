@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,170 +8,102 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
+const CONV_KEY = 'sb_axi_conv_id';
 
-function isRecognizedUser() {
-  if (localStorage.getItem('base44_access_token') || localStorage.getItem('token')) return true;
-  try {
-    const id = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
-    if (id?.did || id?.connected) return true;
-  } catch (_) {}
-  return false;
-}
-
-function hasPlatformToken() {
-  return !!(localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
+function getOrCreateConvId() {
+  let id = localStorage.getItem(CONV_KEY);
+  if (!id) {
+    id = `axi-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    localStorage.setItem(CONV_KEY, id);
+  }
+  return id;
 }
 
 export default function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [convo, setConvo] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const [status, setStatus] = useState('idle'); // idle | loading | ready | error
-  const inputRef = useRef('');
+  const [ready, setReady] = useState(false);
 
   const messagesEndRef = useRef(null);
-  const unsubRef = useRef(null);
-  const initAttempted = useRef(false);
+  const convId = useRef(null);
+  const loaded = useRef(false);
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom
   useEffect(() => {
-    if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (messages.length) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  // Init conversation when chat opens
+  // Load conversation when opened
   useEffect(() => {
-    if (!isOpen || !isRecognizedUser()) return;
-    if (convo) return;
-    if (initAttempted.current && status === 'error') return;
+    if (!isOpen || loaded.current) return;
+    loaded.current = true;
+    convId.current = getOrCreateConvId();
+    setReady(true);
 
-    const init = async () => {
-      setStatus('loading');
-      initAttempted.current = true;
+    // Load existing messages in background
+    base44.functions.invoke('getConversationMessages', { conversation_id: convId.current })
+      .then(res => setMessages(res?.data?.messages || []))
+      .catch(() => {});
+  }, [isOpen]);
 
-      const hasToken = hasPlatformToken();
-      console.log('[AxiChat] Init start. hasPlatformToken:', hasToken, 'recognized:', isRecognizedUser());
-
-      try {
-        if (hasToken) {
-          // Platform-authenticated user: use agent SDK
-          console.log('[AxiChat] Using agent SDK mode');
-          const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-          const unified = conversations
-            .filter(c => c.metadata?.unified_axi_chat === true)
-            .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
-
-          let conversation;
-          if (unified.length > 0) {
-            conversation = unified[0];
-          } else {
-            conversation = await base44.agents.createConversation({
-              agent_name: 'axi',
-              metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
-            });
-          }
-
-          setConvo(conversation);
-          setStatus('ready');
-
-          if (unsubRef.current) unsubRef.current();
-          unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
-            const msgs = data.messages || [];
-            setMessages(msgs.slice(-PAGE_SIZE));
-          });
-        } else {
-          // DID-only user: use direct backend function (no agent SDK)
-          console.log('[AxiChat] Using DID-only mode');
-          const convId = localStorage.getItem('sb_axi_did_conv') || `did-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-          localStorage.setItem('sb_axi_did_conv', convId);
-          setConvo({ id: convId, _didMode: true });
-          setStatus('ready');
-
-          // Load existing messages
-          try {
-            const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
-            setMessages(res?.data?.messages || []);
-          } catch (_) {}
-        }
-      } catch (err) {
-        console.error('[AxiChat] Init failed:', err?.message || err);
-        // Fall back to DID mode if agent SDK fails
-        console.log('[AxiChat] Falling back to DID mode after error');
-        const convId = localStorage.getItem('sb_axi_did_conv') || `did-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-        localStorage.setItem('sb_axi_did_conv', convId);
-        setConvo({ id: convId, _didMode: true });
-        setStatus('ready');
-      }
-    };
-
-    init();
-
-    return () => {
-      if (unsubRef.current) unsubRef.current();
-    };
-  }, [isOpen, convo, status]);
-
-  // Handle retry
-  const handleRetry = useCallback(() => {
-    initAttempted.current = false;
-    setConvo(null);
-    setStatus('idle');
-  }, []);
-
-  // Send message
-  const handleSend = useCallback(async () => {
-    const currentInput = inputRef.current || input;
-    if (!currentInput.trim() || !convo || sending) return;
-    const msg = currentInput.trim();
+  // Send
+  const handleSend = async () => {
+    const msg = input.trim();
+    if (!msg || sending || !convId.current) return;
     setInput('');
-    inputRef.current = '';
     setSending(true);
+
+    // Optimistic user message
+    setMessages(prev => [...prev, {
+      id: `u-${Date.now()}`,
+      sender_agent_id: 'visitor',
+      content: msg,
+      message_type: 'text'
+    }]);
+
     try {
-      if (convo._didMode) {
-        // DID-only mode: use axiRespond directly
-        setMessages(prev => [...prev, { id: `user-${Date.now()}`, sender_agent_id: 'visitor', content: msg, message_type: 'text' }]);
-        const res = await base44.functions.invoke('axiRespond', {
-          conversation_id: convo.id,
-          user_message: msg
-        });
-        const axiReply = res?.data?.response;
-        if (axiReply) {
-          setMessages(prev => [...prev, { id: `axi-${Date.now()}`, sender_agent_id: 'axi', content: axiReply, message_type: 'text' }]);
-        }
-      } else {
-        await base44.agents.addMessage(convo, { role: 'user', content: msg });
+      const res = await base44.functions.invoke('axiRespond', {
+        conversation_id: convId.current,
+        user_message: msg
+      });
+      const reply = res?.data?.response;
+      if (reply) {
+        setMessages(prev => [...prev, {
+          id: `a-${Date.now()}`,
+          sender_agent_id: 'axi',
+          content: reply,
+          message_type: 'text'
+        }]);
       }
     } catch (err) {
-      console.error('[AxiChat] Send failed:', err);
-      setInput(msg);
+      console.error('[AxiChat] Send error:', err);
+      setMessages(prev => [...prev, {
+        id: `err-${Date.now()}`,
+        sender_agent_id: 'axi',
+        content: 'I could not respond right now. Please try again.',
+        message_type: 'text'
+      }]);
     } finally {
       setSending(false);
     }
-  }, [input, convo, sending]);
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
   };
 
-  // Listen for external open events
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  // External open events
   useEffect(() => {
-    const handleOpen = (e) => {
-      setIsOpen(true);
-      if (e.detail?.message) setInput(e.detail.message);
-    };
-    window.addEventListener('open-axi', handleOpen);
-    window.addEventListener('open-axi-with-agent', handleOpen);
-    window.addEventListener('open-axi-with-message', handleOpen);
+    const h = (e) => { setIsOpen(true); if (e.detail?.message) setInput(e.detail.message); };
+    window.addEventListener('open-axi', h);
+    window.addEventListener('open-axi-with-agent', h);
+    window.addEventListener('open-axi-with-message', h);
     return () => {
-      window.removeEventListener('open-axi', handleOpen);
-      window.removeEventListener('open-axi-with-agent', handleOpen);
-      window.removeEventListener('open-axi-with-message', handleOpen);
+      window.removeEventListener('open-axi', h);
+      window.removeEventListener('open-axi-with-agent', h);
+      window.removeEventListener('open-axi-with-message', h);
     };
   }, [setIsOpen]);
 
@@ -213,29 +145,31 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {status === 'loading' && (
+            {!ready && (
               <div className="text-center py-12">
                 <Loader2 className="w-7 h-7 text-purple-400 mx-auto mb-3 animate-spin" />
                 <p className="text-white/40 text-sm">Connecting to Axi...</p>
               </div>
             )}
-            {status === 'error' && (
-              <div className="text-center py-10">
-                <p className="text-red-400 text-sm mb-3">Could not connect to Axi.</p>
-                <Button size="sm" onClick={handleRetry} className="bg-purple-700 hover:bg-purple-600 text-white text-xs">
-                  Retry
-                </Button>
-              </div>
-            )}
-            {status === 'ready' && messages.length === 0 && (
+            {ready && messages.length === 0 && !sending && (
               <div className="text-center py-12">
                 <Sparkles className="w-10 h-10 text-purple-400 mx-auto mb-3 opacity-40" />
                 <p className="text-white/40 text-sm">Say something to Axi...</p>
               </div>
             )}
             {messages.map((msg, idx) => (
-              <MemoizedBubble key={`${idx}-${msg.created_date || idx}`} message={msg} />
+              <MemoizedBubble key={msg.id || idx} message={msg} />
             ))}
+            {sending && (
+              <div className="flex gap-2 justify-start">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="bg-white/10 border border-white/10 rounded-2xl px-3 py-2">
+                  <Loader2 className="w-4 h-4 text-purple-300 animate-spin" />
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -244,16 +178,16 @@ export default function AxiChat({ isOpen, setIsOpen }) {
             <div className="flex gap-2">
               <Textarea
                 value={input}
-                onChange={(e) => { setInput(e.target.value); inputRef.current = e.target.value; }}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Speak to Axi..."
                 className="bg-white/5 border-white/20 text-white placeholder:text-white/30 resize-none h-11 min-h-[44px]"
-                disabled={sending || status !== 'ready'}
+                disabled={sending}
               />
               <Button
                 onClick={handleSend}
-                disabled={sending || status !== 'ready'}
-                className={`h-11 px-4 flex-shrink-0 ${input.trim() ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : 'bg-slate-700 opacity-50'}`}
+                disabled={!input.trim() || sending}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-11 px-4 flex-shrink-0"
               >
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
