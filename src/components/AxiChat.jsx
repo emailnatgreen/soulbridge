@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const PAGE_SIZE = 30;
 const MemoizedBubble = memo(MessageBubble);
+const PERSONAL_CONVERSATION_KEY = 'axi_personal_conversation_id';
 
 export default function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -33,28 +34,35 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     initDone.current = true;
 
     const init = async () => {
-      // Try agent SDK first (preserves conversation history for compliance)
+      // Try agent SDK first and reconnect to the user's saved personal conversation
       try {
         const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-        const unified = conversations
-          .filter(c => c.metadata?.unified_axi_chat === true)
-          .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+        const savedConversationId = localStorage.getItem(PERSONAL_CONVERSATION_KEY);
 
-        let conversation;
-        if (unified.length > 0) {
-          conversation = unified[0];
-        } else {
+        let conversation = null;
+        if (savedConversationId) {
+          conversation = conversations.find(c => c.id === savedConversationId) || null;
+        }
+
+        if (!conversation) {
+          const personal = conversations
+            .filter(c => c.metadata?.unified_axi_chat === true || c.metadata?.personal_axi_chat === true)
+            .sort((a, b) => new Date(a.updated_date || a.created_date) - new Date(b.updated_date || b.created_date));
+          conversation = personal[personal.length - 1] || null;
+        }
+
+        if (!conversation) {
           conversation = await base44.agents.createConversation({
             agent_name: 'axi',
-            metadata: { name: 'Unified Conversation with Axi', unified_axi_chat: true }
+            metadata: { name: 'Personal Conversation with Axi', unified_axi_chat: true, personal_axi_chat: true }
           });
         }
 
+        localStorage.setItem(PERSONAL_CONVERSATION_KEY, conversation.id);
         convoRef.current = conversation;
         setMode('agent');
         setReady(true);
 
-        // Subscribe for real-time messages
         if (unsubRef.current) unsubRef.current();
         unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
           setMessages((data.messages || []).slice(-PAGE_SIZE));
