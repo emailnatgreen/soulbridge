@@ -7,8 +7,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  */
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+    const headers = new Headers(req.headers);
+    const authHeader = (headers.get('authorization') || '').trim();
+    const bearerValue = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    if (!bearerValue) {
+      headers.delete('authorization');
+    }
+
     const body = await req.json();
+    const base44 = createClientFromRequest(new Request(req.url, {
+      method: req.method,
+      headers,
+      body: JSON.stringify(body),
+    }));
     const { page } = body;
 
     if (page === 'landing') {
