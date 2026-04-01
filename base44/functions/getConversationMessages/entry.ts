@@ -12,7 +12,10 @@ Deno.serve(async (req) => {
     const headers = new Headers(req.headers);
     const authHeader = (headers.get('authorization') || '').trim();
     const bearerValue = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    if (!bearerValue) {
+
+    if (bearerValue) {
+      headers.set('authorization', `Bearer ${bearerValue}`);
+    } else {
       headers.delete('authorization');
     }
 
