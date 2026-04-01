@@ -31,6 +31,7 @@ import ScrollOfResonance from './pages/ScrollOfResonance';
 import KineticCompass from './pages/KineticCompass';
 import InviteLinkManager from './pages/InviteLinkManager';
 import NodeCovenant from './pages/NodeCovenant';
+import SyncAuditReport from './pages/SyncAuditReport';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -103,6 +104,7 @@ const AuthenticatedApp = () => {
       <Route path="/KineticCompass" element={<KineticCompass />} />
       <Route path="/InviteLinkManager" element={<LayoutWrapper currentPageName="InviteLinkManager"><InviteLinkManager /></LayoutWrapper>} />
       <Route path="/NodeCovenant" element={<LayoutWrapper currentPageName="NodeCovenant"><NodeCovenant /></LayoutWrapper>} />
+      <Route path="/SyncAuditReport" element={<LayoutWrapper currentPageName="SyncAuditReport"><SyncAuditReport /></LayoutWrapper>} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
