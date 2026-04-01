@@ -37,7 +37,7 @@ export default function AgentPicker({ activeAgentIds = [], onAdd, onClose }) {
   };
 
   return (
-    <div className="absolute bottom-full left-0 right-0 mb-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+    <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
       <div className="flex items-center justify-between px-3 pt-3 pb-2 border-b border-slate-700/50">
         <span className="text-xs font-semibold text-purple-300">Add Agent to Chat</span>
         <button onClick={onClose} className="text-white/40 hover:text-white">

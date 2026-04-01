@@ -143,20 +143,23 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     setActiveAgents((prev) => [...prev, agent]);
     setShowAgentPicker(false);
 
+    const joinMessage = {
+      id: `sys-${Date.now()}`,
+      role: 'assistant',
+      sender_agent_id: 'axi',
+      metadata: { sourceAgentId: agent.id },
+      content: `${agent.name} (${agent.role}) joined this conversation.`,
+      message_type: 'text'
+    };
+
+    setMessages((prev) => [...prev, joinMessage]);
+
     if (mode === 'agent' && convoRef.current) {
       await base44.agents.addMessage(convoRef.current, {
         role: 'user',
         content: `[System: ${agent.name} (${agent.role}) has joined this conversation from this point forward.]`
       });
-      return;
     }
-
-    setMessages((prev) => [...prev, {
-      id: `sys-${Date.now()}`,
-      sender_agent_id: 'system',
-      content: `${agent.name} joined this chat.`,
-      message_type: 'system'
-    }]);
   };
 
   // External open events
@@ -214,7 +217,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
           </div>
 
           {showAgentPicker && (
-            <div className="px-3 pt-3">
+            <div className="px-3 pt-3 flex-shrink-0">
               <AgentPicker
                 activeAgentIds={activeAgents.map((agent) => agent.id)}
                 onAdd={handleAddAgent}
