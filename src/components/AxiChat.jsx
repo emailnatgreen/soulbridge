@@ -176,6 +176,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
   useEffect(() => {
     if (!isAuthenticated || !isOpen) return;
     if (conversation && !initError) return; // already connected
+    if (initError && !retryKey) return; // wait for manual retry
 
     const init = async () => {
       setLoading(true);
@@ -557,7 +558,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
               />
               <Button
                 onClick={handleSend}
-                disabled={!input.trim() || sending}
+                disabled={!input.trim() || sending || !conversation}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-12 px-4"
               >
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

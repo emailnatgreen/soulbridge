@@ -6,7 +6,8 @@ export default function ChatLoader() {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    const hasToken = !!(localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
+    if (!isAuthenticated && !hasToken) return;
 
     const unsubscribe = base44.entities.JukeboxDecision.subscribe((event) => {
       if (event.type === 'create' && event.data) {
