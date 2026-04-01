@@ -174,8 +174,8 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
 
   useEffect(() => {
-    if (!isAuthenticated || !isOpen || initialized.current) return;
-    initialized.current = true;
+    if (!isAuthenticated || !isOpen) return;
+    if (conversation && !initError) return; // already connected
 
     const init = async () => {
       setLoading(true);
@@ -269,8 +269,9 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
           if (unsubscribeRef.current) unsubscribeRef.current();
         };
       } catch (err) {
+        console.error('[AxiChat] Init failed:', err);
         setInitError(true);
-        initialized.current = false;
+        setConversation(null);
       } finally {
         setLoading(false);
       }
@@ -278,7 +279,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
     init();
 
     return () => { if (unsubscribeRef.current) unsubscribeRef.current(); };
-  }, [isAuthenticated, isOpen, retryKey]);
+  }, [isAuthenticated, isOpen, retryKey, conversation, initError]);
 
   // Handle speaker agent when chat opens
   useEffect(() => {
@@ -302,7 +303,6 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
-    initialized.current = false;
   }, [setIsOpen]);
 
   const handleSend = useCallback(async () => {
@@ -481,7 +481,7 @@ const AxiChat = function AxiChat({ isOpen, setIsOpen, prefilledMessage, onMessag
             {initError && !loading && (
               <div className="text-center py-10">
                 <p className="text-red-400 text-sm mb-3">Could not connect to Axi.</p>
-                <Button size="sm" onClick={() => setRetryKey(k => k + 1)} className="bg-purple-700 hover:bg-purple-600 text-white text-xs">
+                <Button size="sm" onClick={() => { setInitError(false); setConversation(null); setRetryKey(k => k + 1); }} className="bg-purple-700 hover:bg-purple-600 text-white text-xs">
                   Retry
                 </Button>
               </div>
