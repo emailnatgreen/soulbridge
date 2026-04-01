@@ -1,8 +1,6 @@
-import React, { useState, useEffect, lazy, Suspense, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/sonner";
-import { Button } from "@/components/ui/button";
 import { Sparkles } from 'lucide-react';
-
 import GlobalNav from '@/components/GlobalNav';
 import ChatLoader from '@/components/axi/ChatLoader';
 import { usePageSignal } from '@/hooks/usePageSignal';
@@ -11,58 +9,38 @@ import { hasAdminAccess } from '@/lib/adminAccess';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
 
-// Pages where Talk to Axi should NOT appear (public/landing pages)
+// Pages where floating button and chat should NOT appear
 const PUBLIC_PAGES = ['EditLanding', 'Terms', 'Support', 'Landing', 'ScrollOfResonance', 'KineticCompass', 'ContactSupport'];
-
-// Pages where the floating Axi button should be hidden
 const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass'];
-// Pages where AxiChat panel itself should not render
-const NO_CHAT_PAGES = ['Axi', 'MentorshipHub'];
+
+function isRecognizedUser(isAuthenticated) {
+  if (isAuthenticated) return true;
+  if (localStorage.getItem('base44_access_token') || localStorage.getItem('token')) return true;
+  try {
+    const id = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
+    if (id?.did || id?.connected) return true;
+  } catch (_) {}
+  return false;
+}
 
 export default function Layout({ children, currentPageName }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [everOpened, setEverOpened] = useState(false);
-  const [prefilledAxiMessage, setPrefilledAxiMessage] = useState(null);
-  const [speakerAgentId, setSpeakerAgentId] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
-
-  // Trigger comprehensive page signal for Jukebox Brain
   usePageSignal();
 
-  const isPublicPage = PUBLIC_PAGES.includes(currentPageName);
-  const isNoFloatPage = NO_FLOAT_PAGES.includes(currentPageName);
+  const isPublic = PUBLIC_PAGES.includes(currentPageName);
+  const isNoFloat = NO_FLOAT_PAGES.includes(currentPageName);
+
   const identity = (() => {
-    try {
-      return JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
-    } catch (_) {
-      return null;
-    }
+    try { return JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); }
+    catch (_) { return null; }
   })();
-  const hasIdentity = !!(identity?.did || identity?.connected);
-  // Check for token directly as a failsafe (AuthContext may still be loading)
-  const hasToken = !!(localStorage.getItem('base44_access_token') || localStorage.getItem('token'));
-  // Recognized = platform-authenticated OR has token OR DID-connected identity
-  const isRecognized = isAuthenticated || hasToken || hasIdentity;
-  const showAdminSidebar = isRecognized && hasAdminAccess({ user, identityDid: identity?.did });
 
-  const handleToggle = () => {
-    if (!everOpened) setEverOpened(true);
-    setIsOpen(prev => !prev);
-    if (prefilledAxiMessage) {
-      setPrefilledAxiMessage(null);
-    }
-  };
+  const recognized = isRecognizedUser(isAuthenticated);
+  const showAdminSidebar = recognized && hasAdminAccess({ user, identityDid: identity?.did });
 
-  const handleOpenAxi = useCallback((event) => {
-    if (!everOpened) setEverOpened(true);
-    setIsOpen(true);
-    if (event.detail?.message) {
-      setPrefilledAxiMessage(event.detail.message);
-    }
-    if (event.detail?.agentId) {
-      setSpeakerAgentId(event.detail.agentId);
-    }
-  }, [everOpened]);
+  // Listen for external open-axi events
+  const handleOpenAxi = useCallback(() => setChatOpen(true), []);
 
   useEffect(() => {
     window.addEventListener('open-axi', handleOpenAxi);
@@ -77,8 +55,8 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="relative">
-      {/* Logo and branding in top-left, visible across all pages except public pages */}
-      {!isPublicPage && (
+      {/* Mobile logo */}
+      {!isPublic && (
         <div className="fixed top-0 left-0 z-50 p-3 md:hidden">
           <img
             src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
@@ -88,9 +66,10 @@ export default function Layout({ children, currentPageName }) {
           />
         </div>
       )}
+
       <GlobalNav />
-      
-      {/* Global Background Watermark */}
+
+      {/* Background watermark */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
@@ -101,31 +80,25 @@ export default function Layout({ children, currentPageName }) {
           opacity: 0.06,
         }}
       />
-      {/* Page Content */}
+
+      {/* Page content */}
       <div className={`relative z-10 ${showAdminSidebar ? 'lg:ml-64' : ''}`}>
         {children}
       </div>
 
       <Toaster />
 
-      {/* AxiChat for recognized users (platform auth OR DID identity) */}
-      {isRecognized && !isPublicPage && !NO_CHAT_PAGES.includes(currentPageName) && (
+      {/* Axi Chat — only for recognized users, not on public pages */}
+      {recognized && !isPublic && (
         <Suspense fallback={null}>
-          <AxiChat 
-            isOpen={isOpen} 
-            setIsOpen={setIsOpen} 
-            prefilledMessage={prefilledAxiMessage}
-            onMessageCleared={() => setPrefilledAxiMessage(null)}
-            speakerAgentId={speakerAgentId}
-            onSpeakerAgentCleared={() => setSpeakerAgentId(null)}
-          />
+          <AxiChat isOpen={chatOpen} setIsOpen={setChatOpen} />
         </Suspense>
       )}
 
-      {/* Floating Axi button — for recognized users, hidden when chat is open */}
-      {isRecognized && !isPublicPage && !isNoFloatPage && !isOpen && (
+      {/* Floating Axi button — hidden when chat is open or on excluded pages */}
+      {recognized && !isPublic && !isNoFloat && !chatOpen && (
         <button
-          onClick={handleToggle}
+          onClick={() => setChatOpen(true)}
           className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[60] w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center justify-center shadow-2xl border border-purple-400/30 transition-transform hover:scale-110 active:scale-95"
           title="Talk to Axi"
         >
@@ -133,8 +106,8 @@ export default function Layout({ children, currentPageName }) {
         </button>
       )}
 
-      {/* ChatLoader — listens for JukeboxDecision events */}
-      {isRecognized && <ChatLoader />}
+      {/* ChatLoader for JukeboxDecision events */}
+      {recognized && <ChatLoader />}
     </div>
   );
 }
