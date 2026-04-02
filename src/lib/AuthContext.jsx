@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAppState = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingAuth(true);
-    setAuthError(null);
+    if (!silent) setAuthError(null);
 
     const normalizeToken = (value) => {
       const token = String(value || '').trim();
