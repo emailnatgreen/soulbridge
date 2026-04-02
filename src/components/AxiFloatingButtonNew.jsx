@@ -55,7 +55,7 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
   const badge = getBadgeStatus();
 
   return (
-    <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-[10001]">
+    <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-[100]">
       <button
         onClick={() => setChatOpen(true)}
         className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 relative ${

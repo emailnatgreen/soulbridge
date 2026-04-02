@@ -70,7 +70,24 @@ export default function PublicAgentGreeter() {
           user_message: `[SYSTEM] The visitor has just successfully connected their DID identity (${shortDid}...). CRITICAL VALIDATION TASK: (1) Do NOT reveal, display, or reference the full DID address or any technical identifier beyond the first 4 characters. (2) Validate their identity by welcoming them warmly and confirming the identity is recognised within the Codex. (3) After validation, instruct them clearly to click the glowing "Enter the Village" button. (4) On your next message, prepend [VALIDATED] to signal that identity verification is complete. Keep it short, warm and mystical.`,
           is_greeting: false
         });
-        await loadMessages(convIdRef.current);
+        const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convIdRef.current });
+        const newMessages = res?.data?.messages || [];
+        setMessages(newMessages);
+
+        // Check for validation immediately after Axi responds
+        if (newMessages.length > 0) {
+          const lastMsg = newMessages[newMessages.length - 1];
+          if (lastMsg.sender_agent_id === 'axi' && lastMsg.content?.includes('[VALIDATED]')) {
+            const storedIdentity = localStorage.getItem('soulbridge_identity');
+            if (storedIdentity) {
+              const identity = JSON.parse(storedIdentity);
+              identity.validated = true;
+              localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
+              window.__soulbridge.identity = identity;
+              window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
+            }
+          }
+        }
       } catch (err) {
         console.error('DID connected message error:', err);
       } finally {
