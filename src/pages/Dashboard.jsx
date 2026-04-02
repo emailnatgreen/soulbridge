@@ -738,52 +738,6 @@ export default function Dashboard() {
               ) : null}
             </div>
 
-            {/* Admin-only: Invited DID Verification */}
-            {isAdmin && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-purple-400" /> Invited DID Verification
-                </h3>
-              </div>
-              {claimedInviteWallets.length === 0 ? (
-                <p className="text-white/40 text-sm">No claimed testnet invite DIDs to verify yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {claimedInviteWallets.map(wallet => (
-                    <div key={wallet.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 space-y-2">
-                      <div className="flex items-center justify-between gap-3 flex-wrap">
-                        <div>
-                          <p className="text-white text-sm font-medium">{wallet.name}</p>
-                          <p className="text-white/40 text-xs font-mono break-all">{wallet.classic_address}</p>
-                          <p className="text-white/30 text-[10px] mt-1">Balance: {Math.round(Number(wallet.balance || 0) * 1000000).toLocaleString('en-GB')} drops</p>
-                        </div>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${wallet.is_published ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'}`}>
-                          {wallet.is_published ? 'Published' : 'Not Published'}
-                        </span>
-                      </div>
-                      {wallet.published_txid ? (
-                        <div className="space-y-1">
-                          <p className="text-white/50 text-[10px] font-mono break-all">TX: {wallet.published_txid}</p>
-                          <a
-                            href={`https://testnet.xrpl.org/transactions/${wallet.published_txid}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 underline"
-                          >
-                            View on XRPL Testnet Explorer →
-                          </a>
-                        </div>
-                      ) : (
-                        <p className="text-white/30 text-xs">No published transaction recorded yet.</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            )}
-
             {/* Admin-only: Octagon Mill */}
             {isAdmin && <OctagonMillUI />}
 
