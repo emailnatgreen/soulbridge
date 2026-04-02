@@ -7,11 +7,9 @@ export default class ErrorBoundary extends Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Ignore MetaMask / Web3 errors
-    const msg = String(error?.message || error || '').toLowerCase();
-    if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3') || msg.includes('wallet connect')) {
-      return null; // Don't trigger error UI
-    }
+    // Always transition to an error state — returning null causes an infinite render loop
+    // (React keeps retrying the crashed child, producing a white screen).
+    // MetaMask / promise errors are swallowed in main.jsx before reaching here.
     return { hasError: true, error };
   }
 
@@ -23,6 +21,12 @@ export default class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
+      const msg = String(this.state.error?.message || '').toLowerCase();
+      // Silently recover from MetaMask / Web3 errors without showing error UI
+      if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3') || msg.includes('wallet connect')) {
+        this.state.hasError = false;
+        return this.props.children;
+      }
       return (
         <div className="min-h-screen flex items-center justify-center bg-slate-950 p-6">
           <div className="text-center max-w-md">
