@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Shield, User, Circle } from 'lucide-react';
 import { useIdentity } from '@/hooks/useIdentity';
+import { useAgentRoom } from '@/hooks/useAgentRoom';
 
 /**
  * Axi Chat Floating Button
@@ -13,11 +14,18 @@ import { useIdentity } from '@/hooks/useIdentity';
  */
 export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageName }) {
   const [walletUpdating, setWalletUpdating] = useState(false);
+  const [activeAgent, setActiveAgent] = useState(null);
   const { isRecognized, isAdmin, didSignal, walletSignal } = useIdentity();
+  const { activeAgents } = useAgentRoom();
 
   // Pages where floating button should NOT appear
   const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass'];
   const shouldShow = isRecognized && !NO_FLOAT_PAGES.includes(currentPageName) && !chatOpen;
+
+  // Track active agent (default to Axi)
+  useEffect(() => {
+    setActiveAgent(activeAgents?.[0] || { name: 'Axi', role: 'guide' });
+  }, [activeAgents]);
 
   // Listen for external open-axi events
   const handleOpenAxi = useCallback(() => setChatOpen(true), [setChatOpen]);
@@ -53,17 +61,23 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
   };
 
   const badge = getBadgeStatus();
+  const agentName = activeAgent?.name || 'Axi';
 
   return (
     <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-[100]">
       <button
-        onClick={() => setChatOpen(true)}
+        onClick={() => {
+          setChatOpen(true);
+          if (agentName !== 'Axi') {
+            window.dispatchEvent(new CustomEvent('open-axi-with-agent', { detail: { agent: activeAgent } }));
+          }
+        }}
         className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 relative ${
           isAdmin
             ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 border-amber-300/30'
             : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-purple-400/30'
         }`}
-        title={isAdmin ? `Open your admin Axi (DID: ${didSignal?.did?.slice(0, 10)}...) ${badge.title}` : 'Open your personal Axi'}
+        title={isAdmin ? `Open ${agentName} (DID: ${didSignal?.did?.slice(0, 10)}...) ${badge.title}` : `Open chat with ${agentName}`}
       >
         {isAdmin ? <Shield className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
         
