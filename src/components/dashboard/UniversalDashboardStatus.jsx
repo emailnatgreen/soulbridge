@@ -23,7 +23,7 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
         { label: 'Identity', value: identityConnected ? '● Connected' : 'Disconnected', subtitle: shortDid, highlight: identityConnected },
         { label: 'Live Balance', value: `${totalBalance.toFixed(2)} XRP`, subtitle: `${wallets?.length || 0} wallet(s)`, highlight: totalBalance > 0 },
         { label: 'Published DIDs', value: String(publishedCount), subtitle: publishedCount > 0 ? 'On-chain' : 'None yet' },
-        { label: 'Transactions', value: String(myTransactions.length) },
+        { label: 'Transactions', value: String((myTransactions || []).length) },
     ];
 
   return (
