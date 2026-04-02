@@ -336,7 +336,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── BODY ── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         <button
           onClick={() => setIdentityModalOpen(true)}
           className="w-full rounded-2xl border border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-pink-900/20 p-4 hover:border-purple-400/50 hover:bg-gradient-to-r hover:from-purple-900/30 hover:to-pink-900/30 transition text-left"
@@ -351,22 +351,7 @@ export default function Dashboard() {
         </button>
         <IdentityRecognitionModal user={user} isOpen={identityModalOpen} onClose={() => setIdentityModalOpen(false)} />
 
-        <UniversalDashboardHero
-          hasInviteSession={hasInviteSession}
-          inviteWallet={inviteWallet}
-          invite={invite}
-        />
-
         <UniversalDashboardStatus
-          hasInviteSession={hasInviteSession}
-          identity={identity || (inviteWallet?.classic_address ? { did: `did:xrpl:1:${inviteWallet.classic_address}` } : null)}
-          wallets={wallets}
-          myInvites={myInvites}
-          myTransactions={myTransactions}
-          inviteWallet={inviteWallet}
-        />
-
-        <UniversalDashboardQuickActions
           hasInviteSession={hasInviteSession}
           inviteWallet={inviteWallet}
           onPublish={handlePublishDID}
@@ -519,10 +504,10 @@ export default function Dashboard() {
 
 
 
-            {/* Admin-only: Constitutional Braid */}
+            {/* Admin-only: Constitutional Braid — compact on dashboard */}
             {isAdmin && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                <ConstitutionalBraidLive compact={false} />
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                <ConstitutionalBraidLive compact />
               </div>
             )}
 
