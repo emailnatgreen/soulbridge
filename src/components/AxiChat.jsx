@@ -59,6 +59,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const unsubRef = useRef(null);
   const pendingMessageRef = useRef('');
   const processedSummonsRef = useRef(new Set());
+  const addingAgentIdsRef = useRef(new Set());
 
   useEffect(() => {
     try {
@@ -222,10 +223,11 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const handleAddAgent = useCallback(async (agent, options = {}) => {
 
     const alreadyActive = activeAgents.some((item) => item.id === agent.id);
-    if (alreadyActive) {
+    if (alreadyActive || addingAgentIdsRef.current.has(agent.id)) {
       setShowAgentPicker(false);
       return;
     }
+    addingAgentIdsRef.current.add(agent.id);
 
     setShowAgentPicker(false);
     setActiveAgents((prev) => [...prev, agent]);
@@ -267,6 +269,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         message_type: 'text'
       }]);
     }
+    addingAgentIdsRef.current.delete(agent.id);
   }, [activeAgents]);
 
   const handleRemoveAgent = (agentId) => {
