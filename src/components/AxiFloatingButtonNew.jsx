@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Shield, User, Circle } from 'lucide-react';
+import { Shield, User, Circle, Sparkles } from 'lucide-react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { useAgentRoom } from '@/hooks/useAgentRoom';
 
@@ -15,6 +15,9 @@ import { useAgentRoom } from '@/hooks/useAgentRoom';
 export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageName }) {
   const [walletUpdating, setWalletUpdating] = useState(false);
   const [activeAgent, setActiveAgent] = useState(null);
+  const [connectedDid, setConnectedDid] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sb_connected_did') || 'null'); } catch(_) { return null; }
+  });
   const { isRecognized, isAdmin, didSignal, walletSignal } = useIdentity();
   const { activeAgents } = useAgentRoom();
 
@@ -22,10 +25,25 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
   const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass'];
   const shouldShow = isRecognized && !NO_FLOAT_PAGES.includes(currentPageName) && !chatOpen;
 
-  // Track active agent (default to Axi)
+  // Track active agent — prefer connected DID's agent, then room agents, then Axi
   useEffect(() => {
-    setActiveAgent(activeAgents?.[0] || { name: 'Axi', role: 'guide' });
-  }, [activeAgents]);
+    if (connectedDid?.agentName) {
+      setActiveAgent({ id: connectedDid.agentId, name: connectedDid.agentName, role: connectedDid.agentRole });
+    } else if (activeAgents?.[0]) {
+      setActiveAgent(activeAgents[0]);
+    } else {
+      setActiveAgent({ name: 'Axi', role: 'guide' });
+    }
+  }, [activeAgents, connectedDid]);
+
+  // Listen for DID connection changes from the identity panel
+  useEffect(() => {
+    const handleDidConnection = (e) => {
+      setConnectedDid(e.detail || null);
+    };
+    window.addEventListener('sb-did-connected', handleDidConnection);
+    return () => window.removeEventListener('sb-did-connected', handleDidConnection);
+  }, []);
 
   // Listen for external open-axi events
   const handleOpenAxi = useCallback(() => setChatOpen(true), [setChatOpen]);
@@ -52,12 +70,13 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
 
   if (!shouldShow) return null;
 
-  // Determine badge status
+  // Determine badge status — connected DID takes priority
   const getBadgeStatus = () => {
     if (walletUpdating) return { color: 'bg-blue-400', pulse: true, title: '📊 Updating' };
+    if (connectedDid) return { color: 'bg-green-400', pulse: false, title: `DID: ${connectedDid.address?.slice(0, 8)}… · ${connectedDid.agentName || 'Axi'}` };
     if (didSignal?.loading) return { color: 'bg-yellow-400', pulse: true, title: 'Verifying DID...' };
     if (didSignal?.isVerified) return { color: 'bg-green-400', pulse: false, title: `DID Verified: ${didSignal?.did?.slice(0, 10)}...` };
-    return { color: 'bg-red-400', pulse: false, title: `DID Error: ${didSignal?.error || 'Not verified'}` };
+    return { color: 'bg-amber-400', pulse: false, title: 'No DID connected' };
   };
 
   const badge = getBadgeStatus();
@@ -68,18 +87,23 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
       <button
         onClick={() => {
           setChatOpen(true);
-          if (agentName !== 'Axi') {
-            window.dispatchEvent(new CustomEvent('open-axi-with-agent', { detail: { agent: activeAgent } }));
+          // If a DID is connected with a linked agent, pass that context
+          if (connectedDid?.agentId) {
+            window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
+              detail: { agent: activeAgent, did: connectedDid }
+            }));
           }
         }}
         className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 relative ${
-          isAdmin
-            ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 border-amber-300/30'
-            : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-purple-400/30'
+          connectedDid
+            ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-green-400/30'
+            : isAdmin
+              ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 border-amber-300/30'
+              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-purple-400/30'
         }`}
-        title={isAdmin ? `Open ${agentName} (DID: ${didSignal?.did?.slice(0, 10)}...) ${badge.title}` : `Open chat with ${agentName}`}
+        title={connectedDid ? `${connectedDid.agentName || 'Axi'} · ${connectedDid.address?.slice(0,8)}…` : `Open chat with ${agentName}`}
       >
-        {isAdmin ? <Shield className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
+        {connectedDid ? <Shield className="w-6 h-6 text-white" /> : isAdmin ? <Shield className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
         
         {/* DID verification badge */}
         <Circle
