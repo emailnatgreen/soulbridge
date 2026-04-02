@@ -81,8 +81,19 @@ Deno.serve(async (req) => {
       const key = agent_id.replace('platform:', '');
       agent = PLATFORM_AGENTS[key] || null;
     } else if (agent_id) {
+      // Entity DB agent — fetch it, then check if it matches a platform agent by name
       const results = await base44.asServiceRole.entities.Agent.filter({ id: agent_id }, '', 1);
-      agent = results?.[0];
+      agent = results?.[0] || null;
+      if (agent) {
+        // If this DB agent matches a platform agent name, attach platform routing
+        const platformMatch = Object.values(PLATFORM_AGENTS).find(
+          p => p.name.toLowerCase() === agent.name?.toLowerCase()
+        );
+        if (platformMatch) {
+          agent._isPlatformAgent = true;
+          agent._agentName = platformMatch._agentName;
+        }
+      }
     }
     if (!agent && agent_name) {
       // Check platform agents by name first
@@ -91,6 +102,11 @@ Deno.serve(async (req) => {
         const all = await base44.asServiceRole.entities.Agent.list('-created_date', 200);
         agent = all.find(a => a.name === agent_name);
       }
+    }
+
+    // Also honour _isPlatformAgent / platform_agent_name from the frontend caller
+    if (!agent?._isPlatformAgent && body._isPlatformAgent && body._agentName) {
+      agent = { ...agent, _isPlatformAgent: true, _agentName: body._agentName };
     }
 
     if (!agent) {

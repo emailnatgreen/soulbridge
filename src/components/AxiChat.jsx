@@ -155,7 +155,9 @@ export default function AxiChat({ isOpen, setIsOpen }) {
                 user_message: msg,
                 agent_id: agent.id,
                 agent_name: agent.name,
-                room_context: buildRoomContext('')
+                room_context: buildRoomContext(''),
+                _isPlatformAgent: !!agent._isPlatformAgent,
+                _agentName: agent._agentName || undefined,
               }).then(res => ({ agent, reply: res?.data?.response }))
             )
           );
@@ -238,7 +240,9 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         user_message: introPrompt,
         agent_id: agent.id,
         agent_name: agent.name,
-        includeContext: true
+        includeContext: true,
+        _isPlatformAgent: !!agent._isPlatformAgent,
+        _agentName: agent._agentName || undefined,
       });
 
       const agentReply = response?.data?.response;

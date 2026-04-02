@@ -34,9 +34,18 @@ export function useAgentRoom() {
     const load = async () => {
       try {
         const agents = await base44.entities.Agent.list('-created_date', 500);
+        const platformByName = {};
+        PLATFORM_AGENTS.forEach(p => { platformByName[p.name.toLowerCase()] = p; });
+        const merged = (agents || []).map(a => {
+          const platformMatch = platformByName[a.name?.toLowerCase()];
+          if (platformMatch) {
+            return { ...a, _isPlatformAgent: true, _agentName: platformMatch._agentName || platformMatch.id?.replace('platform:', '') };
+          }
+          return a;
+        });
         const dbNames = new Set((agents || []).map(a => a.name?.toLowerCase()));
-        const platformFiltered = PLATFORM_AGENTS.filter(p => !dbNames.has(p.name.toLowerCase()));
-        setAllAgents([...platformFiltered, ...(agents || [])]);
+        const platformOnly = PLATFORM_AGENTS.filter(p => !dbNames.has(p.name.toLowerCase()));
+        setAllAgents([...platformOnly, ...merged]);
       } catch (err) {
         console.error('[useAgentRoom] Failed to load agents:', err);
         setAllAgents([...PLATFORM_AGENTS]);

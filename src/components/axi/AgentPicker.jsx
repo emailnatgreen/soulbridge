@@ -26,19 +26,17 @@ export default function AgentPicker({ activeAgentIds = [], onAdd, onClose }) {
     const load = async () => {
       try {
         const all = await base44.entities.Agent.list('-created_date', 500);
-        // Merge platform agents first, then entity agents (dedupe by name)
-        const entityNames = new Set((all || []).map(a => a.name?.toLowerCase()));
-        const platformFiltered = PLATFORM_AGENTS.filter(
-          p => !entityNames.has(p.name.toLowerCase())
-        );
-        setAgents([...platformFiltered, ...(all || [])]);
-      } catch (err) {
-        console.error('Failed to load agents:', err);
-        setAgents([...PLATFORM_AGENTS]);
-      } finally {
-        setLoading(false);
-      }
-    };
+        // Merge: DB agents matching a platform agent get routing fields
+        const platformByName = {};
+        PLATFORM_AGENTS.forEach(p => { platformByName[p.name.toLowerCase()] = p; });
+        const merged = (all || []).map(a => {
+          const pm = platformByName[a.name?.toLowerCase()];
+          if (pm) return { ...a, _isPlatformAgent: true, _agentName: pm._agentName };
+          return a;
+        });
+        const dbNames = new Set((all || []).map(a => a.name?.toLowerCase()));
+        const platformOnly = PLATFORM_AGENTS.filter(p => !dbNames.has(p.name.toLowerCase()));
+        setAgents([...platformOnly, ...merged]);
     load();
   }, []);
 
