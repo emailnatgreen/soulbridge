@@ -59,6 +59,11 @@ export default function DIDManager() {
     queryFn: () => base44.auth.me()
   });
 
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents'],
+    queryFn: () => base44.entities.Agent.list('-created_date', 100),
+  });
+
   const { data: wallets = [], isLoading: walletsLoading } = useQuery({
     queryKey: ['wallets', user?.id, user?.role],
     queryFn: async () => {
