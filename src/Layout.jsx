@@ -1,63 +1,25 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/sonner";
-import { Sparkles, Shield, User, Circle } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import GlobalNav from '@/components/GlobalNav';
 import ChatLoader from '@/components/axi/ChatLoader';
 import { usePageSignal } from '@/hooks/usePageSignal';
-import { useAuth } from '@/lib/AuthContext';
-import { hasAdminAccess } from '@/lib/adminAccess';
-import { useDIDSignal } from '@/hooks/useDIDSignal';
-import { useWalletDidSignal } from '@/hooks/useWalletDidSignal';
+import { useIdentity } from '@/hooks/useIdentity';
+import AxiFloatingButton from '@/components/AxiFloatingButtonNew';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
-
-// Pages where floating button and chat should NOT appear
 const PUBLIC_PAGES = ['EditLanding', 'Terms', 'Support', 'Landing', 'ScrollOfResonance', 'KineticCompass', 'ContactSupport'];
-const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass'];
 
-function isRecognizedUser(isAuthenticated, didSignal) {
-  // Priority: Verified DID (cryptographically proven identity)
-  if (didSignal?.isVerified) return true;
-  // Fallback: Base44 auth
-  if (isAuthenticated) return true;
-  // Legacy: local storage tokens
-  if (localStorage.getItem('base44_access_token') || localStorage.getItem('token')) return true;
-  try {
-    const id = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
-    if (id?.did || id?.connected) return true;
-  } catch (_) {}
-  return false;
-}
+
 
 export default function Layout({ children, currentPageName }) {
   const [chatOpen, setChatOpen] = useState(false);
-  const [walletUpdating, setWalletUpdating] = useState(false);
-  const { user, isAuthenticated } = useAuth();
-  const didSignal = useDIDSignal();
-  const { lastSignal } = useWalletDidSignal({
-    onUpdate: () => setWalletUpdating(true)
-  });
+  const { isRecognized, isAdmin, didSignal } = useIdentity();
   
-  // Reset wallet updating state
-  useEffect(() => {
-    if (walletUpdating) {
-      const timer = setTimeout(() => setWalletUpdating(false), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [walletUpdating]);
+
   
   usePageSignal();
-
   const isPublic = PUBLIC_PAGES.includes(currentPageName);
-  const isNoFloat = NO_FLOAT_PAGES.includes(currentPageName);
-
-  const identity = (() => {
-    try { return JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); }
-    catch (_) { return null; }
-  })();
-
-  const recognized = isRecognizedUser(isAuthenticated, didSignal);
-  const showAdminSidebar = recognized && hasAdminAccess({ user, identityDid: identity?.did });
 
   // Listen for external open-axi events
   const handleOpenAxi = useCallback(() => setChatOpen(true), []);
@@ -75,27 +37,13 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="relative">
-      {/* Mobile logo + DID Signal Indicator */}
-      {!isPublic && (
-        <div className="fixed top-0 left-0 z-50 p-3 md:hidden flex items-center gap-2">
           <img
             src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
             alt="SoulBridge"
             className="w-10 h-10 rounded-lg object-contain"
             style={{ imageRendering: 'crisp-edges' }}
           />
-          {/* DID verification indicator */}
-          {didSignal?.loading && (
-            <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse" title="Verifying DID..." />
-          )}
-          {!didSignal?.loading && didSignal?.isVerified && (
-            <div className="w-2.5 h-2.5 bg-green-400 rounded-full shadow-lg" title={`DID Verified: ${didSignal?.did?.slice(0, 10)}...`} />
-          )}
-          {!didSignal?.loading && !didSignal?.isVerified && (
-            <div className="w-2.5 h-2.5 bg-red-400 rounded-full" title={`DID Error: ${didSignal?.error || 'Not verified'}`} />
-          )}
-        </div>
-      )}
+
 
       <GlobalNav />
 
@@ -112,7 +60,7 @@ export default function Layout({ children, currentPageName }) {
       />
 
       {/* Page content */}
-      <div className={`relative z-10 ${showAdminSidebar ? 'lg:ml-64' : ''}`}>
+      <div className={`relative z-10 ${isAdmin ? 'lg:ml-64' : ''}`}>
         {children}
       </div>
 
@@ -149,7 +97,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* ChatLoader for JukeboxDecision events */}
-      {recognized && <ChatLoader />}
+      {isRecognized && <ChatLoader />}
     </div>
   );
 }
