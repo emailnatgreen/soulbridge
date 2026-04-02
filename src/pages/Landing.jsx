@@ -507,11 +507,11 @@ export default function Landing() {
                     </div>
                   ))}
                 </div>
-              </div>
-              </div>
-              )}
-              </div>
-              </div>
+                </div>
+                </div>
+                )}
+                </div>
+                </div>
 
               {/* Footer */}
       <footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md py-3 sm:py-4">
