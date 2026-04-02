@@ -121,7 +121,7 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
         </DialogHeader>
 
         {/* Testnet unfunded warning */}
-        {wallet?.network === 'testnet' && (wallet?.balance === 0 || !wallet?.balance) && step === 'form' && (
+         {wallet?.network === 'testnet' && (wallet?.balance === 0 || !wallet?.balance) && !wallet?.is_published && step === 'form' && (
           <div className="bg-orange-50 border border-orange-300 rounded-lg p-4">
             <p className="text-sm font-semibold text-orange-800 mb-1">⚠️ Testnet Wallet — Needs Funding</p>
             <p className="text-xs text-orange-700 mb-3">
