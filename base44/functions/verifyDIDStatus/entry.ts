@@ -2,9 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
  * Verifies DID by querying XRPL directly.
- * Distinguishes between:
- * - account_exists: Account has XRP and is activated
- * - did_active: DIDSet transaction exists (actual DID publication)
+ * Accepts { wallet_id } to verify a specific wallet.
+ * Falls back to user's first wallet if no wallet_id provided.
  */
 Deno.serve(async (req) => {
   const RPC_ENDPOINTS = {
@@ -32,7 +31,7 @@ Deno.serve(async (req) => {
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
-        
+
         const rpcResponse = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -40,7 +39,7 @@ Deno.serve(async (req) => {
           signal: controller.signal
         });
         clearTimeout(timeoutId);
-        
+
         if (!rpcResponse.ok) throw new Error(`HTTP ${rpcResponse.status}`);
 
         const rpcData = await rpcResponse.json();
@@ -56,11 +55,10 @@ Deno.serve(async (req) => {
         continue;
       }
     }
-    
+
     return { success: false, error: lastError?.message || 'All RPC endpoints failed' };
   };
 
-  // Check if DIDSet transaction exists (actual DID publication)
   const checkDIDSetExists = async (classicAddress, network) => {
     const endpoints = RPC_ENDPOINTS[network] || RPC_ENDPOINTS.mainnet;
 
@@ -68,8 +66,8 @@ Deno.serve(async (req) => {
       try {
         const body = JSON.stringify({
           method: 'account_tx',
-          params: [{ 
-            account: classicAddress, 
+          params: [{
+            account: classicAddress,
             ledger_index_min: -1,
             limit: 100
           }]
@@ -77,7 +75,7 @@ Deno.serve(async (req) => {
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
-        
+
         const rpcResponse = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -92,8 +90,7 @@ Deno.serve(async (req) => {
         if (rpcData.error) continue;
 
         const transactions = rpcData.result?.transactions || [];
-        
-        // Look specifically for DIDSet transaction type
+
         const hasDIDSet = transactions.some(tx => {
           const txn = tx.tx || tx.transaction;
           return txn && txn.TransactionType === 'DIDSet';
@@ -120,16 +117,40 @@ Deno.serve(async (req) => {
       );
     }
 
-    const wallets = await base44.asServiceRole.entities.Wallet.filter(
-      { owner_id: user.id },
-      '-updated_date',
-      1
-    );
+    // Parse wallet_id from request body
+    let body = {};
+    try { body = await req.json(); } catch (_) {}
+    const requestedWalletId = body.wallet_id;
 
-    if (!wallets || wallets.length === 0) {
+    let wallet;
+    if (requestedWalletId) {
+      // Fetch the specific wallet requested
+      const userWallets = await base44.asServiceRole.entities.Wallet.filter(
+        { owner_id: user.id },
+        '-updated_date',
+        100
+      );
+      wallet = userWallets.find(w => w.id === requestedWalletId);
+
+      // Admin can verify any wallet
+      if (!wallet && user.role === 'admin') {
+        const allWallets = await base44.asServiceRole.entities.Wallet.list('-updated_date', 200);
+        wallet = allWallets.find(w => w.id === requestedWalletId);
+      }
+    } else {
+      // Fallback: get user's first wallet
+      const wallets = await base44.asServiceRole.entities.Wallet.filter(
+        { owner_id: user.id },
+        '-updated_date',
+        1
+      );
+      wallet = wallets?.[0];
+    }
+
+    if (!wallet) {
       return Response.json({
         isVerified: false,
-        error: 'No wallet found',
+        error: requestedWalletId ? `Wallet ${requestedWalletId} not found or not accessible` : 'No wallet found',
         verification: {
           account_exists: false,
           did_active: false
@@ -137,13 +158,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    const wallet = wallets[0];
     const classicAddress = wallet.classic_address;
     const network = wallet.network || 'mainnet';
 
-    // Check if account exists
+    // Check if account exists on XRPL
     const xrplResult = await queryXRPL(classicAddress, network);
-    
+
     if (!xrplResult.success) {
       return Response.json({
         isVerified: false,
@@ -164,24 +184,23 @@ Deno.serve(async (req) => {
     const didCheckResult = await checkDIDSetExists(classicAddress, network);
     const didActive = didCheckResult.success && didCheckResult.hasDIDSet;
 
-    // Update database if account exists but flag wasn't set
-    if (!wallet.is_published && accountExists) {
+    // Update database if publication status changed
+    if (wallet.is_published !== didActive && accountExists) {
       try {
         await base44.asServiceRole.entities.Wallet.update(wallet.id, {
-          is_published: didActive ? true : false
+          is_published: didActive
         });
       } catch (updateErr) {
         console.error('[verifyDIDStatus] Failed to update wallet:', updateErr);
       }
     }
 
-    // Fetch agent
+    // Fetch linked agent
     const agents = await base44.asServiceRole.entities.Agent.filter(
       { classic_address: classicAddress },
       '',
       1
     );
-
     const agent = agents?.[0];
 
     // Calculate live balance from on-chain data
@@ -227,8 +246,8 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('[verifyDIDStatus] Error:', error);
     return Response.json(
-      { 
-        isVerified: false, 
+      {
+        isVerified: false,
         error: error.message || 'Internal server error',
         verification: {
           account_exists: false,
