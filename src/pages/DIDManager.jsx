@@ -491,19 +491,7 @@ function WalletCard(props) {
     queryClient, user
   } = props;
 
-  const handlePublish = async () => {
-    try {
-      const res = await base44.functions.invoke('getBalance', { wallet_id: wallet.id });
-      if (res.data?.balance !== undefined) {
-        queryClient.setQueryData(['wallets', user?.id, user?.role], prev => 
-          prev?.map(w => w.id === wallet.id ? { ...w, balance: res.data.balance } : w)
-        );
-      }
-    } catch (e) {
-      console.log('Balance sync skipped');
-    }
-    onPublish();
-  };
+  const handlePublish = () => onPublish();
 
   const didAddress = `did:xrpl:${wallet.classic_address}`;
   const didDoc = getDIDDocument(wallet);
