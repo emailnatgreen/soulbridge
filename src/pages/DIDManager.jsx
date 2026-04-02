@@ -178,6 +178,7 @@ export default function DIDManager() {
       const message = error?.response?.data?.message || error?.message || error?.error || 'Failed to verify DID';
       toast.error(message);
       console.error('Verification error:', error);
+      setVerifyingWalletId(null);
     }
   });
 
