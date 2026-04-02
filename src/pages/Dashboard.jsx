@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Sparkles, LogOut, Home, ArrowRight, CheckCircle, Plus, Globe, Copy, Users, Zap, Wallet } from 'lucide-react';
+import { Shield, Sparkles, LogOut, Home, ArrowRight, Globe, Wallet } from 'lucide-react';
 import DIDManagementPanel from '@/components/dashboard/DIDManagementPanel';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
@@ -41,13 +41,7 @@ export default function Dashboard() {
   const [invite, setInvite] = useState(null);
   const [creatingWallet, setCreatingWallet] = useState(false);
   const [walletCreated, setWalletCreated] = useState(false);
-  const [myInvites, setMyInvites] = useState([]);
   const [myTransactions, setMyTransactions] = useState([]);
-  const [showInviteForm, setShowInviteForm] = useState(false);
-  const [inviteNickname, setInviteNickname] = useState('');
-  const [inviteNotes, setInviteNotes] = useState('');
-  const [creatingInvite, setCreatingInvite] = useState(false);
-  const [copiedId, setCopiedId] = useState(null);
   const [inviteWallet, setInviteWallet] = useState(() => {
     try { return JSON.parse(localStorage.getItem('sb_invite_wallet') || 'null'); } catch(_) { return null; }
   });
@@ -113,11 +107,7 @@ export default function Dashboard() {
         setMyTransactions(tx || []);
       }
 
-      // Load invites — only for admin
-      if (isAdminUser) {
-        const invites = await base44.entities.InvitationToken.list('-created_date', 20).catch(() => []);
-        setMyInvites(invites || []);
-      }
+
 
 
     };
@@ -234,43 +224,7 @@ export default function Dashboard() {
       }).catch(() => {});
   }, [inviteWallet?.classic_address]);
 
-  function generateHash() {
-    const arr = new Uint8Array(32);
-    crypto.getRandomValues(arr);
-    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-  function generateTokenId() { return 'SB-' + Math.random().toString(36).substring(2, 6).toUpperCase(); }
-  function getAppUrl() { return localStorage.getItem('sb_custom_domain') || window.location.origin; }
 
-  const handleCreateInvite = async () => {
-    if (!inviteNickname.trim()) return;
-    setCreatingInvite(true);
-    const me = await base44.auth.me().catch(() => null);
-    await base44.entities.InvitationToken.create({
-      token_id: generateTokenId(),
-      hash: generateHash(),
-      status: 'active',
-      recipient_nickname: inviteNickname,
-      kinetic_weight: 10,
-      usage_type: 'single',
-      max_claims: 1,
-      claimed_count: 0,
-      notes: inviteNotes || undefined,
-      issued_by: me?.email,
-    });
-    const updated = await base44.entities.InvitationToken.filter({ issued_by: me?.email }, '-created_date', 50).catch(() => []);
-    setMyInvites(updated);
-    setInviteNickname('');
-    setInviteNotes('');
-    setShowInviteForm(false);
-    setCreatingInvite(false);
-  };
-
-  const copyInviteLink = (tokenId) => {
-    navigator.clipboard.writeText(`${getAppUrl()}/?invite=${tokenId}`);
-    setCopiedId(tokenId);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
 
   if (isLoadingAuth) {
     return (
@@ -571,87 +525,6 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-
-            {/* My Village Invitations */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-                  <Users className="w-4 h-4 text-purple-400" /> My Village Invitations
-                </h3>
-                {myInvites.length > 0 && !showInviteForm && (
-                  <button onClick={() => setShowInviteForm(true)} className="flex items-center gap-1 text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition">
-                    <Plus className="w-3 h-3" /> New Invite
-                  </button>
-                )}
-              </div>
-              {showInviteForm && (
-                <div className="bg-white/5 border border-purple-500/30 rounded-xl p-4 mb-4 space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-white/40 mb-1 block">Who are you inviting? *</label>
-                      <input
-                        className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-400/60 transition"
-                        placeholder="e.g. My colleague Sarah"
-                        value={inviteNickname}
-                        onChange={e => setInviteNickname(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-white/40 mb-1 block">Note (optional)</label>
-                      <input
-                        className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/20 text-sm focus:outline-none focus:border-purple-400/60 transition"
-                        placeholder="e.g. Blockchain researcher"
-                        value={inviteNotes}
-                        onChange={e => setInviteNotes(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={handleCreateInvite} disabled={creatingInvite || !inviteNickname.trim()} className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition disabled:opacity-50">
-                      {creatingInvite ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                      {creatingInvite ? 'Creating…' : 'Issue Invite'}
-                    </button>
-                    <button onClick={() => setShowInviteForm(false)} className="text-xs text-white/40 hover:text-white/70 transition px-3">Cancel</button>
-                  </div>
-                </div>
-              )}
-              {myInvites.length === 0 && !showInviteForm ? (
-                <div className="text-center py-8 space-y-4">
-                  <Users className="w-10 h-10 mx-auto text-white/20" />
-                  <p className="text-white/40 text-sm">No invites yet. Invite someone to join SoulBridge.</p>
-                  <button onClick={() => setShowInviteForm(true)} className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-medium px-5 py-2.5 rounded-lg transition mx-auto">
-                    <Plus className="w-3 h-3" /> Create My First Invite
-                  </button>
-                </div>
-              ) : myInvites.length > 0 ? (
-                <div className="space-y-2">
-                  {myInvites.map(t => (
-                    <div key={t.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-white text-sm font-mono">{t.token_id}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${ t.status === 'active' ? 'bg-green-500/20 text-green-400 border-green-500/30' : t.status === 'claimed' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30' }`}>
-                            {t.status === 'claimed' ? '✓ Joined' : t.status.charAt(0).toUpperCase() + t.status.slice(1)}
-                          </span>
-                        </div>
-                        <div className="flex gap-3 text-xs text-white/30 mt-0.5">
-                          <span>👤 {t.recipient_nickname || '—'}</span>
-                          <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-yellow-400" />{t.kinetic_weight ?? 10} KU</span>
-                        </div>
-                      </div>
-                      {t.status === 'active' && (
-                        <button onClick={() => copyInviteLink(t.token_id)} className="flex items-center gap-1 text-xs bg-white/10 hover:bg-white/15 text-white/60 hover:text-white border border-white/15 px-3 py-1.5 rounded-lg transition">
-                          {copiedId === t.token_id ? <CheckCircle className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
-                          {copiedId === t.token_id ? 'Copied!' : 'Copy Link'}
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-
 
             {/* Meet Axi */}
             <div className="bg-gradient-to-br from-indigo-950/60 via-purple-950/60 to-pink-950/40 border border-purple-500/30 rounded-2xl p-4 sm:p-6 space-y-5">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Globe, KeyRound, Users } from 'lucide-react';
+import { ArrowRight, Globe } from 'lucide-react';
 
 export default function UniversalDashboardQuickActions({ hasInviteSession, inviteWallet, onPublish, publishingDid, publishingWalletId, isAdmin }) {
   const cards = hasInviteSession
@@ -39,15 +39,7 @@ export default function UniversalDashboardQuickActions({ hasInviteSession, invit
             </Link>
           )
         },
-        ...(isAdmin ? [{
-          title: 'Invite someone in',
-          description: 'Create a clean invite link and bring new members into the platform.',
-          action: (
-            <Link to="/InviteLinkManager" className="inline-flex items-center gap-2 text-sm text-blue-300 hover:text-blue-200">
-              <Users className="w-4 h-4" /> Open invites
-            </Link>
-          )
-        }] : [])
+
       ];
 
   return (

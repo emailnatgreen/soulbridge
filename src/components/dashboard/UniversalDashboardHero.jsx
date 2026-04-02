@@ -13,7 +13,7 @@ export default function UniversalDashboardHero({ hasInviteSession, inviteWallet,
             <p className="text-xs uppercase tracking-[0.25em] text-purple-300/60 mb-2">Universal Dashboard</p>
             <h2 className="text-2xl sm:text-3xl font-semibold text-white">One clean SoulBridge entry point</h2>
             <p className="text-sm text-white/60 mt-3 max-w-2xl">
-              A simple showcase dashboard for members and invited users, designed around onboarding, identity, invites, and your next step.
+              A simple showcase dashboard for members, designed around identity, onboarding, and your next step.
             </p>
           </div>
         </div>
