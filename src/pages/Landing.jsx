@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { emitWalletSignal, emitDidSignal } from '@/hooks/useWalletDidSignal';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key } from 'lucide-react';
@@ -158,7 +159,25 @@ export default function Landing() {
         setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
       } catch (e) {}
     };
+    
+    // Fetch on mount
     fetchStats();
+    
+    // Poll for live updates every 5 seconds
+    const interval = setInterval(fetchStats, 5000);
+    
+    // Listen for cross-tab signals
+    const handleSignal = (e) => {
+      if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') {
+        fetchStats();
+      }
+    };
+    window.addEventListener('soulbridge-signal', handleSignal);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('soulbridge-signal', handleSignal);
+    };
   }, []);
 
   const handleInviteSubmit = async () => {
