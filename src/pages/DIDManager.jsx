@@ -50,7 +50,6 @@ export default function DIDManager() {
   const [selectedWalletForRequest, setSelectedWalletForRequest] = useState(null);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [selectedWalletForPublish, setSelectedWalletForPublish] = useState(null);
-  const [verifyingWalletId, setVerifyingWalletId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [walletToDelete, setWalletToDelete] = useState(null);
 
@@ -199,31 +198,7 @@ export default function DIDManager() {
   });
 
   const handleVerifyDID = (walletId) => {
-    // Use the new mainnet verification function
-    setVerifyingWalletId(walletId);
-    base44.functions.invoke('verifyDIDStatusMainnet', {})
-      .then((response) => {
-        setVerifyingWalletId(null);
-        const data = response.data || response;
-        setVerificationResults(prev => ({
-          ...prev,
-          [walletId]: data
-        }));
-        setCurrentVerification(data);
-        setVerifyDialogOpen(true);
-        
-        if (data?.isVerified) {
-          toast.success('✅ DID verified on XRPL Mainnet!');
-        } else {
-          toast.error(data?.error || 'DID verification failed');
-        }
-      })
-      .catch((error) => {
-        setVerifyingWalletId(null);
-        const message = error?.response?.data?.message || error?.message || 'Verification failed';
-        toast.error(message);
-        console.error('Verification error:', error);
-      });
+    verifyMutation.mutate(walletId);
   };
 
   const handlePostPublishVerify = (walletId) => {
@@ -583,19 +558,10 @@ export default function DIDManager() {
                         variant="outline"
                         className="w-full"
                         onClick={() => handleVerifyDID(wallet.id)}
-                        disabled={verifyingWalletId === wallet.id}
+                        disabled={verifyMutation.isPending}
                         >
                         <Shield className="w-3 h-3 mr-2" />
-                        {verifyingWalletId === wallet.id ? 'Verifying...' : 'Verify on XRPL'}
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                          onClick={() => { setSelectedWalletForPublish(wallet); setPublishDialogOpen(true); }}
-                        >
-                          <Upload className="w-3 h-3 mr-2" />
-                          Publish DID On-Chain
+                        {verifyMutation.isPending ? 'Verifying...' : 'Verify on XRPL'}
                         </Button>
 
                         <div className="grid grid-cols-2 gap-2">
