@@ -60,8 +60,10 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const unsubRef = useRef(null);
   const pendingMessageRef = useRef('');
   const processedSummonsRef = useRef(new Set());
-  // Agent responses are stored separately because the subscription only knows about Axi's messages
+  // Agent responses stored separately — subscription only knows Axi's messages
   const agentMessagesRef = useRef([]);
+  // Pause subscription updates while agents are responding
+  const pauseSubRef = useRef(false);
 
   useEffect(() => {
     if (messages.length) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -110,13 +112,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
         if (unsubRef.current) unsubRef.current();
         unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
+          // Skip subscription updates while agents are responding
+          if (pauseSubRef.current) return;
           const platformMessages = (data.messages || []).slice(-PAGE_SIZE);
           // Merge platform messages with locally-tracked agent responses
           const agentMsgs = agentMessagesRef.current;
           if (agentMsgs.length === 0) {
             setMessages(platformMessages);
           } else {
-            // Find the last platform message timestamp to insert agent messages after it
             const existingIds = new Set(platformMessages.map(m => m.id));
             const uniqueAgentMsgs = agentMsgs.filter(m => !existingIds.has(m.id));
             setMessages([...platformMessages, ...uniqueAgentMsgs]);
@@ -158,9 +161,10 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         // Send message to Axi — this triggers Axi's platform agent response via subscription
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
 
-        // Wait briefly for Axi's subscription response to arrive before firing other agents
         if (invitedAgents.length > 0) {
-          await new Promise(r => setTimeout(r, 1500));
+          // Wait for Axi's streaming response to finish, then pause subscription
+          await new Promise(r => setTimeout(r, 2000));
+          pauseSubRef.current = true;
 
           setTypingAgents(new Set(invitedAgents.map(a => a.id)));
 
@@ -196,10 +200,12 @@ export default function AxiChat({ isOpen, setIsOpen }) {
             }
           });
           if (newMessages.length > 0) {
-            // Store in ref so subscription merges don't wipe them
             agentMessagesRef.current = [...agentMessagesRef.current, ...newMessages];
             setMessages(prev => [...prev, ...newMessages]);
           }
+
+          // Resume subscription updates
+          pauseSubRef.current = false;
         }
       } else {
         pendingMessageRef.current = '';
