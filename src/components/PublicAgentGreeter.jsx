@@ -144,13 +144,26 @@ export default function PublicAgentGreeter() {
         user_message: greetingMsg,
         is_greeting: true
       });
-
+      
+      // Add delay to let Axi response process fully on mobile
+      await new Promise(r => setTimeout(r, 1000));
       await loadMessages(convId);
 
       if (pollRef.current) clearInterval(pollRef.current);
+      // Poll more frequently initially on mobile, then back off
+      let pollCount = 0;
       pollRef.current = setInterval(() => {
-        if (convIdRef.current) loadMessages(convIdRef.current);
-      }, 10000);
+        if (convIdRef.current) {
+          loadMessages(convIdRef.current);
+          pollCount++;
+          if (pollCount > 5) {
+            clearInterval(pollRef.current);
+            pollRef.current = setInterval(() => {
+              if (convIdRef.current) loadMessages(convIdRef.current);
+            }, 15000);
+          }
+        }
+      }, 2000);
     } catch (err) {
       console.error('Failed to create conversation:', err);
       // Show a fallback greeting when Axi can't respond (e.g. credit limits)
