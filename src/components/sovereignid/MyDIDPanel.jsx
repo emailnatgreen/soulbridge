@@ -32,8 +32,7 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
     setVerifying(wallet.id);
     try {
       const res = await base44.functions.invoke('verifyDIDStatus', {
-        classic_address: wallet.classic_address,
-        network: wallet.network
+        wallet_id: wallet.id
       });
       setVerifyResult(prev => ({ ...prev, [wallet.id]: res.data }));
     } catch (e) {
