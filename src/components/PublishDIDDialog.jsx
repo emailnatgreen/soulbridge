@@ -19,7 +19,8 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
 
   useEffect(() => {
     if (wallet && open) {
-      setDidUri(`https://soulbridge.base44.app/SharedDidView?address=${wallet.classic_address}`);
+      // Use a JSON endpoint that serves the actual DID document, not a webpage
+      setDidUri(`https://soulbridge.base44.app/api/dids/${wallet.classic_address}`);
       setStep('form');
       setQrData(null);
       setResult(null);
