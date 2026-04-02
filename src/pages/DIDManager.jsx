@@ -491,6 +491,20 @@ function WalletCard(props) {
     queryClient, user
   } = props;
 
+  const handlePublish = async () => {
+    try {
+      const res = await base44.functions.invoke('getBalance', { wallet_id: wallet.id });
+      if (res.data?.balance !== undefined) {
+        queryClient.setQueryData(['wallets', user?.id, user?.role], prev => 
+          prev?.map(w => w.id === wallet.id ? { ...w, balance: res.data.balance } : w)
+        );
+      }
+    } catch (e) {
+      console.log('Balance sync skipped');
+    }
+    onPublish();
+  };
+
   const didAddress = `did:xrpl:${wallet.classic_address}`;
   const didDoc = getDIDDocument(wallet);
 
@@ -561,7 +575,7 @@ function WalletCard(props) {
             <DidDocumentEditor wallet={wallet} didDocument={didDoc} trigger={<Button size="sm" variant="outline" className="w-full"><FileJson className="w-3 h-3 mr-2" />View Doc</Button>} />
           </div>
 
-          <Button size="sm" variant="outline" className="w-full bg-indigo-50 border-indigo-200 text-indigo-700" onClick={onPublish}>
+          <Button size="sm" variant="outline" className="w-full bg-indigo-50 border-indigo-200 text-indigo-700" onClick={handlePublish}>
             📤 Publish to Mainnet
           </Button>
 
