@@ -60,6 +60,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const unsubRef = useRef(null);
   const pendingMessageRef = useRef('');
   const processedSummonsRef = useRef(new Set());
+  // Agent responses are stored separately because the subscription only knows about Axi's messages
+  const agentMessagesRef = useRef([]);
 
   useEffect(() => {
     if (messages.length) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -108,7 +110,17 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
         if (unsubRef.current) unsubRef.current();
         unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
-          setMessages((data.messages || []).slice(-PAGE_SIZE));
+          const platformMessages = (data.messages || []).slice(-PAGE_SIZE);
+          // Merge platform messages with locally-tracked agent responses
+          const agentMsgs = agentMessagesRef.current;
+          if (agentMsgs.length === 0) {
+            setMessages(platformMessages);
+          } else {
+            // Find the last platform message timestamp to insert agent messages after it
+            const existingIds = new Set(platformMessages.map(m => m.id));
+            const uniqueAgentMsgs = agentMsgs.filter(m => !existingIds.has(m.id));
+            setMessages([...platformMessages, ...uniqueAgentMsgs]);
+          }
         });
         return;
       } catch (err) {
@@ -184,6 +196,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
             }
           });
           if (newMessages.length > 0) {
+            // Store in ref so subscription merges don't wipe them
+            agentMessagesRef.current = [...agentMessagesRef.current, ...newMessages];
             setMessages(prev => [...prev, ...newMessages]);
           }
         }
@@ -232,13 +246,15 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
     if (options.skipIntro) return;
 
-    setMessages((prev) => [...prev, {
+    const joinMsg = {
       id: `sys-${Date.now()}-${agent.id}`,
       role: 'assistant',
       sender_agent_id: 'axi',
       content: `${agent.name} (${agent.role}) joined this conversation.`,
       message_type: 'system'
-    }]);
+    };
+    agentMessagesRef.current = [...agentMessagesRef.current, joinMsg];
+    setMessages((prev) => [...prev, joinMsg]);
 
     try {
       const contextBrief = buildAgentContextBrief(messages, activeAgents, agent);
@@ -256,14 +272,16 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
       const agentReply = response?.data?.response;
       if (agentReply) {
-        setMessages((prev) => [...prev, {
+        const introMsg = {
           id: `agent-${agent.id}-${Date.now()}`,
           role: 'assistant',
           sender_agent_id: agent.id,
-          metadata: { sourceAgentId: agent.id },
+          metadata: { sourceAgentId: agent.id, agentName: agent.name },
           content: agentReply,
           message_type: 'text'
-        }]);
+        };
+        agentMessagesRef.current = [...agentMessagesRef.current, introMsg];
+        setMessages((prev) => [...prev, introMsg]);
       }
     } catch (err) {
       console.error('[AxiChat] Agent intro error:', err);
