@@ -2,9 +2,32 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
     const body = await req.json();
+
+    // Build clean headers — strip any malformed auth
+    const cleanHeaders = new Headers();
+    for (const [key, value] of req.headers.entries()) {
+      if (key.toLowerCase() === 'authorization') continue;
+      cleanHeaders.set(key, value);
+    }
+    const authHeader = (req.headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const hasValidToken = rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken.length > 10;
+    if (hasValidToken) {
+      cleanHeaders.set('authorization', `Bearer ${rawToken}`);
+    }
+    cleanHeaders.set('content-type', 'application/json');
+
+    const base44 = createClientFromRequest(new Request(req.url, {
+      method: req.method,
+      headers: cleanHeaders,
+      body: JSON.stringify(body),
+    }));
+
+    let user = null;
+    if (hasValidToken) {
+      try { user = await base44.auth.me(); } catch (_) { user = null; }
+    }
 
     const conversation_id = body.conversation_id;
     const user_message = body.user_message;
