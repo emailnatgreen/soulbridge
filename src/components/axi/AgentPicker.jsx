@@ -13,8 +13,27 @@ export default function AgentPicker({ activeAgentIds = [], onAdd, onClose }) {
   useEffect(() => {
     const load = async () => {
       try {
-        const all = await base44.entities.Agent.list('-created_date', 100);
-        setAgents(all || []);
+        // Fetch all agents (no limit cap)
+        const all = await base44.entities.Agent.list('-created_date', 500);
+        const agentMap = {};
+        (all || []).forEach(a => { agentMap[a.classic_address] = a; });
+
+        // Also pull wallets so DID holders without an Agent record appear
+        const wallets = await base44.entities.Wallet.list('-created_date', 500);
+        const extra = [];
+        (wallets || []).forEach(w => {
+          if (w.classic_address && !agentMap[w.classic_address]) {
+            extra.push({
+              id: w.id,
+              name: w.name || w.classic_address,
+              role: 'did_holder',
+              classic_address: w.classic_address,
+              _fromWallet: true
+            });
+          }
+        });
+
+        setAgents([...(all || []), ...extra]);
       } catch (err) {
         console.error('Failed to load agents:', err);
       } finally {
