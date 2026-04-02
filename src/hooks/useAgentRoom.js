@@ -23,11 +23,19 @@ const PLATFORM_AGENTS = [
  */
 export function useAgentRoom() {
   const [allAgents, setAllAgents] = useState([]);
-  const [activeAgents, setActiveAgents] = useState([]);
+  const [activeAgents, setActiveAgents] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ACTIVE_AGENTS_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [loadingAgents, setLoadingAgents] = useState(true);
   const addingRef = useRef(new Set());
 
-  // No longer persist agents to localStorage — agents only exist for the current session
+  // Persist active agents to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(ACTIVE_AGENTS_KEY, JSON.stringify(activeAgents));
+  }, [activeAgents]);
 
   // Load all agents once — platform agents always included, then poll for updates
   useEffect(() => {
@@ -45,7 +53,16 @@ export function useAgentRoom() {
         });
         const dbNames = new Set((agents || []).map(a => a.name?.toLowerCase()));
         const platformOnly = PLATFORM_AGENTS.filter(p => !dbNames.has(p.name.toLowerCase()));
-        setAllAgents([...platformOnly, ...merged]);
+        const allAvailable = [...platformOnly, ...merged];
+        setAllAgents(allAvailable);
+
+        // Rehydrate saved active agents with full data from the freshly loaded list
+        setActiveAgents(prev => {
+          if (prev.length === 0) return prev;
+          const lookup = {};
+          allAvailable.forEach(a => { lookup[a.id] = a; });
+          return prev.map(saved => lookup[saved.id] || saved);
+        });
       } catch (err) {
         console.error('[useAgentRoom] Failed to load agents:', err);
         setAllAgents([...PLATFORM_AGENTS]);

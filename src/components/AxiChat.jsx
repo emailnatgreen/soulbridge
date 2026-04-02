@@ -263,9 +263,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
   const handleRemoveAgent = (agentId) => {
     removeAgent(agentId);
-    // Update saved agents list
-    const remaining = activeAgents.filter(a => a.id !== agentId);
-    localStorage.setItem('axi_active_agents', JSON.stringify(remaining));
   };
 
   useEffect(() => {
@@ -337,7 +334,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     };
   }, [setIsOpen]);
 
-  // Agents are only added via explicit summon command or agent picker — no auto-restore
+  // Active agents are persisted/restored via useAgentRoom hook (localStorage)
 
   return (
     <AnimatePresence>
