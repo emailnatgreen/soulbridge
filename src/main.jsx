@@ -22,14 +22,20 @@ window.addEventListener('error', (event) => {
   }
 });
 
+// Debounced sync — prevents white screens on mobile focus/keyboard events
+let syncTimer = null;
 const syncAppData = () => {
-  queryClientInstance.invalidateQueries();
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    queryClientInstance.invalidateQueries();
+  }, 2000); // 2s debounce
 };
 
-window.addEventListener('focus', syncAppData);
+// Only sync on tab becoming visible after being hidden (not on every focus)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') syncAppData();
 });
+// Sync when coming back online
 window.addEventListener('online', syncAppData);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
