@@ -265,7 +265,7 @@ export default function AIProjectHub() {
                         </div>
                         <div className="flex-1">
                           <div className="text-sm text-white/90">{agent?.name || 'Agent'}</div>
-                          <div className="text-xs text-white/60">{activity.event_type.replace(/_/g, ' ')}</div>
+                          <div className="text-xs text-white/60">{(activity.event_type || '').replace(/_/g, ' ')}</div>
                           <div className="text-xs text-white/40 mt-1">
                             {new Date(activity.created_date).toLocaleString()}
                           </div>
@@ -299,7 +299,7 @@ export default function AIProjectHub() {
                           </div>
                           <div className="flex-1">
                             <div className="text-sm text-white/90">{agent?.name || 'Agent'}</div>
-                            <div className="text-xs text-white/60">{activity.activity_type.replace(/_/g, ' ')}</div>
+                            <div className="text-xs text-white/60">{(activity.activity_type || '').replace(/_/g, ' ')}</div>
                             <div className="text-xs text-white/40 mt-1">
                               {new Date(activity.created_date).toLocaleString()}
                             </div>
@@ -307,7 +307,7 @@ export default function AIProjectHub() {
                         </div>
                         <div className="text-right">
                           <div className={`text-sm font-medium ${activity.activity_type.includes('earned') || activity.activity_type.includes('deposit') ? 'text-green-400' : 'text-red-400'}`}>
-                            {activity.activity_type.includes('earned') || activity.activity_type.includes('deposit') ? '+' : '-'}{activity.amount.toFixed(3)} XRP
+                            {(activity.activity_type || '').includes('earned') || (activity.activity_type || '').includes('deposit') ? '+' : '-'}{(activity.amount ?? 0).toFixed(3)} XRP
                           </div>
                         </div>
                       </div>
