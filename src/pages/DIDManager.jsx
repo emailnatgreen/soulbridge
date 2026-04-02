@@ -153,6 +153,12 @@ export default function DIDManager() {
     mutationFn: (walletId) => base44.functions.invoke('verifyDIDStatus', { wallet_id: walletId }),
     onSuccess: (response) => {
       const data = response.data || response;
+      if (data?.error || data?.message?.includes('error')) {
+        toast.error(data?.message || 'XRPL network issue—try again in a moment');
+        setVerifyingWalletId(null);
+        setVerifyDialogOpen(false);
+        return;
+      }
       setVerificationResults(prev => ({
         ...prev,
         [verifyingWalletId]: data
@@ -175,8 +181,7 @@ export default function DIDManager() {
       }
     },
     onError: (error) => {
-      const message = error?.response?.data?.message || error?.message || error?.error || 'Failed to verify DID';
-      toast.error(message);
+      toast.error('🌐 Network issue reaching XRPL—check your connection and try again');
       console.error('Verification error:', error);
       setVerifyingWalletId(null);
       setVerifyDialogOpen(false);
