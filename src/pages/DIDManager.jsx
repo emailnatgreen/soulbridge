@@ -19,6 +19,7 @@ import DidReputationScore from '../components/DidReputationScore';
 import PublishDIDDialog from '../components/PublishDIDDialog';
 import AskAxiButton from '../components/AskAxiButton';
 import DidReviewPanel from '../components/DidReviewPanel';
+import DidVerificationPanel from '../components/DidVerificationPanel';
 import {
   Dialog,
   DialogContent,
@@ -894,108 +895,11 @@ export default function DIDManager() {
                 Real-time status from XRPL network
               </DialogDescription>
             </DialogHeader>
-            {currentVerification && currentVerification.verification ? (
-              <div className="space-y-4">
-                {/* Status Summary */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">DID:</span>
-                    <code className="text-xs bg-white px-2 py-1 rounded">
-                      {currentVerification.did}
-                    </code>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Network:</span>
-                    <Badge variant="outline">{currentVerification.network}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Account Exists:</span>
-                    {currentVerification.verification.account_exists ? (
-                      <Badge className="bg-green-600">Yes</Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-red-600">No</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">DID Published:</span>
-                    {currentVerification.verification.did_active ? (
-                      <Badge className="bg-green-600">✅ Published on XRPL</Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-yellow-600">⚠️ Not Published</Badge>
-                    )}
-                  </div>
-                  {currentVerification.verification.balance && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Balance:</span>
-                      <span className="text-sm font-mono">{currentVerification.verification.balance} XRP</span>
-                    </div>
-                  )}
-                  </div>
-
-                  {/* On-Chain Proof */}
-                  {currentVerification.verification.on_chain_proof && (
-                  <div className="bg-blue-50 border border-blue-200 rounded p-4 space-y-2">
-                    <div className="text-sm font-medium text-blue-900 mb-3">On-Chain Proof</div>
-                    <div className="text-xs space-y-2">
-                      <div className="flex items-start justify-between">
-                        <span className="text-gray-600">Account:</span>
-                        <code className="bg-white px-2 py-1 rounded border border-blue-200 text-xs font-mono max-w-xs overflow-hidden text-ellipsis">
-                          {currentVerification.verification.on_chain_proof.account}
-                        </code>
-                      </div>
-                      {currentVerification.verification.on_chain_proof.previous_txn && (
-                        <div className="flex items-start justify-between">
-                          <span className="text-gray-600">Previous Txn:</span>
-                          <code className="bg-white px-2 py-1 rounded border border-blue-200 text-xs font-mono max-w-xs overflow-hidden text-ellipsis">
-                            {currentVerification.verification.on_chain_proof.previous_txn}
-                          </code>
-                        </div>
-                      )}
-                      {currentVerification.verification.on_chain_proof.ledger_sequence && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600">Ledger Seq:</span>
-                          <span className="text-xs font-mono">{currentVerification.verification.on_chain_proof.ledger_sequence}</span>
-                        </div>
-                      )}
-                      <a
-                        href={`https://xrpscan.com/account/${currentVerification.verification.on_chain_proof.account}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs font-medium mt-2 inline-flex items-center gap-1"
-                      >
-                        View on XRPScan <ExternalLink className="w-3 h-3" />
-                      </a>
-                      </div>
-                      </div>
-                      )}
-
-                      {currentVerification.verification.account && !currentVerification.verification.account_exists && (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded p-4 space-y-2">
-                      <div className="text-sm font-medium text-yellow-900 mb-2">Account Not Found on Chain</div>
-                      <p className="text-xs text-yellow-800 mb-3">This address hasn't been activated on XRPL mainnet yet. It needs at least 20 XRP deposited to exist on the ledger.</p>
-                      <a
-                      href={`https://xrpscan.com/account/${currentVerification.verification.account}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-yellow-700 hover:text-yellow-900 text-xs font-medium inline-flex items-center gap-1 underline"
-                      >
-                      Check address on XRPScan <ExternalLink className="w-3 h-3" />
-                      </a>
-                      </div>
-                      )}
-
-                      <div className="text-xs text-gray-500 text-center">
-                      Verified at: {new Date(currentVerification.verification.verified_at).toLocaleString()}
-                      </div>
-              </div>
+            {currentVerification ? (
+              <DidVerificationPanel verification={currentVerification} wallet={wallets.find(w => w.id === verifyingWalletId)} />
             ) : (
               <div className="p-6 text-center">
-                <p className="text-gray-600 mb-4">Loading verification results...</p>
-                {currentVerification && (
-                  <pre className="text-xs bg-gray-100 p-2 rounded text-left overflow-auto max-h-40">
-                    {JSON.stringify(currentVerification, null, 2)}
-                  </pre>
-                )}
+                <p className="text-gray-600">Loading verification results...</p>
               </div>
             )}
             <DialogFooter>
