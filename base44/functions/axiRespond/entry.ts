@@ -22,22 +22,24 @@ function scoreSynthesis(synthesis, terms) {
 
 Deno.serve(async (req) => {
   try {
-    const headers = new Headers(req.headers);
-    const authHeader = (headers.get('authorization') || '').trim();
-    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
-    const bearerValue = rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken !== 'Bearer' ? rawToken : '';
-
     const body = await req.json();
 
-    if (bearerValue) {
-      headers.set('authorization', `Bearer ${bearerValue}`);
-    } else {
-      headers.delete('authorization');
+    // Build clean headers — strip any malformed auth
+    const cleanHeaders = new Headers();
+    for (const [key, value] of req.headers.entries()) {
+      if (key.toLowerCase() === 'authorization') continue;
+      cleanHeaders.set(key, value);
     }
+    const authHeader = (req.headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    if (rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken !== 'Bearer' && rawToken.length > 10) {
+      cleanHeaders.set('authorization', `Bearer ${rawToken}`);
+    }
+    cleanHeaders.set('content-type', 'application/json');
 
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
-      headers,
+      headers: cleanHeaders,
       body: JSON.stringify(body),
     }));
     

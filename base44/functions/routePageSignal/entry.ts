@@ -2,21 +2,25 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
-    const headers = new Headers(req.headers);
-    const authHeader = (headers.get('authorization') || '').trim();
-    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
-    const bearerValue = rawToken && rawToken !== 'undefined' && rawToken !== 'null' ? rawToken : '';
-
-    if (bearerValue) {
-      headers.set('authorization', `Bearer ${bearerValue}`);
-    } else {
-      headers.delete('authorization');
-    }
-
     const body = await req.json();
+
+    // Build clean headers — strip any malformed auth
+    const cleanHeaders = new Headers();
+    for (const [key, value] of req.headers.entries()) {
+      if (key.toLowerCase() === 'authorization') continue;
+      cleanHeaders.set(key, value);
+    }
+    const authHeader = (req.headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const bearerValue = (rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken.length > 10) ? rawToken : '';
+    if (bearerValue) {
+      cleanHeaders.set('authorization', `Bearer ${bearerValue}`);
+    }
+    cleanHeaders.set('content-type', 'application/json');
+
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
-      headers,
+      headers: cleanHeaders,
       body: JSON.stringify(body),
     }));
     const { 
