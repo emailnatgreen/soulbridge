@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const [appPublicSettings, setAppPublicSettings] = useState(null);
   const initialCheckDone = useRef(false);
 
-  const fetchPublicSettings = useCallback(async (token) => {
+  const fetchPublicSettings = useCallback(async (token, silent = false) => {
     try {
       const appClient = createAxiosClient({
         baseURL: `/api/apps/public`,
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
       const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
       setAppPublicSettings(publicSettings);
     } catch (appError) {
-      if (appError.status === 403 && appError.data?.extra_data?.reason) {
+      if (!silent && appError.status === 403 && appError.data?.extra_data?.reason) {
         const reason = appError.data.extra_data.reason;
         setAuthError({ type: reason, message: appError.data?.message || reason });
       }
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const token = normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token'));
-    fetchPublicSettings(token || undefined);
+    fetchPublicSettings(token || undefined, silent);
   }, [fetchPublicSettings]);
 
   useEffect(() => {
