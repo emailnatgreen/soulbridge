@@ -77,17 +77,24 @@ export default function Dashboard() {
       let localIdentity = null;
       try { localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch (_) {}
       const localDid = localIdentity?.did;
-      const isAdminUser = me?.role === 'admin' || hasAdminAccess({ user: me, identityDid: localDid });
+      // Check admin from: platform user, auth context user, or DID address
+      const isAdminUser = me?.role === 'admin' || user?.role === 'admin' || hasAdminAccess({ user: me || user, identityDid: localDid });
 
-      // Load wallets — try user-scoped first, then service role for admin
+      // Resolve DID address from any available source
+      const didAddress = localDid
+        ? String(localDid).split(':').pop()
+        : null;
+
+      // Load wallets
       let myWallets = [];
       if (isAdminUser) {
+        // Admin sees all wallets
         myWallets = await base44.entities.Wallet.list('-created_date', 50).catch(() => []);
       } else {
-        const didAddress = localDid ? String(localDid).split(':').pop() : null;
+        // Non-admin: query by owner_id and/or DID address
         const [ownerWallets, didWallets] = await Promise.all([
           me?.id ? base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []) : Promise.resolve([]),
-          didAddress ? base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20).catch(() => []) : Promise.resolve([]),
+          didAddress ? base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 5).catch(() => []) : Promise.resolve([]),
         ]);
         myWallets = [...(ownerWallets || []), ...(didWallets || [])].filter(
           (wallet, index, array) => array.findIndex(item => item.id === wallet.id) === index
@@ -95,7 +102,7 @@ export default function Dashboard() {
       }
       setWallets(myWallets || []);
 
-      // Load transactions — limit to 10, no per-wallet fan-out
+      // Load transactions
       if (isAdminUser) {
         const allTx = await base44.entities.Transaction.list('-created_date', 10).catch(() => []);
         setMyTransactions(allTx || []);
