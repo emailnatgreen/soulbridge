@@ -173,14 +173,16 @@ export default function Landing() {
         const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
         const data = res?.data || {};
         setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
-      } catch (e) {}
+      } catch (e) {
+        console.warn('[Landing] Stats fetch error:', e?.message);
+      }
     };
     
     // Fetch on mount
     fetchStats();
     
-    // Poll for live updates every 5 seconds
-    const interval = setInterval(fetchStats, 5000);
+    // Poll for live updates every 30 seconds (not 5s — reduces load)
+    const interval = setInterval(fetchStats, 30000);
     
     // Listen for cross-tab signals
     const handleSignal = (e) => {

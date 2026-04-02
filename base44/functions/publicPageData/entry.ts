@@ -11,22 +11,15 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { page } = body;
 
-    // Extract and validate JWT token
-    const authHeader = (req.headers.get('authorization') || '').trim();
-    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
-
-    // Build a completely fresh request — only include headers we explicitly set
+    // Build a clean request — this function uses asServiceRole only, so never pass auth
     const freshHeaders = new Headers();
     freshHeaders.set('content-type', 'application/json');
     for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+      const k = key.toLowerCase();
+      if (k === 'authorization') continue;
+      if (k.startsWith('base44') || k.startsWith('x-base44') || k.startsWith('x-app')) {
         freshHeaders.set(key, value);
       }
-    }
-    if (isValidJwt) {
-      freshHeaders.set('authorization', `Bearer ${rawToken}`);
     }
 
     const base44 = createClientFromRequest(new Request(req.url, {
