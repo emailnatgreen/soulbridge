@@ -23,7 +23,7 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
     || (inviteWallet?.classic_address ? `did:xrpl:1:${inviteWallet.classic_address}` : null)
     || (wallets?.[0]?.classic_address ? `did:xrpl:1:${wallets[0].classic_address}` : null);
 
-  const identityConnected = !!(identity || localId?.connected || localId?.did || connectedDid?.did || inviteWallet?.classic_address || wallets?.length > 0);
+  const identityConnected = !!(identityDid || identity || localId?.connected || localId?.did || connectedDid?.did || inviteWallet?.classic_address || wallets?.length > 0);
   const shortDid = effectiveDid ? effectiveDid.split(':').pop()?.slice(0, 8) + '…' : null;
 
   // Collect all unique addresses to fetch live balances
