@@ -64,7 +64,7 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
       ]
     : [
         { label: 'Identity', value: identityConnected ? '● Connected' : 'Disconnected', subtitle: shortDid, highlight: identityConnected },
-        { label: 'Live Balance', value: `${totalBalance.toFixed(2)} XRP`, subtitle: `${wallets?.length || 0} wallet(s)`, highlight: totalBalance > 0 },
+        { label: 'Total Balance', value: `${totalBalance.toFixed(2)} XRP`, subtitle: `${allAddresses.length} address(es)`, highlight: totalBalance > 0 },
         { label: 'Published DIDs', value: String(publishedCount), subtitle: publishedCount > 0 ? 'On-chain' : 'None yet' },
         { label: 'Transactions', value: String((myTransactions || []).length) },
     ];
@@ -88,6 +88,33 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
           </div>
         ))}
       </div>
+
+      {/* Per-address live balance breakdown */}
+      {!hasInviteSession && allAddresses.length > 0 && (
+        <div className="mt-4 space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-white/30">Balance per address</p>
+          {allAddresses.map((addr) => {
+            const live = liveBalances[addr];
+            const bal = live?.balance != null ? live.balance : ((wallets || []).find(w => w.classic_address === addr)?.balance || 0);
+            const isActive = live?.active ?? (bal > 0);
+            const walletName = (wallets || []).find(w => w.classic_address === addr)?.name;
+            return (
+              <div key={addr} className={`flex items-center justify-between gap-2 rounded-xl border px-4 py-2.5 ${
+                isActive ? 'border-green-500/20 bg-green-500/5' : 'border-white/10 bg-black/20'
+              }`}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-mono text-white/70 truncate">{addr}</p>
+                  {walletName && <p className="text-[10px] text-purple-300/50">{walletName}</p>}
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className={`text-sm font-semibold ${isActive ? 'text-green-300' : 'text-white/40'}`}>{Number(bal).toFixed(2)} XRP</p>
+                  <p className={`text-[9px] ${isActive ? 'text-green-400/60' : 'text-white/20'}`}>{isActive ? 'Active' : 'Inactive'}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
