@@ -5,6 +5,9 @@ import ChatLoader from '@/components/axi/ChatLoader';
 import { usePageSignal } from '@/hooks/usePageSignal';
 import { useIdentity } from '@/hooks/useIdentity';
 import AxiFloatingButton from '@/components/AxiFloatingButtonNew';
+import IdentityRecognitionModal from '@/components/dashboard/IdentityRecognitionCard';
+import { useAuth } from '@/lib/AuthContext';
+import { Shield } from 'lucide-react';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
 
@@ -13,7 +16,9 @@ const PUBLIC_PAGES = ['EditLanding', 'Terms', 'Support', 'Landing', 'ScrollOfRes
 
 export default function Layout({ children, currentPageName }) {
   const [chatOpen, setChatOpen] = useState(false);
+  const [identityModalOpen, setIdentityModalOpen] = useState(false);
   const { isRecognized, isAdmin, didSignal } = useIdentity();
+  const { user } = useAuth();
 
   usePageSignal();
 
@@ -48,6 +53,23 @@ export default function Layout({ children, currentPageName }) {
           opacity: 0.06,
         }}
       />
+
+      {/* Identity Recognition Modal */}
+      {isRecognized && (
+        <IdentityRecognitionModal user={user} isOpen={identityModalOpen} onClose={() => setIdentityModalOpen(false)} />
+      )}
+
+      {/* Identity Recognition Button — floating in bottom right on mobile, header on desktop */}
+      {isRecognized && (
+        <button
+          onClick={() => setIdentityModalOpen(true)}
+          className="fixed bottom-40 md:bottom-auto md:top-4 right-4 z-40 flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-all shadow-lg"
+          title="View your DIDs and identity"
+        >
+          <Shield className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Identity</span>
+        </button>
+      )}
 
       {/* Page content */}
       <div className={`relative z-10 ${isAdmin ? 'lg:ml-64' : ''}`}>
