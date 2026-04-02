@@ -36,46 +36,6 @@ export const AuthProvider = ({ children }) => {
     if (!silent) setIsLoadingAuth(true);
     setAuthError(null);
 
-    try {
-      const normalizeToken = (value) => {
-        const token = String(value || '').trim();
-        if (!token || token === 'Bearer' || token === 'undefined' || token === 'null') return null;
-        if (token.startsWith('Bearer ')) {
-          const raw = token.slice(7).trim();
-          if (!raw || raw === 'undefined' || raw === 'null') return null;
-          return raw;
-        }
-        return token;
-      };
-
-      const token = normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token'));
-
-      if (token) {
-        // Has a platform token — try to get user info
-        try {
-          const currentUser = await base44.auth.me();
-          setUser(currentUser);
-        } catch (_) {
-          // me() failed (rate limit, timeout, etc.) — user stays null but still authenticated
-          setUser(null);
-        }
-        setIsAuthenticated(true);
-      } else {
-        // No token at all
-        setUser(null);
-        setIsAuthenticated(false);
-      }
-    } catch (_) {
-      // Unexpected error — still mark as done
-      setUser(null);
-      setIsAuthenticated(false);
-    } finally {
-      // ALWAYS clear loading — no matter what
-      setIsLoadingAuth(false);
-      initialCheckDone.current = true;
-    }
-
-    // Fetch public settings in background (non-blocking)
     const normalizeToken = (value) => {
       const token = String(value || '').trim();
       if (!token || token === 'Bearer' || token === 'undefined' || token === 'null') return null;
@@ -86,6 +46,40 @@ export const AuthProvider = ({ children }) => {
       }
       return token;
     };
+
+    try {
+      const token = normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token'));
+
+      if (token) {
+        // Has a platform token — try to get user info
+        try {
+          const currentUser = await base44.auth.me();
+          setUser(currentUser);
+        } catch (_) {
+          // me() failed — if silent, keep existing auth state to avoid flash
+          if (!silent) setUser(null);
+        }
+        setIsAuthenticated(true);
+      } else {
+        // No token — only reset state on a full (non-silent) check
+        if (!silent) {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    } catch (_) {
+      if (!silent) {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    } finally {
+      if (!silent) {
+        setIsLoadingAuth(false);
+        initialCheckDone.current = true;
+      } else {
+        initialCheckDone.current = true;
+      }
+    }
 
     const token = normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token'));
     fetchPublicSettings(token || undefined);
