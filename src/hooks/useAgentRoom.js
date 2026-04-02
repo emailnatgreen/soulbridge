@@ -82,17 +82,19 @@ export function useAgentRoom() {
 
   // Room context injected into every user message so Axi knows the state
   const buildRoomContext = useCallback((userMessage) => {
-    const available = allAgents.map(a => `${a.name} (${a.role})`).join(', ');
+    const available = allAgents.map(a => `${a.name} [ID:${a.id}] (${a.role})`).join('\n  ');
     const inRoom = activeAgents.length > 0
-      ? activeAgents.map(a => `${a.name} (${a.role})`).join(', ')
+      ? activeAgents.map(a => `${a.name} [ID:${a.id}]`).join(', ')
       : 'None (only Axi)';
 
     return `${userMessage}
 
 [ROOM_STATE]
 Agents currently in this conversation: ${inRoom}
-All available agents you can summon: ${available}
-To summon an agent, include exactly: 🔔 SUMMONING <AgentName> on its own line.`;
+All available agents you can summon (use their exact ID):
+  ${available}
+To summon an agent, output EXACTLY this on its own line: 🔔 SUMMON <agent_id>
+Example: 🔔 SUMMON platform:code_node`;
   }, [allAgents, activeAgents]);
 
   return {

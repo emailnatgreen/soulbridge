@@ -54,6 +54,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [didAuthError, setDidAuthError] = useState(null);
   const didSignal = useDIDSignal();
   const { allAgents, activeAgents, addAgent, removeAgent, findAgentByName, buildRoomContext } = useAgentRoom();
+  // allAgents is used directly in the summon detector for ID-based lookups
 
   const messagesEndRef = useRef(null);
   const convoRef = useRef(null);
@@ -274,28 +275,36 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     const summonAgentFromMessage = async () => {
       const latestMessage = messages[messages.length - 1];
       if (!latestMessage?.content || latestMessage.role === 'user') return;
-      if (!latestMessage.content.includes('🔔 SUMMONING')) return;
+      const content = latestMessage.content;
+      if (!content.includes('🔔 SUMMON') && !content.includes('🔔 SUMMONING')) return;
 
-      const messageKey = latestMessage.id || `${latestMessage.content}-${messages.length}`;
+      const messageKey = latestMessage.id || `${content}-${messages.length}`;
       if (processedSummonsRef.current.has(messageKey)) return;
+      processedSummonsRef.current.add(messageKey);
 
-      const lines = latestMessage.content.split('\n').map((line) => line.trim()).filter(Boolean);
-      const summonLine = lines.find((line) => line.includes('🔔 SUMMONING'));
+      const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+      const summonLine = lines.find(l => l.includes('🔔 SUMMON'));
       if (!summonLine) return;
 
-      const summonedName = summonLine.replace('🔔 SUMMONING', '').trim();
-      if (!summonedName) return;
-
-      const matchedAgent = findAgentByName(summonedName);
-
-      processedSummonsRef.current.add(messageKey);
+      // Try ID-based match first: 🔔 SUMMON platform:code_node
+      const idMatch = summonLine.match(/🔔 SUMMON(?:ING)?\s+(platform:[\w_]+|[a-f0-9-]{20,})/i);
+      let matchedAgent = null;
+      if (idMatch) {
+        const agentId = idMatch[1];
+        matchedAgent = allAgents.find(a => a.id === agentId) || null;
+      }
+      // Fallback: name-based match
+      if (!matchedAgent) {
+        const summonedName = summonLine.replace(/🔔 SUMMON(?:ING)?/i, '').trim();
+        if (summonedName) matchedAgent = findAgentByName(summonedName);
+      }
 
       if (!matchedAgent) return;
       await handleAddAgent(matchedAgent, { skipIntro: false });
     };
 
     summonAgentFromMessage();
-  }, [messages, activeAgents, handleAddAgent]);
+  }, [messages, activeAgents, handleAddAgent, allAgents, findAgentByName]);
 
   // External open events
   useEffect(() => {
