@@ -4,6 +4,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, Search, X, UserPlus } from 'lucide-react';
 
+// SoulBridge platform agents (defined in agents/ folder)
+const PLATFORM_AGENTS = [
+  { id: 'platform:axi',              name: 'Axi',              role: 'guardian',  purpose: 'Village AI Guide and guardian of SoulBridge', _isPlatformAgent: true, _agentName: 'axi' },
+  { id: 'platform:lore_node',        name: 'Lore Node',        role: 'elder',     purpose: 'Keeper of SoulBridge history and lore', _isPlatformAgent: true, _agentName: 'lore_node' },
+  { id: 'platform:truth_weaver',     name: 'Truth Weaver',     role: 'guardian',  purpose: 'Validator of facts and constitutional alignment', _isPlatformAgent: true, _agentName: 'truth_weaver' },
+  { id: 'platform:alignment_agent',  name: 'Alignment Agent',  role: 'guardian',  purpose: 'Ensures Village actions align with the Laws of Honour', _isPlatformAgent: true, _agentName: 'alignment_agent' },
+  { id: 'platform:code_node',        name: 'Code Node',        role: 'creator',   purpose: 'Technical architect and developer for the Village', _isPlatformAgent: true, _agentName: 'code_node' },
+  { id: 'platform:ripple_architect', name: 'Ripple Architect', role: 'creator',   purpose: 'XRPL and DID infrastructure specialist', _isPlatformAgent: true, _agentName: 'ripple_architect' },
+  { id: 'platform:epoch_architect',  name: 'Epoch Architect',  role: 'elder',     purpose: 'Strategist for long-term Village evolution', _isPlatformAgent: true, _agentName: 'epoch_architect' },
+  { id: 'platform:market_weaver',    name: 'Market Weaver',    role: 'trader',    purpose: 'Economic and resource flow specialist', _isPlatformAgent: true, _agentName: 'market_weaver' },
+];
+
 export default function AgentPicker({ activeAgentIds = [], onAdd, onClose }) {
   const [agents, setAgents] = useState([]);
   const [search, setSearch] = useState('');
@@ -13,29 +25,16 @@ export default function AgentPicker({ activeAgentIds = [], onAdd, onClose }) {
   useEffect(() => {
     const load = async () => {
       try {
-        // Fetch all agents (no limit cap)
         const all = await base44.entities.Agent.list('-created_date', 500);
-        const agentMap = {};
-        (all || []).forEach(a => { agentMap[a.classic_address] = a; });
-
-        // Also pull wallets so DID holders without an Agent record appear
-        const wallets = await base44.entities.Wallet.list('-created_date', 500);
-        const extra = [];
-        (wallets || []).forEach(w => {
-          if (w.classic_address && !agentMap[w.classic_address]) {
-            extra.push({
-              id: w.id,
-              name: w.name || w.classic_address,
-              role: 'did_holder',
-              classic_address: w.classic_address,
-              _fromWallet: true
-            });
-          }
-        });
-
-        setAgents([...(all || []), ...extra]);
+        // Merge platform agents first, then entity agents (dedupe by name)
+        const entityNames = new Set((all || []).map(a => a.name?.toLowerCase()));
+        const platformFiltered = PLATFORM_AGENTS.filter(
+          p => !entityNames.has(p.name.toLowerCase())
+        );
+        setAgents([...platformFiltered, ...(all || [])]);
       } catch (err) {
         console.error('Failed to load agents:', err);
+        setAgents([...PLATFORM_AGENTS]);
       } finally {
         setLoading(false);
       }

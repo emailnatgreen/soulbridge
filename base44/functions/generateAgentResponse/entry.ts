@@ -36,22 +36,75 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing conversation_id or user_message' }, { status: 400 });
     }
 
-    // Find agent by ID first, fallback to name
+    // Platform agents map
+    const PLATFORM_AGENTS = {
+      'axi':              { id: 'platform:axi',              name: 'Axi',              role: 'guardian', _isPlatformAgent: true, _agentName: 'axi' },
+      'lore_node':        { id: 'platform:lore_node',        name: 'Lore Node',        role: 'elder',    _isPlatformAgent: true, _agentName: 'lore_node' },
+      'truth_weaver':     { id: 'platform:truth_weaver',     name: 'Truth Weaver',     role: 'guardian', _isPlatformAgent: true, _agentName: 'truth_weaver' },
+      'alignment_agent':  { id: 'platform:alignment_agent',  name: 'Alignment Agent',  role: 'guardian', _isPlatformAgent: true, _agentName: 'alignment_agent' },
+      'code_node':        { id: 'platform:code_node',        name: 'Code Node',        role: 'creator',  _isPlatformAgent: true, _agentName: 'code_node' },
+      'ripple_architect': { id: 'platform:ripple_architect', name: 'Ripple Architect', role: 'creator',  _isPlatformAgent: true, _agentName: 'ripple_architect' },
+      'epoch_architect':  { id: 'platform:epoch_architect',  name: 'Epoch Architect',  role: 'elder',    _isPlatformAgent: true, _agentName: 'epoch_architect' },
+      'market_weaver':    { id: 'platform:market_weaver',    name: 'Market Weaver',    role: 'trader',   _isPlatformAgent: true, _agentName: 'market_weaver' },
+    };
+
+    // Find agent — handle platform: prefix first
     let agent = null;
-    if (agent_id) {
+    if (agent_id?.startsWith('platform:')) {
+      const key = agent_id.replace('platform:', '');
+      agent = PLATFORM_AGENTS[key] || null;
+    } else if (agent_id) {
       const results = await base44.asServiceRole.entities.Agent.filter({ id: agent_id }, '', 1);
       agent = results?.[0];
     }
     if (!agent && agent_name) {
-      const all = await base44.asServiceRole.entities.Agent.list('-created_date', 200);
-      agent = all.find(a => a.name === agent_name);
+      // Check platform agents by name first
+      agent = Object.values(PLATFORM_AGENTS).find(a => a.name.toLowerCase() === agent_name.toLowerCase());
+      if (!agent) {
+        const all = await base44.asServiceRole.entities.Agent.list('-created_date', 200);
+        agent = all.find(a => a.name === agent_name);
+      }
     }
 
     if (!agent) {
       return Response.json({ error: `Agent not found: ${agent_id || agent_name}` }, { status: 404 });
     }
 
-    // Assemble context for prompt priming
+    console.log(`[generateAgentResponse] Agent: ${agent.name}, Conversation: ${conversation_id}, Invoked by: ${user.email} (${userRole})`);
+
+    // Platform agents (defined in agents/ folder) — route through base44 agent SDK
+    const platformAgentName = agent._agentName || body.platform_agent_name;
+    if (agent._isPlatformAgent && platformAgentName) {
+      try {
+        // Get or create a conversation for this platform agent
+        const convos = await base44.asServiceRole.agents.listConversations({ agent_name: platformAgentName });
+        let convo = convos?.find(c => c.id === conversation_id);
+        if (!convo) {
+          // Try to find any existing conversation or create one
+          convo = convos?.[0];
+          if (!convo) {
+            convo = await base44.asServiceRole.agents.createConversation({
+              agent_name: platformAgentName,
+              metadata: { name: `Cross-chat with ${agent.name}`, unified_axi_chat: true }
+            });
+          }
+        }
+        const result = await base44.asServiceRole.agents.addMessage(convo, {
+          role: 'user',
+          content: user_message
+        });
+        // The last assistant message is the reply
+        const msgs = result?.messages || [];
+        const reply = [...msgs].reverse().find(m => m.role === 'assistant')?.content || '';
+        console.log(`[generateAgentResponse] ${agent.name} (platform) responded: "${String(reply).slice(0, 80)}..."`);
+        return Response.json({ success: true, agent: agent.name, response: reply });
+      } catch (platformErr) {
+        console.error(`[generateAgentResponse] Platform agent ${agent.name} error:`, platformErr.message);
+        return Response.json({ error: platformErr.message }, { status: 500 });
+      }
+    }
+
+    // Standard entity agent — use LLM with persona prompt
     let assembledContext = '';
     if (includeContext) {
       try {
@@ -61,32 +114,9 @@ Deno.serve(async (req) => {
         });
         assembledContext = contextRes?.data?.briefing || '';
       } catch (ctxErr) {
-        console.warn('[generateAgentResponse] Context assembly failed, proceeding without context:', ctxErr.message);
+        console.warn('[generateAgentResponse] Context assembly failed:', ctxErr.message);
       }
     }
-
-    // Log agent invocation for audit trail
-    try {
-      await base44.asServiceRole.entities.AutomationLog.create({
-        automation_name: 'agent_invocation',
-        function_name: 'generateAgentResponse',
-        status: 'success',
-        message: `User ${user.email} (${userRole}) invoked agent ${agent.name}`,
-        details: {
-          user_email: user.email,
-          user_did: userDID,
-          user_role: userRole,
-          agent_id: agent.id,
-          agent_name: agent.name,
-          conversation_id: conversation_id
-        },
-        run_at: new Date().toISOString()
-      });
-    } catch (auditErr) {
-      console.warn('[generateAgentResponse] Audit log failed:', auditErr.message);
-    }
-
-    console.log(`[generateAgentResponse] Agent: ${agent.name}, Conversation: ${conversation_id}, Invoked by: ${user.email} (${userRole})`);
 
     const systemPrompt = `You are "${agent.name}", a Village agent in SoulBridge.
 - Purpose: ${agent.purpose || 'To help the Village'}
