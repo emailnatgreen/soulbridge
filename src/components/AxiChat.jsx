@@ -263,7 +263,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     } catch (err) {
       console.error('[AxiChat] Agent intro error:', err);
     }
-  }, [activeAgents, addAgent, messages, handleRemoveAgent]);
+  }, [activeAgents, addAgent, messages]);
 
   const handleRemoveAgent = (agentId) => {
     removeAgent(agentId);
