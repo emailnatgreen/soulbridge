@@ -2,7 +2,8 @@
 const ADMIN_ADDRESSES = [
   'rL1W8aBjXscSHgkiBKQJyYeU9YBpWo2jqz',
   'rG1ZAbWEnBegAXFqyqyi8vgQFhDtDHAQH7',
-  'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', // Governor Nathan - Human Node
+  'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', // Governor Nathan - Human Node (wallet)
+  'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia', // Governor Nathan - active DID on dashboard
 ];
 
 export const ADMIN_DID = 'did:xrpl:1:' + ADMIN_ADDRESSES[0];
