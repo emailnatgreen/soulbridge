@@ -1,8 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
- * Verifies DID by querying XRPL directly (testnet or mainnet).
- * Detects actual DID Set transactions and published DIDs.
+ * Verifies DID by querying XRPL directly.
+ * Distinguishes between:
+ * - account_exists: Account has XRP and is activated
+ * - did_active: DIDSet transaction exists (actual DID publication)
  */
 Deno.serve(async (req) => {
   const RPC_ENDPOINTS = {
@@ -28,34 +30,26 @@ Deno.serve(async (req) => {
           params: [{ account: classicAddress, ledger_index: 'validated' }]
         });
 
-        const rpcPayload = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body
-        };
-
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
         
-        const rpcResponse = await fetch(endpoint, { ...rpcPayload, signal: controller.signal });
+        const rpcResponse = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          signal: controller.signal
+        });
         clearTimeout(timeoutId);
         
-        if (!rpcResponse.ok) {
-          throw new Error(`HTTP ${rpcResponse.status}`);
-        }
+        if (!rpcResponse.ok) throw new Error(`HTTP ${rpcResponse.status}`);
 
         const rpcData = await rpcResponse.json();
-        
-        if (rpcData.error) {
-          throw new Error(rpcData.error.message || JSON.stringify(rpcData.error));
-        }
+        if (rpcData.error) throw new Error(rpcData.error.message || JSON.stringify(rpcData.error));
 
         const accountData = rpcData.result?.account_data || rpcData.account_data || rpcData.result;
-        if (accountData) {
-          return { success: true, data: accountData };
-        }
+        if (accountData) return { success: true, data: accountData };
 
-        throw new Error('No account data in response');
+        throw new Error('No account data');
       } catch (err) {
         lastError = err;
         console.warn(`[verifyDIDStatus] ${endpoint} failed:`, err.message);
@@ -66,8 +60,8 @@ Deno.serve(async (req) => {
     return { success: false, error: lastError?.message || 'All RPC endpoints failed' };
   };
 
-  // Query account transactions to check for DID Set
-  const checkDIDPublished = async (classicAddress, network) => {
+  // Check if DIDSet transaction exists (actual DID publication)
+  const checkDIDSetExists = async (classicAddress, network) => {
     const endpoints = RPC_ENDPOINTS[network] || RPC_ENDPOINTS.mainnet;
 
     for (const endpoint of endpoints) {
@@ -77,20 +71,19 @@ Deno.serve(async (req) => {
           params: [{ 
             account: classicAddress, 
             ledger_index_min: -1,
-            limit: 20
+            limit: 100
           }]
         });
-
-        const rpcPayload = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body
-        };
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
         
-        const rpcResponse = await fetch(endpoint, { ...rpcPayload, signal: controller.signal });
+        const rpcResponse = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          signal: controller.signal
+        });
         clearTimeout(timeoutId);
 
         if (!rpcResponse.ok) continue;
@@ -100,31 +93,20 @@ Deno.serve(async (req) => {
 
         const transactions = rpcData.result?.transactions || [];
         
-        // Check for DIDSet transaction or any transaction with URI containing DID
-        const hasDidSet = transactions.some(tx => {
+        // Look specifically for DIDSet transaction type
+        const hasDIDSet = transactions.some(tx => {
           const txn = tx.tx || tx.transaction;
-          if (!txn) return false;
-          
-          // Look for DIDSet transaction type
-          if (txn.TransactionType === 'DIDSet') return true;
-          
-          // Look for transactions with DID-related metadata
-          if (txn.SigningPubKey && txn.URI) {
-            const uri = typeof txn.URI === 'string' ? txn.URI : '';
-            if (uri.includes('did:xrpl:')) return true;
-          }
-          
-          return false;
+          return txn && txn.TransactionType === 'DIDSet';
         });
 
-        return { success: true, didPublished: hasDidSet || transactions.length > 0 };
+        return { success: true, hasDIDSet };
       } catch (err) {
-        console.warn(`[verifyDIDStatus] DID check failed on ${endpoint}:`, err.message);
+        console.warn(`[verifyDIDStatus] DIDSet check failed on ${endpoint}:`, err.message);
         continue;
       }
     }
 
-    return { success: false, didPublished: false };
+    return { success: false, hasDIDSet: false };
   };
 
   try {
@@ -159,11 +141,10 @@ Deno.serve(async (req) => {
     const classicAddress = wallet.classic_address;
     const network = wallet.network || 'mainnet';
 
-    // Query account info
+    // Check if account exists
     const xrplResult = await queryXRPL(classicAddress, network);
     
     if (!xrplResult.success) {
-      console.error('[verifyDIDStatus] XRPL Query Error:', xrplResult.error);
       return Response.json({
         isVerified: false,
         error: `Failed to query XRPL: ${xrplResult.error}`,
@@ -179,20 +160,18 @@ Deno.serve(async (req) => {
     const accountData = xrplResult.data;
     const accountExists = !!accountData;
 
-    // Check for published DID by examining transactions
-    const didCheckResult = await checkDIDPublished(classicAddress, network);
-    // If account exists and has transactions, DID is likely published
-    const didActive = accountExists && (didCheckResult.success && didCheckResult.didPublished);
+    // Check if DIDSet transaction exists
+    const didCheckResult = await checkDIDSetExists(classicAddress, network);
+    const didActive = didCheckResult.success && didCheckResult.hasDIDSet;
 
-    // Update database if needed
+    // Update database if account exists but flag wasn't set
     if (!wallet.is_published && accountExists) {
       try {
         await base44.asServiceRole.entities.Wallet.update(wallet.id, {
-          is_published: true,
-          published_at: new Date().toISOString()
+          is_published: didActive ? true : false
         });
       } catch (updateErr) {
-        console.error('[verifyDIDStatus] Failed to update wallet flag:', updateErr);
+        console.error('[verifyDIDStatus] Failed to update wallet:', updateErr);
       }
     }
 
@@ -206,7 +185,7 @@ Deno.serve(async (req) => {
     const agent = agents?.[0];
 
     return Response.json({
-      isVerified: accountExists ? true : false,
+      isVerified: didActive ? true : false,
       userId: user.id,
       email: user.email,
       did: `did:xrpl:${classicAddress}`,
@@ -214,7 +193,7 @@ Deno.serve(async (req) => {
       walletId: wallet.id,
       network: network,
       verification: {
-        verified: accountExists ? true : false,
+        verified: didActive,
         account_exists: accountExists,
         did_active: didActive,
         verified_at: new Date().toISOString(),
@@ -231,7 +210,7 @@ Deno.serve(async (req) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('[verifyDIDStatus] Unhandled Error:', error);
+    console.error('[verifyDIDStatus] Error:', error);
     return Response.json(
       { 
         isVerified: false, 
