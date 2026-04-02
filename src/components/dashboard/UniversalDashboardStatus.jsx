@@ -8,6 +8,10 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
 
   const identityConnected = !!(identity || inviteWallet?.classic_address || wallets?.length > 0);
   const shortDid = effectiveDid ? effectiveDid.split(':').pop()?.slice(0, 8) + '…' : null;
+  
+  // Compute live wallet balance (treasury wallet if present)
+  const treasuryWallet = wallets?.find(w => w.classic_address === 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h');
+  const walletBalance = treasuryWallet?.balance ?? inviteWallet?.balance ?? 0;
 
   const items = hasInviteSession
     ? [
@@ -17,7 +21,7 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
       ]
     : [
         { label: 'Identity connected', value: identityConnected ? 'Yes' : 'No', subtitle: shortDid },
-        { label: 'My wallets', value: String(wallets.length) },
+        { label: 'Treasury balance', value: treasuryWallet ? `${walletBalance.toFixed(2)} XRP` : `${wallets.length} wallet(s)` },
         { label: 'My invites', value: String(myInvites.length) },
         { label: 'Transactions', value: String(myTransactions.length) },
     ];

@@ -61,15 +61,23 @@ export default function DIDManager() {
 
   const { data: wallets = [], isLoading: walletsLoading } = useQuery({
     queryKey: ['wallets', user?.id, user?.role],
-    queryFn: () => user?.role === 'admin'
-      ? base44.entities.Wallet.list('-created_date', 100)
-      : base44.entities.Wallet.filter({ owner_id: user?.id }),
+    queryFn: async () => {
+      const list = user?.role === 'admin'
+        ? await base44.entities.Wallet.list('-created_date', 100)
+        : await base44.entities.Wallet.filter({ owner_id: user?.id });
+      // Sync live balances for treasury wallet
+      return Promise.all(list.map(async (w) => {
+        if (w.classic_address === 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h') {
+          try {
+            const res = await base44.functions.invoke('getBalance', { wallet_id: w.id });
+            if (res.data?.balance !== undefined) return { ...w, balance: res.data.balance };
+          } catch (e) {}
+        }
+        return w;
+      }));
+    },
     enabled: !!user?.id,
-  });
-
-  const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list()
+    refetchInterval: 30000,
   });
 
   // NOTE: Revoke/Reverse functions don't exist - DIDs are managed via governance proposals
