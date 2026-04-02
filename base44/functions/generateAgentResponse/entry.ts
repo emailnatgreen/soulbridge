@@ -12,7 +12,8 @@ Deno.serve(async (req) => {
     }
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    const hasValidToken = rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken.length > 10;
+    // Only accept tokens that look like real JWTs (contain dots and are long enough)
+    const hasValidToken = rawToken && rawToken.includes('.') && rawToken.length > 20;
     if (hasValidToken) {
       cleanHeaders.set('authorization', `Bearer ${rawToken}`);
     }

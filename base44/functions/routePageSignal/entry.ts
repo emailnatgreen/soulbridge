@@ -4,7 +4,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
 
-    // Build clean headers — strip any malformed auth
+    // Build clean headers — completely exclude authorization, re-add only if valid JWT
     const cleanHeaders = new Headers();
     for (const [key, value] of req.headers.entries()) {
       if (key.toLowerCase() === 'authorization') continue;
@@ -12,7 +12,8 @@ Deno.serve(async (req) => {
     }
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    const bearerValue = (rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken.length > 10) ? rawToken : '';
+    // Only accept tokens that look like real JWTs (contain dots and are long enough)
+    const bearerValue = (rawToken && rawToken.includes('.') && rawToken.length > 20) ? rawToken : '';
     if (bearerValue) {
       cleanHeaders.set('authorization', `Bearer ${bearerValue}`);
     }
