@@ -140,12 +140,16 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     try {
       if (mode === 'agent') {
         pendingMessageRef.current = '';
-        const invitedAgents = activeAgents;
+        const invitedAgents = [...activeAgents];
         const enrichedMessage = buildRoomContext(msg);
 
+        // Send message to Axi — this triggers Axi's platform agent response via subscription
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
 
+        // Wait briefly for Axi's subscription response to arrive before firing other agents
         if (invitedAgents.length > 0) {
+          await new Promise(r => setTimeout(r, 1500));
+
           setTypingAgents(new Set(invitedAgents.map(a => a.id)));
 
           const agentResponses = await Promise.allSettled(
@@ -164,19 +168,24 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
           setTypingAgents(new Set());
 
+          // Use a single batch update to avoid race conditions with subscription
+          const newMessages = [];
           agentResponses.forEach(result => {
             if (result.status === 'fulfilled' && result.value?.reply) {
               const { agent, reply } = result.value;
-              setMessages(prev => [...prev, {
-                id: `agent-${agent.id}-${Date.now()}-${Math.random()}`,
+              newMessages.push({
+                id: `agent-${agent.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                 role: 'assistant',
                 sender_agent_id: agent.id,
                 metadata: { sourceAgentId: agent.id, agentName: agent.name },
                 content: reply,
                 message_type: 'text'
-              }]);
+              });
             }
           });
+          if (newMessages.length > 0) {
+            setMessages(prev => [...prev, ...newMessages]);
+          }
         }
       } else {
         pendingMessageRef.current = '';
