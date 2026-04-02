@@ -162,8 +162,8 @@ export default function GlobalNav() {
   const hasIdentity = !!(identity?.did || identity?.connected);
   const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
 
-  // Show nav for platform-authenticated users OR DID-connected users
-  if (!isAuthenticated && !hasIdentity) return null;
+  // Only show sidebar for admin users
+  if (!isAdmin) return null;
 
   return (
     <>
@@ -196,14 +196,12 @@ export default function GlobalNav() {
           <div className="mt-4">
             <GlobalSearchBar className="w-full" />
           </div>
-
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
           {NAV_GROUPS.filter(group => !group.adminOnly || isAdmin).map((group, i) => (
             <NavGroup key={group.label} group={group} isOpen={i === 0} />
           ))}
         </div>
-
       </nav>
 
       {/* Mobile Sidebar */}
