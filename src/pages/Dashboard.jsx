@@ -9,7 +9,7 @@ import OctagonMillUI from '@/components/OctagonMillUI';
 import UniversalDashboardHero from '@/components/dashboard/UniversalDashboardHero';
 import UniversalDashboardQuickActions from '@/components/dashboard/UniversalDashboardQuickActions';
 import UniversalDashboardStatus from '@/components/dashboard/UniversalDashboardStatus';
-import IdentityRecognitionCard from '@/components/dashboard/IdentityRecognitionCard';
+import IdentityRecognitionModal from '@/components/dashboard/IdentityRecognitionCard';
 import { hasAdminAccess } from '@/lib/adminAccess';
 
 // ── Signal emitter (global, shared) ──────────────────────────────────────────
@@ -69,6 +69,7 @@ export default function Dashboard() {
   const [publishTxid, setPublishTxid] = useState(() => {
     try { return JSON.parse(localStorage.getItem('sb_invite_wallet') || 'null')?.published_txid || null; } catch(_) { return null; }
   });
+  const [identityModalOpen, setIdentityModalOpen] = useState(false);
   const [grantFocusCards] = useState([
     'Ripple Spring Grant readiness',
     'Invite-to-wallet automation live',
@@ -396,7 +397,19 @@ export default function Dashboard() {
 
       {/* ── BODY ── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        <IdentityRecognitionCard user={user} />
+        <button
+          onClick={() => setIdentityModalOpen(true)}
+          className="w-full rounded-2xl border border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-pink-900/20 p-4 hover:border-purple-400/50 hover:bg-gradient-to-r hover:from-purple-900/30 hover:to-pink-900/30 transition text-left"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-1">Recognition details</p>
+              <h3 className="text-white font-semibold text-sm">View identity, DIDs & agents</h3>
+            </div>
+            <Shield className="w-5 h-5 text-purple-400 flex-shrink-0" />
+          </div>
+        </button>
+        <IdentityRecognitionModal user={user} isOpen={identityModalOpen} onClose={() => setIdentityModalOpen(false)} />
 
         <UniversalDashboardHero
           hasInviteSession={hasInviteSession}
