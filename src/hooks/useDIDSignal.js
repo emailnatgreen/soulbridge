@@ -17,7 +17,28 @@ import { base44 } from '@/api/base44Client';
  * }
  */
 export function useDIDSignal() {
-  const [signal, setSignal] = useState({
+  // Check localStorage for existing identity on init
+  const getLocalIdentity = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
+      if (stored?.did || stored?.connected) {
+        return {
+          isVerified: true,
+          did: stored.did || null,
+          role: stored.role || null,
+          permissions: null,
+          agentId: null,
+          loading: false,
+          error: null
+        };
+      }
+    } catch (_) {}
+    return null;
+  };
+
+  const localIdentity = getLocalIdentity();
+
+  const [signal, setSignal] = useState(localIdentity || {
     isVerified: false,
     did: null,
     role: null,
@@ -43,7 +64,9 @@ export function useDIDSignal() {
           error: null
         });
       } else {
-        setSignal({
+        // Backend says not verified — but if we have local identity, keep it
+        const fallback = getLocalIdentity();
+        setSignal(fallback || {
           isVerified: false,
           did: null,
           role: null,
@@ -54,18 +77,26 @@ export function useDIDSignal() {
         });
       }
     } catch (err) {
-      setSignal(prev => ({
-        ...prev,
-        isVerified: false,
-        loading: false,
-        error: err?.message || 'DID verification error'
-      }));
+      // Network/auth error — fall back to local identity if available
+      const fallback = getLocalIdentity();
+      if (fallback) {
+        setSignal(fallback);
+      } else {
+        setSignal(prev => ({
+          ...prev,
+          isVerified: false,
+          loading: false,
+          error: err?.message || 'DID verification error'
+        }));
+      }
     }
   };
 
-  // Verify on mount
+  // Verify on mount — but only if not already verified from local
   useEffect(() => {
-    verify();
+    if (!localIdentity) {
+      verify();
+    }
   }, []);
 
   return {

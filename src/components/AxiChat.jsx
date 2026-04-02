@@ -375,19 +375,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                 </Button>
-                {didSignal?.loading && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse self-center" title="Verifying DID..." />
-                )}
-                {!didSignal?.loading && !didSignal?.isVerified && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => didSignal.refresh()}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-950/30 h-8 w-8"
-                    title="Retry DID verification"
-                  >
-                    <AlertCircle className="w-3.5 h-3.5" />
-                  </Button>
+                {didSignal?.isVerified && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 self-center" title={`DID verified: ${didSignal.did || ''}`} />
                 )}
                 <Button variant="ghost" size="icon" onClick={() => setIsExpanded(e => !e)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:flex">
                   {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
