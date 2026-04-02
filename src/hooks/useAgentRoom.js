@@ -37,7 +37,7 @@ export function useAgentRoom() {
     localStorage.setItem(ACTIVE_AGENTS_KEY, JSON.stringify(activeAgents));
   }, [activeAgents]);
 
-  // Load all agents once — platform agents always included
+  // Load all agents once — platform agents always included, then poll for updates
   useEffect(() => {
     const load = async () => {
       try {
@@ -53,6 +53,17 @@ export function useAgentRoom() {
       }
     };
     load();
+    // Poll every 8 seconds for new agents (lower interval = better sync across tabs)
+    const interval = setInterval(load, 8000);
+    // Also listen for cross-tab agent creation signals
+    const handleSignal = (e) => {
+      if (e.detail?.type === 'agent_created') load();
+    };
+    window.addEventListener('soulbridge-signal', handleSignal);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('soulbridge-signal', handleSignal);
+    };
   }, []);
 
   const addAgent = useCallback((agent) => {

@@ -132,6 +132,22 @@ export default function Home() {
       setLoading(false);
     };
     fetchData();
+    
+    // Poll every 7 seconds for live data sync across all modes
+    const pollInterval = setInterval(fetchData, 7000);
+    
+    // Listen for cross-tab signals
+    const handleSignal = (e) => {
+      if (e.detail?.type === 'agent_created' || e.detail?.type === 'proposal_created' || e.detail?.type === 'wallet_published') {
+        fetchData();
+      }
+    };
+    window.addEventListener('soulbridge-signal', handleSignal);
+    
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('soulbridge-signal', handleSignal);
+    };
   }, [isAdmin]);
 
   const statusColor = {
