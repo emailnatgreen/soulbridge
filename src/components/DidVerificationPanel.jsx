@@ -184,7 +184,7 @@ export default function DidVerificationPanel({ verification, wallet }) {
         <div className="bg-gray-50 p-2.5 rounded border border-gray-200">
           <div className="text-gray-600 font-medium">Verified At</div>
           <div className="text-gray-800 font-mono text-xs mt-1">
-            {new Date(v.verified_at).toLocaleTimeString()}
+            {v.verified_at ? new Date(v.verified_at).toLocaleTimeString() : new Date().toLocaleTimeString()}
           </div>
         </div>
       </div>
