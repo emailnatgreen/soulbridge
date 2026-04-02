@@ -7,6 +7,7 @@ import { usePageSignal } from '@/hooks/usePageSignal';
 import { useAuth } from '@/lib/AuthContext';
 import { hasAdminAccess } from '@/lib/adminAccess';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
+import { useWalletDidSignal } from '@/hooks/useWalletDidSignal';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
 
@@ -30,8 +31,21 @@ function isRecognizedUser(isAuthenticated, didSignal) {
 
 export default function Layout({ children, currentPageName }) {
   const [chatOpen, setChatOpen] = useState(false);
+  const [walletUpdating, setWalletUpdating] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const didSignal = useDIDSignal();
+  const { lastSignal } = useWalletDidSignal({
+    onUpdate: () => setWalletUpdating(true)
+  });
+  
+  // Reset wallet updating state
+  useEffect(() => {
+    if (walletUpdating) {
+      const timer = setTimeout(() => setWalletUpdating(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [walletUpdating]);
+  
   usePageSignal();
 
   const isPublic = PUBLIC_PAGES.includes(currentPageName);
@@ -117,17 +131,17 @@ export default function Layout({ children, currentPageName }) {
           <button
             onClick={() => setChatOpen(true)}
             className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 relative ${showAdminSidebar ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 border-amber-300/30' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-purple-400/30'}`}
-            title={showAdminSidebar ? 'Open your admin Axi (DID: ' + (didSignal?.did?.slice(0, 10) || 'pending') + '...)' : 'Open your personal Axi'}
+            title={showAdminSidebar ? 'Open your admin Axi (DID: ' + (didSignal?.did?.slice(0, 10) || 'pending') + '...) ' + (walletUpdating ? '📊 Updating' : '') : 'Open your personal Axi'}
           >
             {showAdminSidebar ? <Shield className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
             {/* DID verification indicator badge on button */}
-            {didSignal?.loading && (
+            {walletUpdating ? (
+              <Circle className="w-3 h-3 bg-blue-400 fill-blue-400 absolute bottom-0 right-0 rounded-full border border-white animate-pulse" />
+            ) : didSignal?.loading ? (
               <Circle className="w-3 h-3 bg-yellow-400 fill-yellow-400 absolute bottom-0 right-0 rounded-full border border-white animate-pulse" />
-            )}
-            {!didSignal?.loading && didSignal?.isVerified && (
+            ) : !didSignal?.loading && didSignal?.isVerified ? (
               <Circle className="w-3 h-3 bg-green-400 fill-green-400 absolute bottom-0 right-0 rounded-full border border-white" />
-            )}
-            {!didSignal?.loading && !didSignal?.isVerified && (
+            ) : (
               <Circle className="w-3 h-3 bg-red-400 fill-red-400 absolute bottom-0 right-0 rounded-full border border-white" />
             )}
           </button>
