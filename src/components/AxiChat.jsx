@@ -44,7 +44,6 @@ const PERSONAL_CONVERSATION_META_NAME = 'Personal Conversation with Axi';
 
 export default function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [typingAgents, setTypingAgents] = useState(new Set());
@@ -60,10 +59,13 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const unsubRef = useRef(null);
   const pendingMessageRef = useRef('');
   const processedSummonsRef = useRef(new Set());
-  // Agent responses stored separately — subscription only knows Axi's messages
-  const agentMessagesRef = useRef([]);
-  // Pause subscription updates while agents are responding
-  const pauseSubRef = useRef(false);
+  // Platform messages from subscription (Axi only)
+  const [platformMessages, setPlatformMessages] = useState([]);
+  // Local agent messages that aren't in the platform conversation
+  const [localAgentMessages, setLocalAgentMessages] = useState([]);
+
+  // Merge platform + local agent messages into final messages list
+  const messages = [...platformMessages, ...localAgentMessages];
 
   useEffect(() => {
     if (messages.length) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -104,26 +106,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         }
 
         localStorage.setItem(PERSONAL_CONVERSATION_KEY, conversation.id);
-        // Do NOT auto-restore agents — agents should only join via explicit summon or picker
         convoRef.current = conversation;
         setMode('agent');
         setReady(true);
-        setMessages((conversation.messages || []).slice(-PAGE_SIZE));
+        setPlatformMessages((conversation.messages || []).slice(-PAGE_SIZE));
 
         if (unsubRef.current) unsubRef.current();
         unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
-          // Skip subscription updates while agents are responding
-          if (pauseSubRef.current) return;
-          const platformMessages = (data.messages || []).slice(-PAGE_SIZE);
-          // Merge platform messages with locally-tracked agent responses
-          const agentMsgs = agentMessagesRef.current;
-          if (agentMsgs.length === 0) {
-            setMessages(platformMessages);
-          } else {
-            const existingIds = new Set(platformMessages.map(m => m.id));
-            const uniqueAgentMsgs = agentMsgs.filter(m => !existingIds.has(m.id));
-            setMessages([...platformMessages, ...uniqueAgentMsgs]);
-          }
+          setPlatformMessages((data.messages || []).slice(-PAGE_SIZE));
         });
         return;
       } catch (err) {
@@ -138,7 +128,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
       try {
         const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
-        setMessages(res?.data?.messages || []);
+        setPlatformMessages(res?.data?.messages || []);
       } catch (_) {}
     };
 
@@ -158,13 +148,12 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         const invitedAgents = [...activeAgents];
         const enrichedMessage = buildRoomContext(msg);
 
-        // Send message to Axi — this triggers Axi's platform agent response via subscription
+        // Send message to Axi — triggers her response via subscription
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
 
         if (invitedAgents.length > 0) {
-          // Wait for Axi's streaming response to finish, then pause subscription
-          await new Promise(r => setTimeout(r, 2000));
-          pauseSubRef.current = true;
+          // Brief wait for Axi's response to start streaming
+          await new Promise(r => setTimeout(r, 1500));
 
           setTypingAgents(new Set(invitedAgents.map(a => a.id)));
 
@@ -184,7 +173,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
           setTypingAgents(new Set());
 
-          // Use a single batch update to avoid race conditions with subscription
           const newMessages = [];
           agentResponses.forEach(result => {
             if (result.status === 'fulfilled' && result.value?.reply) {
@@ -200,16 +188,12 @@ export default function AxiChat({ isOpen, setIsOpen }) {
             }
           });
           if (newMessages.length > 0) {
-            agentMessagesRef.current = [...agentMessagesRef.current, ...newMessages];
-            setMessages(prev => [...prev, ...newMessages]);
+            setLocalAgentMessages(prev => [...prev, ...newMessages]);
           }
-
-          // Resume subscription updates
-          pauseSubRef.current = false;
         }
       } else {
         pendingMessageRef.current = '';
-        setMessages(prev => [...prev, {
+        setPlatformMessages(prev => [...prev, {
           id: `u-${Date.now()}`, sender_agent_id: 'visitor',
           content: msg, message_type: 'text'
         }]);
@@ -219,7 +203,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         });
         const reply = res?.data?.response;
         if (reply) {
-          setMessages(prev => [...prev, {
+          setPlatformMessages(prev => [...prev, {
             id: `a-${Date.now()}`, sender_agent_id: 'axi',
             content: reply, message_type: 'text'
           }]);
@@ -228,7 +212,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     } catch (err) {
       console.error('[AxiChat] Send error:', err);
       const errorMessage = err?.response?.data?.error || err?.message || 'Axi could not respond right now.';
-      setMessages(prev => [...prev, {
+      setPlatformMessages(prev => [...prev, {
         id: `err-${Date.now()}`, sender_agent_id: 'axi',
         content: errorMessage,
         message_type: 'text'
@@ -259,8 +243,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       content: `${agent.name} (${agent.role}) joined this conversation.`,
       message_type: 'system'
     };
-    agentMessagesRef.current = [...agentMessagesRef.current, joinMsg];
-    setMessages((prev) => [...prev, joinMsg]);
+    setLocalAgentMessages(prev => [...prev, joinMsg]);
 
     try {
       const contextBrief = buildAgentContextBrief(messages, activeAgents, agent);
@@ -286,8 +269,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
           content: agentReply,
           message_type: 'text'
         };
-        agentMessagesRef.current = [...agentMessagesRef.current, introMsg];
-        setMessages((prev) => [...prev, introMsg]);
+        setLocalAgentMessages(prev => [...prev, introMsg]);
       }
     } catch (err) {
       console.error('[AxiChat] Agent intro error:', err);
