@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
 import '@/index.css'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import { queryClientInstance } from '@/lib/query-client'
 
 // Suppress MetaMask / Web3 browser extension errors that destabilise the editor
@@ -39,5 +40,7 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('online', syncAppData);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <App />
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
 )
