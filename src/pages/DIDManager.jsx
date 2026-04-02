@@ -151,11 +151,11 @@ export default function DIDManager() {
 
   const verifyMutation = useMutation({
     mutationFn: (walletId) => base44.functions.invoke('verifyDIDStatus', { wallet_id: walletId }),
-    onSuccess: (response, walletId) => {
+    onSuccess: (response) => {
       const data = response.data || response;
       setVerificationResults(prev => ({
         ...prev,
-        [walletId]: data
+        [verifyingWalletId]: data
       }));
       setCurrentVerification(data);
       setVerifyDialogOpen(true);
