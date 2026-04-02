@@ -2,8 +2,8 @@ import * as xrpl from 'npm:xrpl@2.14.0';
 
 // Reliable XRPL connector with retry logic and timeout management
 const XRPL_ENDPOINTS = {
-  mainnet: 'https://xrpl.ws',
-  testnet: 'https://testnet.xrpl.ws'
+  mainnet: 'wss://xrpl.ws',
+  testnet: 'wss://testnet.xrpl.ws'
 };
 
 const MAX_RETRIES = 3;
@@ -47,10 +47,13 @@ export async function verifyDIDStatusReliable(classicAddress, network = 'mainnet
     await client.connect();
     
     const accountInfo = await retryWithBackoff(async () => {
-      return await client.getAccountInfo(classicAddress);
+      return await client.request({
+        command: 'account_info',
+        account: classicAddress
+      });
     });
 
-    if (!accountInfo) {
+    if (!accountInfo?.account_data) {
       return {
         success: false,
         account_exists: false,
@@ -76,7 +79,7 @@ export async function verifyDIDStatusReliable(classicAddress, network = 'mainnet
       success: true,
       account_exists: true,
       did_active: didActive,
-      balance: accountInfo.Account ? parseFloat(accountInfo.Account.Balance) / 1000000 : 0,
+      balance: accountInfo.account_data?.Balance ? parseFloat(accountInfo.account_data.Balance) / 1000000 : 0,
       network,
       address: classicAddress,
       verified_at: new Date().toISOString(),
@@ -105,7 +108,7 @@ export async function checkXRPLHealth(network = 'mainnet') {
   try {
     await client.connect();
     const ledger = await Promise.race([
-      client.getLedger(),
+      client.request({ command: 'ledger' }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Health check timeout')), 3000))
     ]);
     
