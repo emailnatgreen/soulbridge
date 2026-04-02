@@ -47,6 +47,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [typingAgents, setTypingAgents] = useState(new Set()); // agent ids currently typing
   const [ready, setReady] = useState(false);
   const [mode, setMode] = useState(null);
   const [showAgentPicker, setShowAgentPicker] = useState(false);
@@ -144,31 +145,45 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
     try {
       if (mode === 'agent') {
-        // Agent SDK mode: keep Axi active and also invite extra agents to respond
         pendingMessageRef.current = '';
         const invitedAgents = activeAgents;
         const enrichedMessage = buildRoomContext(msg);
 
+        // Send user message to Axi (triggers Axi's response via subscription)
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
-        for (const agent of invitedAgents) {
-          const response = await base44.functions.invoke('generateAgentResponse', {
-            conversation_id: convoRef.current.id,
-            user_message: msg,
-            agent_id: agent.id,
-            agent_name: agent.name
-          });
 
-          const agentReply = response?.data?.response;
-          if (agentReply) {
-            setMessages((prev) => [...prev, {
-              id: `agent-${agent.id}-${Date.now()}`,
-              role: 'assistant',
-              sender_agent_id: agent.id,
-              metadata: { sourceAgentId: agent.id },
-              content: agentReply,
-              message_type: 'text'
-            }]);
-          }
+        // Fire all active agents in parallel
+        if (invitedAgents.length > 0) {
+          // Show typing for all agents at once
+          setTypingAgents(new Set(invitedAgents.map(a => a.id)));
+
+          const agentResponses = await Promise.allSettled(
+            invitedAgents.map(agent =>
+              base44.functions.invoke('generateAgentResponse', {
+                conversation_id: convoRef.current.id,
+                user_message: msg,
+                agent_id: agent.id,
+                agent_name: agent.name,
+                room_context: buildRoomContext('')
+              }).then(res => ({ agent, reply: res?.data?.response }))
+            )
+          );
+
+          setTypingAgents(new Set());
+
+          agentResponses.forEach(result => {
+            if (result.status === 'fulfilled' && result.value?.reply) {
+              const { agent, reply } = result.value;
+              setMessages(prev => [...prev, {
+                id: `agent-${agent.id}-${Date.now()}-${Math.random()}`,
+                role: 'assistant',
+                sender_agent_id: agent.id,
+                metadata: { sourceAgentId: agent.id, agentName: agent.name },
+                content: reply,
+                message_type: 'text'
+              }]);
+            }
+          });
         }
       } else {
         // Direct mode fallback
@@ -421,6 +436,21 @@ export default function AxiChat({ isOpen, setIsOpen }) {
                 </div>
               </div>
             )}
+            {[...typingAgents].map(agentId => {
+              const agent = activeAgents.find(a => a.id === agentId);
+              if (!agent) return null;
+              return (
+                <div key={agentId} className="flex gap-2 justify-start">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-xs font-bold">{agent.name?.[0]}</span>
+                  </div>
+                  <div className="bg-white/10 border border-white/10 rounded-2xl px-3 py-2 flex items-center gap-1.5">
+                    <span className="text-white/50 text-xs">{agent.name} is typing</span>
+                    <Loader2 className="w-3 h-3 text-emerald-400 animate-spin" />
+                  </div>
+                </div>
+              );
+            })}
             <div ref={messagesEndRef} />
           </div>
 

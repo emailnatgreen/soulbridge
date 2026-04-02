@@ -98,28 +98,16 @@ const FunctionDisplay = ({ toolCall }) => {
 export default function MessageBubble({ message }) {
     const isUser = message.role === 'user';
     const isSystemError = message.role === 'system_error';
-    const [agentName, setAgentName] = useState(null);
-    
-    // Fetch agent name if sourceAgentId exists in metadata
+    // Use agentName from metadata if passed directly, otherwise fetch
+    const [agentName, setAgentName] = useState(message.metadata?.agentName || null);
+
     useEffect(() => {
-      const fetchAgentName = async () => {
-        if (message.metadata?.sourceAgentId && !isUser) {
-          try {
-            const agent = await base44.entities.Agent.filter(
-              { id: message.metadata.sourceAgentId },
-              '',
-              1
-            );
-            if (agent?.length > 0) {
-              setAgentName(agent[0].name);
-            }
-          } catch (err) {
-            console.error('Failed to fetch agent name:', err);
-          }
-        }
-      };
-      fetchAgentName();
-    }, [message.metadata?.sourceAgentId, isUser]);
+      // Skip fetch if we already have the name from metadata
+      if (message.metadata?.agentName || isUser || !message.metadata?.sourceAgentId) return;
+      base44.entities.Agent.filter({ id: message.metadata.sourceAgentId }, '', 1)
+        .then(res => { if (res?.length > 0) setAgentName(res[0].name); })
+        .catch(() => {});
+    }, [message.metadata?.sourceAgentId, message.metadata?.agentName, isUser]);
 
     const handleCopyMessage = () => {
         navigator.clipboard.writeText(message.content);
