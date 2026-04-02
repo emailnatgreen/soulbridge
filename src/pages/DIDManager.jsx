@@ -162,7 +162,11 @@ export default function DIDManager() {
       
       const v = data?.verification;
       if (!v || !v.account_exists) {
-        toast.error('Account not found on XRPL mainnet. Fund this address with at least 20 XRP to activate it.');
+        const network = data?.network || 'network';
+        const fundingMsg = network === 'mainnet'
+          ? 'Fund this address with at least 20 XRP to activate it.'
+          : 'Fund this address with testnet XRP (via faucet) to activate it.';
+        toast.error(`Account not found on XRPL ${network}. ${fundingMsg}`);
       } else if (v?.did_active) {
         toast.success('✅ DID is published on XRPL');
       } else {
