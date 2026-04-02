@@ -228,6 +228,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     }
 
     setShowAgentPicker(false);
+    setActiveAgents((prev) => [...prev, agent]);
 
     if (options.skipIntro) {
       return;
