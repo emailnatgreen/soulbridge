@@ -52,6 +52,7 @@ export default function DIDManager() {
   const [selectedWalletForPublish, setSelectedWalletForPublish] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [walletToDelete, setWalletToDelete] = useState(null);
+  const [verifyingWalletId, setVerifyingWalletId] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -140,12 +141,8 @@ export default function DIDManager() {
   };
 
   const verifyMutation = useMutation({
-    mutationFn: (walletId) => {
-      setVerifyingWalletId(walletId);
-      return base44.functions.invoke('verifyDIDStatus', { wallet_id: walletId });
-    },
+    mutationFn: (walletId) => base44.functions.invoke('verifyDIDStatus', { wallet_id: walletId }),
     onSuccess: (response, walletId) => {
-      setVerifyingWalletId(null);
       const data = response.data || response;
       setVerificationResults(prev => ({
         ...prev,
@@ -164,7 +161,6 @@ export default function DIDManager() {
       }
     },
     onError: (error) => {
-      setVerifyingWalletId(null);
       const message = error?.response?.data?.message || error?.message || error?.error || 'Failed to verify DID';
       toast.error(message);
       console.error('Verification error:', error);
