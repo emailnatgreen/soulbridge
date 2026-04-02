@@ -8,10 +8,24 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  */
 Deno.serve(async (req) => {
   try {
-    // Public endpoint — create client, then use only asServiceRole (no auth needed)
-    const base44 = createClientFromRequest(req);
     const body = await req.json();
     const { page } = body;
+
+    // Public endpoint — sanitize auth header so createClientFromRequest doesn't choke
+    const headers = new Headers(req.headers);
+    const authHeader = (headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
+    const bearerValue = rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken !== 'Bearer' ? rawToken : '';
+    if (bearerValue) {
+      headers.set('authorization', `Bearer ${bearerValue}`);
+    } else {
+      headers.delete('authorization');
+    }
+    const base44 = createClientFromRequest(new Request(req.url, {
+      method: req.method,
+      headers,
+      body: JSON.stringify(body),
+    }));
 
     if (page === 'landing') {
       const [agents, wallets, kus] = await Promise.all([
