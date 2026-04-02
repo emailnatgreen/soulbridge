@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Radio, Sparkles, LogOut, Home, ArrowRight, Key, CheckCircle, AlertTriangle, Plus, Globe, Copy, Users, Zap, Wallet } from 'lucide-react';
+import { Shield, Sparkles, LogOut, Home, ArrowRight, CheckCircle, Plus, Globe, Copy, Users, Zap, Wallet } from 'lucide-react';
 import DIDManagementPanel from '@/components/dashboard/DIDManagementPanel';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
-import OctagonMillUI from '@/components/OctagonMillUI';
+
 import UniversalDashboardHero from '@/components/dashboard/UniversalDashboardHero';
 import UniversalDashboardQuickActions from '@/components/dashboard/UniversalDashboardQuickActions';
 import UniversalDashboardStatus from '@/components/dashboard/UniversalDashboardStatus';
@@ -20,20 +20,10 @@ if (typeof window !== 'undefined') {
     window.__sb.signals.unshift(s);
     if (window.__sb.signals.length > 50) window.__sb.signals.pop();
     window.dispatchEvent(new CustomEvent('sb-signal', { detail: s }));
-    // Persist to DB silently
-    base44.entities.Signal.create({ signal_type: type, page_name: 'dashboard', source: 'dashboard', ...meta }).catch(() => {});
   };
 }
 
-function SignalDot({ type }) {
-  const colors = {
-    identity_connected: 'bg-green-400',
-    page_view: 'bg-blue-400',
-    axi_activated: 'bg-purple-400',
-    session_started: 'bg-amber-400',
-  };
-  return <span className={`w-2 h-2 rounded-full flex-shrink-0 ${colors[type] || 'bg-white/40'}`} />;
-}
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -47,20 +37,17 @@ export default function Dashboard() {
       return null;
     }
   });
-  const [signals, setSignals] = useState([]);
   const [wallets, setWallets] = useState([]);
   const [invite, setInvite] = useState(null);
   const [creatingWallet, setCreatingWallet] = useState(false);
   const [walletCreated, setWalletCreated] = useState(false);
   const [myInvites, setMyInvites] = useState([]);
   const [myTransactions, setMyTransactions] = useState([]);
-  const [claimedInviteWallets, setClaimedInviteWallets] = useState([]);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteNickname, setInviteNickname] = useState('');
   const [inviteNotes, setInviteNotes] = useState('');
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
-  // The wallet created specifically for this invite session
   const [inviteWallet, setInviteWallet] = useState(() => {
     try { return JSON.parse(localStorage.getItem('sb_invite_wallet') || 'null'); } catch(_) { return null; }
   });
@@ -70,11 +57,6 @@ export default function Dashboard() {
     try { return JSON.parse(localStorage.getItem('sb_invite_wallet') || 'null')?.published_txid || null; } catch(_) { return null; }
   });
   const [identityModalOpen, setIdentityModalOpen] = useState(false);
-  const [grantFocusCards] = useState([
-    'Ripple Spring Grant readiness',
-    'Invite-to-wallet automation live',
-    'Private builder widgets coming next'
-  ]);
 
   useEffect(() => {
     // Load identity from localStorage
@@ -88,9 +70,6 @@ export default function Dashboard() {
         }
       }
     } catch (_) {}
-
-    // Emit page view signal
-    window.__sb?.emit('page_view', { page: 'dashboard' });
 
     // Single consolidated load — one auth call, sequential to avoid rate limits
     const loadAll = async () => {
@@ -134,19 +113,7 @@ export default function Dashboard() {
         setMyInvites(invites || []);
       }
 
-      // Load signals (lightweight)
-      try {
-        const db = await base44.entities.Signal.list('-created_date', 15);
-        const mem = window.__sb?.signals || [];
-        const merged = [...mem, ...db].reduce((acc, s) => {
-          const key = s.id || s.created_date;
-          if (!acc.seen.has(key)) { acc.seen.add(key); acc.list.push(s); }
-          return acc;
-        }, { seen: new Set(), list: [] }).list.slice(0, 15);
-        setSignals(merged);
-      } catch (_) {
-        setSignals(window.__sb?.signals || []);
-      }
+
     };
     loadAll();
 
@@ -164,10 +131,7 @@ export default function Dashboard() {
       }
     } catch (_) {}
 
-    // Listen for new in-memory signals
-    const onSignal = () => setSignals([...(window.__sb?.signals || [])]);
-    window.addEventListener('sb-signal', onSignal);
-    return () => window.removeEventListener('sb-signal', onSignal);
+
   }, []);
 
   const [publishingWalletId, setPublishingWalletId] = useState(null);
@@ -552,47 +516,13 @@ export default function Dashboard() {
              FULL ADMIN / MEMBER DASHBOARD
              ════════════════════════════════════════ */
           <>
-            {/* Admin-only: Grant focus cards */}
-            {isAdmin && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {grantFocusCards.map((item) => (
-                  <div key={item} className="rounded-2xl border border-purple-500/20 bg-white/5 p-4">
-                    <p className="text-xs uppercase tracking-widest text-purple-300/60 mb-2">Current focus</p>
-                    <p className="text-sm font-medium text-white">{item}</p>
-                  </div>
-                ))}
-              </div>
-            )}
 
 
-            {/* Admin-only: Braid + Signal Log */}
+
+            {/* Admin-only: Constitutional Braid */}
             {isAdmin && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 lg:col-span-2">
-                  <ConstitutionalBraidLive compact={false} />
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Radio className="w-4 h-4 text-purple-400" />
-                    <h3 className="text-white font-semibold text-sm">Live Signal Log</h3>
-                    <span className="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                  </div>
-                  <div className="flex-1 space-y-2 overflow-y-auto max-h-72">
-                    {signals.length === 0 ? (
-                      <p className="text-white/20 text-xs py-4 text-center">No signals yet…</p>
-                    ) : signals.map((sig, i) => (
-                      <div key={sig.id || i}
-                      className="flex items-center gap-2 py-1.5 border-b border-white/5 text-xs animate-[fadeIn_0.3s_ease-out]">
-                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-white/20" />
-                      <span className="text-white/60 flex-1 truncate">{sig.type || sig.signal_type}</span>
-                      {sig.page_name && <span className="text-white/30 truncate hidden sm:block">{sig.page_name}</span>}
-                      <span className="text-white/25 flex-shrink-0">
-                        {sig.time || (sig.created_date ? new Date(sig.created_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '')}
-                      </span>
-                    </div>
-                    ))}
-                  </div>
-                </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                <ConstitutionalBraidLive compact={false} />
               </div>
             )}
 
@@ -727,8 +657,7 @@ export default function Dashboard() {
               ) : null}
             </div>
 
-            {/* Admin-only: Octagon Mill */}
-            {isAdmin && <OctagonMillUI />}
+
 
             {/* Meet Axi */}
             <div className="bg-gradient-to-br from-indigo-950/60 via-purple-950/60 to-pink-950/40 border border-purple-500/30 rounded-2xl p-4 sm:p-6 space-y-5">
