@@ -23,19 +23,11 @@ const PLATFORM_AGENTS = [
  */
 export function useAgentRoom() {
   const [allAgents, setAllAgents] = useState([]);
-  const [activeAgents, setActiveAgents] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(ACTIVE_AGENTS_KEY) || '[]');
-      return Array.isArray(saved) ? saved : [];
-    } catch (_) { return []; }
-  });
+  const [activeAgents, setActiveAgents] = useState([]);
   const [loadingAgents, setLoadingAgents] = useState(true);
   const addingRef = useRef(new Set());
 
-  // Persist active agents
-  useEffect(() => {
-    localStorage.setItem(ACTIVE_AGENTS_KEY, JSON.stringify(activeAgents));
-  }, [activeAgents]);
+  // No longer persist agents to localStorage — agents only exist for the current session
 
   // Load all agents once — platform agents always included, then poll for updates
   useEffect(() => {
@@ -53,8 +45,8 @@ export function useAgentRoom() {
       }
     };
     load();
-    // Poll every 8 seconds for new agents (lower interval = better sync across tabs)
-    const interval = setInterval(load, 8000);
+    // Poll every 60 seconds for new agents (reduced from 8s)
+    const interval = setInterval(load, 60000);
     // Also listen for cross-tab agent creation signals
     const handleSignal = (e) => {
       if (e.detail?.type === 'agent_created') load();
@@ -92,21 +84,18 @@ export function useAgentRoom() {
   }, [allAgents]);
 
   // Room context injected into every user message so Axi knows the state
+  // IMPORTANT: Do NOT advertise available agents — this causes Axi to auto-summon them
   const buildRoomContext = useCallback((userMessage) => {
-    const available = allAgents.map(a => `${a.name} [ID:${a.id}] (${a.role})`).join('\n  ');
-    const inRoom = activeAgents.length > 0
-      ? activeAgents.map(a => `${a.name} [ID:${a.id}]`).join(', ')
-      : 'None (only Axi)';
+    if (activeAgents.length === 0) return userMessage;
+
+    const inRoom = activeAgents.map(a => `${a.name} [ID:${a.id}]`).join(', ');
 
     return `${userMessage}
 
 [ROOM_STATE]
 Agents currently in this conversation: ${inRoom}
-All available agents you can summon (use their exact ID):
-  ${available}
-To summon an agent, output EXACTLY this on its own line: 🔔 SUMMON <agent_id>
-Example: 🔔 SUMMON platform:code_node`;
-  }, [allAgents, activeAgents]);
+Do NOT summon additional agents unless the user explicitly asks you to.`;
+  }, [activeAgents]);
 
   return {
     allAgents,
