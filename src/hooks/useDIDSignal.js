@@ -30,7 +30,7 @@ export function useDIDSignal() {
   const verify = async () => {
     try {
       setSignal(prev => ({ ...prev, loading: true, error: null }));
-      const response = await base44.functions.invoke('verifyDIDStatus', {});
+      const response = await base44.functions.invoke('verifyDIDStatusMainnet', {});
       
       if (response?.data?.isVerified) {
         setSignal({

@@ -2,6 +2,7 @@
 const ADMIN_ADDRESSES = [
   'rL1W8aBjXscSHgkiBKQJyYeU9YBpWo2jqz',
   'rG1ZAbWEnBegAXFqyqyi8vgQFhDtDHAQH7',
+  'rPPtBrN5TxAcAShhDMWe2eQzmhG1f6aWBg', // Governor Nathan - Human Node
 ];
 
 export const ADMIN_DID = 'did:xrpl:1:' + ADMIN_ADDRESSES[0];
