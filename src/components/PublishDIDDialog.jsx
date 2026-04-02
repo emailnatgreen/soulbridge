@@ -125,48 +125,39 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
 
         {/* FORM STEP */}
         {(step === 'form' || step === 'loading') && (
-          <div className="space-y-4 py-2">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-              <p className="font-medium mb-1">Account: <code className="text-xs">{wallet?.classic_address}</code></p>
-              <p className="text-xs mt-1">Network: <Badge variant="outline" className="text-xs">{wallet?.network}</Badge></p>
-            </div>
-
-            <div>
-              <Label htmlFor="did-uri">DID Document URI</Label>
-              <Input
-                id="did-uri"
-                value={didUri}
-                onChange={(e) => setDidUri(e.target.value)}
-                placeholder="https://..."
-                className="mt-1 text-sm"
-              />
-              <p className="text-xs text-gray-500 mt-1">This URI points to your DID document and will be stored on-chain.</p>
-            </div>
+         <div className="space-y-4 py-2">
+           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+             <div className="mb-3">
+               <p className="text-xs font-semibold text-blue-900 mb-1">XRPL Account</p>
+               <code className="text-xs text-blue-800 break-all block mb-2">{wallet?.classic_address}</code>
+               <a
+                 href={`https://xrpscan.com/account/${wallet?.classic_address}`}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1"
+               >
+                 View on XRPScan <ExternalLink className="w-3 h-3" />
+               </a>
+             </div>
+             <div className="grid grid-cols-2 gap-3 text-xs">
+               <div>
+                 <p className="text-blue-700 font-medium">Network</p>
+                 <Badge variant="outline" className="text-xs mt-1">{wallet?.network}</Badge>
+               </div>
+               <div>
+                 <p className="text-blue-700 font-medium">Balance</p>
+                 <p className="text-blue-800 mt-1">{wallet?.balance || 0} XRP</p>
+               </div>
+             </div>
+           </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-800">
               <AlertCircle className="w-4 h-4 inline mr-1" />
               A small XRP reserve (~0.2 XRP) will be locked on-chain for the DID object.
             </div>
-
-            <Button
-              className="w-full"
-              onClick={handlePublish}
-              disabled={!didUri || step === 'loading'}
-            >
-              {step === 'loading' ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating QR Code...</>
-              ) : (
-                <><QrCode className="w-4 h-4 mr-2" /> Generate Signing QR</>
-              )}
-            </Button>
-          </div>
-        )}
-
-        {/* QR STEP */}
-        {step === 'qr' && qrData && (
-          <div className="space-y-4 py-2">
-            <div className="bg-white border-2 border-indigo-200 rounded-lg p-4 flex justify-center">
-              <img src={qrData.qr_png} alt="Xaman QR Code" className="w-56 h-56" />
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs">
+              <p className="text-gray-700 font-medium mb-2">DID Document URI</p>
+              <code className="text-xs text-gray-800 break-all block bg-white p-2 rounded border border-gray-200">{didUri}</code>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -197,33 +188,42 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
           <div className="space-y-4 py-2">
             <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
               <CheckCircle className="w-14 h-14 text-green-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-green-900 mb-1">DID Published on XRPL!</h3>
-              <p className="text-sm text-green-700">Your DID is now live on the blockchain.</p>
+              <h3 className="font-semibold text-green-900 mb-2">DID Successfully Published</h3>
+              <p className="text-sm text-green-700">Your Decentralized Identifier is now on-chain.</p>
             </div>
-            {result.txid && (
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="text-xs text-gray-600 mb-1">Transaction ID:</div>
-                <code className="text-xs break-all">{result.txid}</code>
-                <a
-                  href={`https://xrpscan.com/tx/${result.txid}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-indigo-600 flex items-center gap-1 mt-2"
-                >
-                  View on XRPScan <ExternalLink className="w-3 h-3" />
-                </a>
+            <div className="space-y-3">
+              {result.txid && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-xs font-medium text-gray-700 mb-2">Transaction Hash</div>
+                  <code className="text-xs text-gray-800 break-all block bg-white p-2 rounded border border-gray-200 mb-2">{result.txid}</code>
+                  <a
+                    href={`https://xrpscan.com/tx/${result.txid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                  >
+                    View Transaction on XRPScan <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+              {result.account && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-xs font-medium text-gray-700 mb-2">Account Address</div>
+                  <code className="text-xs text-gray-800 break-all block bg-white p-2 rounded border border-gray-200 mb-2">{result.account}</code>
+                  <a
+                    href={`https://xrpscan.com/account/${result.account}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                  >
+                    View Account on XRPScan <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="text-xs font-medium text-blue-900 mb-2">DID Document URI</div>
+                <code className="text-xs text-blue-800 break-all block bg-white p-2 rounded border border-blue-200">{didUri}</code>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* ERROR STEP */}
-        {step === 'error' && (
-          <div className="py-2">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-              <XCircle className="w-14 h-14 text-red-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-red-900 mb-1">Publication Failed</h3>
-              <p className="text-sm text-red-700">{result?.message || 'Transaction was not completed'}</p>
             </div>
           </div>
         )}
