@@ -61,14 +61,18 @@ export function useAgentRoom() {
   const addAgent = useCallback((agent) => {
     if (!agent?.id) return false;
     if (addingRef.current.has(agent.id)) return false;
-    const alreadyIn = activeAgents.some(a => a.id === agent.id);
-    if (alreadyIn) return false;
     addingRef.current.add(agent.id);
-    setActiveAgents(prev => [...prev, agent]);
-    // Release lock after a tick so state settles
-    setTimeout(() => addingRef.current.delete(agent.id), 500);
-    return true;
-  }, [activeAgents]);
+    // Use functional updater so multiple rapid adds don't clobber each other
+    let wasAdded = false;
+    setActiveAgents(prev => {
+      if (prev.some(a => a.id === agent.id)) return prev;
+      wasAdded = true;
+      return [...prev, agent];
+    });
+    // Release lock after a short delay
+    setTimeout(() => addingRef.current.delete(agent.id), 1000);
+    return true; // optimistic — the functional updater handles dedup
+  }, []);
 
   const removeAgent = useCallback((agentId) => {
     setActiveAgents(prev => prev.filter(a => a.id !== agentId));

@@ -217,14 +217,12 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       setShowAgentPicker(false);
       return;
     }
-    // Save active agents to localStorage for persistence
-    localStorage.setItem('axi_active_agents', JSON.stringify([...activeAgents, agent]));
     setShowAgentPicker(false);
 
     if (options.skipIntro) return;
 
     setMessages((prev) => [...prev, {
-      id: `sys-${Date.now()}`,
+      id: `sys-${Date.now()}-${agent.id}`,
       role: 'assistant',
       sender_agent_id: 'axi',
       content: `${agent.name} (${agent.role}) joined this conversation.`,
@@ -257,7 +255,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     } catch (err) {
       console.error('[AxiChat] Agent intro error:', err);
     }
-  }, [activeAgents, addAgent, messages]);
+  }, [addAgent, messages, activeAgents]);
 
   const handleRemoveAgent = (agentId) => {
     removeAgent(agentId);
@@ -304,14 +302,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         }
       }
 
-      // Add all matched agents sequentially
-      for (const agent of agentsToAdd) {
-        try {
-          await handleAddAgent(agent, { skipIntro: false });
-        } catch (err) {
-          console.error('[AxiChat] Summon error for', agent.name, ':', err);
-        }
-      }
+      // Add all matched agents in parallel so they don't block each other
+      await Promise.allSettled(
+        agentsToAdd.map(agent =>
+          handleAddAgent(agent, { skipIntro: false }).catch(err =>
+            console.error('[AxiChat] Summon error for', agent.name, ':', err)
+          )
+        )
+      );
     };
 
     summonAgentsFromMessage();
