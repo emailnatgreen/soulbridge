@@ -1,0 +1,69 @@
+{
+  "name": "Wallet",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "User ID who owns this wallet"
+    },
+    "name": {
+      "type": "string",
+      "description": "Friendly name for this wallet"
+    },
+    "classic_address": {
+      "type": "string",
+      "description": "XRPL classic address (DID)"
+    },
+    "encrypted_seed": {
+      "type": "string",
+      "description": "Encrypted wallet seed using AES-256-GCM"
+    },
+    "encryption_iv": {
+      "type": "string",
+      "description": "Initialization vector for decryption"
+    },
+    "encryption_salt": {
+      "type": "string",
+      "description": "Salt used for key derivation"
+    },
+    "network": {
+      "type": "string",
+      "enum": [
+        "testnet",
+        "mainnet"
+      ],
+      "default": "mainnet",
+      "description": "XRPL network"
+    },
+    "balance": {
+      "type": "number",
+      "default": 0,
+      "description": "XRP balance"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "last_accessed": {
+      "type": "string",
+      "description": "Last access timestamp"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the DID has been published on XRPL"
+    },
+    "published_at": {
+      "type": "string",
+      "description": "ISO timestamp when DID was published"
+    },
+    "published_txid": {
+      "type": "string",
+      "description": "Transaction ID of the DID publication"
+    }
+  },
+  "required": [
+    "owner_id",
+    "network"
+  ]
+}
