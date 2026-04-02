@@ -19,35 +19,21 @@ export default function TreasuryPanel({ treasuryId, canManage = false }) {
 
     const { data: treasury } = useQuery({
         queryKey: ['treasury', treasuryId],
-        queryFn: () => base44.entities.Treasury.get(treasuryId),
-        refetchInterval: 10000,
-    });
-
-    const { data: wallet } = useQuery({
-        queryKey: ['wallet', treasury?.classic_address],
         queryFn: async () => {
-            if (!treasury?.classic_address) return null;
-            const wallets = await base44.entities.Wallet.filter(
-                { classic_address: treasury.classic_address },
-                '-updated_date',
-                1
-            );
-            return wallets[0] || null;
+            const t = await base44.entities.Treasury.get(treasuryId);
+            // Sync live balance from on-chain
+            if (t?.classic_address === 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h') {
+                try {
+                    const wallets = await base44.entities.Wallet.filter({ classic_address: t.classic_address }, '-updated_date', 1);
+                    const w = wallets?.[0];
+                    if (w?.balance !== undefined) {
+                        return { ...t, total_balance: w.balance };
+                    }
+                } catch (e) {}
+            }
+            return t;
         },
-        enabled: !!treasury?.classic_address,
-    });
-
-    const { data: activities = [] } = useQuery({
-        queryKey: ['treasury-activities', treasuryId],
-        queryFn: async () => {
-            const allActivities = await base44.entities.EconomicActivity.filter(
-                { activity_type: ['treasury_deposit', 'treasury_withdrawal'] },
-                '-created_date',
-                100
-            );
-            return allActivities.filter(a => a.description?.includes(treasury?.name) || false);
-        },
-        enabled: !!treasury,
+        refetchInterval: 15000,
     });
 
     const manageMutation = useMutation({

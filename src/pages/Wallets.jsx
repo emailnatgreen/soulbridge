@@ -42,46 +42,36 @@ export default function WalletsPage() {
   const { data: wallets = [], isLoading } = useQuery({
     queryKey: ['wallets'],
     queryFn: async () => {
-      // Fetch all wallets in the system
-      return await base44.entities.Wallet.list('-created_date', 100);
+      const allWallets = await base44.entities.Wallet.list('-created_date', 100);
+      // Sync live balances for treasury wallet
+      const updated = await Promise.all(allWallets.map(async (w) => {
+        if (w.classic_address === 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h') {
+          try {
+            const res = await base44.functions.invoke('getBalance', { wallet_id: w.id });
+            if (res.data?.balance !== undefined) {
+              return { ...w, balance: res.data.balance };
+            }
+          } catch (e) {}
+        }
+        return w;
+      }));
+      return updated;
     },
     enabled: !!user,
-  });
-
-  const createWallet = useMutation({
-    mutationFn: async (data) => {
-      const response = await base44.functions.invoke('createWallet', data);
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallets'] });
-      toast.success('Wallet created successfully');
-      setShowCreate(false);
-      setName('');
-      setNetwork('mainnet');
-    },
-    onError: (error) => {
-      toast.error('Failed to create wallet');
-      console.error(error);
-    }
+    refetchInterval: 30000,
   });
 
   const refreshBalance = async (wallet_id) => {
     try {
       const response = await base44.functions.invoke('getBalance', { wallet_id });
-      if (response.data.success) {
+      if (response.data.success || response.data.balance !== undefined) {
         queryClient.invalidateQueries({ queryKey: ['wallets'] });
-        toast.success('Balance updated: ' + response.data.balance + ' XRP');
+        toast.success('Balance synced: ' + response.data.balance + ' XRP');
       }
     } catch (error) {
-      toast.error('Failed to refresh balance');
+      toast.error('Failed to sync balance');
       console.error(error);
     }
-  };
-
-  const handleCreate = () => {
-    if (!name.trim()) { toast.error('Please enter a wallet name'); return; }
-    createWallet.mutate({ name, network });
   };
 
   const handleAddExisting = async () => {
