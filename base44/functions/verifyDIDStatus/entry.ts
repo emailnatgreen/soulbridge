@@ -184,8 +184,22 @@ Deno.serve(async (req) => {
 
     const agent = agents?.[0];
 
+    // Calculate live balance from on-chain data
+    const liveBalance = accountExists ? parseFloat((parseInt(accountData.Balance) / 1_000_000).toFixed(6)) : 0;
+
+    // Update stored balance to match on-chain reality
+    if (accountExists && Math.abs(liveBalance - (wallet.balance || 0)) > 0.001) {
+      try {
+        await base44.asServiceRole.entities.Wallet.update(wallet.id, {
+          balance: liveBalance
+        });
+      } catch (e) {
+        console.warn('[verifyDIDStatus] Balance sync failed:', e.message);
+      }
+    }
+
     return Response.json({
-      isVerified: didActive ? true : false,
+      isVerified: didActive,
       userId: user.id,
       email: user.email,
       did: `did:xrpl:${classicAddress}`,
@@ -197,11 +211,12 @@ Deno.serve(async (req) => {
         account_exists: accountExists,
         did_active: didActive,
         verified_at: new Date().toISOString(),
-        balance: accountExists ? (parseInt(accountData.Balance) / 1_000_000).toFixed(2) + ' XRP' : '0.00 XRP',
+        balance: liveBalance.toFixed(2) + ' XRP',
         on_chain_proof: accountExists ? {
           account: classicAddress,
-          ledger_sequence: accountData.LedgerIndex || 'current',
-          previous_txn: accountData.PreviousTxnID,
+          ledger_sequence: accountData.index || accountData.LedgerIndex || 'N/A',
+          previous_txn: accountData.PreviousTxnID || null,
+          previous_txn_ledger: accountData.PreviousTxnLgrSeq || null,
           validated: true,
           explorer_url: `https://xrpscan.com/account/${classicAddress}`
         } : null

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const XUMM_API_KEY = Deno.env.get('xumm_api_key');
 const XUMM_API_SECRET = Deno.env.get('xume_secret_key');
@@ -57,12 +57,33 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Access denied: You do not own this wallet' }, { status: 403 });
     }
 
+    // Check LIVE balance from XRPL, not stale DB value
     const minimumPublishBalance = 3;
-    const currentBalance = Number(wallet.balance || 0);
-    if (currentBalance < minimumPublishBalance) {
+    let liveBalance = Number(wallet.balance || 0);
+    try {
+      const rpcRes = await fetch('https://xrplcluster.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'account_info',
+          params: [{ account: wallet.classic_address, ledger_index: 'validated' }]
+        })
+      });
+      const rpcData = await rpcRes.json();
+      const onChainBalance = rpcData.result?.account_data?.Balance;
+      if (onChainBalance) {
+        liveBalance = parseInt(onChainBalance) / 1_000_000;
+        // Sync DB balance
+        await base44.asServiceRole.entities.Wallet.update(wallet.id, { balance: liveBalance });
+      }
+    } catch (e) {
+      console.warn('Live balance check failed, using DB value:', e.message);
+    }
+
+    if (liveBalance < minimumPublishBalance) {
       return Response.json({
-        error: `Wallet balance is ${currentBalance.toFixed(2)} XRP. Need at least ${minimumPublishBalance} XRP to publish DID on-chain.`,
-        current_balance: currentBalance,
+        error: `Wallet balance is ${liveBalance.toFixed(2)} XRP. Need at least ${minimumPublishBalance} XRP to publish DID on-chain.`,
+        current_balance: liveBalance,
         required_balance: minimumPublishBalance
       }, { status: 400 });
     }
