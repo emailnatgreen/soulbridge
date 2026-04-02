@@ -75,7 +75,6 @@ export default function DIDManagementPanel() {
       const isAdmin = hasAdminAccess({ user: me, identityDid });
 
       if (isAdmin) {
-        // Admin sees ALL wallets
         const ws = await base44.entities.Wallet.list('-created_date', 50);
         setWallets(ws || []);
       } else if (me?.id) {
@@ -94,7 +93,11 @@ export default function DIDManagementPanel() {
     setLoading(false);
   };
 
-  useEffect(() => { loadWallets(); }, []);
+  // Delay initial load to avoid concurrent rate-limit hits with Dashboard parent
+  useEffect(() => {
+    const timer = setTimeout(loadWallets, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCreateWallet = async () => {
     if (!walletName.trim()) return;

@@ -92,37 +92,17 @@ export default function Dashboard() {
     // Emit page view signal
     window.__sb?.emit('page_view', { page: 'dashboard' });
 
-    // Load recent signals
-    const loadSignals = async () => {
-      try {
-        const db = await base44.entities.Signal.list('-created_date', 30);
-        const mem = window.__sb?.signals || [];
-        const merged = [...mem, ...db].reduce((acc, s) => {
-          const key = s.id || s.created_date;
-          if (!acc.seen.has(key)) { acc.seen.add(key); acc.list.push(s); }
-          return acc;
-        }, { seen: new Set(), list: [] }).list.slice(0, 25);
-        setSignals(merged);
-      } catch (_) {
-        setSignals(window.__sb?.signals || []);
-      }
-    };
-    loadSignals();
-
-    // Load wallets — admins see all, regular users see only their own
-    const loadWallets = async () => {
+    // Single consolidated load — one auth call, sequential to avoid rate limits
+    const loadAll = async () => {
       const me = await base44.auth.me().catch(() => null);
       let localIdentity = null;
       try { localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch (_) {}
       const localDid = localIdentity?.did;
-      const localAddr = localDid ? String(localDid).replace(/^did:xrpl:(?:1:)?/, '') : null;
+      const isAdminUser = me?.role === 'admin';
 
-      // Admin = platform admin role only (no hardcoded addresses to sync across modes)
-      const earlyAdmin = me?.role === 'admin';
-
+      // Load wallets
       let myWallets = [];
-      if (earlyAdmin) {
-        // Admin sees ALL wallets for the full operational picture
+      if (isAdminUser) {
         myWallets = await base44.entities.Wallet.list('-created_date', 50).catch(() => []);
       } else {
         const didAddress = localDid ? String(localDid).split(':').pop() : null;
@@ -134,21 +114,41 @@ export default function Dashboard() {
           (wallet, index, array) => array.findIndex(item => item.id === wallet.id) === index
         );
       }
-
       setWallets(myWallets || []);
 
-      // Transactions — admins see recent global, others see wallet-scoped
-      if (earlyAdmin) {
-        const allTx = await base44.entities.Transaction.list('-created_date', 20).catch(() => []);
+      // Load transactions — limit to 10, no per-wallet fan-out
+      if (isAdminUser) {
+        const allTx = await base44.entities.Transaction.list('-created_date', 10).catch(() => []);
         setMyTransactions(allTx || []);
-      } else {
-        const walletIds = (myWallets || []).map(w => w.id).filter(Boolean);
-        const txResults = await Promise.all(walletIds.map(id => base44.entities.Transaction.filter({ from_wallet_id: id }, '-created_date', 20).catch(() => [])));
-        const mergedTransactions = txResults.flat().sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0)).slice(0, 20);
-        setMyTransactions(mergedTransactions);
+      } else if (myWallets.length > 0) {
+        // Just get the first wallet's transactions to avoid N queries
+        const tx = await base44.entities.Transaction.filter(
+          { from_wallet_id: myWallets[0].id }, '-created_date', 10
+        ).catch(() => []);
+        setMyTransactions(tx || []);
+      }
+
+      // Load invites — only for admin
+      if (isAdminUser) {
+        const invites = await base44.entities.InvitationToken.list('-created_date', 20).catch(() => []);
+        setMyInvites(invites || []);
+      }
+
+      // Load signals (lightweight)
+      try {
+        const db = await base44.entities.Signal.list('-created_date', 15);
+        const mem = window.__sb?.signals || [];
+        const merged = [...mem, ...db].reduce((acc, s) => {
+          const key = s.id || s.created_date;
+          if (!acc.seen.has(key)) { acc.seen.add(key); acc.list.push(s); }
+          return acc;
+        }, { seen: new Set(), list: [] }).list.slice(0, 15);
+        setSignals(merged);
+      } catch (_) {
+        setSignals(window.__sb?.signals || []);
       }
     };
-    loadWallets();
+    loadAll();
 
     // Invited user — wallet is now created when the invite is claimed
     try {
@@ -163,30 +163,6 @@ export default function Dashboard() {
         }
       }
     } catch (_) {}
-
-    // Load invites — admins see all, regular users see only their own
-    const loadInvites = async () => {
-      const me = await base44.auth.me().catch(() => null);
-      let lid = null;
-      try { lid = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch (_) {}
-      // Admin = platform admin role only (no hardcoded addresses to sync across modes)
-      const earlyAdmin = me?.role === 'admin';
-
-      if (earlyAdmin) {
-        // Admin sees ALL invites
-        const invites = await base44.entities.InvitationToken.list('-created_date', 50).catch(() => []);
-        setMyInvites(invites || []);
-
-        const claimed = (invites || []).filter(token => token.status === 'claimed');
-        const walletResults = await Promise.all(
-          claimed.map(token => base44.entities.Wallet.filter({ name: `${token.recipient_nickname || 'Invited'} Wallet` }, '-created_date', 5).catch(() => []))
-        ).catch(() => []);
-        const flattened = (walletResults || []).flat().filter(w => w?.network === 'testnet');
-        const uniqueWallets = flattened.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
-        setClaimedInviteWallets(uniqueWallets);
-      }
-    };
-    loadInvites();
 
     // Listen for new in-memory signals
     const onSignal = () => setSignals([...(window.__sb?.signals || [])]);

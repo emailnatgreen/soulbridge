@@ -47,9 +47,10 @@ export default function ConstitutionalBraidLive({ compact = false }) {
   }, []);
 
   useEffect(() => {
-    loadAll();
+    // Delay initial fetch to stagger with other dashboard API calls
+    const initialDelay = setTimeout(loadAll, 3000);
     const interval = setInterval(loadAll, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    return () => { clearTimeout(initialDelay); clearInterval(interval); };
   }, [loadAll]);
 
   if (compact) {

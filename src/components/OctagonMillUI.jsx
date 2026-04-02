@@ -171,10 +171,10 @@ export default function OctagonMillUI() {
   }, []);
 
   useEffect(() => {
-    fetchAll();
-    // Auto-refresh balances every 2 minutes via backend proxy
-    const refreshTimer = setInterval(fetchAll, 2 * 60 * 1000);
-    return () => clearInterval(refreshTimer);
+    // Delay initial fetch to stagger with other dashboard API calls
+    const initialDelay = setTimeout(fetchAll, 5000);
+    const refreshTimer = setInterval(fetchAll, 5 * 60 * 1000);
+    return () => { clearTimeout(initialDelay); clearInterval(refreshTimer); };
   }, []);
 
   return (
