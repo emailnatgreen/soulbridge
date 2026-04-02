@@ -162,7 +162,7 @@ export default function DIDManager() {
       
       const v = data?.verification;
       if (!v || !v.account_exists) {
-        const verifyingWallet = wallets.find(w => w.id === walletId);
+        const verifyingWallet = wallets.find(w => w.id === verifyingWalletId);
         const network = data?.network || verifyingWallet?.network || 'mainnet';
         const fundingMsg = network === 'mainnet'
           ? 'Fund this address with at least 20 XRP to activate it.'
@@ -179,6 +179,7 @@ export default function DIDManager() {
       toast.error(message);
       console.error('Verification error:', error);
       setVerifyingWalletId(null);
+      setVerifyDialogOpen(false);
     }
   });
 
