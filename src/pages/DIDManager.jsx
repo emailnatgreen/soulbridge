@@ -70,35 +70,17 @@ export default function DIDManager() {
       const list = user?.role === 'admin'
         ? await base44.entities.Wallet.list('-created_date', 100)
         : await base44.entities.Wallet.filter({ owner_id: user?.id });
-      // Sync live balances for treasury wallet
+      // Sync live balances for all wallets
       return Promise.all(list.map(async (w) => {
-        if (w.classic_address === 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h') {
-          try {
-            const res = await base44.functions.invoke('getBalance', { wallet_id: w.id });
-            if (res.data?.balance !== undefined) return { ...w, balance: res.data.balance };
-          } catch (e) {}
-        }
+        try {
+          const res = await base44.functions.invoke('getBalance', { wallet_id: w.id });
+          if (res.data?.balance !== undefined) return { ...w, balance: res.data.balance };
+        } catch (e) {}
         return w;
       }));
     },
     enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-
-  // NOTE: Revoke/Reverse functions don't exist - DIDs are managed via governance proposals
-
-  const linkMutation = useMutation({
-    mutationFn: ({ agent_id, wallet_id }) => 
-      base44.functions.invoke('linkAgentToDID', { agent_id, wallet_id }),
-    onSuccess: () => {
-      toast.success('Agent successfully linked to DID');
-      queryClient.invalidateQueries({ queryKey: ['agents'] });
-      setLinkDialogOpen(false);
-      setSelectedAgent('');
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to link agent');
-    }
+    refetchInterval: 15000,
   });
 
   // NOTE: Agents cannot be unlinked from wallets - wallet_id is required in Agent schema
