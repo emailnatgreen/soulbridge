@@ -292,8 +292,8 @@ export default function Landing() {
                 { label: 'Published DIDs', value: stats.dids, color: 'text-green-300' },
               ].map(stat => (
                 <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-2 sm:p-3 text-center">
-                  <div className={`text-xl sm:text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                  <div className="text-white/40 text-[10px] sm:text-xs mt-1">{stat.label}</div>
+                  <div className={`text-lg sm:text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+                  <div className="text-white/40 text-[9px] sm:text-xs mt-1 truncate">{stat.label}</div>
                 </div>
               ))}
             </div>
