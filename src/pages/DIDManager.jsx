@@ -153,7 +153,7 @@ export default function DIDManager() {
       
       const v = data?.verification;
       if (!v || !v.account_exists) {
-        toast.error('Account not found on XRPL');
+        toast.error('Account not found on XRPL mainnet. Fund this address with at least 20 XRP to activate it.');
       } else if (v?.did_active) {
         toast.success('✅ DID is published on XRPL');
       } else {
@@ -919,20 +919,35 @@ export default function DIDManager() {
                         </div>
                       )}
                       <a
-                        href={currentVerification.verification.on_chain_proof.explorer_url}
+                        href={`https://xrpscan.com/account/${currentVerification.verification.on_chain_proof.account}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 text-xs font-medium mt-2 inline-flex items-center gap-1"
                       >
                         View on XRPScan <ExternalLink className="w-3 h-3" />
                       </a>
-                    </div>
-                  </div>
-                  )}
+                      </div>
+                      </div>
+                      )}
 
-                  <div className="text-xs text-gray-500 text-center">
-                  Verified at: {new Date(currentVerification.verification.verified_at).toLocaleString()}
-                  </div>
+                      {currentVerification.verification.account && !currentVerification.verification.account_exists && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded p-4 space-y-2">
+                      <div className="text-sm font-medium text-yellow-900 mb-2">Account Not Found on Chain</div>
+                      <p className="text-xs text-yellow-800 mb-3">This address hasn't been activated on XRPL mainnet yet. It needs at least 20 XRP deposited to exist on the ledger.</p>
+                      <a
+                      href={`https://xrpscan.com/account/${currentVerification.verification.account}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-yellow-700 hover:text-yellow-900 text-xs font-medium inline-flex items-center gap-1 underline"
+                      >
+                      Check address on XRPScan <ExternalLink className="w-3 h-3" />
+                      </a>
+                      </div>
+                      )}
+
+                      <div className="text-xs text-gray-500 text-center">
+                      Verified at: {new Date(currentVerification.verification.verified_at).toLocaleString()}
+                      </div>
               </div>
             ) : (
               <div className="p-6 text-center">
