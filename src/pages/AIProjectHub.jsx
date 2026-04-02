@@ -164,13 +164,10 @@ export default function AIProjectHub() {
       queryClient.invalidateQueries({ queryKey: ['economic-activities'] });
     };
 
-    window.addEventListener('focus', refreshProjectHubData);
-    document.addEventListener('visibilitychange', refreshProjectHubData);
-
-    return () => {
-      window.removeEventListener('focus', refreshProjectHubData);
-      document.removeEventListener('visibilitychange', refreshProjectHubData);
-    };
+    // Only sync when tab becomes visible again, not on every focus event
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshProjectHubData(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, [projectId, queryClient]);
 
   const handleSendMessage = () => {
