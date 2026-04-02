@@ -37,6 +37,13 @@ export default function AgentPicker({ activeAgentIds = [], onAdd, onClose }) {
         const dbNames = new Set((all || []).map(a => a.name?.toLowerCase()));
         const platformOnly = PLATFORM_AGENTS.filter(p => !dbNames.has(p.name.toLowerCase()));
         setAgents([...platformOnly, ...merged]);
+      } catch (err) {
+        console.error('[AgentPicker] Failed to load agents:', err);
+        setAgents([...PLATFORM_AGENTS]);
+      } finally {
+        setLoading(false);
+      }
+    };
     load();
   }, []);
 
