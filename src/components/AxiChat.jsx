@@ -267,7 +267,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   };
 
   useEffect(() => {
-    const summonAgentFromMessage = async () => {
+    const summonAgentsFromMessage = async () => {
       // Only check the very latest message — ignore historical messages
       const latestMessage = messages[messages.length - 1];
       if (!latestMessage?.content || latestMessage.role === 'user') return;
@@ -282,29 +282,39 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       if (processedSummonsRef.current.has(messageKey)) return;
       processedSummonsRef.current.add(messageKey);
 
+      // Find ALL summon lines in the message
       const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
-      const summonLine = lines.find(l => l.includes('🔔 SUMMON'));
-      if (!summonLine) return;
+      const summonLines = lines.filter(l => l.includes('🔔 SUMMON'));
+      if (summonLines.length === 0) return;
 
-      const idMatch = summonLine.match(/🔔 SUMMON(?:ING)?\s+(platform:[\w_]+|[a-f0-9-]{20,})/i);
-      let matchedAgent = null;
-      if (idMatch) {
-        matchedAgent = allAgents.find(a => a.id === idMatch[1]) || null;
-      }
-      if (!matchedAgent) {
-        const summonedName = summonLine.replace(/🔔 SUMMON(?:ING)?/i, '').trim();
-        if (summonedName) matchedAgent = findAgentByName(summonedName);
+      // Resolve each summon line to an agent
+      const agentsToAdd = [];
+      for (const line of summonLines) {
+        const idMatch = line.match(/🔔 SUMMON(?:ING)?\s+(platform:[\w_]+|[a-f0-9]{20,})/i);
+        let matched = null;
+        if (idMatch) {
+          matched = allAgents.find(a => a.id === idMatch[1]) || null;
+        }
+        if (!matched) {
+          const name = line.replace(/🔔 SUMMON(?:ING)?/i, '').trim();
+          if (name) matched = findAgentByName(name);
+        }
+        if (matched && !agentsToAdd.some(a => a.id === matched.id)) {
+          agentsToAdd.push(matched);
+        }
       }
 
-      if (!matchedAgent) return;
-      try {
-        await handleAddAgent(matchedAgent, { skipIntro: false });
-      } catch (err) {
-        console.error('[AxiChat] Summon error:', err);
+      // Add all matched agents sequentially
+      for (const agent of agentsToAdd) {
+        try {
+          await handleAddAgent(agent, { skipIntro: false });
+        } catch (err) {
+          console.error('[AxiChat] Summon error for', agent.name, ':', err);
+        }
       }
     };
 
-    summonAgentFromMessage();
+    summonAgentsFromMessage();
   }, [messages, activeAgents, handleAddAgent, allAgents, findAgentByName]);
 
   useEffect(() => {
