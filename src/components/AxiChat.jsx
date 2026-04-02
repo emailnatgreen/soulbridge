@@ -47,14 +47,13 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const [typingAgents, setTypingAgents] = useState(new Set()); // agent ids currently typing
+  const [typingAgents, setTypingAgents] = useState(new Set());
   const [ready, setReady] = useState(false);
   const [mode, setMode] = useState(null);
   const [showAgentPicker, setShowAgentPicker] = useState(false);
   const [didAuthError, setDidAuthError] = useState(null);
   const didSignal = useDIDSignal();
   const { allAgents, activeAgents, addAgent, removeAgent, findAgentByName, buildRoomContext } = useAgentRoom();
-  // allAgents is used directly in the summon detector for ID-based lookups
 
   const messagesEndRef = useRef(null);
   const convoRef = useRef(null);
@@ -62,19 +61,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const pendingMessageRef = useRef('');
   const processedSummonsRef = useRef(new Set());
 
-  // activeAgents persistence handled by useAgentRoom
-
-  // Scroll to bottom
   useEffect(() => {
     if (messages.length) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  // Init or reconnect when opened
   useEffect(() => {
     if (!isOpen) return;
 
     const init = async () => {
-      // Try agent SDK first and reconnect to the user's saved personal conversation
       try {
         const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
         const savedConversationId = localStorage.getItem(PERSONAL_CONVERSATION_KEY);
@@ -119,14 +113,12 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         console.warn('[AxiChat] Agent SDK unavailable, falling back to direct mode:', err?.message);
       }
 
-      // Fallback: direct axiRespond mode (for DID-only / unauthenticated users)
       const convId = localStorage.getItem('sb_axi_did_conv') || `did-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       localStorage.setItem('sb_axi_did_conv', convId);
       convoRef.current = { id: convId };
       setMode('direct');
       setReady(true);
 
-      // Load existing messages
       try {
         const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
         setMessages(res?.data?.messages || []);
@@ -137,7 +129,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     return () => { if (unsubRef.current) unsubRef.current(); };
   }, [isOpen]);
 
-  // Send message
   const handleSend = async () => {
     const msg = input.trim();
     if (!msg || sending || !convoRef.current) return;
@@ -150,12 +141,9 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         const invitedAgents = activeAgents;
         const enrichedMessage = buildRoomContext(msg);
 
-        // Send user message to Axi (triggers Axi's response via subscription)
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
 
-        // Fire all active agents in parallel
         if (invitedAgents.length > 0) {
-          // Show typing for all agents at once
           setTypingAgents(new Set(invitedAgents.map(a => a.id)));
 
           const agentResponses = await Promise.allSettled(
@@ -187,7 +175,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
           });
         }
       } else {
-        // Direct mode fallback
         pendingMessageRef.current = '';
         setMessages(prev => [...prev, {
           id: `u-${Date.now()}`, sender_agent_id: 'visitor',
@@ -230,9 +217,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     }
     setShowAgentPicker(false);
 
-    if (options.skipIntro) {
-      return;
-    }
+    if (options.skipIntro) return;
 
     const joinMessage = {
       id: `sys-${Date.now()}`,
@@ -244,30 +229,33 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
     setMessages((prev) => [...prev, joinMessage]);
 
-    // Context Assembly: build compact briefing for the summoned agent
     const contextBrief = buildAgentContextBrief(messages, activeAgents, agent);
     const introPrompt = `${contextBrief}\n\n[AUTO_JOIN_RESPONSE_REQUIRED]\nAxi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly, acknowledge the current participants, and respond naturally to the latest message.`;
 
-    const response = await base44.functions.invoke('generateAgentResponse', {
-      conversation_id: convoRef.current.id,
-      user_message: introPrompt,
-      agent_id: agent.id,
-      agent_name: agent.name,
-      includeContext: true // Enable Context Assembly Engine
-    });
+    try {
+      const response = await base44.functions.invoke('generateAgentResponse', {
+        conversation_id: convoRef.current.id,
+        user_message: introPrompt,
+        agent_id: agent.id,
+        agent_name: agent.name,
+        includeContext: true
+      });
 
-    const agentReply = response?.data?.response;
-    if (agentReply) {
-      setMessages((prev) => [...prev, {
-        id: `agent-${agent.id}-${Date.now()}`,
-        role: 'assistant',
-        sender_agent_id: agent.id,
-        metadata: { sourceAgentId: agent.id },
-        content: agentReply,
-        message_type: 'text'
-      }]);
+      const agentReply = response?.data?.response;
+      if (agentReply) {
+        setMessages((prev) => [...prev, {
+          id: `agent-${agent.id}-${Date.now()}`,
+          role: 'assistant',
+          sender_agent_id: agent.id,
+          metadata: { sourceAgentId: agent.id },
+          content: agentReply,
+          message_type: 'text'
+        }]);
+      }
+    } catch (err) {
+      console.error('[AxiChat] Agent intro error:', err);
     }
-  }, [activeAgents, addAgent]);
+  }, [activeAgents, addAgent, messages]);
 
   const handleRemoveAgent = (agentId) => removeAgent(agentId);
 
@@ -286,27 +274,28 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       const summonLine = lines.find(l => l.includes('🔔 SUMMON'));
       if (!summonLine) return;
 
-      // Try ID-based match first: 🔔 SUMMON platform:code_node
       const idMatch = summonLine.match(/🔔 SUMMON(?:ING)?\s+(platform:[\w_]+|[a-f0-9-]{20,})/i);
       let matchedAgent = null;
       if (idMatch) {
         const agentId = idMatch[1];
         matchedAgent = allAgents.find(a => a.id === agentId) || null;
       }
-      // Fallback: name-based match
       if (!matchedAgent) {
         const summonedName = summonLine.replace(/🔔 SUMMON(?:ING)?/i, '').trim();
         if (summonedName) matchedAgent = findAgentByName(summonedName);
       }
 
       if (!matchedAgent) return;
-      await handleAddAgent(matchedAgent, { skipIntro: false });
+      try {
+        await handleAddAgent(matchedAgent, { skipIntro: false });
+      } catch (err) {
+        console.error('[AxiChat] Summon error:', err);
+      }
     };
 
     summonAgentFromMessage();
   }, [messages, activeAgents, handleAddAgent, allAgents, findAgentByName]);
 
-  // External open events
   useEffect(() => {
     const h = (e) => {
       setIsOpen(true);
@@ -384,7 +373,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               </Button>
             </div>
           </div>
-          {/* Active agent pills */}
           {activeAgents.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-4 pb-2">
               {activeAgents.map((agent) => (
@@ -413,7 +401,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
             </div>
           )}
 
-          {/* DID Authorization Error Alert */}
           {didAuthError && (
             <div className="mx-3 mt-2 p-3 rounded-lg bg-red-900/30 border border-red-500/30 flex gap-2">
               <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
@@ -436,7 +423,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               </div>
             )}
             {messages.map((msg, idx) => {
-              // Strip injected [ROOM_STATE] block from displayed content
               const cleanMsg = msg.content?.includes('[ROOM_STATE]')
                 ? { ...msg, content: msg.content.split('[ROOM_STATE]')[0].trimEnd() }
                 : msg;
