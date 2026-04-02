@@ -947,9 +947,22 @@ export default function DIDManager() {
                       )}
 
                       {currentVerification.verification.account && !currentVerification.verification.account_exists && (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded p-4 space-y-2">
+                      <div className="bg-yellow-50 border border-yellow-200 rounded p-4 space-y-3">
                       <div className="text-sm font-medium text-yellow-900 mb-2">Account Not Found on Chain</div>
-                      <p className="text-xs text-yellow-800 mb-3">This address hasn't been activated on XRPL mainnet yet. It needs at least 20 XRP deposited to exist on the ledger.</p>
+                      <p className="text-xs text-yellow-800">This address hasn't been activated on XRPL mainnet yet. It needs at least 20 XRP deposited to exist on the ledger.</p>
+                      <Button
+                        size="sm"
+                        className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
+                        onClick={() => {
+                          if (currentVerification?.verification?.account) {
+                            base44.functions.invoke('autoFundWallet', { address: currentVerification.verification.account, amount: 25 }).then(() => {
+                              toast.success('Funding initiated!');
+                            }).catch(e => toast.error(e.message || 'Failed to fund wallet'));
+                          }
+                        }}
+                      >
+                        💰 Fund Wallet Now
+                      </Button>
                       <a
                       href={`https://xrpscan.com/account/${currentVerification.verification.account}`}
                       target="_blank"
