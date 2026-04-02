@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Wallet, RefreshCw } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function UniversalDashboardStatus({ hasInviteSession, identity, wallets, myInvites, myTransactions, inviteWallet }) {
-  // Build effective DID from multiple sources — props, localStorage identity, connected DID, wallets
+  const [liveBalances, setLiveBalances] = useState({});
+  const [loadingBalances, setLoadingBalances] = useState(false);
+
+  // Build effective DID from multiple sources
   const getLocalIdentity = () => {
     try { return JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch(_) { return null; }
   };
@@ -21,8 +25,35 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
   const identityConnected = !!(identity || localId?.connected || localId?.did || connectedDid?.did || inviteWallet?.classic_address || wallets?.length > 0);
   const shortDid = effectiveDid ? effectiveDid.split(':').pop()?.slice(0, 8) + '…' : null;
 
-  // Aggregate total balance across all wallets
-  const totalBalance = (wallets || []).reduce((sum, w) => sum + (Number(w.balance) || 0), 0);
+  // Collect all unique addresses to fetch live balances
+  const allAddresses = [...new Set([
+    ...(wallets || []).map(w => w.classic_address).filter(Boolean),
+    inviteWallet?.classic_address,
+    effectiveDid?.includes(':') ? effectiveDid.split(':').pop() : null,
+  ].filter(Boolean))];
+
+  // Fetch live XRPL balances
+  const fetchLiveBalances = async () => {
+    if (allAddresses.length === 0) return;
+    setLoadingBalances(true);
+    try {
+      const res = await base44.functions.invoke('xrplProxy', { addresses: allAddresses });
+      setLiveBalances(res?.data?.balances || {});
+    } catch (_) {}
+    setLoadingBalances(false);
+  };
+
+  useEffect(() => {
+    fetchLiveBalances();
+  }, [allAddresses.join(',')]);
+
+  // Use live balances, fall back to entity balances
+  const totalBalance = allAddresses.reduce((sum, addr) => {
+    const live = liveBalances[addr];
+    if (live?.balance != null) return sum + live.balance;
+    const wallet = (wallets || []).find(w => w.classic_address === addr);
+    return sum + (Number(wallet?.balance) || 0);
+  }, 0);
   const publishedCount = (wallets || []).filter(w => w.is_published).length;
 
   const items = hasInviteSession
@@ -40,7 +71,12 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-      <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Live status</p>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs uppercase tracking-[0.2em] text-white/40">Live status</p>
+        <button onClick={fetchLiveBalances} disabled={loadingBalances} className="text-white/30 hover:text-white/60 transition" title="Refresh live balances">
+          <RefreshCw className={`w-3.5 h-3.5 ${loadingBalances ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {items.map((item) => (
           <div key={item.label} className={`rounded-2xl border p-4 ${
