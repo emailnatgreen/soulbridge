@@ -174,22 +174,7 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
                 <Loader2 className="w-3 h-3 animate-spin" />
                 Waiting for your signature...
               </div>
-              {qrData.expires && <span>Expires: {new Date(qrData.expires).toLocaleTimeString()}</span>}
-            </div>
-
-            <Button variant="outline" className="w-full" onClick={() => window.open(qrData.qr_link, '_blank')}>
-              <ExternalLink className="w-4 h-4 mr-2" /> Open in Xaman App
-            </Button>
-          </div>
-        )}
-
-        {/* SUCCESS STEP */}
-        {step === 'done' && result?.success && (
-          <div className="space-y-4 py-2">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-              <CheckCircle className="w-14 h-14 text-green-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-green-900 mb-2">DID Successfully Published</h3>
-              <p className="text-sm text-green-700">Your Decentralized Identifier is now on-chain.</p>
+              {qrData?.expires && <span>Expires: {new Date(qrData.expires).toLocaleTimeString()}</span>}
             </div>
             <div className="space-y-3">
               {result.txid && (
