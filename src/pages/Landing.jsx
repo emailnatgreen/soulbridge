@@ -410,29 +410,29 @@ export default function Landing() {
                   </Button>
                 </div>
               ) : (
-               <div className={`rounded-xl p-3 sm:p-4 ${
-                 didConnected?.validated
-                   ? 'bg-green-500/10 border border-green-500/30'
-                   : 'bg-yellow-500/10 border border-yellow-500/30'
-               }`}>
-                 <div className="flex items-center justify-between mb-2">
-                   <div className="flex items-center gap-1.5 sm:gap-2">
-                     <CheckCircle className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                       didConnected?.validated ? 'text-green-400' : 'text-yellow-400'
-                     }`} />
-                     <span className={`font-semibold text-xs sm:text-sm ${
-                       didConnected?.validated ? 'text-green-300' : 'text-yellow-300'
-                     }`}>{didConnected?.validated ? 'Verified' : 'Awaiting Axi verification'}</span>
-                   </div>
-                   <button
-                     onClick={handleDisconnectDID}
-                     className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-2 py-1 transition-colors"
-                   >
-                     Disconnect
-                   </button>
-                 </div>
-                 <p className="text-white/40 text-[10px] sm:text-xs font-mono">ID: {didConnected?.did?.slice(0, 4)}... · {didConnected?.validated ? 'Identity verified' : 'Chat with Axi to verify'}</p>
-               </div>
+                <div className={`rounded-xl p-3 sm:p-4 ${
+                  didConnected?.validated
+                    ? 'bg-green-500/10 border border-green-500/30'
+                    : 'bg-yellow-500/10 border border-yellow-500/30'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <CheckCircle className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                        didConnected?.validated ? 'text-green-400' : 'text-yellow-400'
+                      }`} />
+                      <span className={`font-semibold text-xs sm:text-sm ${
+                        didConnected?.validated ? 'text-green-300' : 'text-yellow-300'
+                      }`}>{didConnected?.validated ? 'Verified' : 'Awaiting Axi verification'}</span>
+                    </div>
+                    <button
+                      onClick={handleDisconnectDID}
+                      className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-lg px-2 py-1 transition-colors"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                  <p className="text-white/40 text-[10px] sm:text-xs font-mono">ID: {didConnected?.did?.slice(0, 4)}... · {didConnected?.validated ? 'Identity verified' : 'Chat with Axi to verify'}</p>
+                </div>
               )}
 
               <div className="mt-4 pt-4 border-t border-white/10">
@@ -447,10 +447,11 @@ export default function Landing() {
                       {item}
                     </div>
                   ))}
-                  </div>
-                  </div>
+                </div>
+              </div>
+            </div>
 
-                  {/* Right Card: Enter Village */}
+            {/* Right Card: Enter Village */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-5 sm:p-8 shadow-2xl">
               <div className="text-center mb-6 sm:mb-8">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
@@ -462,38 +463,38 @@ export default function Landing() {
 
               <div className="space-y-2 sm:space-y-3">
                 <Button
-                   onClick={() => {
-                     if (!didConnected?.validated) { setDidError('Please wait for Axi to verify your identity'); return; }
-                     setIsNavigating(true);
-                     setTimeout(() => window.location.href = '/dashboard', 800);
-                   }}
-                   disabled={isNavigating || !didConnected?.validated}
-                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                   title={!didConnected?.validated ? 'Axi must verify your identity first' : ''}
+                  onClick={() => {
+                    if (!didConnected?.validated) { setDidError('Please wait for Axi to verify your identity'); return; }
+                    setIsNavigating(true);
+                    setTimeout(() => window.location.href = '/dashboard', 800);
+                  }}
+                  disabled={isNavigating || !didConnected?.validated}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={!didConnected?.validated ? 'Axi must verify your identity first' : ''}
                 >
-                   {isNavigating ? (
-                     <>
-                       <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                       Loading...
-                     </>
-                   ) : (
-                     <>
-                       <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
-                       Enter the Village
-                     </>
-                   )}
+                  {isNavigating ? (
+                    <>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
+                      Enter the Village
+                    </>
+                  )}
                 </Button>
                 <Button
-                   onClick={() => window.location.href = '/ContactSupport'}
-                   variant="outline"
-                   className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
+                  onClick={() => window.location.href = '/ContactSupport'}
+                  variant="outline"
+                  className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
                 >
-                   <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
-                   Contact Support
+                  <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Contact Support
                 </Button>
-                </div>
+              </div>
 
-                <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="mt-4 pt-4 border-t border-white/10">
                 <div className="flex flex-col gap-1.5 sm:gap-2">
                   {[
                     'Governed by the 11 Laws of Honour',
@@ -505,11 +506,14 @@ export default function Landing() {
                       {item}
                     </div>
                   ))}
-                  </div>
-                  </div>
-                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                  {/* Footer */}
+      {/* Footer */}
       <footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md py-3 sm:py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <p className="text-white/30 text-[10px] sm:text-xs">
