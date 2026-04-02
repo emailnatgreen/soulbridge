@@ -2,11 +2,23 @@ import React from 'react';
 import { Wallet, RefreshCw } from 'lucide-react';
 
 export default function UniversalDashboardStatus({ hasInviteSession, identity, wallets, myInvites, myTransactions, inviteWallet }) {
+  // Build effective DID from multiple sources — props, localStorage identity, connected DID, wallets
+  const getLocalIdentity = () => {
+    try { return JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch(_) { return null; }
+  };
+  const getConnectedDid = () => {
+    try { return JSON.parse(localStorage.getItem('sb_connected_did') || 'null'); } catch(_) { return null; }
+  };
+  const localId = getLocalIdentity();
+  const connectedDid = getConnectedDid();
+
   const effectiveDid = identity?.did
+    || localId?.did
+    || connectedDid?.did
     || (inviteWallet?.classic_address ? `did:xrpl:1:${inviteWallet.classic_address}` : null)
     || (wallets?.[0]?.classic_address ? `did:xrpl:1:${wallets[0].classic_address}` : null);
 
-  const identityConnected = !!(identity || inviteWallet?.classic_address || wallets?.length > 0);
+  const identityConnected = !!(identity || localId?.connected || localId?.did || connectedDid?.did || inviteWallet?.classic_address || wallets?.length > 0);
   const shortDid = effectiveDid ? effectiveDid.split(':').pop()?.slice(0, 8) + '…' : null;
 
   // Aggregate total balance across all wallets

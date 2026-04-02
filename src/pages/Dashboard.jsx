@@ -77,9 +77,9 @@ export default function Dashboard() {
       let localIdentity = null;
       try { localIdentity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch (_) {}
       const localDid = localIdentity?.did;
-      const isAdminUser = me?.role === 'admin';
+      const isAdminUser = me?.role === 'admin' || hasAdminAccess({ user: me, identityDid: localDid });
 
-      // Load wallets
+      // Load wallets — try user-scoped first, then service role for admin
       let myWallets = [];
       if (isAdminUser) {
         myWallets = await base44.entities.Wallet.list('-created_date', 50).catch(() => []);
@@ -100,7 +100,6 @@ export default function Dashboard() {
         const allTx = await base44.entities.Transaction.list('-created_date', 10).catch(() => []);
         setMyTransactions(allTx || []);
       } else if (myWallets.length > 0) {
-        // Just get the first wallet's transactions to avoid N queries
         const tx = await base44.entities.Transaction.filter(
           { from_wallet_id: myWallets[0].id }, '-created_date', 10
         ).catch(() => []);
