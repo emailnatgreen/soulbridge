@@ -12,9 +12,10 @@ Deno.serve(async (req) => {
     // Build a completely fresh request — only include headers we explicitly set
     const freshHeaders = new Headers();
     freshHeaders.set('content-type', 'application/json');
-    // Copy over x-base44-* headers needed by the SDK
+    // Copy over platform headers needed by the SDK (base44-*, x-base44-*, x-app-*)
     for (const [key, value] of req.headers.entries()) {
-      if (key.startsWith('x-base44') || key.startsWith('x-app')) {
+      if (key.toLowerCase() === 'authorization') continue;
+      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
         freshHeaders.set(key, value);
       }
     }

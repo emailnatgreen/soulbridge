@@ -22,8 +22,8 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
   const { activeAgents } = useAgentRoom();
 
   // Pages where floating button should NOT appear
-  const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass'];
-  const shouldShow = isRecognized && !NO_FLOAT_PAGES.includes(currentPageName) && !chatOpen;
+  const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass', 'Landing', 'ContactSupport'];
+  const shouldShow = !NO_FLOAT_PAGES.includes(currentPageName) && !chatOpen;
 
   // Track active agent — prefer connected DID's agent, then room agents, then Axi
   useEffect(() => {
@@ -83,18 +83,17 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
   const agentName = activeAgent?.name || 'Axi';
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 right-3 md:right-6 z-[100]">
+    <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-[100]">
       <button
         onClick={() => {
           setChatOpen(true);
-          // If a DID is connected with a linked agent, pass that context
           if (connectedDid?.agentId) {
             window.dispatchEvent(new CustomEvent('open-axi-with-agent', {
               detail: { agent: activeAgent, did: connectedDid }
             }));
           }
         }}
-        className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 relative ${
+        className={`w-14 h-14 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 relative ${
           connectedDid
             ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-green-400/30'
             : isAdmin

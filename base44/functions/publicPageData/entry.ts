@@ -20,7 +20,8 @@ Deno.serve(async (req) => {
     const freshHeaders = new Headers();
     freshHeaders.set('content-type', 'application/json');
     for (const [key, value] of req.headers.entries()) {
-      if (key.startsWith('x-base44') || key.startsWith('x-app')) {
+      if (key.toLowerCase() === 'authorization') continue;
+      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
         freshHeaders.set(key, value);
       }
     }
