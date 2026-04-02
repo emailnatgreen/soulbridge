@@ -21,6 +21,11 @@ function emitSignal(data) {
   window.dispatchEvent(new CustomEvent('soulbridge-signal', { detail: data }));
 }
 
+function shortenDID(did) {
+  if (!did) return '';
+  return `${did.slice(0, 20)}...${did.slice(-20)}`;
+}
+
 function ParticleCanvas() {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -129,9 +134,23 @@ export default function Landing() {
   };
 
   useEffect(() => {
-    const handleValidated = (e) => {
-      const { did } = e.detail || {};
-      setDidConnected(prev => prev ? { ...prev, validated: true } : null);
+    // Check localStorage on mount first
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      if (stored) {
+        const identity = JSON.parse(stored);
+        setDidConnected(identity);
+      }
+    } catch (e) {}
+
+    const handleValidated = () => {
+      try {
+        const stored = localStorage.getItem('soulbridge_identity');
+        if (stored) {
+          const identity = JSON.parse(stored);
+          setDidConnected({ ...identity, validated: true });
+        }
+      } catch (e) {}
     };
     window.addEventListener('did-validated', handleValidated);
     return () => window.removeEventListener('did-validated', handleValidated);
@@ -431,7 +450,10 @@ export default function Landing() {
                       Disconnect
                     </button>
                   </div>
-                  <p className="text-white/40 text-[10px] sm:text-xs font-mono">ID: {didConnected?.did?.slice(0, 4)}... · {didConnected?.validated ? 'Identity verified' : 'Chat with Axi to verify'}</p>
+                  <div className="text-white/50 text-[10px] sm:text-xs font-mono break-all select-all cursor-pointer hover:text-white/70 transition-colors p-2 bg-black/30 rounded border border-white/10">
+                    {shortenDID(didConnected?.did)}
+                  </div>
+                  <p className="text-white/40 text-[10px] sm:text-xs mt-2">{didConnected?.validated ? '✓ Identity verified' : '⏳ Chat with Axi to verify'}</p>
                 </div>
               )}
 
