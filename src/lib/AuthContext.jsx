@@ -94,6 +94,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkAppState(false);
 
+    // Skip re-auth checks in editor preview — the iframe fires focus/visibility events constantly
+    const isEditorPreview = new URLSearchParams(window.location.search).has('_preview_token');
+    if (isEditorPreview) return;
+
     const handleFocus = () => {
       if (initialCheckDone.current) checkAppState(true);
     };
