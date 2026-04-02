@@ -5,18 +5,15 @@ import '@/index.css'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { queryClientInstance } from '@/lib/query-client'
 
-// Block window.ethereum so MetaMask can't auto-connect
-const blockEthereum = () => {
-  try {
-    Object.defineProperty(window, 'ethereum', {
-      get: () => undefined,
-      set: () => {},
-      configurable: true,
-    });
-  } catch (_) {}
-};
-blockEthereum();
-setInterval(blockEthereum, 500);
+// Block window.ethereum permanently so MetaMask can't auto-connect
+try {
+  Object.defineProperty(window, 'ethereum', {
+    get: () => undefined,
+    set: () => {},
+    configurable: false,
+    enumerable: false,
+  });
+} catch (_) {}
 
 // Swallow MetaMask / Web3 errors silently
 const isWeb3Error = (msg) => {

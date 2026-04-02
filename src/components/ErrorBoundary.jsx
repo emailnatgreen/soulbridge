@@ -24,7 +24,8 @@ export default class ErrorBoundary extends Component {
       const msg = String(this.state.error?.message || '').toLowerCase();
       // Silently recover from MetaMask / Web3 errors without showing error UI
       if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3') || msg.includes('wallet connect')) {
-        this.state.hasError = false;
+        // Use setTimeout to avoid mutating state during render
+        setTimeout(() => this.setState({ hasError: false, error: null }), 0);
         return this.props.children;
       }
       return (

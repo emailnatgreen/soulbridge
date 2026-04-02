@@ -4,28 +4,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  * Fetches entity data for public-facing pages using service role.
  * This bypasses entity security rules so unauthenticated visitors can view
  * aggregated/anonymised Village data on Landing, ScrollOfResonance, KineticCompass.
+ * No authentication required — uses asServiceRole only.
  */
 Deno.serve(async (req) => {
   try {
-    const headers = new Headers(req.headers);
-    const authHeader = (headers.get('authorization') || '').trim();
-    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
-    const bearerValue = rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken !== 'Bearer' ? rawToken : '';
-
+    // Public endpoint — create client, then use only asServiceRole (no auth needed)
+    const base44 = createClientFromRequest(req);
     const body = await req.json();
-
-    if (bearerValue) {
-      headers.set('authorization', `Bearer ${bearerValue}`);
-      
-    } else {
-      headers.delete('authorization');
-    }
-
-    const base44 = createClientFromRequest(new Request(req.url, {
-      method: req.method,
-      headers,
-      body: JSON.stringify(body),
-    }));
     const { page } = body;
 
     if (page === 'landing') {
