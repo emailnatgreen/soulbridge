@@ -47,13 +47,13 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
     fetchLiveBalances();
   }, [allAddresses.join(',')]);
 
-  // Use live balances, fall back to entity balances
-  const totalBalance = allAddresses.reduce((sum, addr) => {
-    const live = liveBalances[addr];
-    if (live?.balance != null) return sum + live.balance;
-    const wallet = (wallets || []).find(w => w.classic_address === addr);
-    return sum + (Number(wallet?.balance) || 0);
-  }, 0);
+  // The user's own DID address — this is what we show as "My DID Balance"
+  const myDidAddress = effectiveDid?.includes(':') ? effectiveDid.split(':').pop() : null;
+  const myDidLive = myDidAddress ? liveBalances[myDidAddress] : null;
+  const myDidBalance = myDidLive?.balance != null
+    ? myDidLive.balance
+    : (myDidAddress ? (Number((wallets || []).find(w => w.classic_address === myDidAddress)?.balance) || 0) : 0);
+  const myDidActive = myDidLive?.active ?? (myDidBalance > 0);
   const publishedCount = (wallets || []).filter(w => w.is_published).length;
 
   const items = hasInviteSession
@@ -64,7 +64,7 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
       ]
     : [
         { label: 'Identity', value: identityConnected ? '● Connected' : 'Disconnected', subtitle: shortDid, highlight: identityConnected },
-        { label: 'Total Balance', value: `${totalBalance.toFixed(2)} XRP`, subtitle: `${allAddresses.length} address(es)`, highlight: totalBalance > 0 },
+        { label: 'My DID Balance', value: `${myDidBalance.toFixed(2)} XRP`, subtitle: myDidAddress ? myDidAddress.slice(0, 12) + '…' : 'No DID', highlight: myDidActive },
         { label: 'Published DIDs', value: String(publishedCount), subtitle: publishedCount > 0 ? 'On-chain' : 'None yet' },
         { label: 'Transactions', value: String((myTransactions || []).length) },
     ];
