@@ -306,7 +306,7 @@ export default function AIProjectHub() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className={`text-sm font-medium ${activity.activity_type.includes('earned') || activity.activity_type.includes('deposit') ? 'text-green-400' : 'text-red-400'}`}>
+                          <div className={`text-sm font-medium ${(activity.activity_type || '').includes('earned') || (activity.activity_type || '').includes('deposit') ? 'text-green-400' : 'text-red-400'}`}>
                             {(activity.activity_type || '').includes('earned') || (activity.activity_type || '').includes('deposit') ? '+' : '-'}{(activity.amount ?? 0).toFixed(3)} XRP
                           </div>
                         </div>
