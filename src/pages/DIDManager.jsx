@@ -151,9 +151,12 @@ export default function DIDManager() {
   };
 
   const verifyMutation = useMutation({
-    mutationFn: (walletId) => base44.functions.invoke('verifyDIDStatus', { wallet_id: walletId }),
-    onSuccess: (response) => {
-      const data = response.data || response;
+    mutationFn: async (walletId) => {
+      const wallet = wallets.find(w => w.id === walletId);
+      const result = await base44.functions.invoke('verifyDIDStatus', { wallet_id: walletId });
+      return { ...result.data, wallet }; // Attach wallet to result for panel
+    },
+    onSuccess: (data) => {
       if (data?.error || data?.message?.includes('error')) {
         toast.error(data?.message || 'XRPL network issue—try again in a moment');
         setVerifyingWalletId(null);
@@ -164,13 +167,13 @@ export default function DIDManager() {
         ...prev,
         [verifyingWalletId]: data
       }));
+      // Pass the full data object to panel (includes verification + wallet details)
       setCurrentVerification(data);
       setVerifyDialogOpen(true);
       
       const v = data?.verification;
       if (!v || !v.account_exists) {
-        const verifyingWallet = wallets.find(w => w.id === verifyingWalletId);
-        const network = data?.network || verifyingWallet?.network || 'mainnet';
+        const network = data?.network || data?.wallet?.network || 'mainnet';
         const fundingMsg = network === 'mainnet'
           ? 'Fund this address with at least 20 XRP to activate it.'
           : 'Fund this address with testnet XRP (via faucet) to activate it.';
@@ -186,32 +189,6 @@ export default function DIDManager() {
       console.error('Verification error:', error);
       setVerifyingWalletId(null);
       setVerifyDialogOpen(false);
-    }
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (walletId) => base44.entities.Wallet.delete(walletId),
-    onSuccess: () => {
-      toast.success('DID deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['wallets'] });
-      setDeleteDialogOpen(false);
-      setWalletToDelete(null);
-    },
-    onError: () => toast.error('Failed to delete DID')
-  });
-
-  const requestActivationMutation = useMutation({
-    mutationFn: ({ wallet_id, agent_id }) => 
-      base44.functions.invoke('createDidActivationProposal', { wallet_id, agent_id }),
-    onSuccess: (response) => {
-      toast.success('DID activation proposal submitted to governance');
-      setRequestDialogOpen(false);
-      setSelectedWalletForRequest(null);
-      queryClient.invalidateQueries(['wallets']);
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to submit activation proposal');
-      console.error('Proposal error:', error);
     }
   });
 
