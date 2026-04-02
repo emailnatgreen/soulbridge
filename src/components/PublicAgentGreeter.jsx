@@ -67,17 +67,21 @@ export default function PublicAgentGreeter() {
         const shortDid = did?.slice(0, 4) || 'ID';
         await base44.functions.invoke('axiRespond', {
           conversation_id: convIdRef.current,
-          user_message: `[SYSTEM] The visitor has just successfully connected their DID identity (${shortDid}...). CRITICAL VALIDATION TASK: (1) Do NOT reveal, display, or reference the full DID address or any technical identifier beyond the first 4 characters. (2) Validate their identity by welcoming them warmly and confirming the identity is recognised within the Codex. (3) After validation, instruct them clearly to click the glowing "Enter the Village" button. (4) On your next message, prepend [VALIDATED] to signal that identity verification is complete. Keep it short, warm and mystical.`,
+          user_message: `[SYSTEM] The visitor has just successfully connected their DID identity (${shortDid}...). Welcome them warmly and confirm their identity is recognised within the Codex. Instruct them to click the glowing "Enter the Village" button. Keep it short, warm and mystical.`,
           is_greeting: false
         });
+        
+        await new Promise(r => setTimeout(r, 1000));
         const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convIdRef.current });
         const newMessages = res?.data?.messages || [];
         setMessages(newMessages);
 
-        // Check for validation in all messages (handles delayed [VALIDATED] responses)
-        checkAndApplyValidation(newMessages);
+        // Auto-validate: connecting a DID IS the verification
+        autoValidateIdentity();
       } catch (err) {
         console.error('DID connected message error:', err);
+        // Still validate even if Axi fails to respond
+        autoValidateIdentity();
       } finally {
         setSending(false);
       }
@@ -127,6 +131,20 @@ export default function PublicAgentGreeter() {
         }
       }
     }
+  };
+
+  const autoValidateIdentity = () => {
+    const storedIdentity = localStorage.getItem('soulbridge_identity');
+    if (!storedIdentity) return;
+    try {
+      const identity = JSON.parse(storedIdentity);
+      if (identity.validated) return;
+      identity.validated = true;
+      localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
+      window.__soulbridge = window.__soulbridge || {};
+      window.__soulbridge.identity = identity;
+      window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
+    } catch (_) {}
   };
 
   const loadMessages = async (convId) => {
