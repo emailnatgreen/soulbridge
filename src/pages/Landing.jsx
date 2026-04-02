@@ -486,11 +486,10 @@ export default function Landing() {
               <div className="space-y-2 sm:space-y-3">
                 <Button
                   onClick={() => {
-                    if (!didConnected?.validated) { setDidError('Please wait for Axi to verify your identity'); return; }
                     setIsNavigating(true);
                     setTimeout(() => window.location.href = '/dashboard', 800);
                   }}
-                  disabled={isNavigating || !didConnected?.validated}
+                  disabled={isNavigating || !didConnected || !didConnected.validated}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   title={!didConnected?.validated ? 'Axi must verify your identity first' : ''}
                 >
