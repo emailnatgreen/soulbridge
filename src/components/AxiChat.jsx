@@ -332,7 +332,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/50 flex-shrink-0">
+          <div className="flex flex-col border-b border-slate-700/50 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
@@ -340,22 +341,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               <div>
                 <h3 className="font-semibold text-white text-sm">Talk to Axi</h3>
                 <p className="text-xs text-purple-300/60">Village AI Guide</p>
-                {activeAgents.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {activeAgents.map((agent) => (
-                      <Badge key={agent.id} className="bg-white/10 text-white border-white/10 pr-1">
-                        <span>{agent.name}</span>
-                        <button
-                          onClick={() => handleRemoveAgent(agent.id)}
-                          className="ml-1 rounded-full p-0.5 hover:bg-white/10"
-                          aria-label={`Remove ${agent.name}`}
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
             <div className="flex gap-1">
@@ -389,6 +374,24 @@ export default function AxiChat({ isOpen, setIsOpen }) {
                 <X className="w-3.5 h-3.5" />
               </Button>
             </div>
+          </div>
+          {/* Active agent pills */}
+          {activeAgents.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+              {activeAgents.map((agent) => (
+                <Badge key={agent.id} className="bg-white/10 text-white border-white/10 pr-1 text-xs">
+                  <span>{agent.name}</span>
+                  <button
+                    onClick={() => handleRemoveAgent(agent.id)}
+                    className="ml-1 rounded-full p-0.5 hover:bg-white/10"
+                    aria-label={`Remove ${agent.name}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
           </div>
 
           {showAgentPicker && (
