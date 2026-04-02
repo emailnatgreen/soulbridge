@@ -83,7 +83,7 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
   const agentName = activeAgent?.name || 'Axi';
 
   return (
-    <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-[100]">
+    <div className="fixed bottom-20 md:bottom-6 right-3 md:right-6 z-[100]">
       <button
         onClick={() => {
           setChatOpen(true);
@@ -94,7 +94,7 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
             }));
           }
         }}
-        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 relative ${
+        className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-2xl border transition-transform hover:scale-110 active:scale-95 relative ${
           connectedDid
             ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-green-400/30'
             : isAdmin
@@ -103,11 +103,11 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
         }`}
         title={connectedDid ? `${connectedDid.agentName || 'Axi'} · ${connectedDid.address?.slice(0,8)}…` : `Open chat with ${agentName}`}
       >
-        {connectedDid ? <Shield className="w-6 h-6 text-white" /> : isAdmin ? <Shield className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
+        {connectedDid ? <Shield className="w-4 h-4 md:w-6 md:h-6 text-white" /> : isAdmin ? <Shield className="w-4 h-4 md:w-6 md:h-6 text-white" /> : <User className="w-4 h-4 md:w-6 md:h-6 text-white" />}
         
         {/* DID verification badge */}
         <Circle
-          className={`w-3 h-3 fill-current absolute bottom-0 right-0 rounded-full border border-white ${
+          className={`w-2 h-2 md:w-3 md:h-3 fill-current absolute bottom-0 right-0 rounded-full border border-white ${
             badge.pulse ? 'animate-pulse' : ''
           } ${badge.color}`}
         />

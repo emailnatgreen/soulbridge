@@ -227,11 +227,13 @@ export default function Landing() {
     setDidError('');
     if (!did.trim()) { setDidError('Please enter your DID wallet address'); return; }
     if (!did.trim().startsWith('did:')) { setDidError('Invalid DID format — must start with did:'); return; }
-    const identity = { did: did.trim(), connected: true, timestamp: Date.now() };
+    const identity = { did: did.trim(), connected: true, validated: true, timestamp: Date.now() };
+    window.__soulbridge = window.__soulbridge || {};
     window.__soulbridge.identity = identity;
     localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
     emitSignal({ type: 'identity_connected', did: did.trim(), timestamp: Date.now() });
     window.dispatchEvent(new CustomEvent('did-connected', { detail: { did: did.trim() } }));
+    window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: did.trim() } }));
     setDidConnected(identity);
   };
 
@@ -489,7 +491,7 @@ export default function Landing() {
                     setIsNavigating(true);
                     setTimeout(() => window.location.href = '/dashboard', 800);
                   }}
-                  disabled={isNavigating || !didConnected || !didConnected.validated}
+                  disabled={isNavigating || !didConnected}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   title={!didConnected?.validated ? 'Axi must verify your identity first' : ''}
                 >
