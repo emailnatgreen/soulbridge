@@ -116,9 +116,8 @@ export default function Dashboard() {
       const localDid = localIdentity?.did;
       const localAddr = localDid ? String(localDid).replace(/^did:xrpl:(?:1:)?/, '') : null;
 
-      // Admin = platform admin OR admin DID in localStorage
-      const ADMIN_ADDRS = ['rL1W8aBjXscSHgkiBKQJyYeU9YBpWo2jqz', 'rG1ZAbWEnBegAXFqyqyi8vgQFhDtDHAQH7'];
-      const earlyAdmin = me?.role === 'admin' || ADMIN_ADDRS.includes(localAddr || '');
+      // Admin = platform admin role only (no hardcoded addresses to sync across modes)
+      const earlyAdmin = me?.role === 'admin';
 
       let myWallets = [];
       if (earlyAdmin) {
@@ -169,9 +168,8 @@ export default function Dashboard() {
       const me = await base44.auth.me().catch(() => null);
       let lid = null;
       try { lid = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null'); } catch (_) {}
-      const la = lid?.did ? String(lid.did).replace(/^did:xrpl:(?:1:)?/, '') : null;
-      const ADMIN_ADDRS2 = ['rL1W8aBjXscSHgkiBKQJyYeU9YBpWo2jqz', 'rG1ZAbWEnBegAXFqyqyi8vgQFhDtDHAQH7'];
-      const earlyAdmin = me?.role === 'admin' || ADMIN_ADDRS2.includes(la || '');
+      // Admin = platform admin role only (no hardcoded addresses to sync across modes)
+      const earlyAdmin = me?.role === 'admin';
 
       if (earlyAdmin) {
         // Admin sees ALL invites
