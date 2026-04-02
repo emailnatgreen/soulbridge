@@ -88,8 +88,11 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
             queryClient.invalidateQueries({ queryKey: ['dh-wallets'] });
             queryClient.invalidateQueries({ queryKey: ['user-wallets'] });
           }, 500);
-          if (onSuccess) onSuccess();
-        } else if (status.resolved && !status.signed) {
+          // Delay success callback to allow XRPL ledger to propagate before verification
+          setTimeout(() => {
+            if (onSuccess) onSuccess();
+          }, 8000);
+          } else if (status.resolved && !status.signed) {
           clearInterval(interval);
           setPollingInterval(null);
           setResult({ success: false, message: 'Signing request was rejected or expired' });
