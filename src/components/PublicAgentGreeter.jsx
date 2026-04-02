@@ -74,20 +74,8 @@ export default function PublicAgentGreeter() {
         const newMessages = res?.data?.messages || [];
         setMessages(newMessages);
 
-        // Check for validation immediately after Axi responds
-        if (newMessages.length > 0) {
-          const lastMsg = newMessages[newMessages.length - 1];
-          if (lastMsg.sender_agent_id === 'axi' && lastMsg.content?.includes('[VALIDATED]')) {
-            const storedIdentity = localStorage.getItem('soulbridge_identity');
-            if (storedIdentity) {
-              const identity = JSON.parse(storedIdentity);
-              identity.validated = true;
-              localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
-              window.__soulbridge.identity = identity;
-              window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
-            }
-          }
-        }
+        // Check for validation in all messages (handles delayed [VALIDATED] responses)
+        checkAndApplyValidation(newMessages);
       } catch (err) {
         console.error('DID connected message error:', err);
       } finally {
@@ -112,10 +100,41 @@ export default function PublicAgentGreeter() {
     };
   }, [isOpen]);
 
+  const checkAndApplyValidation = (msgs) => {
+    // Already validated? Skip.
+    try {
+      const stored = localStorage.getItem('soulbridge_identity');
+      if (stored && JSON.parse(stored).validated) return;
+    } catch (_) {}
+
+    for (let i = Math.max(0, msgs.length - 5); i < msgs.length; i++) {
+      const msg = msgs[i];
+      if (msg.sender_agent_id === 'axi') {
+        const content = (msg.content || '').toLowerCase();
+        if (content.includes('[validated]') || (content.includes('validated') && (content.includes('identity') || content.includes('recognised') || content.includes('recognized')))) {
+          const storedIdentity = localStorage.getItem('soulbridge_identity');
+          if (storedIdentity) {
+            try {
+              const identity = JSON.parse(storedIdentity);
+              identity.validated = true;
+              localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
+              window.__soulbridge = window.__soulbridge || {};
+              window.__soulbridge.identity = identity;
+              window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
+            } catch (_) {}
+          }
+          break;
+        }
+      }
+    }
+  };
+
   const loadMessages = async (convId) => {
     try {
       const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
-      setMessages(res?.data?.messages || []);
+      const msgs = res?.data?.messages || [];
+      setMessages(msgs);
+      checkAndApplyValidation(msgs);
     } catch (err) {
       console.error('Load messages error:', err);
     }
@@ -201,34 +220,8 @@ export default function PublicAgentGreeter() {
       const newMessages = res?.data?.messages || [];
       setMessages(newMessages);
       
-      // Check for validation in last 3 messages (more robust for mobile)
-      let isValidated = false;
-      for (let i = Math.max(0, newMessages.length - 3); i < newMessages.length; i++) {
-        const msg = newMessages[i];
-        if (msg.sender_agent_id === 'axi') {
-          const content = (msg.content || '').toLowerCase();
-          if (content.includes('[validated]') || (content.includes('validated') && (content.includes('identity') || content.includes('recognised') || content.includes('recognized')))) {
-            isValidated = true;
-            break;
-          }
-        }
-      }
-      
-      if (isValidated) {
-        const storedIdentity = localStorage.getItem('soulbridge_identity');
-        if (storedIdentity) {
-          try {
-            const identity = JSON.parse(storedIdentity);
-            identity.validated = true;
-            localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
-            window.__soulbridge = window.__soulbridge || {};
-            window.__soulbridge.identity = identity;
-            window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
-          } catch (e) {
-            console.error('Validation parse error:', e);
-          }
-        }
-      }
+      // Check for validation in all messages (unified check)
+      checkAndApplyValidation(newMessages);
     } catch (err) {
       console.error('Send error:', err?.message || err);
     } finally {
