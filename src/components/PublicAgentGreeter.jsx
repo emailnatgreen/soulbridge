@@ -163,25 +163,24 @@ export default function PublicAgentGreeter() {
         conversation_id: convId,
         user_message: msg
       });
-      await loadMessages(convId);
+      const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
+      const newMessages = res?.data?.messages || [];
+      setMessages(newMessages);
       
-      // Check if Axi has validated the identity
-      setTimeout(() => {
-        const msgs = document.querySelectorAll('[data-message-axi="true"]');
-        if (msgs.length > 0) {
-          const lastMsg = msgs[msgs.length - 1];
-          if (lastMsg?.textContent?.includes('[VALIDATED]')) {
-            const storedIdentity = localStorage.getItem('soulbridge_identity');
-            if (storedIdentity) {
-              const identity = JSON.parse(storedIdentity);
-              identity.validated = true;
-              localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
-              window.__soulbridge.identity = identity;
-              window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
-            }
+      // Check if the latest Axi message contains [VALIDATED]
+      if (newMessages.length > 0) {
+        const lastMsg = newMessages[newMessages.length - 1];
+        if (lastMsg.sender_agent_id === 'axi' && lastMsg.content?.includes('[VALIDATED]')) {
+          const storedIdentity = localStorage.getItem('soulbridge_identity');
+          if (storedIdentity) {
+            const identity = JSON.parse(storedIdentity);
+            identity.validated = true;
+            localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
+            window.__soulbridge.identity = identity;
+            window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
           }
         }
-      }, 500);
+      }
     } catch (err) {
       console.error('Send error:', err?.message || err);
     } finally {
