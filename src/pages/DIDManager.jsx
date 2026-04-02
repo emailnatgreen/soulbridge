@@ -361,7 +361,7 @@ export default function DIDManager() {
                     wallet={wallet}
                     agent={getAgentForWallet(wallet.id)}
                     onVerify={handleVerifyDID}
-                    onPublish={() => setSelectedWalletForPublish(wallet)}
+                    onPublish={() => { setSelectedWalletForPublish(wallet); setPublishDialogOpen(true); }}
                     onDelete={() => { setWalletToDelete(wallet); setDeleteDialogOpen(true); }}
                     verifyLoading={verifyMutation.isPending}
                     copyToClipboard={copyToClipboard}
