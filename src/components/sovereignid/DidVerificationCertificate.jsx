@@ -6,8 +6,13 @@ import { Button } from '@/components/ui/button';
 
 export default function DidVerificationCertificate({ wallet, verification }) {
   const certificateId = `did-certificate-${wallet.id}`;
-  const verifiedAt = verification?.verified_at ? new Date(verification.verified_at).toLocaleString() : 'Just now';
+  const verifiedAt = verification?.verified_at ? new Date(verification.verified_at).toLocaleString() : new Date().toLocaleString();
   const did = `did:xrpl:1:${wallet.classic_address}`;
+  const accountExists = verification?.account_exists;
+  const didActive = verification?.did_active;
+  const balance = verification?.balance;
+  const ledgerIndex = verification?.ledger_index;
+  const didTxHash = verification?.did_tx_hash || wallet.published_txid;
 
   const handlePrint = () => {
     window.print();
@@ -57,25 +62,61 @@ export default function DidVerificationCertificate({ wallet, verification }) {
           </div>
           <div className="rounded-xl bg-black/20 border border-white/10 p-3">
             <p className="text-white/40 text-xs mb-1">Network</p>
-            <p className="text-white font-medium capitalize">{wallet.network || 'testnet'}</p>
+            <p className="text-white font-medium capitalize">{wallet.network || 'mainnet'}</p>
           </div>
           <div className="rounded-xl bg-black/20 border border-white/10 p-3 md:col-span-2">
             <p className="text-white/40 text-xs mb-1">Verified DID</p>
             <p className="text-sky-300 font-mono text-xs break-all">{did}</p>
           </div>
+
+          {/* On-chain proof details */}
           <div className="rounded-xl bg-black/20 border border-white/10 p-3">
-            <p className="text-white/40 text-xs mb-1">Verification Status</p>
-            <p className="text-green-300 font-medium flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> On-chain verified</p>
+            <p className="text-white/40 text-xs mb-1">XRPL Account</p>
+            <p className={`font-medium flex items-center gap-2 ${accountExists ? 'text-green-300' : 'text-red-400'}`}>
+              <ShieldCheck className="w-4 h-4" /> {accountExists ? 'Active on ledger' : 'Not found on ledger'}
+            </p>
           </div>
           <div className="rounded-xl bg-black/20 border border-white/10 p-3">
-            <p className="text-white/40 text-xs mb-1">Verification Timestamp</p>
-            <p className="text-white font-medium">{verifiedAt}</p>
+            <p className="text-white/40 text-xs mb-1">DID Document</p>
+            <p className={`font-medium flex items-center gap-2 ${didActive ? 'text-green-300' : 'text-amber-400'}`}>
+              <ShieldCheck className="w-4 h-4" /> {didActive ? 'Published on-chain' : 'Not published'}
+            </p>
+          </div>
+          {balance !== undefined && balance !== null && (
+            <div className="rounded-xl bg-black/20 border border-white/10 p-3">
+              <p className="text-white/40 text-xs mb-1">On-Chain Balance</p>
+              <p className="text-white font-medium">{balance} XRP</p>
+            </div>
+          )}
+          {ledgerIndex && (
+            <div className="rounded-xl bg-black/20 border border-white/10 p-3">
+              <p className="text-white/40 text-xs mb-1">Ledger Index</p>
+              <p className="text-white font-mono text-xs">{ledgerIndex}</p>
+            </div>
+          )}
+          {didTxHash && (
+            <div className="rounded-xl bg-black/20 border border-white/10 p-3 md:col-span-2">
+              <p className="text-white/40 text-xs mb-1">DID Publication TX</p>
+              <a href={`https://${wallet.network === 'testnet' ? 'testnet.' : ''}xrpscan.com/tx/${didTxHash}`}
+                target="_blank" rel="noopener noreferrer"
+                className="text-sky-300 font-mono text-xs break-all hover:underline">{didTxHash}</a>
+            </div>
+          )}
+          <div className="rounded-xl bg-black/20 border border-white/10 p-3">
+            <p className="text-white/40 text-xs mb-1">Verified At</p>
+            <p className="text-white font-medium text-xs">{verifiedAt}</p>
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 rounded-xl border border-sky-400/20 bg-sky-500/5 px-3 py-2 text-xs text-sky-200">
+        <div className={`mt-4 flex items-center gap-2 rounded-xl border px-3 py-2 text-xs ${
+          didActive 
+            ? 'border-green-400/20 bg-green-500/5 text-green-200' 
+            : 'border-amber-400/20 bg-amber-500/5 text-amber-200'
+        }`}>
           <Sparkles className="w-4 h-4" />
-          This certificate confirms the DID was published and passed on-chain verification.
+          {didActive 
+            ? 'This certificate confirms the DID was published and verified against the live XRPL ledger.'
+            : 'Account exists but DID document has not been published on-chain yet.'}
         </div>
       </div>
     </div>

@@ -16,10 +16,18 @@ export default function MyDIDPanel({ user, wallets, onRefresh }) {
     base44.entities.Agent.list().then(setAgents).catch(() => {});
   }, []);
 
-  const PUBLISHED_DIDS = ['rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', 'r4QgW8kVhzdLhS9xj16DLdXc42x5xrESjV']; // Lore, Truth
   const isPublished = (w) => w.is_published || !!w.published_txid || !!w.published_at;
-  const publishedWallets = wallets.filter(w => isPublished(w) || (w.classic_address && PUBLISHED_DIDS.includes(w.classic_address)));
-  const unpublishedWallets = wallets.filter(w => !isPublished(w) && !(w.classic_address && PUBLISHED_DIDS.includes(w.classic_address)));
+  const publishedWallets = wallets.filter(w => isPublished(w));
+  const unpublishedWallets = wallets.filter(w => !isPublished(w));
+
+  // Auto-verify published DIDs on load
+  useEffect(() => {
+    publishedWallets.forEach(w => {
+      if (!verifyResult[w.id]) {
+        verifyDID(w);
+      }
+    });
+  }, [wallets.length]);
 
   function copyDID(address) {
     const did = `did:xrpl:1:${address}`;
@@ -137,7 +145,7 @@ function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResu
             <Badge className="bg-green-900/50 text-green-400 border-green-700/50 text-xs">
               {wallet.network}
             </Badge>
-            {isVerified && <DidVerificationBadge />}
+            {isVerified ? <DidVerificationBadge verified network={wallet.network} /> : verifyResult ? <DidVerificationBadge verified={false} /> : null}
           </div>
           <div className="font-mono text-sm text-purple-300 break-all">{did}</div>
         </div>
@@ -183,14 +191,7 @@ function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResu
       )}
 
       {verifyResult && (
-        <div className={`rounded-lg p-3 text-sm ${verifyResult.error ? 'bg-red-900/30 border border-red-700/50 text-red-400' : 'bg-green-900/30 border border-green-700/50 text-green-300'}`}>
-          {verifyResult.error ? `Error: ${verifyResult.error}` : (
-            <div className="space-y-1">
-              <div>✅ DID Active on XRPL</div>
-              {verifyResult.verification?.balance && <div>Balance: {verifyResult.verification.balance} XRP</div>}
-            </div>
-          )}
-        </div>
+        <VerificationResultPanel result={verifyResult} wallet={wallet} />
       )}
 
       {isVerified && <DidVerificationCertificate wallet={wallet} verification={verifyResult.verification} />}
@@ -207,8 +208,74 @@ function WalletDIDCard({ wallet, copied, onCopy, onVerify, verifying, verifyResu
         </Button>
         <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1"
           onClick={() => onVerify(wallet)} disabled={verifying}>
-          <Zap className="w-3 h-3" /> {verifying ? 'Verifying...' : 'Verify On-Chain'}
+          <Zap className="w-3 h-3" /> {verifying ? 'Verifying...' : (verifyResult ? 'Re-Verify On-Chain' : 'Verify On-Chain')}
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function VerificationResultPanel({ result, wallet }) {
+  if (result.error) {
+    return (
+      <div className="rounded-lg p-4 text-sm bg-red-900/30 border border-red-700/50">
+        <div className="text-red-400 font-semibold mb-1">Verification Failed</div>
+        <div className="text-red-300 text-xs">{result.error}</div>
+      </div>
+    );
+  }
+
+  const v = result.verification || {};
+  const network = result.network || wallet?.network || 'mainnet';
+  const explorerBase = network === 'testnet' ? 'https://testnet.xrpscan.com' : 'https://xrpscan.com';
+
+  return (
+    <div className="rounded-lg border border-green-700/50 bg-green-900/20 p-4 space-y-3">
+      <div className="flex items-center gap-2 text-green-300 font-semibold text-sm">
+        <CheckCircle className="w-4 h-4" /> On-Chain Verification Results
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+        <div className="bg-black/20 rounded-lg p-2.5">
+          <span className="text-white/40">Account Status</span>
+          <div className={v.account_exists ? 'text-green-300 font-medium' : 'text-red-400 font-medium'}>
+            {v.account_exists ? '✅ Active on XRPL' : '❌ Not found'}
+          </div>
+        </div>
+        <div className="bg-black/20 rounded-lg p-2.5">
+          <span className="text-white/40">DID Document</span>
+          <div className={v.did_active ? 'text-green-300 font-medium' : 'text-amber-400 font-medium'}>
+            {v.did_active ? '✅ Published' : '⚠️ Not published'}
+          </div>
+        </div>
+        {v.balance !== undefined && v.balance !== null && (
+          <div className="bg-black/20 rounded-lg p-2.5">
+            <span className="text-white/40">On-Chain Balance</span>
+            <div className="text-white font-medium">{v.balance} XRP</div>
+          </div>
+        )}
+        {v.ledger_index && (
+          <div className="bg-black/20 rounded-lg p-2.5">
+            <span className="text-white/40">Ledger Index</span>
+            <div className="text-white font-mono">{v.ledger_index}</div>
+          </div>
+        )}
+        <div className="bg-black/20 rounded-lg p-2.5">
+          <span className="text-white/40">Network</span>
+          <div className="text-white font-medium capitalize">{network}</div>
+        </div>
+        {(v.did_tx_hash || wallet?.published_txid) && (
+          <div className="bg-black/20 rounded-lg p-2.5">
+            <span className="text-white/40">DID TX</span>
+            <a href={`${explorerBase}/tx/${v.did_tx_hash || wallet.published_txid}`}
+              target="_blank" rel="noopener noreferrer"
+              className="text-sky-300 font-mono hover:underline truncate block">
+              {(v.did_tx_hash || wallet.published_txid)?.slice(0, 20)}…
+            </a>
+          </div>
+        )}
+      </div>
+      <div className="text-[10px] text-white/30 text-right">
+        Verified {v.verified_at ? new Date(v.verified_at).toLocaleString() : 'just now'}
       </div>
     </div>
   );

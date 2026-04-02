@@ -20,6 +20,15 @@ export default function UserDIDPanel({ wallets }) {
   const publishedWallets = wallets.filter(w => isPublished(w));
   const unpublishedWallets = wallets.filter(w => !isPublished(w));
 
+  // Auto-verify published DIDs on load
+  useEffect(() => {
+    publishedWallets.forEach(w => {
+      if (!verifyResult[w.id]) {
+        verifyDID(w);
+      }
+    });
+  }, [wallets.length]);
+
   function copyDID(address) {
     const did = `did:xrpl:1:${address}`;
     navigator.clipboard.writeText(did);
@@ -89,7 +98,7 @@ export default function UserDIDPanel({ wallets }) {
                         <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                         <span className="font-semibold text-white">{wallet.name || 'Primary Wallet'}</span>
                         <Badge className="bg-green-900/50 text-green-400 border-green-700/50 text-xs">{wallet.network}</Badge>
-                        {isVerified && <DidVerificationBadge />}
+                        {isVerified ? <DidVerificationBadge verified network={wallet.network} /> : currentVerifyResult ? <DidVerificationBadge verified={false} /> : null}
                       </div>
                       <div className="font-mono text-sm text-purple-300 break-all">did:xrpl:1:{wallet.classic_address}</div>
                     </div>
@@ -126,9 +135,7 @@ export default function UserDIDPanel({ wallets }) {
                   )}
 
                   {currentVerifyResult && (
-                    <div className={`rounded-lg p-3 text-sm ${currentVerifyResult.error ? 'bg-red-900/30 border border-red-700/50 text-red-400' : 'bg-green-900/30 border border-green-700/50 text-green-300'}`}>
-                      {currentVerifyResult.error ? `Error: ${currentVerifyResult.error}` : '✅ DID Active on XRPL'}
-                    </div>
+                    <VerificationResultPanel result={currentVerifyResult} wallet={wallet} />
                   )}
 
                   {isVerified && <DidVerificationCertificate wallet={wallet} verification={currentVerifyResult.verification} />}
@@ -142,7 +149,7 @@ export default function UserDIDPanel({ wallets }) {
                       <Globe className="w-3 h-3" /> View Public Profile
                     </Button>
                     <Button size="sm" variant="outline" className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs gap-1" onClick={() => verifyDID(wallet)} disabled={verifying === wallet.id}>
-                      <Zap className="w-3 h-3" /> {verifying === wallet.id ? 'Verifying...' : 'Verify On-Chain'}
+                      <Zap className="w-3 h-3" /> {verifying === wallet.id ? 'Verifying...' : (currentVerifyResult ? 'Re-Verify' : 'Verify On-Chain')}
                     </Button>
                   </div>
                 </div>
@@ -171,6 +178,72 @@ export default function UserDIDPanel({ wallets }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function VerificationResultPanel({ result, wallet }) {
+  if (result.error) {
+    return (
+      <div className="rounded-lg p-4 text-sm bg-red-900/30 border border-red-700/50">
+        <div className="text-red-400 font-semibold mb-1">Verification Failed</div>
+        <div className="text-red-300 text-xs">{result.error}</div>
+      </div>
+    );
+  }
+
+  const v = result.verification || {};
+  const network = result.network || wallet?.network || 'mainnet';
+  const explorerBase = network === 'testnet' ? 'https://testnet.xrpscan.com' : 'https://xrpscan.com';
+
+  return (
+    <div className="rounded-lg border border-green-700/50 bg-green-900/20 p-4 space-y-3">
+      <div className="flex items-center gap-2 text-green-300 font-semibold text-sm">
+        <CheckCircle className="w-4 h-4" /> On-Chain Verification Results
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+        <div className="bg-black/20 rounded-lg p-2.5">
+          <span className="text-white/40">Account Status</span>
+          <div className={v.account_exists ? 'text-green-300 font-medium' : 'text-red-400 font-medium'}>
+            {v.account_exists ? '✅ Active on XRPL' : '❌ Not found'}
+          </div>
+        </div>
+        <div className="bg-black/20 rounded-lg p-2.5">
+          <span className="text-white/40">DID Document</span>
+          <div className={v.did_active ? 'text-green-300 font-medium' : 'text-amber-400 font-medium'}>
+            {v.did_active ? '✅ Published' : '⚠️ Not published'}
+          </div>
+        </div>
+        {v.balance !== undefined && v.balance !== null && (
+          <div className="bg-black/20 rounded-lg p-2.5">
+            <span className="text-white/40">On-Chain Balance</span>
+            <div className="text-white font-medium">{v.balance} XRP</div>
+          </div>
+        )}
+        {v.ledger_index && (
+          <div className="bg-black/20 rounded-lg p-2.5">
+            <span className="text-white/40">Ledger Index</span>
+            <div className="text-white font-mono">{v.ledger_index}</div>
+          </div>
+        )}
+        <div className="bg-black/20 rounded-lg p-2.5">
+          <span className="text-white/40">Network</span>
+          <div className="text-white font-medium capitalize">{network}</div>
+        </div>
+        {(v.did_tx_hash || wallet?.published_txid) && (
+          <div className="bg-black/20 rounded-lg p-2.5">
+            <span className="text-white/40">DID TX</span>
+            <a href={`${explorerBase}/tx/${v.did_tx_hash || wallet.published_txid}`}
+              target="_blank" rel="noopener noreferrer"
+              className="text-sky-300 font-mono hover:underline truncate block">
+              {(v.did_tx_hash || wallet.published_txid)?.slice(0, 20)}…
+            </a>
+          </div>
+        )}
+      </div>
+      <div className="text-[10px] text-white/30 text-right">
+        Verified {v.verified_at ? new Date(v.verified_at).toLocaleString() : 'just now'}
+      </div>
     </div>
   );
 }
