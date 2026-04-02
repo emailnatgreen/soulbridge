@@ -85,10 +85,21 @@ export default function DIDManager() {
 
   // NOTE: Agents cannot be unlinked from wallets - wallet_id is required in Agent schema
 
+  const linkMutation = useMutation({
+    mutationFn: ({ agent_id, wallet_id }) => 
+      base44.functions.invoke('linkAgentToDID', { agent_id, wallet_id }),
+    onSuccess: () => {
+      toast.success('Agent successfully linked to DID');
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+      setLinkDialogOpen(false);
+      setSelectedAgent('');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to link agent');
+    }
+  });
+
   const copyToClipboard = (text, label) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} copied to clipboard`);
-  };
 
   const getAgentForWallet = (walletId) => {
     return agents.find(agent => agent.wallet_id === walletId);
