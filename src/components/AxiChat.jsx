@@ -8,6 +8,7 @@ import MessageBubble from '@/components/MessageBubble';
 import AgentPicker from '@/components/axi/AgentPicker';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
+import { useAgentRoom } from '@/hooks/useAgentRoom';
 
 const PAGE_SIZE = 30;
 const CONTEXT_MESSAGE_LIMIT = 8;
@@ -40,7 +41,6 @@ function buildAgentContextBrief(messages, activeAgents, invitedAgent) {
 const MemoizedBubble = memo(MessageBubble);
 const PERSONAL_CONVERSATION_KEY = 'axi_personal_conversation_id';
 const PERSONAL_CONVERSATION_META_NAME = 'Personal Conversation with Axi';
-const ACTIVE_AGENTS_KEY = 'axi_active_agents';
 
 export default function AxiChat({ isOpen, setIsOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -48,31 +48,19 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
-  const [mode, setMode] = useState(null); // 'agent' | 'direct'
+  const [mode, setMode] = useState(null);
   const [showAgentPicker, setShowAgentPicker] = useState(false);
-  const [activeAgents, setActiveAgents] = useState([]);
   const [didAuthError, setDidAuthError] = useState(null);
   const didSignal = useDIDSignal();
+  const { allAgents, activeAgents, addAgent, removeAgent, findAgentByName, buildRoomContext } = useAgentRoom();
 
   const messagesEndRef = useRef(null);
   const convoRef = useRef(null);
   const unsubRef = useRef(null);
   const pendingMessageRef = useRef('');
   const processedSummonsRef = useRef(new Set());
-  const addingAgentIdsRef = useRef(new Set());
 
-  useEffect(() => {
-    try {
-      const savedAgents = JSON.parse(localStorage.getItem(ACTIVE_AGENTS_KEY) || '[]');
-      if (Array.isArray(savedAgents) && savedAgents.length > 0) {
-        setActiveAgents(savedAgents);
-      }
-    } catch (_) {}
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(ACTIVE_AGENTS_KEY, JSON.stringify(activeAgents));
-  }, [activeAgents]);
+  // activeAgents persistence handled by useAgentRoom
 
   // Scroll to bottom
   useEffect(() => {
@@ -159,9 +147,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         // Agent SDK mode: keep Axi active and also invite extra agents to respond
         pendingMessageRef.current = '';
         const invitedAgents = activeAgents;
-        const enrichedMessage = invitedAgents.length > 0
-          ? `${msg}\n\n[ACTIVE_AGENTS]\nThe following agents are currently present in this conversation and available to respond alongside Axi: ${invitedAgents.map((agent) => `${agent.name} (${agent.role})`).join(', ')}. Treat them as already present in the room and acknowledge them naturally when relevant.`
-          : msg;
+        const enrichedMessage = buildRoomContext(msg);
 
         await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
         for (const agent of invitedAgents) {
@@ -221,16 +207,12 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   };
 
   const handleAddAgent = useCallback(async (agent, options = {}) => {
-
-    const alreadyActive = activeAgents.some((item) => item.id === agent.id);
-    if (alreadyActive || addingAgentIdsRef.current.has(agent.id)) {
+    const added = addAgent(agent);
+    if (!added) {
       setShowAgentPicker(false);
       return;
     }
-    addingAgentIdsRef.current.add(agent.id);
-
     setShowAgentPicker(false);
-    setActiveAgents((prev) => [...prev, agent]);
 
     if (options.skipIntro) {
       return;
@@ -269,12 +251,9 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         message_type: 'text'
       }]);
     }
-    addingAgentIdsRef.current.delete(agent.id);
-  }, [activeAgents]);
+  }, [activeAgents, addAgent]);
 
-  const handleRemoveAgent = (agentId) => {
-    setActiveAgents((prev) => prev.filter((agent) => agent.id !== agentId));
-  };
+  const handleRemoveAgent = (agentId) => removeAgent(agentId);
 
   useEffect(() => {
     const summonAgentFromMessage = async () => {
@@ -292,14 +271,11 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       const summonedName = summonLine.replace('🔔 SUMMONING', '').trim();
       if (!summonedName) return;
 
-      const agents = await base44.entities.Agent.list('-created_date', 200);
-      const matchedAgent = (agents || []).find((agent) =>
-        agent.name?.trim().toLowerCase() === summonedName.toLowerCase()
-      );
+      const matchedAgent = findAgentByName(summonedName);
 
       processedSummonsRef.current.add(messageKey);
 
-      if (!matchedAgent || activeAgents.some((agent) => agent.id === matchedAgent.id)) return;
+      if (!matchedAgent) return;
       await handleAddAgent(matchedAgent, { skipIntro: false });
     };
 
