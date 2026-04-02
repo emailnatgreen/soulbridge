@@ -91,7 +91,7 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
           // Delay success callback to allow XRPL ledger to propagate before verification
           setTimeout(() => {
             if (onSuccess) onSuccess();
-          }, 8000);
+          }, 12000);
           } else if (status.resolved && !status.signed) {
           clearInterval(interval);
           setPollingInterval(null);
