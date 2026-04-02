@@ -184,6 +184,10 @@ export default function WalletsPage() {
       });
       queryClient.invalidateQueries({ queryKey: ['wallets'] });
       toast.success(`Wallet "${walletName}" added successfully!`);
+      // Clear state immediately to prevent manual add after auto-save
+      setXummResolved(false);
+      setXummQr(null);
+      setClassicAddress('');
       setTimeout(() => resetForm(), 1800);
     } catch (err) {
       toast.error('Wallet imported but failed to save — please click Add Wallet');
@@ -301,14 +305,14 @@ export default function WalletsPage() {
                     </div>
                   )}
                   {xummResolved && (
-                    <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
-                      <CheckCircle className="w-5 h-5 text-green-400" />
-                      <div>
-                        <p className="text-green-300 text-sm font-medium">Wallet scanned — saving automatically...</p>
-                        <p className="text-green-400/70 text-xs font-mono mt-0.5">{classicAddress}</p>
-                      </div>
-                      <Loader2 className="ml-auto w-4 h-4 text-green-400 animate-spin" />
-                    </div>
+                   <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
+                     <CheckCircle className="w-5 h-5 text-green-400" />
+                     <div>
+                       <p className="text-green-300 text-sm font-medium">Wallet saved — closing form...</p>
+                       <p className="text-green-400/70 text-xs font-mono mt-0.5">{classicAddress}</p>
+                     </div>
+                     <Loader2 className="ml-auto w-4 h-4 text-green-400 animate-spin" />
+                   </div>
                   )}
                 </div>
               )}
@@ -339,7 +343,7 @@ export default function WalletsPage() {
                     Add Wallet
                   </Button>
                 )}
-                {addMode === 'xumm' && !xummResolved && xummQr && (
+                {addMode === 'xumm' && !xummResolved && xummQr && !xummResolved && (
                   <Button onClick={handleAddExisting} disabled={!classicAddress} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                     Add Wallet Manually
                   </Button>
