@@ -100,13 +100,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         }
 
         localStorage.setItem(PERSONAL_CONVERSATION_KEY, conversation.id);
-        // Restore previously active agents from this conversation
-        if (savedActiveAgents) {
-          try {
-            const agents = JSON.parse(savedActiveAgents);
-            agents.forEach(agent => addAgent(agent, { skipIntro: true }));
-          } catch (e) { console.warn('Could not restore agents:', e); }
-        }
+        // Do NOT auto-restore agents — agents should only join via explicit summon or picker
         convoRef.current = conversation;
         setMode('agent');
         setReady(true);
@@ -274,10 +268,15 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
   useEffect(() => {
     const summonAgentFromMessage = async () => {
+      // Only check the very latest message — ignore historical messages
       const latestMessage = messages[messages.length - 1];
       if (!latestMessage?.content || latestMessage.role === 'user') return;
       const content = latestMessage.content;
       if (!content.includes('🔔 SUMMON') && !content.includes('🔔 SUMMONING')) return;
+
+      // Must be a genuinely new message (created in the last 30 seconds)
+      const msgDate = latestMessage.created_date ? new Date(latestMessage.created_date) : null;
+      if (msgDate && (Date.now() - msgDate.getTime() > 30000)) return;
 
       const messageKey = latestMessage.id || `${content}-${messages.length}`;
       if (processedSummonsRef.current.has(messageKey)) return;
@@ -326,17 +325,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     };
   }, [setIsOpen]);
 
-  // Auto-restore agents on mount
-  useEffect(() => {
-    if (!ready || mode !== 'agent') return;
-    const saved = localStorage.getItem('axi_active_agents');
-    if (saved && activeAgents.length === 0) {
-      try {
-        const agents = JSON.parse(saved);
-        agents.forEach(agent => addAgent(agent, { skipIntro: true }));
-      } catch (e) { console.warn('Could not restore agents:', e); }
-    }
-  }, [ready, mode]);
+  // Agents are only added via explicit summon command or agent picker — no auto-restore
 
   return (
     <AnimatePresence>
