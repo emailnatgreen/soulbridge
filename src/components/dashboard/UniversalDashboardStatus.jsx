@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Wallet, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-export default function UniversalDashboardStatus({ hasInviteSession, identity, wallets, myInvites, myTransactions, inviteWallet }) {
+export default function UniversalDashboardStatus({ hasInviteSession, identity, wallets, myInvites, myTransactions, inviteWallet, identityDid }) {
   const [liveBalances, setLiveBalances] = useState({});
   const [loadingBalances, setLoadingBalances] = useState(false);
 
@@ -16,7 +16,8 @@ export default function UniversalDashboardStatus({ hasInviteSession, identity, w
   const localId = getLocalIdentity();
   const connectedDid = getConnectedDid();
 
-  const effectiveDid = identity?.did
+  const effectiveDid = identityDid
+    || identity?.did
     || localId?.did
     || connectedDid?.did
     || (inviteWallet?.classic_address ? `did:xrpl:1:${inviteWallet.classic_address}` : null)

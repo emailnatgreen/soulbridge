@@ -364,6 +364,9 @@ export default function Dashboard() {
           publishingDid={publishingDid}
           publishingWalletId={publishingWalletId}
           isAdmin={isAdmin}
+          identityDid={identityDid}
+          wallets={wallets}
+          myTransactions={myTransactions}
         />
 
         {/* ════════════════════════════════════════
