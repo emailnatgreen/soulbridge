@@ -21,7 +21,7 @@ const tierIcons = {
   novice: '🌱'
 };
 
-export default function DidReputationScore({ agentId, walletId, compact = false, refreshInterval = 30000 }) {
+export default function DidReputationScore({ agentId, walletId, compact = false }) {
   const [reputation, setReputation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
@@ -44,9 +44,7 @@ export default function DidReputationScore({ agentId, walletId, compact = false,
 
   useEffect(() => {
     fetchReputation();
-    const interval = setInterval(fetchReputation, refreshInterval);
-    return () => clearInterval(interval);
-  }, [agentId, walletId, refreshInterval]);
+  }, [agentId, walletId]);
 
   if (loading) {
     return (

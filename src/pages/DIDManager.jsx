@@ -69,24 +69,9 @@ export default function DIDManager() {
       const list = user?.role === 'admin'
         ? await base44.entities.Wallet.list('-created_date', 100)
         : await base44.entities.Wallet.filter({ owner_id: user?.id });
-      // Sync live balances sequentially to avoid batch overload
-      const result = [];
-      for (const w of list) {
-        try {
-          const res = await base44.functions.invoke('getBalance', { wallet_id: w.id });
-          if (res.data?.balance !== undefined) {
-            result.push({ ...w, balance: res.data.balance });
-          } else {
-            result.push(w);
-          }
-        } catch (e) {
-          result.push(w);
-        }
-      }
-      return result;
+      return list;
     },
     enabled: !!user?.id,
-    refetchInterval: 15000,
   });
 
   const linkMutation = useMutation({
