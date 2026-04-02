@@ -57,11 +57,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Access denied: You do not own this wallet' }, { status: 403 });
     }
 
-    const minimumPublishBalance = 12;
+    const minimumPublishBalance = 3;
     const currentBalance = Number(wallet.balance || 0);
     if (currentBalance < minimumPublishBalance) {
       return Response.json({
-        error: `This wallet needs at least ${minimumPublishBalance} XRP before publishing a DID. Current balance: ${currentBalance} XRP.`
+        error: `Wallet balance is ${currentBalance.toFixed(2)} XRP. Need at least ${minimumPublishBalance} XRP to publish DID on-chain.`,
+        current_balance: currentBalance,
+        required_balance: minimumPublishBalance
       }, { status: 400 });
     }
 
@@ -120,6 +122,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
+    console.error('PublishDID error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
