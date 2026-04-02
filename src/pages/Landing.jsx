@@ -105,7 +105,7 @@ export default function Landing() {
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
-  const [didConnected, setDidConnected] = useState(() => {
+  const [didConnected, setDidConnected] = useState(null);
 
   const handleDisconnectDID = () => {
     localStorage.removeItem('soulbridge_identity');
@@ -449,9 +449,8 @@ export default function Landing() {
                   ))}
                   </div>
                   </div>
-                  </div>
 
-            {/* Right Card: Enter Village */}
+                  {/* Right Card: Enter Village */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-5 sm:p-8 shadow-2xl">
               <div className="text-center mb-6 sm:mb-8">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
