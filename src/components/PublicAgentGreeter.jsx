@@ -64,9 +64,10 @@ export default function PublicAgentGreeter() {
       setIsOpen(true);
       setSending(true);
       try {
+        const shortDid = did?.slice(0, 4) || 'ID';
         await base44.functions.invoke('axiRespond', {
           conversation_id: convIdRef.current,
-          user_message: `[SYSTEM] The visitor has just successfully verified and connected their DID identity. CRITICAL: Do NOT reveal, display, or reference any DID address or technical identifier. Welcome them warmly, confirm their identity is recognised within the Codex, and instruct them clearly to click the glowing "Enter the Village" button on this page to proceed. Do NOT mention Google, email, or any other login method. Keep it short, warm and mystical.`,
+          user_message: `[SYSTEM] The visitor has just successfully connected their DID identity (${shortDid}...). CRITICAL VALIDATION TASK: (1) Do NOT reveal, display, or reference the full DID address or any technical identifier beyond the first 4 characters. (2) Validate their identity by welcoming them warmly and confirming the identity is recognised within the Codex. (3) After validation, instruct them clearly to click the glowing "Enter the Village" button. (4) On your next message, prepend [VALIDATED] to signal that identity verification is complete. Keep it short, warm and mystical.`,
           is_greeting: false
         });
         await loadMessages(convIdRef.current);
@@ -163,6 +164,24 @@ export default function PublicAgentGreeter() {
         user_message: msg
       });
       await loadMessages(convId);
+      
+      // Check if Axi has validated the identity
+      setTimeout(() => {
+        const msgs = document.querySelectorAll('[data-message-axi="true"]');
+        if (msgs.length > 0) {
+          const lastMsg = msgs[msgs.length - 1];
+          if (lastMsg?.textContent?.includes('[VALIDATED]')) {
+            const storedIdentity = localStorage.getItem('soulbridge_identity');
+            if (storedIdentity) {
+              const identity = JSON.parse(storedIdentity);
+              identity.validated = true;
+              localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
+              window.__soulbridge.identity = identity;
+              window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
+            }
+          }
+        }
+      }, 500);
     } catch (err) {
       console.error('Send error:', err?.message || err);
     } finally {
@@ -234,9 +253,17 @@ export default function PublicAgentGreeter() {
                   <p className="text-purple-200 text-sm">I am awakening...</p>
                 </div>
               )}
-              {messages.map((msg, idx) => (
-                <Bubble key={msg.id || idx} message={msg} />
-              ))}
+              {messages.map((msg, idx) => {
+               const isAxiMsg = msg.sender_agent_id === 'axi';
+               const displayContent = isAxiMsg && msg.content?.includes('[VALIDATED]')
+                 ? msg.content.replace(/\[VALIDATED\]\s*/i, '')
+                 : msg.content;
+               return (
+                 <div key={msg.id || idx} data-message-axi={isAxiMsg ? 'true' : 'false'}>
+                   <Bubble message={{ ...msg, content: displayContent }} />
+                 </div>
+               );
+              })}
               {sending && (
                 <div className="flex justify-start gap-2">
                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0 mt-1 flex items-center justify-center">
