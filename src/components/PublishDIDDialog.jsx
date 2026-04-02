@@ -121,25 +121,7 @@ export default function PublishDIDDialog({ wallet, open, onOpenChange, onSuccess
         </DialogHeader>
 
         {/* Testnet unfunded warning */}
-         {wallet?.network === 'testnet' && (wallet?.balance === 0 || !wallet?.balance) && !wallet?.is_published && step === 'form' && (
-          <div className="bg-orange-50 border border-orange-300 rounded-lg p-4">
-            <p className="text-sm font-semibold text-orange-800 mb-1">⚠️ Testnet Wallet — Needs Funding</p>
-            <p className="text-xs text-orange-700 mb-3">
-              This testnet wallet has 0 XRP. You need at least ~2 XRP to create a DID object on the ledger.
-              Fund it for free using the XRPL Testnet Faucet.
-            </p>
-            <a
-              href={`https://faucet.altnet.rippletest.net/accounts?account=${wallet?.classic_address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium px-3 py-1.5 rounded-md transition-colors"
-            >
-              <ExternalLink className="w-3 h-3" />
-              Fund on Testnet Faucet
-            </a>
-            <p className="text-xs text-orange-600 mt-2">After funding, refresh the page and try again.</p>
-          </div>
-        )}
+
 
         {/* FORM STEP */}
         {(step === 'form' || step === 'loading') && (
