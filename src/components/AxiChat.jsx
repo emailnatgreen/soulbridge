@@ -220,12 +220,6 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   };
 
   const handleAddAgent = useCallback(async (agent, options = {}) => {
-    // DID Authorization Check (Step 2)
-    if (!didSignal?.isVerified) {
-      setDidAuthError('DID verification required to summon agents. Please publish your DID.');
-      setTimeout(() => setDidAuthError(null), 5000);
-      return;
-    }
 
     const alreadyActive = activeAgents.some((item) => item.id === agent.id);
     if (alreadyActive) {
@@ -374,9 +368,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
                 variant="ghost" 
                 size="icon" 
                 onClick={() => setShowAgentPicker((value) => !value)}
-                disabled={!didSignal?.isVerified && !didSignal?.loading}
-                className={`h-8 w-8 ${didSignal?.isVerified ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-red-400/60'}`}
-                title={didSignal?.isVerified ? 'Add agent' : 'DID verification required'}
+                className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/10"
+                title="Add agent"
               >
                 <UserPlus className="w-3.5 h-3.5" />
               </Button>
