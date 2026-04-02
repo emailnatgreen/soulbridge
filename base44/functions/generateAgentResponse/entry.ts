@@ -4,29 +4,31 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
 
-    // Build clean headers — strip any malformed auth
-    const cleanHeaders = new Headers();
-    for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      cleanHeaders.set(key, value);
-    }
+    // Extract and validate JWT token
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    // Only accept tokens that look like real JWTs (contain dots and are long enough)
-    const hasValidToken = rawToken && rawToken.includes('.') && rawToken.length > 20;
-    if (hasValidToken) {
-      cleanHeaders.set('authorization', `Bearer ${rawToken}`);
+    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+    // Build a completely fresh request — only include headers we explicitly set
+    const freshHeaders = new Headers();
+    freshHeaders.set('content-type', 'application/json');
+    for (const [key, value] of req.headers.entries()) {
+      if (key.startsWith('x-base44') || key.startsWith('x-app')) {
+        freshHeaders.set(key, value);
+      }
     }
-    cleanHeaders.set('content-type', 'application/json');
+    if (isValidJwt) {
+      freshHeaders.set('authorization', `Bearer ${rawToken}`);
+    }
 
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
-      headers: cleanHeaders,
+      headers: freshHeaders,
       body: JSON.stringify(body),
     }));
 
     let user = null;
-    if (hasValidToken) {
+    if (isValidJwt) {
       try { user = await base44.auth.me(); } catch (_) { user = null; }
     }
 
