@@ -106,7 +106,7 @@ export default function Landing() {
         navigate('/');
       }
     } catch (_) {}
-  }, [navigate]);
+  }, []);
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
