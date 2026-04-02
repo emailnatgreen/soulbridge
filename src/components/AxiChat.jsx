@@ -72,6 +72,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       try {
         const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
         const savedConversationId = localStorage.getItem(PERSONAL_CONVERSATION_KEY);
+        const savedActiveAgents = localStorage.getItem('axi_active_agents');
 
         const isPersonalConversation = (conversation) => (
           conversation?.metadata?.unified_axi_chat === true ||
@@ -99,6 +100,13 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         }
 
         localStorage.setItem(PERSONAL_CONVERSATION_KEY, conversation.id);
+        // Restore previously active agents from this conversation
+        if (savedActiveAgents) {
+          try {
+            const agents = JSON.parse(savedActiveAgents);
+            agents.forEach(agent => addAgent(agent, { skipIntro: true }));
+          } catch (e) { console.warn('Could not restore agents:', e); }
+        }
         convoRef.current = conversation;
         setMode('agent');
         setReady(true);
@@ -215,6 +223,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       setShowAgentPicker(false);
       return;
     }
+    // Save active agents to localStorage for persistence
+    localStorage.setItem('axi_active_agents', JSON.stringify([...activeAgents, agent]));
     setShowAgentPicker(false);
 
     if (options.skipIntro) return;
@@ -253,9 +263,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     } catch (err) {
       console.error('[AxiChat] Agent intro error:', err);
     }
-  }, [activeAgents, addAgent, messages]);
+  }, [activeAgents, addAgent, messages, handleRemoveAgent]);
 
-  const handleRemoveAgent = (agentId) => removeAgent(agentId);
+  const handleRemoveAgent = (agentId) => {
+    removeAgent(agentId);
+    // Update saved agents list
+    const remaining = activeAgents.filter(a => a.id !== agentId);
+    localStorage.setItem('axi_active_agents', JSON.stringify(remaining));
+  };
 
   useEffect(() => {
     const summonAgentFromMessage = async () => {
@@ -310,6 +325,18 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       window.removeEventListener('open-axi-with-message', h);
     };
   }, [setIsOpen]);
+
+  // Auto-restore agents on mount
+  useEffect(() => {
+    if (!ready || mode !== 'agent') return;
+    const saved = localStorage.getItem('axi_active_agents');
+    if (saved && activeAgents.length === 0) {
+      try {
+        const agents = JSON.parse(saved);
+        agents.forEach(agent => addAgent(agent, { skipIntro: true }));
+      } catch (e) { console.warn('Could not restore agents:', e); }
+    }
+  }, [ready, mode]);
 
   return (
     <AnimatePresence>
