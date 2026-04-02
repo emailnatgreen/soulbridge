@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null);
   const initialCheckDone = useRef(false);
+  const hasCompletedInitialLoad = useRef(false);
 
   const fetchPublicSettings = useCallback(async (token, silent = false) => {
     try {
@@ -33,7 +34,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = useCallback(async (silent = false) => {
-    if (!silent) setIsLoadingAuth(true);
+    // Never show the loading spinner again after the first successful load
+    const shouldShowLoading = !silent && !hasCompletedInitialLoad.current;
+    if (shouldShowLoading) setIsLoadingAuth(true);
     if (!silent) setAuthError(null);
 
     const normalizeToken = (value) => {
@@ -73,11 +76,10 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
       }
     } finally {
-      if (!silent) {
+      if (!silent || !hasCompletedInitialLoad.current) {
         setIsLoadingAuth(false);
         initialCheckDone.current = true;
-      } else {
-        initialCheckDone.current = true;
+        hasCompletedInitialLoad.current = true;
       }
     }
 
