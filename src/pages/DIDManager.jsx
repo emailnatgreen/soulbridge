@@ -100,6 +100,9 @@ export default function DIDManager() {
   });
 
   const copyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied to clipboard`);
+  };
 
   const getAgentForWallet = (walletId) => {
     return agents.find(agent => agent.wallet_id === walletId);
@@ -970,7 +973,7 @@ export default function DIDManager() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        </div>
-        </div>
-        );
-        }
+      </div>
+    </div>
+  );
+}
