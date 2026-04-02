@@ -12,38 +12,25 @@ Deno.serve(async (req) => {
     const agent_name = body.agent_name;
     const includeContext = body.includeContext !== false; // Default true for priming
 
-    // STEP 2: DID Permission Check (Agent Invocation Bottleneck)
-    // Verify that the requesting user has a valid, published DID
-    let userDID = null;
-    let userRole = 'citizen';
-    if (user) {
-      const wallets = await base44.asServiceRole.entities.Wallet.filter(
-        { owner_id: user.id },
-        '-updated_date',
-        1
-      );
-      if (wallets?.length > 0 && wallets[0].is_published) {
-        userDID = wallets[0].classic_address;
-        // Fetch user's agent profile for role
-        const agents = await base44.asServiceRole.entities.Agent.filter(
-          { classic_address: userDID },
-          '',
-          1
-        );
-        if (agents?.length > 0) {
-          userRole = agents[0].role || 'citizen';
-        }
-      } else {
-        // User has no published DID — log and return error
-        console.warn(`[generateAgentResponse] User ${user.email} attempted agent invocation without published DID`);
-        return Response.json(
-          { error: 'DID verification required to invoke agents. Please publish your DID first.' },
-          { status: 403 }
-        );
-      }
-    } else {
+    // Require authentication; DID is optional
+    if (!user) {
       return Response.json({ error: 'Unauthorized: User not authenticated' }, { status: 401 });
     }
+
+    let userDID = null;
+    let userRole = 'citizen';
+    try {
+      const wallets = await base44.asServiceRole.entities.Wallet.filter(
+        { owner_id: user.id }, '-updated_date', 1
+      );
+      if (wallets?.length > 0) {
+        userDID = wallets[0].classic_address;
+        const agents = await base44.asServiceRole.entities.Agent.filter(
+          { classic_address: userDID }, '', 1
+        );
+        if (agents?.length > 0) userRole = agents[0].role || 'citizen';
+      }
+    } catch (_) { /* DID lookup is best-effort */ }
 
     if (!conversation_id || !user_message) {
       return Response.json({ error: 'Missing conversation_id or user_message' }, { status: 400 });
