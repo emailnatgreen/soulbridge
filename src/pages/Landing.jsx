@@ -509,12 +509,9 @@ export default function Landing() {
                 </div>
                 </div>
                 </div>
-                </div>
-          </div>
-
-          <p className="text-white/25 text-[10px] sm:text-xs text-center">
-            Experimental AI Agent Research Platform · Pre-authorisation technical testing phase
-          </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
