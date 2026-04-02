@@ -23,7 +23,6 @@ function buildAgentContextBrief(messages, activeAgents, invitedAgent) {
         : message.metadata?.sourceAgentId
           ? activeAgents.find((agent) => agent.id === message.metadata.sourceAgentId)?.name || 'Agent'
           : 'Axi';
-
       return `${label}: ${message.content}`;
     });
 
@@ -38,6 +37,7 @@ function buildAgentContextBrief(messages, activeAgents, invitedAgent) {
     ...recentMessages
   ].join('\n');
 }
+
 const MemoizedBubble = memo(MessageBubble);
 const PERSONAL_CONVERSATION_KEY = 'axi_personal_conversation_id';
 const PERSONAL_CONVERSATION_META_NAME = 'Personal Conversation with Axi';
@@ -219,20 +219,18 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
     if (options.skipIntro) return;
 
-    const joinMessage = {
+    setMessages((prev) => [...prev, {
       id: `sys-${Date.now()}`,
       role: 'assistant',
       sender_agent_id: 'axi',
       content: `${agent.name} (${agent.role}) joined this conversation.`,
       message_type: 'system'
-    };
-
-    setMessages((prev) => [...prev, joinMessage]);
-
-    const contextBrief = buildAgentContextBrief(messages, activeAgents, agent);
-    const introPrompt = `${contextBrief}\n\n[AUTO_JOIN_RESPONSE_REQUIRED]\nAxi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly, acknowledge the current participants, and respond naturally to the latest message.`;
+    }]);
 
     try {
+      const contextBrief = buildAgentContextBrief(messages, activeAgents, agent);
+      const introPrompt = `${contextBrief}\n\n[AUTO_JOIN_RESPONSE_REQUIRED]\nAxi has invited ${agent.name} (${agent.role}) into this conversation. Introduce yourself briefly, acknowledge the current participants, and respond naturally to the latest message.`;
+
       const response = await base44.functions.invoke('generateAgentResponse', {
         conversation_id: convoRef.current.id,
         user_message: introPrompt,
@@ -277,8 +275,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
       const idMatch = summonLine.match(/🔔 SUMMON(?:ING)?\s+(platform:[\w_]+|[a-f0-9-]{20,})/i);
       let matchedAgent = null;
       if (idMatch) {
-        const agentId = idMatch[1];
-        matchedAgent = allAgents.find(a => a.id === agentId) || null;
+        matchedAgent = allAgents.find(a => a.id === idMatch[1]) || null;
       }
       if (!matchedAgent) {
         const summonedName = summonLine.replace(/🔔 SUMMON(?:ING)?/i, '').trim();
@@ -331,64 +328,64 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         >
           {/* Header */}
           <div className="flex flex-col border-b border-slate-700/50 flex-shrink-0">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm">Talk to Axi</h3>
+                  <p className="text-xs text-purple-300/60">Village AI Guide</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-white text-sm">Talk to Axi</h3>
-                <p className="text-xs text-purple-300/60">Village AI Guide</p>
-              </div>
-            </div>
-            <div className="flex gap-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowAgentPicker((value) => !value)}
-                className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/10"
-                title="Add agent"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-              </Button>
-              {didSignal?.loading && (
-                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" title="Verifying DID..." />
-              )}
-              {!didSignal?.loading && !didSignal?.isVerified && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => didSignal.refresh()} 
-                  className="text-red-400 hover:text-red-300 hover:bg-red-950/30 h-8 w-8"
-                  title="Retry DID verification"
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowAgentPicker((value) => !value)}
+                  className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/10"
+                  title="Add agent"
                 >
-                  <AlertCircle className="w-3.5 h-3.5" />
+                  <UserPlus className="w-3.5 h-3.5" />
                 </Button>
-              )}
-              <Button variant="ghost" size="icon" onClick={() => setIsExpanded(e => !e)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:flex">
-                {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8">
-                <X className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          </div>
-          {activeAgents.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 px-4 pb-2">
-              {activeAgents.map((agent) => (
-                <Badge key={agent.id} className="bg-white/10 text-white border-white/10 pr-1 text-xs">
-                  <span>{agent.name}</span>
-                  <button
-                    onClick={() => handleRemoveAgent(agent.id)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-white/10"
-                    aria-label={`Remove ${agent.name}`}
+                {didSignal?.loading && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse self-center" title="Verifying DID..." />
+                )}
+                {!didSignal?.loading && !didSignal?.isVerified && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => didSignal.refresh()}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-950/30 h-8 w-8"
+                    title="Retry DID verification"
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
+                    <AlertCircle className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" onClick={() => setIsExpanded(e => !e)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8 hidden md:flex">
+                  {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8">
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             </div>
-          )}
+            {activeAgents.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+                {activeAgents.map((agent) => (
+                  <Badge key={agent.id} className="bg-white/10 text-white border-white/10 pr-1 text-xs">
+                    <span>{agent.name}</span>
+                    <button
+                      onClick={() => handleRemoveAgent(agent.id)}
+                      className="ml-1 rounded-full p-0.5 hover:bg-white/10"
+                      aria-label={`Remove ${agent.name}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {showAgentPicker && (
