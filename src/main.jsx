@@ -5,37 +5,37 @@ import '@/index.css'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { queryClientInstance } from '@/lib/query-client'
 
-// Disconnect MetaMask — block window.ethereum so nothing auto-connects
-try {
-  Object.defineProperty(window, 'ethereum', {
-    get: () => undefined,
-    configurable: true,
-  });
-} catch (_) {}
+// Block window.ethereum so MetaMask can't auto-connect
+const blockEthereum = () => {
+  try {
+    Object.defineProperty(window, 'ethereum', {
+      get: () => undefined,
+      set: () => {},
+      configurable: true,
+    });
+  } catch (_) {}
+};
+blockEthereum();
+setInterval(blockEthereum, 500);
 
-// Suppress any residual MetaMask / Web3 errors
+// Swallow MetaMask / Web3 errors silently
+const isWeb3Error = (msg) => {
+  const s = String(msg || '').toLowerCase();
+  return s.includes('metamask') || s.includes('ethereum') || s.includes('web3')
+    || s.includes('failed to connect') || s.includes('wallet') || s.includes('provider');
+};
 window.addEventListener('unhandledrejection', (event) => {
-  const msg = String(event?.reason?.message || event?.reason || '').toLowerCase();
-  if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3') || msg.includes('wallet') || msg.includes('provider')) {
+  if (isWeb3Error(event?.reason?.message) || isWeb3Error(event?.reason)) {
     event.preventDefault();
     event.stopImmediatePropagation();
   }
-});
+}, true);
 window.addEventListener('error', (event) => {
-  const msg = String(event?.message || event?.error?.message || '').toLowerCase();
-  if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3')) {
+  if (isWeb3Error(event?.message) || isWeb3Error(event?.error?.message)) {
     event.preventDefault();
     event.stopImmediatePropagation();
   }
-});
-window.addEventListener('error', (event) => {
-  const msg = String(event?.message || event?.error?.message || '').toLowerCase();
-  if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3')) {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    return false;
-  }
-});
+}, true);
 
 // Debounced sync — prevents white screens on mobile focus/keyboard events
 let syncTimer = null;
@@ -43,14 +43,11 @@ const syncAppData = () => {
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     queryClientInstance.invalidateQueries();
-  }, 2000); // 2s debounce
+  }, 2000);
 };
-
-// Only sync on tab becoming visible after being hidden (not on every focus)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') syncAppData();
 });
-// Sync when coming back online
 window.addEventListener('online', syncAppData);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
