@@ -447,9 +447,9 @@ export default function Landing() {
                       {item}
                     </div>
                   ))}
-                </div>
-              </div>
-            </div>
+                  </div>
+                  </div>
+                  </div>
 
             {/* Right Card: Enter Village */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-5 sm:p-8 shadow-2xl">
