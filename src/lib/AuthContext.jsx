@@ -88,23 +88,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkAppState(false);
 
-    // Skip re-auth checks in editor preview — the iframe fires focus/visibility events constantly
-    const isEditorPreview = new URLSearchParams(window.location.search).has('_preview_token');
-    if (isEditorPreview) return;
-
-    const handleFocus = () => {
-      if (initialCheckDone.current) checkAppState(true);
-    };
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && initialCheckDone.current) checkAppState(true);
-    };
-
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
+    // Skip re-auth checks entirely once authenticated — re-checks cause white flashes
+    // and are not needed for an already-authenticated session.
   }, [checkAppState]);
 
   // Hard safety net: force loading off after 4 seconds
