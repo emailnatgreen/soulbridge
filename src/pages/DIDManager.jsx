@@ -162,7 +162,8 @@ export default function DIDManager() {
       
       const v = data?.verification;
       if (!v || !v.account_exists) {
-        const network = data?.network || 'network';
+        const verifyingWallet = wallets.find(w => w.id === walletId);
+        const network = data?.network || verifyingWallet?.network || 'mainnet';
         const fundingMsg = network === 'mainnet'
           ? 'Fund this address with at least 20 XRP to activate it.'
           : 'Fund this address with testnet XRP (via faucet) to activate it.';
@@ -207,6 +208,7 @@ export default function DIDManager() {
   });
 
   const handleVerifyDID = (walletId) => {
+    setVerifyingWalletId(walletId);
     verifyMutation.mutate(walletId);
   };
 
