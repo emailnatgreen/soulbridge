@@ -3,6 +3,17 @@ import { base44 } from '@/api/base44Client';
 
 const ACTIVE_AGENTS_KEY = 'axi_active_agents';
 
+const PLATFORM_AGENTS = [
+  { id: 'platform:axi',              name: 'Axi',              role: 'guardian' },
+  { id: 'platform:lore_node',        name: 'Lore Node',        role: 'elder' },
+  { id: 'platform:truth_weaver',     name: 'Truth Weaver',     role: 'guardian' },
+  { id: 'platform:alignment_agent',  name: 'Alignment Agent',  role: 'guardian' },
+  { id: 'platform:code_node',        name: 'Code Node',        role: 'creator' },
+  { id: 'platform:ripple_architect', name: 'Ripple Architect', role: 'creator' },
+  { id: 'platform:epoch_architect',  name: 'Epoch Architect',  role: 'elder' },
+  { id: 'platform:market_weaver',    name: 'Market Weaver',    role: 'trader' },
+];
+
 /**
  * Master Agent Room Hook
  * - Loads all available agents on mount
@@ -26,14 +37,17 @@ export function useAgentRoom() {
     localStorage.setItem(ACTIVE_AGENTS_KEY, JSON.stringify(activeAgents));
   }, [activeAgents]);
 
-  // Load all agents once
+  // Load all agents once — platform agents always included
   useEffect(() => {
     const load = async () => {
       try {
         const agents = await base44.entities.Agent.list('-created_date', 500);
-        setAllAgents(agents || []);
+        const dbNames = new Set((agents || []).map(a => a.name?.toLowerCase()));
+        const platformFiltered = PLATFORM_AGENTS.filter(p => !dbNames.has(p.name.toLowerCase()));
+        setAllAgents([...platformFiltered, ...(agents || [])]);
       } catch (err) {
         console.error('[useAgentRoom] Failed to load agents:', err);
+        setAllAgents([...PLATFORM_AGENTS]);
       } finally {
         setLoadingAgents(false);
       }
