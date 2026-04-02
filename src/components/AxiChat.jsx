@@ -435,9 +435,13 @@ export default function AxiChat({ isOpen, setIsOpen }) {
                 <p className="text-white/40 text-sm">Say something to Axi...</p>
               </div>
             )}
-            {messages.map((msg, idx) => (
-              <MemoizedBubble key={msg.id || idx} message={msg} />
-            ))}
+            {messages.map((msg, idx) => {
+              // Strip injected [ROOM_STATE] block from displayed content
+              const cleanMsg = msg.content?.includes('[ROOM_STATE]')
+                ? { ...msg, content: msg.content.split('[ROOM_STATE]')[0].trimEnd() }
+                : msg;
+              return <MemoizedBubble key={msg.id || idx} message={cleanMsg} />;
+            })}
             {sending && (
               <div className="flex gap-2 justify-start">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
