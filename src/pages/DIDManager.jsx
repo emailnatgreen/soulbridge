@@ -600,6 +600,23 @@ export default function DIDManager() {
 
                         <div className="flex flex-col gap-2">
 
+                           <Dialog open={publishDialogOpen && selectedWalletForPublish?.id === wallet.id} 
+                                   onOpenChange={(open) => {
+                                     setPublishDialogOpen(open);
+                                     if (!open) setSelectedWalletForPublish(null);
+                                   }}>
+                             <DialogTrigger asChild>
+                               <Button 
+                                 size="sm" 
+                                 variant="outline"
+                                 className="w-full bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+                                 onClick={() => setSelectedWalletForPublish(wallet)}
+                               >
+                                 📤 Publish to Mainnet
+                               </Button>
+                             </DialogTrigger>
+                           </Dialog>
+
                            <Dialog open={requestDialogOpen && selectedWalletForRequest?.id === wallet.id} 
                                    onOpenChange={(open) => {
                                      setRequestDialogOpen(open);
