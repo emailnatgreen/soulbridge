@@ -180,21 +180,39 @@ export default function PublicAgentGreeter() {
         conversation_id: convId,
         user_message: msg
       });
+      
+      // Add delay to ensure mobile response is fully processed
+      await new Promise(r => setTimeout(r, 500));
+      
       const res = await base44.functions.invoke('getConversationMessages', { conversation_id: convId });
       const newMessages = res?.data?.messages || [];
       setMessages(newMessages);
       
-      // Check if the latest Axi message contains [VALIDATED]
-      if (newMessages.length > 0) {
-        const lastMsg = newMessages[newMessages.length - 1];
-        if (lastMsg.sender_agent_id === 'axi' && lastMsg.content?.includes('[VALIDATED]')) {
-          const storedIdentity = localStorage.getItem('soulbridge_identity');
-          if (storedIdentity) {
+      // Check for validation in last 3 messages (more robust for mobile)
+      let isValidated = false;
+      for (let i = Math.max(0, newMessages.length - 3); i < newMessages.length; i++) {
+        const msg = newMessages[i];
+        if (msg.sender_agent_id === 'axi') {
+          const content = (msg.content || '').toLowerCase();
+          if (content.includes('[validated]') || (content.includes('validated') && (content.includes('identity') || content.includes('recognised') || content.includes('recognized')))) {
+            isValidated = true;
+            break;
+          }
+        }
+      }
+      
+      if (isValidated) {
+        const storedIdentity = localStorage.getItem('soulbridge_identity');
+        if (storedIdentity) {
+          try {
             const identity = JSON.parse(storedIdentity);
             identity.validated = true;
             localStorage.setItem('soulbridge_identity', JSON.stringify(identity));
+            window.__soulbridge = window.__soulbridge || {};
             window.__soulbridge.identity = identity;
             window.dispatchEvent(new CustomEvent('did-validated', { detail: { did: identity.did } }));
+          } catch (e) {
+            console.error('Validation parse error:', e);
           }
         }
       }
