@@ -5,13 +5,27 @@ import '@/index.css'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { queryClientInstance } from '@/lib/query-client'
 
-// Suppress MetaMask / Web3 browser extension errors that destabilise the editor
+// Disconnect MetaMask — block window.ethereum so nothing auto-connects
+try {
+  Object.defineProperty(window, 'ethereum', {
+    get: () => undefined,
+    configurable: true,
+  });
+} catch (_) {}
+
+// Suppress any residual MetaMask / Web3 errors
 window.addEventListener('unhandledrejection', (event) => {
   const msg = String(event?.reason?.message || event?.reason || '').toLowerCase();
   if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3') || msg.includes('wallet') || msg.includes('provider')) {
     event.preventDefault();
     event.stopImmediatePropagation();
-    return false;
+  }
+});
+window.addEventListener('error', (event) => {
+  const msg = String(event?.message || event?.error?.message || '').toLowerCase();
+  if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3')) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
   }
 });
 window.addEventListener('error', (event) => {
