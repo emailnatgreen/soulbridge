@@ -204,6 +204,32 @@ export default function DIDManager() {
     }, 4000);
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: (walletId) => base44.entities.Wallet.delete(walletId),
+    onSuccess: () => {
+      toast.success('DID deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      setDeleteDialogOpen(false);
+      setWalletToDelete(null);
+    },
+    onError: () => toast.error('Failed to delete DID')
+  });
+
+  const requestActivationMutation = useMutation({
+    mutationFn: ({ wallet_id, agent_id }) => 
+      base44.functions.invoke('createDidActivationProposal', { wallet_id, agent_id }),
+    onSuccess: (response) => {
+      toast.success('DID activation proposal submitted to governance');
+      setRequestDialogOpen(false);
+      setSelectedWalletForRequest(null);
+      queryClient.invalidateQueries(['wallets']);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to submit activation proposal');
+      console.error('Proposal error:', error);
+    }
+  });
+
   const getVerificationBadge = (wallet) => {
     // First check persistent database state
     if (wallet.is_published) {
