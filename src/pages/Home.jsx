@@ -11,8 +11,10 @@ import { hasAdminAccess } from '@/lib/adminAccess';
 import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
-  TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap
+  TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
+  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3
 } from 'lucide-react';
+import { useDIDSignal } from '@/hooks/useDIDSignal';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
+  const didSignal = useDIDSignal();
 
   // Real-time active AIProjects count
   const { data: activeProjects = [] } = useQuery({
@@ -260,6 +263,43 @@ export default function Home() {
               </Button>
             </div>
           )}
+
+          {/* DID Signal + Identity + Agent Status Buttons */}
+          {identity?.connected && (
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+              <button
+                onClick={() => navigate('/SovereignID')}
+                className="flex items-center gap-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/40 hover:border-purple-400/60 rounded-xl px-4 py-2.5 transition-all group"
+              >
+                <Fingerprint className="w-4 h-4 text-purple-400" />
+                <span className="text-white text-sm font-medium">DID Identity</span>
+                {didSignal?.isVerified ? (
+                  <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" title="DID Verified" />
+                ) : (
+                  <span className="w-2 h-2 rounded-full bg-amber-400" title="DID Unverified" />
+                )}
+                <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white/60 transition" />
+              </button>
+              <button
+                onClick={() => navigate('/Agents')}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/40 hover:border-blue-400/60 rounded-xl px-4 py-2.5 transition-all group"
+              >
+                <Bot className="w-4 h-4 text-blue-400" />
+                <span className="text-white text-sm font-medium">Agents</span>
+                <span className="text-xs text-blue-300 bg-blue-500/20 px-1.5 py-0.5 rounded-full">{liveCounts.agents}</span>
+                <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white/60 transition" />
+              </button>
+              <button
+                onClick={() => navigate('/DIDHealthDashboard')}
+                className="flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/40 hover:border-green-400/60 rounded-xl px-4 py-2.5 transition-all group"
+              >
+                <Radio className="w-4 h-4 text-green-400" />
+                <span className="text-white text-sm font-medium">DID Signal</span>
+                {didSignal?.isVerified && <span className="w-2 h-2 rounded-full bg-green-400" />}
+                <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white/60 transition" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Trust Strip: RLUSDT + Compliance */}
@@ -452,6 +492,41 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {/* More Pages — pages not in the features grid */}
+        {isAdmin && (
+          <div>
+            <h3 className="text-white/60 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Settings className="w-3 h-3" /> More Pages
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {[
+                { title: 'Sovereign ID', path: '/SovereignID', icon: Fingerprint, color: 'text-purple-400', border: 'border-purple-500/30' },
+                { title: 'Skill Validation', path: '/SkillValidation', icon: Award, color: 'text-emerald-400', border: 'border-emerald-500/30' },
+                { title: 'Sync Audit', path: '/SyncAuditReport', icon: FileCheck, color: 'text-cyan-400', border: 'border-cyan-500/30' },
+                { title: 'Invite Links', path: '/InviteLinkManager', icon: Link2, color: 'text-pink-400', border: 'border-pink-500/30' },
+                { title: 'Village Calendar', path: '/VillageCalendar', icon: CalendarDays, color: 'text-indigo-400', border: 'border-indigo-500/30' },
+                { title: 'Scroll of Resonance', path: '/ScrollOfResonance', icon: ScrollText, color: 'text-amber-400', border: 'border-amber-500/30' },
+                { title: 'Kinetic Compass', path: '/KineticCompass', icon: Zap, color: 'text-yellow-400', border: 'border-yellow-500/30' },
+                { title: 'Service Marketplace', path: '/ServiceSkillMarketplace', icon: Briefcase, color: 'text-orange-400', border: 'border-orange-500/30' },
+                { title: 'Axi Command', path: '/AxiCommandDashboard', icon: Sparkles, color: 'text-violet-400', border: 'border-violet-500/30' },
+                { title: 'Integration Credits', path: '/IntegrationCreditDashboard', icon: BarChart3, color: 'text-teal-400', border: 'border-teal-500/30' },
+                { title: 'Project Sanctuary', path: '/ProjectSanctuary', icon: Globe, color: 'text-sky-400', border: 'border-sky-500/30' },
+                { title: 'Memory Browser', path: '/MemoryBrowser', icon: BookOpen, color: 'text-rose-400', border: 'border-rose-500/30' },
+              ].map(p => (
+                <button
+                  key={p.path}
+                  onClick={() => navigate(p.path)}
+                  className={`bg-white/5 border ${p.border} rounded-xl p-3 text-left hover:bg-white/10 transition-all group flex items-center gap-2.5`}
+                >
+                  <p.icon className={`w-4 h-4 ${p.color} flex-shrink-0`} />
+                  <span className="text-white text-xs font-medium truncate">{p.title}</span>
+                  <ChevronRight className="w-3 h-3 text-white/20 group-hover:text-white/50 transition ml-auto flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 11 Laws */}
         <div className="bg-gradient-to-br from-amber-900/20 to-orange-900/10 border border-amber-500/20 rounded-2xl p-5 space-y-3">
