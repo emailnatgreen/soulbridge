@@ -61,6 +61,26 @@ export default function WalletsPage() {
     refetchInterval: 30000,
   });
 
+  const createWallet = useMutation({
+    mutationFn: async ({ name, network }) => {
+      const res = await base44.functions.invoke('createWallet', { name, network });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      toast.success('Wallet generated successfully');
+      resetForm();
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.error || 'Failed to generate wallet');
+    }
+  });
+
+  const handleCreate = () => {
+    const walletName = name.trim() || `Wallet ${Date.now().toString(36)}`;
+    createWallet.mutate({ name: walletName, network });
+  };
+
   const refreshBalance = async (wallet_id) => {
     try {
       const response = await base44.functions.invoke('getBalance', { wallet_id });

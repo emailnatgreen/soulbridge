@@ -2,6 +2,19 @@
 module.exports = {
     darkMode: ["class"],
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
+    safelist: [
+      'data-[state=active]:from-purple-600',
+      'data-[state=active]:to-pink-600',
+      'data-[state=active]:from-emerald-500',
+      'data-[state=active]:to-teal-600',
+      'data-[state=active]:from-amber-500',
+      'data-[state=active]:to-orange-500',
+      'data-[state=active]:from-indigo-600',
+      'data-[state=active]:from-red-500',
+      'data-[state=active]:to-orange-500',
+      'data-[state=active]:to-purple-600',
+      'data-[state=active]:bg-gradient-to-r',
+    ],
   theme: {
   	extend: {
   		borderRadius: {
