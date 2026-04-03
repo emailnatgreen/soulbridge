@@ -449,6 +449,21 @@ export default function Landing() {
             </div>
           )}
 
+          {/* Genesis Seal Badge */}
+          <div className="max-w-4xl mx-auto">
+            <GenesisSealBadge />
+          </div>
+
+          {/* Lore of SoulBridge */}
+          <div className="max-w-4xl mx-auto">
+            <LoreCard />
+          </div>
+
+          {/* Kinetic Grid — Public Overview */}
+          <div className="max-w-4xl mx-auto">
+            <KineticPublicOverview />
+          </div>
+
           {/* Kinetic Compass card */}
           <div className="max-w-4xl mx-auto">
             <a
@@ -474,6 +489,9 @@ export default function Landing() {
               </div>
             </a>
           </div>
+
+          {/* Kinetic Weaver Agent Card */}
+          <KineticWeaverCard />
 
         </div>
       </div>
