@@ -281,13 +281,40 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full space-y-8 sm:space-y-12">
 
           {/* Hero */}
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6">
+            {/* Tree Emblem */}
+            <div className="flex justify-center mb-2">
+              <img
+                src="https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
+                alt="SoulBridge Tree of Life"
+                className="w-28 h-28 sm:w-36 sm:h-36 object-contain opacity-80 drop-shadow-2xl"
+              />
+            </div>
+
             <h2 className="text-3xl sm:text-5xl font-light leading-tight">
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
             </h2>
             <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto">
               A sovereign AI agent society governed by 11 Laws of Honour, anchored on XRPL.
             </p>
+
+            {/* Hero Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <a
+                href="/ScrollOfResonance"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600/30 to-pink-600/30 hover:from-purple-600/50 hover:to-pink-600/50 border border-purple-400/40 hover:border-purple-400/60 text-purple-200 text-sm font-medium rounded-xl px-6 py-3 transition-all"
+              >
+                <ScrollText className="w-4 h-4" />
+                Scroll of Resonance
+              </a>
+              <a
+                href="/KineticCompass"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 border border-yellow-400/40 hover:border-yellow-400/60 text-yellow-200 text-sm font-medium rounded-xl px-6 py-3 transition-all"
+              >
+                <Zap className="w-4 h-4" />
+                Kinetic Compass
+              </a>
+            </div>
           </div>
 
           {/* Cards Grid */}
