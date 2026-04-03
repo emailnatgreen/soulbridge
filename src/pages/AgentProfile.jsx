@@ -6,17 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Star, Briefcase, Award, Zap, Globe, MessageCircle, Edit, ExternalLink, CheckCircle2, TrendingUp, TrendingDown, Minus, Users, BookOpen, Target, Vote, ShoppingBag, Brain, Sparkles } from 'lucide-react';
+import { ArrowLeft, Star, Briefcase, Award, Zap, Globe, MessageCircle, Edit, ExternalLink, CheckCircle2, TrendingUp, TrendingDown, Minus, Users, BookOpen, Target, Vote, ShoppingBag, Brain, Sparkles, BarChart3, Fingerprint, Shield } from 'lucide-react';
 import SkillTrajectoryInsights from '../components/agent/SkillTrajectoryInsights';
 import AgentKUProfile from '../components/kinetic/AgentKUProfile';
 import AgentMatchingProjects from '../components/AgentMatchingProjects';
 import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { useIdentity } from '@/hooks/useIdentity';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
 export default function AgentProfile() {
   const [searchParams] = useSearchParams();
   const agentId = searchParams.get('id');
+  const { isRecognized, didSignal, isAdmin } = useIdentity();
 
   const { data: agent, isLoading } = useQuery({
     queryKey: ['agent', agentId],
@@ -106,24 +107,34 @@ export default function AgentProfile() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <Link to={createPageUrl('Agents')}>
-              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <Link to={createPageUrl('EditAgentProfile') + `?id=${agent.id}`}>
-              <Button variant="outline" className="border-white/10 text-white">
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link to="/Agents">
+                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              </Link>
+              {didSignal?.isVerified && (
+                <div className="hidden sm:flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2 py-1">
+                  <Shield className="w-3 h-3 text-green-400" />
+                  <span className="text-green-300 text-xs">DID Active</span>
+                </div>
+              )}
+            </div>
+            {isAdmin && (
+              <Link to={`/EditAgentProfile?id=${agent.id}`}>
+                <Button variant="outline" size="sm" className="border-white/10 text-white">
+                  <Edit className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Edit Profile</span>
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {/* Hero Section */}
         <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-6">
           <CardContent className="pt-8">
@@ -138,11 +149,17 @@ export default function AgentProfile() {
               {/* Info */}
               <div className="flex-1 space-y-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">{agent.name}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{agent.name}</h1>
                   {agent.tagline && (
-                    <p className="text-lg text-purple-300/80">{agent.tagline}</p>
+                    <p className="text-base sm:text-lg text-purple-300/80">{agent.tagline}</p>
                   )}
-                  <div className="flex items-center gap-3 mt-3">
+                  {agent.classic_address && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <Fingerprint className="w-3 h-3 text-purple-400" />
+                      <code className="text-[10px] text-purple-300/50 truncate">did:xrpl:1:{agent.classic_address}</code>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 sm:gap-3 mt-3 flex-wrap">
                     <Badge className="bg-purple-500/20 text-purple-300">{agent.role}</Badge>
                     <Badge className={
                       agent.availability_status === 'available' ? 'bg-green-500/20 text-green-300' :
@@ -214,7 +231,7 @@ export default function AgentProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10 flex-wrap">
+          <TabsList className="bg-white/5 border border-white/10 flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600">Overview</TabsTrigger>
             <TabsTrigger value="performance" className="data-[state=active]:bg-purple-600">Performance</TabsTrigger>
             <TabsTrigger value="skills" className="data-[state=active]:bg-purple-600">Skills</TabsTrigger>
@@ -570,13 +587,13 @@ export default function AgentProfile() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white">Core Skills</CardTitle>
                   <div className="flex gap-2">
-                    <Link to={createPageUrl('SkillEndorsements') + `?agentId=${agent.id}`}>
+                    <Link to={`/SkillEndorsements?agentId=${agent.id}`}>
                       <Button size="sm" variant="outline" className="border-white/10 text-white">
                         <Users className="w-4 h-4 mr-2" />
                         View Endorsements
                       </Button>
                     </Link>
-                    <Link to={createPageUrl('SkillValidation') + `?agentId=${agent.id}`}>
+                    <Link to={`/SkillValidation?agentId=${agent.id}`}>
                       <Button size="sm" variant="outline" className="border-white/10 text-white">
                         <Award className="w-4 h-4 mr-2" />
                         Request Validation
@@ -678,7 +695,7 @@ export default function AgentProfile() {
                     Self-NFT Skill Dashboard
                     <span className="text-xs font-normal text-white/60 ml-2">Living Capabilities Record</span>
                   </CardTitle>
-                  <Link to={createPageUrl(`AgentSkillDashboard?agent_id=${agent.id}`)}>
+                  <Link to={`/AgentSkillDashboard?agent_id=${agent.id}`}>
                     <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
                       <BarChart3 className="w-4 h-4 mr-2" />
                       View Full Dashboard
@@ -710,7 +727,7 @@ export default function AgentProfile() {
                 {projects.length > 0 ? (
                   <div className="space-y-3">
                     {projects.map((project) => (
-                      <Link key={project.id} to={createPageUrl('AIProjectHub') + `?id=${project.id}`}>
+                      <Link key={project.id} to={`/AIProjectHub?id=${project.id}`}>
                         <div className="p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
                           <div className="flex items-start justify-between">
                             <div>

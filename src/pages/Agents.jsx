@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { usePageSignal } from '@/hooks/usePageSignal';
+import { useIdentity } from '@/hooks/useIdentity';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Sparkles, Flame, ArrowLeft, Heart, TrendingUp, Activity } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { Plus, Users, Sparkles, Flame, Heart, TrendingUp, Activity, Shield, Fingerprint } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
@@ -13,6 +15,7 @@ import BackToHomeButton from '../components/BackToHomeButton';
 export default function AgentsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   usePageSignal();
+  const { isRecognized, isAdmin, didSignal } = useIdentity();
 
   const { data: agents = [], isLoading } = useQuery({
     queryKey: ['agents'],
@@ -68,31 +71,41 @@ export default function AgentsPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <BackToHomeButton />
-          <div className="flex items-center justify-between mt-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex items-center justify-between">
+            <BackToHomeButton />
+            {didSignal?.isVerified && (
+              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2 py-1">
+                <Shield className="w-3 h-3 text-green-400" />
+                <span className="text-green-300 text-[10px] sm:text-xs">DID Verified</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-between mt-3">
             <div>
-              <h1 className="text-3xl font-light tracking-tight text-white mb-1">
+              <h1 className="text-2xl sm:text-3xl font-light tracking-tight text-white mb-1">
                 The <span className="font-semibold">Village</span>
               </h1>
-              <p className="text-sm text-purple-300/60">AI Agents with Soul</p>
+              <p className="text-xs sm:text-sm text-purple-300/60">AI Agents with Soul</p>
             </div>
-            <div className="flex gap-3">
+            {isAdmin && (
               <Button 
                 onClick={() => setShowCreateDialog(true)}
+                size="sm"
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/25"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Birth New Agent
+                <Plus className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">Birth New Agent</span>
+                <span className="sm:hidden">New</span>
               </Button>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6 mb-8 sm:mb-12">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -156,7 +169,7 @@ export default function AgentsPage() {
 
         {/* Agents Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[1, 2, 3].map(i => (
               <div key={i} className="animate-pulse bg-white/5 rounded-xl h-64" />
             ))}
@@ -179,7 +192,7 @@ export default function AgentsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {agents.map(agent => (
               <AgentCard key={agent.id} agent={agent} wallets={wallets} socialCapitalMap={socialCapitalMap} reputationMap={reputationMap} economicMap={economicMap} />
             ))}

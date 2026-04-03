@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { ArrowLeft, Shield, Zap, Users } from 'lucide-react';
+import { ArrowLeft, Shield, Zap, Users, Fingerprint } from 'lucide-react';
+import { useIdentity } from '@/hooks/useIdentity';
+import BackToHomeButton from '../components/BackToHomeButton';
 import AgentPersonalityCard from '../components/AgentPersonalityCard';
 import SocialCapitalCard from '../components/SocialCapitalCard';
 import SkillProfilePanel from '../components/agent/SkillProfilePanel';
@@ -26,7 +27,7 @@ function AgentPicker() {
             <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-6 py-6">
                     <div className="flex items-center gap-4">
-                        <Link to={createPageUrl('Agents')}>
+                        <Link to="/Agents">
                             <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
                                 <ArrowLeft className="w-5 h-5" />
                             </Button>
@@ -48,7 +49,7 @@ function AgentPicker() {
                         {agents.map(agent => (
                             <a
                                 key={agent.id}
-                                href={createPageUrl('AgentDetails') + '?id=' + agent.id}
+                                href={`/AgentDetails?id=${agent.id}`}
                                 className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
                             >
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
@@ -121,7 +122,7 @@ export default function AgentDetails() {
                 <div className="text-center text-white space-y-3">
                     <p className="text-xl">Agent not found</p>
                     <p className="text-white/40 text-sm font-mono">ID: {agentId}</p>
-                    <Link to={createPageUrl('Agents')} className="underline text-purple-300">← Back to Agents</Link>
+                    <Link to="/Agents" className="underline text-purple-300">← Back to Agents</Link>
                 </div>
             </div>
         );
@@ -134,18 +135,24 @@ export default function AgentDetails() {
             <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-6 py-6">
                     <div className="flex items-center gap-4">
-                        <Link to={createPageUrl('Agents')}>
+                        <Link to="/Agents">
                             <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
                                 <ArrowLeft className="w-5 h-5" />
                             </Button>
                         </Link>
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-1">
-                                <h1 className="text-3xl font-light tracking-tight text-white">{agent.name}</h1>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+                                <h1 className="text-xl sm:text-3xl font-light tracking-tight text-white">{agent.name}</h1>
                                 <Badge className="capitalize">{agent.role}</Badge>
                                 <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>{agent.status}</Badge>
                             </div>
-                            <p className="text-sm text-purple-300/60">{agent.purpose}</p>
+                            <p className="text-xs sm:text-sm text-purple-300/60 truncate">{agent.purpose}</p>
+                            {agent.classic_address && (
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <Fingerprint className="w-3 h-3 text-purple-400" />
+                                <code className="text-[10px] text-purple-300/50 truncate">did:xrpl:1:{agent.classic_address}</code>
+                              </div>
+                            )}
                         </div>
                     </div>
                 </div>

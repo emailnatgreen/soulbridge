@@ -2,12 +2,16 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, ShieldCheck, Activity, Loader2 } from 'lucide-react';
+import { Award, ShieldCheck, Activity, Loader2, Shield } from 'lucide-react';
+import { useIdentity } from '@/hooks/useIdentity';
+import BackToHomeButton from '../components/BackToHomeButton';
 import SkillEndorseCard from '@/components/skills/SkillEndorseCard';
 import EndorsementList from '@/components/skills/EndorsementList';
 import ReputationTimeline from '@/components/skills/ReputationTimeline';
 
 export default function SkillValidation() {
+  const { didSignal } = useIdentity();
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -33,15 +37,24 @@ export default function SkillValidation() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950">
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-light tracking-tight text-white mb-1">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex items-center justify-between mb-2">
+            <BackToHomeButton />
+            {didSignal?.isVerified && (
+              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2 py-1">
+                <Shield className="w-3 h-3 text-green-400" />
+                <span className="text-green-300 text-[10px] sm:text-xs">DID Verified</span>
+              </div>
+            )}
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-light tracking-tight text-white mb-1">
             Skill <span className="font-semibold">Validation</span>
           </h1>
-          <p className="text-sm text-purple-300/60">Endorse agent skills, view endorsements, and track reputation across the Village</p>
+          <p className="text-xs sm:text-sm text-purple-300/60">Endorse agent skills, view endorsements, and track reputation across the Village</p>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
