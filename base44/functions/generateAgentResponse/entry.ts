@@ -37,9 +37,8 @@ Deno.serve(async (req) => {
     const user_message = body.user_message;
     const agent_id = body.agent_id;
     const agent_name = body.agent_name;
-    const includeContext = body.includeContext !== false; // Default true for priming
+    const includeContext = body.includeContext !== false;
 
-    // Require authentication; DID is optional
     if (!user) {
       return Response.json({ error: 'Unauthorized: User not authenticated' }, { status: 401 });
     }
@@ -57,7 +56,7 @@ Deno.serve(async (req) => {
         );
         if (agents?.length > 0) userRole = agents[0].role || 'citizen';
       }
-    } catch (_) { /* DID lookup is best-effort */ }
+    } catch (_) {}
 
     if (!conversation_id || !user_message) {
       return Response.json({ error: 'Missing conversation_id or user_message' }, { status: 400 });
@@ -75,17 +74,15 @@ Deno.serve(async (req) => {
       'market_weaver':    { id: 'platform:market_weaver',    name: 'Market Weaver',    role: 'trader',   _isPlatformAgent: true, _agentName: 'market_weaver' },
     };
 
-    // Find agent — handle platform: prefix first
+    // Find agent
     let agent = null;
     if (agent_id?.startsWith('platform:')) {
       const key = agent_id.replace('platform:', '');
       agent = PLATFORM_AGENTS[key] || null;
     } else if (agent_id) {
-      // Entity DB agent — fetch it, then check if it matches a platform agent by name
       const results = await base44.asServiceRole.entities.Agent.filter({ id: agent_id }, '', 1);
       agent = results?.[0] || null;
       if (agent) {
-        // If this DB agent matches a platform agent name, attach platform routing
         const platformMatch = Object.values(PLATFORM_AGENTS).find(
           p => p.name.toLowerCase() === agent.name?.toLowerCase()
         );
@@ -96,7 +93,6 @@ Deno.serve(async (req) => {
       }
     }
     if (!agent && agent_name) {
-      // Check platform agents by name first
       agent = Object.values(PLATFORM_AGENTS).find(a => a.name.toLowerCase() === agent_name.toLowerCase());
       if (!agent) {
         const all = await base44.asServiceRole.entities.Agent.list('-created_date', 200);
@@ -104,7 +100,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Also honour _isPlatformAgent / platform_agent_name from the frontend caller
     if (!agent?._isPlatformAgent && body._isPlatformAgent && body._agentName) {
       agent = { ...agent, _isPlatformAgent: true, _agentName: body._agentName };
     }
@@ -115,15 +110,13 @@ Deno.serve(async (req) => {
 
     console.log(`[generateAgentResponse] Agent: ${agent.name}, Conversation: ${conversation_id}, Invoked by: ${user.email} (${userRole})`);
 
-    // Platform agents (defined in agents/ folder) — route through base44 agent SDK
+    // Platform agents — route through base44 agent SDK
     const platformAgentName = agent._agentName || body.platform_agent_name;
     if (agent._isPlatformAgent && platformAgentName) {
       try {
-        // Get or create a conversation for this platform agent
         const convos = await base44.asServiceRole.agents.listConversations({ agent_name: platformAgentName });
         let convo = convos?.find(c => c.id === conversation_id);
         if (!convo) {
-          // Try to find any existing conversation or create one
           convo = convos?.[0];
           if (!convo) {
             convo = await base44.asServiceRole.agents.createConversation({
@@ -132,13 +125,33 @@ Deno.serve(async (req) => {
             });
           }
         }
-        const result = await base44.asServiceRole.agents.addMessage(convo, {
+
+        // addMessage sends the user message and triggers agent response
+        await base44.asServiceRole.agents.addMessage(convo, {
           role: 'user',
           content: user_message
         });
-        // The last assistant message is the reply
-        const msgs = result?.messages || [];
-        const reply = [...msgs].reverse().find(m => m.role === 'assistant')?.content || '';
+
+        // Poll for the assistant's response — addMessage may return before streaming completes
+        let reply = '';
+        const maxAttempts = 12;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          await new Promise(r => setTimeout(r, 2000));
+          const freshConvo = await base44.asServiceRole.agents.getConversation(convo.id);
+          const msgs = freshConvo?.messages || [];
+          // Find the last assistant message
+          const lastAssistant = [...msgs].reverse().find(m => m.role === 'assistant');
+          if (lastAssistant?.content && lastAssistant.content.trim().length > 0) {
+            reply = lastAssistant.content;
+            break;
+          }
+        }
+
+        if (!reply) {
+          console.warn(`[generateAgentResponse] ${agent.name} (platform) — no response after polling`);
+          reply = `*${agent.name} is gathering thoughts…*`;
+        }
+
         console.log(`[generateAgentResponse] ${agent.name} (platform) responded: "${String(reply).slice(0, 80)}..."`);
         return Response.json({ success: true, agent: agent.name, response: reply });
       } catch (platformErr) {
