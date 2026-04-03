@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/sonner";
 import GlobalNav from '@/components/GlobalNav';
+import MobileBottomNav from '@/components/MobileBottomNav';
 import ChatLoader from '@/components/axi/ChatLoader';
 import { usePageSignal } from '@/hooks/usePageSignal';
 import { useIdentity } from '@/hooks/useIdentity';
@@ -59,11 +60,11 @@ export default function Layout({ children, currentPageName }) {
         <IdentityRecognitionModal user={user} isOpen={identityModalOpen} onClose={() => setIdentityModalOpen(false)} />
       )}
 
-      {/* Identity Recognition Button — floating in bottom right on mobile, header on desktop */}
+      {/* Identity Recognition Button */}
       {isRecognized && (
         <button
           onClick={() => setIdentityModalOpen(true)}
-          className="fixed bottom-40 md:bottom-auto md:top-4 right-4 z-40 flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-all shadow-lg"
+          className="fixed top-4 right-16 lg:right-4 z-40 flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-all shadow-lg"
           title="View your DIDs and identity"
         >
           <Shield className="w-3.5 h-3.5" />
@@ -72,9 +73,12 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Page content */}
-      <div className={`relative z-10 ${isAdmin ? 'lg:ml-64' : ''}`}>
+      <div className={`relative z-10 ${isAdmin ? 'lg:ml-64' : ''} ${isRecognized && !isPublic ? 'pb-16 lg:pb-0' : ''}`}>
         {children}
       </div>
+
+      {/* Mobile Bottom Nav — for recognized users on non-public pages */}
+      {isRecognized && !isPublic && <MobileBottomNav />}
 
       <Toaster />
 

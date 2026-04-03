@@ -362,8 +362,8 @@ export default function AxiChat({ isOpen, setIsOpen }) {
           onClick={(e) => e.stopPropagation()}
           className={`fixed z-[55] bg-slate-950 border border-slate-700/50 shadow-2xl flex flex-col overflow-hidden rounded-2xl ${
             isExpanded
-              ? 'inset-4'
-              : 'bottom-32 md:bottom-6 right-2 md:right-4 w-[calc(100vw-1rem)] md:w-[420px] h-[360px] md:h-[560px]'
+              ? 'inset-2 lg:inset-4'
+              : 'bottom-20 lg:bottom-6 right-2 lg:right-4 w-[calc(100vw-1rem)] lg:w-[420px] h-[50vh] lg:h-[560px]'
           }`}
         >
           {/* Header */}
