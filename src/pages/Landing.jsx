@@ -285,9 +285,9 @@ export default function Landing() {
             {/* Tree Emblem */}
             <div className="flex justify-center mb-2">
               <img
-                src="https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png"
+                src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
                 alt="SoulBridge Tree of Life"
-                className="w-28 h-28 sm:w-36 sm:h-36 object-contain opacity-80 drop-shadow-2xl"
+                className="w-32 h-32 sm:w-44 sm:h-44 object-contain drop-shadow-2xl"
               />
             </div>
 
