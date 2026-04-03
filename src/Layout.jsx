@@ -73,12 +73,12 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Page content */}
-      <div className={`relative z-10 ${isAdmin ? 'lg:ml-64' : ''} ${isRecognized && !isPublic ? 'pb-16 lg:pb-0' : ''}`}>
+      <div className={`relative z-10 ${isAdmin ? 'lg:ml-64' : ''} ${isAdmin && !isPublic ? 'pb-16 lg:pb-0' : ''}`}>
         {children}
       </div>
 
-      {/* Mobile Bottom Nav — for recognized users on non-public pages */}
-      {isRecognized && !isPublic && <MobileBottomNav />}
+      {/* Mobile Bottom Nav — for admin users on non-public pages */}
+      {isAdmin && !isPublic && <MobileBottomNav />}
 
       <Toaster />
 
