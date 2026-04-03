@@ -89,27 +89,10 @@ export default function AxiChatImporter({ onImported }) {
     await deleteBundleFromChat(bundleIndex, allMessages);
   };
 
-  const deleteBundleFromChat = async (idx, currentMsgs) => {
-    if (!convoRef) return;
-    setDeleting(true);
-    try {
-      const msgs = currentMsgs || allMessages;
-      const start = idx * BUNDLE_SIZE;
-      const end = Math.min(start + BUNDLE_SIZE, msgs.length);
-      const bundleMsgs = msgs.slice(start, end);
-      const sigSet = new Set(bundleMsgs.map(m => (m.created_date || '') + '||' + (m.content || '').slice(0, 40)));
-      const fresh = await base44.agents.getConversation(convoRef.id);
-      const remaining = (fresh.messages || []).filter(m => {
-        const sig = (m.created_date || '') + '||' + (m.content || '').slice(0, 40);
-        return !sigSet.has(sig);
-      });
-      if (remaining.length === fresh.messages.length) {
-        return;
-      }
-      console.warn('Bundle deletion from AxiChat is not supported safely from this screen yet.');
-    } catch (err) {
-      console.error('Failed to delete bundle from chat:', err);
-    }
+  const deleteBundleFromChat = async () => {
+    // Chat message deletion is handled by the Bulk Bundler in Memory Browser.
+    // Individual chat messages cannot be removed via the agents SDK.
+    // Once saved to Memory, use the Bulk Bundle Panel to archive into Synthesis records.
     setDeleting(false);
   };
 
