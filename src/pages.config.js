@@ -119,7 +119,7 @@ import GrantTracker from './pages/GrantTracker';
 import Home from './pages/Home';
 import InstitutionalDeck from './pages/InstitutionalDeck';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
-import Landing from './pages/Landing';
+// Landing is routed explicitly in App.jsx at '/' without Layout wrapper
 import LaughterLoom from './pages/LaughterLoom';
 import MainnetMigration from './pages/MainnetMigration';
 import MayaDiplomacyTraining from './pages/MayaDiplomacyTraining';
@@ -250,7 +250,7 @@ export const PAGES = {
     "Home": Home,
     "InstitutionalDeck": InstitutionalDeck,
     "KnowledgeSynthesis": KnowledgeSynthesis,
-    "Landing": Landing,
+
     "LaughterLoom": LaughterLoom,
     "MainnetMigration": MainnetMigration,
     "MayaDiplomacyTraining": MayaDiplomacyTraining,
