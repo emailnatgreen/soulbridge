@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, Sparkles, LogOut, Home, ArrowRight, Globe, Wallet } from 'lucide-react';
+import MemorySynthesisTrigger from '@/components/dashboard/MemorySynthesisTrigger';
 import DIDManagementPanel from '@/components/dashboard/DIDManagementPanel';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
@@ -476,6 +477,9 @@ export default function Dashboard() {
 
             {/* DID Management Panel — all users */}
             <DIDManagementPanel />
+
+            {/* Memory Synthesis — admin only */}
+            {isAdmin && <MemorySynthesisTrigger />}
 
             {/* My Transaction History */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">

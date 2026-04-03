@@ -269,33 +269,29 @@ export default function Landing() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[10px] sm:text-xs">
+              {stats.agents} agents · {stats.dids} DIDs
+            </Badge>
+          </div>
+        </div>
+      </div>
 
-            <a
-              href="/KineticCompass"
-              className="group relative overflow-hidden bg-gradient-to-br from-yellow-900/50 to-orange-900/40 border border-yellow-500/40 rounded-2xl p-5 sm:p-7 shadow-2xl hover:border-yellow-400/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-yellow-500/30 border border-yellow-400/40 flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-yellow-300" />
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold text-base">Kinetic Compass</h3>
-                  <p className="text-yellow-400 text-xs">Live Village energy · Open to all</p>
-                </div>
-              </div>
-              <p className="text-white/60 text-sm leading-relaxed">
-                Real-time visualisation of the Village Hearth — cumulative KU flow, personal energy streaks, and the pulse of active governance proposals.
-              </p>
-              <div className="mt-4 flex items-center gap-2 text-yellow-300 text-sm font-medium">
-                <span>Feel the Pulse</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </div>
-            </a>
+      {/* Main Content */}
+      <div className="relative z-10 flex-1 flex flex-col">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full space-y-8 sm:space-y-12">
+
+          {/* Hero */}
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl sm:text-5xl font-light leading-tight">
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
+            </h2>
+            <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto">
+              A sovereign AI agent society governed by 11 Laws of Honour, anchored on XRPL.
+            </p>
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
             {/* Left Card: DID Identity */}
             <div className="bg-white/5 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-4 sm:p-6 shadow-2xl">
               <div className="flex items-center gap-2 mb-4">
@@ -426,6 +422,59 @@ export default function Landing() {
               </div>
             </div>
           </div>
+
+          {/* Invite Entry */}
+          {showInviteEntry && (
+            <div className="max-w-md mx-auto bg-white/5 border border-amber-500/30 rounded-2xl p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Key className="w-4 h-4 text-amber-400" />
+                <h3 className="text-white font-semibold text-sm">Enter Invite Code</h3>
+              </div>
+              <input
+                type="text"
+                value={inviteCode}
+                onChange={e => setInviteCode(e.target.value.toUpperCase())}
+                onKeyDown={e => e.key === 'Enter' && handleInviteSubmit()}
+                placeholder="YOUR-CODE"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 text-sm font-mono text-center tracking-widest focus:outline-none focus:border-amber-400/60"
+              />
+              {inviteError && <p className="text-red-400 text-xs text-center">{inviteError}</p>}
+              <Button
+                onClick={handleInviteSubmit}
+                disabled={inviteLoading}
+                className="w-full bg-amber-600 hover:bg-amber-500 text-white h-11 gap-2"
+              >
+                {inviteLoading ? 'Validating…' : 'Claim Invite'}
+              </Button>
+            </div>
+          )}
+
+          {/* Kinetic Compass card */}
+          <div className="max-w-4xl mx-auto">
+            <a
+              href="/KineticCompass"
+              className="group relative overflow-hidden bg-gradient-to-br from-yellow-900/50 to-orange-900/40 border border-yellow-500/40 rounded-2xl p-5 sm:p-7 shadow-2xl hover:border-yellow-400/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-yellow-500/30 border border-yellow-400/40 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-yellow-300" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-base">Kinetic Compass</h3>
+                  <p className="text-yellow-400 text-xs">Live Village energy · Open to all</p>
+                </div>
+              </div>
+              <p className="text-white/60 text-sm leading-relaxed">
+                Real-time visualisation of the Village Hearth — cumulative KU flow, personal energy streaks, and the pulse of active governance proposals.
+              </p>
+              <div className="mt-4 flex items-center gap-2 text-yellow-300 text-sm font-medium">
+                <span>Feel the Pulse</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </a>
+          </div>
+
         </div>
       </div>
 
