@@ -10,6 +10,7 @@ import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
 import UniversalDashboardHero from '@/components/dashboard/UniversalDashboardHero';
 import UniversalDashboardQuickActions from '@/components/dashboard/UniversalDashboardQuickActions';
 import UniversalDashboardStatus from '@/components/dashboard/UniversalDashboardStatus';
+import CoreDIDStatusModule from '@/components/dashboard/CoreDIDStatusModule';
 import IdentityRecognitionModal from '@/components/dashboard/IdentityRecognitionCard';
 import { hasAdminAccess } from '@/lib/adminAccess';
 
@@ -474,6 +475,9 @@ export default function Dashboard() {
                 <ConstitutionalBraidLive compact />
               </div>
             )}
+
+            {/* Phase 0 — Core DID Status (on-chain truth) */}
+            <CoreDIDStatusModule wallets={wallets} identityDid={identityDid} />
 
             {/* DID Management Panel — all users */}
             <DIDManagementPanel />
