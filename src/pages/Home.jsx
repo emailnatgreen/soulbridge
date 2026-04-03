@@ -12,7 +12,7 @@ import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
   TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
-  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3
+  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
 
@@ -509,6 +509,7 @@ export default function Home() {
                 { title: 'Scroll of Resonance', path: '/ScrollOfResonance', icon: ScrollText, color: 'text-amber-400', border: 'border-amber-500/30' },
                 { title: 'Kinetic Compass', path: '/KineticCompass', icon: Zap, color: 'text-yellow-400', border: 'border-yellow-500/30' },
                 { title: 'Service Marketplace', path: '/ServiceSkillMarketplace', icon: Briefcase, color: 'text-orange-400', border: 'border-orange-500/30' },
+                { title: 'Agent Comms', path: '/AgentCommsDashboard', icon: MessageSquare, color: 'text-blue-400', border: 'border-blue-500/30' },
                 { title: 'Axi Command', path: '/AxiCommandDashboard', icon: Sparkles, color: 'text-violet-400', border: 'border-violet-500/30' },
                 { title: 'Integration Credits', path: '/IntegrationCreditDashboard', icon: BarChart3, color: 'text-teal-400', border: 'border-teal-500/30' },
                 { title: 'Project Sanctuary', path: '/ProjectSanctuary', icon: Globe, color: 'text-sky-400', border: 'border-sky-500/30' },

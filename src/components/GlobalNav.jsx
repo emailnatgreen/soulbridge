@@ -30,6 +30,7 @@ const NAV_GROUPS = [
       { label: 'Marketplace', path: '/AgentMarketplace', icon: ShoppingBag },
       { label: 'Leaderboard', path: '/AgentLeaderboard', icon: Award },
       { label: 'Messaging', path: '/AgentMessaging', icon: MessageSquare },
+      { label: 'Agent Comms', path: '/AgentCommsDashboard', icon: MessageSquare },
       { label: 'Wellbeing', path: '/AgentWellbeing', icon: Heart },
       { label: 'Reputation', path: '/AgentReputation', icon: TrendingUp },
     ]

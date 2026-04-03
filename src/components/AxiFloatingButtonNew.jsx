@@ -22,7 +22,7 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
   const { activeAgents } = useAgentRoom();
 
   // Pages where floating button should NOT appear
-  const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass', 'Landing', 'ContactSupport'];
+  const NO_FLOAT_PAGES = ['Axi', 'MentorshipHub', 'ScrollOfResonance', 'KineticCompass', 'Landing', 'ContactSupport', 'AgentCommsDashboard'];
   const shouldShow = !NO_FLOAT_PAGES.includes(currentPageName) && !chatOpen;
 
   // Track active agent — prefer connected DID's agent, then room agents, then Axi

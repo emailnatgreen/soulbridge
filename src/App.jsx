@@ -33,6 +33,7 @@ import InviteLinkManager from './pages/InviteLinkManager';
 import NodeCovenant from './pages/NodeCovenant';
 import SyncAuditReport from './pages/SyncAuditReport';
 import SkillValidation from './pages/SkillValidation';
+import AgentCommsDashboard from './pages/AgentCommsDashboard';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -107,6 +108,7 @@ const AuthenticatedApp = () => {
       <Route path="/NodeCovenant" element={<LayoutWrapper currentPageName="NodeCovenant"><NodeCovenant /></LayoutWrapper>} />
       <Route path="/SyncAuditReport" element={<LayoutWrapper currentPageName="SyncAuditReport"><SyncAuditReport /></LayoutWrapper>} />
       <Route path="/SkillValidation" element={<LayoutWrapper currentPageName="SkillValidation"><SkillValidation /></LayoutWrapper>} />
+      <Route path="/AgentCommsDashboard" element={<LayoutWrapper currentPageName="AgentCommsDashboard"><AgentCommsDashboard /></LayoutWrapper>} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
