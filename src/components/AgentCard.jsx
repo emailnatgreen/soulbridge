@@ -4,14 +4,17 @@ import { createPageUrl } from '../utils';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Wallet, Activity, Edit, Eye, MessageCircle, BarChart2 } from 'lucide-react';
+import { Sparkles, Wallet, Activity, Edit, Eye, MessageCircle, BarChart2, Heart, TrendingUp } from 'lucide-react';
 import AgentChatModal from './AgentChatModal';
 import AgentInsightsPanel from './AgentInsightsPanel';
 
-export default function AgentCard({ agent, wallets }) {
+export default function AgentCard({ agent, wallets, socialCapitalMap = {}, reputationMap = {}, economicMap = {} }) {
   const [showChat, setShowChat] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const wallet = wallets.find(w => w.id === agent.wallet_id);
+  const socialCapital = socialCapitalMap[agent.id];
+  const reputationScore = reputationMap[agent.id] || 0;
+  const economicActivity = economicMap[agent.id] || [];
   
   const statusConfig = {
     active: { color: 'bg-green-500/10 text-green-400 border-green-500/20', icon: Sparkles },
@@ -95,9 +98,29 @@ export default function AgentCard({ agent, wallets }) {
         )}
 
         {/* Stats */}
-        <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-          <span className="text-white/40">Transactions</span>
-          <span className="text-white/60">{agent.total_transactions || 0}</span>
+        <div className="pt-3 border-t border-white/5 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-white/40">Transactions</span>
+            <span className="text-white/60">{agent.total_transactions || 0}</span>
+          </div>
+          {socialCapital && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-white/40 flex items-center gap-1"><Heart className="w-3 h-3 text-pink-400" />Social Capital</span>
+              <span className="text-pink-300 font-medium">{socialCapital.total_score || 0}</span>
+            </div>
+          )}
+          {reputationScore !== 0 && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-white/40 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-emerald-400" />Reputation</span>
+              <span className={`font-medium ${reputationScore >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{reputationScore >= 0 ? '+' : ''}{reputationScore}</span>
+            </div>
+          )}
+          {economicActivity.length > 0 && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-white/40 flex items-center gap-1"><Activity className="w-3 h-3 text-blue-400" />Recent Activity</span>
+              <span className="text-blue-300">{economicActivity.length} events</span>
+            </div>
+          )}
         </div>
 
         {agent.parent_agent_id && (

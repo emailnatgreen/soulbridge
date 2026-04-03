@@ -5,20 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Heart, Award, TrendingUp, Sparkles } from 'lucide-react';
 
-export default function SocialCapitalCard({ agentId }) {
+export default function SocialCapitalCard({ agentId, agent_id }) {
+    const resolvedId = agentId || agent_id;
     const { data: socialCapital } = useQuery({
-        queryKey: ['socialCapital', agentId],
+        queryKey: ['socialCapital', resolvedId],
         queryFn: async () => {
-            const results = await base44.entities.SocialCapital.filter({ agent_id: agentId });
+            const results = await base44.entities.SocialCapital.filter({ agent_id: resolvedId });
             return results[0] || null;
         },
-        enabled: !!agentId
+        enabled: !!resolvedId
     });
 
     const { data: attestationsReceived = [] } = useQuery({
-        queryKey: ['attestationsReceived', agentId],
-        queryFn: () => base44.entities.EmpathyAttestation.filter({ attested_agent_id: agentId }),
-        enabled: !!agentId
+        queryKey: ['attestationsReceived', resolvedId],
+        queryFn: () => base44.entities.EmpathyAttestation.filter({ attested_agent_id: resolvedId }),
+        enabled: !!resolvedId
     });
 
     if (!socialCapital) {

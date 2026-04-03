@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { usePageSignal } from '@/hooks/usePageSignal';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Sparkles, Flame, ArrowLeft } from 'lucide-react';
+import { Plus, Users, Sparkles, Flame, ArrowLeft, Heart, TrendingUp, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
@@ -24,12 +24,44 @@ export default function AgentsPage() {
     queryFn: () => base44.entities.Wallet.list(),
   });
 
+  const { data: socialCapitalList = [] } = useQuery({
+    queryKey: ['all-social-capital'],
+    queryFn: () => base44.entities.SocialCapital.list('-created_date', 500),
+  });
+
+  const { data: reputationEvents = [] } = useQuery({
+    queryKey: ['all-reputation-events'],
+    queryFn: () => base44.entities.ReputationEvent.list('-created_date', 500),
+  });
+
+  const { data: economicActivities = [] } = useQuery({
+    queryKey: ['all-economic-activities'],
+    queryFn: () => base44.entities.EconomicActivity.list('-created_date', 200),
+  });
+
+  // Build lookup maps for AgentCard
+  const socialCapitalMap = {};
+  socialCapitalList.forEach(sc => { socialCapitalMap[sc.agent_id] = sc; });
+
+  const reputationMap = {};
+  reputationEvents.forEach(ev => {
+    reputationMap[ev.agent_id] = (reputationMap[ev.agent_id] || 0) + (ev.impact || 0);
+  });
+
+  const economicMap = {};
+  economicActivities.forEach(ea => {
+    if (!economicMap[ea.agent_id]) economicMap[ea.agent_id] = [];
+    economicMap[ea.agent_id].push(ea);
+  });
+
   const stats = {
     total: agents.length,
     active: agents.filter(a => a.status === 'active').length,
     avgHonor: agents.length > 0 
       ? (agents.reduce((sum, a) => sum + (a.honor_score || 100), 0) / agents.length).toFixed(1)
       : 100,
+    totalSocialCapital: socialCapitalList.reduce((sum, sc) => sum + (sc.total_score || 0), 0),
+    totalReputation: reputationEvents.reduce((sum, ev) => sum + (ev.impact || 0), 0),
   };
 
   return (
@@ -60,7 +92,7 @@ export default function AgentsPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -96,6 +128,30 @@ export default function AgentsPage() {
               <p className="text-3xl font-light text-white">{stats.avgHonor}</p>
             </CardContent>
           </Card>
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-pink-300/80">Social Capital</CardTitle>
+                <Heart className="w-4 h-4 text-pink-400" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-light text-white">{stats.totalSocialCapital}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-emerald-300/80">Net Reputation</CardTitle>
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className={`text-3xl font-light ${stats.totalReputation >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.totalReputation >= 0 ? '+' : ''}{stats.totalReputation}</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Agents Grid */}
@@ -125,7 +181,7 @@ export default function AgentsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {agents.map(agent => (
-              <AgentCard key={agent.id} agent={agent} wallets={wallets} />
+              <AgentCard key={agent.id} agent={agent} wallets={wallets} socialCapitalMap={socialCapitalMap} reputationMap={reputationMap} economicMap={economicMap} />
             ))}
           </div>
         )}
