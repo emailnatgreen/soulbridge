@@ -46,9 +46,9 @@ export default function PublicAgentGreeter() {
   const pollRef = useRef(null);
   const initialized = useRef(false);
 
-  // Auto-open after delay
+  // Auto-open after delay (longer to avoid burst with other API calls)
   useEffect(() => {
-    const timer = setTimeout(() => setIsOpen(true), 1000);
+    const timer = setTimeout(() => setIsOpen(true), 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -187,20 +187,10 @@ export default function PublicAgentGreeter() {
       await loadMessages(convId);
 
       if (pollRef.current) clearInterval(pollRef.current);
-      // Poll more frequently initially on mobile, then back off
-      let pollCount = 0;
+      // Light polling — avoid rate limits
       pollRef.current = setInterval(() => {
-        if (convIdRef.current) {
-          loadMessages(convIdRef.current);
-          pollCount++;
-          if (pollCount > 5) {
-            clearInterval(pollRef.current);
-            pollRef.current = setInterval(() => {
-              if (convIdRef.current) loadMessages(convIdRef.current);
-            }, 15000);
-          }
-        }
-      }, 2000);
+        if (convIdRef.current) loadMessages(convIdRef.current);
+      }, 30000);
     } catch (err) {
       console.error('Failed to create conversation:', err);
       // Show a fallback greeting when Axi can't respond (e.g. credit limits)

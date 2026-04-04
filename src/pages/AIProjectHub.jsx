@@ -40,7 +40,7 @@ export default function AIProjectHub() {
     queryKey: ['project-messages', projectId],
     queryFn: () => base44.entities.ProjectMessage.filter({ project_id: projectId }),
     enabled: !!projectId,
-    refetchInterval: 5000
+    refetchInterval: 60000
   });
 
   const { data: agents = [] } = useQuery({
@@ -56,13 +56,13 @@ export default function AIProjectHub() {
   const { data: recentActivities = [] } = useQuery({
     queryKey: ['recent-activities'],
     queryFn: () => base44.entities.ReputationEvent.list('-created_date', 20),
-    refetchInterval: 10000
+    refetchInterval: 120000
   });
 
   const { data: economicActivities = [] } = useQuery({
     queryKey: ['economic-activities'],
     queryFn: () => base44.entities.EconomicActivity.list('-created_date', 15),
-    refetchInterval: 10000
+    refetchInterval: 120000
   });
 
   const sendMessageMutation = useMutation({
