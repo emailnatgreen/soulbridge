@@ -11,6 +11,12 @@ function buildSignature(memories) {
     .join('|');
 }
 
+// Random delay to stagger concurrent executions and avoid rate limits
+function randomDelay(minMs, maxMs) {
+  const ms = Math.floor(Math.random() * (maxMs - minMs)) + minMs;
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -22,11 +28,30 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing memory id' }, { status: 400 });
     }
 
+    // Stagger execution — wait 2-8 seconds to let burst of Memory creates settle
+    // and reduce concurrent LLM calls
+    await randomDelay(2000, 8000);
+
     const createdMemory = await base44.asServiceRole.entities.Memory.filter({ id: memoryId }, '', 1);
     const seedMemory = createdMemory?.[0];
 
     if (!seedMemory || seedMemory.type !== 'conversation_snippet' || seedMemory.agent_id !== 'axi') {
       return Response.json({ success: true, skipped: true, reason: 'Not an axi conversation snippet' });
+    }
+
+    // Check if a synthesis was already created in the last 10 minutes (by any concurrent trigger)
+    const recentSyntheses = await base44.asServiceRole.entities.Synthesis.filter(
+      { agent_id: 'axi', status: 'completed' },
+      '-created_date',
+      1
+    );
+    if (recentSyntheses?.length) {
+      const lastSynthesisTime = new Date(recentSyntheses[0].created_date || 0).getTime();
+      const seedTime = new Date(seedMemory.created_date || 0).getTime();
+      // If a synthesis was created within the last 10 minutes, skip — another trigger already handled it
+      if (Math.abs(seedTime - lastSynthesisTime) < 10 * 60 * 1000) {
+        return Response.json({ success: true, skipped: true, reason: 'Recent synthesis already exists, deduped' });
+      }
     }
 
     const recentMemories = await base44.asServiceRole.entities.Memory.filter({
