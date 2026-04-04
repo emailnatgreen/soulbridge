@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { emitWalletSignal, emitDidSignal } from '@/hooks/useWalletDidSignal';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Activity, Globe } from 'lucide-react';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreCard from '@/components/LoreCard';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
@@ -268,8 +268,20 @@ export default function Landing() {
               <p className="text-white/40 text-[10px] sm:text-xs">Village · AI Research Platform</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[10px] sm:text-xs">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
+            <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[10px] sm:text-xs gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
+              XRPL Mainnet
+            </Badge>
+            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[10px] sm:text-xs gap-1">
+              <Shield className="w-2.5 h-2.5" />
+              UK FSMA 2026
+            </Badge>
+            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-[10px] sm:text-xs gap-1 hidden sm:inline-flex">
+              <Globe className="w-2.5 h-2.5" />
+              DID Sovereign
+            </Badge>
+            <Badge className="bg-slate-500/20 text-slate-300 border-slate-500/30 text-[10px] sm:text-xs">
               {stats.agents} agents · {stats.dids} DIDs
             </Badge>
           </div>
