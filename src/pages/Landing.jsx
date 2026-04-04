@@ -108,6 +108,7 @@ export default function Landing() {
     } catch (_) {}
   }, []);
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
+  const [landingKUs, setLandingKUs] = useState([]);
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
   const [didConnected, setDidConnected] = useState(null);
@@ -173,6 +174,7 @@ export default function Landing() {
         const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
         const data = res?.data || {};
         setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
+        setLandingKUs(data.kus || []);
       } catch (e) {
         console.warn('[Landing] Stats fetch error:', e?.message);
       }
@@ -181,8 +183,8 @@ export default function Landing() {
     // Fetch on mount
     fetchStats();
     
-    // Poll for live updates every 30 seconds (not 5s — reduces load)
-    const interval = setInterval(fetchStats, 30000);
+    // Poll for live updates every 2 minutes to avoid rate limits
+    const interval = setInterval(fetchStats, 120000);
     
     // Listen for cross-tab signals
     const handleSignal = (e) => {
@@ -462,31 +464,41 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Invite Entry */}
-          {showInviteEntry && (
-            <div className="max-w-md mx-auto bg-white/5 border border-amber-500/30 rounded-2xl p-5 space-y-3">
-              <div className="flex items-center gap-2">
-                <Key className="w-4 h-4 text-amber-400" />
-                <h3 className="text-white font-semibold text-sm">Enter Invite Code</h3>
-              </div>
-              <input
-                type="text"
-                value={inviteCode}
-                onChange={e => setInviteCode(e.target.value.toUpperCase())}
-                onKeyDown={e => e.key === 'Enter' && handleInviteSubmit()}
-                placeholder="YOUR-CODE"
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 text-sm font-mono text-center tracking-widest focus:outline-none focus:border-amber-400/60"
-              />
-              {inviteError && <p className="text-red-400 text-xs text-center">{inviteError}</p>}
-              <Button
-                onClick={handleInviteSubmit}
-                disabled={inviteLoading}
-                className="w-full bg-amber-600 hover:bg-amber-500 text-white h-11 gap-2"
+          {/* Invite Entry — always visible */}
+          <div className="max-w-md mx-auto">
+            {!showInviteEntry ? (
+              <button
+                onClick={() => setShowInviteEntry(true)}
+                className="w-full flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/50 text-amber-300 text-sm font-medium rounded-xl px-6 py-3 transition-all"
               >
-                {inviteLoading ? 'Validating…' : 'Claim Invite'}
-              </Button>
-            </div>
-          )}
+                <Key className="w-4 h-4" />
+                Have an Invite Code?
+              </button>
+            ) : (
+              <div className="bg-white/5 border border-amber-500/30 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Key className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-white font-semibold text-sm">Enter Invite Code</h3>
+                </div>
+                <input
+                  type="text"
+                  value={inviteCode}
+                  onChange={e => setInviteCode(e.target.value.toUpperCase())}
+                  onKeyDown={e => e.key === 'Enter' && handleInviteSubmit()}
+                  placeholder="YOUR-CODE"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 text-sm font-mono text-center tracking-widest focus:outline-none focus:border-amber-400/60"
+                />
+                {inviteError && <p className="text-red-400 text-xs text-center">{inviteError}</p>}
+                <Button
+                  onClick={handleInviteSubmit}
+                  disabled={inviteLoading}
+                  className="w-full bg-amber-600 hover:bg-amber-500 text-white h-11 gap-2"
+                >
+                  {inviteLoading ? 'Validating…' : 'Claim Invite'}
+                </Button>
+              </div>
+            )}
+          </div>
 
           {/* Genesis Seal Badge */}
           <div className="max-w-4xl mx-auto">
@@ -500,7 +512,7 @@ export default function Landing() {
 
           {/* Kinetic Grid — Public Overview */}
           <div className="max-w-4xl mx-auto">
-            <KineticPublicOverview />
+            <KineticPublicOverview kus={landingKUs} />
           </div>
 
           {/* Kinetic Compass card */}

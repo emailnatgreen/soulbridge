@@ -17,8 +17,10 @@ const KU_TYPE_COLORS = {
   resource_trade: '#86efac',
 };
 
-export default function KineticPublicOverview() {
-  const { data: kus = [] } = useQuery({
+export default function KineticPublicOverview({ kus: propKUs }) {
+  // Use passed-in KUs from parent (Landing) to avoid duplicate API calls
+  // Falls back to own fetch only if rendered standalone
+  const { data: fetchedKUs = [] } = useQuery({
     queryKey: ['public-kinetic-kus'],
     queryFn: async () => {
       try {
@@ -28,10 +30,13 @@ export default function KineticPublicOverview() {
         return [];
       }
     },
-    staleTime: 60000,
-    refetchInterval: 60000,
+    staleTime: 120000,
+    refetchInterval: 120000,
     retry: false,
+    enabled: !propKUs || propKUs.length === 0,
   });
+
+  const kus = (propKUs && propKUs.length > 0) ? propKUs : fetchedKUs;
 
   // Aggregated, anonymised metrics only
   const totalKUs = kus.length;

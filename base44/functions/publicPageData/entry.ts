@@ -2,37 +2,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
  * Fetches entity data for public-facing pages using service role.
- * This bypasses entity security rules so unauthenticated visitors can view
- * aggregated/anonymised Village data on Landing, ScrollOfResonance, KineticCompass.
- * No authentication required — uses asServiceRole only.
+ * No user authentication required — uses asServiceRole exclusively.
  */
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const { page } = body;
 
-    // Build a clean request — this function uses asServiceRole only, so never pass auth
-    const freshHeaders = new Headers();
-    freshHeaders.set('content-type', 'application/json');
-    for (const [key, value] of req.headers.entries()) {
-      const k = key.toLowerCase();
-      if (k === 'authorization') continue;
-      if (k.startsWith('base44') || k.startsWith('x-base44') || k.startsWith('x-app')) {
-        freshHeaders.set(key, value);
-      }
-    }
-
-    const base44 = createClientFromRequest(new Request(req.url, {
-      method: req.method,
-      headers: freshHeaders,
-      body: JSON.stringify(body),
-    }));
+    const base44 = createClientFromRequest(req);
 
     if (page === 'landing') {
       const [agents, wallets, kus] = await Promise.all([
-        base44.asServiceRole.entities.Agent.filter({ status: 'active' }, '-created_date', 200),
-        base44.asServiceRole.entities.Wallet.filter({ is_published: true }, 'created_date', 1000),
-        base44.asServiceRole.entities.KineticUnit.list('-created_date', 500),
+        base44.asServiceRole.entities.Agent.filter({ status: 'active' }, '-created_date', 50),
+        base44.asServiceRole.entities.Wallet.filter({ is_published: true }, 'created_date', 200),
+        base44.asServiceRole.entities.KineticUnit.list('-created_date', 100),
       ]);
 
       const normalizedAgents = agents.map(a => ({
@@ -49,9 +32,9 @@ Deno.serve(async (req) => {
       }));
 
       const publishedDidCount = new Set([
-        ...wallets.map((wallet) => wallet.classic_address).filter(Boolean),
-        ...normalizedAgents.map((agent) => agent.classic_address).filter(Boolean),
-        ...normalizedAgents.flatMap((agent) => agent.external_classic_addresses || []).filter(Boolean)
+        ...wallets.map(w => w.classic_address).filter(Boolean),
+        ...normalizedAgents.map(a => a.classic_address).filter(Boolean),
+        ...normalizedAgents.flatMap(a => a.external_classic_addresses || []).filter(Boolean)
       ]).size;
 
       return Response.json({
@@ -65,7 +48,7 @@ Deno.serve(async (req) => {
       const [memories, kus, agents] = await Promise.all([
         base44.asServiceRole.entities.Memory.filter({}, '-created_date', 50),
         base44.asServiceRole.entities.KineticUnit.list('-created_date', 100),
-        base44.asServiceRole.entities.Agent.list('-created_date', 200),
+        base44.asServiceRole.entities.Agent.list('-created_date', 50),
       ]);
       return Response.json({
         memories,
@@ -76,9 +59,9 @@ Deno.serve(async (req) => {
 
     if (page === 'compass') {
       const [kus, agents, proposals] = await Promise.all([
-        base44.asServiceRole.entities.KineticUnit.list('-created_date', 1000),
-        base44.asServiceRole.entities.Agent.list('-created_date', 200),
-        base44.asServiceRole.entities.GovernanceProposal.list('-created_date', 50),
+        base44.asServiceRole.entities.KineticUnit.list('-created_date', 200),
+        base44.asServiceRole.entities.Agent.list('-created_date', 50),
+        base44.asServiceRole.entities.GovernanceProposal.list('-created_date', 20),
       ]);
       return Response.json({
         kus,
@@ -90,9 +73,7 @@ Deno.serve(async (req) => {
     if (page === 'agent_lookup') {
       const { agent_name } = body || {};
       const agents = await base44.asServiceRole.entities.Agent.filter(
-        { name: agent_name },
-        '-created_date',
-        1
+        { name: agent_name }, '-created_date', 1
       );
       const agent = agents[0];
       if (!agent) return Response.json({ agent: null });
