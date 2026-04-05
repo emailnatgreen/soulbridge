@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Sparkles, LogOut, Home, ArrowRight, Globe, Wallet } from 'lucide-react';
+import { Shield, Sparkles, LogOut, Home, ArrowRight, Globe, Wallet, ArrowDownUp } from 'lucide-react';
 import MemorySynthesisTrigger from '@/components/dashboard/MemorySynthesisTrigger';
 import DIDManagementPanel from '@/components/dashboard/DIDManagementPanel';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
+import DexSwapPanel from '@/components/dex/DexSwapPanel';
 
 import UniversalDashboardHero from '@/components/dashboard/UniversalDashboardHero';
 import UniversalDashboardQuickActions from '@/components/dashboard/UniversalDashboardQuickActions';
@@ -481,6 +482,9 @@ export default function Dashboard() {
 
             {/* DID Management Panel — all users */}
             <DIDManagementPanel />
+
+            {/* DEX Swap — all users */}
+            <DexSwapPanel wallets={wallets} />
 
             {/* Memory Synthesis — admin only */}
             {isAdmin && <MemorySynthesisTrigger />}
