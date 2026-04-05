@@ -370,6 +370,11 @@ export default function Landing() {
             <KineticEnergyVisualizer kus={allKUs} />
           </div>
 
+          {/* Kinetic Grid — Village Pulse */}
+          <div className="max-w-4xl mx-auto">
+            <KineticPublicOverview kus={allKUs} />
+          </div>
+
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
             {/* Left Card: DID Identity */}
@@ -507,11 +512,6 @@ export default function Landing() {
 
           <div className="max-w-4xl mx-auto">
             <LoreCard />
-          </div>
-
-          {/* Kinetic Grid — Public Overview */}
-          <div className="max-w-4xl mx-auto">
-            <KineticPublicOverview kus={landingKUs} />
           </div>
 
           {/* Kinetic Compass card */}
