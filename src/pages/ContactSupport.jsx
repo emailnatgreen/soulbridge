@@ -1,6 +1,6 @@
 import React from 'react';
 import InquiryForm from '@/components/InquiryForm';
-import { Mail, Shield, Zap, ArrowLeft, Globe } from 'lucide-react';
+import { Mail, Shield, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export default function ContactSupport() {
@@ -71,7 +71,6 @@ export default function ContactSupport() {
           <div className="flex justify-center gap-3 sm:gap-5 mb-6 flex-wrap">
             {[
               { icon: Shield, label: 'Privacy First' },
-              { icon: Zap, label: 'Quick Response' },
               { icon: Mail, label: 'No Login Needed' },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-1.5 text-white/30 text-[10px] sm:text-xs">
