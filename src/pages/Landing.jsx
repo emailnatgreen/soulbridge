@@ -606,7 +606,26 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md py-3 sm:py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center space-y-2">
+          <div className="flex items-center justify-center gap-4">
+            <a
+              href="https://canva.link/soubridgeviewwhitepaper"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
+            >
+              White Paper
+            </a>
+            <span className="text-white/20">·</span>
+            <a
+              href="https://canva.link/kqm1rrjgu9qzj90"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
+            >
+              Demo Video
+            </a>
+          </div>
           <p className="text-white/30 text-[10px] sm:text-xs">
             © 2026 SoulBridge Village · Governed by 11 Laws of Honour · XRPL DID Architecture · UK FSMA 2026 Compliant
           </p>
