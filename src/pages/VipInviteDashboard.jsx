@@ -72,7 +72,7 @@ export default function VipInviteDashboard() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { label: 'VIP Wallets', value: wallets.length },
             { label: 'DIDs Published', value: wallets.filter(w => w.is_published).length },

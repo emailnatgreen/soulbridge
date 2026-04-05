@@ -87,11 +87,11 @@ export default function VipWalletCard({ wallet, onRefresh }) {
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
           <p className="text-white/30 text-[9px] uppercase tracking-widest">XRP Balance</p>
-          <p className="text-white font-bold text-lg">{typeof liveBalance === 'number' ? liveBalance.toFixed(4) : '—'} <span className="text-white/40 text-xs">XRP</span></p>
+          <p className="text-white font-bold text-base sm:text-lg">{typeof liveBalance === 'number' ? liveBalance.toFixed(4) : '—'} <span className="text-white/40 text-xs">XRP</span></p>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
           <p className="text-white/30 text-[9px] uppercase tracking-widest">RLUSD Balance</p>
-          <p className="text-white font-bold text-lg">{rlusdBalance !== null ? rlusdBalance.toFixed(2) : '—'} <span className="text-white/40 text-xs">RLUSD</span></p>
+          <p className="text-white font-bold text-base sm:text-lg">{rlusdBalance !== null ? rlusdBalance.toFixed(2) : '—'} <span className="text-white/40 text-xs">RLUSD</span></p>
         </div>
       </div>
       <div className="flex justify-end">
@@ -111,7 +111,7 @@ export default function VipWalletCard({ wallet, onRefresh }) {
           {wallet.published_txid && (
             <p className="text-white/30 text-[10px] font-mono break-all">{wallet.published_txid}</p>
           )}
-          <div className="flex gap-2 mt-1">
+          <div className="flex flex-wrap gap-2 mt-1">
             <a
               href={`${explorerBase}/account/${wallet.classic_address}`}
               target="_blank"
