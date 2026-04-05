@@ -425,6 +425,7 @@ export default function Landing() {
                     {shortenDID(didConnected?.did)}
                   </div>
                   <p className="text-white/40 text-[10px] sm:text-xs mt-2">{didConnected?.validated ? '✓ Identity verified' : '⏳ Chat with Axi to verify'}</p>
+                  <p className="text-yellow-400/60 text-[9px] sm:text-[10px] mt-1">🔒 2-min security timeout — DID will disconnect if Village is not entered</p>
                 </div>
               )}
 
