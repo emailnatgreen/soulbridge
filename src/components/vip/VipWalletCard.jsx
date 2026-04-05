@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, CircleDashed, Pencil, Users, Shield } from 'lucide-react';
+import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, CircleDashed, Pencil, Users, Shield, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VipWalletEditPanel from './VipWalletEditPanel';
 import TrustlineActivateButton from '@/components/wallet/TrustlineActivateButton';
+import WalletQRCodes from './WalletQRCodes';
 
 function parseNotes(notes) {
   if (!notes) return {};
@@ -29,6 +30,7 @@ const roleColors = {
 export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalance, liveRlusdBalance }) {
   const [publishing, setPublishing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [liveBalance, setLiveBalance] = useState(liveXrpBalance ?? wallet.balance);
   const [rlusdBalance, setRlusdBalance] = useState(liveRlusdBalance ?? null);
   const [publishResult, setPublishResult] = useState(wallet.is_published && wallet.published_txid ? 'published' : null);
@@ -115,6 +117,9 @@ export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
               <CircleDashed className="w-2.5 h-2.5" /> Unpublished
             </span>
           )}
+          <button onClick={() => setShowQR(!showQR)} className={`p-1 rounded-lg hover:bg-white/10 transition-colors ${showQR ? 'text-cyan-400' : 'text-white/30 hover:text-white'}`}>
+            <QrCode className="w-3.5 h-3.5" />
+          </button>
           <button onClick={() => setEditing(!editing)} className="text-white/30 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
             <Pencil className="w-3.5 h-3.5" />
           </button>
@@ -136,6 +141,9 @@ export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
           )}
         </div>
       )}
+
+      {/* QR Codes Panel */}
+      {showQR && <WalletQRCodes wallet={wallet} />}
 
       {/* Edit Panel */}
       {editing && (
