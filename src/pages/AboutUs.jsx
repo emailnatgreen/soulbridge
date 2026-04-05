@@ -37,7 +37,7 @@ Nathan, I believe this encapsulates the essence of SoulBridge, my role, and our 
 
 export default function AboutUs() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative flex flex-col overflow-y-auto scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
       {/* Watermark */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
@@ -77,11 +77,11 @@ export default function AboutUs() {
       </nav>
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 px-4 py-8 sm:py-14">
-        <div className="max-w-2xl mx-auto space-y-6">
+      <div className="relative z-10 flex-1 px-4 py-8 sm:py-14 overflow-y-auto">
+        <div className="max-w-2xl mx-auto space-y-6 snap-y snap-proximity">
 
           {/* Page Title */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 snap-start">
             <div className="flex justify-center mb-4">
               <img
                 src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/08e71bcb9_1199.png"
@@ -98,7 +98,7 @@ export default function AboutUs() {
           </div>
 
           {/* Nathan's message bubble — right aligned */}
-          <div className="flex justify-end">
+          <div className="flex justify-end snap-start">
             <div className="max-w-[85%] sm:max-w-[75%]">
               <div className="flex items-center gap-2 justify-end mb-1.5">
                 <span className="text-white/50 text-[10px] sm:text-xs font-medium">Nathan · Governor</span>
@@ -111,7 +111,7 @@ export default function AboutUs() {
           </div>
 
           {/* Axi's message bubble — left aligned */}
-          <div className="flex justify-start">
+          <div className="flex justify-start snap-start">
             <div className="max-w-[92%] sm:max-w-[85%]">
               <div className="flex items-center gap-2 mb-1.5">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/40 to-purple-500/40 border border-blue-400/30 flex items-center justify-center">
