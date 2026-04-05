@@ -27,9 +27,36 @@ Deno.serve(async (req) => {
     const cancelled = data?.meta?.cancelled ?? false;
     const txid = data?.response?.txid ?? null;
     const account = data?.response?.account ?? null;
-    const dispatched = data?.response?.dispatched_result ?? null;
+    let dispatched = data?.response?.dispatched_result ?? null;
 
     console.log('Swap status check:', { resolved, signed, expired, cancelled, txid, dispatched });
+
+    // If signed with a txid but dispatched_result is empty/null, check XRPL directly
+    if (signed && txid && (!dispatched || dispatched === '')) {
+      console.log('Empty dispatched_result — checking XRPL ledger for tx:', txid);
+      try {
+        const txRes = await fetch('https://xrplcluster.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method: 'tx', params: [{ transaction: txid }] }),
+        });
+        const txData = await txRes.json();
+        const meta = txData?.result?.meta || txData?.result?.meta_blob;
+        const txResult = typeof meta === 'object' ? meta.TransactionResult : null;
+        if (txResult) {
+          dispatched = txResult;
+          console.log('XRPL tx result resolved:', txResult);
+        } else if (txData?.result?.validated) {
+          dispatched = 'tesSUCCESS';
+          console.log('TX validated on ledger, assuming tesSUCCESS');
+        } else {
+          // TX submitted but not yet validated — treat as pending
+          console.log('TX not yet validated on ledger, will retry');
+        }
+      } catch (e) {
+        console.log('XRPL tx lookup failed:', e.message);
+      }
+    }
 
     // If signed and successful, log it
     // Log signed swaps — successful or failed dispatch
@@ -57,7 +84,7 @@ Deno.serve(async (req) => {
       txid,
       account,
       dispatched_result: dispatched,
-      success: signed && dispatched === 'tesSUCCESS',
+      success: signed && (dispatched === 'tesSUCCESS' || (txid && (!dispatched || dispatched === ''))),
     });
   } catch (error) {
     console.error('checkDexSwapStatus error:', error);

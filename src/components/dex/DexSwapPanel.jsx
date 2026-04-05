@@ -87,7 +87,7 @@ export default function DexSwapPanel({ wallets }) {
         setPolling(false);
         setResult(status);
         if (status.success) {
-          toast.success('Swap completed successfully!');
+          toast.success('Swap signed and submitted successfully!');
         } else if (status.expired) {
           toast.error('Swap request expired — try again');
         } else if (status.cancelled) {
