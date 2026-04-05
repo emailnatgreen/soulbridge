@@ -23,6 +23,7 @@ export default function VipInviteDashboard() {
   const [agents, setAgents] = useState([]);
   const [treasuryAddresses, setTreasuryAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [liveBalances, setLiveBalances] = useState({});
   const [rlusdBalances, setRlusdBalances] = useState({});
 
   const loadData = async () => {
@@ -42,18 +43,26 @@ export default function VipInviteDashboard() {
     setAgents(allAgents || []);
     setLoading(false);
 
-    // Fetch RLUSD balances for VIP wallets in background
-    for (const w of vipOnly) {
-      if (w.classic_address) {
-        base44.functions.invoke('getWalletTrustlines', { wallet_id: w.id }).then(res => {
-          const lines = res?.data?.trustlines || [];
-          const rlusdLine = lines.find(tl => tl.currency === 'RLUSD' || tl.currency === '524C555344000000000000000000000000000000');
-          if (rlusdLine) {
-            setRlusdBalances(prev => ({ ...prev, [w.id]: parseFloat(rlusdLine.balance || '0') }));
-          }
-        }).catch(() => {});
+    // Fetch live XRP + RLUSD balances for all VIP wallets in parallel
+    const newLive = {};
+    const newRlusd = {};
+    await Promise.all(vipOnly.map(async (w) => {
+      if (!w.classic_address) return;
+      const [balRes, tlRes] = await Promise.all([
+        base44.functions.invoke('getBalance', { wallet_id: w.id }).catch(() => null),
+        base44.functions.invoke('getWalletTrustlines', { wallet_id: w.id }).catch(() => null),
+      ]);
+      if (balRes?.data?.balance !== undefined) {
+        newLive[w.id] = balRes.data.balance;
       }
-    }
+      const lines = tlRes?.data?.trustlines || [];
+      const rlusdLine = lines.find(tl => tl.currency === 'RLUSD' || tl.currency === '524C555344000000000000000000000000000000');
+      if (rlusdLine) {
+        newRlusd[w.id] = parseFloat(rlusdLine.balance || '0');
+      }
+    }));
+    setLiveBalances(newLive);
+    setRlusdBalances(newRlusd);
   };
 
   useEffect(() => { loadData(); }, []);
@@ -100,7 +109,7 @@ export default function VipInviteDashboard() {
           {[
             { label: 'VIP Wallets', value: wallets.length },
             { label: 'DIDs Published', value: wallets.filter(w => w.is_published && w.published_txid).length },
-            { label: 'Total XRP', value: `${wallets.reduce((s, w) => s + (w.balance || 0), 0).toFixed(2)}` },
+            { label: 'Total XRP', value: `${wallets.reduce((s, w) => s + (liveBalances[w.id] ?? w.balance ?? 0), 0).toFixed(2)}` },
             { label: 'Total RLUSD', value: `${Object.values(rlusdBalances).reduce((s, b) => s + b, 0).toFixed(2)}` },
           ].map(s => (
             <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-3 text-center">
@@ -154,6 +163,8 @@ export default function VipInviteDashboard() {
                   wallet={wallet}
                   agents={agents}
                   onRefresh={loadData}
+                  liveXrpBalance={liveBalances[wallet.id]}
+                  liveRlusdBalance={rlusdBalances[wallet.id]}
                 />
               ))}
             </div>

@@ -26,13 +26,21 @@ const roleColors = {
   master: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
 };
 
-export default function VipWalletCard({ wallet, agents, onRefresh }) {
+export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalance, liveRlusdBalance }) {
   const [publishing, setPublishing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [liveBalance, setLiveBalance] = useState(wallet.balance);
-  const [rlusdBalance, setRlusdBalance] = useState(null);
+  const [liveBalance, setLiveBalance] = useState(liveXrpBalance ?? wallet.balance);
+  const [rlusdBalance, setRlusdBalance] = useState(liveRlusdBalance ?? null);
   const [publishResult, setPublishResult] = useState(wallet.is_published && wallet.published_txid ? 'published' : null);
   const [editing, setEditing] = useState(false);
+
+  // Sync live balances from parent when they change
+  React.useEffect(() => {
+    if (liveXrpBalance !== undefined) setLiveBalance(liveXrpBalance);
+  }, [liveXrpBalance]);
+  React.useEffect(() => {
+    if (liveRlusdBalance !== undefined) setRlusdBalance(liveRlusdBalance);
+  }, [liveRlusdBalance]);
 
   const parsed = parseNotes(wallet.notes);
   const walletColor = parsed.color || '#a855f7';
