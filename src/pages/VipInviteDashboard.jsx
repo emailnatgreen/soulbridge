@@ -23,6 +23,7 @@ export default function VipInviteDashboard() {
   const [agents, setAgents] = useState([]);
   const [treasuryAddresses, setTreasuryAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rlusdBalances, setRlusdBalances] = useState({});
 
   const loadData = async () => {
     setLoading(true);
@@ -40,6 +41,19 @@ export default function VipInviteDashboard() {
     setWallets(vipOnly);
     setAgents(allAgents || []);
     setLoading(false);
+
+    // Fetch RLUSD balances for VIP wallets in background
+    for (const w of vipOnly) {
+      if (w.classic_address) {
+        base44.functions.invoke('getWalletTrustlines', { wallet_id: w.id }).then(res => {
+          const lines = res?.data?.trustlines || [];
+          const rlusdLine = lines.find(tl => tl.currency === 'RLUSD' || tl.currency === '524C555344000000000000000000000000000000');
+          if (rlusdLine) {
+            setRlusdBalances(prev => ({ ...prev, [w.id]: parseFloat(rlusdLine.balance || '0') }));
+          }
+        }).catch(() => {});
+      }
+    }
   };
 
   useEffect(() => { loadData(); }, []);
@@ -61,38 +75,37 @@ export default function VipInviteDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
       {/* Header */}
-      <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl px-4 sm:px-6 py-3 sticky top-0 z-20">
-        <div className="flex items-center justify-between gap-3 max-w-6xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-amber-300" />
+      <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 z-20">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 max-w-6xl mx-auto">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
             </div>
-            <div>
-              <h1 className="text-white font-semibold text-sm sm:text-base">VIP Invite Dashboard</h1>
-              <p className="text-amber-400/60 text-[10px] sm:text-xs">Admin · Manage VIP wallets, DIDs & invite access</p>
+            <div className="min-w-0">
+              <h1 className="text-white font-semibold text-xs sm:text-base truncate">VIP Invite Dashboard</h1>
+              <p className="text-amber-400/60 text-[9px] sm:text-xs truncate">Admin · VIP wallets, DIDs & access</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={loadData}
-              className="text-xs border-white/20 bg-white/5 text-white hover:bg-white/10 gap-1.5">
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh
-            </Button>
-          </div>
+          <Button size="sm" variant="outline" onClick={loadData}
+            className="text-[10px] sm:text-xs border-white/20 bg-white/5 text-white hover:bg-white/10 gap-1 sm:gap-1.5 h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0">
+            <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Refresh</span>
+          </Button>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {[
             { label: 'VIP Wallets', value: wallets.length },
             { label: 'DIDs Published', value: wallets.filter(w => w.is_published && w.published_txid).length },
-            { label: 'Total VIP Balance', value: `${wallets.reduce((s, w) => s + (w.balance || 0), 0).toFixed(2)} XRP` },
+            { label: 'Total XRP', value: `${wallets.reduce((s, w) => s + (w.balance || 0), 0).toFixed(2)}` },
+            { label: 'Total RLUSD', value: `${Object.values(rlusdBalances).reduce((s, b) => s + b, 0).toFixed(2)}` },
           ].map(s => (
-            <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-              <p className="text-lg sm:text-xl font-bold text-white">{s.value}</p>
-              <p className="text-white/40 text-[10px] sm:text-xs">{s.label}</p>
+            <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-2.5 sm:p-3 text-center">
+              <p className="text-base sm:text-xl font-bold text-white truncate">{s.value}</p>
+              <p className="text-white/40 text-[9px] sm:text-xs">{s.label}</p>
             </div>
           ))}
         </div>
