@@ -14,17 +14,14 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    const msg = String(error?.message || '').toLowerCase();
-    if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3')) return;
     console.error('[ErrorBoundary]', error, info);
   }
 
   render() {
     if (this.state.hasError) {
       const msg = String(this.state.error?.message || '').toLowerCase();
-      // Silently recover from MetaMask / Web3 errors without showing error UI
-      if (msg.includes('metamask') || msg.includes('ethereum') || msg.includes('web3') || msg.includes('wallet connect')) {
-        // Use setTimeout to avoid mutating state during render
+      // Silently recover from MetaMask / Web3 injected errors without showing error UI
+      if (msg.includes('metamask') || msg.includes('ethereum is not defined')) {
         setTimeout(() => this.setState({ hasError: false, error: null }), 0);
         return this.props.children;
       }

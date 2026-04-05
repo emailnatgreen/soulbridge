@@ -20,17 +20,8 @@ export function OwnerGovernorProvider({ children }) {
 
         const user = await base44.auth.me();
         if (user) {
-          const newOwnerId = user.id;
-          const newGovernorId = user.role === 'admin' ? user.id : null;
-          
-          setOwnerId(newOwnerId);
-          setGovernorId(newGovernorId);
-          
-          // Save to user profile for persistence
-          await base44.auth.updateMe({
-            owner_id: newOwnerId,
-            governor_id: newGovernorId
-          });
+          setOwnerId(user.id);
+          setGovernorId(user.role === 'admin' ? user.id : null);
         }
       } catch (error) {
         // Silently ignore auth errors — user is simply not logged in

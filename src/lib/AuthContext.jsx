@@ -28,7 +28,11 @@ export const AuthProvider = ({ children }) => {
     } catch (appError) {
       if (!silent && appError.status === 403 && appError.data?.extra_data?.reason) {
         const reason = appError.data.extra_data.reason;
-        setAuthError({ type: reason, message: appError.data?.message || reason });
+        // Only set auth errors that the app explicitly handles — ignore auth_required
+        // to prevent white screens on public pages for unauthenticated visitors
+        if (reason === 'user_not_registered') {
+          setAuthError({ type: reason, message: appError.data?.message || reason });
+        }
       }
     }
   }, []);

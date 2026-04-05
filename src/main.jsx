@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
 import '@/index.css'
+// Force rebuild
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { queryClientInstance } from '@/lib/query-client'
 
@@ -18,8 +19,7 @@ try {
 // Swallow MetaMask / Web3 errors silently
 const isWeb3Error = (msg) => {
   const s = String(msg || '').toLowerCase();
-  return s.includes('metamask') || s.includes('ethereum') || s.includes('web3')
-    || s.includes('failed to connect') || s.includes('wallet') || s.includes('provider');
+  return s.includes('metamask') || s.includes('ethereum') || s.includes('web3');
 };
 window.addEventListener('unhandledrejection', (event) => {
   if (isWeb3Error(event?.reason?.message) || isWeb3Error(event?.reason)) {
