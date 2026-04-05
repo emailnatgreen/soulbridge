@@ -283,7 +283,7 @@ export default function Landing() {
             />
             <div>
               <h1 className="text-white font-light text-base sm:text-xl tracking-tight">SoulBridge Foundation</h1>
-              <p className="text-white/40 text-[10px] sm:text-xs">Village · AI Research Platform</p>
+              <p className="text-yellow-400/80 text-[10px] sm:text-xs">Village · AI Research Platform</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
