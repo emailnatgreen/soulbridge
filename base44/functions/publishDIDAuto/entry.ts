@@ -43,12 +43,18 @@ Deno.serve(async (req) => {
 
     // Allow re-publishing (DID updates are valid on XRPL)
 
-    if (!wallet.encrypted_seed || !wallet.encryption_iv || !wallet.encryption_salt) {
-      return Response.json({ error: 'Wallet seed not securely stored — cannot auto-publish' }, { status: 400 });
+    if (!wallet.encrypted_seed) {
+      return Response.json({ error: 'No seed stored for this wallet — cannot auto-publish' }, { status: 400 });
     }
 
-    // Decrypt the seed
-    const seed = await decryptSeed(wallet.encrypted_seed, wallet.encryption_iv, wallet.encryption_salt);
+    // Decrypt the seed (or use plain seed if not encrypted)
+    let seed;
+    if (wallet.encryption_iv && wallet.encryption_salt) {
+      seed = await decryptSeed(wallet.encrypted_seed, wallet.encryption_iv, wallet.encryption_salt);
+    } else {
+      // Legacy: seed stored unencrypted (starts with 's')
+      seed = wallet.encrypted_seed;
+    }
     const xrplWallet = XRPLWallet.fromSeed(seed);
 
     // Connect to mainnet
