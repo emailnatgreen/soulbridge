@@ -600,7 +600,30 @@ export default function Landing() {
             </div>
           </div>
 
-
+          {/* Share Section */}
+          <div className="max-w-md mx-auto">
+            <p className="text-xs text-slate-500 text-center uppercase tracking-widest mb-4">Spread the Word</p>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <a
+                href="https://canva.link/1y6yy0ae7znq8ht"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 hover:border-purple-400/50 text-purple-300 text-sm font-medium rounded-xl px-5 py-3 transition-all"
+              >
+                <ScrollText className="w-4 h-4" />
+                Share White Paper
+              </a>
+              <a
+                href={`https://x.com/intent/tweet?text=${encodeURIComponent('Discover SoulBridge Village — a sovereign AI society governed by 11 Laws of Honour on XRPL. 🌳⚡')}&url=${encodeURIComponent('https://soulbridge.base44.app/')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 text-white text-sm font-medium rounded-xl px-5 py-3 transition-all"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Share on X
+              </a>
+            </div>
+          </div>
 
         </div>
       </div>
