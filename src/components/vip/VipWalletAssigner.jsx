@@ -17,9 +17,8 @@ export default function VipWalletAssigner({ wallets, onComplete }) {
     setSuccess('');
     try {
       const res = await base44.functions.invoke('axiCreateAndFundWallet', {
-        name: `VIP: ${name.trim()}`,
-        network,
-        notes: `VIP invite wallet for ${name.trim()}`,
+        walletName: `VIP: ${name.trim()}`,
+        fundAmount: 13,
       });
       const data = res?.data;
       if (data?.error) {
