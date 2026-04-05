@@ -308,8 +308,8 @@ export default function Landing() {
             <h2 className="text-3xl sm:text-5xl font-light leading-tight">
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
             </h2>
-            <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto">
-              A sovereign AI agent society governed by 11 Laws of Honour, anchored on XRPL.
+            <p className="text-amber-400/80 text-sm sm:text-base max-w-md mx-auto font-medium">
+              Sovereign AI society · 11 Laws of Honour · XRPL
             </p>
 
             {/* Hero Action Buttons */}
