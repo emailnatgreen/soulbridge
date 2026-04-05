@@ -176,8 +176,26 @@ export default function Landing() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
-        const data = res?.data || {};
+        let data = {};
+        try {
+          const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
+          data = res?.data || {};
+        } catch (_sdkErr) {
+          // Fallback: direct fetch for unauthenticated/public visitors
+          try {
+            const baseUrl = window.location.origin;
+            const resp = await fetch(`${baseUrl}/functions/publicPageData`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ page: 'landing' }),
+            });
+            if (resp.ok) {
+              data = await resp.json();
+            }
+          } catch (_fetchErr) {
+            // silent
+          }
+        }
         setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
         setLandingKUs(data.kus || []);
         setAllKUs(data.kus || []);
@@ -264,40 +282,39 @@ export default function Landing() {
 
       {/* Header */}
       <div className="relative z-10 border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <img
-              src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
-              alt="SoulBridge"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-contain"
-            />
-            <div>
-              <h1 className="text-white font-light text-base sm:text-xl tracking-tight">SoulBridge Foundation</h1>
-              <p className="text-yellow-400/80 text-[10px] sm:text-xs">Village · AI Research Platform</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <img
+                src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
+                alt="SoulBridge"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-contain flex-shrink-0"
+              />
+              <div className="min-w-0">
+                <h1 className="text-white font-light text-sm sm:text-xl tracking-tight truncate">SoulBridge</h1>
+                <p className="text-yellow-400/80 text-[9px] sm:text-xs truncate">Village · AI Research Platform</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
-            <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[10px] sm:text-xs gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
-              XRPL Mainnet
-            </Badge>
-            <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-[10px] sm:text-xs gap-1">
-              <Shield className="w-2.5 h-2.5" />
-              UK FSMA 2026
-            </Badge>
-            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-[10px] sm:text-xs gap-1 hidden sm:inline-flex">
-              <Globe className="w-2.5 h-2.5" />
-              DID Sovereign
-            </Badge>
-            {isAdmin && (
-              <button
-                onClick={() => window.location.href = '/dashboard'}
-                className="flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-400/50 text-red-300 text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-md transition-all"
-              >
-                <Lock className="w-2.5 h-2.5" />
-                Admin
-              </button>
-            )}
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
+                <span className="hidden sm:inline">XRPL Mainnet</span>
+                <span className="sm:hidden">Live</span>
+              </Badge>
+              <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5 hidden sm:inline-flex">
+                <Shield className="w-2.5 h-2.5" />
+                UK FSMA 2026
+              </Badge>
+              {isAdmin && (
+                <button
+                  onClick={() => window.location.href = '/dashboard'}
+                  className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-[9px] sm:text-xs font-semibold px-2 py-1 rounded-md transition-all"
+                >
+                  <Lock className="w-2.5 h-2.5" />
+                  <span className="hidden sm:inline">Admin</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -325,21 +342,21 @@ export default function Landing() {
             </p>
 
             {/* Live Status Boxes */}
-            <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
-              <div className="bg-white/5 border border-purple-500/20 rounded-xl p-3 text-center">
-                <p className="text-xl sm:text-2xl font-bold text-purple-300">{stats.dids}</p>
-                <p className="text-white/40 text-[10px] sm:text-xs mt-0.5">DIDs</p>
-                <span className="inline-flex items-center gap-1 text-green-400 text-[9px] mt-1"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto">
+              <div className="bg-white/5 border border-purple-500/20 rounded-xl p-2 sm:p-3 text-center">
+                <p className="text-lg sm:text-2xl font-bold text-purple-300">{stats.dids}</p>
+                <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">DIDs</p>
+                <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
               </div>
-              <div className="bg-white/5 border border-blue-500/20 rounded-xl p-3 text-center">
-                <p className="text-xl sm:text-2xl font-bold text-blue-300">{stats.agents}</p>
-                <p className="text-white/40 text-[10px] sm:text-xs mt-0.5">Agents</p>
-                <span className="inline-flex items-center gap-1 text-green-400 text-[9px] mt-1"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+              <div className="bg-white/5 border border-blue-500/20 rounded-xl p-2 sm:p-3 text-center">
+                <p className="text-lg sm:text-2xl font-bold text-blue-300">{stats.agents}</p>
+                <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">Agents</p>
+                <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
               </div>
-              <div className="bg-white/5 border border-amber-500/20 rounded-xl p-3 text-center">
-                <p className="text-xl sm:text-2xl font-bold text-amber-300">{allKUs.reduce((s, k) => s + (k.weighted_score || 1), 0).toLocaleString()}</p>
-                <p className="text-white/40 text-[10px] sm:text-xs mt-0.5">Kinetic</p>
-                <span className="inline-flex items-center gap-1 text-green-400 text-[9px] mt-1"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+              <div className="bg-white/5 border border-amber-500/20 rounded-xl p-2 sm:p-3 text-center">
+                <p className="text-lg sm:text-2xl font-bold text-amber-300">{allKUs.reduce((s, k) => s + (k.weighted_score || 1), 0).toLocaleString()}</p>
+                <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">Kinetic</p>
+                <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
               </div>
             </div>
 

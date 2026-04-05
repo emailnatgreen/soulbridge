@@ -1,37 +1,38 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
- * Fetches entity data for public-facing pages using service role.
- * No user authentication required — uses asServiceRole exclusively.
- * 
- * For unauthenticated callers (no Bearer token), we construct a new
- * Request with a placeholder JWT-shaped token so the SDK initialises
- * without throwing, then only call asServiceRole methods.
+ * Public data endpoint — no user auth needed.
+ * All queries use asServiceRole exclusively.
+ *
+ * The SDK's createClientFromRequest may throw if the Authorization
+ * header is missing or malformed. We work around this by cloning
+ * the request with a valid-format placeholder token before
+ * handing it to the SDK.
  */
+
+function initBase44(req, bodyStr) {
+  // Always build a fresh request with a guaranteed valid auth header
+  // so createClientFromRequest never rejects due to format.
+  const headers = new Headers(req.headers);
+  const existing = headers.get('authorization') || '';
+  if (!existing || !existing.startsWith('Bearer ') || existing.split(' ')[1].length < 20) {
+    headers.set('authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwdWJsaWMiLCJpYXQiOjE3MDAwMDAwMDB9.placeholder_signature_value');
+  }
+  const newReq = new Request(req.url, {
+    method: req.method,
+    headers,
+    body: bodyStr,
+  });
+  return createClientFromRequest(newReq);
+}
+
 Deno.serve(async (req) => {
   try {
-    const body = await req.json();
+    const bodyStr = await req.text();
+    const body = JSON.parse(bodyStr);
     const { page } = body;
 
-    // Build a request the SDK will accept.
-    // createClientFromRequest validates "Bearer <token>" — if the caller
-    // is unauthenticated we must supply a syntactically valid token.
-    const PLACEHOLDER_JWT = 'eyJhbGciOiJub25lIn0.eyJzdWIiOiJwdWJsaWMifQ.placeholder';
-    const authHeader = req.headers.get('authorization') || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : '';
-
-    let sdkReq = req;
-    if (!token || token.length < 10) {
-      const newHeaders = new Headers(req.headers);
-      newHeaders.set('authorization', `Bearer ${PLACEHOLDER_JWT}`);
-      sdkReq = new Request(req.url, {
-        method: req.method,
-        headers: newHeaders,
-        body: JSON.stringify(body),
-      });
-    }
-
-    const base44 = createClientFromRequest(sdkReq);
+    const base44 = initBase44(req, bodyStr);
 
     if (page === 'landing') {
       const [agents, wallets, kus] = await Promise.all([

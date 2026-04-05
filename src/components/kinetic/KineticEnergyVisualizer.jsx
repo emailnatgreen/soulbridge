@@ -66,8 +66,17 @@ export default function KineticEnergyVisualizer({ kus = [] }) {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => setTick((value) => value + 1), 80);
-    return () => clearInterval(interval);
+    let animId;
+    let last = 0;
+    const step = (ts) => {
+      if (ts - last > 80) {
+        last = ts;
+        setTick(v => v + 1);
+      }
+      animId = requestAnimationFrame(step);
+    };
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
   }, []);
 
   const flows = useMemo(() => buildFlowMatrix(kus).filter((flow) => flow.throughput > 0), [kus]);
@@ -75,19 +84,19 @@ export default function KineticEnergyVisualizer({ kus = [] }) {
   const totalThroughput = useMemo(() => flows.reduce((sum, flow) => sum + flow.throughput, 0), [flows]);
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <div>
-          <h3 className="text-white font-semibold text-sm">Kinetic Energy Visualizer</h3>
-          <p className="text-white/40 text-xs">Particle flow speed reflects current KU throughput between braid nodes.</p>
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-5">
+      <div className="flex items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="min-w-0">
+          <h3 className="text-white font-semibold text-xs sm:text-sm">Kinetic Energy Visualizer</h3>
+          <p className="text-white/40 text-[10px] sm:text-xs">Particle flow reflects KU throughput between braid nodes.</p>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-white/40">Live throughput</p>
-          <p className="text-lg font-semibold text-purple-300">{totalThroughput.toFixed(1)} KU</p>
+        <div className="text-right flex-shrink-0">
+          <p className="text-[10px] sm:text-xs text-white/40">Throughput</p>
+          <p className="text-base sm:text-lg font-semibold text-purple-300">{totalThroughput.toFixed(1)} KU</p>
         </div>
       </div>
 
-      <div className="relative aspect-[16/9] rounded-xl border border-white/10 bg-slate-950/70 overflow-hidden">
+      <div className="relative aspect-[4/3] sm:aspect-[16/9] rounded-xl border border-white/10 bg-slate-950/70 overflow-hidden">
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
