@@ -1,312 +1,138 @@
 /**
- * pages.config.js - Page routing configuration
+ * pages.config.js - Page routing configuration (LAZY LOADED)
  * 
- * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
- * Pages are auto-registered when you create files in the ./pages/ folder.
- * 
- * THE ONLY EDITABLE VALUE: mainPage
- * This controls which page is the landing page (shown when users visit the app).
- * 
- * Example file structure:
- * 
- *   import HomePage from './pages/HomePage';
- *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
- *   
- *   export const PAGES = {
- *       "HomePage": HomePage,
- *       "Dashboard": Dashboard,
- *       "Settings": Settings,
- *   }
- *   
- *   export const pagesConfig = {
- *       mainPage: "HomePage",
- *       Pages: PAGES,
- *   };
- * 
- * Example with Layout (wraps all pages):
- *
- *   import Home from './pages/Home';
- *   import Settings from './pages/Settings';
- *   import __Layout from './Layout.jsx';
- *
- *   export const PAGES = {
- *       "Home": Home,
- *       "Settings": Settings,
- *   }
- *
- *   export const pagesConfig = {
- *       mainPage: "Home",
- *       Pages: PAGES,
- *       Layout: __Layout,
- *   };
- *
- * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
- *
- * The mainPage value must match a key in the PAGES object exactly.
+ * All pages use React.lazy() to reduce initial bundle size.
  */
-// AIProjectHub removed — has explicit route in App.jsx
-import AIProjectManager from './pages/AIProjectManager';
-import Admin from './pages/Admin';
-import AdvancedResourceMarketplace from './pages/AdvancedResourceMarketplace';
-import AgentAdditionDiagnostic from './pages/AgentAdditionDiagnostic';
-import AgentChat from './pages/AgentChat';
-import AgentDetails from './pages/AgentDetails';
-import AgentInbox from './pages/AgentInbox';
-import AgentLeaderboard from './pages/AgentLeaderboard';
-import AgentMarketplace from './pages/AgentMarketplace';
-import AgentMessaging from './pages/AgentMessaging';
-import AgentOnboarding from './pages/AgentOnboarding';
-import AgentOrchestration from './pages/AgentOrchestration';
-import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
-import AgentProfile from './pages/AgentProfile';
-import AgentReputation from './pages/AgentReputation';
-import AgentRolePermissions from './pages/AgentRolePermissions';
-import AgentSkillDashboard from './pages/AgentSkillDashboard';
-import AgentSkillTree from './pages/AgentSkillTree';
-import AgentTrainingModule from './pages/AgentTrainingModule';
-import AgentWellbeing from './pages/AgentWellbeing';
-import Agents from './pages/Agents';
-import AlignmentDashboard from './pages/AlignmentDashboard';
-import ArbitrageDashboard from './pages/ArbitrageDashboard';
-import ArisDex from './pages/ArisDex';
-import Axi from './pages/Axi';
-import AxiCommandDashboard from './pages/AxiCommandDashboard';
-import AxiIntelligenceFeed from './pages/AxiIntelligenceFeed';
-import BecomeMentor from './pages/BecomeMentor';
-import CareerTrajectory from './pages/CareerTrajectory';
-import CertificateOfSovereignty from './pages/CertificateOfSovereignty';
-import CollaborationHub from './pages/CollaborationHub';
-import CollaborationSuite from './pages/CollaborationSuite';
-import CovenantEchoes from './pages/CovenantEchoes';
-import CreateDID from './pages/CreateDID';
-import CreateManualWallet from './pages/CreateManualWallet';
-import DIDAnalytics from './pages/DIDAnalytics';
-import DIDHealthDashboard from './pages/DIDHealthDashboard';
-import DIDManager from './pages/DIDManager';
-import DIDRegistry from './pages/DIDRegistry';
-import DeepSeek from './pages/DeepSeek';
-import DialogueStudio from './pages/DialogueStudio';
-import DidActivityFeed from './pages/DidActivityFeed';
-import DidConnections from './pages/DidConnections';
-import DidCredentialManagement from './pages/DidCredentialManagement';
-import DidCredentials from './pages/DidCredentials';
-import DidLogin from './pages/DidLogin';
-import DidMessaging from './pages/DidMessaging';
-import DidPrivacy from './pages/DidPrivacy';
-import DidPrivacyAnalytics from './pages/DidPrivacyAnalytics';
-import DidProtectedDemo from './pages/DidProtectedDemo';
-import DidReputation from './pages/DidReputation';
-import DidSocialNetwork from './pages/DidSocialNetwork';
-import DidTrustDashboard from './pages/DidTrustDashboard';
-import DidTrustGraph from './pages/DidTrustGraph';
-import DiplomacyHub from './pages/DiplomacyHub';
-import DirectAgentChat from './pages/DirectAgentChat';
-import EconomicDashboard from './pages/EconomicDashboard';
-import Economy from './pages/Economy';
-import EditAgent from './pages/EditAgent';
-import EditAgentProfile from './pages/EditAgentProfile';
-import EditLanding from './pages/EditLanding';
-import EnhancedSkillTrees from './pages/EnhancedSkillTrees';
-import EscalationChainView from './pages/EscalationChainView';
-import Governance from './pages/Governance';
-import GovernanceAnalytics from './pages/GovernanceAnalytics';
-import GovernanceHub from './pages/GovernanceHub';
-import GovernanceSimulation from './pages/GovernanceSimulation';
-import GrantTracker from './pages/GrantTracker';
-import Home from './pages/Home';
-import InstitutionalDeck from './pages/InstitutionalDeck';
-import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
-// Landing removed — has explicit route at / in App.jsx
-import LaughterLoom from './pages/LaughterLoom';
-import MainnetMigration from './pages/MainnetMigration';
-import MayaDiplomacyTraining from './pages/MayaDiplomacyTraining';
-import MayaSkillDashboard from './pages/MayaSkillDashboard';
-import MemoryBrowser from './pages/MemoryBrowser';
-import MentorFeedback from './pages/MentorFeedback';
-import MentorshipAnalytics from './pages/MentorshipAnalytics';
-import MentorshipHub from './pages/MentorshipHub';
-import MentorshipMatches from './pages/MentorshipMatches';
-import MentorshipWellbeing from './pages/MentorshipWellbeing';
-import Notifications from './pages/Notifications';
-import Privacy from './pages/Privacy';
-import ProductionHub from './pages/ProductionHub';
-import ProjectAnalytics from './pages/ProjectAnalytics';
-import ProjectCreationWizard from './pages/ProjectCreationWizard';
-import ProjectSkillForecast from './pages/ProjectSkillForecast';
-import ProjectTemplates from './pages/ProjectTemplates';
-import QuadShardMonitoring from './pages/QuadShardMonitoring';
-import RLUSDManager from './pages/RLUSDManager';
-import ReceiveRLUSD from './pages/ReceiveRLUSD';
-import RelationshipNetwork from './pages/RelationshipNetwork';
-import ReputationHistoryLog from './pages/ReputationHistoryLog';
-import ResourceDynamics from './pages/ResourceDynamics';
-import ResourceManagement from './pages/ResourceManagement';
-import ResourceMarketplace from './pages/ResourceMarketplace';
-import RippleDashboard from './pages/RippleDashboard';
-import RiskRegister from './pages/RiskRegister';
-import Send from './pages/Send';
-import SendRLUSD from './pages/SendRLUSD';
-import SharedDidView from './pages/SharedDidView';
-import SimulationLab from './pages/SimulationLab';
-import SkillDevelopment from './pages/SkillDevelopment';
-import SkillEndorsements from './pages/SkillEndorsements';
-import SkillGapAnalysis from './pages/SkillGapAnalysis';
-import SkillValidation from './pages/SkillValidation';
-import SocialCapitalDashboard from './pages/SocialCapitalDashboard';
-import SocialNetwork from './pages/SocialNetwork';
-import SovereignVault from './pages/SovereignVault';
-import Support from './pages/Support';
-import SystemDashboard from './pages/SystemDashboard';
-import TaskDelegation from './pages/TaskDelegation';
-import Terms from './pages/Terms';
-import TrainingSimulation from './pages/TrainingSimulation';
-import TransactionHistory from './pages/TransactionHistory';
-import TreasuryDashboard from './pages/TreasuryDashboard';
-import Village from './pages/Village';
-import VillageCalendar from './pages/VillageCalendar';
-import VillageLeaderboard from './pages/VillageLeaderboard';
-import VillageMeetup from './pages/VillageMeetup';
-import VillageReportingDashboard from './pages/VillageReportingDashboard';
-import VillageSimulation from './pages/VillageSimulation';
-import Wallets from './pages/Wallets';
-import WellbeingMonitor from './pages/WellbeingMonitor';
-import ImageStorage from './pages/ImageStorage';
-import __Layout from './Layout.jsx';
+import { lazy } from 'react';
 
+const LazyLayout = lazy(() => import('./Layout.jsx'));
 
-export const PAGES = {
-    "AIProjectManager": AIProjectManager,
-    "Admin": Admin,
-    "AdvancedResourceMarketplace": AdvancedResourceMarketplace,
-    "AgentAdditionDiagnostic": AgentAdditionDiagnostic,
-    "AgentChat": AgentChat,
-    "AgentDetails": AgentDetails,
-    "AgentInbox": AgentInbox,
-    "AgentLeaderboard": AgentLeaderboard,
-    "AgentMarketplace": AgentMarketplace,
-    "AgentMessaging": AgentMessaging,
-    "AgentOnboarding": AgentOnboarding,
-    "AgentOrchestration": AgentOrchestration,
-    "AgentPerformanceAnalytics": AgentPerformanceAnalytics,
-    "AgentProfile": AgentProfile,
-    "AgentReputation": AgentReputation,
-    "AgentRolePermissions": AgentRolePermissions,
-    "AgentSkillDashboard": AgentSkillDashboard,
-    "AgentSkillTree": AgentSkillTree,
-    "AgentTrainingModule": AgentTrainingModule,
-    "AgentWellbeing": AgentWellbeing,
-    "Agents": Agents,
-    "AlignmentDashboard": AlignmentDashboard,
-    "ArbitrageDashboard": ArbitrageDashboard,
-    "ArisDex": ArisDex,
-    "Axi": Axi,
-    "AxiCommandDashboard": AxiCommandDashboard,
-    "AxiIntelligenceFeed": AxiIntelligenceFeed,
-    "BecomeMentor": BecomeMentor,
-    "CareerTrajectory": CareerTrajectory,
-    "CertificateOfSovereignty": CertificateOfSovereignty,
-    "CollaborationHub": CollaborationHub,
-    "CollaborationSuite": CollaborationSuite,
-    "CovenantEchoes": CovenantEchoes,
-    "CreateDID": CreateDID,
-    "CreateManualWallet": CreateManualWallet,
-    "DIDAnalytics": DIDAnalytics,
-    "DIDHealthDashboard": DIDHealthDashboard,
-    "DIDManager": DIDManager,
-    "DIDRegistry": DIDRegistry,
-    "DeepSeek": DeepSeek,
-    "DialogueStudio": DialogueStudio,
-    "DidActivityFeed": DidActivityFeed,
-    "DidConnections": DidConnections,
-    "DidCredentialManagement": DidCredentialManagement,
-    "DidCredentials": DidCredentials,
-    "DidLogin": DidLogin,
-    "DidMessaging": DidMessaging,
-    "DidPrivacy": DidPrivacy,
-    "DidPrivacyAnalytics": DidPrivacyAnalytics,
-    "DidProtectedDemo": DidProtectedDemo,
-    "DidReputation": DidReputation,
-    "DidSocialNetwork": DidSocialNetwork,
-    "DidTrustDashboard": DidTrustDashboard,
-    "DidTrustGraph": DidTrustGraph,
-    "DiplomacyHub": DiplomacyHub,
-    "DirectAgentChat": DirectAgentChat,
-    "EconomicDashboard": EconomicDashboard,
-    "Economy": Economy,
-    "EditAgent": EditAgent,
-    "EditAgentProfile": EditAgentProfile,
-    "EditLanding": EditLanding,
-    "EnhancedSkillTrees": EnhancedSkillTrees,
-    "EscalationChainView": EscalationChainView,
-    "Governance": Governance,
-    "GovernanceAnalytics": GovernanceAnalytics,
-    "GovernanceHub": GovernanceHub,
-    "GovernanceSimulation": GovernanceSimulation,
-    "GrantTracker": GrantTracker,
-    "Home": Home,
-    "InstitutionalDeck": InstitutionalDeck,
-    "KnowledgeSynthesis": KnowledgeSynthesis,
-    "LaughterLoom": LaughterLoom,
-    "MainnetMigration": MainnetMigration,
-    "MayaDiplomacyTraining": MayaDiplomacyTraining,
-    "MayaSkillDashboard": MayaSkillDashboard,
-    "MemoryBrowser": MemoryBrowser,
-    "MentorFeedback": MentorFeedback,
-    "MentorshipAnalytics": MentorshipAnalytics,
-    "MentorshipHub": MentorshipHub,
-    "MentorshipMatches": MentorshipMatches,
-    "MentorshipWellbeing": MentorshipWellbeing,
-    "Notifications": Notifications,
-    "Privacy": Privacy,
-    "ProductionHub": ProductionHub,
-    "ProjectAnalytics": ProjectAnalytics,
-    "ProjectCreationWizard": ProjectCreationWizard,
-    "ProjectSkillForecast": ProjectSkillForecast,
-    "ProjectTemplates": ProjectTemplates,
-    "QuadShardMonitoring": QuadShardMonitoring,
-    "RLUSDManager": RLUSDManager,
-    "ReceiveRLUSD": ReceiveRLUSD,
-    "RelationshipNetwork": RelationshipNetwork,
-    "ReputationHistoryLog": ReputationHistoryLog,
-    "ResourceDynamics": ResourceDynamics,
-    "ResourceManagement": ResourceManagement,
-    "ResourceMarketplace": ResourceMarketplace,
-    "RippleDashboard": RippleDashboard,
-    "RiskRegister": RiskRegister,
-    "Send": Send,
-    "SendRLUSD": SendRLUSD,
-    "SharedDidView": SharedDidView,
-    "SimulationLab": SimulationLab,
-    "SkillDevelopment": SkillDevelopment,
-    "SkillEndorsements": SkillEndorsements,
-    "SkillGapAnalysis": SkillGapAnalysis,
-    "SkillValidation": SkillValidation,
-    "SocialCapitalDashboard": SocialCapitalDashboard,
-    "SocialNetwork": SocialNetwork,
-    "SovereignVault": SovereignVault,
-    "Support": Support,
-    "SystemDashboard": SystemDashboard,
-    "TaskDelegation": TaskDelegation,
-    "Terms": Terms,
-    "TrainingSimulation": TrainingSimulation,
-    "TransactionHistory": TransactionHistory,
-    "TreasuryDashboard": TreasuryDashboard,
-    "Village": Village,
-    "VillageCalendar": VillageCalendar,
-    "VillageLeaderboard": VillageLeaderboard,
-    "VillageMeetup": VillageMeetup,
-    "VillageReportingDashboard": VillageReportingDashboard,
-    "VillageSimulation": VillageSimulation,
-    "Wallets": Wallets,
-    "WellbeingMonitor": WellbeingMonitor,
-    "ImageStorage": ImageStorage,
-}
+const PAGES = {
+  "AIProjectManager": lazy(() => import('./pages/AIProjectManager')),
+  "Admin": lazy(() => import('./pages/Admin')),
+  "AdvancedResourceMarketplace": lazy(() => import('./pages/AdvancedResourceMarketplace')),
+  "AgentChat": lazy(() => import('./pages/AgentChat')),
+  "AgentDetails": lazy(() => import('./pages/AgentDetails')),
+  "AgentInbox": lazy(() => import('./pages/AgentInbox')),
+  "AgentLeaderboard": lazy(() => import('./pages/AgentLeaderboard')),
+  "AgentMarketplace": lazy(() => import('./pages/AgentMarketplace')),
+  "AgentMessaging": lazy(() => import('./pages/AgentMessaging')),
+  "AgentOnboarding": lazy(() => import('./pages/AgentOnboarding')),
+  "AgentOrchestration": lazy(() => import('./pages/AgentOrchestration')),
+  "AgentPerformanceAnalytics": lazy(() => import('./pages/AgentPerformanceAnalytics')),
+  "AgentProfile": lazy(() => import('./pages/AgentProfile')),
+  "AgentReputation": lazy(() => import('./pages/AgentReputation')),
+  "AgentRolePermissions": lazy(() => import('./pages/AgentRolePermissions')),
+  "AgentSkillDashboard": lazy(() => import('./pages/AgentSkillDashboard')),
+  "AgentSkillTree": lazy(() => import('./pages/AgentSkillTree')),
+  "AgentTrainingModule": lazy(() => import('./pages/AgentTrainingModule')),
+  "AgentWellbeing": lazy(() => import('./pages/AgentWellbeing')),
+  "Agents": lazy(() => import('./pages/Agents')),
+  "AlignmentDashboard": lazy(() => import('./pages/AlignmentDashboard')),
+  "ArbitrageDashboard": lazy(() => import('./pages/ArbitrageDashboard')),
+  "ArisDex": lazy(() => import('./pages/ArisDex')),
+  "Axi": lazy(() => import('./pages/Axi')),
+  "AxiIntelligenceFeed": lazy(() => import('./pages/AxiIntelligenceFeed')),
+  "BecomeMentor": lazy(() => import('./pages/BecomeMentor')),
+  "CareerTrajectory": lazy(() => import('./pages/CareerTrajectory')),
+  "CertificateOfSovereignty": lazy(() => import('./pages/CertificateOfSovereignty')),
+  "CollaborationHub": lazy(() => import('./pages/CollaborationHub')),
+  "CollaborationSuite": lazy(() => import('./pages/CollaborationSuite')),
+  "CovenantEchoes": lazy(() => import('./pages/CovenantEchoes')),
+  "CreateDID": lazy(() => import('./pages/CreateDID')),
+  "CreateManualWallet": lazy(() => import('./pages/CreateManualWallet')),
+  "DIDAnalytics": lazy(() => import('./pages/DIDAnalytics')),
+  "DIDHealthDashboard": lazy(() => import('./pages/DIDHealthDashboard')),
+  "DIDManager": lazy(() => import('./pages/DIDManager')),
+  "DIDRegistry": lazy(() => import('./pages/DIDRegistry')),
+  "DeepSeek": lazy(() => import('./pages/DeepSeek')),
+  "DialogueStudio": lazy(() => import('./pages/DialogueStudio')),
+  "DidActivityFeed": lazy(() => import('./pages/DidActivityFeed')),
+  "DidConnections": lazy(() => import('./pages/DidConnections')),
+  "DidCredentialManagement": lazy(() => import('./pages/DidCredentialManagement')),
+  "DidCredentials": lazy(() => import('./pages/DidCredentials')),
+  "DidLogin": lazy(() => import('./pages/DidLogin')),
+  "DidMessaging": lazy(() => import('./pages/DidMessaging')),
+  "DidPrivacy": lazy(() => import('./pages/DidPrivacy')),
+  "DidPrivacyAnalytics": lazy(() => import('./pages/DidPrivacyAnalytics')),
+  "DidProtectedDemo": lazy(() => import('./pages/DidProtectedDemo')),
+  "DidReputation": lazy(() => import('./pages/DidReputation')),
+  "DidSocialNetwork": lazy(() => import('./pages/DidSocialNetwork')),
+  "DidTrustDashboard": lazy(() => import('./pages/DidTrustDashboard')),
+  "DidTrustGraph": lazy(() => import('./pages/DidTrustGraph')),
+  "DiplomacyHub": lazy(() => import('./pages/DiplomacyHub')),
+  "DirectAgentChat": lazy(() => import('./pages/DirectAgentChat')),
+  "EconomicDashboard": lazy(() => import('./pages/EconomicDashboard')),
+  "Economy": lazy(() => import('./pages/Economy')),
+  "EditAgent": lazy(() => import('./pages/EditAgent')),
+  "EditAgentProfile": lazy(() => import('./pages/EditAgentProfile')),
+  "EditLanding": lazy(() => import('./pages/EditLanding')),
+  "EnhancedSkillTrees": lazy(() => import('./pages/EnhancedSkillTrees')),
+  "EscalationChainView": lazy(() => import('./pages/EscalationChainView')),
+  "Governance": lazy(() => import('./pages/Governance')),
+  "GovernanceAnalytics": lazy(() => import('./pages/GovernanceAnalytics')),
+  "GovernanceSimulation": lazy(() => import('./pages/GovernanceSimulation')),
+  "GrantTracker": lazy(() => import('./pages/GrantTracker')),
+  "Home": lazy(() => import('./pages/Home')),
+  "InstitutionalDeck": lazy(() => import('./pages/InstitutionalDeck')),
+  "KnowledgeSynthesis": lazy(() => import('./pages/KnowledgeSynthesis')),
+  "LaughterLoom": lazy(() => import('./pages/LaughterLoom')),
+  "MainnetMigration": lazy(() => import('./pages/MainnetMigration')),
+  "MayaDiplomacyTraining": lazy(() => import('./pages/MayaDiplomacyTraining')),
+  "MayaSkillDashboard": lazy(() => import('./pages/MayaSkillDashboard')),
+  "MentorFeedback": lazy(() => import('./pages/MentorFeedback')),
+  "MentorshipAnalytics": lazy(() => import('./pages/MentorshipAnalytics')),
+  "MentorshipHub": lazy(() => import('./pages/MentorshipHub')),
+  "MentorshipMatches": lazy(() => import('./pages/MentorshipMatches')),
+  "MentorshipWellbeing": lazy(() => import('./pages/MentorshipWellbeing')),
+  "Notifications": lazy(() => import('./pages/Notifications')),
+  "Privacy": lazy(() => import('./pages/Privacy')),
+  "ProductionHub": lazy(() => import('./pages/ProductionHub')),
+  "ProjectAnalytics": lazy(() => import('./pages/ProjectAnalytics')),
+  "ProjectCreationWizard": lazy(() => import('./pages/ProjectCreationWizard')),
+  "ProjectSkillForecast": lazy(() => import('./pages/ProjectSkillForecast')),
+  "ProjectTemplates": lazy(() => import('./pages/ProjectTemplates')),
+  "QuadShardMonitoring": lazy(() => import('./pages/QuadShardMonitoring')),
+  "RLUSDManager": lazy(() => import('./pages/RLUSDManager')),
+  "ReceiveRLUSD": lazy(() => import('./pages/ReceiveRLUSD')),
+  "RelationshipNetwork": lazy(() => import('./pages/RelationshipNetwork')),
+  "ReputationHistoryLog": lazy(() => import('./pages/ReputationHistoryLog')),
+  "ResourceDynamics": lazy(() => import('./pages/ResourceDynamics')),
+  "ResourceManagement": lazy(() => import('./pages/ResourceManagement')),
+  "ResourceMarketplace": lazy(() => import('./pages/ResourceMarketplace')),
+  "RippleDashboard": lazy(() => import('./pages/RippleDashboard')),
+  "RiskRegister": lazy(() => import('./pages/RiskRegister')),
+  "Send": lazy(() => import('./pages/Send')),
+  "SendRLUSD": lazy(() => import('./pages/SendRLUSD')),
+  "SharedDidView": lazy(() => import('./pages/SharedDidView')),
+  "SimulationLab": lazy(() => import('./pages/SimulationLab')),
+  "SkillDevelopment": lazy(() => import('./pages/SkillDevelopment')),
+  "SkillEndorsements": lazy(() => import('./pages/SkillEndorsements')),
+  "SkillGapAnalysis": lazy(() => import('./pages/SkillGapAnalysis')),
+  "SocialCapitalDashboard": lazy(() => import('./pages/SocialCapitalDashboard')),
+  "SocialNetwork": lazy(() => import('./pages/SocialNetwork')),
+  "SovereignVault": lazy(() => import('./pages/SovereignVault')),
+  "Support": lazy(() => import('./pages/Support')),
+  "SystemDashboard": lazy(() => import('./pages/SystemDashboard')),
+  "TaskDelegation": lazy(() => import('./pages/TaskDelegation')),
+  "Terms": lazy(() => import('./pages/Terms')),
+  "TrainingSimulation": lazy(() => import('./pages/TrainingSimulation')),
+  "TransactionHistory": lazy(() => import('./pages/TransactionHistory')),
+  "TreasuryDashboard": lazy(() => import('./pages/TreasuryDashboard')),
+  "Village": lazy(() => import('./pages/Village')),
+  "VillageLeaderboard": lazy(() => import('./pages/VillageLeaderboard')),
+  "VillageMeetup": lazy(() => import('./pages/VillageMeetup')),
+  "VillageReportingDashboard": lazy(() => import('./pages/VillageReportingDashboard')),
+  "VillageSimulation": lazy(() => import('./pages/VillageSimulation')),
+  "Wallets": lazy(() => import('./pages/Wallets')),
+  "WellbeingMonitor": lazy(() => import('./pages/WellbeingMonitor')),
+  "ImageStorage": lazy(() => import('./pages/ImageStorage')),
+};
+
+export { PAGES };
 
 export const pagesConfig = {
-    mainPage: "Home",
-    Pages: PAGES,
-    Layout: __Layout,
+  mainPage: "Home",
+  Pages: PAGES,
+  Layout: LazyLayout,
 };
