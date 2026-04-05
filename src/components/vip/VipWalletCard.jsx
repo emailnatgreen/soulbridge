@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, Trash2 } from 'lucide-react';
+import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, Trash2, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function VipWalletCard({ wallet, editMode, onRefresh }) {
   const [publishing, setPublishing] = useState(false);
@@ -13,11 +14,19 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
   const handlePublishDID = async () => {
     setPublishing(true);
     try {
-      const res = await base44.functions.invoke('publishDID', { wallet_id: wallet.id });
-      setPublishResult('published');
+      const res = await base44.functions.invoke('publishDIDAuto', { wallet_id: wallet.id });
+      const data = res?.data;
+      if (data?.success) {
+        setPublishResult('published');
+        toast.success(`DID published! TX: ${data.txid?.slice(0, 12)}...`);
+      } else {
+        setPublishResult('error');
+        toast.error(data?.message || data?.error || 'Publication failed');
+      }
       onRefresh?.();
     } catch (e) {
       setPublishResult('error');
+      toast.error(e?.response?.data?.error || e.message || 'Publication failed');
     }
     setPublishing(false);
   };
@@ -122,7 +131,7 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
       ) : editMode ? (
         <Button onClick={handlePublishDID} disabled={publishing}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white gap-2 text-sm">
-          {publishing ? <><Loader2 className="w-4 h-4 animate-spin" /> Publishing…</> : <><Globe className="w-4 h-4" /> Publish DID Now</>}
+          {publishing ? <><Loader2 className="w-4 h-4 animate-spin" /> Publishing DID on-chain…</> : <><Link className="w-4 h-4" /> Publish DID (Auto-Sign)</>}
         </Button>
       ) : (
         <div className="text-center py-2">
