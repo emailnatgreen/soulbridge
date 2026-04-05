@@ -149,17 +149,7 @@ Deno.serve(async (req) => {
             { classic_address: wallet.classicAddress, network: 'mainnet' }
         );
 
-        // Auto-add RLUSD trustline if wallet has enough XRP
-        if (balance >= 1.2) {
-            try {
-                await base44.asServiceRole.functions.invoke('addRLUSDTrustline', {
-                    wallet_id: walletData.id
-                });
-                console.log(`✅ RLUSD auto-configured for ${walletData.name}`);
-            } catch (error) {
-                console.log(`⚠️ RLUSD auto-config will be done later for ${walletData.name}`);
-            }
-        }
+        // NOTE: Automatic RLUSD trustline removed — use manual activation per wallet
 
         return Response.json({
             success: true,

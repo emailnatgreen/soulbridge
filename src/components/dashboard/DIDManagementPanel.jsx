@@ -5,6 +5,7 @@ import {
   Loader2, ExternalLink, ArrowRight, QrCode, RefreshCw, Copy, Wallet
 } from 'lucide-react';
 import DIDWalletEditor from '@/components/dashboard/DIDWalletEditor';
+import TrustlineActivateButton from '@/components/wallet/TrustlineActivateButton';
 import { hasAdminAccess } from '@/lib/adminAccess';
 
 // Modes: idle | creating | publish_select | publish_qr | done
@@ -230,6 +231,7 @@ export default function DIDManagementPanel() {
                       </a>
                     </div>
                   </div>
+                  <TrustlineActivateButton wallet={w} />
                   <DIDWalletEditor wallet={w} onSaved={loadWallets} onDeleted={loadWallets} />
                 </div>
               ))}

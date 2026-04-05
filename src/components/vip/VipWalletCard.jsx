@@ -4,6 +4,7 @@ import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, CircleDas
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VipWalletEditPanel from './VipWalletEditPanel';
+import TrustlineActivateButton from '@/components/wallet/TrustlineActivateButton';
 
 function parseNotes(notes) {
   if (!notes) return {};
@@ -161,6 +162,9 @@ export default function VipWalletCard({ wallet, agents, onRefresh }) {
           <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} /> Refresh Balances
         </Button>
       </div>
+
+      {/* RLUSD Trustline */}
+      <TrustlineActivateButton wallet={wallet} />
 
       {/* DID Status */}
       {isPublished ? (
