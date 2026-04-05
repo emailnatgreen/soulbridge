@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, Trash2, Link } from 'lucide-react';
+import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-export default function VipWalletCard({ wallet, editMode, onRefresh }) {
+export default function VipWalletCard({ wallet, onRefresh }) {
   const [publishing, setPublishing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [liveBalance, setLiveBalance] = useState(wallet.balance);
@@ -102,7 +102,7 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
         <div className="bg-green-500/5 border border-green-500/20 rounded-xl px-3 py-2.5 space-y-1.5">
           <div className="flex items-center gap-1.5">
             <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-            <span className="text-green-300 text-xs font-semibold">DID Published on XRPL</span>
+            <span className="text-green-300 text-xs font-semibold">DID Published on XRPL Mainnet</span>
           </div>
           {wallet.published_txid && (
             <p className="text-white/30 text-[10px] font-mono break-all">{wallet.published_txid}</p>
@@ -114,7 +114,7 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300"
             >
-              <ExternalLink className="w-3 h-3" /> View on {wallet.network === 'testnet' ? 'Testnet Explorer' : 'XRPScan'}
+              <ExternalLink className="w-3 h-3" /> Verify on XRPScan
             </a>
             {wallet.published_txid && (
               <a
@@ -123,25 +123,17 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300"
               >
-                <ExternalLink className="w-3 h-3" /> View TX
+                <ExternalLink className="w-3 h-3" /> View TX on XRPScan
               </a>
             )}
           </div>
+          <UnpublishButton walletId={wallet.id} onDone={onRefresh} />
         </div>
-      ) : editMode ? (
+      ) : (
         <Button onClick={handlePublishDID} disabled={publishing}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white gap-2 text-sm">
-          {publishing ? <><Loader2 className="w-4 h-4 animate-spin" /> Publishing DID on-chain…</> : <><Link className="w-4 h-4" /> Publish DID (Auto-Sign)</>}
+          {publishing ? <><Loader2 className="w-4 h-4 animate-spin" /> Publishing DID on-chain…</> : <><Globe className="w-4 h-4" /> Publish DID to Mainnet</>}
         </Button>
-      ) : (
-        <div className="text-center py-2">
-          <p className="text-white/30 text-xs">DID not yet published · Switch to Edit Mode</p>
-        </div>
-      )}
-
-      {/* Delete — only from VIP dashboard, only in edit mode */}
-      {editMode && (
-        <VipDeleteButton walletId={wallet.id} onDeleted={onRefresh} />
       )}
 
       {/* Notes */}
@@ -152,40 +144,45 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
   );
 }
 
-function VipDeleteButton({ walletId, onDeleted }) {
+function UnpublishButton({ walletId, onDone }) {
   const [confirming, setConfirming] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleDelete = async () => {
-    setDeleting(true);
+  const handleUnpublish = async () => {
+    setLoading(true);
     try {
-      await base44.entities.Wallet.delete(walletId);
-      onDeleted?.();
-    } catch (_) {}
-    setDeleting(false);
+      const res = await base44.functions.invoke('unpublishDIDAuto', { wallet_id: walletId });
+      if (res?.data?.success) {
+        toast.success('DID status reset to unpublished (app-level)');
+        onDone?.();
+      } else {
+        toast.error(res?.data?.error || 'Failed to unpublish');
+      }
+    } catch (e) {
+      toast.error(e?.response?.data?.error || 'Failed to unpublish');
+    }
+    setLoading(false);
     setConfirming(false);
   };
 
   if (confirming) {
     return (
-      <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2">
-        <p className="text-red-300 text-xs flex-1">Remove this VIP wallet permanently?</p>
-        <Button size="sm" onClick={handleDelete} disabled={deleting}
-          className="bg-red-600 hover:bg-red-500 text-white text-xs h-7 px-3">
-          {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes, delete'}
+      <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2 mt-2">
+        <p className="text-amber-200 text-xs flex-1">Reset DID status? (On-chain record stays)</p>
+        <Button size="sm" onClick={handleUnpublish} disabled={loading}
+          className="bg-amber-600 hover:bg-amber-500 text-white text-xs h-7 px-3">
+          {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes, reset'}
         </Button>
         <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}
-          className="text-white/50 hover:text-white text-xs h-7 px-3">
-          Cancel
-        </Button>
+          className="text-white/50 hover:text-white text-xs h-7 px-3">Cancel</Button>
       </div>
     );
   }
 
   return (
     <button onClick={() => setConfirming(true)}
-      className="flex items-center gap-1.5 text-red-400/60 hover:text-red-400 text-[10px] transition-colors">
-      <Trash2 className="w-3 h-3" /> Remove VIP Wallet
+      className="flex items-center gap-1.5 text-amber-400/60 hover:text-amber-400 text-[10px] transition-colors mt-1">
+      <RefreshCw className="w-3 h-3" /> Reset DID Status (for testing)
     </button>
   );
 }

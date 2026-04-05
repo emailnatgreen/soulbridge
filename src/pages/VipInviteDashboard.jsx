@@ -18,7 +18,6 @@ export default function VipInviteDashboard() {
 
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -62,11 +61,6 @@ export default function VipInviteDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setEditMode(!editMode)}
-              className="text-xs border-white/20 bg-white/5 text-white hover:bg-white/10 gap-1.5">
-              {editMode ? <Eye className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-              {editMode ? 'View Mode' : 'Edit Mode'}
-            </Button>
             <Button size="sm" variant="outline" onClick={loadData}
               className="text-xs border-white/20 bg-white/5 text-white hover:bg-white/10 gap-1.5">
               <RefreshCw className="w-3.5 h-3.5" /> Refresh
@@ -92,12 +86,10 @@ export default function VipInviteDashboard() {
         </div>
 
         {/* Admin: Add Wallet to VIP */}
-        {editMode && (
-          <VipWalletAssigner
-            wallets={wallets}
-            onComplete={loadData}
-          />
-        )}
+        <VipWalletAssigner
+          wallets={wallets}
+          onComplete={loadData}
+        />
 
         {/* Live VIP Wallets */}
         <div>
@@ -120,7 +112,6 @@ export default function VipInviteDashboard() {
                 <VipWalletCard
                   key={wallet.id}
                   wallet={wallet}
-                  editMode={editMode}
                   onRefresh={loadData}
                 />
               ))}
