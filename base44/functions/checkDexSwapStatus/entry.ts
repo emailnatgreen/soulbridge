@@ -29,12 +29,15 @@ Deno.serve(async (req) => {
     const account = data?.response?.account ?? null;
     const dispatched = data?.response?.dispatched_result ?? null;
 
-    // If signed and successful, log it
-    if (signed && txid && dispatched === 'tesSUCCESS') {
-      const blobStr = data?.payload?.custom_meta?.blob;
-      let swapMeta = {};
-      try { swapMeta = JSON.parse(blobStr); } catch (_) {}
+    console.log('Swap status check:', { resolved, signed, expired, cancelled, txid, dispatched });
 
+    // If signed and successful, log it
+    // Log signed swaps — successful or failed dispatch
+    if (signed && txid) {
+      const isSuccess = dispatched === 'tesSUCCESS';
+      console.log(`Swap ${isSuccess ? 'succeeded' : 'dispatched: ' + dispatched}`, { txid });
+
+      if (isSuccess) {
       await base44.asServiceRole.entities.Transaction.create({
         recipient_address: account || 'DEX',
         recipient_name: `DEX Swap (${swapMeta.direction === 'xrp_to_rlusd' ? 'XRP→RLUSD' : 'RLUSD→XRP'})`,
@@ -43,6 +46,7 @@ Deno.serve(async (req) => {
         status: 'completed',
         hash: txid,
       });
+      }
     }
 
     return Response.json({

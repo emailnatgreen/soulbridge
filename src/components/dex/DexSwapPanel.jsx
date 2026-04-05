@@ -89,9 +89,15 @@ export default function DexSwapPanel({ wallets }) {
         if (status.success) {
           toast.success('Swap completed successfully!');
         } else if (status.expired) {
-          toast.error('Swap request expired');
+          toast.error('Swap request expired — try again');
         } else if (status.cancelled) {
-          toast.error('Swap was cancelled');
+          toast.error('Swap was cancelled in Xumm');
+        } else if (status.dispatched_result === 'tecKILLED') {
+          toast.error('No liquidity on DEX — the offer could not be filled. Try a smaller amount.');
+        } else if (status.dispatched_result === 'tecUNFUNDED_OFFER') {
+          toast.error('Insufficient funds in wallet to complete this swap.');
+        } else if (status.signed && status.dispatched_result) {
+          toast.error(`Swap signed but XRPL returned: ${status.dispatched_result}`);
         } else {
           toast.error(`Swap failed: ${status.dispatched_result || 'Unknown error'}`);
         }
@@ -255,9 +261,15 @@ export default function DexSwapPanel({ wallets }) {
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-center space-y-2">
               <XCircle className="w-8 h-8 text-red-400 mx-auto" />
               <p className="text-red-300 font-semibold text-sm">
-                {result.expired ? 'Swap Expired' : result.cancelled ? 'Swap Cancelled' : 'Swap Failed'}
+                {result.expired ? 'Swap Expired' : result.cancelled ? 'Swap Cancelled' : result.dispatched_result === 'tecKILLED' ? 'No DEX Liquidity' : result.dispatched_result === 'tecUNFUNDED_OFFER' ? 'Insufficient Funds' : 'Swap Failed'}
               </p>
-              <p className="text-white/40 text-xs">{result.dispatched_result || 'Please try again.'}</p>
+              <p className="text-white/40 text-xs">
+                {result.dispatched_result === 'tecKILLED'
+                  ? 'There are no matching orders on the XRPL DEX right now. Try a smaller amount or try again later.'
+                  : result.dispatched_result === 'tecUNFUNDED_OFFER'
+                  ? 'Your wallet does not have enough funds for this swap.'
+                  : result.dispatched_result || 'Please try again.'}
+              </p>
             </div>
           )}
           <Button onClick={resetSwap} className="w-full bg-white/10 hover:bg-white/15 text-white gap-2 text-sm">
