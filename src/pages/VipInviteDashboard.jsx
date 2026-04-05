@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import VipWalletAssigner from '@/components/vip/VipWalletAssigner';
 import VipWalletCard from '@/components/vip/VipWalletCard';
 import DexSwapPanel from '@/components/dex/DexSwapPanel';
+import SendPanel from '@/components/wallet/SendPanel';
+import ReceivePanel from '@/components/wallet/ReceivePanel';
 
 export default function VipInviteDashboard() {
   const { user } = useAuth();
@@ -95,8 +97,19 @@ export default function VipInviteDashboard() {
           ))}
         </div>
 
-        {/* DEX Swap — only user/VIP wallets, exclude treasury */}
-        <DexSwapPanel wallets={wallets.filter(w => !treasuryAddresses.includes(w.classic_address))} />
+        {/* Send / Receive / DEX Swap — VIP wallets only, exclude treasury */}
+        {(() => {
+          const vipUserWallets = wallets.filter(w => !treasuryAddresses.includes(w.classic_address));
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SendPanel wallets={vipUserWallets} />
+                <ReceivePanel wallets={vipUserWallets} />
+              </div>
+              <DexSwapPanel wallets={vipUserWallets} />
+            </div>
+          );
+        })()}
 
         {/* Admin: Add Wallet to VIP */}
         <VipWalletAssigner

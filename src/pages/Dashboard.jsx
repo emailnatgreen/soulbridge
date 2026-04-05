@@ -7,6 +7,8 @@ import DIDManagementPanel from '@/components/dashboard/DIDManagementPanel';
 import { base44 } from '@/api/base44Client';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
 import DexSwapPanel from '@/components/dex/DexSwapPanel';
+import SendPanel from '@/components/wallet/SendPanel';
+import ReceivePanel from '@/components/wallet/ReceivePanel';
 
 import UniversalDashboardHero from '@/components/dashboard/UniversalDashboardHero';
 import UniversalDashboardQuickActions from '@/components/dashboard/UniversalDashboardQuickActions';
@@ -489,8 +491,19 @@ export default function Dashboard() {
             {/* DID Management Panel — all users */}
             <DIDManagementPanel />
 
-            {/* DEX Swap — all users (exclude treasury wallets) */}
-            <DexSwapPanel wallets={wallets.filter(w => !treasuryAddresses.includes(w.classic_address))} />
+            {/* Send / Receive / DEX Swap — user wallets only (exclude treasury) */}
+            {(() => {
+              const userWallets = wallets.filter(w => !treasuryAddresses.includes(w.classic_address));
+              return (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <SendPanel wallets={userWallets} />
+                    <ReceivePanel wallets={userWallets} />
+                  </div>
+                  <DexSwapPanel wallets={userWallets} />
+                </div>
+              );
+            })()}
 
             {/* Memory Synthesis — admin only */}
             {isAdmin && <MemorySynthesisTrigger />}
