@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { hasAdminAccess } from '@/lib/adminAccess';
 import { Link } from 'react-router-dom';
-import { Shield, Globe, Wallet, ArrowRight, Sparkles, ExternalLink, RefreshCw, Plus, Eye, Trash2 } from 'lucide-react';
+import { Shield, Globe, Wallet, Sparkles, RefreshCw, Plus, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import VipWalletAssigner from '@/components/vip/VipWalletAssigner';
 import VipWalletCard from '@/components/vip/VipWalletCard';
@@ -16,19 +16,13 @@ export default function VipInviteDashboard() {
   const identityDid = identity?.did;
   const isAdmin = hasAdminAccess({ user, identityDid });
 
-  const [inviteTokens, setInviteTokens] = useState([]);
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
-    const [tokens, allWallets] = await Promise.all([
-      base44.entities.InvitationToken.list('-created_date', 50).catch(() => []),
-      base44.entities.Wallet.list('-created_date', 100).catch(() => []),
-    ]);
-    setInviteTokens(tokens || []);
-    // Only show wallets tagged as VIP (name or notes contains 'VIP')
+    const allWallets = await base44.entities.Wallet.list('-created_date', 100).catch(() => []);
     const vipOnly = (allWallets || []).filter(w =>
       (w.name && w.name.toLowerCase().includes('vip')) ||
       (w.notes && w.notes.toLowerCase().includes('vip'))
@@ -39,13 +33,7 @@ export default function VipInviteDashboard() {
 
   useEffect(() => { loadData(); }, []);
 
-  // Match VIP wallets to invite tokens by name/notes
-  const getWalletForToken = (token) => {
-    return wallets.find(w =>
-      w.name?.toLowerCase().includes(token.recipient_nickname?.toLowerCase() || '___') ||
-      w.notes?.includes(token.id)
-    );
-  };
+
 
   if (!isAdmin) {
     return (
@@ -90,9 +78,8 @@ export default function VipInviteDashboard() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'VIP Invites', value: inviteTokens.length },
             { label: 'VIP Wallets', value: wallets.length },
             { label: 'DIDs Published', value: wallets.filter(w => w.is_published).length },
             { label: 'Total VIP Balance', value: `${wallets.reduce((s, w) => s + (w.balance || 0), 0).toFixed(2)} XRP` },
@@ -107,7 +94,6 @@ export default function VipInviteDashboard() {
         {/* Admin: Add Wallet to VIP */}
         {editMode && (
           <VipWalletAssigner
-            inviteTokens={inviteTokens}
             wallets={wallets}
             onComplete={loadData}
           />
@@ -142,44 +128,6 @@ export default function VipInviteDashboard() {
           )}
         </div>
 
-        {/* Invite Tokens List */}
-        <div>
-          <h2 className="text-white font-semibold text-sm flex items-center gap-2 mb-4">
-            <Shield className="w-4 h-4 text-amber-400" /> Invite Tokens
-          </h2>
-          {inviteTokens.length === 0 ? (
-            <p className="text-white/30 text-sm text-center py-8">No invite tokens found.</p>
-          ) : (
-            <div className="space-y-2">
-              {inviteTokens.slice(0, 20).map(token => {
-                const linkedWallet = getWalletForToken(token);
-                return (
-                  <div key={token.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-white text-sm font-medium">{token.recipient_nickname || 'Unnamed'}</span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-semibold ${
-                          token.status === 'active' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                          token.status === 'used' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
-                          'bg-white/10 text-white/40 border-white/15'
-                        }`}>{token.status || 'pending'}</span>
-                      </div>
-                      <p className="text-white/30 text-[10px] font-mono">{token.id}</p>
-                    </div>
-                    {linkedWallet && (
-                      <span className="text-[10px] text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-lg">
-                        Wallet linked
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

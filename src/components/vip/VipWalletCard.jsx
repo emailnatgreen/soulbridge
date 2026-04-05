@@ -7,6 +7,7 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
   const [publishing, setPublishing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [liveBalance, setLiveBalance] = useState(wallet.balance);
+  const [rlusdBalance, setRlusdBalance] = useState(null);
   const [publishResult, setPublishResult] = useState(wallet.is_published ? 'published' : null);
 
   const handlePublishDID = async () => {
@@ -26,6 +27,12 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
     try {
       const res = await base44.functions.invoke('getBalance', { wallet_id: wallet.id });
       setLiveBalance(res?.data?.balance ?? liveBalance);
+      // Check for RLUSD trustline balance
+      const tlRes = await base44.functions.invoke('getWalletTrustlines', { wallet_id: wallet.id }).catch(() => null);
+      const rlusdLine = (tlRes?.data?.trustlines || tlRes?.data || []).find(
+        tl => tl.currency === 'RLUSD' || tl.currency === '524C555344000000000000000000000000000000'
+      );
+      setRlusdBalance(rlusdLine ? parseFloat(rlusdLine.balance || rlusdLine.value || '0') : 0);
     } catch (_) {}
     setRefreshing(false);
   };
@@ -63,15 +70,21 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
         <p className="text-purple-300 font-mono text-xs break-all select-all cursor-pointer hover:text-purple-200">{wallet.classic_address}</p>
       </div>
 
-      {/* Balance */}
-      <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
-        <div>
-          <p className="text-white/30 text-[9px] uppercase tracking-widest">Live Balance</p>
+      {/* Balances */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
+          <p className="text-white/30 text-[9px] uppercase tracking-widest">XRP Balance</p>
           <p className="text-white font-bold text-lg">{typeof liveBalance === 'number' ? liveBalance.toFixed(4) : '—'} <span className="text-white/40 text-xs">XRP</span></p>
         </div>
+        <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
+          <p className="text-white/30 text-[9px] uppercase tracking-widest">RLUSD Balance</p>
+          <p className="text-white font-bold text-lg">{rlusdBalance !== null ? rlusdBalance.toFixed(2) : '—'} <span className="text-white/40 text-xs">RLUSD</span></p>
+        </div>
+      </div>
+      <div className="flex justify-end">
         <Button size="sm" variant="ghost" onClick={handleRefreshBalance} disabled={refreshing}
-          className="text-white/40 hover:text-white hover:bg-white/10 h-8 w-8 p-0">
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+          className="text-white/40 hover:text-white hover:bg-white/10 h-7 gap-1.5 text-[10px]">
+          <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} /> Refresh Balances
         </Button>
       </div>
 

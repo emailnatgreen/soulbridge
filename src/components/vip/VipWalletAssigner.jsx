@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 
-export default function VipWalletAssigner({ inviteTokens, wallets, onComplete }) {
+export default function VipWalletAssigner({ wallets, onComplete }) {
   const [name, setName] = useState('');
   const [network, setNetwork] = useState('mainnet');
   const [creating, setCreating] = useState(false);
