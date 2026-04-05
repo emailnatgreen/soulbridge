@@ -1,17 +1,25 @@
 import React from 'react';
 import InquiryForm from '@/components/InquiryForm';
-
-import { Mail, Shield, Zap } from 'lucide-react';
+import { Mail, Shield, Zap, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function ContactSupport() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950">
-            <div className="sticky top-0 z-[9999] bg-slate-900/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
-              <a href="/" style={{position:'relative',zIndex:9999,display:'inline-flex',alignItems:'center',gap:'8px',color:'rgba(255,255,255,0.8)',fontSize:'14px',fontWeight:500,textDecoration:'none'}}>
-                ← Back to SoulBridge
-              </a>
-            </div>
-            <div className="flex items-center justify-center px-4 py-16">
+            <nav className="sticky top-0 z-[9999] bg-slate-900/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
+              <div className="max-w-lg mx-auto flex items-center justify-between">
+                <a href="/" className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors">
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Back to SoulBridge</span>
+                  <span className="sm:hidden">Back</span>
+                </a>
+                <div className="flex items-center gap-1.5">
+                  <img src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png" alt="SoulBridge" className="w-6 h-6 rounded object-contain" />
+                  <span className="text-white/60 text-xs font-medium hidden sm:inline">SoulBridge Support</span>
+                </div>
+              </div>
+            </nav>
+            <div className="flex items-center justify-center px-4 py-8 sm:py-16">
             <div className="w-full max-w-lg">
                 {/* Header */}
                 <div className="text-center mb-10">
@@ -26,7 +34,7 @@ export default function ContactSupport() {
                 </div>
 
                 {/* Trust badges */}
-                <div className="flex justify-center gap-6 mb-8">
+                <div className="flex justify-center gap-3 sm:gap-6 mb-6 sm:mb-8 flex-wrap">
                     <div className="flex items-center gap-2 text-slate-500 text-xs">
                         <Shield className="w-4 h-4 text-purple-400" />
                         <span>Privacy First</span>
@@ -42,7 +50,7 @@ export default function ContactSupport() {
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-8 backdrop-blur-sm">
                     <InquiryForm source="contact_support_page" />
                 </div>
 

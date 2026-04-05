@@ -60,7 +60,22 @@ Deno.serve(async (req) => {
         });
     } catch (emailErr) {
         console.error('Admin notification email failed:', emailErr.message);
-        // Don't fail the whole request if email fails — inquiry is already saved
+    }
+
+    // Store a Memory so Axi is aware of incoming inquiries
+    try {
+        await base44.asServiceRole.entities.Memory.create({
+            agent_id: 'axi',
+            type: 'observation',
+            content: `New support inquiry received from ${sender_email}: "${subject}" — Source: ${source || 'website'}. Inquiry ID: ${inquiry.id}. Message preview: ${message.slice(0, 200)}`,
+            keywords: ['inquiry', 'support', 'email', 'contact', source || 'website'],
+            importance: 7,
+            context: `Support inquiry submitted via ${source || 'website'} on ${new Date().toISOString()}`,
+            related_entity_id: inquiry.id,
+            related_entity_type: 'Inquiry',
+        });
+    } catch (memErr) {
+        console.error('Axi memory creation failed:', memErr.message);
     }
 
     return Response.json({ success: true, inquiry_id: inquiry.id });

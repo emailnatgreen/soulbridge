@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Globe } from 'lucide-react';
+import { ArrowRight, Globe, Mail } from 'lucide-react';
+import ContactAdminCard from '@/components/dashboard/ContactAdminCard';
 
-export default function UniversalDashboardQuickActions({ hasInviteSession, inviteWallet, onPublish, publishingDid, publishingWalletId, isAdmin }) {
+export default function UniversalDashboardQuickActions({ hasInviteSession, inviteWallet, onPublish, publishingDid, publishingWalletId, isAdmin, userDid, userName, userEmail }) {
   const cards = hasInviteSession
     ? [
         {
@@ -43,14 +44,17 @@ export default function UniversalDashboardQuickActions({ hasInviteSession, invit
       ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {cards.map((card) => (
-        <div key={card.title} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <h3 className="text-white font-medium mb-2">{card.title}</h3>
-          <p className="text-sm text-white/60 mb-4">{card.description}</p>
-          {card.action}
-        </div>
-      ))}
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {cards.map((card) => (
+          <div key={card.title} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h3 className="text-white font-medium mb-2">{card.title}</h3>
+            <p className="text-sm text-white/60 mb-4">{card.description}</p>
+            {card.action}
+          </div>
+        ))}
+      </div>
+      <ContactAdminCard userDid={userDid} userName={userName} userEmail={userEmail} />
     </div>
   );
 }
