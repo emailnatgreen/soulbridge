@@ -7,6 +7,7 @@ import { Shield, Globe, Wallet, Sparkles, RefreshCw, Plus, Eye } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import VipWalletAssigner from '@/components/vip/VipWalletAssigner';
 import VipWalletCard from '@/components/vip/VipWalletCard';
+import DexSwapPanel from '@/components/dex/DexSwapPanel';
 
 export default function VipInviteDashboard() {
   const { user } = useAuth();
@@ -89,6 +90,9 @@ export default function VipInviteDashboard() {
             </div>
           ))}
         </div>
+
+        {/* DEX Swap */}
+        <DexSwapPanel wallets={wallets} />
 
         {/* Admin: Add Wallet to VIP */}
         <VipWalletAssigner
