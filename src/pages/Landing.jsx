@@ -180,39 +180,23 @@ export default function Landing() {
         const data = res?.data || {};
         setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
         setLandingKUs(data.kus || []);
+        setAllKUs(data.kus || []);
       } catch (e) {
         console.warn('[Landing] Stats fetch error:', e?.message);
       }
     };
 
-    const fetchAllKUs = async () => {
-      try {
-        const kus = await base44.entities.KineticUnit.list('-created_date', 500);
-        setAllKUs(kus);
-      } catch (e) {
-        console.warn('[Landing] KU fetch error:', e?.message);
-      }
-    };
-    
     // Fetch on mount
     fetchStats();
-    fetchAllKUs();
     
     // Poll for live updates every 2 minutes to avoid rate limits
-    const interval = setInterval(() => { fetchStats(); fetchAllKUs(); }, 120000);
+    const interval = setInterval(() => { fetchStats(); }, 120000);
     
     // Listen for cross-tab signals
     const handleSignal = (e) => {
       if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') {
         fetchStats();
-        fetchAllKUs();
       }
-    };
-    window.addEventListener('soulbridge-signal', handleSignal);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('soulbridge-signal', handleSignal);
     };
   }, []);
 

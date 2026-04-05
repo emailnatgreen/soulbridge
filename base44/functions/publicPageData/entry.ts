@@ -9,6 +9,14 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { page } = body;
 
+    // Ensure auth header exists for SDK init — inject a dummy if missing
+    // since we only use asServiceRole and never need user auth
+    if (!req.headers.get('authorization') || !req.headers.get('authorization').startsWith('Bearer ')) {
+      const headers = new Headers(req.headers);
+      headers.set('authorization', 'Bearer public');
+      req = new Request(req.url, { method: req.method, headers, body: JSON.stringify(body) });
+    }
+
     const base44 = createClientFromRequest(req);
 
     if (page === 'landing') {
