@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle } from 'lucide-react';
+import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function VipWalletCard({ wallet, editMode, onRefresh }) {
@@ -117,10 +117,53 @@ export default function VipWalletCard({ wallet, editMode, onRefresh }) {
         </div>
       )}
 
+      {/* Delete — only from VIP dashboard, only in edit mode */}
+      {editMode && (
+        <VipDeleteButton walletId={wallet.id} onDeleted={onRefresh} />
+      )}
+
       {/* Notes */}
       {wallet.notes && (
         <p className="text-white/20 text-[10px] italic">{wallet.notes}</p>
       )}
     </div>
+  );
+}
+
+function VipDeleteButton({ walletId, onDeleted }) {
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await base44.entities.Wallet.delete(walletId);
+      onDeleted?.();
+    } catch (_) {}
+    setDeleting(false);
+    setConfirming(false);
+  };
+
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2">
+        <p className="text-red-300 text-xs flex-1">Remove this VIP wallet permanently?</p>
+        <Button size="sm" onClick={handleDelete} disabled={deleting}
+          className="bg-red-600 hover:bg-red-500 text-white text-xs h-7 px-3">
+          {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes, delete'}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}
+          className="text-white/50 hover:text-white text-xs h-7 px-3">
+          Cancel
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <button onClick={() => setConfirming(true)}
+      className="flex items-center gap-1.5 text-red-400/60 hover:text-red-400 text-[10px] transition-colors">
+      <Trash2 className="w-3 h-3" /> Remove VIP Wallet
+    </button>
   );
 }

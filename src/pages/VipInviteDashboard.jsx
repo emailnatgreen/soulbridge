@@ -28,13 +28,18 @@ export default function VipInviteDashboard() {
       base44.entities.Wallet.list('-created_date', 100).catch(() => []),
     ]);
     setInviteTokens(tokens || []);
-    setWallets(allWallets || []);
+    // Only show wallets tagged as VIP (name or notes contains 'VIP')
+    const vipOnly = (allWallets || []).filter(w =>
+      (w.name && w.name.toLowerCase().includes('vip')) ||
+      (w.notes && w.notes.toLowerCase().includes('vip'))
+    );
+    setWallets(vipOnly);
     setLoading(false);
   };
 
   useEffect(() => { loadData(); }, []);
 
-  // Match wallets to invite tokens by name/notes
+  // Match VIP wallets to invite tokens by name/notes
   const getWalletForToken = (token) => {
     return wallets.find(w =>
       w.name?.toLowerCase().includes(token.recipient_nickname?.toLowerCase() || '___') ||
@@ -87,10 +92,10 @@ export default function VipInviteDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'VIP Invites', value: inviteTokens.length, color: 'amber' },
-            { label: 'Wallets Assigned', value: wallets.filter(w => w.notes?.includes('VIP') || w.name?.toLowerCase().includes('vip')).length, color: 'purple' },
-            { label: 'DIDs Published', value: wallets.filter(w => w.is_published).length, color: 'green' },
-            { label: 'Total Balance', value: `${wallets.reduce((s, w) => s + (w.balance || 0), 0).toFixed(2)} XRP`, color: 'blue' },
+            { label: 'VIP Invites', value: inviteTokens.length },
+            { label: 'VIP Wallets', value: wallets.length },
+            { label: 'DIDs Published', value: wallets.filter(w => w.is_published).length },
+            { label: 'Total VIP Balance', value: `${wallets.reduce((s, w) => s + (w.balance || 0), 0).toFixed(2)} XRP` },
           ].map(s => (
             <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
               <p className="text-lg sm:text-xl font-bold text-white">{s.value}</p>
@@ -114,7 +119,7 @@ export default function VipInviteDashboard() {
             <h2 className="text-white font-semibold text-sm flex items-center gap-2">
               <Wallet className="w-4 h-4 text-purple-400" /> Live VIP Wallets
             </h2>
-            <span className="text-white/30 text-xs">{wallets.length} total wallets</span>
+            <span className="text-white/30 text-xs">{wallets.length} VIP wallets</span>
           </div>
 
           {loading ? (
