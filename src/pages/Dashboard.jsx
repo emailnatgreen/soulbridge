@@ -41,6 +41,7 @@ export default function Dashboard() {
     }
   });
   const [wallets, setWallets] = useState([]);
+  const [treasuryAddresses, setTreasuryAddresses] = useState([]);
   const [invite, setInvite] = useState(null);
   const [creatingWallet, setCreatingWallet] = useState(false);
   const [walletCreated, setWalletCreated] = useState(false);
@@ -81,6 +82,11 @@ export default function Dashboard() {
       const didAddress = localDid
         ? String(localDid).split(':').pop()
         : null;
+
+      // Load treasury addresses to exclude from DEX swap
+      const treasuries = await base44.entities.Treasury.list('-created_date', 20).catch(() => []);
+      const tAddresses = (treasuries || []).map(t => t.classic_address).filter(a => a && a !== 'N/A - Legacy Record');
+      setTreasuryAddresses(tAddresses);
 
       // Load wallets
       let myWallets = [];
@@ -483,8 +489,8 @@ export default function Dashboard() {
             {/* DID Management Panel — all users */}
             <DIDManagementPanel />
 
-            {/* DEX Swap — all users */}
-            <DexSwapPanel wallets={wallets} />
+            {/* DEX Swap — all users (exclude treasury wallets) */}
+            <DexSwapPanel wallets={wallets.filter(w => !treasuryAddresses.includes(w.classic_address))} />
 
             {/* Memory Synthesis — admin only */}
             {isAdmin && <MemorySynthesisTrigger />}

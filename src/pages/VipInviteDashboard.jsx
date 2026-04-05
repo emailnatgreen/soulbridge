@@ -19,14 +19,18 @@ export default function VipInviteDashboard() {
 
   const [wallets, setWallets] = useState([]);
   const [agents, setAgents] = useState([]);
+  const [treasuryAddresses, setTreasuryAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     setLoading(true);
-    const [allWallets, allAgents] = await Promise.all([
+    const [allWallets, allAgents, treasuries] = await Promise.all([
       base44.entities.Wallet.list('-created_date', 100).catch(() => []),
-      base44.entities.Agent.list('-created_date', 100).catch(() => [])
+      base44.entities.Agent.list('-created_date', 100).catch(() => []),
+      base44.entities.Treasury.list('-created_date', 20).catch(() => [])
     ]);
+    const tAddresses = (treasuries || []).map(t => t.classic_address).filter(a => a && a !== 'N/A - Legacy Record');
+    setTreasuryAddresses(tAddresses);
     const vipOnly = (allWallets || []).filter(w =>
       (w.name && w.name.toLowerCase().includes('vip')) ||
       (w.notes && w.notes.toLowerCase().includes('vip'))
@@ -91,8 +95,8 @@ export default function VipInviteDashboard() {
           ))}
         </div>
 
-        {/* DEX Swap */}
-        <DexSwapPanel wallets={wallets} />
+        {/* DEX Swap — only user/VIP wallets, exclude treasury */}
+        <DexSwapPanel wallets={wallets.filter(w => !treasuryAddresses.includes(w.classic_address))} />
 
         {/* Admin: Add Wallet to VIP */}
         <VipWalletAssigner
