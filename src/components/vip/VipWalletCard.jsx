@@ -74,7 +74,7 @@ export default function VipWalletCard({ wallet, agents, onRefresh }) {
     setRefreshing(false);
   };
 
-  const isPublished = wallet.is_published || publishResult === 'published';
+  const isPublished = (wallet.is_published && wallet.published_txid) || publishResult === 'published';
   const explorerBase = 'https://xrpscan.com';
 
   return (
