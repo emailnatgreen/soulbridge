@@ -5,7 +5,8 @@ import {
   Settings, Image, Brain, Wallet, Globe, Shield, BookOpen, Zap,
   TrendingUp, Network, MessageSquare, Star, ChevronDown, ChevronRight,
   Swords, TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
-  FileText, ShoppingBag, Heart, Landmark, Database, Link2 as LinkIcon
+  FileText, ShoppingBag, Heart, Landmark, Database, Link2 as LinkIcon,
+  MailWarning
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -108,6 +109,7 @@ const NAV_GROUPS = [
       { label: 'Ripple Dashboard', path: '/RippleDashboard', icon: Zap },
       { label: 'Arbitrage Dashboard', path: '/ArbitrageDashboard', icon: TrendingUp },
       { label: 'Edit Landing', path: '/EditLanding', icon: FileText },
+      { label: '📧 Inquiries', path: '/AdminInquiries', icon: MailWarning },
     ]
   },
 ];
