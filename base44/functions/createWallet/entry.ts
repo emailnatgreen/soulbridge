@@ -74,10 +74,12 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { name, network = 'testnet' } = await req.json();
+        const { name, network = 'mainnet' } = await req.json();
 
-        // Connect to XRPL testnet
-        const networkUrl = 'wss://s.altnet.rippletest.net:51233';
+        // Connect to the correct XRPL network
+        const networkUrl = network === 'testnet'
+            ? 'wss://s.altnet.rippletest.net:51233'
+            : 'wss://xrplcluster.com';
         const client = new Client(networkUrl);
         await client.connect();
 
@@ -130,7 +132,7 @@ Deno.serve(async (req) => {
             encrypted_seed: encrypted,
             encryption_iv: iv,
             encryption_salt: salt,
-            network: 'testnet',
+            network: network,
             balance: balance,
             last_accessed: new Date().toISOString()
         });
