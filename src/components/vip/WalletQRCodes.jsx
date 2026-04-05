@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import QRCode from 'qrcode.react';
 import { QrCode, Eye, EyeOff, Copy, Check, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -40,7 +40,7 @@ export default function WalletQRCodes({ wallet }) {
         </div>
         <div className="flex justify-center">
           <div className="bg-white rounded-xl p-3">
-            <QRCodeSVG value={address} size={140} level="M" />
+            <QRCode value={address} size={140} level="M" renderAs="svg" />
           </div>
         </div>
         <p className="text-purple-300 font-mono text-[10px] text-center break-all select-all">{address}</p>
@@ -80,7 +80,7 @@ export default function WalletQRCodes({ wallet }) {
             <>
               <div className="flex justify-center">
                 <div className="bg-white rounded-xl p-3">
-                  <QRCodeSVG value={seed} size={140} level="M" />
+                  <QRCode value={seed} size={140} level="M" renderAs="svg" />
                 </div>
               </div>
               <p className="text-red-300/60 font-mono text-[10px] text-center break-all select-all">{seed}</p>
