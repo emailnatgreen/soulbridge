@@ -175,49 +175,38 @@ export default function Landing() {
 
   useEffect(() => {
     const fetchStats = async () => {
+      let data = {};
+      // Try SDK invoke first
       try {
-        let data = {};
+        const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
+        data = res?.data || {};
+      } catch (_sdkErr) {
+        // SDK failed (unauthenticated visitor) — try direct fetch
         try {
-          const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
-          data = res?.data || {};
-        } catch (_sdkErr) {
-          // Fallback: direct fetch for unauthenticated/public visitors
-          try {
-            const baseUrl = window.location.origin;
-            const resp = await fetch(`${baseUrl}/functions/publicPageData`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ page: 'landing' }),
-            });
-            if (resp.ok) {
-              data = await resp.json();
-            }
-          } catch (_fetchErr) {
-            // silent
+          const resp = await fetch('/api/functions/publicPageData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page: 'landing' }),
+          });
+          if (resp.ok) {
+            const json = await resp.json();
+            data = json?.data || json || {};
           }
-        }
+        } catch (_) {}
+      }
+      if (data.agents || data.wallets_count || data.kus) {
         setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
         setLandingKUs(data.kus || []);
         setAllKUs(data.kus || []);
-      } catch (e) {
-        console.warn('[Landing] Stats fetch error:', e?.message);
       }
     };
 
-    // Fetch on mount
     fetchStats();
-    
-    // Poll for live updates every 2 minutes to avoid rate limits
-    const interval = setInterval(() => { fetchStats(); }, 120000);
-    
-    // Listen for cross-tab signals
+    const interval = setInterval(fetchStats, 120000);
     const handleSignal = (e) => {
-      if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') {
-        fetchStats();
-      }
+      if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') fetchStats();
     };
     window.addEventListener('soulbridge-signal', handleSignal);
-
     return () => {
       clearInterval(interval);
       window.removeEventListener('soulbridge-signal', handleSignal);

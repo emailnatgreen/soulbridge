@@ -20,19 +20,31 @@ const KU_TYPE_COLORS = {
 export default function KineticPublicOverview({ kus: propKUs }) {
   // Use passed-in KUs from parent (Landing) to avoid duplicate API calls
   // Falls back to own fetch only if rendered standalone
-  const { data: fetchedKUs = [] } = useQuery({
+  const { data: fetchedKUs = [], isLoading: isFetchingKUs } = useQuery({
     queryKey: ['public-kinetic-kus'],
     queryFn: async () => {
       try {
         const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
         return res?.data?.kus || [];
       } catch (_) {
+        // Fallback direct fetch for public visitors
+        try {
+          const resp = await fetch('/api/functions/publicPageData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page: 'landing' }),
+          });
+          if (resp.ok) {
+            const json = await resp.json();
+            return (json?.data || json)?.kus || [];
+          }
+        } catch (__) {}
         return [];
       }
     },
     staleTime: 120000,
     refetchInterval: 120000,
-    retry: false,
+    retry: 1,
     enabled: !propKUs || propKUs.length === 0,
   });
 
@@ -64,7 +76,46 @@ export default function KineticPublicOverview({ kus: propKUs }) {
   ).map(([name, count]) => ({ name, count, color: KU_TYPE_COLORS[name.toLowerCase().replace(/ /g, '_')] || '#64748b' }))
     .sort((a, b) => b.count - a.count).slice(0, 5);
 
-  if (totalKUs === 0) return null;
+  const isLoading = totalKUs === 0 && isFetchingKUs;
+
+  if (totalKUs === 0 && !isLoading) {
+    return (
+      <div className="bg-white/5 border border-purple-500/20 rounded-2xl p-5 sm:p-6 backdrop-blur-xl">
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-semibold text-sm">Kinetic Grid · Village Pulse</h3>
+            <p className="text-white/40 text-[10px]">Aggregated · Anonymised · Transparent</p>
+          </div>
+        </div>
+        <p className="text-white/30 text-xs text-center py-4">Kinetic Grid warming up — data loading…</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="bg-white/5 border border-purple-500/20 rounded-2xl p-5 sm:p-6 backdrop-blur-xl">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-semibold text-sm">Kinetic Grid · Village Pulse</h3>
+            <p className="text-white/40 text-[10px]">Loading…</p>
+          </div>
+        </div>
+        <div className="space-y-3 mt-4">
+          <div className="grid grid-cols-3 gap-3">
+            {[1,2,3].map(i => <div key={i} className="h-16 bg-white/5 rounded-xl animate-pulse" />)}
+          </div>
+          <div className="h-2 bg-white/10 rounded-full animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white/5 border border-purple-500/20 rounded-2xl p-5 sm:p-6 space-y-5 backdrop-blur-xl">
