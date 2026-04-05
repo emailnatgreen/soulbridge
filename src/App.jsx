@@ -38,6 +38,7 @@ import AIProjectHub from './pages/AIProjectHub';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
 import AdminInquiries from './pages/AdminInquiries';
+import AboutUs from './pages/AboutUs';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -117,6 +118,7 @@ const AuthenticatedApp = () => {
       <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
       <Route path="/CookiePolicy" element={<CookiePolicy />} />
       <Route path="/AdminInquiries" element={<LayoutWrapper currentPageName="AdminInquiries"><AdminInquiries /></LayoutWrapper>} />
+      <Route path="/about" element={<AboutUs />} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>

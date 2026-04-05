@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { emitWalletSignal } from '@/hooks/useWalletDidSignal';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock, Info } from 'lucide-react';
 import { useIdentity } from '@/hooks/useIdentity';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
@@ -298,6 +298,12 @@ export default function Landing() {
                 <Globe className="w-2.5 h-2.5" />
                 Xaman Integrated
               </Badge>
+              <a href="/about">
+                <Badge className="bg-white/10 text-white/70 border-white/20 hover:bg-white/15 hover:text-white text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5 cursor-pointer transition-all">
+                  <Info className="w-2.5 h-2.5" />
+                  About
+                </Badge>
+              </a>
               {isAdmin && (
                 <button
                   onClick={() => window.location.href = '/dashboard'}
