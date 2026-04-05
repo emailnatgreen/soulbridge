@@ -17,7 +17,6 @@ export default function VipWalletAssigner({ wallets, onComplete }) {
     try {
       const res = await base44.functions.invoke('axiCreateAndFundWallet', {
         walletName: `VIP: ${name.trim()}`,
-        fundAmount: 13,
       });
       const data = res?.data;
       if (data?.error) {
@@ -39,7 +38,7 @@ export default function VipWalletAssigner({ wallets, onComplete }) {
         <Plus className="w-4 h-4 text-amber-400" />
         <h3 className="text-white font-semibold text-sm">Create & Assign VIP Wallet</h3>
       </div>
-      <p className="text-white/50 text-xs">Create a funded mainnet wallet for a VIP invite. The wallet will be created with a real XRPL address and balance.</p>
+      <p className="text-white/50 text-xs">Create a mainnet wallet for a VIP invite. The wallet starts at 0 XRP — fund it manually via Xumm or direct transfer.</p>
 
       <div>
         <label className="text-white/40 text-xs mb-1 block">Recipient Name</label>
