@@ -17,16 +17,21 @@ export default function VipInviteDashboard() {
   const isAdmin = hasAdminAccess({ user, identityDid });
 
   const [wallets, setWallets] = useState([]);
+  const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     setLoading(true);
-    const allWallets = await base44.entities.Wallet.list('-created_date', 100).catch(() => []);
+    const [allWallets, allAgents] = await Promise.all([
+      base44.entities.Wallet.list('-created_date', 100).catch(() => []),
+      base44.entities.Agent.list('-created_date', 100).catch(() => [])
+    ]);
     const vipOnly = (allWallets || []).filter(w =>
       (w.name && w.name.toLowerCase().includes('vip')) ||
       (w.notes && w.notes.toLowerCase().includes('vip'))
     );
     setWallets(vipOnly);
+    setAgents(allAgents || []);
     setLoading(false);
   };
 
@@ -88,6 +93,7 @@ export default function VipInviteDashboard() {
         {/* Admin: Add Wallet to VIP */}
         <VipWalletAssigner
           wallets={wallets}
+          agents={agents}
           onComplete={loadData}
         />
 
@@ -112,6 +118,7 @@ export default function VipInviteDashboard() {
                 <VipWalletCard
                   key={wallet.id}
                   wallet={wallet}
+                  agents={agents}
                   onRefresh={loadData}
                 />
               ))}
