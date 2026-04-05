@@ -600,7 +600,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center space-y-2">
           <div className="flex items-center justify-center gap-4">
             <a
-              href="https://canva.link/soubridgeviewwhitepaper"
+              href="https://canva.link/1y6yy0ae7znq8ht"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
