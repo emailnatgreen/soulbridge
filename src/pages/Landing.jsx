@@ -431,6 +431,42 @@ export default function Landing() {
                   ))}
                 </div>
               </div>
+
+              {/* Invite Code Entry */}
+              <div className="mt-4 pt-4 border-t border-white/10">
+                {!showInviteEntry ? (
+                  <button
+                    onClick={() => setShowInviteEntry(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/50 text-amber-300 text-xs font-medium rounded-lg px-4 py-2.5 transition-all"
+                  >
+                    <Key className="w-3.5 h-3.5" />
+                    Have an Invite Code?
+                  </button>
+                ) : (
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="text-white font-semibold text-xs">Enter Invite Code</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={inviteCode}
+                      onChange={e => setInviteCode(e.target.value.toUpperCase())}
+                      onKeyDown={e => e.key === 'Enter' && handleInviteSubmit()}
+                      placeholder="YOUR-CODE"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-white placeholder:text-white/30 text-sm font-mono text-center tracking-widest focus:outline-none focus:border-amber-400/60"
+                    />
+                    {inviteError && <p className="text-red-400 text-xs text-center">{inviteError}</p>}
+                    <Button
+                      onClick={handleInviteSubmit}
+                      disabled={inviteLoading}
+                      className="w-full bg-amber-600 hover:bg-amber-500 text-white h-9 gap-2 text-sm"
+                    >
+                      {inviteLoading ? 'Validating…' : 'Claim Invite'}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Right Card: Enter Village */}
@@ -552,41 +588,7 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Invite Entry */}
-          <div className="max-w-md mx-auto">
-            {!showInviteEntry ? (
-              <button
-                onClick={() => setShowInviteEntry(true)}
-                className="w-full flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/50 text-amber-300 text-sm font-medium rounded-xl px-6 py-3 transition-all"
-              >
-                <Key className="w-4 h-4" />
-                Have an Invite Code?
-              </button>
-            ) : (
-              <div className="bg-white/5 border border-amber-500/30 rounded-2xl p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Key className="w-4 h-4 text-amber-400" />
-                  <h3 className="text-white font-semibold text-sm">Enter Invite Code</h3>
-                </div>
-                <input
-                  type="text"
-                  value={inviteCode}
-                  onChange={e => setInviteCode(e.target.value.toUpperCase())}
-                  onKeyDown={e => e.key === 'Enter' && handleInviteSubmit()}
-                  placeholder="YOUR-CODE"
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 text-sm font-mono text-center tracking-widest focus:outline-none focus:border-amber-400/60"
-                />
-                {inviteError && <p className="text-red-400 text-xs text-center">{inviteError}</p>}
-                <Button
-                  onClick={handleInviteSubmit}
-                  disabled={inviteLoading}
-                  className="w-full bg-amber-600 hover:bg-amber-500 text-white h-11 gap-2"
-                >
-                  {inviteLoading ? 'Validating…' : 'Claim Invite'}
-                </Button>
-              </div>
-            )}
-          </div>
+
 
         </div>
       </div>
