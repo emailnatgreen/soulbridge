@@ -285,19 +285,25 @@ export default function Landing() {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
-                <span className="hidden sm:inline">XRPL Mainnet</span>
-                <span className="sm:hidden">Live</span>
-              </Badge>
-              <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5 hidden sm:inline-flex">
-                <Shield className="w-2.5 h-2.5" />
-                UK FSMA 2026
-              </Badge>
-              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5">
-                <Globe className="w-2.5 h-2.5" />
-                Xaman Integrated
-              </Badge>
+              <a href="/xrpl-info">
+                <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5 cursor-pointer hover:bg-green-500/30 transition-all">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
+                  <span className="hidden sm:inline">XRPL Mainnet</span>
+                  <span className="sm:hidden">Live</span>
+                </Badge>
+              </a>
+              <a href="/fsma-info" className="hidden sm:inline-flex">
+                <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5 cursor-pointer hover:bg-yellow-500/30 transition-all">
+                  <Shield className="w-2.5 h-2.5" />
+                  UK FSMA 2026
+                </Badge>
+              </a>
+              <a href="/xaman-info">
+                <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5 cursor-pointer hover:bg-blue-500/30 transition-all">
+                  <Globe className="w-2.5 h-2.5" />
+                  Xaman Integrated
+                </Badge>
+              </a>
               <a href="/about">
                 <Badge className="bg-white/10 text-white/70 border-white/20 hover:bg-white/15 hover:text-white text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5 cursor-pointer transition-all">
                   <Info className="w-2.5 h-2.5" />

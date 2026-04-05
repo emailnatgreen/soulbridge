@@ -39,6 +39,9 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
 import AdminInquiries from './pages/AdminInquiries';
 import AboutUs from './pages/AboutUs';
+import XRPLMainnetInfo from './pages/XRPLMainnetInfo';
+import FSMAInfo from './pages/FSMAInfo';
+import XamanInfo from './pages/XamanInfo';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -119,6 +122,9 @@ const AuthenticatedApp = () => {
       <Route path="/CookiePolicy" element={<CookiePolicy />} />
       <Route path="/AdminInquiries" element={<LayoutWrapper currentPageName="AdminInquiries"><AdminInquiries /></LayoutWrapper>} />
       <Route path="/about" element={<AboutUs />} />
+      <Route path="/xrpl-info" element={<XRPLMainnetInfo />} />
+      <Route path="/fsma-info" element={<FSMAInfo />} />
+      <Route path="/xaman-info" element={<XamanInfo />} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
