@@ -70,7 +70,7 @@ export default function AIProjectHub() {
       await base44.entities.ProjectMessage.create(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['project-messages', projectId]);
+      queryClient.invalidateQueries({ queryKey: ['project-messages', projectId] });
       setMessageInput('');
     }
   });
@@ -80,7 +80,7 @@ export default function AIProjectHub() {
       await base44.entities.ProjectTask.update(taskId, updates);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['project-tasks', projectId]);
+      queryClient.invalidateQueries({ queryKey: ['project-tasks', projectId] });
     }
   });
 
@@ -89,13 +89,14 @@ export default function AIProjectHub() {
       await base44.functions.invoke('assignProjectTask', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['project-tasks', projectId]);
+      queryClient.invalidateQueries({ queryKey: ['project-tasks', projectId] });
     }
   });
 
   const autoAssignAllMutation = useMutation({
     mutationFn: async () => {
-      const unassigned = tasks.filter(t => !t.assigned_agent_id && t.status !== 'completed');
+      const currentTasks = queryClient.getQueryData(['project-tasks', projectId]) || [];
+      const unassigned = currentTasks.filter(t => !t.assigned_agent_id && t.status !== 'completed');
       const results = [];
       for (const task of unassigned) {
         const res = await base44.functions.invoke('autoAssignTask', { task_id: task.id });
@@ -104,7 +105,7 @@ export default function AIProjectHub() {
       return results;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['project-tasks', projectId]);
+      queryClient.invalidateQueries({ queryKey: ['project-tasks', projectId] });
     }
   });
 
@@ -113,39 +114,7 @@ export default function AIProjectHub() {
       await base44.functions.invoke('updateProjectMilestone', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['project', projectId]);
-    }
-  });
-
-  const { data: riskAnalysis, isLoading: loadingRisks, refetch: fetchRisks } = useQuery({
-    queryKey: ['projectRisks', projectId],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('analyzeProjectRisks', { project_id: projectId });
-      return response.data;
-    },
-    enabled: false
-  });
-
-  const { data: scheduleOptimization, isLoading: loadingSchedule, refetch: fetchSchedule } = useQuery({
-    queryKey: ['scheduleOptimization', projectId],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('optimizeProjectSchedule', { project_id: projectId });
-      return response.data;
-    },
-    enabled: false
-  });
-
-  const autoAdjustMutation = useMutation({
-    mutationFn: async (apply) => {
-      const response = await base44.functions.invoke('autoAdjustProjectTasks', {
-        project_id: projectId,
-        apply_changes: apply
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['project-tasks', projectId]);
-      queryClient.invalidateQueries(['project', projectId]);
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
     }
   });
 
@@ -171,11 +140,15 @@ export default function AIProjectHub() {
   }, [projectId, queryClient]);
 
   const handleSendMessage = () => {
-    if (!messageInput.trim()) return;
+    if (!messageInput.trim() || !project) return;
+    
+    // Find the current user's agent to send as them, fallback to project owner
+    const currentUserAgent = agents.find(a => a.created_by === project.created_by);
+    const senderId = currentUserAgent?.id || project.owner_agent_id;
     
     sendMessageMutation.mutate({
       project_id: projectId,
-      sender_agent_id: project.owner_agent_id,
+      sender_agent_id: senderId,
       content: messageInput,
       message_type: 'text'
     });
@@ -373,8 +346,8 @@ export default function AIProjectHub() {
                 <div className="text-xs text-white/60">Tasks</div>
               </div>
               <div className="text-center p-3 bg-white/5 rounded-lg">
-                <div className="text-2xl font-bold text-white">{project.budget_rlusd || 0}</div>
-                <div className="text-xs text-white/60">Budget RLUSD</div>
+                <div className="text-2xl font-bold text-white">{project.budget_drops ? (project.budget_drops / 1000000).toFixed(2) : '0'}</div>
+                <div className="text-xs text-white/60">Budget XRP</div>
               </div>
             </div>
 
@@ -431,6 +404,14 @@ export default function AIProjectHub() {
 
           {/* Tasks Tab */}
           <TabsContent value="tasks" className="space-y-4">
+            {tasks.length === 0 && (
+              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                <CardContent className="p-12 text-center">
+                  <ListTodo className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                  <p className="text-white/50">No tasks yet. Create tasks from the Project Manager.</p>
+                </CardContent>
+              </Card>
+            )}
             {tasks.map(task => (
               <Card key={task.id} className="bg-white/5 backdrop-blur-xl border-white/10">
                 <CardContent className="p-4">
@@ -474,10 +455,10 @@ export default function AIProjectHub() {
                           </span>
                         )}
                         
-                        {task.reward_rlusd && (
+                        {task.reward_drops > 0 && (
                           <span className="text-white/60">
                             <DollarSign className="w-3 h-3 inline mr-1" />
-                            {task.reward_rlusd} RLUSD
+                            {(task.reward_drops / 1000000).toFixed(3)} XRP
                           </span>
                         )}
                       </div>
@@ -777,6 +758,14 @@ export default function AIProjectHub() {
 
           {/* Milestones Tab */}
           <TabsContent value="milestones" className="space-y-4">
+            {(!project.milestones || project.milestones.length === 0) && (
+              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                <CardContent className="p-12 text-center">
+                  <Target className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                  <p className="text-white/50">No milestones defined yet.</p>
+                </CardContent>
+              </Card>
+            )}
             {project.milestones?.map((milestone, idx) => (
               <Card key={idx} className="bg-white/5 backdrop-blur-xl border-white/10">
                 <CardContent className="p-4">

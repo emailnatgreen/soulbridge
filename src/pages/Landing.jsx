@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { emitWalletSignal, emitDidSignal } from '@/hooks/useWalletDidSignal';
+import { emitWalletSignal } from '@/hooks/useWalletDidSignal';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Activity, Globe, Lock } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock } from 'lucide-react';
 import { useIdentity } from '@/hooks/useIdentity';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
@@ -197,6 +197,12 @@ export default function Landing() {
       if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') {
         fetchStats();
       }
+    };
+    window.addEventListener('soulbridge-signal', handleSignal);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('soulbridge-signal', handleSignal);
     };
   }, []);
 
