@@ -47,7 +47,7 @@ export default function VipWalletCard({ wallet, onRefresh }) {
   };
 
   const isPublished = wallet.is_published || publishResult === 'published';
-  const explorerBase = wallet.network === 'testnet' ? 'https://testnet.xrpl.org' : 'https://xrpscan.com';
+  const explorerBase = 'https://xrpscan.com';
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
@@ -61,7 +61,7 @@ export default function VipWalletCard({ wallet, onRefresh }) {
           </div>
           <div className="min-w-0">
             <p className="text-white font-semibold text-sm truncate">{wallet.name || 'Unnamed Wallet'}</p>
-            <p className="text-white/30 text-[10px]">{wallet.network === 'testnet' ? 'Testnet' : 'Mainnet'} · {wallet.id.slice(0, 8)}</p>
+            <p className="text-white/30 text-[10px]">Mainnet · {wallet.id.slice(0, 8)}</p>
           </div>
         </div>
         <div className="flex items-center gap-1">

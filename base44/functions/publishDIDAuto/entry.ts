@@ -41,9 +41,7 @@ Deno.serve(async (req) => {
     const wallet = await base44.asServiceRole.entities.Wallet.get(wallet_id);
     if (!wallet) return Response.json({ error: 'Wallet not found' }, { status: 404 });
 
-    if (wallet.is_published) {
-      return Response.json({ error: 'DID already published for this wallet' }, { status: 400 });
-    }
+    // Allow re-publishing (DID updates are valid on XRPL)
 
     if (!wallet.encrypted_seed || !wallet.encryption_iv || !wallet.encryption_salt) {
       return Response.json({ error: 'Wallet seed not securely stored — cannot auto-publish' }, { status: 400 });
@@ -53,11 +51,8 @@ Deno.serve(async (req) => {
     const seed = await decryptSeed(wallet.encrypted_seed, wallet.encryption_iv, wallet.encryption_salt);
     const xrplWallet = XRPLWallet.fromSeed(seed);
 
-    // Connect to the correct network
-    const wsUrl = wallet.network === 'testnet'
-      ? 'wss://s.altnet.rippletest.net:51233'
-      : 'wss://xrplcluster.com';
-    client = new Client(wsUrl);
+    // Connect to mainnet
+    client = new Client('wss://xrplcluster.com');
     await client.connect();
 
     // Build URI for the DID
@@ -94,8 +89,8 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Memory.create({
         agent_id: 'axi',
         type: 'village_detail',
-        content: `DID published on ${wallet.network} for wallet ${wallet.name || wallet_id} (${wallet.classic_address}). TX: ${result.result.hash}`,
-        keywords: ['did', 'publish', wallet.network, 'vip'],
+        content: `DID published on mainnet for wallet ${wallet.name || wallet_id} (${wallet.classic_address}). TX: ${result.result.hash}`,
+        keywords: ['did', 'publish', 'mainnet', 'vip'],
         context: 'Auto-published DID from VIP Dashboard',
         importance: 9,
         related_entity_id: wallet_id,
@@ -105,10 +100,8 @@ Deno.serve(async (req) => {
       return Response.json({
         success: true,
         txid: result.result.hash,
-        message: 'DID published successfully on ' + wallet.network,
-        xrpscan_link: wallet.network === 'testnet'
-          ? `https://testnet.xrpl.org/transactions/${result.result.hash}`
-          : `https://xrpscan.com/tx/${result.result.hash}`,
+        message: 'DID published successfully on XRPL Mainnet',
+        xrpscan_link: `https://xrpscan.com/tx/${result.result.hash}`,
       });
     } else {
       return Response.json({
