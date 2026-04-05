@@ -9,6 +9,7 @@ import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreCard from '@/components/LoreCard';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
+import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 
 if (!window.__soulbridge) window.__soulbridge = {};
@@ -109,6 +110,7 @@ export default function Landing() {
   }, []);
   const [stats, setStats] = useState({ agents: 0, dids: 0 });
   const [landingKUs, setLandingKUs] = useState([]);
+  const [allKUs, setAllKUs] = useState([]);
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
   const [didConnected, setDidConnected] = useState(null);
@@ -179,17 +181,28 @@ export default function Landing() {
         console.warn('[Landing] Stats fetch error:', e?.message);
       }
     };
+
+    const fetchAllKUs = async () => {
+      try {
+        const kus = await base44.entities.KineticUnit.list('-created_date', 500);
+        setAllKUs(kus);
+      } catch (e) {
+        console.warn('[Landing] KU fetch error:', e?.message);
+      }
+    };
     
     // Fetch on mount
     fetchStats();
+    fetchAllKUs();
     
     // Poll for live updates every 2 minutes to avoid rate limits
-    const interval = setInterval(fetchStats, 120000);
+    const interval = setInterval(() => { fetchStats(); fetchAllKUs(); }, 120000);
     
     // Listen for cross-tab signals
     const handleSignal = (e) => {
       if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') {
         fetchStats();
+        fetchAllKUs();
       }
     };
     window.addEventListener('soulbridge-signal', handleSignal);
@@ -322,7 +335,7 @@ export default function Landing() {
                 <span className="inline-flex items-center gap-1 text-green-400 text-[9px] mt-1"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
               </div>
               <div className="bg-white/5 border border-amber-500/20 rounded-xl p-3 text-center">
-                <p className="text-xl sm:text-2xl font-bold text-amber-300">{landingKUs.reduce((s, k) => s + (k.weighted_score || 1), 0).toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-bold text-amber-300">{allKUs.reduce((s, k) => s + (k.weighted_score || 1), 0).toLocaleString()}</p>
                 <p className="text-white/40 text-[10px] sm:text-xs mt-0.5">Kinetic</p>
                 <span className="inline-flex items-center gap-1 text-green-400 text-[9px] mt-1"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
               </div>
@@ -350,6 +363,11 @@ export default function Landing() {
           {/* Genesis Seal Badge */}
           <div className="max-w-4xl mx-auto">
             <GenesisSealBadge />
+          </div>
+
+          {/* Kinetic Energy Visualizer */}
+          <div className="max-w-4xl mx-auto">
+            <KineticEnergyVisualizer kus={allKUs} />
           </div>
 
           {/* Cards Grid */}
