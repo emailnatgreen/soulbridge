@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle } from 'lucide-react';
+import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, CircleDashed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -65,9 +65,13 @@ export default function VipWalletCard({ wallet, onRefresh }) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {isPublished && (
+          {isPublished ? (
             <span className="text-[9px] bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
               <CheckCircle className="w-2.5 h-2.5" /> DID Live
+            </span>
+          ) : (
+            <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <CircleDashed className="w-2.5 h-2.5" /> Unpublished
             </span>
           )}
         </div>
@@ -127,7 +131,6 @@ export default function VipWalletCard({ wallet, onRefresh }) {
               </a>
             )}
           </div>
-          <UnpublishButton walletId={wallet.id} onDone={onRefresh} />
         </div>
       ) : (
         <Button onClick={handlePublishDID} disabled={publishing}
@@ -141,48 +144,5 @@ export default function VipWalletCard({ wallet, onRefresh }) {
         <p className="text-white/20 text-[10px] italic">{wallet.notes}</p>
       )}
     </div>
-  );
-}
-
-function UnpublishButton({ walletId, onDone }) {
-  const [confirming, setConfirming] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleUnpublish = async () => {
-    setLoading(true);
-    try {
-      const res = await base44.functions.invoke('unpublishDIDAuto', { wallet_id: walletId });
-      if (res?.data?.success) {
-        toast.success('DID status reset to unpublished (app-level)');
-        onDone?.();
-      } else {
-        toast.error(res?.data?.error || 'Failed to unpublish');
-      }
-    } catch (e) {
-      toast.error(e?.response?.data?.error || 'Failed to unpublish');
-    }
-    setLoading(false);
-    setConfirming(false);
-  };
-
-  if (confirming) {
-    return (
-      <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2 mt-2">
-        <p className="text-amber-200 text-xs flex-1">Reset DID status? (On-chain record stays)</p>
-        <Button size="sm" onClick={handleUnpublish} disabled={loading}
-          className="bg-amber-600 hover:bg-amber-500 text-white text-xs h-7 px-3">
-          {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Yes, reset'}
-        </Button>
-        <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}
-          className="text-white/50 hover:text-white text-xs h-7 px-3">Cancel</Button>
-      </div>
-    );
-  }
-
-  return (
-    <button onClick={() => setConfirming(true)}
-      className="flex items-center gap-1.5 text-amber-400/60 hover:text-amber-400 text-[10px] transition-colors mt-1">
-      <RefreshCw className="w-3 h-3" /> Reset DID Status (for testing)
-    </button>
   );
 }
