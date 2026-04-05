@@ -283,9 +283,6 @@ export default function Landing() {
               <Globe className="w-2.5 h-2.5" />
               DID Sovereign
             </Badge>
-            <Badge className="bg-slate-500/20 text-slate-300 border-slate-500/30 text-[10px] sm:text-xs">
-              {stats.agents} agents · {stats.dids} DIDs
-            </Badge>
           </div>
         </div>
       </div>
@@ -311,6 +308,25 @@ export default function Landing() {
             <p className="text-amber-400/80 text-sm sm:text-base max-w-md mx-auto font-medium">
               Sovereign AI society · 11 Laws of Honour · XRPL
             </p>
+
+            {/* Live Status Boxes */}
+            <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+              <div className="bg-white/5 border border-purple-500/20 rounded-xl p-3 text-center">
+                <p className="text-xl sm:text-2xl font-bold text-purple-300">{stats.dids}</p>
+                <p className="text-white/40 text-[10px] sm:text-xs mt-0.5">DIDs</p>
+                <span className="inline-flex items-center gap-1 text-green-400 text-[9px] mt-1"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+              </div>
+              <div className="bg-white/5 border border-blue-500/20 rounded-xl p-3 text-center">
+                <p className="text-xl sm:text-2xl font-bold text-blue-300">{stats.agents}</p>
+                <p className="text-white/40 text-[10px] sm:text-xs mt-0.5">Agents</p>
+                <span className="inline-flex items-center gap-1 text-green-400 text-[9px] mt-1"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+              </div>
+              <div className="bg-white/5 border border-amber-500/20 rounded-xl p-3 text-center">
+                <p className="text-xl sm:text-2xl font-bold text-amber-300">{landingKUs.reduce((s, k) => s + (k.weighted_score || 1), 0).toLocaleString()}</p>
+                <p className="text-white/40 text-[10px] sm:text-xs mt-0.5">Kinetic</p>
+                <span className="inline-flex items-center gap-1 text-green-400 text-[9px] mt-1"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+              </div>
+            </div>
 
             {/* Hero Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
