@@ -294,6 +294,10 @@ export default function Landing() {
                 <Shield className="w-2.5 h-2.5" />
                 UK FSMA 2026
               </Badge>
+              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[9px] sm:text-xs gap-1 px-1.5 sm:px-2.5">
+                <Globe className="w-2.5 h-2.5" />
+                Xaman Integrated
+              </Badge>
               {isAdmin && (
                 <button
                   onClick={() => window.location.href = '/dashboard'}
