@@ -47,7 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import AIProjectHub from './pages/AIProjectHub';
+// AIProjectHub removed — has explicit route in App.jsx
 import AIProjectManager from './pages/AIProjectManager';
 import Admin from './pages/Admin';
 import AdvancedResourceMarketplace from './pages/AdvancedResourceMarketplace';
@@ -119,7 +119,7 @@ import GrantTracker from './pages/GrantTracker';
 import Home from './pages/Home';
 import InstitutionalDeck from './pages/InstitutionalDeck';
 import KnowledgeSynthesis from './pages/KnowledgeSynthesis';
-import Landing from './pages/Landing';
+// Landing removed — has explicit route at / in App.jsx
 import LaughterLoom from './pages/LaughterLoom';
 import MainnetMigration from './pages/MainnetMigration';
 import MayaDiplomacyTraining from './pages/MayaDiplomacyTraining';
@@ -178,7 +178,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "AIProjectHub": AIProjectHub,
     "AIProjectManager": AIProjectManager,
     "Admin": Admin,
     "AdvancedResourceMarketplace": AdvancedResourceMarketplace,
@@ -250,7 +249,6 @@ export const PAGES = {
     "Home": Home,
     "InstitutionalDeck": InstitutionalDeck,
     "KnowledgeSynthesis": KnowledgeSynthesis,
-    "Landing": Landing,
     "LaughterLoom": LaughterLoom,
     "MainnetMigration": MainnetMigration,
     "MayaDiplomacyTraining": MayaDiplomacyTraining,
