@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { emitWalletSignal, emitDidSignal } from '@/hooks/useWalletDidSignal';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Activity, Globe } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Activity, Globe, Lock } from 'lucide-react';
+import { useIdentity } from '@/hooks/useIdentity';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
 
@@ -84,6 +85,7 @@ function ParticleCanvas() {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { isAdmin } = useIdentity();
   const inactivityRef = useRef(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [showInviteEntry, setShowInviteEntry] = useState(false);
@@ -297,6 +299,15 @@ export default function Landing() {
               <Globe className="w-2.5 h-2.5" />
               DID Sovereign
             </Badge>
+            {isAdmin && (
+              <button
+                onClick={() => window.location.href = '/dashboard'}
+                className="flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-400/50 text-red-300 text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-md transition-all"
+              >
+                <Lock className="w-2.5 h-2.5" />
+                Admin
+              </button>
+            )}
           </div>
         </div>
       </div>
