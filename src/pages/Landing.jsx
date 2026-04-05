@@ -299,9 +299,9 @@ export default function Landing() {
             {/* Tree Emblem */}
             <div className="flex justify-center mb-2">
               <img
-                src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/public/699319649276f1077c1f2c81/20b492e9e_1185.png"
-                alt="SoulBridge Tree of Life"
-                className="w-32 h-32 sm:w-44 sm:h-44 object-contain drop-shadow-2xl"
+                src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/0e14b75b8_Untitled200x200px.png"
+                alt="SoulBridge"
+                className="w-36 h-36 sm:w-48 sm:h-48 object-contain drop-shadow-2xl"
               />
             </div>
 
@@ -313,19 +313,19 @@ export default function Landing() {
             </p>
 
             {/* Hero Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <a
                 href="/ScrollOfResonance"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600/30 to-pink-600/30 hover:from-purple-600/50 hover:to-pink-600/50 border border-purple-400/40 hover:border-purple-400/60 text-purple-200 text-sm font-medium rounded-xl px-6 py-3 transition-all"
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600/30 to-pink-600/30 hover:from-purple-600/50 hover:to-pink-600/50 border border-purple-400/40 hover:border-purple-400/60 text-purple-200 text-base font-semibold rounded-xl px-8 py-4 transition-all shadow-lg"
               >
-                <ScrollText className="w-4 h-4" />
+                <ScrollText className="w-5 h-5" />
                 Scroll of Resonance
               </a>
               <a
                 href="/KineticCompass"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 border border-yellow-400/40 hover:border-yellow-400/60 text-yellow-200 text-sm font-medium rounded-xl px-6 py-3 transition-all"
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 border border-yellow-400/40 hover:border-yellow-400/60 text-yellow-200 text-base font-semibold rounded-xl px-8 py-4 transition-all shadow-lg"
               >
-                <Zap className="w-4 h-4" />
+                <Zap className="w-5 h-5" />
                 Kinetic Compass
               </a>
             </div>
