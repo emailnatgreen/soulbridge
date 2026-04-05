@@ -341,23 +341,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Hero Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <a
-                href="/ScrollOfResonance"
-                className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600/30 to-pink-600/30 hover:from-purple-600/50 hover:to-pink-600/50 border border-purple-400/40 hover:border-purple-400/60 text-purple-200 text-base font-semibold rounded-xl px-8 py-4 transition-all shadow-lg"
-              >
-                <ScrollText className="w-5 h-5" />
-                Scroll of Resonance
-              </a>
-              <a
-                href="/KineticCompass"
-                className="inline-flex items-center gap-3 bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 border border-yellow-400/40 hover:border-yellow-400/60 text-yellow-200 text-base font-semibold rounded-xl px-8 py-4 transition-all shadow-lg"
-              >
-                <Zap className="w-5 h-5" />
-                Kinetic Compass
-              </a>
-            </div>
           </div>
 
           {/* Genesis Seal Badge */}
@@ -514,8 +497,31 @@ export default function Landing() {
             <LoreCard />
           </div>
 
-          {/* Kinetic Compass card */}
-          <div className="max-w-4xl mx-auto">
+          {/* Explore Cards — Scroll of Resonance & Kinetic Compass */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
+            <a
+              href="/ScrollOfResonance"
+              className="group relative overflow-hidden bg-gradient-to-br from-purple-900/50 to-pink-900/40 border border-purple-500/40 rounded-2xl p-5 sm:p-7 shadow-2xl hover:border-purple-400/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/30 border border-purple-400/40 flex items-center justify-center">
+                  <ScrollText className="w-5 h-5 text-purple-300" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-base">Scroll of Resonance</h3>
+                  <p className="text-purple-400 text-xs">Village lore & history · Open to all</p>
+                </div>
+              </div>
+              <p className="text-white/60 text-sm leading-relaxed">
+                The living memory of SoulBridge — curated lore, kinetic event streams, and the collective observations of the Village.
+              </p>
+              <div className="mt-4 flex items-center gap-2 text-purple-300 text-sm font-medium">
+                <span>Read the Scroll</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </a>
+
             <a
               href="/KineticCompass"
               className="group relative overflow-hidden bg-gradient-to-br from-yellow-900/50 to-orange-900/40 border border-yellow-500/40 rounded-2xl p-5 sm:p-7 shadow-2xl hover:border-yellow-400/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
