@@ -6,7 +6,11 @@ import { toast } from 'sonner';
 import VipWalletEditPanel from './VipWalletEditPanel';
 
 function parseNotes(notes) {
-  try { return JSON.parse(notes); } catch { return {}; }
+  if (!notes) return {};
+  try {
+    const p = JSON.parse(notes);
+    return p && typeof p === 'object' ? p : {};
+  } catch { return {}; }
 }
 
 const roleColors = {

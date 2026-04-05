@@ -8,7 +8,11 @@ const roles = ['citizen', 'guardian', 'creator', 'trader', 'teacher', 'healer', 
 const colors = ['#a855f7', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
 
 function parseNotes(notes) {
-  try { return JSON.parse(notes); } catch { return {}; }
+  if (!notes) return {};
+  try {
+    const p = JSON.parse(notes);
+    return p && typeof p === 'object' ? p : {};
+  } catch { return {}; }
 }
 
 export default function VipWalletEditPanel({ wallet, agents, onSave, onClose }) {
