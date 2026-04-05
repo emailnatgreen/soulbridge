@@ -42,6 +42,7 @@ import AboutUs from './pages/AboutUs';
 import XRPLMainnetInfo from './pages/XRPLMainnetInfo';
 import FSMAInfo from './pages/FSMAInfo';
 import XamanInfo from './pages/XamanInfo';
+import VipInviteDashboard from './pages/VipInviteDashboard';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -125,6 +126,7 @@ const AuthenticatedApp = () => {
       <Route path="/xrpl-info" element={<XRPLMainnetInfo />} />
       <Route path="/fsma-info" element={<FSMAInfo />} />
       <Route path="/xaman-info" element={<XamanInfo />} />
+      <Route path="/VipInviteDashboard" element={<LayoutWrapper currentPageName="VipInviteDashboard"><VipInviteDashboard /></LayoutWrapper>} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>

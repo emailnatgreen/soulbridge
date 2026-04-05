@@ -110,6 +110,7 @@ const NAV_GROUPS = [
       { label: 'Arbitrage Dashboard', path: '/ArbitrageDashboard', icon: TrendingUp },
       { label: 'Edit Landing', path: '/EditLanding', icon: FileText },
       { label: '📧 Inquiries', path: '/AdminInquiries', icon: MailWarning },
+      { label: '⭐ VIP Dashboard', path: '/VipInviteDashboard', icon: Star },
     ]
   },
 ];
