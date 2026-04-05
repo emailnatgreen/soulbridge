@@ -44,11 +44,18 @@ Deno.serve(async (req) => {
             return Response.json({ success: false, error: 'No seed available (tracking-only wallet)' }, { status: 400 });
         }
 
+        // Resolve the seed — some legacy wallets store it in plain text (no iv/salt)
         let seed;
-        try {
-            seed = await decryptSeed(walletRecord.encrypted_seed, walletRecord.encryption_iv, walletRecord.encryption_salt);
-        } catch (error) {
-            return Response.json({ success: false, error: 'Cannot decrypt wallet seed' }, { status: 400 });
+        if (!walletRecord.encryption_iv || !walletRecord.encryption_salt) {
+            console.log('Plain-text seed detected (legacy wallet)', { wallet_id, address });
+            seed = walletRecord.encrypted_seed;
+        } else {
+            try {
+                seed = await decryptSeed(walletRecord.encrypted_seed, walletRecord.encryption_iv, walletRecord.encryption_salt);
+            } catch (error) {
+                console.error('Decryption failed:', { wallet_id, address, error: error.message });
+                return Response.json({ success: false, error: `Cannot decrypt wallet seed: ${error.message}` }, { status: 400 });
+            }
         }
 
         const client = new Client('wss://xrplcluster.com');
