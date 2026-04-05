@@ -41,7 +41,9 @@ Deno.serve(async (req) => {
         const response = await client.submitAndWait(signed.tx_blob);
 
         // Store wallet in database (system-level operation)
+        const user = await base44.auth.me();
         const walletData = await base44.asServiceRole.entities.Wallet.create({
+            owner_id: user?.id || 'system',
             name: walletName,
             classic_address: newWallet.address,
             encrypted_seed: newWallet.seed,
