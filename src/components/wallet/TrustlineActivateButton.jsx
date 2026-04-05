@@ -28,21 +28,28 @@ export default function TrustlineActivateButton({ wallet, compact = false }) {
   const handleActivate = async () => {
     setStatus('activating');
     setErrorMsg(null);
-    const res = await base44.functions.invoke('addRLUSDTrustlineManual', { wallet_id: wallet.id });
-    const data = res?.data;
-    if (data?.success) {
-      if (data.already_exists) {
-        setStatus('active');
-        toast.info('RLUSD trustline already active');
+    try {
+      const res = await base44.functions.invoke('addRLUSDTrustlineManual', { wallet_id: wallet.id });
+      const data = res?.data;
+      if (data?.success) {
+        if (data.already_exists) {
+          setStatus('active');
+          toast.info('RLUSD trustline already active');
+        } else {
+          setStatus('active');
+          setTxHash(data.transaction_hash);
+          toast.success('RLUSD trustline activated!');
+        }
       } else {
-        setStatus('active');
-        setTxHash(data.transaction_hash);
-        toast.success('RLUSD trustline activated!');
+        setStatus('error');
+        setErrorMsg(data?.error || 'Activation failed');
+        toast.error(data?.error || 'Failed to activate trustline');
       }
-    } else {
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Activation failed';
       setStatus('error');
-      setErrorMsg(data?.error || 'Activation failed');
-      toast.error(data?.error || 'Failed to activate trustline');
+      setErrorMsg(msg);
+      toast.error(msg);
     }
   };
 
