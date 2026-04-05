@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Activity, Globe } from 'lucide-react';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
-import LoreCard from '@/components/LoreCard';
+
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
@@ -492,11 +492,7 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Lore of SoulBridge */}
 
-          <div className="max-w-4xl mx-auto">
-            <LoreCard />
-          </div>
 
           {/* Explore Cards — Scroll of Resonance & Kinetic Compass */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
