@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Activity, Globe } from 'lucide-react';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
+import LoreNodeCard from '@/components/lore/LoreNodeCard';
 import LoreCard from '@/components/LoreCard';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
@@ -546,8 +547,14 @@ export default function Landing() {
             </a>
           </div>
 
-          {/* Kinetic Weaver Agent Card */}
-          <KineticWeaverCard />
+          {/* Village Guides */}
+          <div className="max-w-4xl mx-auto">
+            <p className="text-xs text-slate-500 text-center uppercase tracking-widest mb-4">Your Village Guides</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <LoreNodeCard />
+              <KineticWeaverCard inline />
+            </div>
+          </div>
 
           {/* Invite Entry */}
           <div className="max-w-md mx-auto">

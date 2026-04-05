@@ -16,7 +16,7 @@ const FALLBACK_KW = {
   honor_score: 100,
 };
 
-export default function KineticWeaverCard() {
+export default function KineticWeaverCard({ inline = false }) {
   const [showChat, setShowChat] = useState(false);
   const { data: agents = [] } = useQuery({
     queryKey: ['kinetic-weaver-card'],
@@ -34,10 +34,8 @@ export default function KineticWeaverCard() {
 
   const kw = agents[0] || FALLBACK_KW;
 
-  return (
-    <div className="mt-10 max-w-sm mx-auto">
-      <p className="text-xs text-slate-500 text-center uppercase tracking-widest mb-3">Your Kinetic Guide</p>
-      <div className="bg-white/[0.04] border border-yellow-500/20 rounded-2xl p-5 shadow-xl">
+  const card = (
+    <div className="bg-white/[0.04] border border-yellow-500/20 rounded-2xl p-5 shadow-xl">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center flex-shrink-0">
             {kw?.avatar_url ? (
@@ -82,7 +80,15 @@ export default function KineticWeaverCard() {
       {showChat && (
         <PublicAgentChatModal agent={kw} onClose={() => setShowChat(false)} />
       )}
-      </div>
+    </div>
+  );
+
+  if (inline) return card;
+
+  return (
+    <div className="mt-10 max-w-sm mx-auto">
+      <p className="text-xs text-slate-500 text-center uppercase tracking-widest mb-3">Your Kinetic Guide</p>
+      {card}
     </div>
   );
 }
