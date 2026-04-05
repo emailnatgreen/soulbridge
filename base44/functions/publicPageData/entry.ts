@@ -10,10 +10,12 @@ Deno.serve(async (req) => {
     const { page } = body;
 
     // Ensure auth header exists for SDK init — inject a dummy if missing
-    // since we only use asServiceRole and never need user auth
-    if (!req.headers.get('authorization') || !req.headers.get('authorization').startsWith('Bearer ')) {
+    // since we only use asServiceRole and never need user auth.
+    // SDK v0.8.23+ validates token format, so use a valid-looking placeholder.
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader === 'Bearer ' || authHeader.trim().split(' ')[1]?.length < 10) {
       const headers = new Headers(req.headers);
-      headers.set('authorization', 'Bearer public');
+      headers.set('authorization', 'Bearer eyJwdWJsaWMiOnRydWV9.eyJwdWJsaWMiOnRydWV9.public');
       req = new Request(req.url, { method: req.method, headers, body: JSON.stringify(body) });
     }
 
