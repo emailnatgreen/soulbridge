@@ -80,7 +80,7 @@ export default function VipInviteDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { label: 'VIP Wallets', value: wallets.length },
-            { label: 'DIDs Published', value: wallets.filter(w => w.is_published).length },
+            { label: 'DIDs Published', value: wallets.filter(w => w.is_published && w.published_txid).length },
             { label: 'Total VIP Balance', value: `${wallets.reduce((s, w) => s + (w.balance || 0), 0).toFixed(2)} XRP` },
           ].map(s => (
             <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">

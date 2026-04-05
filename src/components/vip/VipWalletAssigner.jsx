@@ -22,7 +22,7 @@ export default function VipWalletAssigner({ wallets, agents, onComplete }) {
     setSuccess('');
     try {
       const res = await base44.functions.invoke('axiCreateAndFundWallet', {
-        walletName: `VIP: ${name.trim()}`,
+        walletName: name.trim().startsWith('VIP:') ? name.trim() : `VIP: ${name.trim()}`,
       });
       const data = res?.data;
       if (data?.error) {

@@ -30,7 +30,7 @@ export default function VipWalletCard({ wallet, agents, onRefresh }) {
   const [refreshing, setRefreshing] = useState(false);
   const [liveBalance, setLiveBalance] = useState(wallet.balance);
   const [rlusdBalance, setRlusdBalance] = useState(null);
-  const [publishResult, setPublishResult] = useState(wallet.is_published ? 'published' : null);
+  const [publishResult, setPublishResult] = useState(wallet.is_published && wallet.published_txid ? 'published' : null);
   const [editing, setEditing] = useState(false);
 
   const parsed = parseNotes(wallet.notes);
