@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 
 export default function ContactSupport() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 relative flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative flex flex-col">
       {/* Watermark */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
@@ -81,7 +81,7 @@ export default function ContactSupport() {
           </div>
 
           {/* Form Card */}
-          <div className="bg-white/5 backdrop-blur-xl border border-purple-500/20 rounded-2xl p-5 sm:p-8 shadow-2xl">
+          <div className="bg-white/5 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 sm:p-8 shadow-2xl">
             <InquiryForm source="contact_support_page" />
           </div>
 

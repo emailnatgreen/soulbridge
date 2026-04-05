@@ -43,8 +43,8 @@ export default function InquiryForm({ source = 'website' }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
-                <Label htmlFor="sender_email" className="text-slate-300">Your Email</Label>
+            <div className="space-y-1.5">
+                <Label htmlFor="sender_email" className="text-white/60 text-sm">Your Email</Label>
                 <Input
                     id="sender_email"
                     name="sender_email"
@@ -53,11 +53,11 @@ export default function InquiryForm({ source = 'website' }) {
                     value={form.sender_email}
                     onChange={handleChange}
                     required
-                    className="bg-white/5 border-white/20 text-white placeholder:text-slate-500"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:border-purple-400/60 focus:bg-white/15 transition-all"
                 />
             </div>
-            <div className="space-y-1">
-                <Label htmlFor="subject" className="text-slate-300">Subject</Label>
+            <div className="space-y-1.5">
+                <Label htmlFor="subject" className="text-white/60 text-sm">Subject</Label>
                 <Input
                     id="subject"
                     name="subject"
@@ -65,11 +65,11 @@ export default function InquiryForm({ source = 'website' }) {
                     value={form.subject}
                     onChange={handleChange}
                     required
-                    className="bg-white/5 border-white/20 text-white placeholder:text-slate-500"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:border-purple-400/60 focus:bg-white/15 transition-all"
                 />
             </div>
-            <div className="space-y-1">
-                <Label htmlFor="message" className="text-slate-300">Message</Label>
+            <div className="space-y-1.5">
+                <Label htmlFor="message" className="text-white/60 text-sm">Message</Label>
                 <Textarea
                     id="message"
                     name="message"
@@ -78,14 +78,14 @@ export default function InquiryForm({ source = 'website' }) {
                     onChange={handleChange}
                     required
                     rows={5}
-                    className="bg-white/5 border-white/20 text-white placeholder:text-slate-500 resize-none"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:border-purple-400/60 focus:bg-white/15 transition-all resize-none"
                 />
             </div>
             {error && <p className="text-red-400 text-sm">{error}</p>}
             <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-11"
             >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
                 {loading ? 'Sending...' : 'Send Inquiry'}
