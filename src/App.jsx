@@ -9,7 +9,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { OwnerGovernorProvider } from '@/lib/OwnerGovernorContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
-// Lazy-load all explicitly-routed pages to keep the initial bundle small
+// Lazy-load explicitly-routed pages
 const Landing = lazy(() => import('./pages/Landing'));
 const ProjectManager = lazy(() => import('./pages/ProjectManager'));
 const SkillsHub = lazy(() => import('./pages/SkillsHub'));
@@ -47,7 +47,7 @@ const FSMAInfo = lazy(() => import('./pages/FSMAInfo'));
 const XamanInfo = lazy(() => import('./pages/XamanInfo'));
 const VipInviteDashboard = lazy(() => import('./pages/VipInviteDashboard'));
 
-const { Pages, Layout, mainPage } = pagesConfig;
+const { Pages, Layout } = pagesConfig;
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Suspense fallback={<LoadingFallback />}>
@@ -62,14 +62,19 @@ const LoadingFallback = () => (
 );
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, authError } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  if (isLoadingAuth) {
+  if (isLoadingPublicSettings || isLoadingAuth) {
     return <LoadingFallback />;
   }
 
-  if (authError?.type === 'user_not_registered') {
-    return <UserNotRegisteredError />;
+  if (authError) {
+    if (authError.type === 'user_not_registered') {
+      return <UserNotRegisteredError />;
+    } else if (authError.type === 'auth_required') {
+      navigateToLogin();
+      return null;
+    }
   }
 
   return (
@@ -130,16 +135,16 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClientInstance}>
-      <AuthProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClientInstance}>
         <OwnerGovernorProvider>
           <Router>
             <AuthenticatedApp />
           </Router>
           <Toaster />
         </OwnerGovernorProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }
 
