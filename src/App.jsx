@@ -35,6 +35,8 @@ import SyncAuditReport from './pages/SyncAuditReport';
 import SkillValidation from './pages/SkillValidation';
 import AgentCommsDashboard from './pages/AgentCommsDashboard';
 import AIProjectHub from './pages/AIProjectHub';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import CookiePolicy from './pages/CookiePolicy';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -111,6 +113,8 @@ const AuthenticatedApp = () => {
       <Route path="/SkillValidation" element={<LayoutWrapper currentPageName="SkillValidation"><SkillValidation /></LayoutWrapper>} />
       <Route path="/AgentCommsDashboard" element={<LayoutWrapper currentPageName="AgentCommsDashboard"><AgentCommsDashboard /></LayoutWrapper>} />
       <Route path="/AIProjectHub" element={<LayoutWrapper currentPageName="AIProjectHub"><AIProjectHub /></LayoutWrapper>} />
+      <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+      <Route path="/CookiePolicy" element={<CookiePolicy />} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>

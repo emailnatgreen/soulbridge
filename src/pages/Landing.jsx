@@ -616,6 +616,20 @@ export default function Landing() {
             >
               Demo Video
             </a>
+            <span className="text-white/20">·</span>
+            <a
+              href="/PrivacyPolicy"
+              className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
+            >
+              Privacy Policy
+            </a>
+            <span className="text-white/20">·</span>
+            <a
+              href="/CookiePolicy"
+              className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
+            >
+              Anti-Cookie Policy
+            </a>
           </div>
           <p className="text-white/30 text-[10px] sm:text-xs">
             © 2026 SoulBridge Village · Governed by 11 Laws of Honour · XRPL DID Architecture · UK FSMA 2026 Compliant
