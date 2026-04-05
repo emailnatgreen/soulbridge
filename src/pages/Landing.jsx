@@ -282,7 +282,7 @@ export default function Landing() {
               className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-contain"
             />
             <div>
-              <h1 className="text-white font-light text-base sm:text-xl tracking-tight">SoulBridge</h1>
+              <h1 className="text-white font-light text-base sm:text-xl tracking-tight">SoulBridge Foundation</h1>
               <p className="text-white/40 text-[10px] sm:text-xs">Village · AI Research Platform</p>
             </div>
           </div>
@@ -291,7 +291,7 @@ export default function Landing() {
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
               XRPL Mainnet
             </Badge>
-            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[10px] sm:text-xs gap-1">
+            <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-[10px] sm:text-xs gap-1">
               <Shield className="w-2.5 h-2.5" />
               UK FSMA 2026
             </Badge>
