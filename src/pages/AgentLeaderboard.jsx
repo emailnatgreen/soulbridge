@@ -3,11 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, ArrowLeft, Shield } from 'lucide-react';
+import { Trophy, ArrowLeft, Shield, Fingerprint } from 'lucide-react';
+import { useIdentity } from '@/hooks/useIdentity';
 import { Link } from 'react-router-dom';
 
 export default function AgentLeaderboard() {
-  const [tab, setTab] = useState('honor');
+  const { didSignal, isRecognized } = useIdentity();
 
   useEffect(() => {
     // Trigger retroactive honor processing on page load
@@ -41,12 +42,7 @@ export default function AgentLeaderboard() {
     return unsubscribe;
   }, [refetch]);
 
-  const lists = {
-    honor: [...agents].sort((a, b) => (b.honor_score || 0) - (a.honor_score || 0)),
-    active: [...agents].filter(a => a.status === 'active').sort((a, b) => (b.honor_score || 0) - (a.honor_score || 0)),
-  };
-
-  const ranked = lists[tab] || [];
+  const ranked = [...agents].sort((a, b) => (b.honor_score || 0) - (a.honor_score || 0));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
@@ -56,32 +52,22 @@ export default function AgentLeaderboard() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Agents
           </Link>
-          <div className="flex items-center gap-3">
-            <Trophy className="w-8 h-8 text-yellow-400" />
-            <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Trophy className="w-8 h-8 text-yellow-400" />
+              <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
+            </div>
+            {isRecognized && didSignal && (
+              <Badge className="bg-purple-500/20 border-purple-400/30 text-purple-300 text-xs flex items-center gap-1">
+                <Fingerprint className="w-3 h-3" />
+                {didSignal.did?.slice(0, 20)}...
+              </Badge>
+            )}
           </div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div className="flex gap-2 mb-6">
-          {[
-            { value: 'honor', label: 'Honor Score' },
-            { value: 'active', label: 'Active Agents' },
-          ].map(item => (
-            <button
-              key={item.value}
-              onClick={() => setTab(item.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                tab === item.value
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
 
         {isLoading ? (
           <div className="text-center py-12 text-white/50">Loading agents...</div>
