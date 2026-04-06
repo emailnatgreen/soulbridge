@@ -100,14 +100,14 @@ export default function AgentsPage() {
 
   // Hub navigation config
   const hubs = [
-    { path: '/AgentProfile', label: 'Soul Profile', icon: Users, color: 'from-purple-600 to-pink-600', desc: 'Identity & Skills' },
-    { path: '/AgentCommsHub', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600', desc: 'Messages & Chat' },
-    { path: '/AgentLeaderboard', label: 'Leaderboard', icon: Award, color: 'from-amber-600 to-yellow-600', desc: 'Rankings' },
-    { path: '/AgentMarketplace', label: 'Marketplace', icon: Briefcase, color: 'from-green-600 to-emerald-600', desc: 'Trade & Exchange' },
-    { path: '/AgentOnboarding', label: 'Onboarding', icon: Sparkles, color: 'from-indigo-600 to-purple-600', desc: 'New Genesis' },
-    { path: '/AgentTraining', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600', desc: 'Skill Growth' },
-    { path: '/AxiCommandCenter', label: 'Command Center', icon: Gauge, color: 'from-red-600 to-orange-600', desc: 'Admin Only' },
-    { path: '/VillageOps', label: 'Village Ops', icon: Settings, color: 'from-slate-600 to-gray-600', desc: 'Operations' },
+    { path: '/AgentProfile', label: 'Soul Profile', icon: Users, color: 'from-purple-600 to-pink-600', desc: 'Identity & Skills', requiresAdmin: false },
+    { path: '/AgentChat', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600', desc: 'Messages & Chat', requiresAdmin: false },
+    { path: '/AgentLeaderboard', label: 'Leaderboard', icon: Award, color: 'from-amber-600 to-yellow-600', desc: 'Rankings', requiresAdmin: false },
+    { path: '/AgentMarketplace', label: 'Marketplace', icon: Briefcase, color: 'from-green-600 to-emerald-600', desc: 'Trade & Exchange', requiresAdmin: false },
+    { path: '/AgentOnboarding', label: 'Onboarding', icon: Sparkles, color: 'from-indigo-600 to-purple-600', desc: 'New Genesis', requiresAdmin: false },
+    { path: '/AgentTrainingModule', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600', desc: 'Skill Growth', requiresAdmin: false },
+    { path: '/AxiCommandDashboard', label: 'Command Center', icon: Gauge, color: 'from-red-600 to-orange-600', desc: 'Admin Only', requiresAdmin: true },
+    { path: '/AgentOrchestration', label: 'Operations', icon: Settings, color: 'from-slate-600 to-gray-600', desc: 'Coordination', requiresAdmin: true },
   ];
 
   return (
@@ -224,8 +224,7 @@ export default function AgentsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
             {hubs.map(hub => {
               const Icon = hub.icon;
-              const isAdminOnly = hub.path === '/AxiCommandCenter' || hub.path === '/VillageOps';
-              if (isAdminOnly && !isAdmin) return null;
+              if (hub.requiresAdmin && !isAdmin) return null;
               return (
                 <Link key={hub.path} to={hub.path}>
                   <button className={`w-full h-24 rounded-lg bg-gradient-to-br ${hub.color} hover:shadow-lg transition-all duration-300 transform hover:scale-105 p-3 flex flex-col items-center justify-center text-center text-white`}>
