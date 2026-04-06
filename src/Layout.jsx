@@ -3,8 +3,6 @@ import { Toaster } from "@/components/ui/sonner";
 import GlobalNav from '@/components/GlobalNav';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import ChatLoader from '@/components/axi/ChatLoader';
-import { usePageSignal } from '@/hooks/usePageSignal';
-import { useIdentity } from '@/hooks/useIdentity';
 import AxiFloatingButton from '@/components/AxiFloatingButtonNew';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -18,7 +16,7 @@ export default function Layout({ children, currentPageName }) {
   const { isRecognized, isAdmin, didSignal } = useIdentity();
   const { user } = useAuth();
 
-  usePageSignal();
+
 
   const isPublic = PUBLIC_PAGES.includes(currentPageName);
 
