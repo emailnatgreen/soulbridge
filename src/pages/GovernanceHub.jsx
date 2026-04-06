@@ -51,24 +51,28 @@ export default function GovernanceHub() {
       }
     } catch (e) {}
 
-    base44.auth.me().then(async (u) => {
+    openAxi('I have just opened the Governance Hub. Please review the active proposals, flag any that need urgent attention, and tell me if there are any constitutional alignment issues or expired proposals that need executing.');
+  }, []);
+
+  const { data: agents = [], isLoading: agentsLoading } = useQuery({
+    queryKey: ['agents-governance'],
+    queryFn: () => base44.entities.Agent.list(),
+    staleTime: 30000,
+  });
+
+  // Auto-select current user's agent once agents load
+  useEffect(() => {
+    if (agentsLoading || agents.length === 0) return;
+    base44.auth.me().then(u => {
       if (!u) { setAgentLoading(false); return; }
-      const all = await base44.entities.Agent.list();
-      const mine = all.find(a => a.created_by === u.email);
+      const mine = agents.find(a => a.created_by === u.email);
       if (mine) {
         setMyAgent(mine);
         setSelectedAgent(mine.id);
       }
       setAgentLoading(false);
     }).catch(() => setAgentLoading(false));
-
-    openAxi('I have just opened the Governance Hub. Please review the active proposals, flag any that need urgent attention, and tell me if there are any constitutional alignment issues or expired proposals that need executing.');
-  }, []);
-
-  const { data: agents = [] } = useQuery({
-    queryKey: ['agents-governance'],
-    queryFn: () => base44.entities.Agent.list(),
-  });
+  }, [agents, agentsLoading]);
 
   const { data: proposals = [], isLoading: loadingProposals } = useQuery({
     queryKey: ['governance-proposals'],
