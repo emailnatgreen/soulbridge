@@ -35,6 +35,7 @@ import AxiServiceSkillCreator from "@/components/axi/AxiServiceSkillCreator";
 import AnomalyOverviewPanel from "@/components/axi/AnomalyOverviewPanel";
 import PendingJukeboxDecisions from "@/components/axi/PendingJukeboxDecisions";
 import CorrelatedInsightsViewer from "@/components/axi/CorrelatedInsightsViewer";
+import EmergencyPauseButton from "@/components/axi/EmergencyPauseButton";
 
 // Tab 5 — Memory & Review
 import PageReviewPanel from "@/components/axi/PageReviewPanel";
@@ -254,7 +255,7 @@ export default function AxiCommandDashboard() {
                 <AxiServiceSkillCreator />
               </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
               <div className="rounded-2xl border border-pink-700/40 bg-slate-800/60 backdrop-blur p-4">
                 <AgentPersonalityPanel />
               </div>
@@ -271,6 +272,7 @@ export default function AxiCommandDashboard() {
                   Navigate to any Agent Profile to access the full Admin Override Panel for name, role, status, honour, and purpose modifications with mandatory audit logging.
                 </p>
               </div>
+              <EmergencyPauseButton />
             </div>
           </TabsContent>
 
