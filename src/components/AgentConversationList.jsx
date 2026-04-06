@@ -97,23 +97,22 @@ export default function AgentConversationList({ agents, allMessages, selectedAge
                 )}
               >
                 <div className="flex items-start justify-between mb-2">
-                     <div className="flex-1 min-w-0">
-                       <div className="flex items-center gap-2 mb-1 truncate">
-                         <p className="text-white font-medium truncate">{agent.name}</p>
-                         {currentDID && (
-                           <span className="text-[9px] text-purple-400/60 flex-shrink-0">DID</span>
-                         )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-white font-medium truncate">{agent.name}</p>
+                      {currentDID && (
+                        <span className="text-[9px] text-purple-400/60 flex-shrink-0">DID</span>
+                      )}
                       {unreadCount > 0 && (
                         <Badge className="bg-pink-500 text-white text-xs px-1.5 py-0 h-5">
                           {unreadCount}
                         </Badge>
                       )}
-                      </div>
-                    <Badge className={cn("text-xs border", getRoleColor(agent.role))}>
-                      {agent.role}
-                    </Badge>
+                    </div>
                   </div>
-                  <MessageCircle className="w-4 h-4 text-purple-400/60 flex-shrink-0 mt-1" />
+                  <Badge className={cn("text-xs border", getRoleColor(agent.role))}>
+                    {agent.role}
+                  </Badge>
                 </div>
                 
                 {lastMessage && (
