@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
+import GovernanceKUFlow from '@/components/kinetic/GovernanceKUFlow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -451,6 +452,19 @@ export default function KineticGridDashboard() {
                 <div className="text-center py-8 text-white/30 text-sm">No Kinetic Units yet — trigger generate_ku to begin</div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Governance Voting KU Flow */}
+        <Card className="bg-white/5 border-white/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-white text-sm flex items-center gap-2">
+              <Vote className="w-4 h-4 text-blue-400" /> Governance Voting — Kinetic Flow
+            </CardTitle>
+            <p className="text-white/40 text-xs">Every vote generates a KU · Law 8: Those Who Dwell Decide</p>
+          </CardHeader>
+          <CardContent>
+            <GovernanceKUFlow kus={kus} agents={agents} />
           </CardContent>
         </Card>
 

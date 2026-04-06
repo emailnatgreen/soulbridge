@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
@@ -60,6 +60,31 @@ Deno.serve(async (req) => {
       is_public: true
     });
 
+    // ── Generate Kinetic Unit for this governance vote ──
+    try {
+      await base44.entities.KineticUnit.create({
+        ku_type: 'governance_vote',
+        agent_id: agent_id,
+        trigger_event: 'GovernanceVote.create',
+        trigger_entity_id: vote.id,
+        weight: 1.5,
+        raw_score: votingPower / 100,
+        weighted_score: (votingPower / 100) * 1.5,
+        mwtp_layer: 'meso',
+        status: 'generated',
+        constitutional_laws: ['Law 2: Honour', 'Law 5: Dwelling', 'Law 8: Governance'],
+        metadata: {
+          proposal_id,
+          vote_choice,
+          voting_power: votingPower,
+          voter_name: voter.name,
+          voter_role: voter.role
+        }
+      });
+    } catch (kuErr) {
+      console.warn('KU generation failed (non-blocking):', kuErr.message);
+    }
+
     // Fetch all current votes for this proposal to recalculate totals
     const proposalVotes = await base44.entities.GovernanceVote.filter({ proposal_id });
     
@@ -87,7 +112,7 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       vote,
-      message: `Vote "${vote_choice}" cast with ${votingPower.toFixed(2)} voting power`,
+      message: `Vote "${vote_choice}" cast with ${votingPower.toFixed(2)} voting power · KU generated`,
       voting_power: votingPower,
       updated_tallies: { for: totalFor, against: totalAgainst, abstain: totalAbstain }
     });

@@ -171,14 +171,14 @@ export default function GovernanceHub() {
   }, [selectedProposal, selectedAgent, voteChoice, voteRationale]);
 
   const handleCreateProposal = async () => {
-    if (!myAgent || !proposalTitle || !proposalDescription || !proposalType) {
-      toast.error('Please fill in all required fields and ensure you have an agent identity');
+    if (!selectedAgent || !proposalTitle || !proposalDescription || !proposalType) {
+      toast.error('Please fill in all required fields and select an agent identity');
       return;
     }
 
     try {
       await createProposalMutation.mutateAsync({
-        proposer_agent_id: myAgent.id,
+        proposer_agent_id: selectedAgent,
         title: proposalTitle,
         description: proposalDescription,
         proposal_type: proposalType,
@@ -274,22 +274,28 @@ export default function GovernanceHub() {
                     <DialogDescription className="text-purple-200/70">Submit a proposal for the Village to vote on</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 mt-4">
-                    <div className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center gap-3">
-                      <Bot className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                      {myAgent ? (
-                        <div>
-                          <p className="text-white text-sm font-medium">{myAgent.name} <span className="text-white/40 text-xs capitalize">· {myAgent.role}</span></p>
-                          {identity?.did && <p className="text-purple-300/60 text-xs font-mono">{identity.did.slice(0, 20)}…</p>}
-                        </div>
-                      ) : (
-                        <p className="text-yellow-300 text-sm">No agent found — <Link to="/Agents" className="underline">create an agent</Link> first</p>
-                      )}
-                    </div>
+                   {/* Propose on behalf of any agent */}
+                   <div>
+                     <label className="text-white text-sm font-medium mb-2 block">Propose on Behalf of Agent *</label>
+                     <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+                       <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                         <SelectValue placeholder="Select agent to propose on behalf of" />
+                       </SelectTrigger>
+                       <SelectContent className="bg-slate-900 border-white/20 max-h-60">
+                         {agents.filter(a => a.status === 'active').map(agent => (
+                           <SelectItem key={agent.id} value={agent.id} className="text-white">
+                             {agent.name} ({agent.role}) - Honor: {agent.honor_score || 100}{agent.id === myAgent?.id ? ' ★ Yours' : ''}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                     <p className="text-white/30 text-xs mt-1">Every agent has a voice — propose on behalf of any active agent</p>
+                   </div>
 
-                    <div>
-                      <label className="text-white text-sm font-medium mb-2 block">Proposal Title *</label>
-                      <Input placeholder="Brief, clear title for the proposal" value={proposalTitle} onChange={(e) => setProposalTitle(e.target.value)} className="bg-white/5 border-white/20 text-white placeholder:text-white/40" />
-                    </div>
+                   <div>
+                     <label className="text-white text-sm font-medium mb-2 block">Proposal Title *</label>
+                     <Input placeholder="Brief, clear title for the proposal" value={proposalTitle} onChange={(e) => setProposalTitle(e.target.value)} className="bg-white/5 border-white/20 text-white placeholder:text-white/40" />
+                   </div>
 
                     <div>
                       <label className="text-white text-sm font-medium mb-2 block">Description *</label>
@@ -326,7 +332,7 @@ export default function GovernanceHub() {
 
                     <ConstitutionalCompliancePanel title={proposalTitle} description={proposalDescription} proposalType={proposalType} affectedEntities={[]} />
 
-                    <Button onClick={handleCreateProposal} disabled={creatingProposal || !myAgent} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
+                    <Button onClick={handleCreateProposal} disabled={creatingProposal || !selectedAgent} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
                       {creatingProposal ? (
                         <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating Proposal...</>
                       ) : (

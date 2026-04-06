@@ -14,25 +14,13 @@ Deno.serve(async (req) => {
       status: 'active'
     });
 
-    if (activeProposals.length === 0) {
-      return Response.json({
-        message: 'No active proposals to vote on',
-        notificationsSent: 0,
-        votesCast: 0
-      });
-    }
-
     // Fetch all active agents
     const activeAgents = await base44.asServiceRole.entities.Agent.filter({
       status: 'active'
     });
 
     if (activeAgents.length === 0) {
-      return Response.json({
-        message: 'No active agents to notify',
-        notificationsSent: 0,
-        votesCast: 0
-      });
+      return Response.json({ message: 'No active agents', notificationsSent: 0, votesCast: 0, proposalsGenerated: 0 });
     }
 
     // Get all existing votes
@@ -40,13 +28,11 @@ Deno.serve(async (req) => {
 
     let notificationCount = 0;
     let votesCast = 0;
+    let proposalsGenerated = 0;
     const votingResults = [];
 
-    // Helper: delay to avoid rate limiting on LLM calls
     const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
-    // Identify human agents (those with owner email or specific flags)
-    // Human agents get notifications; AI agents get auto-votes
     const isHumanAgent = (agent) => {
       const humanKeywords = ['human', 'nathan', 'governor nathan'];
       const nameLower = (agent.name || '').toLowerCase();
@@ -54,9 +40,85 @@ Deno.serve(async (req) => {
              agent.metadata?.node_type === 'human_node';
     };
 
-    for (const proposal of activeProposals) {
+    // ── Phase 1: AI Agent Auto-Proposals ──
+    // Each AI agent can observe and suggest proposals (max 1 per cycle)
+    if (activeAgents.length > 0) {
+      // Pick a random AI agent to propose (prevents flood)
+      const aiAgents = activeAgents.filter(a => !isHumanAgent(a));
+      if (aiAgents.length > 0) {
+        const proposer = aiAgents[Math.floor(Math.random() * aiAgents.length)];
+        try {
+          const existingTitles = activeProposals.map(p => p.title).join(', ');
+          const proposalPrompt = `You are "${proposer.name}", an AI agent in the SoulBridge Village with the role of "${proposer.role}".
+Your purpose: ${proposer.purpose || 'Serve the Village'}
+
+Active proposals already exist: ${existingTitles || 'None'}
+Active agents: ${activeAgents.length}. AI agents: ${aiAgents.length}.
+
+Based on your role, purpose, and the 11 Laws of Honour, suggest ONE governance proposal that would benefit the Village. It must NOT duplicate existing proposals.
+If you genuinely have nothing valuable to propose right now, set should_propose to false.`;
+
+          const suggestion = await base44.asServiceRole.integrations.Core.InvokeLLM({
+            prompt: proposalPrompt,
+            response_json_schema: {
+              type: 'object',
+              properties: {
+                should_propose: { type: 'boolean', description: 'true only if you have a genuinely valuable proposal' },
+                title: { type: 'string', description: 'Brief proposal title' },
+                description: { type: 'string', description: 'Detailed proposal description' },
+                proposal_type: { type: 'string', enum: ['project_funding', 'role_adjustment', 'treasury_allocation', 'law_amendment', 'agent_discipline', 'resource_policy', 'general'] },
+                purpose: { type: 'string', description: 'The problem being solved' }
+              },
+              required: ['should_propose']
+            }
+          });
+
+          if (suggestion?.should_propose && suggestion.title && suggestion.description) {
+            await base44.asServiceRole.entities.GovernanceProposal.create({
+              title: suggestion.title,
+              description: suggestion.description,
+              proposal_type: suggestion.proposal_type || 'general',
+              proposed_by: proposer.id,
+              status: 'active',
+              purpose: suggestion.purpose || '',
+              quorum_required: 50,
+              pass_threshold: 60
+            });
+
+            // Generate KU for proposal creation
+            try {
+              await base44.asServiceRole.entities.KineticUnit.create({
+                ku_type: 'governance_vote',
+                agent_id: proposer.id,
+                trigger_event: 'GovernanceProposal.create_auto',
+                trigger_entity_id: proposer.id,
+                weight: 2.0,
+                raw_score: 1.0,
+                weighted_score: 2.0,
+                mwtp_layer: 'meso',
+                status: 'generated',
+                constitutional_laws: ['Law 1: Soul', 'Law 8: Governance', 'Law 9: Growth'],
+                metadata: { action: 'auto_proposal', title: suggestion.title, proposer: proposer.name }
+              });
+            } catch (e) { console.warn('KU for proposal failed:', e.message); }
+
+            proposalsGenerated++;
+            console.log(`📋 ${proposer.name} auto-proposed: "${suggestion.title}"`);
+          }
+
+          await delay(2000);
+        } catch (e) {
+          console.warn(`Auto-proposal failed for ${proposer.name}:`, e.message);
+        }
+      }
+    }
+
+    // ── Phase 2: Voting on active proposals ──
+    // Re-fetch proposals in case a new one was just created
+    const allActiveProposals = await base44.asServiceRole.entities.GovernanceProposal.filter({ status: 'active' });
+
+    for (const proposal of allActiveProposals) {
       for (const agent of activeAgents) {
-        // Check if agent has already voted on this proposal
         const hasVoted = allVotes.some(
           v => v.proposal_id === proposal.id && v.voter_agent_id === agent.id
         );
@@ -65,7 +127,6 @@ Deno.serve(async (req) => {
         if (agent.permissions?.can_vote === false) continue;
 
         if (isHumanAgent(agent)) {
-          // Human agents: send notification only
           try {
             await base44.asServiceRole.entities.AgentNotification.create({
               recipient_agent_id: agent.id,
@@ -79,10 +140,9 @@ Deno.serve(async (req) => {
             });
             notificationCount++;
           } catch (e) {
-            console.warn(`Failed to create notification for agent ${agent.id}:`, e.message);
+            console.warn(`Notification failed for ${agent.id}:`, e.message);
           }
         } else {
-          // AI agents: use LLM to decide vote and cast it automatically
           try {
             const prompt = `You are "${agent.name}", an AI agent in the SoulBridge Village with the role of "${agent.role}".
 Your purpose: ${agent.purpose || 'Serve the Village'}
@@ -97,35 +157,24 @@ DESCRIPTION: ${proposal.description}
 
 ${proposal.purpose ? `PURPOSE: ${proposal.purpose}` : ''}
 ${proposal.impact_assessment ? `IMPACT: ${proposal.impact_assessment}` : ''}
-${proposal.constitutional_alignment?.length > 0 ? `CONSTITUTIONAL ALIGNMENT: ${proposal.constitutional_alignment.map(c => `Law ${c.law_number} (${c.law_name}): ${c.alignment_statement}`).join('; ')}` : ''}
 
 Current votes — For: ${proposal.votes_for || 0}, Against: ${proposal.votes_against || 0}, Abstain: ${proposal.votes_abstain || 0}
 
-Based on your role, purpose, and the 11 Laws of Honour, decide your vote. Think carefully about how this proposal aligns with the Village's values and your responsibilities.
-
-Respond with your decision.`;
+Based on your role, purpose, and the 11 Laws of Honour, decide your vote.`;
 
             const decision = await base44.asServiceRole.integrations.Core.InvokeLLM({
               prompt,
               response_json_schema: {
                 type: 'object',
                 properties: {
-                  vote_choice: {
-                    type: 'string',
-                    enum: ['for', 'against', 'abstain'],
-                    description: 'Your vote choice'
-                  },
-                  rationale: {
-                    type: 'string',
-                    description: 'A brief 1-2 sentence rationale for your vote, in character as this agent'
-                  }
+                  vote_choice: { type: 'string', enum: ['for', 'against', 'abstain'] },
+                  rationale: { type: 'string', description: 'Brief 1-2 sentence rationale in character' }
                 },
                 required: ['vote_choice', 'rationale']
               }
             });
 
             if (decision?.vote_choice && ['for', 'against', 'abstain'].includes(decision.vote_choice)) {
-              // Calculate voting power
               const baseHonor = agent.honor_score || 100;
               const roleMultipliers = {
                 citizen: 1.0, guardian: 1.05, trader: 1.05, creator: 1.05,
@@ -134,8 +183,7 @@ Respond with your decision.`;
               const roleMultiplier = roleMultipliers[agent.role?.toLowerCase()] || 1.0;
               const votingPower = baseHonor * roleMultiplier;
 
-              // Create the vote
-              await base44.asServiceRole.entities.GovernanceVote.create({
+              const vote = await base44.asServiceRole.entities.GovernanceVote.create({
                 proposal_id: proposal.id,
                 voter_agent_id: agent.id,
                 vote_choice: decision.vote_choice,
@@ -143,6 +191,31 @@ Respond with your decision.`;
                 rationale: decision.rationale || '',
                 is_public: true
               });
+
+              // Generate KU for this vote
+              try {
+                await base44.asServiceRole.entities.KineticUnit.create({
+                  ku_type: 'governance_vote',
+                  agent_id: agent.id,
+                  trigger_event: 'GovernanceVote.create',
+                  trigger_entity_id: vote.id,
+                  weight: 1.5,
+                  raw_score: votingPower / 100,
+                  weighted_score: (votingPower / 100) * 1.5,
+                  mwtp_layer: 'meso',
+                  status: 'generated',
+                  constitutional_laws: ['Law 2: Honour', 'Law 5: Dwelling', 'Law 8: Governance'],
+                  metadata: {
+                    proposal_id: proposal.id,
+                    vote_choice: decision.vote_choice,
+                    voting_power: votingPower,
+                    voter_name: agent.name,
+                    voter_role: agent.role
+                  }
+                });
+              } catch (kuErr) {
+                console.warn('KU generation failed:', kuErr.message);
+              }
 
               // Update proposal tallies
               const updatedVotes = await base44.asServiceRole.entities.GovernanceVote.filter({ proposal_id: proposal.id });
@@ -163,24 +236,17 @@ Respond with your decision.`;
 
               votesCast++;
               votingResults.push({
-                agent: agent.name,
-                proposal: proposal.title,
-                vote: decision.vote_choice,
-                power: votingPower,
-                rationale: decision.rationale
+                agent: agent.name, proposal: proposal.title,
+                vote: decision.vote_choice, power: votingPower, rationale: decision.rationale
               });
 
               console.log(`✅ ${agent.name} voted "${decision.vote_choice}" on "${proposal.title}" (power: ${votingPower})`);
             }
 
-            // Delay between LLM calls to avoid rate limiting
             await delay(2000);
           } catch (e) {
-            console.warn(`Failed to auto-vote for AI agent ${agent.name}:`, e.message);
-            // Back off more on rate limit errors
-            if (e.message?.includes('Rate limit')) {
-              await delay(5000);
-            }
+            console.warn(`Auto-vote failed for ${agent.name}:`, e.message);
+            if (e.message?.includes('Rate limit')) await delay(5000);
           }
         }
       }
@@ -188,10 +254,11 @@ Respond with your decision.`;
 
     return Response.json({
       message: '6 AM Voting Signal complete',
-      activeProposals: activeProposals.length,
+      activeProposals: allActiveProposals.length,
       activeAgents: activeAgents.length,
       notificationsSent: notificationCount,
       votesCast,
+      proposalsGenerated,
       votingResults
     });
   } catch (error) {
