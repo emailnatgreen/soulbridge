@@ -7,6 +7,7 @@ import TrustlineActivateButton from '@/components/wallet/TrustlineActivateButton
 import WalletQRCodes from '@/components/vip/WalletQRCodes';
 import DIDWalletEditPanel from './DIDWalletEditPanel';
 import AssignSeedPanel from './AssignSeedPanel';
+import XummDIDSignPanel from './XummDIDSignPanel';
 
 function parseNotes(notes) {
   if (!notes) return {};
@@ -37,6 +38,7 @@ export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
   const [publishResult, setPublishResult] = useState(wallet.is_published && wallet.published_txid ? 'published' : null);
   const [editing, setEditing] = useState(false);
   const [assigningSeed, setAssigningSeed] = useState(false);
+  const [xummSign, setXummSign] = useState(false);
 
   useEffect(() => {
     if (liveXrpBalance !== undefined) setLiveBalance(liveXrpBalance);
@@ -230,11 +232,25 @@ export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
             )}
           </div>
         </div>
+      ) : xummSign ? (
+        <XummDIDSignPanel
+          wallet={wallet}
+          onComplete={() => { setXummSign(false); onRefresh?.(); }}
+          onClose={() => setXummSign(false)}
+        />
       ) : (
-        <Button onClick={handlePublishDID} disabled={publishing}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white gap-2 text-sm">
-          {publishing ? <><Loader2 className="w-4 h-4 animate-spin" /> Publishing DID on-chain…</> : <><Globe className="w-4 h-4" /> Publish DID to {wallet.network === 'testnet' ? 'Testnet' : 'Mainnet'}</>}
-        </Button>
+        <div className="space-y-2">
+          {hasSeed && (
+            <Button onClick={handlePublishDID} disabled={publishing}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white gap-2 text-sm">
+              {publishing ? <><Loader2 className="w-4 h-4 animate-spin" /> Publishing DID on-chain…</> : <><Globe className="w-4 h-4" /> Auto-Publish DID</>}
+            </Button>
+          )}
+          <Button onClick={() => setXummSign(true)} variant="outline"
+            className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/10 gap-2 text-sm">
+            <Globe className="w-4 h-4" /> Sign DIDSet via Xaman
+          </Button>
+        </div>
       )}
     </div>
   );
