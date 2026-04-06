@@ -171,7 +171,7 @@ export default function Dashboard() {
       }
       setWallets(refreshedWallets || []);
       } catch (e) {
-      setPublishError(e?.response?.data?.error || 'Failed to publish DID. Please try again.');
+        setPublishError(e?.response?.data?.error || 'Failed to publish DID. Please try again.');
       }
       setPublishingDid(false);
       setPublishingWalletId(null);
