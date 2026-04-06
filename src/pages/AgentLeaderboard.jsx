@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Zap, TrendingUp, Crown, Medal, Award, ArrowLeft, Fingerprint } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 function getRankConfig(score) {
-  if (score >= 90) return { label: 'Legendary', color: 'text-yellow-300', bg: 'bg-yellow-500/20 border-yellow-400/30', icon: Crown };
-  if (score >= 75) return { label: 'Elite', color: 'text-purple-300', bg: 'bg-purple-500/20 border-purple-400/30', icon: Trophy };
-  if (score >= 60) return { label: 'Honored', color: 'text-blue-300', bg: 'bg-blue-500/20 border-blue-400/30', icon: Award };
-  if (score >= 40) return { label: 'Rising', color: 'text-green-300', bg: 'bg-green-500/20 border-green-400/30', icon: TrendingUp };
-  return { label: 'Citizen', color: 'text-white/60', bg: 'bg-white/10 border-white/20', icon: Zap };
+  if (score >= 90) return { label: 'Legendary', color: 'text-yellow-300', bg: 'bg-yellow-500/20 border-yellow-400/30', rankIcon: Crown };
+  if (score >= 75) return { label: 'Elite', color: 'text-purple-300', bg: 'bg-purple-500/20 border-purple-400/30', rankIcon: Trophy };
+  if (score >= 60) return { label: 'Honored', color: 'text-blue-300', bg: 'bg-blue-500/20 border-blue-400/30', rankIcon: Award };
+  if (score >= 40) return { label: 'Rising', color: 'text-green-300', bg: 'bg-green-500/20 border-green-400/30', rankIcon: TrendingUp };
+  return { label: 'Citizen', color: 'text-white/60', bg: 'bg-white/10 border-white/20', rankIcon: Zap };
 }
 
-const RANK_ICONS = { Legendary: Crown, Elite: Trophy, Honored: Award, Rising: TrendingUp, Citizen: Zap };
-const PODIUM_ICONS = [
+const PODIUM_MEDALS = [
   { icon: Crown, color: 'text-yellow-400' },
   { icon: Medal, color: 'text-slate-300' },
   { icon: Award, color: 'text-amber-600' },
@@ -24,9 +23,9 @@ const PODIUM_ICONS = [
 
 export default function AgentLeaderboard() {
   const [tab, setTab] = useState('honor');
-  const [currentDID, setCurrentDID] = React.useState(null);
+  const [currentDID, setCurrentDID] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       const identity = localStorage.getItem('soulbridge_identity');
       if (identity) setCurrentDID(JSON.parse(identity));
@@ -143,13 +142,14 @@ export default function AgentLeaderboard() {
             {[ranked[1], ranked[0], ranked[2]].map((agent, idx) => {
               const place = idx === 1 ? 0 : idx === 0 ? 1 : 2;
               const rank = getRankConfig(agent.honor_score || 0);
-              const Icon = PODIUM_ICONS[place].icon;
+              const medal = PODIUM_MEDALS[place];
+              const MedalIcon = medal.icon;
               const heights = ['h-32', 'h-40', 'h-28'];
               
               return (
                 <div key={agent.id} className={`flex flex-col items-center justify-end ${heights[idx]}`}>
                   <div className={`w-full rounded-t-lg border ${rank.bg} p-4 text-center`}>
-                    <Icon className={`w-6 h-6 ${PODIUM_ICONS[place].color} mx-auto mb-2`} />
+                    <MedalIcon className={`w-6 h-6 ${medal.color} mx-auto mb-2`} />
                     <p className="text-white font-bold text-sm truncate">{agent.name}</p>
                     <p className={`text-lg font-bold ${rank.color} mt-1`}>{agent.honor_score || 0}</p>
                     <Badge className={`mt-2 text-xs ${rank.bg}`}>{rank.label}</Badge>
@@ -193,20 +193,21 @@ export default function AgentLeaderboard() {
             ) : (
               ranked.map((agent, idx) => {
                 const rank = getRankConfig(agent.honor_score || 0);
-                const RankIcon = RANK_ICONS[rank.label];
+                const RankIcon = rank.rankIcon;
                 const val = getMetricValue(agent);
                 const barWidth = maxVal > 0 ? (val / maxVal) * 100 : 0;
+                const medal = idx < 3 ? PODIUM_MEDALS[idx] : null;
+                const MedalIcon = medal?.icon;
 
                 return (
                   <Card key={agent.id} className="bg-white/5 border-white/10 hover:bg-white/[0.08] transition-all">
                     <CardContent className="py-3 px-4">
                       <div className="flex items-center gap-3">
-                      <span className="text-white/40 font-bold w-6 text-center text-sm">#{idx + 1}</span>
-
-                      {idx < 3 && (() => {
-                        const PodiumIcon = PODIUM_ICONS[idx].icon;
-                        return <PodiumIcon className={`w-5 h-5 ${PODIUM_ICONS[idx].color}`} />;
-                      })()}
+                        <span className="text-white/40 font-bold w-6 text-center text-sm">#{idx + 1}</span>
+                        
+                        {medal && (
+                          <MedalIcon className={`w-5 h-5 ${medal.color}`} />
+                        )}
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
