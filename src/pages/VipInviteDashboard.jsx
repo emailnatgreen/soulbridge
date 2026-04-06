@@ -10,6 +10,7 @@ import VipWalletCard from '@/components/vip/VipWalletCard';
 import DexSwapPanel from '@/components/dex/DexSwapPanel';
 import SendPanel from '@/components/wallet/SendPanel';
 import ReceivePanel from '@/components/wallet/ReceivePanel';
+import AxiGuidanceModule from '@/components/vip/AxiGuidanceModule';
 
 export default function VipInviteDashboard() {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function VipInviteDashboard() {
   const [loading, setLoading] = useState(true);
   const [liveBalances, setLiveBalances] = useState({});
   const [rlusdBalances, setRlusdBalances] = useState({});
+  const [lastAxiEvent, setLastAxiEvent] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -221,6 +223,14 @@ export default function VipInviteDashboard() {
 
           </div>
         </details>
+
+        {/* Axi Interactive Guidance Module */}
+        <AxiGuidanceModule
+          wallets={wallets}
+          liveBalances={liveBalances}
+          rlusdBalances={rlusdBalances}
+          lastEvent={lastAxiEvent}
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
