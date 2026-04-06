@@ -27,14 +27,14 @@ export default function DIDManager() {
     queryFn: async () => {
       if (wallets.length === 0) return {};
       const result = {};
-      for (const wallet of wallets) {
+      await Promise.all(wallets.map(async (wallet) => {
         try {
-          const res = await base44.functions.invoke('getBalance', { wallet_id: wallet.id });
+          const res = await base44.functions.invoke('getBalanceEnhanced', { wallet_id: wallet.id });
           result[wallet.id] = res.data;
         } catch (e) {
-          result[wallet.id] = { xrp: 0, rlusd: 0, error: true };
+          result[wallet.id] = { xrp: 0, rlusd: 0, has_rlusd_trustline: false, trustlines: [], error: true };
         }
-      }
+      }));
       return result;
     },
     enabled: wallets.length > 0,
