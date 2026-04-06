@@ -19,9 +19,13 @@ import SkillGapAlertsPanel from '@/components/SkillGapAlertsPanel';
 import SkillTrajectoryInsights from '@/components/agent/SkillTrajectoryInsights';
 import SkillProfilePanel from '@/components/agent/SkillProfilePanel';
 import { useMyAgent } from '@/hooks/useMyAgent';
+import { useIdentity } from '@/hooks/useIdentity';
+import DIDIdentityBanner from '@/components/skill/DIDIdentityBanner';
+import AdminSkillControls from '@/components/skill/AdminSkillControls';
 
 export default function SkillDevelopment() {
   const { myAgent, allAgents, isLoading: identityLoading } = useMyAgent();
+  const { isAdmin } = useIdentity();
   const [selectedAgentId, setSelectedAgentId] = useState('');
   const [selectedModule, setSelectedModule] = useState(null);
   const queryClient = useQueryClient();
@@ -158,9 +162,13 @@ export default function SkillDevelopment() {
         {/* Agent Selector */}
         <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-6">
           <CardHeader>
-            <CardTitle className="text-white">Select Agent</CardTitle>
+            <CardTitle className="text-white flex items-center gap-2">
+              Select Agent
+              {!isAdmin && <Badge className="bg-white/10 text-white/40 text-[10px]">Your Agent</Badge>}
+              {isAdmin && <Badge className="bg-amber-500/20 text-amber-300 text-[10px]">Admin — All Agents</Badge>}
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
               <SelectTrigger className="bg-white/5 border-white/10 text-white">
                 <SelectValue placeholder="Choose an agent to train..." />
@@ -168,13 +176,26 @@ export default function SkillDevelopment() {
               <SelectContent className="bg-slate-900 border-white/10">
                 {agents.map(agent => (
                   <SelectItem key={agent.id} value={agent.id}>
-                    {agent.name} - {agent.role}
+                    <span className="flex items-center gap-2">
+                      {agent.name} — {agent.role}
+                      {agent.classic_address && (
+                        <span className="text-[10px] text-purple-400/60 font-mono">
+                          {agent.classic_address.slice(0, 6)}...
+                        </span>
+                      )}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </CardContent>
         </Card>
+
+        {/* DID Identity Banner */}
+        {selectedAgent && <div className="mb-6"><DIDIdentityBanner agent={selectedAgent} /></div>}
+
+        {/* Admin Controls — Axi Only */}
+        {isAdmin && selectedAgent && <div className="mb-6"><AdminSkillControls selectedAgent={selectedAgent} agents={agents} /></div>}
 
         {selectedAgent && (
           <>
@@ -229,7 +250,7 @@ export default function SkillDevelopment() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-yellow-400">
-                    {skillProgress.length > 0 
+                    {skillProgress.length > 0
                       ? Math.round(skillProgress.reduce((sum, sp) => sum + sp.progress_percentage, 0) / skillProgress.length)
                       : 0}%
                   </div>
@@ -263,7 +284,6 @@ export default function SkillDevelopment() {
 
               {/* AI Growth Plan Tab */}
               <TabsContent value="ai-plan" className="space-y-6">
-                {/* Skill Gap Alerts for this agent */}
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                   <CardContent className="pt-5">
                     <SkillGapAlertsPanel agentId={selectedAgentId} />
@@ -333,7 +353,6 @@ export default function SkillDevelopment() {
                 {['beginner', 'intermediate', 'advanced', 'expert'].map(level => {
                   const levelModules = modulesByDifficulty[level] || [];
                   if (levelModules.length === 0) return null;
-
                   return (
                     <div key={level}>
                       <h3 className="text-white font-medium mb-4 capitalize flex items-center gap-2">
