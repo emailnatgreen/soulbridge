@@ -38,7 +38,6 @@ export default function Agents() {
     { path: '/AgentChat', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600' },
     { path: '/AgentLeaderboard', label: 'Leaderboard', icon: Award, color: 'from-amber-600 to-yellow-600' },
     { path: '/AgentMarketplace', label: 'Marketplace', icon: Briefcase, color: 'from-green-600 to-emerald-600' },
-    { path: '/AgentOnboarding', label: 'Onboarding', icon: Sparkles, color: 'from-indigo-600 to-purple-600' },
     { path: '/AgentTrainingModule', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600' },
   ];
 
