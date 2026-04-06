@@ -128,10 +128,12 @@ export default function DIDManager() {
             <div className="flex gap-3">
               <input
                 type="text"
-                placeholder="Wallet name (e.g., Agent01)"
+                placeholder="Enter wallet name..."
                 value={walletName}
                 onChange={(e) => setWalletName(e.target.value)}
-                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:border-purple-500"
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateWallet()}
+                autoFocus
+                className="flex-1 bg-white/20 border border-purple-500/50 rounded-lg px-4 py-2.5 text-white placeholder-white/60 focus:outline-none focus:border-purple-400 focus:bg-white/25"
               />
               <button
                 onClick={handleCreateWallet}
