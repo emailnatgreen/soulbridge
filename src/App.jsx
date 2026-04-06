@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -12,62 +12,61 @@ import Layout from './Layout';
 
 // PUBLIC PAGES
 import LandingPage from './pages/LandingPage.jsx';
-const ContactSupport = lazy(() => import('./pages/ContactSupport'));
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
-const AboutUs = lazy(() => import('./pages/AboutUs'));
-const XRPLMainnetInfo = lazy(() => import('./pages/XRPLMainnetInfo'));
-const FSMAInfo = lazy(() => import('./pages/FSMAInfo'));
-const XamanInfo = lazy(() => import('./pages/XamanInfo'));
-const KineticCompass = lazy(() => import('./pages/KineticCompass'));
-const Terms = lazy(() => import('./pages/Terms'));
-const Support = lazy(() => import('./pages/Support'));
+import ContactSupport from './pages/ContactSupport';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import CookiePolicy from './pages/CookiePolicy';
+import AboutUs from './pages/AboutUs';
+import XRPLMainnetInfo from './pages/XRPLMainnetInfo';
+import FSMAInfo from './pages/FSMAInfo';
+import XamanInfo from './pages/XamanInfo';
+import KineticCompass from './pages/KineticCompass';
+import Terms from './pages/Terms';
+import Support from './pages/Support';
 
 // CORE USER HUBS
-const Home = lazy(() => import('./pages/Home'));
-const Agents = lazy(() => import('./pages/Agents'));
-const AgentProfile = lazy(() => import('./pages/AgentProfile'));
-const GovernanceHub = lazy(() => import('./pages/GovernanceHub'));
-const Wallets = lazy(() => import('./pages/Wallets'));
-const MemoryBrowser = lazy(() => import('./pages/MemoryBrowser'));
-const VillageCalendar = lazy(() => import('./pages/VillageCalendar'));
-const SkillsHub = lazy(() => import('./pages/SkillsHub'));
-const ServiceSkillMarketplace = lazy(() => import('./pages/ServiceSkillMarketplace'));
-const AgentLeaderboard = lazy(() => import('./pages/AgentLeaderboard'));
-const AgentGenesis = lazy(() => import('./pages/AgentGenesis'));
-const SovereignID = lazy(() => import('./pages/SovereignID'));
-const SkillValidation = lazy(() => import('./pages/SkillValidation'));
-const AgentMarketplace = lazy(() => import('./pages/AgentMarketplace'));
-const DIDManager = lazy(() => import('./pages/DIDManager'));
-const AgentChat = lazy(() => import('./pages/AgentChat'));
-const SkillDevelopment = lazy(() => import('./pages/SkillDevelopment'));
-const AgentProfile_EditProfile = lazy(() => import('./pages/EditAgentProfile'));
+import Home from './pages/Home';
+import Agents from './pages/Agents';
+import AgentProfile from './pages/AgentProfile';
+import GovernanceHub from './pages/GovernanceHub';
+import Wallets from './pages/Wallets';
+import MemoryBrowser from './pages/MemoryBrowser';
+import VillageCalendar from './pages/VillageCalendar';
+import SkillsHub from './pages/SkillsHub';
+import ServiceSkillMarketplace from './pages/ServiceSkillMarketplace';
+import AgentLeaderboard from './pages/AgentLeaderboard';
+import AgentGenesis from './pages/AgentGenesis';
+import SovereignID from './pages/SovereignID';
+import SkillValidation from './pages/SkillValidation';
+import AgentMarketplace from './pages/AgentMarketplace';
+import DIDManager from './pages/DIDManager';
+import AgentChat from './pages/AgentChat';
+import SkillDevelopment from './pages/SkillDevelopment';
+import AgentProfile_EditProfile from './pages/EditAgentProfile';
 
-// ADMIN PAGES (restricted)
-const AxiCommandDashboard = lazy(() => import('./pages/AxiCommandDashboard'));
-const Axi = lazy(() => import('./pages/Axi'));
-const AxiIntelligenceFeed = lazy(() => import('./pages/AxiIntelligenceFeed'));
-const AgentOrchestration = lazy(() => import('./pages/AgentOrchestration'));
-const AgentPerformanceAnalytics = lazy(() => import('./pages/AgentPerformanceAnalytics'));
-const AgentRolePermissions = lazy(() => import('./pages/AgentRolePermissions'));
-const AgentWellbeing = lazy(() => import('./pages/AgentWellbeing'));
-const AgentAdditionDiagnostic = lazy(() => import('./pages/AgentAdditionDiagnostic'));
-const IntegrationCreditDashboard = lazy(() => import('./pages/IntegrationCreditDashboard'));
-const AdminInquiries = lazy(() => import('./pages/AdminInquiries'));
-const TreasurySigningHelper = lazy(() => import('./pages/TreasurySigningHelper'));
-const VipInviteDashboard = lazy(() => import('./pages/VipInviteDashboard'));
-const GovernanceVotingDashboard = lazy(() => import('./pages/GovernanceVotingDashboard'));
-const NewProposalDraft = lazy(() => import('./pages/NewProposalDraft'));
-const TreasuryAllocationProposal = lazy(() => import('./pages/TreasuryAllocationProposal'));
-const AgentTrainingModule = lazy(() => import('./pages/AgentTrainingModule'));
-const KineticGridDashboard = lazy(() => import('./pages/KineticGridDashboard'));
+// ADMIN PAGES
+import AxiCommandDashboard from './pages/AxiCommandDashboard';
+import Axi from './pages/Axi';
+import AxiIntelligenceFeed from './pages/AxiIntelligenceFeed';
+import AgentOrchestration from './pages/AgentOrchestration';
+import AgentPerformanceAnalytics from './pages/AgentPerformanceAnalytics';
+import AgentRolePermissions from './pages/AgentRolePermissions';
+import AgentWellbeing from './pages/AgentWellbeing';
+import AgentAdditionDiagnostic from './pages/AgentAdditionDiagnostic';
+import IntegrationCreditDashboard from './pages/IntegrationCreditDashboard';
+import AdminInquiries from './pages/AdminInquiries';
+import TreasurySigningHelper from './pages/TreasurySigningHelper';
+import VipInviteDashboard from './pages/VipInviteDashboard';
+import GovernanceVotingDashboard from './pages/GovernanceVotingDashboard';
+import NewProposalDraft from './pages/NewProposalDraft';
+import TreasuryAllocationProposal from './pages/TreasuryAllocationProposal';
+import AgentTrainingModule from './pages/AgentTrainingModule';
+import KineticGridDashboard from './pages/KineticGridDashboard';
 
-// LEGACY (kept for backward compat, minimal use)
-// Import Dashboard directly (not lazy) to prevent dev-mode syntax errors from crashing the app
+// LEGACY
 import Dashboard from './pages/Dashboard';
-const ProjectManager = lazy(() => import('./pages/ProjectManager'));
-const AIProjectHub = lazy(() => import('./pages/AIProjectHub'));
-const EditLanding = lazy(() => import('./pages/EditLanding'));
+import ProjectManager from './pages/ProjectManager';
+import AIProjectHub from './pages/AIProjectHub';
+import EditLanding from './pages/EditLanding';
 
 
 const LoadingFallback = () => (
@@ -103,7 +102,6 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Suspense fallback={<LoadingFallback />}>
       <Routes>
         {/* PUBLIC PAGES (no layout) */}
         <Route path="/" element={<LandingPage />} />
@@ -198,7 +196,6 @@ const AuthenticatedApp = () => {
 
         <Route path="*" element={<PageNotFound />} />
       </Routes>
-    </Suspense>
   );
 };
 
