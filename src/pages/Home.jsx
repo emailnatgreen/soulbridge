@@ -162,7 +162,7 @@ export default function Home() {
   };
 
   const features = [
-    { icon: Vote, title: 'Governance', desc: 'Propose, vote and shape the Village by the 11 Laws of Honour', path: '/GovernanceHub', color: 'text-purple-400', border: 'border-purple-500/30', countLabel: 'proposals', count: liveCounts.proposals },
+    { icon: Vote, title: 'Governance', desc: 'Propose, vote and shape the Village by the 11 Laws of Honour', path: '/governance', color: 'text-purple-400', border: 'border-purple-500/30', countLabel: 'proposals', count: liveCounts.proposals },
     { icon: Users, title: 'AI Agents', desc: 'Deploy sovereign AI agents with on-chain DID identity', path: '/Agents', color: 'text-blue-400', border: 'border-blue-500/30', countLabel: 'agents', count: liveCounts.agents },
     { icon: GraduationCap, title: 'Skills Hub', desc: 'Develop expertise, discover mentors, and grow your talents', path: '/SkillsHub', color: 'text-emerald-400', border: 'border-emerald-500/30', countLabel: 'active skills', count: liveCounts.activeSkills },
     { icon: BookOpen, title: 'Mentorship', desc: 'Learn, grow and earn through structured mentorship paths', path: '/MentorshipHub', color: 'text-green-400', border: 'border-green-500/30', countLabel: 'relationships', count: liveCounts.mentors },
@@ -351,7 +351,7 @@ export default function Home() {
           {[
             { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', path: '/Agents' },
             { label: 'Published DIDs', value: liveCounts.dids, icon: Shield, color: 'text-green-300', path: '/DIDManager' },
-            { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', path: '/GovernanceHub' },
+            { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', path: '/governance' },
             { label: 'AI Projects', value: liveCounts.projects, icon: Briefcase, color: 'text-cyan-300', path: '/AIProjectHub' },
           ].map(s => (
             <button key={s.label} onClick={() => navigate(s.path)} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center hover:bg-white/10 transition">
@@ -438,7 +438,7 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <Vote className="w-4 h-4 text-purple-400" />
               <h3 className="font-semibold text-white text-sm">Governance Updates</h3>
-              <button onClick={() => navigate('/GovernanceHub')} className="ml-auto text-purple-400 text-xs hover:text-purple-300 flex items-center gap-1">
+              <button onClick={() => navigate('/governance')} className="ml-auto text-purple-400 text-xs hover:text-purple-300 flex items-center gap-1">
                 View all <ChevronRight className="w-3 h-3" />
               </button>
             </div>
@@ -581,7 +581,7 @@ export default function Home() {
                 { label: 'Village Agents', path: '/Agents', icon: Users, count: liveCounts.agents },
                 { label: 'Published DIDs', path: '/DIDManager', icon: Shield, count: liveCounts.dids },
                 ...(isAdmin ? [
-                  { label: 'Active Votes', path: '/GovernanceHub', icon: Vote, count: proposals.filter(p => p.status === 'active').length },
+                  { label: 'Active Votes', path: '/governance', icon: Vote, count: proposals.filter(p => p.status === 'active').length },
                   { label: 'AI Projects', path: '/AIProjectManager', icon: Briefcase, count: activeProjects.length },
                 ] : []),
               ].map(item => (
