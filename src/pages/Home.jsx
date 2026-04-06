@@ -107,9 +107,10 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [proposalData, agentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData] = await Promise.all([
+        const [proposalData, agentData, allAgentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData] = await Promise.all([
           isAdmin ? base44.entities.GovernanceProposal.list('-created_date', 5) : Promise.resolve([]),
           base44.entities.Agent.list('-created_date', 6),
+          base44.entities.Agent.list('-created_date', 500),
           base44.entities.Wallet.filter({ is_published: true, network: 'mainnet' }, 'created_date', 1000),
           isAdmin ? base44.entities.EconomicActivity.list('-created_date', 8).catch(() => []) : Promise.resolve([]),
           isAdmin ? base44.entities.AIProject.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
@@ -122,7 +123,7 @@ export default function Home() {
         setAgents(agentData || []);
         setTransactions(activityData || []);
         setLiveCounts({
-          agents: agentData?.length || 0,
+          agents: allAgentData?.length || 0,
           proposals: proposalData?.length || 0,
           dids: walletData?.length || 0,
           projects: projectData?.length || 0,
