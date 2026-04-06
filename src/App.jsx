@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { OwnerGovernorProvider } from '@/lib/OwnerGovernorContext';
@@ -85,19 +85,70 @@ const L = (pageName, Component) => (
   <LayoutWrap pageName={pageName}><Component /></LayoutWrap>
 );
 
+// Public paths that should NEVER require authentication
+const PUBLIC_PATHS = [
+  '/', '/contact-support', '/ContactSupport',
+  '/privacy-policy', '/PrivacyPolicy',
+  '/cookie-policy', '/CookiePolicy',
+  '/about', '/xrpl-info', '/fsma-info', '/xaman-info',
+  '/kinetic-compass', '/KineticCompass',
+  '/terms', '/Terms', '/support', '/Support',
+  '/EditLanding',
+  '/ScrollOfResonance',
+];
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
+
+  const isPublicPath = PUBLIC_PATHS.includes(location.pathname);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
+    // Let public pages render while auth is loading
+    if (isPublicPath) {
+      return (
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/contact-support" element={<ContactSupport />} />
+          <Route path="/ContactSupport" element={<ContactSupport />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/CookiePolicy" element={<CookiePolicy />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/xrpl-info" element={<XRPLMainnetInfo />} />
+          <Route path="/fsma-info" element={<FSMAInfo />} />
+          <Route path="/xaman-info" element={<XamanInfo />} />
+          <Route path="/kinetic-compass" element={<KineticCompass />} />
+          <Route path="/KineticCompass" element={<KineticCompass />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/Terms" element={<Terms />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/Support" element={<Support />} />
+          <Route path="/EditLanding" element={<EditLanding />} />
+          <Route path="/ScrollOfResonance" element={<LandingPage />} />
+          <Route path="*" element={<LoadingFallback />} />
+        </Routes>
+      );
+    }
     return <LoadingFallback />;
   }
 
   if (authError) {
     if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
+      // Still allow public pages even for unregistered users
+      if (isPublicPath) {
+        // fall through to render all routes
+      } else {
+        return <UserNotRegisteredError />;
+      }
     } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
+      // Only redirect to login for non-public pages
+      if (!isPublicPath) {
+        navigateToLogin();
+        return null;
+      }
+      // Public pages: fall through to render
     }
   }
 
@@ -187,7 +238,7 @@ const AuthenticatedApp = () => {
         <Route path="/AgentTrainingModule" element={L("training-module", AgentTrainingModule)} />
         <Route path="/KineticGridDashboard" element={L("kinetic-grid", KineticGridDashboard)} />
 
-        {/* LEGACY/BACKWARD COMPAT - still accessible but not in primary nav */}
+        {/* LEGACY/BACKWARD COMPAT */}
         <Route path="/dashboard" element={L("dashboard", Dashboard)} />
         <Route path="/AIProjectManager" element={L("projects", ProjectManager)} />
         <Route path="/AIProjectHub" element={L("project-hub", AIProjectHub)} />
