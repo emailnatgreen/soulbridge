@@ -27,7 +27,7 @@ export default function GovernanceAnalytics() {
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents-gov'],
-    queryFn: () => base44.entities.Agent.list(),
+    queryFn: () => base44.entities.Agent.list('-honor_score', 200),
   });
 
   const totalProposals = proposals.length;
@@ -48,12 +48,23 @@ export default function GovernanceAnalytics() {
     proposals.reduce((acc, p) => { acc[p.proposal_type] = (acc[p.proposal_type] || 0) + 1; return acc; }, {})
   ).map(([type, count]) => ({ type: type.replace(/_/g, ' '), count }));
 
-  // Top voters
+  // Top voters — match by id, classic_address, or created_by
   const voterCounts = votes.reduce((acc, v) => { if (v.voter_agent_id) acc[v.voter_agent_id] = (acc[v.voter_agent_id] || 0) + 1; return acc; }, {});
+  const resolveAgentName = (id) => {
+    if (!id) return 'Unknown Agent';
+    const byId = agents.find(a => a.id === id);
+    if (byId) return byId.name;
+    const byAddr = agents.find(a => a.classic_address && a.classic_address === id);
+    if (byAddr) return byAddr.name;
+    const byEmail = agents.find(a => a.created_by === id);
+    if (byEmail) return byEmail.name;
+    return id.length > 20 ? id.slice(0, 8) + '…' : id;
+  };
   const topVoters = Object.entries(voterCounts)
-    .sort(([, a], [, b]) => b - a).slice(0, 8)
+    .sort(([, a], [, b]) => b - a).slice(0, 10)
     .map(([id, count]) => ({
-      name: agents.find(a => a.id === id)?.name || agents.find(a => a.classic_address === id)?.name || 'Unknown Agent',
+      name: resolveAgentName(id),
+      agentId: id,
       votes: count,
       power: votes.filter(v => v.voter_agent_id === id).reduce((s, v) => s + (v.voting_power || 0), 0),
     }));
@@ -76,7 +87,7 @@ export default function GovernanceAnalytics() {
   const trendData = Object.values(monthlyTrend).slice(-8);
 
   // Timeline events for audit trail — never expose raw IDs
-  const agentName = (id) => agents.find(a => a.id === id)?.name || agents.find(a => a.classic_address === id)?.name || agents.find(a => a.created_by === id)?.name || (id && !id.includes('@') && id.length < 40 ? id : 'Unknown Agent');
+  const agentName = (id) => resolveAgentName(id);
   const timelineEvents = [
     ...proposals.slice(0, 30).map(p => ({
       id: p.id, type: 'governance',

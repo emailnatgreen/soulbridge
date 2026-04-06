@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -339,15 +339,15 @@ export default function GovernanceVotingDashboard() {
     queryFn: () => base44.entities.Agent.list('-honor_score', 200),
   });
 
-  const { data: proposals = [], isLoading } = useQuery({
-    queryKey: ['proposals-gov-dashboard'],
-    queryFn: () => base44.entities.GovernanceProposal.list('-created_date', 100),
-  });
-
-  const { data: allVotes = [] } = useQuery({
-    queryKey: ['votes-gov-dashboard'],
-    queryFn: () => base44.entities.GovernanceVote.list('-created_date', 500),
-  });
+  // Auto-select the current user's agent
+  useEffect(() => {
+    if (selectedAgentId || agents.length === 0) return;
+    base44.auth.me().then(u => {
+      if (!u) return;
+      const mine = agents.find(a => a.created_by === u.email);
+      if (mine) setSelectedAgentId(mine.id);
+    }).catch(() => {});
+  }, [agents, selectedAgentId]);
 
   const selectedAgent = agents.find(a => a.id === selectedAgentId) || null;
   const { eligible } = getDIDPermissionStatus(selectedAgent);
