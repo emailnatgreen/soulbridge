@@ -190,7 +190,6 @@ const AuthenticatedApp = () => {
         <Route path="/AIProjectManager" element={L("projects", ProjectManager)} />
         <Route path="/AIProjectHub" element={L("project-hub", AIProjectHub)} />
         <Route path="/AgentChat" element={L("chat", AgentChat)} />
-        <Route path="/AgentMarketplace" element={L("agent-marketplace", AgentMarketplace)} />
         <Route path="/SkillValidation" element={L("skill-validation", SkillValidation)} />
 
         <Route path="*" element={<PageNotFound />} />

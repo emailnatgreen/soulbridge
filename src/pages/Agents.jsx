@@ -106,13 +106,18 @@ export default function Agents() {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {hubs.map(hub => {
               const Icon = hub.icon;
-              return (
-                <Link key={hub.path} to={hub.path}>
-                  <button className={`w-full h-20 rounded-lg bg-gradient-to-br ${hub.color} hover:shadow-lg transition-all p-2 flex flex-col items-center justify-center text-white`}>
-                    <Icon className="w-4 h-4 mb-1" />
-                    <span className="text-xs font-semibold text-center line-clamp-2">{hub.label}</span>
-                  </button>
-                </Link>
+              const isComingSoon = hub.label === 'Marketplace';
+              const buttonContent = (
+                <button className={`w-full h-20 rounded-lg bg-gradient-to-br ${hub.color} hover:shadow-lg transition-all p-2 flex flex-col items-center justify-center text-white relative ${isComingSoon ? 'opacity-60' : ''}`}>
+                  <Icon className="w-4 h-4 mb-1" />
+                  <span className="text-xs font-semibold text-center line-clamp-2">{hub.label}</span>
+                  {isComingSoon && <span className="absolute top-1 right-1 text-[10px] bg-white/20 px-1.5 py-0.5 rounded">Soon</span>}
+                </button>
+              );
+              return isComingSoon ? (
+                <div key={hub.path}>{buttonContent}</div>
+              ) : (
+                <Link key={hub.path} to={hub.path}>{buttonContent}</Link>
               );
             })}
           </div>
