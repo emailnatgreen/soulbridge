@@ -73,6 +73,8 @@ export default function Agents() {
     });
   }
 
+  const economicMap = {};
+
   const stats = {
     total: agents.length,
     active: agents.filter(a => a.status === 'active').length,
@@ -239,13 +241,14 @@ export default function Agents() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {agents.map(agent => (
-              <AgentCard 
-                key={agent.id} 
-                agent={agent} 
-                wallets={wallets} 
-                socialCapitalMap={socialCapitalMap} 
-                reputationMap={reputationMap}
-              />
+             <AgentCard 
+               key={agent.id} 
+               agent={agent} 
+               wallets={wallets} 
+               socialCapitalMap={socialCapitalMap} 
+               reputationMap={reputationMap}
+               economicMap={economicMap}
+             />
             ))}
           </div>
         )}
