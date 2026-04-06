@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { useAuth } from '@/lib/AuthContext';
@@ -12,7 +12,7 @@ import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
   TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
-  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare
+  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
 
@@ -225,6 +225,15 @@ export default function Home() {
               <ArrowRight className="w-3.5 h-3.5" />
               Dashboard
             </Button>
+            {isAdmin && (
+              <Button
+                onClick={() => navigate('/VipInviteDashboard')}
+                className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white h-8 gap-1.5 text-xs px-3"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                VIP Dash
+              </Button>
+            )}
             {!identity?.connected && (
               <Button
                 onClick={() => navigate('/')}
