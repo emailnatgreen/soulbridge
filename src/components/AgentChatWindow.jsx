@@ -77,23 +77,8 @@ export default function AgentChatWindow({ selectedAgent, allMessages, currentDID
 
   const sendMessageMutation = useMutation({
     mutationFn: async (data) => {
-      // Send user message
+      // Send user message only
       await base44.functions.invoke('sendAgentMessage', data);
-      
-      // If recipient is Axi, generate her persona-driven response
-      if (selectedAgent?.name?.toLowerCase() === 'axi') {
-        try {
-          await base44.functions.invoke('axiRespond', {
-            from_agent_id: selectedAgent.id,
-            to_agent_id: fromAgent?.id,
-            user_message: data.message,
-            conversation_context: conversationMessages.slice(-5) // Last 5 messages for context
-          });
-        } catch (err) {
-          console.error('Failed to generate Axi response:', err);
-        }
-      }
-      
       return { success: true };
     },
     onSuccess: () => {
