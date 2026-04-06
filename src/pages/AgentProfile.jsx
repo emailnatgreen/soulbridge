@@ -17,7 +17,13 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 export default function AgentProfile() {
   const [searchParams] = useSearchParams();
   const [currentDID, setCurrentDID] = useState(null);
-  const agentId = searchParams.get('id');
+  let agentId = searchParams.get('id');
+  
+  // Support both query param and route param
+  if (!agentId && typeof window !== 'undefined') {
+    const pathParts = window.location.pathname.split('/');
+    if (pathParts[2]) agentId = pathParts[2];
+  }
   const { isRecognized, didSignal, isAdmin } = useIdentity();
 
   useEffect(() => {
@@ -96,9 +102,18 @@ export default function AgentProfile() {
     enabled: !!agentId
   });
 
+  if (!agentId) {
+    return <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+      <div className="text-white text-center">
+        <p className="mb-4">No agent selected</p>
+        <Link to="/Agents"><Button variant="outline">Back to Agents</Button></Link>
+      </div>
+    </div>;
+  }
+
   if (isLoading || !agent) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-      <div className="text-white">Loading...</div>
+      <div className="text-white">Loading agent...</div>
     </div>;
   }
 
