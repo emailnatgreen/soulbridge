@@ -11,7 +11,9 @@ export default function DIDManager() {
   const [creating, setCreating] = useState(false);
   const [publishing, setPublishing] = useState(null);
   const [showSeed, setShowSeed] = useState({});
-  const [walletName, setWalletName] = useState('');
+  const [walletName, setWalletName] = useState('Agent01');
+
+  const walletNameOptions = ['Agent01', 'Agent02', 'Agent03', 'Agent04', 'Agent05', 'Guardian01', 'Creator01', 'Trader01', 'Treasury'];
 
   const { data: wallets = [], isLoading, refetch } = useQuery({
     queryKey: ['did-wallets'],
@@ -20,14 +22,15 @@ export default function DIDManager() {
 
   const handleCreateWallet = async () => {
     if (!walletName.trim()) {
-      toast.error('Please enter a wallet name');
+      toast.error('Please select a wallet name');
       return;
     }
     setCreating(true);
     try {
       await base44.functions.invoke('createWallet', { name: walletName });
-      toast.success('Wallet created successfully');
-      setWalletName('');
+      toast.success(`${walletName} created`);
+      setWalletName('Agent01');
+      await new Promise(r => setTimeout(r, 500));
       await refetch();
     } catch (e) {
       toast.error(e.response?.data?.error || 'Failed to create wallet');
@@ -126,15 +129,15 @@ export default function DIDManager() {
           </CardHeader>
           <CardContent>
             <div className="flex gap-3">
-              <input
-                type="text"
-                placeholder="Enter wallet name..."
+              <select
                 value={walletName}
                 onChange={(e) => setWalletName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateWallet()}
-                autoFocus
-                className="flex-1 bg-white/20 border border-purple-500/50 rounded-lg px-4 py-2.5 text-white placeholder-white/60 focus:outline-none focus:border-purple-400 focus:bg-white/25"
-              />
+                className="flex-1 bg-white/20 border border-purple-500/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-400 focus:bg-white/25"
+              >
+                {walletNameOptions.map(name => (
+                  <option key={name} value={name} className="bg-slate-900">{name}</option>
+                ))}
+              </select>
               <button
                 onClick={handleCreateWallet}
                 disabled={creating}
