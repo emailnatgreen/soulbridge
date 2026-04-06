@@ -62,7 +62,8 @@ const AgentTrainingModule = lazy(() => import('./pages/AgentTrainingModule'));
 const KineticGridDashboard = lazy(() => import('./pages/KineticGridDashboard'));
 
 // LEGACY (kept for backward compat, minimal use)
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+// Import Dashboard directly (not lazy) to prevent dev-mode syntax errors from crashing the app
+import Dashboard from './pages/Dashboard';
 const ProjectManager = lazy(() => import('./pages/ProjectManager'));
 const AIProjectHub = lazy(() => import('./pages/AIProjectHub'));
 const EditLanding = lazy(() => import('./pages/EditLanding'));
