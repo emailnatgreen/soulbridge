@@ -84,8 +84,7 @@ export default function SkillGapAlertsPanel({ agentId }) {
         </div>
         <Button
           size="sm"
-          variant="outline"
-          className="border-white/10 text-white/70 hover:text-white"
+          className="bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white"
           onClick={runScan}
           disabled={scanning}
         >
