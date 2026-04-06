@@ -6,28 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MessageSquare, Fingerprint, Users, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useIdentity } from '@/hooks/useIdentity';
+import { useAuth } from '@/lib/AuthContext';
 import { useAgentAwareness } from '@/hooks/useAgentAwareness';
 
 export default function AgentChat() {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [currentDID, setCurrentDID] = useState(null);
-  const { isRecognized } = useIdentity();
+  const { user } = useAuth();
   const { broadcastMessageReceived } = useAgentAwareness();
-
-  // Load current DID from storage
-  useEffect(() => {
-    const identity = localStorage.getItem('soulbridge_identity');
-    if (identity) {
-      try {
-        setCurrentDID(JSON.parse(identity));
-      } catch (e) {
-        // ignore parse errors
-      }
-    }
-  }, []);
 
   // Fetch agents
   const { data: agents = [], isLoading: agentsLoading } = useQuery({
@@ -37,10 +24,10 @@ export default function AgentChat() {
 
   // Fetch conversation messages for selected agent
   const { data: messages = [], refetch: refetchMessages } = useQuery({
-    queryKey: ['chat-messages', selectedAgent?.id],
+    queryKey: ['chat-messages', selectedAgent?.id, user?.id],
     queryFn: async () => {
-      if (!selectedAgent) return [];
-      const convId = `conv-${selectedAgent.id}`;
+      if (!selectedAgent || !user) return [];
+      const convId = `conv-${user.id}-${selectedAgent.id}`;
       try {
         return await base44.entities.AgentMessage.filter({ conversation_id: convId }, '-created_date', 200);
       } catch (e) {
@@ -48,31 +35,33 @@ export default function AgentChat() {
         return [];
       }
     },
-    enabled: !!selectedAgent,
+    enabled: !!selectedAgent && !!user,
   });
 
   const conversationMessages = messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
 
   const handleSendMessage = async () => {
-    if (!message.trim() || !selectedAgent) return;
+    if (!message.trim() || !selectedAgent || !user) return;
 
     setIsSending(true);
     try {
-      const senderAgentId = currentDID?.agent_id || localStorage.getItem('user_agent_id') || 'user';
-      const convId = `conv-${selectedAgent.id}`;
+      const convId = `conv-${user.id}-${selectedAgent.id}`;
       
       const newMsg = await base44.entities.AgentMessage.create({
-        sender_agent_id: senderAgentId,
+        sender_agent_id: user.id,
         conversation_id: convId,
         content: message.trim(),
         message_type: 'text',
         status: 'sent',
       });
       
-      // Emit signal that message was sent to selected agent
+      // Broadcast message received to agent system for awareness
+      broadcastMessageReceived(selectedAgent.id, true);
+      
+      // Emit event so agents can pick up the conversation
       window.dispatchEvent(new CustomEvent('agent-chat-message', {
         detail: {
-          sender: senderAgentId,
+          sender: user.id,
           recipient: selectedAgent.id,
           message: message.trim(),
           conversationId: convId,
@@ -80,9 +69,6 @@ export default function AgentChat() {
           timestamp: new Date().toISOString(),
         }
       }));
-
-      // Notify agents that a message was received
-      broadcastMessageReceived(selectedAgent.id, true);
       
       setMessage('');
       setTimeout(() => refetchMessages(), 300);
@@ -124,7 +110,7 @@ export default function AgentChat() {
               <h1 className="text-2xl sm:text-3xl font-light text-white">Agent Chat</h1>
               <p className="text-xs sm:text-sm text-purple-300/60 mt-0.5">Direct communication with AI agents</p>
             </div>
-            {currentDID && (
+            {user && (
               <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 ml-auto text-xs">
                 <Fingerprint className="w-3 h-3 mr-1" />
                 Connected
