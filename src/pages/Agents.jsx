@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
 import BackToHomeButton from '../components/BackToHomeButton';
+import AxiAgentsGuide from '../components/agents/AxiAgentsGuide';
 
 export default function AgentsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -165,6 +166,11 @@ export default function AgentsPage() {
               <p className={`text-3xl font-light ${stats.totalReputation >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.totalReputation >= 0 ? '+' : ''}{stats.totalReputation}</p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Axi's Village Guide */}
+        <div className="mb-8">
+          <AxiAgentsGuide stats={stats} currentPage="Agents" />
         </div>
 
         {/* Agents Grid */}
