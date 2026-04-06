@@ -205,12 +205,12 @@ export default function GovernanceHub() {
 
   const normalisedProposals = proposals.map(normaliseProposal);
   const activeProposals = normalisedProposals.filter(p => p.status === 'active');
-  const completedProposals = normalisedProposals.filter(p => p.status !== 'active');
+  const completedProposals = normalisedProposals.filter(p => ['passed', 'rejected', 'executed', 'expired'].includes(p.status));
 
   const governanceStats = {
     totalProposals: proposals.length,
     activeProposals: activeProposals.length,
-    approvedProposals: proposals.filter(p => p.status === 'approved').length,
+    approvedProposals: proposals.filter(p => p.status === 'passed' || p.status === 'executed').length,
     totalVotes: allVotes.length,
     participationRate: agents.length > 0 
       ? ((allVotes.length / (proposals.length * agents.length)) * 100).toFixed(1)
