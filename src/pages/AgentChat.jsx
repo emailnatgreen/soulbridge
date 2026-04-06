@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,8 +13,10 @@ export default function AgentChat() {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
   const { broadcastMessageReceived } = useAgentAwareness();
+  const unsubscribeRef = useRef(null);
 
   // Fetch agents
   const { data: agents = [], isLoading: agentsLoading } = useQuery({
@@ -40,6 +42,32 @@ export default function AgentChat() {
 
   const conversationMessages = messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
 
+  // Subscribe to real-time message updates
+  useEffect(() => {
+    if (!selectedAgent || !user) return;
+    
+    const convId = `conv-${user.id}-${selectedAgent.id}`;
+    
+    // Unsubscribe from previous subscription
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+    }
+    
+    // Subscribe to new messages
+    unsubscribeRef.current = base44.entities.AgentMessage.subscribe((event) => {
+      if (event.data?.conversation_id === convId) {
+        // Message created or updated, refetch
+        refetchMessages();
+      }
+    });
+    
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, [selectedAgent, user, refetchMessages]);
+
   const handleSendMessage = async () => {
     if (!message.trim() || !selectedAgent || !user) return;
 
@@ -55,23 +83,27 @@ export default function AgentChat() {
         status: 'sent',
       });
       
-      // Broadcast message received to agent system for awareness
+      // Broadcast message received to agent system
       broadcastMessageReceived(selectedAgent.id, true);
-      
-      // Emit event so agents can pick up the conversation
-      window.dispatchEvent(new CustomEvent('agent-chat-message', {
-        detail: {
-          sender: user.id,
-          recipient: selectedAgent.id,
-          message: message.trim(),
-          conversationId: convId,
-          messageId: newMsg.id,
-          timestamp: new Date().toISOString(),
-        }
-      }));
-      
+
       setMessage('');
       setTimeout(() => refetchMessages(), 300);
+
+      // Auto-generate agent response
+      setIsGenerating(true);
+      try {
+        await base44.functions.invoke('generateAgentResponse', {
+          agentId: selectedAgent.id,
+          conversationId: convId,
+          userId: user.id,
+          messageId: newMsg.id,
+        });
+        // Response will auto-load via subscription
+      } catch (error) {
+        console.error('Failed to generate response:', error);
+      } finally {
+        setIsGenerating(false);
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
       alert('Failed to send message. Check console for details.');
@@ -179,12 +211,21 @@ export default function AgentChat() {
 
                 {/* Messages */}
                 <CardContent className="flex-1 overflow-y-scroll p-4 space-y-4 scrollbar scrollbar-thumb-purple-500/50 scrollbar-track-white/5">
-                  {conversationMessages.length === 0 ? (
+                  {conversationMessages.length === 0 && !isGenerating ? (
                     <div className="h-full flex items-center justify-center">
                       <div className="text-center">
                         <MessageSquare className="w-12 h-12 text-purple-400/30 mx-auto mb-3" />
                         <p className="text-white/60">No messages yet</p>
                         <p className="text-white/40 text-sm mt-1">Start a conversation</p>
+                      </div>
+                    </div>
+                  ) : conversationMessages.length === 0 && isGenerating ? (
+                    <div className="h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="inline-flex items-center justify-center mb-3">
+                          <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                        </div>
+                        <p className="text-white/60">{selectedAgent.name} is thinking...</p>
                       </div>
                     </div>
                   ) : (
@@ -205,6 +246,14 @@ export default function AgentChat() {
                         </div>
                       );
                     })
+                  )}
+                  {isGenerating && conversationMessages.length > 0 && (
+                    <div className="flex justify-start">
+                      <div className="bg-white/10 rounded-lg px-4 py-2 flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                        <p className="text-xs text-white/60">{selectedAgent.name} is responding...</p>
+                      </div>
+                    </div>
                   )}
                 </CardContent>
 
