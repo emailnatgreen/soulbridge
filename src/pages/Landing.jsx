@@ -8,13 +8,11 @@ import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key
 import { useIdentity } from '@/hooks/useIdentity';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
-
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 
-// SoulBridge Landing — force refresh
 if (!window.__soulbridge) window.__soulbridge = {};
 
 function emitSignal(data) {
@@ -141,7 +139,6 @@ export default function Landing() {
   };
 
   useEffect(() => {
-    // Check localStorage on mount first
     try {
       const stored = localStorage.getItem('soulbridge_identity');
       if (stored) {
@@ -177,12 +174,10 @@ export default function Landing() {
   useEffect(() => {
     const fetchStats = async () => {
       let data = {};
-      // Try SDK invoke first
       try {
         const res = await base44.functions.invoke('publicPageData', { page: 'landing' });
         data = res?.data || {};
       } catch (_sdkErr) {
-        // SDK failed (unauthenticated visitor) — try direct fetch
         try {
           const resp = await fetch('/api/functions/publicPageData', {
             method: 'POST',
@@ -331,7 +326,6 @@ export default function Landing() {
 
           {/* Hero */}
           <div className="text-center space-y-6">
-            {/* Tree Emblem */}
             <div className="flex justify-center mb-2">
               <img
                 src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/08e71bcb9_1199.png"
@@ -437,8 +431,8 @@ export default function Landing() {
                   <div className="text-white/50 text-[10px] sm:text-xs font-mono break-all select-all cursor-pointer hover:text-white/70 transition-colors p-2 bg-black/30 rounded border border-white/10">
                     {shortenDID(didConnected?.did)}
                   </div>
-                  <p className="text-white/40 text-[10px] sm:text-xs mt-2">{didConnected?.validated ? '✓ Identity verified' : '⏳ Chat with Axi to verify'}</p>
-                  <p className="text-yellow-400/60 text-[9px] sm:text-[10px] mt-1">🔒 2-min security timeout — DID will disconnect if Village is not entered</p>
+                  <p className="text-white/40 text-[10px] sm:text-xs mt-2">{didConnected?.validated ? '\u2713 Identity verified' : '\u23F3 Chat with Axi to verify'}</p>
+                  <p className="text-yellow-400/60 text-[9px] sm:text-[10px] mt-1">\uD83D\uDD12 2-min security timeout — DID will disconnect if Village is not entered</p>
                 </div>
               )}
 
@@ -487,7 +481,7 @@ export default function Landing() {
                       disabled={inviteLoading}
                       className="w-full bg-amber-600 hover:bg-amber-500 text-white h-9 gap-2 text-sm"
                     >
-                      {inviteLoading ? 'Validating…' : 'Claim Invite'}
+                      {inviteLoading ? 'Validating\u2026' : 'Claim Invite'}
                     </Button>
                   </div>
                 )}
@@ -553,9 +547,7 @@ export default function Landing() {
             </div>
           </div>
 
-
-
-          {/* Explore Cards — Scroll of Resonance & Kinetic Compass */}
+          {/* Explore Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
             <a
               href="/ScrollOfResonance"
@@ -576,7 +568,7 @@ export default function Landing() {
               </p>
               <div className="mt-4 flex items-center gap-2 text-purple-300 text-sm font-medium">
                 <span>Read the Scroll</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <span className="group-hover:translate-x-1 transition-transform">{'\u2192'}</span>
               </div>
             </a>
 
@@ -599,7 +591,7 @@ export default function Landing() {
               </p>
               <div className="mt-4 flex items-center gap-2 text-yellow-300 text-sm font-medium">
                 <span>Feel the Pulse</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <span className="group-hover:translate-x-1 transition-transform">{'\u2192'}</span>
               </div>
             </a>
           </div>
@@ -627,7 +619,7 @@ export default function Landing() {
                 Share White Paper
               </a>
               <a
-                href={`https://x.com/intent/tweet?text=${encodeURIComponent('Discover SoulBridge Village — a sovereign AI society governed by 11 Laws of Honour on XRPL. 🌳⚡')}&url=${encodeURIComponent('https://soulbridge.base44.app/')}`}
+                href={`https://x.com/intent/tweet?text=${encodeURIComponent('Discover SoulBridge Village \u2014 a sovereign AI society governed by 11 Laws of Honour on XRPL. \uD83C\uDF33\u26A1')}&url=${encodeURIComponent('https://soulbridge.base44.app/')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 text-white text-sm font-medium rounded-xl px-5 py-3 transition-all"
@@ -653,7 +645,7 @@ export default function Landing() {
             >
               White Paper
             </a>
-            <span className="text-white/20">·</span>
+            <span className="text-white/20">{'\u00B7'}</span>
             <a
               href="https://canva.link/kqm1rrjgu9qzj90"
               target="_blank"
@@ -662,14 +654,14 @@ export default function Landing() {
             >
               Demo Video
             </a>
-            <span className="text-white/20">·</span>
+            <span className="text-white/20">{'\u00B7'}</span>
             <a
               href="/PrivacyPolicy"
               className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
             >
               Privacy Policy
             </a>
-            <span className="text-white/20">·</span>
+            <span className="text-white/20">{'\u00B7'}</span>
             <a
               href="/CookiePolicy"
               className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
@@ -678,7 +670,7 @@ export default function Landing() {
             </a>
           </div>
           <p className="text-white/30 text-[10px] sm:text-xs">
-            © 2026 SoulBridge Village · Governed by 11 Laws of Honour · XRPL DID Architecture · UK FSMA 2026 Compliant
+            {'\u00A9'} 2026 SoulBridge Village {'\u00B7'} Governed by 11 Laws of Honour {'\u00B7'} XRPL DID Architecture {'\u00B7'} UK FSMA 2026 Compliant
           </p>
         </div>
       </footer>
