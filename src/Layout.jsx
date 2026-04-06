@@ -5,6 +5,7 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 import ChatLoader from '@/components/axi/ChatLoader';
 import AxiFloatingButton from '@/components/AxiFloatingButtonNew';
 import { useAuth } from '@/lib/AuthContext';
+import { useIdentity } from '@/hooks/useIdentity';
 
 const AxiChat = lazy(() => import('@/components/AxiChat'));
 
