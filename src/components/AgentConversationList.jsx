@@ -5,13 +5,20 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Sparkles } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
-export default function AgentConversationList({ agents, allMessages, selectedAgent, onSelectAgent }) {
+export default function AgentConversationList({ agents, allMessages, selectedAgent, onSelectAgent, currentDID }) {
   // Calculate unread and recent messages for each agent
   const agentStats = useMemo(() => {
     return agents.map(agent => {
-      const agentMessages = allMessages.filter(
-        msg => msg.from_agent_id === agent.id || msg.to_agent_id === agent.id
-      );
+      // Filter messages based on DID identity if available, otherwise use agent ID
+      const agentMessages = currentDID
+        ? allMessages.filter(msg => {
+            const fromDID = msg.from_agent_id === agent.id;
+            const toDID = msg.to_agent_id === agent.id;
+            return fromDID || toDID;
+          })
+        : allMessages.filter(
+            msg => msg.from_agent_id === agent.id || msg.to_agent_id === agent.id
+          );
       
       const unreadCount = agentMessages.filter(
         msg => msg.to_agent_id === agent.id && msg.status !== 'responded'
@@ -27,7 +34,7 @@ export default function AgentConversationList({ agents, allMessages, selectedAge
         lastMessageTime: lastMessage?.created_date
       };
     });
-  }, [agents, allMessages]);
+  }, [agents, allMessages, currentDID]);
 
   const sortedAgents = [...agentStats].sort((a, b) => {
     // Sort by last message time, with unread messages prioritized
@@ -90,15 +97,18 @@ export default function AgentConversationList({ agents, allMessages, selectedAge
                 )}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-white font-medium truncate">{agent.name}</p>
+                     <div className="flex-1 min-w-0">
+                       <div className="flex items-center gap-2 mb-1 truncate">
+                         <p className="text-white font-medium truncate">{agent.name}</p>
+                         {currentDID && (
+                           <span className="text-[9px] text-purple-400/60 flex-shrink-0">DID</span>
+                         )}
                       {unreadCount > 0 && (
                         <Badge className="bg-pink-500 text-white text-xs px-1.5 py-0 h-5">
                           {unreadCount}
                         </Badge>
                       )}
-                    </div>
+                      </div>
                     <Badge className={cn("text-xs border", getRoleColor(agent.role))}>
                       {agent.role}
                     </Badge>

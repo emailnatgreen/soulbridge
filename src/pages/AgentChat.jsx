@@ -6,21 +6,29 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MessageSquare, Fingerprint } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useIdentity } from '@/hooks/useIdentity';
 import AgentConversationList from '../components/AgentConversationList';
 import AgentChatWindow from '../components/AgentChatWindow';
 
 export default function AgentChatPage() {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [currentDID, setCurrentDID] = useState(null);
+  const { isRecognized } = useIdentity ? { isRecognized: !!currentDID } : { isRecognized: false };
 
   useEffect(() => {
     const checkDID = async () => {
       try {
         const identity = localStorage.getItem('soulbridge_identity');
-        if (identity) setCurrentDID(JSON.parse(identity));
+        if (identity) {
+          const parsed = JSON.parse(identity);
+          setCurrentDID(parsed);
+        }
       } catch (e) { /* ignore */ }
     };
     checkDID();
+    const handleDidSignal = () => checkDID();
+    window.addEventListener('did-connected', handleDidSignal);
+    return () => window.removeEventListener('did-connected', handleDidSignal);
   }, []);
 
   const { data: agents = [] } = useQuery({
@@ -71,6 +79,7 @@ export default function AgentChatPage() {
               allMessages={allMessages}
               selectedAgent={selectedAgent}
               onSelectAgent={setSelectedAgent}
+              currentDID={currentDID}
             />
           </div>
 
@@ -80,6 +89,7 @@ export default function AgentChatPage() {
               <AgentChatWindow
                 selectedAgent={selectedAgent}
                 allMessages={allMessages}
+                currentDID={currentDID}
               />
             ) : (
               <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-full flex items-center justify-center">

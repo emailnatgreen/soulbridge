@@ -11,25 +11,39 @@ import { toast } from 'sonner';
 import AgentChatMessage from './AgentChatMessage';
 import { cn } from "@/lib/utils";
 
-export default function AgentChatWindow({ selectedAgent, allMessages }) {
+export default function AgentChatWindow({ selectedAgent, allMessages, currentDID }) {
   const [message, setMessage] = useState('');
   const [fromAgent, setFromAgent] = useState(null);
   const scrollRef = useRef(null);
   const queryClient = useQueryClient();
 
-  // Get Axi as the default sender (user's perspective agent)
+  // Set sender agent based on DID identity
   useEffect(() => {
     const fetchUserAgent = async () => {
-      const agents = await base44.entities.Agent.list();
-      const axi = agents.find(a => a.name.toLowerCase() === 'axi');
-      if (axi) {
-        setFromAgent(axi);
-      } else if (agents.length > 0) {
-        setFromAgent(agents[0]);
+      if (currentDID?.agent_id) {
+        // If DID has associated agent, use that
+        try {
+          const agent = await base44.entities.Agent.get(currentDID.agent_id);
+          if (agent) setFromAgent(agent);
+        } catch (e) {
+          // Fallback to Axi
+          const agents = await base44.entities.Agent.list();
+          const axi = agents.find(a => a.name.toLowerCase() === 'axi');
+          if (axi) setFromAgent(axi);
+        }
+      } else {
+        // Fallback: find Axi or first agent
+        const agents = await base44.entities.Agent.list();
+        const axi = agents.find(a => a.name.toLowerCase() === 'axi');
+        if (axi) {
+          setFromAgent(axi);
+        } else if (agents.length > 0) {
+          setFromAgent(agents[0]);
+        }
       }
     };
     fetchUserAgent();
-  }, []);
+  }, [currentDID]);
 
   // Filter messages between the two agents
   const conversationMessages = useMemo(() => {
@@ -72,7 +86,8 @@ export default function AgentChatWindow({ selectedAgent, allMessages }) {
     sendMessageMutation.mutate({
       from_agent_id: fromAgent?.id || null,
       to_agent_id: selectedAgent.id,
-      message: message.trim()
+      message: message.trim(),
+      ...(currentDID && { from_did: currentDID.did || null })
     });
   };
 
@@ -102,17 +117,20 @@ export default function AgentChatWindow({ selectedAgent, allMessages }) {
     <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-full flex flex-col">
       {/* Header */}
       <CardHeader className="pb-3 border-b border-white/10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3 min-w-0">
             <div className={cn(
               "w-12 h-12 rounded-full bg-gradient-to-br border-2 flex items-center justify-center",
               getRoleColor(selectedAgent.role)
             )}>
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <CardTitle className="text-lg font-medium text-white">{selectedAgent.name}</CardTitle>
-              <p className="text-xs text-purple-300/60">{selectedAgent.role} • {selectedAgent.purpose}</p>
+            <div className="min-w-0">
+              <CardTitle className="text-lg font-medium text-white truncate">{selectedAgent.name}</CardTitle>
+              <p className="text-xs text-purple-300/60 truncate">{selectedAgent.role} • {selectedAgent.purpose}</p>
+              {currentDID && (
+                <p className="text-[10px] text-purple-400/60 mt-0.5">via {currentDID.did?.slice(0, 16)}...</p>
+              )}
             </div>
           </div>
           <Badge className={cn(
