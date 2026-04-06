@@ -81,7 +81,7 @@ export default function GovernanceAnalytics() {
       acc[month].proposals++;
       if (p.status === 'passed' || p.status === 'executed') acc[month].passed++;
       acc[month].votes += (p.total_votes_cast || 0);
-    } catch { /* skip */ }
+    } catch (e) { /* skip */ }
     return acc;
   }, {});
   const trendData = Object.values(monthlyTrend).slice(-8);
