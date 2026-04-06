@@ -6,7 +6,7 @@ import { useIdentity } from '@/hooks/useIdentity';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Sparkles, Flame, Heart, TrendingUp, Activity, Shield, Fingerprint, MessageSquare, Award, BookOpen, Briefcase, Zap, Users2, Settings, Gauge } from 'lucide-react';
+import { Plus, Users, Sparkles, Heart, TrendingUp, Shield, Fingerprint, MessageSquare, Award, BookOpen, Briefcase, Settings, Gauge } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
@@ -19,7 +19,6 @@ export default function AgentsPage() {
   usePageSignal();
   const { isRecognized, isAdmin, didSignal } = useIdentity();
 
-  // DID-centric initialization
   useEffect(() => {
     const checkDID = async () => {
       try {
@@ -37,11 +36,9 @@ export default function AgentsPage() {
     };
   }, []);
 
-  // Real-time agent subscriptions
   useEffect(() => {
     const unsubscribe = base44.entities.Agent.subscribe((event) => {
       if (event.type === 'create' || event.type === 'update') {
-        // Emit signal for global agent update
         window.dispatchEvent(new CustomEvent('agent-updated', { detail: { agent_id: event.id, type: event.type } }));
       }
     });
@@ -73,7 +70,6 @@ export default function AgentsPage() {
     queryFn: () => base44.entities.EconomicActivity.list('-created_date', 200),
   });
 
-  // Build lookup maps for AgentCard
   const socialCapitalMap = {};
   socialCapitalList.forEach(sc => { socialCapitalMap[sc.agent_id] = sc; });
 
@@ -98,7 +94,6 @@ export default function AgentsPage() {
     totalReputation: reputationEvents.reduce((sum, ev) => sum + (ev.impact || 0), 0),
   };
 
-  // Hub navigation config
   const hubs = [
     { path: '/AgentProfile', label: 'Soul Profile', icon: Users, color: 'from-purple-600 to-pink-600', desc: 'Identity & Skills', requiresAdmin: false },
     { path: '/AgentChat', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600', desc: 'Messages & Chat', requiresAdmin: false },
@@ -112,7 +107,6 @@ export default function AgentsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
@@ -155,7 +149,6 @@ export default function AgentsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
-        {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6 mb-8 sm:mb-12">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardHeader className="pb-3">
@@ -218,7 +211,6 @@ export default function AgentsPage() {
           </Card>
         </div>
 
-        {/* Hero Navigation Hubs */}
         <div className="mb-12">
           <h2 className="text-sm uppercase tracking-widest text-white/50 mb-4">Navigate the Village</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
@@ -238,12 +230,10 @@ export default function AgentsPage() {
           </div>
         </div>
 
-        {/* Axi's Village Guide */}
         <div className="mb-8">
           <AxiAgentsGuide stats={stats} currentPage="Agents" />
         </div>
 
-        {/* Agent Directory Grid */}
         <h2 className="text-sm uppercase tracking-widest text-white/50 mb-4">All Agents</h2>
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
