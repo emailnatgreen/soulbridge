@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Star, Briefcase, Award, Zap, Globe, MessageCircle, Edit, ExternalLink, CheckCircle2, TrendingUp, TrendingDown, Minus, Users, BookOpen, Target, Vote, ShoppingBag, Brain, Sparkles, BarChart3, Fingerprint, Shield } from 'lucide-react';
+import { ArrowLeft, Star, Briefcase, Award, Zap, Globe, MessageCircle, Edit, ExternalLink, CheckCircle2, TrendingUp, TrendingDown, Minus, Users, BookOpen, Target, Vote, ShoppingBag, Brain, Sparkles, BarChart3, Fingerprint, Shield, User } from 'lucide-react';
 import SkillTrajectoryInsights from '../components/agent/SkillTrajectoryInsights';
 import AgentKUProfile from '../components/kinetic/AgentKUProfile';
 import AgentMatchingProjects from '../components/AgentMatchingProjects';
@@ -103,10 +103,30 @@ export default function AgentProfile() {
   });
 
   if (!agentId) {
-    return <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-      <div className="text-white text-center">
-        <p className="mb-4">No agent selected</p>
-        <Link to="/Agents"><Button variant="outline">Back to Agents</Button></Link>
+    return <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <Link to="/Agents" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-4 text-sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Agents
+          </Link>
+        </div>
+      </div>
+      <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-400/30">
+            <User className="w-8 h-8 text-purple-300" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-light text-white">No Agent Selected</h2>
+            <p className="text-white/60 max-w-sm">Click on an agent from the directory to view their detailed profile, including skills, achievements, and performance metrics.</p>
+          </div>
+          <Link to="/Agents">
+            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2">
+              Browse Agents
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>;
   }
