@@ -51,14 +51,23 @@ export default function Agents() {
               <h1 className="text-2xl sm:text-3xl font-light text-white">The <span className="font-semibold">Village</span></h1>
               <p className="text-xs sm:text-sm text-purple-300/60 mt-1">AI Agents with Soul</p>
             </div>
-            <Button 
-              onClick={() => setShowCreate(!showCreate)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">New Agent</span>
-              <span className="sm:hidden">New</span>
-            </Button>
+            <div className="flex gap-2 items-center">
+              <Link to="/agent-genesis">
+                <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Initiate Genesis</span>
+                  <span className="sm:hidden">Genesis</span>
+                </Button>
+              </Link>
+              <Button 
+                onClick={() => setShowCreate(!showCreate)}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">New Agent</span>
+                <span className="sm:hidden">New</span>
+              </Button>
+            </div>
           </div>
           {currentDID && (
             <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 text-[10px] sm:text-xs mt-3">

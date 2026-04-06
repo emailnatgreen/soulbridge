@@ -34,6 +34,7 @@ const VillageCalendar = lazy(() => import('./pages/VillageCalendar'));
 const SkillsHub = lazy(() => import('./pages/SkillsHub'));
 const ServiceSkillMarketplace = lazy(() => import('./pages/ServiceSkillMarketplace'));
 const AgentLeaderboard = lazy(() => import('./pages/AgentLeaderboard'));
+const AgentGenesis = lazy(() => import('./pages/AgentGenesis'));
 const SovereignID = lazy(() => import('./pages/SovereignID'));
 const SkillValidation = lazy(() => import('./pages/SkillValidation'));
 const AgentMarketplace = lazy(() => import('./pages/AgentMarketplace'));
@@ -143,6 +144,8 @@ const AuthenticatedApp = () => {
         <Route path="/ServiceSkillMarketplace" element={L("marketplace", ServiceSkillMarketplace)} />
         <Route path="/leaderboard" element={L("leaderboard", AgentLeaderboard)} />
         <Route path="/AgentLeaderboard" element={L("leaderboard", AgentLeaderboard)} />
+        <Route path="/agent-genesis" element={L("agent-genesis", AgentGenesis)} />
+        <Route path="/AgentGenesis" element={L("agent-genesis", AgentGenesis)} />
         <Route path="/sovereign-id" element={L("sovereign-id", SovereignID)} />
         <Route path="/SovereignID" element={L("sovereign-id", SovereignID)} />
         <Route path="/training" element={L("training", SkillDevelopment)} />
