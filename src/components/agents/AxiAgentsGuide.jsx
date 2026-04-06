@@ -85,14 +85,19 @@ export default function AxiAgentsGuide({ stats = {}, currentPage = 'Agents' }) {
   useEffect(() => {
     const init = async () => {
       try {
-        const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+        let conversations = [];
+        try {
+          conversations = await base44.agents.listConversations({ agent_name: 'axi' });
+        } catch (err) {
+          console.warn('[AxiAgentsGuide] listConversations failed, creating new:', err);
+        }
         const savedId = localStorage.getItem(CONVERSATION_KEY);
 
         let conversation = null;
-        if (savedId) {
+        if (savedId && conversations.length > 0) {
           conversation = conversations.find(c => c.id === savedId && c.metadata?.agents_guidance === true) || null;
         }
-        if (!conversation) {
+        if (!conversation && conversations.length > 0) {
           conversation = conversations
             .filter(c => c.metadata?.agents_guidance === true)
             .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date))[0] || null;
