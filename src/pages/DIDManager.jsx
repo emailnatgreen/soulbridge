@@ -20,10 +20,12 @@ export default function DIDManager() {
   const { data: wallets = [], isLoading, refetch } = useQuery({
     queryKey: ['did-wallets'],
     queryFn: () => base44.entities.Wallet.list('-created_date', 100),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
-  const { data: balances = {}, isLoading: balancesLoading } = useQuery({
-    queryKey: ['wallet-balances', wallets.map(w => w.id)],
+  const { data: balances = {}, isLoading: balancesLoading, refetch: refetchBalances } = useQuery({
+    queryKey: ['wallet-balances', wallets.map(w => w.id).join(',')],
     queryFn: async () => {
       if (wallets.length === 0) return {};
       const result = {};
@@ -32,12 +34,15 @@ export default function DIDManager() {
           const res = await base44.functions.invoke('getBalanceEnhanced', { wallet_id: wallet.id });
           result[wallet.id] = res.data;
         } catch (e) {
+          console.error('Balance fetch error for', wallet.name, e);
           result[wallet.id] = { xrp: 0, rlusd: 0, has_rlusd_trustline: false, trustlines: [], error: true };
         }
       }));
       return result;
     },
     enabled: wallets.length > 0,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const handleCreateWallet = async () => {
@@ -112,7 +117,7 @@ export default function DIDManager() {
               <h1 className="text-3xl font-bold text-white">DID Manager</h1>
             </div>
             <button
-              onClick={() => refetch()}
+              onClick={() => { refetch(); setTimeout(() => refetchBalances(), 500); }}
               className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition"
             >
               <RefreshCw className="w-4 h-4" />
