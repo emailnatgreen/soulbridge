@@ -19,6 +19,7 @@ import { Progress } from "@/components/ui/progress";
 import AskAxiButton from '@/components/AskAxiButton';
 import DidActivationProposalsPanel from '@/components/DidActivationProposalsPanel';
 import ProposalAISummaryPanel from '@/components/governance/ProposalAISummaryPanel';
+import AxiGovernanceGuide from '@/components/governance/AxiGovernanceGuide';
 
 const openAxi = (msg) => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
 
@@ -371,6 +372,11 @@ export default function GovernanceHub() {
             </div>
           </div>
         )}
+
+        {/* Axi's Governance Guide */}
+        <div className="mb-8">
+          <AxiGovernanceGuide stats={governanceStats} myAgent={myAgent} currentPage="Governance Hub" />
+        </div>
 
         <div className="mb-8">
           <DidActivationProposalsPanel />
