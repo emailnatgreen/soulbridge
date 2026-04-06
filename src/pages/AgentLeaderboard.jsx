@@ -20,10 +20,10 @@ function getRankConfig(score) {
   return RANK_CONFIG.find(r => score >= r.min) || RANK_CONFIG[RANK_CONFIG.length - 1];
 }
 
-const PLACE_ICONS = [
-  <Crown className="w-6 h-6 text-yellow-400" />,
-  <Medal className="w-6 h-6 text-slate-300" />,
-  <Award className="w-6 h-6 text-amber-600" />,
+const PLACE_ICON_COMPONENTS = [
+  { Icon: Crown, color: 'text-yellow-400' },
+  { Icon: Medal, color: 'text-slate-300' },
+  { Icon: Award, color: 'text-amber-600' },
 ];
 
 export default function AgentLeaderboard() {
@@ -153,8 +153,8 @@ export default function AgentLeaderboard() {
                     <Card key={agent.id} className={`bg-white/5 border-white/10 hover:bg-white/[0.08] transition-all ${idx < 3 ? 'ring-1 ring-yellow-400/20' : ''}`}>
                       <CardContent className="py-3 px-4">
                         <div className="flex items-center gap-2 sm:gap-4">
-                           <span className="text-white/40 font-bold w-5 sm:w-6 text-center text-xs sm:text-sm">#{idx + 1}</span>
-                          {idx < 3 && PLACE_ICONS[idx]}
+                          <span className="text-white/40 font-bold w-5 sm:w-6 text-center text-xs sm:text-sm">#{idx + 1}</span>
+                          {idx < 3 && (() => { const { Icon, color } = PLACE_ICON_COMPONENTS[idx]; return <Icon className={`w-6 h-6 ${color}`} />; })()}
                           <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 mb-1 flex-wrap">
                             <span className="text-white font-semibold text-xs sm:text-sm truncate">{agent.name}</span>
