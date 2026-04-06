@@ -42,7 +42,7 @@ export default function AgentChatPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
@@ -70,10 +70,10 @@ export default function AgentChatPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 min-h-[500px]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 h-full">
           {/* Conversation List */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 h-full overflow-hidden">
             <AgentConversationList
               agents={agents}
               allMessages={allMessages}
@@ -83,14 +83,36 @@ export default function AgentChatPage() {
             />
           </div>
 
-          {/* Chat Window */}
-          <div className="lg:col-span-2">
+          {/* Chat Window & State */}
+          <div className="lg:col-span-3 h-full overflow-hidden">
             {selectedAgent ? (
-              <AgentChatWindow
-                selectedAgent={selectedAgent}
-                allMessages={allMessages}
-                currentDID={currentDID}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-full">
+                <div className="md:col-span-3 h-full overflow-hidden">
+                  <AgentChatWindow
+                    selectedAgent={selectedAgent}
+                    allMessages={allMessages}
+                    currentDID={currentDID}
+                  />
+                </div>
+                <div className="md:col-span-1 overflow-y-auto">
+                  <div className="space-y-4">
+                    {/* Agent State Sidebar */}
+                    {selectedAgent && (
+                      <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                        <CardContent className="p-0">
+                          <div className="p-4 border-b border-white/10">
+                            <h3 className="text-sm font-medium text-white">Agent Presence</h3>
+                          </div>
+                          {/* Placeholder for AgentStateDisplay */}
+                          <div className="p-4 text-center text-white/60 text-xs">
+                            State monitoring active
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+              </div>
             ) : (
               <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-full flex items-center justify-center">
                 <div className="text-center">

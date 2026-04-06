@@ -9,11 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Send, Loader2, Sparkles, User } from 'lucide-react';
 import { toast } from 'sonner';
 import AgentChatMessage from './AgentChatMessage';
+import AgentStateDisplay from './AgentStateDisplay';
 import { cn } from "@/lib/utils";
 
 export default function AgentChatWindow({ selectedAgent, allMessages, currentDID }) {
   const [message, setMessage] = useState('');
   const [fromAgent, setFromAgent] = useState(null);
+  const [agentState, setAgentState] = useState(null);
   const scrollRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -21,18 +23,15 @@ export default function AgentChatWindow({ selectedAgent, allMessages, currentDID
   useEffect(() => {
     const fetchUserAgent = async () => {
       if (currentDID?.agent_id) {
-        // If DID has associated agent, use that
         try {
           const agent = await base44.entities.Agent.get(currentDID.agent_id);
           if (agent) setFromAgent(agent);
         } catch (e) {
-          // Fallback to Axi
           const agents = await base44.entities.Agent.list();
           const axi = agents.find(a => a.name.toLowerCase() === 'axi');
           if (axi) setFromAgent(axi);
         }
       } else {
-        // Fallback: find Axi or first agent
         const agents = await base44.entities.Agent.list();
         const axi = agents.find(a => a.name.toLowerCase() === 'axi');
         if (axi) {
@@ -44,6 +43,20 @@ export default function AgentChatWindow({ selectedAgent, allMessages, currentDID
     };
     fetchUserAgent();
   }, [currentDID]);
+
+  // Fetch agent state
+  useEffect(() => {
+    if (!selectedAgent) return;
+    const fetchAgentState = async () => {
+      try {
+        const states = await base44.entities.AgentState.filter({ agent_id: selectedAgent.id }, '-created_date', 1);
+        if (states.length > 0) setAgentState(states[0]);
+      } catch (e) {
+        // Silently fail if AgentState doesn't exist
+      }
+    };
+    fetchAgentState();
+  }, [selectedAgent]);
 
   // Filter messages between the two agents
   const conversationMessages = useMemo(() => {
@@ -161,6 +174,8 @@ export default function AgentChatWindow({ selectedAgent, allMessages, currentDID
                   message={msg}
                   isFromUser={msg.from_agent_id === fromAgent.id}
                   fromAgentName={msg.from_agent_id === fromAgent.id ? fromAgent.name : selectedAgent.name}
+                  recipientAgent={selectedAgent}
+                  fromAgent={fromAgent}
                 />
               ))
             )}
