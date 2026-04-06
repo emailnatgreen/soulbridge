@@ -9,6 +9,7 @@ import { Shield, TrendingUp, Users, CheckCircle2, XCircle, Download, ArrowLeft }
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import ActivityTimeline from '@/components/audit/ActivityTimeline';
+import AxiGovernanceGuide from '@/components/governance/AxiGovernanceGuide';
 
 const COLORS = ['#22c55e', '#ef4444', '#94a3b8'];
 
@@ -121,6 +122,20 @@ export default function GovernanceAnalytics() {
             <p className="text-slate-400 text-sm mt-1">{totalProposals} proposals · {votes.length} votes cast</p>
           </div>
         </div>
+
+        {/* Axi Governance Guide */}
+        <AxiGovernanceGuide
+          stats={{
+            totalProposals,
+            activeProposals: activeCount,
+            approvedProposals: passedCount,
+            totalVotes: votes.length,
+            participationRate: agents.length > 0 && totalProposals > 0
+              ? ((votes.length / (totalProposals * agents.length)) * 100).toFixed(1)
+              : 0,
+          }}
+          currentPage="Governance Analytics"
+        />
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

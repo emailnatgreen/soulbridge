@@ -20,6 +20,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis
 import DIDAssertionPanel, { calcVotingPower, getDIDPermissionStatus } from '@/components/governance/DIDAssertionPanel';
 import CollectiveDIDInfluence from '@/components/governance/CollectiveDIDInfluence';
 import VoteCastingPanel from '@/components/governance/VoteCastingPanel';
+import AxiGovernanceGuide from '@/components/governance/AxiGovernanceGuide';
 
 // ─── Proposal Detail Dialog ─────────────────────────────────────────────────
 function ProposalDetailDialog({ open, onClose, proposal, proposalVotes, selectedAgent, hasVoted, myVote, onVote, daysLeft, isExpired, onExecute }) {
@@ -432,6 +433,19 @@ export default function GovernanceVotingDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Axi Governance Guide */}
+        <AxiGovernanceGuide
+          stats={{
+            totalProposals: proposals.length,
+            activeProposals: activeProposals.length,
+            approvedProposals: proposals.filter(p => p.status === 'passed' || p.status === 'executed').length,
+            totalVotes: allVotes.length,
+            participationRate,
+          }}
+          myAgent={selectedAgent}
+          currentPage="Voting Dashboard"
+        />
+
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
