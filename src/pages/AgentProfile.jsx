@@ -46,8 +46,6 @@ export default function AgentProfile() {
     return () => window.removeEventListener('did-connected', handleDidSignal);
   }, []);
 
-  const displayAgentId = selectedAgentId || agentId;
-
   const { data: agent, isLoading } = useQuery({
     queryKey: ['agent', displayAgentId],
     queryFn: () => base44.entities.Agent.get(displayAgentId),
