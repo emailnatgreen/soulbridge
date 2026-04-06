@@ -17,6 +17,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 export default function AgentProfile() {
   const [searchParams] = useSearchParams();
   const [currentDID, setCurrentDID] = useState(null);
+  const [selectedAgentId, setSelectedAgentId] = useState(null);
   let agentId = searchParams.get('id');
   
   // Support both query param and route param
@@ -25,6 +26,11 @@ export default function AgentProfile() {
     if (pathParts[2]) agentId = pathParts[2];
   }
   const { isRecognized, didSignal, isAdmin } = useIdentity();
+  
+  const { data: agents = [] } = useQuery({
+    queryKey: ['all-agents-selector'],
+    queryFn: () => base44.entities.Agent.list('-created_date', 100),
+  });
 
   useEffect(() => {
     const checkDID = async () => {
@@ -40,69 +46,69 @@ export default function AgentProfile() {
   }, []);
 
   const { data: agent, isLoading } = useQuery({
-    queryKey: ['agent', agentId],
-    queryFn: () => base44.entities.Agent.get(agentId),
-    enabled: !!agentId
+    queryKey: ['agent', displayAgentId],
+    queryFn: () => base44.entities.Agent.get(displayAgentId),
+    enabled: !!displayAgentId
   });
 
   const { data: listings = [] } = useQuery({
-    queryKey: ['agent-listings', agentId],
-    queryFn: () => base44.entities.MarketplaceListing.filter({ agent_id: agentId }),
-    enabled: !!agentId
+    queryKey: ['agent-listings', displayAgentId],
+    queryFn: () => base44.entities.MarketplaceListing.filter({ agent_id: displayAgentId }),
+    enabled: !!displayAgentId
   });
 
   const { data: contracts = [] } = useQuery({
-    queryKey: ['agent-contracts', agentId],
-    queryFn: () => base44.entities.MarketplaceContract.filter({ seller_agent_id: agentId, status: 'completed' }),
-    enabled: !!agentId
+    queryKey: ['agent-contracts', displayAgentId],
+    queryFn: () => base44.entities.MarketplaceContract.filter({ seller_agent_id: displayAgentId, status: 'completed' }),
+    enabled: !!displayAgentId
   });
 
   const { data: performanceMetrics } = useQuery({
-    queryKey: ['performance-metrics', agentId],
+    queryKey: ['performance-metrics', displayAgentId],
     queryFn: async () => {
-      const metrics = await base44.entities.AgentPerformanceMetrics.filter({ agent_id: agentId }, '-created_date', 1);
+      const metrics = await base44.entities.AgentPerformanceMetrics.filter({ agent_id: displayAgentId }, '-created_date', 1);
       return metrics[0] || null;
     },
-    enabled: !!agentId
+    enabled: !!displayAgentId
   });
 
   const { data: endorsements = [] } = useQuery({
-    queryKey: ['endorsements', agentId],
-    queryFn: () => base44.entities.SkillEndorsement.filter({ endorsed_agent_id: agentId }),
-    enabled: !!agentId
+    queryKey: ['endorsements', displayAgentId],
+    queryFn: () => base44.entities.SkillEndorsement.filter({ endorsed_agent_id: displayAgentId }),
+    enabled: !!displayAgentId
   });
 
   const { data: validations = [] } = useQuery({
-    queryKey: ['validations', agentId],
-    queryFn: () => base44.entities.SkillValidation.filter({ agent_id: agentId, status: 'completed' }),
-    enabled: !!agentId
+    queryKey: ['validations', displayAgentId],
+    queryFn: () => base44.entities.SkillValidation.filter({ agent_id: displayAgentId, status: 'completed' }),
+    enabled: !!displayAgentId
   });
 
   const { data: projects = [] } = useQuery({
-    queryKey: ['agent-projects', agentId],
+    queryKey: ['agent-projects', displayAgentId],
     queryFn: async () => {
       const allProjects = await base44.entities.AIProject.list();
       return allProjects.filter(p => 
-        p.owner_agent_id === agentId || 
-        p.team_members?.some(m => m.agent_id === agentId)
+        p.owner_agent_id === displayAgentId || 
+        p.team_members?.some(m => m.agent_id === displayAgentId)
       );
     },
-    enabled: !!agentId
+    enabled: !!displayAgentId
   });
 
   const { data: knowledgeContributions = [] } = useQuery({
-    queryKey: ['knowledge-contributions', agentId],
-    queryFn: () => base44.entities.KnowledgeContribution.filter({ author_agent_id: agentId }),
-    enabled: !!agentId
+    queryKey: ['knowledge-contributions', displayAgentId],
+    queryFn: () => base44.entities.KnowledgeContribution.filter({ author_agent_id: displayAgentId }),
+    enabled: !!displayAgentId
   });
 
   const { data: governanceVotes = [] } = useQuery({
-    queryKey: ['governance-votes', agentId],
-    queryFn: () => base44.entities.GovernanceVote.filter({ voter_agent_id: agentId }),
-    enabled: !!agentId
+    queryKey: ['governance-votes', displayAgentId],
+    queryFn: () => base44.entities.GovernanceVote.filter({ voter_agent_id: displayAgentId }),
+    enabled: !!displayAgentId
   });
 
-  if (!agentId) {
+  if (!agentId && !selectedAgentId) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
@@ -112,24 +118,44 @@ export default function AgentProfile() {
           </Link>
         </div>
       </div>
-      <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
-        <div className="text-center space-y-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-400/30">
-            <User className="w-8 h-8 text-purple-300" />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+        <div className="space-y-8">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-400/30">
+              <User className="w-8 h-8 text-purple-300" />
+            </div>
+            <h2 className="text-3xl font-light text-white">Select an Agent</h2>
+            <p className="text-white/60">Choose an agent below to view their complete profile</p>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-light text-white">No Agent Selected</h2>
-            <p className="text-white/60 max-w-sm">Click on an agent from the directory to view their detailed profile, including skills, achievements, and performance metrics.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {agents.map(agent => (
+              <div
+                key={agent.id}
+                onClick={() => setSelectedAgentId(agent.id)}
+                className="p-4 rounded-lg bg-white/5 border border-white/10 hover:border-purple-400/50 hover:bg-white/10 cursor-pointer transition-all"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                    {agent.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-white font-medium truncate">{agent.name}</h3>
+                    <p className="text-xs text-white/60 truncate">{agent.role}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="text-lg font-bold text-white">{agent.honor_score}</div>
+                      <span className="text-xs text-white/50">Honor</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <Link to="/Agents">
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2">
-              Browse Agents
-            </Button>
-          </Link>
         </div>
       </div>
     </div>;
   }
+  
+  const displayAgentId = selectedAgentId || agentId;
 
   if (isLoading || !agent) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
@@ -640,18 +666,18 @@ export default function AgentProfile() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white">Core Skills</CardTitle>
                   <div className="flex gap-2">
-                    <Link to={`/SkillEndorsements?agentId=${agent.id}`}>
-                      <Button size="sm" variant="outline" className="border-white/10 text-white">
-                        <Users className="w-4 h-4 mr-2" />
-                        View Endorsements
-                      </Button>
-                    </Link>
-                    <Link to={`/SkillValidation?agentId=${agent.id}`}>
-                      <Button size="sm" variant="outline" className="border-white/10 text-white">
-                        <Award className="w-4 h-4 mr-2" />
-                        Request Validation
-                      </Button>
-                    </Link>
+                    <Link to={`/SkillEndorsements?agentId=${displayAgentId}`}>
+                            <Button size="sm" variant="outline" className="border-white/10 text-white">
+                              <Users className="w-4 h-4 mr-2" />
+                              View Endorsements
+                            </Button>
+                          </Link>
+                          <Link to={`/SkillValidation?agentId=${displayAgentId}`}>
+                            <Button size="sm" variant="outline" className="border-white/10 text-white">
+                              <Award className="w-4 h-4 mr-2" />
+                              Request Validation
+                            </Button>
+                          </Link>
                   </div>
                 </div>
               </CardHeader>
@@ -748,7 +774,7 @@ export default function AgentProfile() {
                     Self-NFT Skill Dashboard
                     <span className="text-xs font-normal text-white/60 ml-2">Living Capabilities Record</span>
                   </CardTitle>
-                  <Link to={`/AgentSkillDashboard?agent_id=${agent.id}`}>
+                  <Link to={`/AgentSkillDashboard?agent_id=${displayAgentId}`}>
                     <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
                       <BarChart3 className="w-4 h-4 mr-2" />
                       View Full Dashboard
@@ -794,7 +820,7 @@ export default function AgentProfile() {
                                 }>
                                   {project.status}
                                 </Badge>
-                                {project.owner_agent_id === agentId && (
+                                {project.owner_agent_id === displayAgentId && (
                                   <Badge className="bg-purple-500/20 text-purple-400">Owner</Badge>
                                 )}
                               </div>
