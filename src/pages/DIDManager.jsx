@@ -26,24 +26,34 @@ export default function DIDManager() {
     staleTime: 30000,
   });
 
-  // Fetch live balances for all wallets
+  // Fetch live balances in staggered batches (4 at a time, 500ms gap) to avoid XRPL rate limits
   const { data: balances = {}, refetch: refetchBalances } = useQuery({
     queryKey: ['did-balances', wallets.map(w => w.id).join(',')],
     queryFn: async () => {
       if (wallets.length === 0) return {};
       const result = {};
-      await Promise.all(wallets.map(async (wallet) => {
-        try {
-          const res = await base44.functions.invoke('getBalanceEnhanced', { wallet_id: wallet.id });
-          result[wallet.id] = res.data;
-        } catch (e) {
-          result[wallet.id] = { xrp: wallet.balance || 0, rlusd: 0 };
+      // Filter out fake/placeholder addresses
+      const realWallets = wallets.filter(w => w.classic_address && !w.classic_address.startsWith('rAxi') && !w.classic_address.startsWith('rZoe'));
+      const batchSize = 4;
+      for (let i = 0; i < realWallets.length; i += batchSize) {
+        const batch = realWallets.slice(i, i + batchSize);
+        await Promise.all(batch.map(async (wallet) => {
+          try {
+            const res = await base44.functions.invoke('getBalanceEnhanced', { wallet_id: wallet.id });
+            result[wallet.id] = res.data;
+          } catch (e) {
+            result[wallet.id] = { xrp: wallet.balance || 0, rlusd: 0 };
+          }
+        }));
+        // Stagger between batches to avoid rate limiting
+        if (i + batchSize < realWallets.length) {
+          await new Promise(r => setTimeout(r, 600));
         }
-      }));
+      }
       return result;
     },
     enabled: wallets.length > 0,
-    staleTime: 0,
+    staleTime: 60000,
     refetchOnMount: 'always',
   });
 

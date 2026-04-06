@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, CircleDashed, Pencil, Users, Shield, QrCode } from 'lucide-react';
+import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, CircleDashed, Pencil, Users, Shield, QrCode, Key, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import TrustlineActivateButton from '@/components/wallet/TrustlineActivateButton';
 import WalletQRCodes from '@/components/vip/WalletQRCodes';
 import DIDWalletEditPanel from './DIDWalletEditPanel';
+import AssignSeedPanel from './AssignSeedPanel';
 
 function parseNotes(notes) {
   if (!notes) return {};
@@ -35,6 +36,7 @@ export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
   const [rlusdBalance, setRlusdBalance] = useState(liveRlusdBalance ?? null);
   const [publishResult, setPublishResult] = useState(wallet.is_published && wallet.published_txid ? 'published' : null);
   const [editing, setEditing] = useState(false);
+  const [assigningSeed, setAssigningSeed] = useState(false);
 
   useEffect(() => {
     if (liveXrpBalance !== undefined) setLiveBalance(liveXrpBalance);
@@ -49,6 +51,8 @@ export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
   const linkedAgentId = parsed.linkedAgent;
   const linkedNodeDid = parsed.linkedNodeDid;
   const linkedAgent = linkedAgentId ? (agents || []).find(a => a.id === linkedAgentId) : null;
+  const hasSeed = !!wallet.encrypted_seed;
+  const isFakeAddress = wallet.classic_address && (wallet.classic_address.startsWith('rAxi') || wallet.classic_address.startsWith('rZoe'));
 
   const handlePublishDID = async () => {
     setPublishing(true);
@@ -149,6 +153,31 @@ export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
           onSave={() => { setEditing(false); onRefresh?.(); }}
           onClose={() => setEditing(false)}
         />
+      )}
+
+      {/* Assign Seed Panel */}
+      {assigningSeed && (
+        <AssignSeedPanel
+          wallet={wallet}
+          onComplete={() => { setAssigningSeed(false); onRefresh?.(); }}
+          onClose={() => setAssigningSeed(false)}
+        />
+      )}
+
+      {/* Missing Seed Warning */}
+      {!hasSeed && !isFakeAddress && !assigningSeed && (
+        <button onClick={() => setAssigningSeed(true)}
+          className="flex items-center gap-2 w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl px-3 py-2.5 text-xs text-red-300 font-semibold transition">
+          <AlertTriangle className="w-4 h-4" /> Missing Seed — Click to Assign
+        </button>
+      )}
+
+      {/* Placeholder Address Warning */}
+      {isFakeAddress && (
+        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2.5">
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-amber-300 text-xs">Placeholder address — not a real XRPL wallet</span>
+        </div>
       )}
 
       {/* Address */}
