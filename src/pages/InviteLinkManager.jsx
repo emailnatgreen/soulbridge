@@ -271,6 +271,9 @@ export default function InviteLinkManager() {
           </div>
         </div>
 
+        {/* Create Token Form */}
+        {showForm && <CreateTokenForm onCreated={() => setShowForm(false)} currentUser={user} />}
+
         {/* Domain Setting */}
         <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center gap-2">
           <span className="text-xs text-slate-400 flex-shrink-0">🌐 Invite Base URL:</span>
