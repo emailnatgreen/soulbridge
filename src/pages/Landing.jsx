@@ -14,6 +14,7 @@ import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 
+// SoulBridge Landing — force refresh
 if (!window.__soulbridge) window.__soulbridge = {};
 
 function emitSignal(data) {
