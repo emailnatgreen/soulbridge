@@ -11,6 +11,7 @@ import XummImportWallet from '@/components/did/XummImportWallet';
 import SendPanel from '@/components/wallet/SendPanel';
 import ReceivePanel from '@/components/wallet/ReceivePanel';
 import DexSwapPanel from '@/components/dex/DexSwapPanel';
+import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
 
 export default function DIDManager() {
   const { isAdmin, isLoading: identityLoading } = useIdentity();
@@ -212,6 +213,19 @@ export default function DIDManager() {
               </Button>
             </div>
           )}
+        </div>
+
+        {/* Constitutional Braid — 8-Node Live Status */}
+        <div className="bg-white/5 border border-purple-500/20 rounded-2xl p-4 sm:p-5">
+          <ConstitutionalBraidLive />
+          <div className="mt-3 flex items-center gap-3">
+            <Link to="/NodeCovenant" className="text-xs text-purple-400 hover:text-purple-300 underline underline-offset-2">
+              Open Node Covenant Signing →
+            </Link>
+            <Link to="/SovereignID?tab=constitutional" className="text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2">
+              View Sovereign ID →
+            </Link>
+          </div>
         </div>
 
         {/* Send / Receive / DEX */}
