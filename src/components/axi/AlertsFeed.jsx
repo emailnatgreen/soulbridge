@@ -17,10 +17,10 @@ const typeIcon = {
 };
 
 const priorityColor = {
-  urgent: "bg-red-100 text-red-700 border-red-300",
-  high: "bg-orange-100 text-orange-700 border-orange-300",
-  normal: "bg-blue-100 text-blue-700 border-blue-300",
-  low: "bg-slate-100 text-slate-600 border-slate-200",
+  urgent: "bg-red-900/30 text-red-300 border-red-700/50",
+  high: "bg-orange-900/30 text-orange-300 border-orange-700/50",
+  normal: "bg-blue-900/30 text-blue-300 border-blue-700/50",
+  low: "bg-slate-800/50 text-slate-300 border-slate-700/50",
 };
 
 export default function AlertsFeed() {
@@ -38,8 +38,8 @@ export default function AlertsFeed() {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-amber-500" />
-          <span className="font-semibold text-sm text-slate-700">Live Alerts</span>
+          <Bell className="w-4 h-4 text-amber-400" />
+          <span className="font-semibold text-sm text-white">Live Alerts</span>
         </div>
         {urgent.length > 0 && (
           <Badge className="bg-red-500 text-white text-xs px-2">{urgent.length} urgent</Badge>
@@ -47,7 +47,7 @@ export default function AlertsFeed() {
       </div>
       <ScrollArea className="flex-1">
         {sorted.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 text-sm">All clear — no unread alerts</div>
+          <div className="text-center py-8 text-slate-500 text-sm">All clear — no unread alerts</div>
         ) : (
           <div className="space-y-2">
             {sorted.map(n => {

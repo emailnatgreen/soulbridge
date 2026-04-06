@@ -8,8 +8,7 @@ export default function NewPageAlertsPanel() {
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['new-page-alerts'],
     queryFn: async () => {
-      const notifs = await base44.asServiceRole.entities.AgentNotification.filter({
-        recipient_agent_id: '6993271e7dc0fa2ab78762bf',
+      const notifs = await base44.entities.AgentNotification.filter({
         notification_type: 'system'
       }, '-created_date', 20);
       return notifs.filter(n => n.metadata?.review_type === 'auto' && n.message?.includes('auto-review'));

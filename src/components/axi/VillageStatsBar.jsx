@@ -33,13 +33,13 @@ export default function VillageStatsBar() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
       {stats.map(({ label, value, icon: Icon, color }) => (
-        <div key={label} className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3">
+        <div key={label} className="rounded-xl border border-white/10 bg-slate-800/60 p-4 flex items-center gap-3">
           <div className={`p-2 rounded-lg ${color}`}>
             <Icon className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-xl font-bold text-slate-800">{value}</p>
-            <p className="text-xs text-slate-500">{label}</p>
+            <p className="text-xl font-bold text-white">{value}</p>
+            <p className="text-xs text-slate-400">{label}</p>
           </div>
         </div>
       ))}

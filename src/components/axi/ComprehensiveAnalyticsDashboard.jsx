@@ -7,32 +7,32 @@ import { base44 } from '@/api/base44Client';
 export default function ComprehensiveAnalyticsDashboard() {
   // Fetch all necessary data for analytics
   const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.asServiceRole.entities.Agent.list(),
+    queryKey: ['analytics-agents'],
+    queryFn: () => base44.entities.Agent.list('-updated_date', 200),
     refetchInterval: 60000
   });
 
   const { data: proposals = [] } = useQuery({
-    queryKey: ['governance-proposals'],
-    queryFn: () => base44.asServiceRole.entities.GovernanceProposal.filter({ status: 'active' }),
+    queryKey: ['analytics-proposals'],
+    queryFn: () => base44.entities.GovernanceProposal.filter({ status: 'active' }),
     refetchInterval: 60000
   });
 
   const { data: projects = [] } = useQuery({
-    queryKey: ['ai-projects'],
-    queryFn: () => base44.asServiceRole.entities.AIProject.filter({}, '-updated_date', 100),
+    queryKey: ['analytics-projects'],
+    queryFn: () => base44.entities.AIProject.filter({}, '-updated_date', 100),
     refetchInterval: 60000
   });
 
   const { data: tasks = [] } = useQuery({
-    queryKey: ['project-tasks'],
-    queryFn: () => base44.asServiceRole.entities.ProjectTask.list(),
+    queryKey: ['analytics-tasks'],
+    queryFn: () => base44.entities.ProjectTask.list('-updated_date', 200),
     refetchInterval: 60000
   });
 
   const { data: votes = [] } = useQuery({
-    queryKey: ['governance-votes'],
-    queryFn: () => base44.asServiceRole.entities.GovernanceVote.list(),
+    queryKey: ['analytics-votes'],
+    queryFn: () => base44.entities.GovernanceVote.list('-created_date', 200),
     refetchInterval: 60000
   });
 

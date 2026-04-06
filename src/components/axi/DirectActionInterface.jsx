@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { logAdminAction } from '@/lib/adminAuditLog';
 
 const ACTION_TYPES = ['open_chat', 'broadcast_wisdom', 'trigger_alert'];
 
@@ -23,12 +24,19 @@ export default function DirectActionInterface() {
 
     setSubmitting(true);
     try {
-      await base44.entities.JukeboxDecision.create({
+      const decision = await base44.entities.JukeboxDecision.create({
         action,
         agent_id: agentId,
         message: message.trim(),
         status: 'pending',
         triggered_by: 'axi_command_interface',
+      });
+
+      await logAdminAction({
+        action: 'create_jukebox_decision',
+        target_entity: 'JukeboxDecision',
+        target_id: decision.id,
+        details: { action_type: action, agent_id: agentId, message: message.trim() },
       });
 
       toast.success('Decision created and queued');

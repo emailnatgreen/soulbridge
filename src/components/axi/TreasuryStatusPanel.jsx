@@ -18,8 +18,8 @@ export default function TreasuryStatusPanel() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Landmark className="w-4 h-4 text-amber-500" />
-        <span className="text-sm font-semibold text-slate-700">Treasury</span>
+        <Landmark className="w-4 h-4 text-amber-400" />
+        <span className="text-sm font-semibold text-white">Treasury</span>
       </div>
       {treasuries.length === 0 ? (
         <p className="text-xs text-slate-400">No treasury data</p>
@@ -31,10 +31,10 @@ export default function TreasuryStatusPanel() {
             const pct = Math.min(100, Math.round((balance / SAFE_BALANCE) * 100));
 
             return (
-              <div key={t.id} className={`rounded-lg border p-3 ${isLow ? "border-red-300 bg-red-50" : "border-slate-200 bg-slate-50"}`}>
+              <div key={t.id} className={`rounded-lg border p-3 ${isLow ? "border-red-700/50 bg-red-900/20" : "border-slate-700/50 bg-slate-800/40"}`}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-slate-700">{t.name}</span>
-                  <Badge className={isLow ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}>
+                  <span className="text-xs font-medium text-slate-200">{t.name}</span>
+                  <Badge className={isLow ? "bg-red-900/40 text-red-300" : "bg-emerald-900/40 text-emerald-300"}>
                     {balance.toLocaleString()} XRP
                   </Badge>
                 </div>
@@ -44,7 +44,7 @@ export default function TreasuryStatusPanel() {
                     <AlertTriangle className="w-3 h-3" /> Below 150 XRP threshold — alert co-creator
                   </p>
                 )}
-                <div className="flex justify-between text-xs text-slate-500 mt-1">
+                <div className="flex justify-between text-xs text-slate-400 mt-1">
                   <span>Deposits: {(t.total_deposits ?? 0).toLocaleString()} XRP</span>
                   <span>Withdrawn: {(t.total_withdrawals ?? 0).toLocaleString()} XRP</span>
                 </div>

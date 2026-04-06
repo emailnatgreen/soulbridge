@@ -7,13 +7,13 @@ import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
 
 const typeColors = {
-  project_funding:      "bg-blue-100 text-blue-700",
-  role_adjustment:      "bg-purple-100 text-purple-700",
-  treasury_allocation:  "bg-amber-100 text-amber-700",
-  law_amendment:        "bg-red-100 text-red-700",
-  agent_discipline:     "bg-orange-100 text-orange-700",
-  resource_policy:      "bg-teal-100 text-teal-700",
-  general:              "bg-slate-100 text-slate-600",
+  project_funding:      "bg-blue-900/30 text-blue-300",
+  role_adjustment:      "bg-purple-900/30 text-purple-300",
+  treasury_allocation:  "bg-amber-900/30 text-amber-300",
+  law_amendment:        "bg-red-900/30 text-red-300",
+  agent_discipline:     "bg-orange-900/30 text-orange-300",
+  resource_policy:      "bg-teal-900/30 text-teal-300",
+  general:              "bg-slate-800/50 text-slate-300",
 };
 
 export default function GovernanceRiskPanel() {
@@ -64,8 +64,8 @@ export default function GovernanceRiskPanel() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Vote className="w-4 h-4 text-violet-500" />
-          <span className="text-sm font-semibold text-slate-700">Active Proposals ({proposals.length})</span>
+          <Vote className="w-4 h-4 text-violet-400" />
+          <span className="text-sm font-semibold text-white">Active Proposals ({proposals.length})</span>
         </div>
         {dormantCount > 0 && proposals.length > 0 && (
           <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1 text-xs">
@@ -86,9 +86,9 @@ export default function GovernanceRiskPanel() {
             const thresholdRisk = approval !== null && approval < (p.pass_threshold ?? 60);
 
             return (
-              <div key={p.id} className={`rounded-lg border p-3 ${expiring || quorumRisk ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50"}`}>
+              <div key={p.id} className={`rounded-lg border p-3 ${expiring || quorumRisk ? "border-amber-700/50 bg-amber-900/20" : "border-slate-700/50 bg-slate-800/40"}`}>
                 <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <p className="text-xs font-medium text-slate-800 line-clamp-2 flex-1">{p.title}</p>
+                  <p className="text-xs font-medium text-slate-200 line-clamp-2 flex-1">{p.title}</p>
                   <div className="flex gap-1 flex-shrink-0">
                     {expiring && (
                       <Badge className="bg-amber-100 text-amber-700 text-xs flex items-center gap-0.5">
