@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { usePageSignal } from '@/hooks/usePageSignal';
@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
 import BackToHomeButton from '../components/BackToHomeButton';
-const AxiAgentsGuide = lazy(() => import('../components/agents/AxiAgentsGuide'));
+import AxiAgentsGuide from '../components/agents/AxiAgentsGuide';
 
 export default function AgentsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -238,11 +238,9 @@ export default function AgentsPage() {
           </div>
         </div>
 
-        {/* Axi's Village Guide — Lazy Loaded */}
+        {/* Axi's Village Guide */}
         <div className="mb-8">
-          <Suspense fallback={<div className="bg-white/5 rounded-xl h-32 animate-pulse" />}>
-            <AxiAgentsGuide stats={stats} currentPage="Agents" />
-          </Suspense>
+          <AxiAgentsGuide stats={stats} currentPage="Agents" />
         </div>
 
         {/* Agent Directory Grid */}
