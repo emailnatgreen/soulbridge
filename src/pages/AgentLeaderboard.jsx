@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Star, Shield, Zap, TrendingUp, Crown, Medal, Award } from 'lucide-react';
+import { Trophy, Star, Shield, Zap, TrendingUp, Crown, Medal, Award, ArrowLeft, Fingerprint } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { Link } from 'react-router-dom';
 
@@ -28,6 +28,17 @@ const PLACE_ICONS = [
 
 export default function AgentLeaderboard() {
   const [tab, setTab] = useState('honor');
+  const [currentDID, setCurrentDID] = useState(null);
+
+  useEffect(() => {
+    const checkDID = async () => {
+      try {
+        const identity = localStorage.getItem('soulbridge_identity');
+        if (identity) setCurrentDID(JSON.parse(identity));
+      } catch (e) { /* ignore */ }
+    };
+    checkDID();
+  }, []);
 
   const { data: agents = [], isLoading } = useQuery({
     queryKey: ['leaderboard-agents'],
@@ -73,20 +84,35 @@ export default function AgentLeaderboard() {
   }[tab]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-4">
-          <Trophy className="w-10 h-10 text-yellow-400" />
-          <div>
-            <h1 className="text-4xl font-bold text-white">Agent Leaderboard</h1>
-            <p className="text-white/50">Honoring those who contribute, govern, and grow</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+      {/* Header */}
+      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <Link to="/Agents" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-3 sm:mb-4 text-sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Link>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 gap-y-2">
+            <Trophy className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-4xl font-bold text-white">Leaderboard</h1>
+              <p className="text-xs sm:text-sm text-white/50">Recognition & rankings</p>
+            </div>
+            {currentDID && (
+              <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 text-[10px] sm:text-xs truncate flex-shrink-0">
+                <Fingerprint className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
+                Connected
+              </Badge>
+            )}
           </div>
         </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
         {/* Top 3 Podium */}
         {!isLoading && byHonor.length >= 3 && (
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
             {[byHonor[1], byHonor[0], byHonor[2]].map((agent, podiumIdx) => {
               const place = podiumIdx === 1 ? 0 : podiumIdx === 0 ? 1 : 2;
               const rank = getRankConfig(agent?.honor_score || 0);
@@ -107,10 +133,10 @@ export default function AgentLeaderboard() {
 
         {/* Tabs */}
         <Tabs value={tab} onValueChange={setTab} className="space-y-4">
-          <TabsList className="bg-white/10">
-            <TabsTrigger value="honor"><Star className="w-4 h-4 mr-2" />Honor Score</TabsTrigger>
-            <TabsTrigger value="tasks"><Zap className="w-4 h-4 mr-2" />Tasks Completed</TabsTrigger>
-            <TabsTrigger value="votes"><Shield className="w-4 h-4 mr-2" />Governance Votes</TabsTrigger>
+          <TabsList className="bg-white/10 flex-wrap h-auto gap-1 p-1 w-full">
+            <TabsTrigger value="honor" className="text-xs sm:text-sm"><Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /><span className="hidden sm:inline">Honor Score</span><span className="sm:hidden">Honor</span></TabsTrigger>
+            <TabsTrigger value="tasks" className="text-xs sm:text-sm"><Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /><span className="hidden sm:inline">Tasks</span><span className="sm:hidden">Work</span></TabsTrigger>
+            <TabsTrigger value="votes" className="text-xs sm:text-sm"><Shield className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /><span className="hidden sm:inline">Votes</span><span className="sm:hidden">Gov</span></TabsTrigger>
           </TabsList>
 
           <TabsContent value={tab}>
@@ -126,20 +152,19 @@ export default function AgentLeaderboard() {
                   return (
                     <Card key={agent.id} className={`bg-white/5 border-white/10 hover:bg-white/[0.08] transition-all ${idx < 3 ? 'ring-1 ring-yellow-400/20' : ''}`}>
                       <CardContent className="py-3 px-4">
-                        <div className="flex items-center gap-4">
-                          <span className="text-white/40 font-bold w-6 text-center text-sm">#{idx + 1}</span>
+                        <div className="flex items-center gap-2 sm:gap-4">
+                           <span className="text-white/40 font-bold w-5 sm:w-6 text-center text-xs sm:text-sm">#{idx + 1}</span>
                           {idx < 3 && PLACE_ICONS[idx]}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-white font-semibold truncate">{agent.name}</span>
-                              <Badge className={`text-xs ${rank.bg}`}>
-                                <RankIcon className="w-3 h-3 mr-1" />{rank.label}
-                              </Badge>
-                              <Badge className="bg-white/10 text-white/60 border-white/10 text-xs">{agent.role}</Badge>
-                            </div>
-                            <Progress value={(val / max) * 100} className="h-1.5" />
+                          <div className="flex items-center gap-1 mb-1 flex-wrap">
+                            <span className="text-white font-semibold text-xs sm:text-sm truncate">{agent.name}</span>
+                            <Badge className={`text-[10px] sm:text-xs ${rank.bg}`}>
+                              <RankIcon className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />{rank.label}
+                            </Badge>
                           </div>
-                          <span className={`text-xl font-bold ${rank.color} min-w-[3rem] text-right`}>{val}</span>
+                          <Progress value={(val / max) * 100} className="h-1 sm:h-1.5" />
+                          </div>
+                          <span className={`text-lg sm:text-xl font-bold ${rank.color} min-w-[2rem] sm:min-w-[3rem] text-right text-sm sm:text-base`}>{val}</span>
                         </div>
                       </CardContent>
                     </Card>

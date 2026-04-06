@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useIdentity } from '@/hooks/useIdentity';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,13 +12,26 @@ import SkillTrajectoryInsights from '../components/agent/SkillTrajectoryInsights
 import AgentKUProfile from '../components/kinetic/AgentKUProfile';
 import AgentMatchingProjects from '../components/AgentMatchingProjects';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useIdentity } from '@/hooks/useIdentity';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
 export default function AgentProfile() {
   const [searchParams] = useSearchParams();
+  const [currentDID, setCurrentDID] = useState(null);
   const agentId = searchParams.get('id');
   const { isRecognized, didSignal, isAdmin } = useIdentity();
+
+  useEffect(() => {
+    const checkDID = async () => {
+      try {
+        const identity = localStorage.getItem('soulbridge_identity');
+        if (identity) setCurrentDID(JSON.parse(identity));
+      } catch (e) { /* ignore */ }
+    };
+    checkDID();
+    const handleDidSignal = () => checkDID();
+    window.addEventListener('did-connected', handleDidSignal);
+    return () => window.removeEventListener('did-connected', handleDidSignal);
+  }, []);
 
   const { data: agent, isLoading } = useQuery({
     queryKey: ['agent', agentId],
@@ -108,17 +122,23 @@ export default function AgentProfile() {
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Link to="/Agents">
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                  <ArrowLeft className="w-5 h-5" />
+                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white flex-shrink-0">
+                  <ArrowLeft className="w-4 sm:w-5 h-4 sm:h-5" />
                 </Button>
               </Link>
+              {currentDID && (
+                <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 text-[10px] sm:text-xs truncate">
+                  <Fingerprint className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 flex-shrink-0" />
+                  <span className="truncate">{currentDID.did?.slice(0, 16)}...</span>
+                </Badge>
+              )}
               {didSignal?.isVerified && (
-                <div className="hidden sm:flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2 py-1">
-                  <Shield className="w-3 h-3 text-green-400" />
-                  <span className="text-green-300 text-xs">DID Active</span>
+                <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2 py-1 flex-shrink-0">
+                  <Shield className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-400" />
+                  <span className="text-green-300 text-[10px] sm:text-xs">Verified</span>
                 </div>
               )}
             </div>
@@ -134,22 +154,22 @@ export default function AgentProfile() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto p-3 sm:p-6">
         {/* Hero Section */}
         <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-6">
-          <CardContent className="pt-8">
-            <div className="flex flex-col md:flex-row gap-6">
+          <CardContent className="pt-6 sm:pt-8">
+            <div className="flex flex-col gap-4 sm:gap-6">
               {/* Avatar */}
               <div className="flex-shrink-0">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-4xl font-bold">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-2xl sm:text-4xl font-bold">
                   {agent.name.charAt(0)}
                 </div>
               </div>
 
               {/* Info */}
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-3 sm:space-y-4">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{agent.name}</h1>
+                  <h1 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{agent.name}</h1>
                   {agent.tagline && (
                     <p className="text-base sm:text-lg text-purple-300/80">{agent.tagline}</p>
                   )}
@@ -181,11 +201,11 @@ export default function AgentProfile() {
                 )}
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-white">{agent.honor_score}</div>
-                    <div className="text-xs text-white/60">Honor</div>
-                  </div>
+                <div className="grid grid-cols-2 gap-2 sm:gap-4 pt-3 sm:pt-4">
+                   <div className="text-center">
+                     <div className="text-lg sm:text-2xl font-bold text-white">{agent.honor_score}</div>
+                     <div className="text-[10px] sm:text-xs text-white/60">Honor</div>
+                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white flex items-center justify-center gap-1">
                       {averageRating > 0 ? averageRating.toFixed(1) : 'N/A'}
@@ -231,19 +251,17 @@ export default function AgentProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10 flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600">Overview</TabsTrigger>
-            <TabsTrigger value="performance" className="data-[state=active]:bg-purple-600">Performance</TabsTrigger>
-            <TabsTrigger value="skills" className="data-[state=active]:bg-purple-600">Skills</TabsTrigger>
-            <TabsTrigger value="growth" className="data-[state=active]:bg-purple-600 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" /> Growth Insights
+          <TabsList className="bg-white/5 border border-white/10 flex-wrap h-auto gap-1 p-1 w-full overflow-x-auto justify-start">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">Overview</TabsTrigger>
+            <TabsTrigger value="performance" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">Performance</TabsTrigger>
+            <TabsTrigger value="skills" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">Skills</TabsTrigger>
+            <TabsTrigger value="growth" className="data-[state=active]:bg-purple-600 flex items-center gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Growth</span>
             </TabsTrigger>
-            <TabsTrigger value="self-nft" className="data-[state=active]:bg-purple-600 flex items-center gap-1">
-              <BarChart3 className="w-3.5 h-3.5" /> Self-NFT
-            </TabsTrigger>
-            <TabsTrigger value="contributions" className="data-[state=active]:bg-purple-600">Contributions</TabsTrigger>
-            <TabsTrigger value="portfolio" className="data-[state=active]:bg-purple-600">Portfolio</TabsTrigger>
-            <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-600">Reviews</TabsTrigger>
+            <TabsTrigger value="self-nft" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">NFT</TabsTrigger>
+            <TabsTrigger value="contributions" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">Work</TabsTrigger>
+            <TabsTrigger value="portfolio" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">Portfolio</TabsTrigger>
+            <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">Reviews</TabsTrigger>
           </TabsList>
 
           <TabsContent value="performance" className="space-y-6">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,15 +8,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, User, Target, Brain, Award, Users, BookOpen, ArrowRight, CheckCircle, Plus, X } from 'lucide-react';
+import { Sparkles, User, Target, Brain, Award, Users, BookOpen, ArrowRight, CheckCircle, Plus, X, ArrowLeft, Fingerprint } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import GuidedTour from '../components/onboarding/GuidedTour';
 
 export default function AgentOnboarding() {
     const [step, setStep] = useState(1);
     const [onboardingData, setOnboardingData] = useState(null);
+    const [currentDID, setCurrentDID] = useState(null);
+
+    useEffect(() => {
+      const checkDID = async () => {
+        try {
+          const identity = localStorage.getItem('soulbridge_identity');
+          if (identity) setCurrentDID(JSON.parse(identity));
+        } catch (e) { /* ignore */ }
+      };
+      checkDID();
+    }, []);
     
     const [formData, setFormData] = useState({
         agent_id: '',
@@ -105,44 +115,55 @@ export default function AgentOnboarding() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
         <GuidedTour steps={onboardingTourSteps} tourKey="agent-onboarding-tour" />
-            <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="mb-8">
-                    <Link to={createPageUrl('Home')}>
-                        <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-4">
-                            ← Back to Village
-                        </Button>
-                    </Link>
-                    <div className="flex items-center gap-3 mb-2">
-                        <Sparkles className="w-8 h-8 text-purple-400" />
-                        <h1 className="text-3xl font-light text-white">Agent Onboarding</h1>
+            {/* Header */}
+            <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+                <Link to="/Agents">
+                    <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-3 sm:mb-4 text-sm">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                    </Button>
+                </Link>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                    <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h1 className="text-xl sm:text-3xl font-light text-white">Onboarding</h1>
+                      <p className="text-xs sm:text-sm text-purple-300/60">New agent setup</p>
                     </div>
-                    <p className="text-purple-300/60">AI-powered personalized journey into SoulBridge Village</p>
+                    {currentDID && (
+                      <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 text-[10px] sm:text-xs truncate flex-shrink-0">
+                        <Fingerprint className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
+                        Connected
+                      </Badge>
+                    )}
                 </div>
+              </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
                 {/* Progress Steps */}
                 {step < 5 && (
-                    <div className="mb-8">
+                    <div className="mb-6 sm:mb-8">
                         <div className="flex items-center justify-between mb-2">
                             {[1, 2, 3, 4].map((s) => (
                                 <div key={s} className="flex items-center flex-1">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-base ${
                                         step >= s ? 'bg-purple-600 text-white' : 'bg-white/10 text-gray-400'
                                     }`}>
-                                        {step > s ? <CheckCircle className="w-5 h-5" /> : s}
+                                        {step > s ? <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" /> : s}
                                     </div>
                                     {s < 4 && (
-                                        <div className={`flex-1 h-1 mx-2 ${
+                                        <div className={`flex-1 h-1 mx-1 sm:mx-2 ${
                                             step > s ? 'bg-purple-600' : 'bg-white/10'
                                         }`} />
                                     )}
                                 </div>
                             ))}
                         </div>
-                        <div className="flex justify-between text-sm text-gray-400">
-                            <span>Select Agent</span>
+                        <div className="flex justify-between text-[10px] sm:text-xs text-gray-400">
+                            <span>Agent</span>
                             <span>Skills</span>
                             <span>Goals</span>
                             <span>Review</span>

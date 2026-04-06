@@ -112,71 +112,71 @@ export default function AgentOrchestration() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" className="text-indigo-300 hover:text-indigo-200 mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+      {/* Header */}
+      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <Link to="/Agents" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-3 sm:mb-4 text-sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
           </Link>
-          <div className="flex items-center gap-3 mb-4">
-            <Network className="w-10 h-10 text-indigo-400" />
-            <div>
-              <h1 className="text-4xl font-bold text-white">AI Agent Orchestration</h1>
-              <p className="text-indigo-200/70">Coordinate, manage, and optimize your agent workforce</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+            <Network className="w-6 h-6 sm:w-10 sm:h-10 text-purple-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-4xl font-bold text-white">Orchestration</h1>
+              <p className="text-xs sm:text-sm text-purple-200/70">Agent coordination & automation</p>
             </div>
           </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* System Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-indigo-300/70">Active Agents</p>
-                  <p className="text-3xl font-bold text-white">{systemStats.totalAgents}</p>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-purple-300/70 truncate">Active Agents</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white">{systemStats.totalAgents}</p>
                 </div>
-                <Users className="w-8 h-8 text-indigo-400" />
+                <Users className="w-5 h-5 sm:w-8 sm:h-8 text-purple-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-300/70">Active Projects</p>
-                  <p className="text-3xl font-bold text-white">{systemStats.totalProjects}</p>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-blue-300/70 truncate">Projects</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white">{systemStats.totalProjects}</p>
                 </div>
-                <Target className="w-8 h-8 text-blue-400" />
+                <Target className="w-5 h-5 sm:w-8 sm:h-8 text-blue-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-300/70">Completed Tasks</p>
-                  <p className="text-3xl font-bold text-white">{systemStats.completedTasks}</p>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-green-300/70 truncate">Completed</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white">{systemStats.completedTasks}</p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-green-400" />
+                <CheckCircle2 className="w-5 h-5 sm:w-8 sm:h-8 text-green-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-white/5 border-white/10 backdrop-blur-xl">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-yellow-300/70">In Progress</p>
-                  <p className="text-3xl font-bold text-white">{systemStats.activeTasks}</p>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-yellow-300/70 truncate">In Progress</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white">{systemStats.activeTasks}</p>
                 </div>
-                <Activity className="w-8 h-8 text-yellow-400" />
+                <Activity className="w-5 h-5 sm:w-8 sm:h-8 text-yellow-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
