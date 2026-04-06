@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, CheckCircle, AlertCircle, RefreshCw, ArrowLeft, Copy, Eye, EyeOff, Plus, Zap } from 'lucide-react';
+import { Shield, CheckCircle, AlertCircle, RefreshCw, ArrowLeft, Copy, Eye, EyeOff, Plus, Zap, Link2, Zap as ZapIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -12,12 +12,32 @@ export default function DIDManager() {
   const [publishing, setPublishing] = useState(null);
   const [showSeed, setShowSeed] = useState({});
   const [walletName, setWalletName] = useState('Agent01');
+  const [selectedWallet, setSelectedWallet] = useState(null);
+  const [trustlineLoading, setTrustlineLoading] = useState(null);
 
   const walletNameOptions = ['Agent01', 'Agent02', 'Agent03', 'Agent04', 'Agent05', 'Guardian01', 'Creator01', 'Trader01', 'Treasury'];
 
   const { data: wallets = [], isLoading, refetch } = useQuery({
     queryKey: ['did-wallets'],
     queryFn: () => base44.entities.Wallet.list('-created_date', 100),
+  });
+
+  const { data: balances = {}, isLoading: balancesLoading } = useQuery({
+    queryKey: ['wallet-balances', wallets.map(w => w.id)],
+    queryFn: async () => {
+      if (wallets.length === 0) return {};
+      const result = {};
+      for (const wallet of wallets) {
+        try {
+          const res = await base44.functions.invoke('getBalance', { wallet_id: wallet.id });
+          result[wallet.id] = res.data;
+        } catch (e) {
+          result[wallet.id] = { xrp: 0, rlusd: 0, error: true };
+        }
+      }
+      return result;
+    },
+    enabled: wallets.length > 0,
   });
 
   const handleCreateWallet = async () => {
@@ -49,6 +69,19 @@ export default function DIDManager() {
       toast.error(e.response?.data?.error || 'Failed to publish DID');
     } finally {
       setPublishing(null);
+    }
+  };
+
+  const handleAddTrustline = async (walletId, assetCode) => {
+    setTrustlineLoading({ walletId, assetCode });
+    try {
+      await base44.functions.invoke('addRLUSDTrustline', { wallet_id: walletId });
+      toast.success(`${assetCode} trustline added`);
+      await refetch();
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to add trustline');
+    } finally {
+      setTrustlineLoading(null);
     }
   };
 
@@ -153,7 +186,7 @@ export default function DIDManager() {
         {/* Wallets List */}
         <Card className="bg-white/5 border-white/10">
           <CardHeader>
-            <CardTitle className="text-white">Wallet DIDs & Seeds</CardTitle>
+            <CardTitle className="text-white">Wallet DIDs & Management</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -164,96 +197,129 @@ export default function DIDManager() {
               <p className="text-white/40 text-center py-8">No wallets found. Create one above.</p>
             ) : (
               <div className="space-y-4">
-                {wallets.map(wallet => (
-                  <div key={wallet.id} className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-white font-semibold">{wallet.name || 'Unnamed'}</h3>
-                          {wallet.is_published ? (
-                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Published
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                              <AlertCircle className="w-3 h-3 mr-1" />
-                              Pending
-                            </Badge>
-                          )}
+                {wallets.map(wallet => {
+                  const balance = balances[wallet.id] || {};
+                  return (
+                    <div key={wallet.id} className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-white font-semibold">{wallet.name || 'Unnamed'}</h3>
+                            {wallet.is_published ? (
+                              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Published
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                                <AlertCircle className="w-3 h-3 mr-1" />
+                                Pending
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      {!wallet.is_published && (
-                        <button
-                          onClick={() => handlePublishDID(wallet.id)}
-                          disabled={publishing === wallet.id}
-                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
-                        >
-                          {publishing === wallet.id ? 'Publishing...' : 'Publish DID'}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Address */}
-                    <div className="bg-black/30 rounded-lg p-3">
-                      <p className="text-white/40 text-xs mb-1">Classic Address (DID)</p>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-white/70 text-sm font-mono truncate">{wallet.classic_address}</p>
-                        <button
-                          onClick={() => copyToClipboard(wallet.classic_address, 'Address')}
-                          className="text-purple-400 hover:text-purple-300 transition flex-shrink-0"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Seed (encrypted) */}
-                    {wallet.encrypted_seed && (
-                      <div className="bg-black/30 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-white/40 text-xs">Encrypted Seed</p>
+                        {!wallet.is_published && (
                           <button
-                            onClick={() => toggleShowSeed(wallet.id)}
-                            className="text-purple-400 hover:text-purple-300 transition"
+                            onClick={() => handlePublishDID(wallet.id)}
+                            disabled={publishing === wallet.id}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
                           >
-                            {showSeed[wallet.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {publishing === wallet.id ? 'Publishing...' : 'Publish DID'}
                           </button>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-white/70 text-sm font-mono truncate">
-                            {showSeed[wallet.id] ? wallet.encrypted_seed : '••••••••••••••••'}
-                          </p>
-                          {showSeed[wallet.id] && (
-                            <button
-                              onClick={() => copyToClipboard(wallet.encrypted_seed, 'Seed')}
-                              className="text-purple-400 hover:text-purple-300 transition flex-shrink-0"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
+                        )}
                       </div>
-                    )}
 
-                    {/* Publication Details */}
-                    {wallet.is_published && wallet.published_txid && (
-                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                        <p className="text-green-400/60 text-xs mb-1">Published TX Hash</p>
+                      {/* Address */}
+                      <div className="bg-black/30 rounded-lg p-3">
+                        <p className="text-white/40 text-xs mb-1">Classic Address (DID)</p>
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-green-400 text-sm font-mono truncate">{wallet.published_txid}</p>
+                          <p className="text-white/70 text-sm font-mono truncate">{wallet.classic_address}</p>
                           <button
-                            onClick={() => copyToClipboard(wallet.published_txid, 'TX Hash')}
-                            className="text-green-400 hover:text-green-300 transition flex-shrink-0"
+                            onClick={() => copyToClipboard(wallet.classic_address, 'Address')}
+                            className="text-purple-400 hover:text-purple-300 transition flex-shrink-0"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Balances */}
+                      {!balancesLoading && balance && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-black/30 rounded-lg p-3">
+                            <p className="text-white/40 text-xs mb-1">XRP Balance</p>
+                            <p className="text-white/70 text-sm font-mono">{balance.xrp || 0} XRP</p>
+                          </div>
+                          <div className="bg-black/30 rounded-lg p-3">
+                            <p className="text-white/40 text-xs mb-1">rLUSD Balance</p>
+                            <p className="text-white/70 text-sm font-mono">{balance.rlusd || 0} rLUSD</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Trustline Management */}
+                      {!balance.has_rlusd_trustline && (
+                        <button
+                          onClick={() => handleAddTrustline(wallet.id, 'rLUSD')}
+                          disabled={trustlineLoading?.walletId === wallet.id}
+                          className="w-full flex items-center justify-center gap-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
+                        >
+                          {trustlineLoading?.walletId === wallet.id ? (
+                            <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-300 rounded-full animate-spin" />
+                          ) : (
+                            <Link2 className="w-4 h-4" />
+                          )}
+                          Add rLUSD Trustline
+                        </button>
+                      )}
+
+                      {/* Seed (encrypted) */}
+                      {wallet.encrypted_seed && (
+                        <div className="bg-black/30 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-white/40 text-xs">Encrypted Seed</p>
+                            <button
+                              onClick={() => toggleShowSeed(wallet.id)}
+                              className="text-purple-400 hover:text-purple-300 transition"
+                            >
+                              {showSeed[wallet.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-white/70 text-sm font-mono truncate">
+                              {showSeed[wallet.id] ? wallet.encrypted_seed : '••••••••••••••••'}
+                            </p>
+                            {showSeed[wallet.id] && (
+                              <button
+                                onClick={() => copyToClipboard(wallet.encrypted_seed, 'Seed')}
+                                className="text-purple-400 hover:text-purple-300 transition flex-shrink-0"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Publication Details */}
+                      {wallet.is_published && wallet.published_txid && (
+                        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                          <p className="text-green-400/60 text-xs mb-1">Published TX Hash</p>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-green-400 text-sm font-mono truncate">{wallet.published_txid}</p>
+                            <button
+                              onClick={() => copyToClipboard(wallet.published_txid, 'TX Hash')}
+                              className="text-green-400 hover:text-green-300 transition flex-shrink-0"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>
