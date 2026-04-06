@@ -93,7 +93,7 @@ export default function GovernanceAnalytics() {
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <Link to="/GovernanceHub">
+            <Link to="/governance">
               <Button variant="ghost" className="text-purple-300 hover:text-purple-200 mb-3 -ml-2">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back to Governance
               </Button>

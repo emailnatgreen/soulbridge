@@ -407,7 +407,7 @@ export default function GovernanceVotingDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/GovernanceHub">
+            <Link to="/governance">
               <Button variant="ghost" size="sm" className="text-white/50 hover:text-white">
                 <ArrowLeft className="w-4 h-4 mr-1" />Hub
               </Button>
