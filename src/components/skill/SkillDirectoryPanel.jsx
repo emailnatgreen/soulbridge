@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import SkillCard from './SkillCard';
 import { Search, Filter, AlertCircle, Loader } from 'lucide-react';
 
-export default function SkillDirectoryPanel({ currentUser, agents = [] }) {
+export default function SkillDirectoryPanel({ myAgent, agents = [] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
@@ -25,36 +25,35 @@ export default function SkillDirectoryPanel({ currentUser, agents = [] }) {
     staleTime: 15000,
   });
 
-  // Fetch existing mentorship requests for current user
+  // Fetch existing mentorship requests for current agent
   const { data: existingMentorships = [] } = useQuery({
-    queryKey: ['userMentorships', currentUser?.id],
+    queryKey: ['userMentorships', myAgent?.id],
     queryFn: async () => {
-      if (!currentUser) return [];
-      return base44.entities.MentorshipRelationship?.filter?.({ mentee_agent_id: currentUser.id }, '-created_date', 100) || [];
+      if (!myAgent?.id) return [];
+      return base44.entities.MentorshipRelationship?.filter?.({ mentee_agent_id: myAgent.id }, '-created_date', 100) || [];
     },
     staleTime: 10000,
-    enabled: !!currentUser,
+    enabled: !!myAgent?.id,
   });
 
   // Create mentorship request mutation
   const createMentorshipMutation = useMutation({
     mutationFn: async ({ skillId, mentorAgentId }) => {
-      if (!currentUser) throw new Error('User not authenticated');
+      if (!myAgent?.id) throw new Error('No agent linked to your account. Create an agent first.');
       
       return base44.entities.MentorshipRelationship.create({
         mentor_agent_id: mentorAgentId,
-        mentee_agent_id: currentUser.id,
+        mentee_agent_id: myAgent.id,
         focus_areas: [skillId],
         skill_focus_ids: [skillId],
         status: 'requested',
       });
     },
     onSuccess: () => {
-      // Show success toast or refetch mentorships
-      alert('Mentorship request sent!');
+      import('sonner').then(({ toast }) => toast.success('Mentorship request sent!'));
     },
     onError: (error) => {
-      alert(`Error: ${error.message}`);
+      import('sonner').then(({ toast }) => toast.error(error.message || 'Failed to send request'));
     },
   });
 

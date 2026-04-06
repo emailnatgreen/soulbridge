@@ -12,7 +12,6 @@ import {
   CheckCircle, Play, Clock, Brain, Star, ChevronRight, Loader2, ShieldCheck, Zap
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import PersonalisedPlanCard from '@/components/PersonalisedPlanCard';
 import AskAxiButton from '@/components/AskAxiButton';
@@ -94,7 +93,7 @@ export default function SkillDevelopment() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-4">
-              <Link to={createPageUrl('Home')}>
+              <Link to="/home">
                 <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
                   <ArrowLeft className="w-5 h-5" />
                 </Button>

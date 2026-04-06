@@ -4,36 +4,33 @@ import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Shield, TrendingUp, Calendar, Target, CheckCircle2, Clock, AlertCircle, Loader } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export default function DevelopmentPathsPanel({ currentUser, agents = [] }) {
-  // Fetch development plans for current user
+export default function DevelopmentPathsPanel({ myAgent, agents = [] }) {
+  const navigate = useNavigate();
+
+  // Fetch development plans for current agent
   const { data: devPlans = [], isLoading: plansLoading } = useQuery({
-    queryKey: ['devPlans', currentUser?.id],
-    queryFn: async () => {
-      if (!currentUser) return [];
-      return base44.entities.SkillDevelopmentPlan?.filter?.(
-        { agent_id: currentUser.id },
-        '-created_date',
-        50
-      ) || [];
-    },
+    queryKey: ['devPlans', myAgent?.id],
+    queryFn: () => base44.entities.SkillDevelopmentPlan.filter(
+      { agent_id: myAgent.id },
+      '-created_date',
+      50
+    ),
     staleTime: 15000,
-    enabled: !!currentUser,
+    enabled: !!myAgent?.id,
   });
 
-  // Fetch skill progress records
+  // Fetch skill progress records for current agent
   const { data: skillProgress = [] } = useQuery({
-    queryKey: ['skillProgress', currentUser?.id],
-    queryFn: async () => {
-      if (!currentUser) return [];
-      return base44.entities.SkillProgress?.filter?.(
-        { agent_id: currentUser.id },
-        '-updated_date',
-        100
-      ) || [];
-    },
+    queryKey: ['skillProgress', myAgent?.id],
+    queryFn: () => base44.entities.SkillProgress.filter(
+      { agent_id: myAgent.id },
+      '-updated_date',
+      100
+    ),
     staleTime: 15000,
-    enabled: !!currentUser,
+    enabled: !!myAgent?.id,
   });
 
   // Fetch mentor profiles for assigned mentors
@@ -46,26 +43,35 @@ export default function DevelopmentPathsPanel({ currentUser, agents = [] }) {
   // Enrich development plans with progress and mentor data
   const enrichedPlans = useMemo(() => {
     return devPlans.map(plan => {
-      const planProgress = skillProgress.filter(sp => sp.plan_id === plan.id);
+      const planProgress = skillProgress.filter(sp => sp.development_plan_id === plan.id);
       const mentor = agents.find(a => a.id === plan.assigned_mentor_id);
       const mentorProfile = mentorProfiles.find(mp => mp.agent_id === plan.assigned_mentor_id);
 
-      // Calculate overall progress
-      const completedMilestones = planProgress.filter(sp => sp.status === 'completed').length;
-      const totalMilestones = planProgress.length || 1;
-      const progressPercentage = Math.round((completedMilestones / totalMilestones) * 100);
+      // Calculate overall progress from immediate_actions completion
+      const completedActions = (plan.immediate_actions || []).filter(a => a.completed).length;
+      const totalActions = (plan.immediate_actions || []).length;
+      const progressPercentage = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0;
 
       return {
         ...plan,
         mentor,
         mentorProfile,
         progress: planProgress,
-        completedMilestones,
-        totalMilestones,
+        completedMilestones: completedActions,
+        totalMilestones: totalActions || (planProgress.length || 1),
         progressPercentage,
       };
     });
   }, [devPlans, skillProgress, agents, mentorProfiles]);
+
+  if (!myAgent) {
+    return (
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center space-y-4">
+        <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
+        <p className="text-white/60">No agent linked to your account.</p>
+      </div>
+    );
+  }
 
   if (plansLoading) {
     return (
@@ -80,9 +86,12 @@ export default function DevelopmentPathsPanel({ currentUser, agents = [] }) {
       <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center space-y-4">
         <AlertCircle className="w-8 h-8 text-white/40 mx-auto" />
         <div>
-          <p className="text-white/60 text-sm mb-3">No development paths yet.</p>
-          <p className="text-white/40 text-xs">Request mentorship in the Skill Directory to start your growth journey.</p>
+          <p className="text-white/60 text-sm mb-3">No development paths for <span className="text-white font-semibold">{myAgent.name}</span> yet.</p>
+          <p className="text-white/40 text-xs">Go to Skill Development to generate an AI Growth Plan.</p>
         </div>
+        <Button onClick={() => navigate('/training')} className="mx-auto bg-cyan-600 hover:bg-cyan-700 text-white">
+          Go to Skill Development
+        </Button>
       </div>
     );
   }
@@ -97,8 +106,8 @@ export default function DevelopmentPathsPanel({ currentUser, agents = [] }) {
           {/* Plan Header */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h3 className="text-white font-semibold text-lg">{plan.skill_name}</h3>
-              <p className="text-white/50 text-sm mt-0.5">{plan.description}</p>
+              <h3 className="text-white font-semibold text-lg">{plan.plan_title}</h3>
+              <p className="text-white/50 text-sm mt-0.5">{plan.summary}</p>
             </div>
             <Badge className={`flex-shrink-0 ${
               plan.status === 'active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
@@ -113,32 +122,22 @@ export default function DevelopmentPathsPanel({ currentUser, agents = [] }) {
           {plan.mentor && (
             <div className="bg-gradient-to-br from-emerald-900/20 to-teal-900/20 border border-emerald-500/30 rounded-xl p-4 space-y-3">
               <p className="text-xs uppercase text-emerald-400 tracking-widest">Your Mentor</p>
-              
               <div className="flex items-center gap-3">
                 {plan.mentor.avatar_url ? (
-                  <img
-                    src={plan.mentor.avatar_url}
-                    alt={plan.mentor.name}
-                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                  />
+                  <img src={plan.mentor.avatar_url} alt={plan.mentor.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500/30 to-teal-500/30 border border-emerald-400/30 flex items-center justify-center flex-shrink-0">
                     <span className="text-emerald-300 font-bold">{plan.mentor.name?.[0] || '?'}</span>
                   </div>
                 )}
-                
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-white font-medium text-sm">{plan.mentor.name}</p>
-                    {plan.mentor.wallet_id && (
-                      <Shield className="w-4 h-4 text-green-400 flex-shrink-0" title="DID Published" />
-                    )}
+                    {plan.mentor.wallet_id && <Shield className="w-4 h-4 text-green-400 flex-shrink-0" />}
                   </div>
                   <p className="text-white/40 text-xs capitalize">{plan.mentor.role || 'Mentor'}</p>
                 </div>
               </div>
-
-              {/* Mentor Details */}
               {plan.mentorProfile && (
                 <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-emerald-500/20">
                   <div>
@@ -185,78 +184,49 @@ export default function DevelopmentPathsPanel({ currentUser, agents = [] }) {
             </div>
           )}
 
-          {/* Timeline of Milestones */}
-          {plan.progress && plan.progress.length > 0 && (
+          {/* Learning Phases */}
+          {plan.learning_phases?.length > 0 && (
             <div className="space-y-3">
               <h4 className="text-white font-medium text-sm flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-blue-400" />
-                Milestone Timeline
+                Learning Phases
               </h4>
-              
               <div className="space-y-2">
-                {plan.progress.map((milestone, idx) => (
-                  <div key={milestone.id} className="flex gap-3">
-                    {/* Timeline dot */}
-                    <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        milestone.status === 'completed'
-                          ? 'bg-green-500/30 border-green-500'
-                          : milestone.status === 'in_progress'
-                          ? 'bg-blue-500/30 border-blue-500'
-                          : 'bg-white/10 border-white/20'
-                      }`}>
-                        {milestone.status === 'completed' && (
-                          <CheckCircle2 className="w-3 h-3 text-green-400" />
-                        )}
-                      </div>
-                      {idx < plan.progress.length - 1 && (
-                        <div className="w-0.5 h-8 bg-gradient-to-b from-white/20 to-transparent" />
-                      )}
+                {plan.learning_phases.map((phase, idx) => (
+                  <div key={idx} className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-white font-medium text-sm">{phase.phase_name}</span>
+                      <span className="text-purple-300 text-xs">{phase.duration_weeks}wk</span>
                     </div>
-
-                    {/* Milestone content */}
-                    <div className="flex-1 pt-0.5">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-white font-medium text-sm">{milestone.milestone_name || `Milestone ${idx + 1}`}</p>
-                          {milestone.description && (
-                            <p className="text-white/40 text-xs mt-1">{milestone.description}</p>
-                          )}
-                        </div>
-                        <Badge className={`flex-shrink-0 text-[10px] ${
-                          milestone.status === 'completed' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
-                          milestone.status === 'in_progress' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                          'bg-white/10 text-white/60 border-white/20'
-                        }`}>
-                          {milestone.status === 'in_progress' && <Clock className="w-2.5 h-2.5 mr-1" />}
-                          {milestone.status || 'pending'}
-                        </Badge>
+                    {phase.focus_skills?.length > 0 && (
+                      <div className="flex gap-1 flex-wrap mt-1">
+                        {phase.focus_skills.map(s => (
+                          <Badge key={s} className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-[10px]">{s}</Badge>
+                        ))}
                       </div>
-                      
-                      {milestone.target_date && (
-                        <p className="text-white/40 text-xs mt-2">
-                          Target: {new Date(milestone.target_date).toLocaleDateString()}
-                        </p>
-                      )}
-
-                      {milestone.completed_date && (
-                        <p className="text-green-400 text-xs mt-1">
-                          Completed: {new Date(milestone.completed_date).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Action Buttons */}
+          {/* Action Buttons — now functional */}
           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-            <Button variant="ghost" size="sm" className="flex-1 text-xs text-white/60 hover:text-white hover:bg-white/10">
-              View Details
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 text-xs text-white/60 hover:text-white hover:bg-white/10"
+              onClick={() => navigate('/training')}
+            >
+              View in Skill Development
             </Button>
-            <Button variant="ghost" size="sm" className="flex-1 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+              onClick={() => navigate('/training')}
+            >
               Update Progress
             </Button>
           </div>

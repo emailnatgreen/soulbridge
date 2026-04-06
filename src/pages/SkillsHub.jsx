@@ -6,31 +6,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MySkillsPanel from '@/components/skill/MySkillsPanel';
 import SkillDirectoryPanel from '@/components/skill/SkillDirectoryPanel';
 import DevelopmentPathsPanel from '@/components/skill/DevelopmentPathsPanel';
-import { BookOpen, Users, Map, Loader } from 'lucide-react';
+import { BookOpen, Users, Map, Loader, AlertCircle } from 'lucide-react';
 import BackToHomeButton from '../components/BackToHomeButton';
+import { useMyAgent } from '@/hooks/useMyAgent';
 
 export default function SkillsHub() {
   const [activeTab, setActiveTab] = useState('my-skills');
 
-  // Fetch current user's agent
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
-      try {
-        return await base44.auth.me();
-      } catch {
-        return null;
-      }
-    },
-    staleTime: 30000,
-  });
-
-  // Fetch all agents for DID signals
-  const { data: agents = [], isLoading: agentsLoading } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list('-created_date', 100),
-    staleTime: 15000,
-  });
+  // Resolve current user to their Agent entity
+  const { user: currentUser, myAgent, allAgents: agents, isLoading: identityLoading } = useMyAgent();
 
   // Fetch mentor profiles
   const { data: mentorProfiles = [] } = useQuery({
@@ -46,7 +30,7 @@ export default function SkillsHub() {
     staleTime: 15000,
   });
 
-  const isLoading = agentsLoading;
+  const isLoading = identityLoading;
 
   // Calculate statistics
   const totalMentors = mentorProfiles.length;
@@ -130,19 +114,30 @@ export default function SkillsHub() {
               </TabsTrigger>
             </TabsList>
 
+            {/* Agent identity notice */}
+            {!myAgent && !isLoading && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mt-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-amber-300 font-medium text-sm">No agent linked to your account</p>
+                  <p className="text-white/50 text-xs mt-1">Your skills and development paths are tied to your Agent identity. Create an agent or ask an admin to link one to your account.</p>
+                </div>
+              </div>
+            )}
+
             {/* Tab 1: My Skills */}
             <TabsContent value="my-skills" className="space-y-4 mt-6">
-              <MySkillsPanel currentUser={currentUser} agents={agents} />
+              <MySkillsPanel myAgent={myAgent} agents={agents} />
             </TabsContent>
 
             {/* Tab 2: Skill Directory */}
             <TabsContent value="skill-directory" className="space-y-4 mt-6">
-              <SkillDirectoryPanel currentUser={currentUser} agents={agents} />
+              <SkillDirectoryPanel myAgent={myAgent} agents={agents} />
             </TabsContent>
 
             {/* Tab 3: Development Paths */}
             <TabsContent value="development-paths" className="space-y-4 mt-6">
-              <DevelopmentPathsPanel currentUser={currentUser} agents={agents} />
+              <DevelopmentPathsPanel myAgent={myAgent} agents={agents} />
             </TabsContent>
           </Tabs>
         )}

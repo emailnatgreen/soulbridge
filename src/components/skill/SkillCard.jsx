@@ -1,7 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, BookOpen, Star, TrendingUp, Award, Zap } from 'lucide-react';
+import { Shield, BookOpen, Star, TrendingUp, Award, Zap, Eye } from 'lucide-react';
 
 export default function SkillCard({
   skill,
@@ -10,6 +11,8 @@ export default function SkillCard({
   onRequestMentorship = null, // Callback for booking
   isLoading = false,
 }) {
+  const navigate = useNavigate();
+
   if (variant === 'owned') {
     return (
       <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4 hover:bg-white/10 transition">
@@ -58,10 +61,10 @@ export default function SkillCard({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="flex-1 text-xs text-white/60 hover:text-white hover:bg-white/10">
-            View Details
+          <Button variant="ghost" size="sm" className="flex-1 text-xs text-white/60 hover:text-white hover:bg-white/10" onClick={() => navigate('/training')}>
+            <Eye className="w-3 h-3 mr-1" /> Details
           </Button>
-          <Button variant="ghost" size="sm" className="flex-1 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+          <Button variant="ghost" size="sm" className="flex-1 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10" onClick={() => navigate('/SkillValidation')}>
             <Award className="w-3 h-3 mr-1" /> Endorse
           </Button>
         </div>
