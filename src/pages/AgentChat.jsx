@@ -13,7 +13,8 @@ import AgentChatWindow from '../components/AgentChatWindow';
 export default function AgentChatPage() {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [currentDID, setCurrentDID] = useState(null);
-  const { isRecognized } = useIdentity ? { isRecognized: !!currentDID } : { isRecognized: false };
+  const { isRecognized } = useIdentity();
+  const recognized = isRecognized || !!currentDID;
 
   useEffect(() => {
     const checkDID = async () => {
