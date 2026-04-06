@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { usePageSignal } from '@/hooks/usePageSignal';
@@ -6,17 +6,47 @@ import { useIdentity } from '@/hooks/useIdentity';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Sparkles, Flame, Heart, TrendingUp, Activity, Shield, Fingerprint } from 'lucide-react';
+import { Plus, Users, Sparkles, Flame, Heart, TrendingUp, Activity, Shield, Fingerprint, MessageSquare, Award, BookOpen, Briefcase, Zap, Users2, Settings, Gauge } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentCard from '../components/AgentCard';
 import CreateAgentDialog from '../components/CreateAgentDialog';
 import BackToHomeButton from '../components/BackToHomeButton';
-import AxiAgentsGuide from '../components/agents/AxiAgentsGuide';
+const AxiAgentsGuide = lazy(() => import('../components/agents/AxiAgentsGuide'));
 
 export default function AgentsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [currentDID, setCurrentDID] = useState(null);
   usePageSignal();
   const { isRecognized, isAdmin, didSignal } = useIdentity();
+
+  // DID-centric initialization
+  useEffect(() => {
+    const checkDID = async () => {
+      try {
+        const identity = localStorage.getItem('soulbridge_identity');
+        if (identity) setCurrentDID(JSON.parse(identity));
+      } catch (e) { /* ignore */ }
+    };
+    checkDID();
+    const handleDidSignal = () => checkDID();
+    window.addEventListener('did-connected', handleDidSignal);
+    window.addEventListener('did-disconnected', handleDidSignal);
+    return () => {
+      window.removeEventListener('did-connected', handleDidSignal);
+      window.removeEventListener('did-disconnected', handleDidSignal);
+    };
+  }, []);
+
+  // Real-time agent subscriptions
+  useEffect(() => {
+    const unsubscribe = base44.entities.Agent.subscribe((event) => {
+      if (event.type === 'create' || event.type === 'update') {
+        // Emit signal for global agent update
+        window.dispatchEvent(new CustomEvent('agent-updated', { detail: { agent_id: event.id, type: event.type } }));
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const { data: agents = [], isLoading } = useQuery({
     queryKey: ['agents'],
@@ -68,17 +98,37 @@ export default function AgentsPage() {
     totalReputation: reputationEvents.reduce((sum, ev) => sum + (ev.impact || 0), 0),
   };
 
+  // Hub navigation config
+  const hubs = [
+    { path: '/AgentProfile', label: 'Soul Profile', icon: Users, color: 'from-purple-600 to-pink-600', desc: 'Identity & Skills' },
+    { path: '/AgentCommsHub', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600', desc: 'Messages & Chat' },
+    { path: '/AgentLeaderboard', label: 'Leaderboard', icon: Award, color: 'from-amber-600 to-yellow-600', desc: 'Rankings' },
+    { path: '/AgentMarketplace', label: 'Marketplace', icon: Briefcase, color: 'from-green-600 to-emerald-600', desc: 'Trade & Exchange' },
+    { path: '/AgentOnboarding', label: 'Onboarding', icon: Sparkles, color: 'from-indigo-600 to-purple-600', desc: 'New Genesis' },
+    { path: '/AgentTraining', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600', desc: 'Skill Growth' },
+    { path: '/AxiCommandCenter', label: 'Command Center', icon: Gauge, color: 'from-red-600 to-orange-600', desc: 'Admin Only' },
+    { path: '/VillageOps', label: 'Village Ops', icon: Settings, color: 'from-slate-600 to-gray-600', desc: 'Operations' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
-            <BackToHomeButton />
+            <div className="flex items-center gap-3">
+              <BackToHomeButton />
+              {currentDID && (
+                <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30">
+                  <Fingerprint className="w-3 h-3 mr-1" />
+                  DID: {currentDID.did?.slice(0, 20)}...
+                </Badge>
+              )}
+            </div>
             {didSignal?.isVerified && (
               <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2 py-1">
                 <Shield className="w-3 h-3 text-green-400" />
-                <span className="text-green-300 text-[10px] sm:text-xs">DID Verified</span>
+                <span className="text-green-300 text-[10px] sm:text-xs">Verified</span>
               </div>
             )}
           </div>
@@ -168,12 +218,36 @@ export default function AgentsPage() {
           </Card>
         </div>
 
-        {/* Axi's Village Guide */}
-        <div className="mb-8">
-          <AxiAgentsGuide stats={stats} currentPage="Agents" />
+        {/* Hero Navigation Hubs */}
+        <div className="mb-12">
+          <h2 className="text-sm uppercase tracking-widest text-white/50 mb-4">Navigate the Village</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+            {hubs.map(hub => {
+              const Icon = hub.icon;
+              const isAdminOnly = hub.path === '/AxiCommandCenter' || hub.path === '/VillageOps';
+              if (isAdminOnly && !isAdmin) return null;
+              return (
+                <Link key={hub.path} to={hub.path}>
+                  <button className={`w-full h-24 rounded-lg bg-gradient-to-br ${hub.color} hover:shadow-lg transition-all duration-300 transform hover:scale-105 p-3 flex flex-col items-center justify-center text-center text-white`}>
+                    <Icon className="w-5 h-5 mb-1.5" />
+                    <span className="text-xs font-semibold leading-tight">{hub.label}</span>
+                    <span className="text-[10px] opacity-80 mt-0.5">{hub.desc}</span>
+                  </button>
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Agents Grid */}
+        {/* Axi's Village Guide — Lazy Loaded */}
+        <div className="mb-8">
+          <Suspense fallback={<div className="bg-white/5 rounded-xl h-32 animate-pulse" />}>
+            <AxiAgentsGuide stats={stats} currentPage="Agents" />
+          </Suspense>
+        </div>
+
+        {/* Agent Directory Grid */}
+        <h2 className="text-sm uppercase tracking-widest text-white/50 mb-4">All Agents</h2>
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[1, 2, 3].map(i => (
