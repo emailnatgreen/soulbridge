@@ -38,6 +38,7 @@ const AgentGenesis = lazy(() => import('./pages/AgentGenesis'));
 const SovereignID = lazy(() => import('./pages/SovereignID'));
 const SkillValidation = lazy(() => import('./pages/SkillValidation'));
 const AgentMarketplace = lazy(() => import('./pages/AgentMarketplace'));
+const DIDManager = lazy(() => import('./pages/DIDManager'));
 const AgentChat = lazy(() => import('./pages/AgentChat'));
 const SkillDevelopment = lazy(() => import('./pages/SkillDevelopment'));
 const AgentProfile_EditProfile = lazy(() => import('./pages/EditAgentProfile'));
@@ -149,6 +150,8 @@ const AuthenticatedApp = () => {
         <Route path="/AgentGenesis" element={L("agent-genesis", AgentGenesis)} />
         <Route path="/sovereign-id" element={L("sovereign-id", SovereignID)} />
         <Route path="/SovereignID" element={L("sovereign-id", SovereignID)} />
+        <Route path="/did-manager" element={L("did-manager", DIDManager)} />
+        <Route path="/DIDManager" element={L("did-manager", DIDManager)} />
         <Route path="/training" element={L("training", SkillDevelopment)} />
         <Route path="/SkillDevelopment" element={L("training", SkillDevelopment)} />
         <Route path="/agents/edit" element={L("edit-profile", AgentProfile_EditProfile)} />
