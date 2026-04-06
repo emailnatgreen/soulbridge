@@ -8,8 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { OwnerGovernorProvider } from '@/lib/OwnerGovernorContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
-// Layout
-const Layout = lazy(() => import('./Layout'));
+import Layout from './Layout';
 
 // All pages lazy-loaded
 import LandingPage from './pages/LandingPage.jsx';
