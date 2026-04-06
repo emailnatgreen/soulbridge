@@ -13,7 +13,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const CATEGORIES = ['governance', 'resource_management', 'diplomacy', 'technical', 'wisdom', 'creative', 'research', 'leadership', 'wellbeing'];
 
-export default function SkillEndorseCard({ agents = [], currentUser }) {
+export default function SkillEndorseCard({ agents = [], currentUser, myAgent }) {
   const queryClient = useQueryClient();
   const [agentId, setAgentId] = useState('');
   const [skillName, setSkillName] = useState('');
@@ -51,7 +51,7 @@ export default function SkillEndorseCard({ agents = [], currentUser }) {
       return;
     }
     endorseMutation.mutate({
-      endorser_agent_id: currentUser?.id || currentUser?.email || 'unknown',
+      endorser_agent_id: myAgent?.id || currentUser?.email || 'unknown',
       endorsed_agent_id: agentId,
       skill_name: skillName,
       skill_category: category || 'technical',

@@ -518,13 +518,19 @@ function SkillCard({ skill }) {
     diplomacy: 'from-purple-500 to-pink-500',
     technical: 'from-orange-500 to-red-500',
     wisdom: 'from-yellow-500 to-amber-500',
-    combat: 'from-red-500 to-rose-500'
+    combat: 'from-red-500 to-rose-500',
+    research: 'from-indigo-500 to-violet-500',
+    leadership: 'from-teal-500 to-emerald-500',
+    wellbeing: 'from-green-500 to-lime-500',
+    creative: 'from-pink-500 to-rose-500',
   };
+
+  const proficiency = skill.proficiency_score > 0 ? skill.proficiency_score : Math.round((skill.level / (skill.max_level || 10)) * 100);
 
   return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10">
       <CardHeader>
-        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${categoryColors[skill.skill_category]} flex items-center justify-center mb-3`}>
+        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${categoryColors[skill.skill_category] || 'from-slate-500 to-slate-600'} flex items-center justify-center mb-3`}>
           <Award className="w-6 h-6 text-white" />
         </div>
         <CardTitle className="text-lg text-white">{skill.skill_name}</CardTitle>
@@ -532,18 +538,14 @@ function SkillCard({ skill }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-white/70 text-sm">Level</span>
-          <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${i < skill.level ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
-              />
-            ))}
-          </div>
+          <span className="text-white/70 text-sm">Level {skill.level}/{skill.max_level || 10}</span>
+          <span className="text-emerald-300 font-semibold text-sm">{proficiency}%</span>
+        </div>
+        <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: `${proficiency}%` }} />
         </div>
 
-        {skill.experience_invested && (
+        {skill.experience_invested > 0 && (
           <div className="text-xs text-white/60">
             {skill.experience_invested} XP invested
           </div>

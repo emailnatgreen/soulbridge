@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MySkillsPanel from '@/components/skill/MySkillsPanel';
 import SkillDirectoryPanel from '@/components/skill/SkillDirectoryPanel';
 import DevelopmentPathsPanel from '@/components/skill/DevelopmentPathsPanel';
-import { BookOpen, Users, Map, Loader, AlertCircle } from 'lucide-react';
+import { BookOpen, Users, Map, Loader, AlertCircle, TrendingUp } from 'lucide-react';
 import BackToHomeButton from '../components/BackToHomeButton';
 import { useMyAgent } from '@/hooks/useMyAgent';
 
@@ -28,6 +28,14 @@ export default function SkillsHub() {
     queryKey: ['allAgentSkills'],
     queryFn: () => base44.entities.AgentSkill?.list?.('-created_date', 500) || Promise.resolve([]),
     staleTime: 15000,
+  });
+
+  // Fetch dev plans for the current agent
+  const { data: devPlans = [] } = useQuery({
+    queryKey: ['myDevPlans', myAgent?.id],
+    queryFn: () => base44.entities.SkillDevelopmentPlan.filter({ agent_id: myAgent.id, status: 'active' }, '-created_date', 50),
+    staleTime: 15000,
+    enabled: !!myAgent?.id,
   });
 
   const isLoading = identityLoading;
@@ -85,11 +93,11 @@ export default function SkillsHub() {
           <div className="bg-white/5 border border-cyan-500/30 rounded-xl p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                <Map className="w-5 h-5 text-cyan-400" />
+                <TrendingUp className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
-                <p className="text-white/60 text-xs uppercase tracking-wide">Learning Paths</p>
-                <p className="text-2xl font-bold text-white">Coming Soon</p>
+                <p className="text-white/60 text-xs uppercase tracking-wide">Active Dev Plans</p>
+                <p className="text-2xl font-bold text-white">{devPlans.length}</p>
               </div>
             </div>
           </div>

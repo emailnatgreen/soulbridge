@@ -26,8 +26,11 @@ const actionTypeColor = {
 
 const readinessColor = {
   ready_now: 'bg-green-500/20 text-green-300',
+  ready: 'bg-green-500/20 text-green-300',
   needs_practice: 'bg-yellow-500/20 text-yellow-300',
-  needs_training: 'bg-orange-500/20 text-orange-300'
+  needs_work: 'bg-yellow-500/20 text-yellow-300',
+  needs_training: 'bg-orange-500/20 text-orange-300',
+  not_ready: 'bg-red-500/20 text-red-300',
 };
 
 export default function PersonalisedPlanCard({ plan, onRefresh }) {

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import SkillCard from './SkillCard';
 import { Search, Filter, AlertCircle, Loader } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function SkillDirectoryPanel({ myAgent, agents = [] }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -94,7 +95,7 @@ export default function SkillDirectoryPanel({ myAgent, agents = [] }) {
 
   const handleRequestMentorship = (skillId, mentorAgentId) => {
     if (!mentorAgentId) {
-      alert('No mentor available for this skill yet.');
+      toast.error('No mentor available for this skill yet.');
       return;
     }
     createMentorshipMutation.mutate({ skillId, mentorAgentId });

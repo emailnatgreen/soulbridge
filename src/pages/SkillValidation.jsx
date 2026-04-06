@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, ShieldCheck, Activity, Loader2, Shield } from 'lucide-react';
 import { useIdentity } from '@/hooks/useIdentity';
+import { useMyAgent } from '@/hooks/useMyAgent';
 import BackToHomeButton from '../components/BackToHomeButton';
 import SkillEndorseCard from '@/components/skills/SkillEndorseCard';
 import EndorsementList from '@/components/skills/EndorsementList';
@@ -11,11 +12,7 @@ import ReputationTimeline from '@/components/skills/ReputationTimeline';
 
 export default function SkillValidation() {
   const { didSignal } = useIdentity();
-
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { user, myAgent } = useMyAgent();
 
   const { data: agents = [], isLoading: agentsLoading } = useQuery({
     queryKey: ['agents-all'],
@@ -76,7 +73,7 @@ export default function SkillValidation() {
             </TabsList>
 
             <TabsContent value="endorse">
-              <SkillEndorseCard agents={agents} currentUser={user} />
+              <SkillEndorseCard agents={agents} currentUser={user} myAgent={myAgent} />
             </TabsContent>
 
             <TabsContent value="endorsements">
