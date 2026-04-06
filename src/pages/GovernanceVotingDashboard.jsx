@@ -349,6 +349,16 @@ export default function GovernanceVotingDashboard() {
     }).catch(() => {});
   }, [agents, selectedAgentId]);
 
+  const { data: proposals = [], isLoading } = useQuery({
+    queryKey: ['proposals-gov-dashboard'],
+    queryFn: () => base44.entities.GovernanceProposal.list('-created_date', 100),
+  });
+
+  const { data: allVotes = [] } = useQuery({
+    queryKey: ['votes-gov-dashboard'],
+    queryFn: () => base44.entities.GovernanceVote.list('-created_date', 500),
+  });
+
   const selectedAgent = agents.find(a => a.id === selectedAgentId) || null;
   const { eligible } = getDIDPermissionStatus(selectedAgent);
 
