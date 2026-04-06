@@ -160,6 +160,54 @@ export default function AgentChat() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* Info Section */}
+        <div className="mb-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-2">How to Use</h3>
+              <ul className="space-y-2 text-sm text-white/70">
+                <li className="flex gap-2">
+                  <span className="text-purple-400">1.</span>
+                  <span>Select an agent from the list on the left</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-purple-400">2.</span>
+                  <span>Type your message in the input field</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-purple-400">3.</span>
+                  <span>Press Enter or click Send to submit</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-purple-400">4.</span>
+                  <span>View the agent's response in real-time (may take ~30 seconds)</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-2">Why Agent Chat</h3>
+              <ul className="space-y-2 text-sm text-white/70">
+                <li className="flex gap-2">
+                  <span className="text-pink-400">•</span>
+                  <span>Direct conversation with specialized AI agents</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-pink-400">•</span>
+                  <span>Persistent conversation history for continuity</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-pink-400">•</span>
+                  <span>Real-time responses without manual refresh</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-pink-400">•</span>
+                  <span>Unique expertise from each agent's specialized role</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 h-[calc(100vh-240px)]">
           {/* Agent List */}
           <div className="lg:col-span-1 overflow-y-auto">
