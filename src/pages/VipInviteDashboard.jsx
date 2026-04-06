@@ -122,8 +122,8 @@ export default function VipInviteDashboard() {
 
             {/* Operational Funds Notice */}
             <div className="bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
-              <p className="text-green-300 text-sm font-semibold flex items-center gap-2">✅ Operational Funds Have Been Provided</p>
-              <p className="text-green-300/70 text-xs mt-1">All VIP wallets listed below have been funded with XRP to cover reserve requirements, transaction fees, and DID publication costs. No additional funding is needed to begin operations.</p>
+              <p className="text-green-300 text-sm font-semibold flex items-center gap-2">✅ Pre-Funded Wallet Ready — "Ripple Node 1"</p>
+              <p className="text-green-300/70 text-xs mt-1">The wallet <strong className="text-green-200">Ripple Node 1</strong> has already been funded with XRP and is ready to use. Simply click <strong className="text-green-200">"Publish DID to Mainnet"</strong> on its card to publish a DID on-chain in real time — then verify it instantly on <a href="https://xrpscan.com" target="_blank" rel="noopener noreferrer" className="text-green-200 underline hover:text-green-100">XRPScan.com</a>.</p>
             </div>
 
             {/* Purpose */}
@@ -155,12 +155,12 @@ export default function VipInviteDashboard() {
                     desc: 'Swap between XRP and RLUSD directly on the XRPL decentralised exchange. Select a VIP wallet, choose the swap direction, enter the amount, and execute. Uses on-chain XRPL DEX order matching.'
                   },
                   {
-                    title: '🌐 DID Publication',
-                    desc: 'Each wallet can publish a Decentralised Identifier (DID) to XRPL mainnet. Once published, the DID is permanently anchored on-chain with a verifiable transaction hash. Click "Publish DID to Mainnet" on any unpublished wallet.'
+                    title: '🌐 DID Publication (12 XRP)',
+                    desc: 'Each wallet can publish a Decentralised Identifier (DID) to XRPL mainnet. Publishing a DID costs 12 XRP (owner reserve + transaction fees). Once published, the DID is permanently anchored on-chain with a verifiable transaction hash — verify it instantly on XRPScan.com. Click "Publish DID to Mainnet" on any unpublished wallet.'
                   },
                   {
-                    title: '🔗 RLUSD Trustline',
-                    desc: 'Activates or checks the RLUSD trustline on each wallet. A trustline is required before the wallet can hold or receive RLUSD tokens. The activation button appears on wallets without an active trustline.'
+                    title: '🔗 RLUSD Trustline (Manual Only)',
+                    desc: 'To hold or swap RLUSD, users must manually activate the RLUSD trustline on their wallet. This is always a deliberate user choice — trustlines are never activated automatically. Click the "Activate RLUSD Trustline" button on any wallet card that does not yet have one enabled.'
                   },
                   {
                     title: '📱 QR Codes (Xaman Import)',
@@ -211,8 +211,8 @@ export default function VipInviteDashboard() {
               <ul className="text-white/60 text-xs leading-relaxed list-disc list-inside space-y-1 pl-1">
                 <li>All wallets operate on <strong className="text-white/80">XRPL Mainnet</strong> — transactions are real and irreversible</li>
                 <li>Minimum XRPL account reserve is <strong className="text-white/80">1 XRP</strong> (base reserve) plus 0.2 XRP per trustline/object</li>
-                <li>DID publication costs approximately <strong className="text-white/80">2 XRP</strong> in owner reserves</li>
-                <li>RLUSD trustline activation requires <strong className="text-white/80">0.2 XRP</strong> additional reserve</li>
+                <li>DID publication costs <strong className="text-white/80">12 XRP</strong> to fully publish on-chain (owner reserves + transaction fees)</li>
+                <li>RLUSD trustline activation is <strong className="text-white/80">always manual</strong> — users choose when to enable it; it is never done automatically. Requires 0.2 XRP additional reserve</li>
                 <li>Treasury wallets are <strong className="text-white/80">excluded</strong> from the Send panel to protect governance-controlled funds</li>
                 <li>Balances refresh automatically on page load and can be manually refreshed per wallet</li>
                 <li>Wallets with encrypted seeds (AES-256-GCM) cannot display seed QR codes — only plain-seed wallets support Xaman import via QR</li>
