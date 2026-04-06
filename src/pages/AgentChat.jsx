@@ -33,37 +33,45 @@ export default function AgentChat() {
     queryFn: () => base44.entities.Agent.list('-created_date', 100),
   });
 
-  // Fetch conversation messages
+  // Fetch conversation messages for selected agent
   const { data: messages = [], refetch: refetchMessages } = useQuery({
     queryKey: ['chat-messages', selectedAgent?.id],
-    queryFn: () => base44.entities.AgentMessage.list('-created_date', 200),
+    queryFn: async () => {
+      if (!selectedAgent) return [];
+      const convId = `conv-${selectedAgent.id}`;
+      try {
+        return await base44.entities.AgentMessage.filter({ conversation_id: convId }, '-created_date', 200);
+      } catch (e) {
+        console.error('Failed to fetch messages:', e);
+        return [];
+      }
+    },
     enabled: !!selectedAgent,
   });
 
-  // Filter messages for selected agent conversation
-  const conversationMessages = messages.filter(msg =>
-    (msg.sender_agent_id === selectedAgent?.id || msg.from_agent_id === selectedAgent?.id)
-  ).sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+  const conversationMessages = messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
 
   const handleSendMessage = async () => {
     if (!message.trim() || !selectedAgent) return;
 
     setIsSending(true);
     try {
+      const senderAgentId = currentDID?.agent_id || localStorage.getItem('user_agent_id') || 'user';
+      const convId = `conv-${selectedAgent.id}`;
+      
       await base44.entities.AgentMessage.create({
-        sender_agent_id: currentDID?.agent_id || 'user',
-        from_agent_id: currentDID?.agent_id || 'user',
-        to_agent_id: selectedAgent.id,
+        sender_agent_id: senderAgentId,
+        conversation_id: convId,
         content: message.trim(),
-        message: message.trim(),
-        conversation_id: `conv-${selectedAgent.id}`,
         message_type: 'text',
         status: 'sent',
       });
+      
       setMessage('');
-      setTimeout(() => refetchMessages(), 500);
+      setTimeout(() => refetchMessages(), 300);
     } catch (error) {
       console.error('Failed to send message:', error);
+      alert('Failed to send message. Check console for details.');
     } finally {
       setIsSending(false);
     }
@@ -169,23 +177,23 @@ export default function AgentChat() {
                       </div>
                     </div>
                   ) : (
-                    conversationMessages.map(msg => (
-                      <div
-                        key={msg.id}
-                        className={`flex ${msg.sender_agent_id === selectedAgent.id || msg.from_agent_id === selectedAgent.id ? 'justify-start' : 'justify-end'}`}
-                      >
-                        <div className={`max-w-xs rounded-lg px-4 py-2 ${
-                          msg.sender_agent_id === selectedAgent.id || msg.from_agent_id === selectedAgent.id
-                            ? 'bg-white/10 text-white'
-                            : 'bg-purple-600 text-white'
-                        }`}>
-                          <p className="text-sm">{msg.content || msg.message}</p>
-                          <p className="text-xs mt-1 opacity-60">
-                            {new Date(msg.created_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                    conversationMessages.map(msg => {
+                      const isFromAgent = msg.sender_agent_id === selectedAgent.id;
+                      return (
+                        <div key={msg.id} className={`flex ${isFromAgent ? 'justify-start' : 'justify-end'}`}>
+                          <div className={`max-w-xs rounded-lg px-4 py-2 ${
+                            isFromAgent
+                              ? 'bg-white/10 text-white'
+                              : 'bg-purple-600 text-white'
+                          }`}>
+                            <p className="text-sm">{msg.content || msg.message}</p>
+                            <p className="text-xs mt-1 opacity-60">
+                              {new Date(msg.created_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </CardContent>
 
