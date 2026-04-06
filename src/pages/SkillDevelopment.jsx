@@ -81,10 +81,42 @@ export default function SkillDevelopment() {
   });
 
   const enrollMutation = useMutation({
-    mutationFn: (data) => base44.functions.invoke('conductTrainingSession', data),
+    mutationFn: async ({ agent_id, module_id }) => {
+      // Create an AgentTraining record from the module
+      const mod = modules.find(m => m.id === module_id);
+      if (!mod) throw new Error('Module not found');
+      const training = await base44.entities.AgentTraining.create({
+        agent_id,
+        training_type: mod.module_type === 'certification' ? 'skill_development' : 'skill_development',
+        skill_focus: mod.skill_focus?.[0] || mod.module_name,
+        title: mod.module_name,
+        description: mod.description,
+        difficulty_level: mod.difficulty_level === 'beginner' ? 1 : mod.difficulty_level === 'intermediate' ? 2 : mod.difficulty_level === 'advanced' ? 3 : 4,
+        training_content: mod.content || { lessons: [], exercises: [], readings: [] },
+        status: 'in_progress',
+        progress: { completion_percentage: 0, lessons_completed: 0, exercises_completed: 0, time_spent_minutes: 0 },
+        rewards: { experience_gained: mod.estimated_hours ? mod.estimated_hours * 10 : 20, wisdom_gained: 5, honor_gained: 2 },
+      });
+      // Also create a SkillProgress record
+      await base44.entities.SkillProgress.create({
+        agent_id,
+        development_plan_id: '',
+        skill_name: mod.skill_focus?.[0] || mod.module_name,
+        starting_level: 0,
+        current_level: 0,
+        target_level: mod.difficulty_level === 'beginner' ? 3 : mod.difficulty_level === 'intermediate' ? 5 : 7,
+        progress_percentage: 0,
+        status: 'active',
+        started_date: new Date().toISOString(),
+      });
+      return training;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['skill-progress']);
-      toast.success('Training session started!');
+      toast.success('Training enrolled! Check Progress Tracking tab.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Failed to enroll');
     }
   });
 
