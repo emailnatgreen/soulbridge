@@ -297,32 +297,20 @@ export default function InviteLinkManager() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
-            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Auto wallet funding</p>
-            <p className="text-white text-sm font-semibold">Enabled on invite claim</p>
-            <p className="text-slate-400 text-xs mt-1">Each claimed invite now creates a testnet wallet and preloads 13 XRP.</p>
+            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Network</p>
+            <p className="text-white text-sm font-semibold">XRPL Mainnet</p>
+            <p className="text-slate-400 text-xs mt-1">All invite links operate on XRPL Mainnet. No testnet activity.</p>
           </div>
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
-            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Funding source</p>
-            <p className="text-white text-sm font-semibold">Nathan Green testnet wallet</p>
-            <p className="text-slate-400 text-xs mt-1">Using the existing secure testnet funding secret already configured in the app.</p>
+            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Wallet Funding</p>
+            <p className="text-white text-sm font-semibold">None — Manual Only</p>
+            <p className="text-slate-400 text-xs mt-1">No automatic wallet creation or funding. Wallets are managed in VIP Dashboard.</p>
           </div>
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
-            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Next step for invitee</p>
-            <p className="text-white text-sm font-semibold">Publish DID</p>
-            <p className="text-slate-400 text-xs mt-1">After claim, the private dashboard can move straight into DID activation.</p>
+            <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Destination</p>
+            <p className="text-white text-sm font-semibold">VIP Invite Dashboard</p>
+            <p className="text-slate-400 text-xs mt-1">All claimed invites route directly to the VIP Invite Dashboard.</p>
           </div>
-        </div>
-
-        {/* Stats */}
-        {showForm && <CreateTokenForm currentUser={user} onCreated={() => setShowForm(false)} />}
-
-        {/* Filter */}
-        <div className="flex gap-2 flex-wrap">
-          {['all', 'active', 'claimed', 'revoked'].map(s => (
-            <button key={s} onClick={() => setFilterStatus(s)} className={`px-3 py-1 rounded-full text-xs font-semibold border transition ${filterStatus === s ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'border-slate-700 text-slate-500 hover:text-slate-300'}`}>
-              {s.charAt(0).toUpperCase() + s.slice(1)} {s !== 'all' ? `(${stats[s] ?? 0})` : `(${tokens.length})`}
-            </button>
-          ))}
         </div>
 
         {/* Token List */}

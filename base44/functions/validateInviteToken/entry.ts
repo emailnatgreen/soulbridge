@@ -1,84 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-import { Client, Wallet } from 'npm:xrpl@3.0.0';
-
-async function encryptSeed(seed) {
-  const masterKey = Deno.env.get('WALLET_ENCRYPTION_KEY');
-  if (!masterKey) {
-    throw new Error('WALLET_ENCRYPTION_KEY not configured');
-  }
-
-  const encoder = new TextEncoder();
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(masterKey),
-    'PBKDF2',
-    false,
-    ['deriveBits', 'deriveKey']
-  );
-
-  const key = await crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt,
-      iterations: 100000,
-      hash: 'SHA-256'
-    },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt']
-  );
-
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encoder.encode(seed)
-  );
-
-  return {
-    encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-    iv: btoa(String.fromCharCode(...iv)),
-    salt: btoa(String.fromCharCode(...salt))
-  };
-}
-
-async function createPrefundedInviteWallet(base44, token, user, authHeader) {
-  const createResponse = await base44.asServiceRole.functions.invoke('createWallet', {
-    name: `${token.recipient_nickname || 'Invited'} Wallet`,
-    network: 'testnet'
-  }, {
-    headers: {
-      Authorization: authHeader
-    }
-  });
-
-  const createdWallet = createResponse?.data?.wallet;
-  if (!createdWallet?.id) {
-    throw new Error('Invite wallet creation failed');
-  }
-
-  await base44.asServiceRole.entities.Wallet.update(createdWallet.id, {
-    owner_id: user.id,
-    notes: `Invite wallet for ${token.token_id}`,
-    last_accessed: new Date().toISOString()
-  });
-
-  return {
-    id: createdWallet.id,
-    classic_address: createdWallet.classic_address,
-    network: createdWallet.network,
-    balance: createdWallet.balance
-  };
-}
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    const authHeader = req.headers.get('Authorization');
 
     if (!user) {
       return Response.json({ valid: false, error: 'Please sign in before using an invite code' }, { status: 401 });
@@ -109,8 +34,7 @@ Deno.serve(async (req) => {
       return Response.json({ valid: false, error: 'This invite has expired' });
     }
 
-    const wallet = await createPrefundedInviteWallet(base44, token, user, authHeader);
-
+    // Update token claim status — no wallet creation, no auto-funding
     if (token.usage_type === 'single') {
       await base44.asServiceRole.entities.InvitationToken.update(token.id, {
         status: 'claimed',
@@ -135,8 +59,7 @@ Deno.serve(async (req) => {
       token_id: token.token_id,
       recipient_nickname: token.recipient_nickname || 'New Soul',
       kinetic_weight: token.kinetic_weight || 10,
-      notes: token.notes || null,
-      wallet
+      notes: token.notes || null
     });
   } catch (error) {
     return Response.json({ valid: false, error: error.message }, { status: 500 });
