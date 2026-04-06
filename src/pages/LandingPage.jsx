@@ -1,4 +1,3 @@
-/* SoulBridge Landing – cache-bust rebuild */
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -91,7 +90,7 @@ function ParticleCanvas() {
   return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" style={{ opacity: 0.5 }} />;
 }
 
-export default function Landing() {
+export default function LandingPage() {
   const navigate = useNavigate();
   const { isAdmin } = useIdentity();
   const inactivityRef = useRef(null);
