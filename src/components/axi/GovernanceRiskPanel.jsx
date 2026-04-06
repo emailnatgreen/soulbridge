@@ -91,7 +91,7 @@ export default function GovernanceRiskPanel() {
                   <p className="text-xs font-medium text-slate-200 line-clamp-2 flex-1">{p.title}</p>
                   <div className="flex gap-1 flex-shrink-0">
                     {expiring && (
-                      <Badge className="bg-amber-100 text-amber-700 text-xs flex items-center gap-0.5">
+                      <Badge className="bg-amber-900/30 text-amber-300 text-xs flex items-center gap-0.5">
                         <Clock className="w-2.5 h-2.5" /> Soon
                       </Badge>
                     )}
@@ -110,17 +110,17 @@ export default function GovernanceRiskPanel() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs text-slate-500">
                     <span>Participation ({p.total_votes_cast ?? 0}/{totalEligible})</span>
-                    <span className={quorumRisk ? "text-red-600 font-semibold" : "text-slate-600"}>{participation}%</span>
+                    <span className={quorumRisk ? "text-red-400 font-semibold" : "text-slate-300"}>{participation}%</span>
                   </div>
                   <Progress value={participation} className="h-1" />
                   {approval !== null && (
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-500">Approval (need {p.pass_threshold ?? 60}%)</span>
-                      <span className={`font-semibold ${thresholdRisk ? "text-red-600" : "text-emerald-600"}`}>{approval}%</span>
+                      <span className={`font-semibold ${thresholdRisk ? "text-red-400" : "text-emerald-400"}`}>{approval}%</span>
                     </div>
                   )}
                   {(quorumRisk || thresholdRisk) && (
-                    <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                    <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
                       <AlertTriangle className="w-3 h-3" />
                       {quorumRisk ? "Low participation — quorum at risk" : "Approval below threshold"}
                     </p>

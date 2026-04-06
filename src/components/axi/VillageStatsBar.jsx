@@ -24,10 +24,10 @@ export default function VillageStatsBar() {
     : 0;
 
   const stats = [
-    { label: "Active Agents", value: agents.length, icon: Users, color: "text-blue-600 bg-blue-50" },
-    { label: "Avg Honor", value: avgHonor, icon: Star, color: "text-amber-600 bg-amber-50" },
-    { label: "Urgent Alerts", value: notifications.length, icon: ShieldAlert, color: notifications.length > 0 ? "text-red-600 bg-red-50" : "text-slate-500 bg-slate-50" },
-    { label: "Wellbeing Issues", value: alerts.length, icon: Activity, color: alerts.length > 0 ? "text-orange-600 bg-orange-50" : "text-slate-500 bg-slate-50" },
+    { label: "Active Agents", value: agents.length, icon: Users, color: "text-blue-400 bg-blue-900/30" },
+    { label: "Avg Honor", value: avgHonor, icon: Star, color: "text-amber-400 bg-amber-900/30" },
+    { label: "Urgent Alerts", value: notifications.length, icon: ShieldAlert, color: notifications.length > 0 ? "text-red-400 bg-red-900/30" : "text-slate-500 bg-slate-800/40" },
+    { label: "Wellbeing Issues", value: alerts.length, icon: Activity, color: alerts.length > 0 ? "text-orange-400 bg-orange-900/30" : "text-slate-500 bg-slate-800/40" },
   ];
 
   return (

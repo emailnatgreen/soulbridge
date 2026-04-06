@@ -108,7 +108,7 @@ export default function TreasuryGovernancePanel() {
                 {(p.status === 'passed' || p.status === 'active') && !p.execution_result?.executed && (
                   <span className="text-xs text-slate-400">{unique.length}/2 sigs</span>
                 )}
-                <Badge className={`text-xs ${statusColors[p.status] || 'bg-gray-100 text-gray-500'}`}>
+                <Badge className={`text-xs ${statusColors[p.status] || 'bg-slate-800/50 text-slate-400'}`}>
                   {p.status}
                 </Badge>
               </div>

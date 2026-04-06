@@ -51,9 +51,9 @@ export default function HonorRiskPanel() {
   });
 
   const honorColor = (score) => {
-    if (score >= 75) return "text-emerald-600";
-    if (score >= 50) return "text-amber-600";
-    return "text-red-600";
+    if (score >= 75) return "text-emerald-400";
+    if (score >= 50) return "text-amber-400";
+    return "text-red-400";
   };
 
   return (
@@ -90,7 +90,7 @@ export default function HonorRiskPanel() {
             {significantEvents.map(e => (
               <div key={e.id} className={`rounded border p-2 flex items-center justify-between ${(e.impact ?? 0) < 0 ? "bg-red-900/20 border-red-700/40" : "bg-emerald-900/20 border-emerald-700/40"}`}>
                 <span className="text-xs text-slate-300 truncate flex-1 mr-2">{e.description || e.event_type}</span>
-                <span className={`text-xs font-bold flex-shrink-0 ${(e.impact ?? 0) < 0 ? "text-red-600" : "text-emerald-600"}`}>
+                <span className={`text-xs font-bold flex-shrink-0 ${(e.impact ?? 0) < 0 ? "text-red-400" : "text-emerald-400"}`}>
                   {(e.impact ?? 0) > 0 ? "+" : ""}{e.impact}
                 </span>
               </div>
@@ -137,7 +137,7 @@ export default function HonorRiskPanel() {
               return (
                 <div key={a.id} className="flex items-center justify-between text-xs">
                   <span className="text-slate-300">{a.name}</span>
-                  <Badge className="bg-emerald-100 text-emerald-700 text-xs">{a.honor_score} → {next}</Badge>
+                  <Badge className="bg-emerald-900/30 text-emerald-300 text-xs">{a.honor_score} → {next}</Badge>
                 </div>
               );
             })}
