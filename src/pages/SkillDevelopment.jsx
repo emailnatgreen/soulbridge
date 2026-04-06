@@ -16,16 +16,24 @@ import { toast } from 'sonner';
 import PersonalisedPlanCard from '@/components/PersonalisedPlanCard';
 import AskAxiButton from '@/components/AskAxiButton';
 import SkillGapAlertsPanel from '@/components/SkillGapAlertsPanel';
+import SkillTrajectoryInsights from '@/components/agent/SkillTrajectoryInsights';
+import SkillProfilePanel from '@/components/agent/SkillProfilePanel';
+import { useMyAgent } from '@/hooks/useMyAgent';
 
 export default function SkillDevelopment() {
+  const { myAgent, allAgents, isLoading: identityLoading } = useMyAgent();
   const [selectedAgentId, setSelectedAgentId] = useState('');
   const [selectedModule, setSelectedModule] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => base44.entities.Agent.list()
-  });
+  // Auto-select user's agent once resolved
+  React.useEffect(() => {
+    if (myAgent?.id && !selectedAgentId) {
+      setSelectedAgentId(myAgent.id);
+    }
+  }, [myAgent?.id]);
+
+  const agents = allAgents;
 
   const { data: modules = [] } = useQuery({
     queryKey: ['training-modules'],
@@ -215,6 +223,10 @@ export default function SkillDevelopment() {
                   <Award className="w-4 h-4 mr-2" />
                   Current Skills
                 </TabsTrigger>
+                <TabsTrigger value="trajectory" className="data-[state=active]:bg-purple-600">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  AI Trajectory
+                </TabsTrigger>
               </TabsList>
 
               {/* AI Growth Plan Tab */}
@@ -335,21 +347,18 @@ export default function SkillDevelopment() {
               </TabsContent>
 
               <TabsContent value="skills" className="space-y-4">
-                {agentSkills.length === 0 ? (
-                  <Card className="bg-white/5 border-white/10">
-                    <CardContent className="text-center py-12">
-                      <Award className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                      <h3 className="text-xl text-white mb-2">No Skills Yet</h3>
-                      <p className="text-white/60">Complete training modules to earn skills</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {agentSkills.map(skill => (
-                      <SkillCard key={skill.id} skill={skill} />
-                    ))}
-                  </div>
-                )}
+                <SkillProfilePanel
+                  agentId={selectedAgentId}
+                  skills={agentSkills}
+                  onRefresh={() => queryClient.invalidateQueries(['agent-skills', selectedAgentId])}
+                />
+              </TabsContent>
+
+              <TabsContent value="trajectory" className="space-y-4">
+                <SkillTrajectoryInsights
+                  agentId={selectedAgentId}
+                  agentName={selectedAgent?.name || 'Agent'}
+                />
               </TabsContent>
             </Tabs>
           </>
@@ -504,56 +513,6 @@ function ProgressCard({ progress }) {
                 {progress.ai_insights.next_recommended_activity}
               </p>
             )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function SkillCard({ skill }) {
-  const categoryColors = {
-    governance: 'from-blue-500 to-cyan-500',
-    resource_management: 'from-green-500 to-emerald-500',
-    diplomacy: 'from-purple-500 to-pink-500',
-    technical: 'from-orange-500 to-red-500',
-    wisdom: 'from-yellow-500 to-amber-500',
-    combat: 'from-red-500 to-rose-500',
-    research: 'from-indigo-500 to-violet-500',
-    leadership: 'from-teal-500 to-emerald-500',
-    wellbeing: 'from-green-500 to-lime-500',
-    creative: 'from-pink-500 to-rose-500',
-  };
-
-  const proficiency = skill.proficiency_score > 0 ? skill.proficiency_score : Math.round((skill.level / (skill.max_level || 10)) * 100);
-
-  return (
-    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-      <CardHeader>
-        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${categoryColors[skill.skill_category] || 'from-slate-500 to-slate-600'} flex items-center justify-center mb-3`}>
-          <Award className="w-6 h-6 text-white" />
-        </div>
-        <CardTitle className="text-lg text-white">{skill.skill_name}</CardTitle>
-        <CardDescription className="text-white/60 capitalize">{skill.skill_category}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-white/70 text-sm">Level {skill.level}/{skill.max_level || 10}</span>
-          <span className="text-emerald-300 font-semibold text-sm">{proficiency}%</span>
-        </div>
-        <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: `${proficiency}%` }} />
-        </div>
-
-        {skill.experience_invested > 0 && (
-          <div className="text-xs text-white/60">
-            {skill.experience_invested} XP invested
-          </div>
-        )}
-
-        {skill.unlocked_at && (
-          <div className="text-xs text-white/60">
-            Unlocked {new Date(skill.unlocked_at).toLocaleDateString()}
           </div>
         )}
       </CardContent>

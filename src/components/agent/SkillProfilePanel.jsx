@@ -31,7 +31,7 @@ function SkillRow({ skill }) {
   const [expanded, setExpanded] = useState(false);
   const traj = TRAJECTORY_CONFIG[skill.skill_growth_trajectory] || TRAJECTORY_CONFIG.stable;
   const Icon = traj.icon;
-  const proficiency = skill.proficiency_score || 0;
+  const proficiency = skill.proficiency_score > 0 ? skill.proficiency_score : Math.round((skill.level / (skill.max_level || 10)) * 100);
 
   return (
     <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
@@ -124,8 +124,13 @@ export default function SkillProfilePanel({ agentId, skills, onRefresh }) {
     return acc;
   }, {});
 
+  const computeProficiency = (sk) => {
+    if (sk.proficiency_score > 0) return sk.proficiency_score;
+    return Math.round((sk.level / (sk.max_level || 10)) * 100);
+  };
+
   const totalProficiency = skills.length
-    ? Math.round(skills.reduce((s, sk) => s + (sk.proficiency_score || 0), 0) / skills.length)
+    ? Math.round(skills.reduce((s, sk) => s + computeProficiency(sk), 0) / skills.length)
     : 0;
 
   const trajectoryCount = skills.reduce((acc, s) => {
