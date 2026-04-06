@@ -12,7 +12,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 const Layout = lazy(() => import('./Layout.jsx'));
 
 // All pages lazy-loaded
-const Landing = lazy(() => import('./pages/Landing.jsx'));
+const Landing = lazy(() => import('./pages/Landing'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ContactSupport = lazy(() => import('./pages/ContactSupport'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));

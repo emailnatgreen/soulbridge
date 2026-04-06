@@ -13,7 +13,7 @@ import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 
-/* SoulBridge Landing — rebuilt 2026-04-06 */
+/* SoulBridge Landing v2 */
 
 if (!window.__soulbridge) window.__soulbridge = {};
 
