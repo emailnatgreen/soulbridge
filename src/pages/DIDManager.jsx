@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Shield, RefreshCw, ArrowLeft, Plus, Zap, Wallet, Smartphone, Globe, Home } from 'lucide-react';
+import { Shield, RefreshCw, Plus, Zap, Wallet, Smartphone, Globe, Home, Lock } from 'lucide-react';
+import { useIdentity } from '@/hooks/useIdentity';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -12,9 +13,33 @@ import ReceivePanel from '@/components/wallet/ReceivePanel';
 import DexSwapPanel from '@/components/dex/DexSwapPanel';
 
 export default function DIDManager() {
+  const { isAdmin, isLoading: identityLoading } = useIdentity();
   const [creating, setCreating] = useState(false);
   const [walletName, setWalletName] = useState('');
   const [showXummImport, setShowXummImport] = useState(false);
+
+  if (identityLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center text-center px-6">
+        <div className="space-y-4">
+          <Lock className="w-12 h-12 text-red-400 mx-auto" />
+          <h1 className="text-white text-xl font-bold">Admin Access Required</h1>
+          <p className="text-white/50 text-sm">This page is restricted to platform administrators.<br/>Users can manage their own DIDs from the Dashboard.</p>
+          <Link to="/home" className="inline-flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 mt-4">
+            <Home className="w-4 h-4" /> Back to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const { data: wallets = [], isLoading, refetch } = useQuery({
     queryKey: ['did-wallets'],
