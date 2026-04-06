@@ -26,6 +26,7 @@ export default function AgentProfile() {
     if (pathParts[2]) agentId = pathParts[2];
   }
   const { isRecognized, didSignal, isAdmin } = useIdentity();
+  const displayAgentId = selectedAgentId || agentId;
   
   const { data: agents = [] } = useQuery({
     queryKey: ['all-agents-selector'],
@@ -44,6 +45,8 @@ export default function AgentProfile() {
     window.addEventListener('did-connected', handleDidSignal);
     return () => window.removeEventListener('did-connected', handleDidSignal);
   }, []);
+
+  const displayAgentId = selectedAgentId || agentId;
 
   const { data: agent, isLoading } = useQuery({
     queryKey: ['agent', displayAgentId],
@@ -154,8 +157,6 @@ export default function AgentProfile() {
       </div>
     </div>;
   }
-  
-  const displayAgentId = selectedAgentId || agentId;
 
   if (isLoading || !agent) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
