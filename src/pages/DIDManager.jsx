@@ -48,7 +48,7 @@ export default function DIDManager() {
       if (wallets.length === 0) return {};
       const result = {};
       const realWallets = wallets.filter(w => w.classic_address && !w.classic_address.startsWith('rAxi') && !w.classic_address.startsWith('rZoe'));
-      const batchSize = 4;
+      const batchSize = 2;
       for (let i = 0; i < realWallets.length; i += batchSize) {
         const batch = realWallets.slice(i, i + batchSize);
         await Promise.all(batch.map(async (wallet) => {
@@ -56,17 +56,18 @@ export default function DIDManager() {
             const res = await base44.functions.invoke('getBalanceEnhanced', { wallet_id: wallet.id });
             result[wallet.id] = res.data;
           } catch (e) {
+            console.warn(`Balance fetch failed for ${wallet.name}:`, e.message);
             result[wallet.id] = { xrp: wallet.balance || 0, rlusd: 0 };
           }
         }));
         if (i + batchSize < realWallets.length) {
-          await new Promise(r => setTimeout(r, 600));
+          await new Promise(r => setTimeout(r, 1500));
         }
       }
       return result;
     },
     enabled: wallets.length > 0 && isAdmin === true,
-    staleTime: 60000,
+    staleTime: 120000,
     refetchOnMount: 'always',
   });
 

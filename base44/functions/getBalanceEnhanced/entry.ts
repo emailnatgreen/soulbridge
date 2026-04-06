@@ -1,5 +1,65 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+const MAINNET_NODES = [
+  'https://xrplcluster.com',
+  'https://s1.ripple.com:51234',
+  'https://s2.ripple.com:51234',
+];
+
+const TESTNET_NODES = [
+  'https://s.altnet.rippletest.net:51234',
+  'https://testnet.xrpl-labs.com',
+];
+
+async function xrplRequest(nodes, body) {
+  for (const node of nodes) {
+    try {
+      const resp = await fetch(node, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(12000),
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        console.log(`Node ${node} HTTP ${resp.status}: ${text.slice(0, 100)}`);
+        continue;
+      }
+
+      const contentType = resp.headers.get('content-type') || '';
+      if (!contentType.includes('json')) {
+        const text = await resp.text().catch(() => '');
+        console.log(`Node ${node} non-JSON response: ${text.slice(0, 100)}`);
+        continue;
+      }
+
+      const data = await resp.json();
+      if (data.result?.error === 'rateLimited' || data.result?.error === 'slowDown') {
+        console.log(`Node ${node} rate limited, trying next`);
+        continue;
+      }
+
+      return data;
+    } catch (e) {
+      console.log(`Node ${node} error: ${e.message}`);
+      continue;
+    }
+  }
+  return null;
+}
+
+function decodeHexCurrency(hex) {
+  if (hex.length <= 3) return hex;
+  let str = '';
+  for (let i = 0; i < hex.length; i += 2) {
+    const code = parseInt(hex.substring(i, i + 2), 16);
+    if (code === 0) break;
+    str += String.fromCharCode(code);
+  }
+  return str || hex;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -9,7 +69,7 @@ Deno.serve(async (req) => {
     }
 
     const { wallet_id } = await req.json();
-    
+
     if (!wallet_id) {
       return Response.json({ error: 'wallet_id required' }, { status: 400 });
     }
@@ -20,52 +80,38 @@ Deno.serve(async (req) => {
     }
 
     const isTestnet = wallet.network === 'testnet';
-    const rpcUrl = isTestnet
-      ? 'https://s.altnet.rippletest.net:51234'
-      : 'https://xrplcluster.com';
+    const nodes = isTestnet ? TESTNET_NODES : MAINNET_NODES;
 
     // Get account info for XRP balance
-    const accountResponse = await fetch(rpcUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        method: 'account_info',
-        params: [{ account: wallet.classic_address, ledger_index: 'validated' }],
-      }),
-      signal: AbortSignal.timeout(10000),
-    }).catch(e => { console.log('account_info fetch error:', e.message); return null; });
+    const accountData = await xrplRequest(nodes, {
+      method: 'account_info',
+      params: [{ account: wallet.classic_address, ledger_index: 'validated' }],
+    });
 
     let xrpBalance = 0;
-    if (accountResponse?.ok) {
-      const accountData = await accountResponse.json();
-      const rawBalance = accountData.result?.account_data?.Balance;
-      if (rawBalance) {
-        xrpBalance = parseInt(rawBalance) / 1000000;
-      }
+    if (accountData?.result?.account_data?.Balance) {
+      xrpBalance = parseInt(accountData.result.account_data.Balance) / 1000000;
     }
 
+    // Small delay between calls to avoid rate limiting
+    await new Promise(r => setTimeout(r, 300));
+
     // Get trustlines
-    const trustlineResponse = await fetch(rpcUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        method: 'account_lines',
-        params: [{ account: wallet.classic_address, ledger_index: 'validated' }],
-      }),
-      signal: AbortSignal.timeout(10000),
-    }).catch(e => { console.log('account_lines fetch error:', e.message); return null; });
+    const trustlineData = await xrplRequest(nodes, {
+      method: 'account_lines',
+      params: [{ account: wallet.classic_address, ledger_index: 'validated' }],
+    });
 
     let trustlines = [];
     let rlusdBalance = 0;
     let hasRlusdTrustline = false;
 
-    if (trustlineResponse?.ok) {
-      const trustlineData = await trustlineResponse.json();
-      trustlines = trustlineData.result?.lines || [];
-      
-      // Check for rLUSD trustline — currency code is 'USD' or hex-encoded 'RLUSD'
-      const rlusdLine = trustlines.find(line => 
-        line.currency === 'USD' || 
+    if (trustlineData?.result?.lines) {
+      trustlines = trustlineData.result.lines;
+
+      // Check for RLUSD trustline
+      const rlusdLine = trustlines.find(line =>
+        line.currency === 'USD' ||
         line.currency === '524C555344000000000000000000000000000000' ||
         line.currency === 'RLUSD'
       );
@@ -74,18 +120,6 @@ Deno.serve(async (req) => {
         rlusdBalance = parseFloat(rlusdLine.balance || '0');
       }
     }
-
-    // Format trustlines for display
-    const decodeHexCurrency = (hex) => {
-      if (hex.length <= 3) return hex;
-      let str = '';
-      for (let i = 0; i < hex.length; i += 2) {
-        const code = parseInt(hex.substring(i, i + 2), 16);
-        if (code === 0) break;
-        str += String.fromCharCode(code);
-      }
-      return str || hex;
-    };
 
     const formattedTrustlines = trustlines.map(t => ({
       currency: decodeHexCurrency(t.currency),
