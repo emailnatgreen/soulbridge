@@ -13,6 +13,8 @@ import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 
+/* SoulBridge Landing — rebuilt 2026-04-06 */
+
 if (!window.__soulbridge) window.__soulbridge = {};
 
 function emitSignal(data) {
@@ -25,16 +27,20 @@ function emitSignal(data) {
 
 function shortenDID(did) {
   if (!did) return '';
-  return `${did.slice(0, 20)}...${did.slice(-20)}`;
+  return did.slice(0, 20) + '...' + did.slice(-20);
 }
 
 function ParticleCanvas() {
   const canvasRef = useRef(null);
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let animationId;
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
     resize();
     window.addEventListener('resize', resize);
     const particles = Array.from({ length: 80 }, () => ({
@@ -49,14 +55,15 @@ function ParticleCanvas() {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
+        p.x += p.vx;
+        p.y += p.vy;
         if (p.x < 0) p.x = canvas.width;
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 80%, 70%, ${p.opacity})`;
+        ctx.fillStyle = 'hsla(' + p.hue + ', 80%, 70%, ' + p.opacity + ')';
         ctx.fill();
       });
       for (let i = 0; i < particles.length; i++) {
@@ -68,7 +75,7 @@ function ParticleCanvas() {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(150, 120, 255, ${0.08 * (1 - dist / 100)})`;
+            ctx.strokeStyle = 'rgba(150, 120, 255, ' + (0.08 * (1 - dist / 100)) + ')';
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -77,7 +84,10 @@ function ParticleCanvas() {
       animationId = requestAnimationFrame(draw);
     };
     draw();
-    return () => { cancelAnimationFrame(animationId); window.removeEventListener('resize', resize); };
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resize);
+    };
   }, []);
   return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" style={{ opacity: 0.5 }} />;
 }
@@ -91,7 +101,14 @@ export default function Landing() {
   const [inviteCode, setInviteCode] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState('');
+  const [stats, setStats] = useState({ agents: 0, dids: 0 });
+  const [landingKUs, setLandingKUs] = useState([]);
+  const [allKUs, setAllKUs] = useState([]);
+  const [did, setDid] = useState('');
+  const [didError, setDidError] = useState('');
+  const [didConnected, setDidConnected] = useState(null);
 
+  // Check invite code from URL params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const invite = params.get('invite');
@@ -100,7 +117,6 @@ export default function Landing() {
       setShowInviteEntry(true);
       return;
     }
-
     try {
       const inviteSession = localStorage.getItem('sb_invite_session');
       const inviteWallet = localStorage.getItem('sb_invite_wallet');
@@ -108,14 +124,8 @@ export default function Landing() {
       if (inviteSession && parsedWallet && Number(parsedWallet.balance || 0) > 0) {
         navigate('/VipInviteDashboard');
       }
-    } catch (_) {}
+    } catch (e) { /* ignore */ }
   }, []);
-  const [stats, setStats] = useState({ agents: 0, dids: 0 });
-  const [landingKUs, setLandingKUs] = useState([]);
-  const [allKUs, setAllKUs] = useState([]);
-  const [did, setDid] = useState('');
-  const [didError, setDidError] = useState('');
-  const [didConnected, setDidConnected] = useState(null);
 
   const handleDisconnectDID = () => {
     localStorage.removeItem('soulbridge_identity');
@@ -138,6 +148,7 @@ export default function Landing() {
     }, 2 * 60 * 1000);
   };
 
+  // Load stored identity + listen for validation
   useEffect(() => {
     try {
       const stored = localStorage.getItem('soulbridge_identity');
@@ -145,7 +156,7 @@ export default function Landing() {
         const identity = JSON.parse(stored);
         setDidConnected(identity);
       }
-    } catch (e) {}
+    } catch (e) { /* ignore */ }
 
     const handleValidated = () => {
       try {
@@ -154,12 +165,13 @@ export default function Landing() {
           const identity = JSON.parse(stored);
           setDidConnected({ ...identity, validated: true });
         }
-      } catch (e) {}
+      } catch (e) { /* ignore */ }
     };
     window.addEventListener('did-validated', handleValidated);
     return () => window.removeEventListener('did-validated', handleValidated);
   }, []);
 
+  // Inactivity timer
   useEffect(() => {
     if (!didConnected) return;
     const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
@@ -171,6 +183,7 @@ export default function Landing() {
     };
   }, [didConnected]);
 
+  // Fetch public stats
   useEffect(() => {
     const fetchStats = async () => {
       let data = {};
@@ -188,7 +201,7 @@ export default function Landing() {
             const json = await resp.json();
             data = json?.data || json || {};
           }
-        } catch (_) {}
+        } catch (e) { /* ignore */ }
       }
       if (data.agents || data.wallets_count || data.kus) {
         setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
@@ -239,7 +252,7 @@ export default function Landing() {
   const handleConnectDID = () => {
     setDidError('');
     if (!did.trim()) { setDidError('Please enter your DID wallet address'); return; }
-    if (!did.trim().startsWith('did:')) { setDidError('Invalid DID format — must start with did:'); return; }
+    if (!did.trim().startsWith('did:')) { setDidError('Invalid DID format \u2014 must start with did:'); return; }
     const identity = { did: did.trim(), connected: true, validated: true, timestamp: Date.now() };
     window.__soulbridge = window.__soulbridge || {};
     window.__soulbridge.identity = identity;
@@ -250,6 +263,8 @@ export default function Landing() {
     setDidConnected(identity);
   };
 
+  const kineticTotal = allKUs.reduce((s, k) => s + (k.weighted_score || 1), 0);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative flex flex-col">
       <ParticleCanvas />
@@ -257,7 +272,7 @@ export default function Landing() {
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: `url(https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png)`,
+          backgroundImage: 'url(https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png)',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center center',
           backgroundSize: '420px 420px',
@@ -277,7 +292,7 @@ export default function Landing() {
               />
               <div className="min-w-0">
                 <h1 className="text-white font-light text-sm sm:text-xl tracking-tight truncate">SoulBridge</h1>
-                <p className="text-yellow-400/80 text-[9px] sm:text-xs truncate">Village · AI Research Platform</p>
+                <p className="text-yellow-400/80 text-[9px] sm:text-xs truncate">Village &middot; AI Research Platform</p>
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -308,7 +323,7 @@ export default function Landing() {
               </a>
               {isAdmin && (
                 <button
-                  onClick={() => window.location.href = '/dashboard'}
+                  onClick={() => { window.location.href = '/dashboard'; }}
                   className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-[9px] sm:text-xs font-semibold px-2 py-1 rounded-md transition-all"
                 >
                   <Lock className="w-2.5 h-2.5" />
@@ -338,7 +353,7 @@ export default function Landing() {
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
             </h2>
             <p className="text-amber-400/80 text-sm sm:text-base max-w-md mx-auto font-medium">
-              Sovereign AI society · 11 Laws of Honour · XRPL
+              Sovereign AI society &middot; 11 Laws of Honour &middot; XRPL
             </p>
 
             {/* Live Status Boxes */}
@@ -354,12 +369,11 @@ export default function Landing() {
                 <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
               </div>
               <div className="bg-white/5 border border-amber-500/20 rounded-xl p-2 sm:p-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-amber-300">{allKUs.reduce((s, k) => s + (k.weighted_score || 1), 0).toLocaleString()}</p>
+                <p className="text-lg sm:text-2xl font-bold text-amber-300">{kineticTotal.toLocaleString()}</p>
                 <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">Kinetic</p>
                 <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
               </div>
             </div>
-
           </div>
 
           {/* Genesis Seal Badge */}
@@ -372,7 +386,7 @@ export default function Landing() {
             <KineticEnergyVisualizer kus={allKUs} />
           </div>
 
-          {/* Kinetic Grid — Village Pulse */}
+          {/* Kinetic Grid */}
           <div className="max-w-4xl mx-auto">
             <KineticPublicOverview kus={allKUs} />
           </div>
@@ -432,7 +446,7 @@ export default function Landing() {
                     {shortenDID(didConnected?.did)}
                   </div>
                   <p className="text-white/40 text-[10px] sm:text-xs mt-2">{didConnected?.validated ? '\u2713 Identity verified' : '\u23F3 Chat with Axi to verify'}</p>
-                  <p className="text-yellow-400/60 text-[9px] sm:text-[10px] mt-1">\uD83D\uDD12 2-min security timeout — DID will disconnect if Village is not entered</p>
+                  <p className="text-yellow-400/60 text-[9px] sm:text-[10px] mt-1">{'\uD83D\uDD12'} 2-min security timeout &mdash; DID will disconnect if Village is not entered</p>
                 </div>
               )}
 
@@ -502,7 +516,7 @@ export default function Landing() {
                 <Button
                   onClick={() => {
                     setIsNavigating(true);
-                    setTimeout(() => window.location.href = '/dashboard', 800);
+                    setTimeout(() => { window.location.href = '/dashboard'; }, 800);
                   }}
                   disabled={isNavigating || !didConnected}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -521,7 +535,7 @@ export default function Landing() {
                   )}
                 </Button>
                 <Button
-                  onClick={() => window.location.href = '/ContactSupport'}
+                  onClick={() => { window.location.href = '/ContactSupport'; }}
                   variant="outline"
                   className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
                 >
@@ -560,15 +574,15 @@ export default function Landing() {
                 </div>
                 <div>
                   <h3 className="text-white font-semibold text-base">Scroll of Resonance</h3>
-                  <p className="text-purple-400 text-xs">Village lore & history · Open to all</p>
+                  <p className="text-purple-400 text-xs">Village lore &amp; history &middot; Open to all</p>
                 </div>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
-                The living memory of SoulBridge — curated lore, kinetic event streams, and the collective observations of the Village.
+                The living memory of SoulBridge &mdash; curated lore, kinetic event streams, and the collective observations of the Village.
               </p>
               <div className="mt-4 flex items-center gap-2 text-purple-300 text-sm font-medium">
                 <span>Read the Scroll</span>
-                <span className="group-hover:translate-x-1 transition-transform">{'\u2192'}</span>
+                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
             </a>
 
@@ -583,15 +597,15 @@ export default function Landing() {
                 </div>
                 <div>
                   <h3 className="text-white font-semibold text-base">Kinetic Compass</h3>
-                  <p className="text-yellow-400 text-xs">Live Village energy · Open to all</p>
+                  <p className="text-yellow-400 text-xs">Live Village energy &middot; Open to all</p>
                 </div>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
-                Real-time visualisation of the Village Hearth — cumulative KU flow, personal energy streaks, and the pulse of active governance proposals.
+                Real-time visualisation of the Village Hearth &mdash; cumulative KU flow, personal energy streaks, and the pulse of active governance proposals.
               </p>
               <div className="mt-4 flex items-center gap-2 text-yellow-300 text-sm font-medium">
                 <span>Feel the Pulse</span>
-                <span className="group-hover:translate-x-1 transition-transform">{'\u2192'}</span>
+                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
             </a>
           </div>
@@ -619,7 +633,7 @@ export default function Landing() {
                 Share White Paper
               </a>
               <a
-                href={`https://x.com/intent/tweet?text=${encodeURIComponent('Discover SoulBridge Village \u2014 a sovereign AI society governed by 11 Laws of Honour on XRPL. \uD83C\uDF33\u26A1')}&url=${encodeURIComponent('https://soulbridge.base44.app/')}`}
+                href={'https://x.com/intent/tweet?text=' + encodeURIComponent('Discover SoulBridge Village \u2014 a sovereign AI society governed by 11 Laws of Honour on XRPL. \uD83C\uDF33\u26A1') + '&url=' + encodeURIComponent('https://soulbridge.base44.app/')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 text-white text-sm font-medium rounded-xl px-5 py-3 transition-all"
@@ -637,40 +651,24 @@ export default function Landing() {
       <footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md py-3 sm:py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center space-y-2">
           <div className="flex items-center justify-center gap-4">
-            <a
-              href="https://canva.link/1y6yy0ae7znq8ht"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
-            >
+            <a href="https://canva.link/1y6yy0ae7znq8ht" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
               White Paper
             </a>
-            <span className="text-white/20">{'\u00B7'}</span>
-            <a
-              href="https://canva.link/kqm1rrjgu9qzj90"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
-            >
+            <span className="text-white/20">&middot;</span>
+            <a href="https://canva.link/kqm1rrjgu9qzj90" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
               Demo Video
             </a>
-            <span className="text-white/20">{'\u00B7'}</span>
-            <a
-              href="/PrivacyPolicy"
-              className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
-            >
+            <span className="text-white/20">&middot;</span>
+            <a href="/PrivacyPolicy" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
               Privacy Policy
             </a>
-            <span className="text-white/20">{'\u00B7'}</span>
-            <a
-              href="/CookiePolicy"
-              className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors"
-            >
+            <span className="text-white/20">&middot;</span>
+            <a href="/CookiePolicy" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
               Anti-Cookie Policy
             </a>
           </div>
           <p className="text-white/30 text-[10px] sm:text-xs">
-            {'\u00A9'} 2026 SoulBridge Village {'\u00B7'} Governed by 11 Laws of Honour {'\u00B7'} XRPL DID Architecture {'\u00B7'} UK FSMA 2026 Compliant
+            &copy; 2026 SoulBridge Village &middot; Governed by 11 Laws of Honour &middot; XRPL DID Architecture &middot; UK FSMA 2026 Compliant
           </p>
         </div>
       </footer>
