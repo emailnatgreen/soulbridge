@@ -23,7 +23,12 @@ export default function TrustlineActivateButton({ wallet, compact = false }) {
     }
   };
 
-  useEffect(() => { checkTrustline(); }, [wallet?.id]);
+  useEffect(() => {
+    // Stagger trustline checks to avoid XRPL rate limits when many cards load
+    const delay = Math.random() * 3000 + 500;
+    const timer = setTimeout(checkTrustline, delay);
+    return () => clearTimeout(timer);
+  }, [wallet?.id]);
 
   const handleActivate = async () => {
     setStatus('activating');

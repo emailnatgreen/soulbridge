@@ -19,17 +19,38 @@ Deno.serve(async (req) => {
 
     if (!classicAddress) return Response.json({ error: 'wallet_id or address required' }, { status: 400 });
 
-    // Query XRPL for account lines (trustlines)
-    const rpcRes = await fetch('https://xrplcluster.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        method: 'account_lines',
-        params: [{ account: classicAddress, ledger_index: 'validated' }]
-      })
-    });
+    // Query XRPL for account lines (trustlines) with retry on rate limit
+    const endpoints = ['https://xrplcluster.com', 'https://s1.ripple.com:51234', 'https://s2.ripple.com:51234'];
+    let rpcData = null;
+    let lastError = null;
 
-    const rpcData = await rpcRes.json();
+    for (const endpoint of endpoints) {
+      try {
+        const rpcRes = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            method: 'account_lines',
+            params: [{ account: classicAddress, ledger_index: 'validated' }]
+          })
+        });
+
+        const text = await rpcRes.text();
+        if (text.startsWith('Rate limit') || rpcRes.status === 429) {
+          lastError = 'Rate limited on ' + endpoint;
+          continue;
+        }
+        rpcData = JSON.parse(text);
+        break;
+      } catch (e) {
+        lastError = e.message;
+        continue;
+      }
+    }
+
+    if (!rpcData) {
+      return Response.json({ trustlines: [], message: lastError || 'All XRPL endpoints failed' });
+    }
 
     if (rpcData.result?.error === 'actNotFound') {
       return Response.json({ trustlines: [], message: 'Account not found on ledger' });
