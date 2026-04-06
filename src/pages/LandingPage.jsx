@@ -315,15 +315,19 @@ export default function LandingPage() {
                   About
                 </Badge>
               </a>
-              {isAdmin && (
-                <button
-                  onClick={() => { window.location.href = '/dashboard'; }}
-                  className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-[9px] sm:text-xs font-semibold px-2 py-1 rounded-md transition-all"
-                >
-                  <Lock className="w-2.5 h-2.5" />
-                  <span className="hidden sm:inline">Admin</span>
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  if (isAdmin) {
+                    window.location.href = '/home';
+                  } else {
+                    base44.auth.redirectToLogin('/home');
+                  }
+                }}
+                className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-[9px] sm:text-xs font-semibold px-2 py-1 rounded-md transition-all"
+              >
+                <Lock className="w-2.5 h-2.5" />
+                Admin
+              </button>
             </div>
           </div>
         </div>
