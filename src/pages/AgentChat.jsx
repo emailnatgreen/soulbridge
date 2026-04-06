@@ -8,6 +8,7 @@ import { ArrowLeft, MessageSquare, Fingerprint, Users, Loader2 } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { useAgentAwareness } from '@/hooks/useAgentAwareness';
+import DIDIdentityBannerCompact from '@/components/DIDIdentityBannerCompact';
 
 export default function AgentChat() {
   const [selectedAgent, setSelectedAgent] = useState(null);
@@ -254,6 +255,7 @@ export default function AgentChat() {
                   <div>
                     <h2 className="text-lg font-medium text-white">{selectedAgent.name}</h2>
                     <p className="text-xs text-purple-300/60 mt-1">{selectedAgent.purpose}</p>
+                    <div className="mt-1.5"><DIDIdentityBannerCompact agent={selectedAgent} /></div>
                   </div>
                   <button
                     onClick={() => setSelectedAgent(null)}

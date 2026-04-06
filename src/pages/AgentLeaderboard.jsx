@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, ArrowLeft, Shield, Fingerprint } from 'lucide-react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Link } from 'react-router-dom';
+import DIDIdentityBannerCompact from '@/components/DIDIdentityBannerCompact';
 
 export default function AgentLeaderboard() {
   const { didSignal, isRecognized } = useIdentity();
@@ -86,12 +87,15 @@ export default function AgentLeaderboard() {
                        <Badge className="bg-white/10 border-white/20 text-white/70 text-xs">
                          {agent.role || 'citizen'}
                        </Badge>
-                       {walletsMap[agent.id] && (
+                       {agent.classic_address && (
+                         <DIDIdentityBannerCompact agent={agent} />
+                        )}
+                       {!agent.classic_address && walletsMap[agent.id] && (
                          <Badge className="bg-emerald-500/20 border-emerald-400/30 text-emerald-300 text-xs flex items-center gap-1">
-                           <Shield className="w-3 h-3" />
-                           DID Published
-                         </Badge>
-                       )}
+                            <Shield className="w-3 h-3" />
+                            DID Published
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-white/40 text-xs">{agent.purpose}</p>
                     </div>

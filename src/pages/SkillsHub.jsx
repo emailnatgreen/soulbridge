@@ -9,6 +9,7 @@ import DevelopmentPathsPanel from '@/components/skill/DevelopmentPathsPanel';
 import { BookOpen, Users, Map, Loader, AlertCircle, TrendingUp } from 'lucide-react';
 import BackToHomeButton from '../components/BackToHomeButton';
 import { useMyAgent } from '@/hooks/useMyAgent';
+import DIDIdentityBannerCompact from '@/components/DIDIdentityBannerCompact';
 
 export default function SkillsHub() {
   const [activeTab, setActiveTab] = useState('my-skills');
@@ -121,6 +122,13 @@ export default function SkillsHub() {
                 Development Paths
               </TabsTrigger>
             </TabsList>
+
+            {/* DID Identity Banner */}
+            {myAgent && (
+              <div className="mt-4 p-3 bg-white/5 border border-purple-500/20 rounded-xl">
+                <DIDIdentityBannerCompact agent={myAgent} />
+              </div>
+            )}
 
             {/* Agent identity notice */}
             {!myAgent && !isLoading && (

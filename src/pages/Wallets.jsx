@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AskAxiButton from '@/components/AskAxiButton';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { logAdminAction } from '@/lib/adminAuditLog';
 import WalletCard from '../components/WalletCard';
 import TransactionAlerts from '../components/TransactionAlerts';
 import { Badge } from "@/components/ui/badge";
@@ -65,9 +66,10 @@ export default function WalletsPage() {
       const res = await base44.functions.invoke('createWallet', { name, network });
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['wallets'] });
       toast.success('Wallet generated successfully');
+      logAdminAction({ action: 'wallet_create', target_entity: 'Wallet', details: { name, network } });
       resetForm();
     },
     onError: (err) => {

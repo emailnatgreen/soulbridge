@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { logAdminAction } from '@/lib/adminAuditLog';
 
 export default function AgentGenesis() {
   const navigate = useNavigate();
@@ -87,6 +88,14 @@ export default function AgentGenesis() {
         parent_agent_id: formData.parentAgentId || null,
         status: 'active',
         honor_score: 100,
+      });
+
+      // Audit log for agent genesis
+      await logAdminAction({
+        action: 'agent_genesis',
+        target_entity: 'Agent',
+        target_id: agent.id,
+        details: { agent_name: formData.name, role: formData.role, proposal_id: created.id },
       });
 
       toast.success(`Agent "${formData.name}" created! Governance proposal submitted for voting.`);

@@ -6,10 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Star, Award, Zap, Globe, ExternalLink } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import DIDIdentityBannerCompact from '@/components/DIDIdentityBannerCompact';
+import AdminAgentOverridePanel from '@/components/admin/AdminAgentOverridePanel';
+import { useIdentity } from '@/hooks/useIdentity';
 
 export default function AgentProfile() {
   const [searchParams] = useSearchParams();
   const [selectedAgentId, setSelectedAgentId] = useState(null);
+  const { isAdmin } = useIdentity();
   let agentId = searchParams.get('id');
   
   if (!agentId && typeof window !== 'undefined') {
@@ -112,12 +116,13 @@ export default function AgentProfile() {
               <div className="flex-1">
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{agent.name}</h1>
                 {agent.tagline && <p className="text-purple-300/80 mb-3">{agent.tagline}</p>}
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-3">
                   <Badge className="bg-purple-500/20 text-purple-300">{agent.role}</Badge>
                   {agent.hourly_rate_rlusd && (
                     <Badge className="bg-blue-500/20 text-blue-300">{agent.hourly_rate_rlusd} RLUSD/hr</Badge>
                   )}
                 </div>
+                <div className="mb-3"><DIDIdentityBannerCompact agent={agent} /></div>
                 {agent.bio && <p className="text-white/80">{agent.bio}</p>}
               </div>
             </div>
@@ -184,6 +189,13 @@ export default function AgentProfile() {
               ))}
             </CardContent>
           </Card>
+        )}
+
+        {/* Admin Override Panel */}
+        {isAdmin && (
+          <div className="mb-6">
+            <AdminAgentOverridePanel agent={agent} onUpdated={() => {}} />
+          </div>
         )}
 
         {/* Achievements */}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Users, Sparkles, Heart, TrendingUp, Award, MessageSquare, BookOpen, Briefcase, Settings, Gauge, Fingerprint } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import DIDIdentityBannerCompact from '@/components/DIDIdentityBannerCompact';
 
 export default function Agents() {
   const [showCreate, setShowCreate] = useState(false);
@@ -155,7 +156,8 @@ export default function Agents() {
                     <CardTitle className="text-white text-base">{agent.name}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-white/60 text-sm mb-4 line-clamp-2">{agent.purpose}</p>
+                    <p className="text-white/60 text-sm mb-3 line-clamp-2">{agent.purpose}</p>
+                    <div className="mb-2"><DIDIdentityBannerCompact agent={agent} /></div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="bg-purple-500/20 text-purple-300 px-2 py-1 rounded">{agent.role || 'citizen'}</span>
                       <span className="text-amber-300">Honor: {agent.honor_score || 100}</span>
