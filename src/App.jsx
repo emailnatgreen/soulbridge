@@ -12,7 +12,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 const Layout = lazy(() => import('./Layout'));
 
 // All pages lazy-loaded
-const Landing = lazy(() => import('./pages/LandingPage.jsx'));
+import LandingPage from './pages/LandingPage.jsx';
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ContactSupport = lazy(() => import('./pages/ContactSupport'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
@@ -207,7 +207,7 @@ const AuthenticatedApp = () => {
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         {/* Public pages (no layout) */}
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/ContactSupport" element={<ContactSupport />} />
         <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
         <Route path="/CookiePolicy" element={<CookiePolicy />} />
