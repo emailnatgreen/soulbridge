@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MessageSquare, Fingerprint, Users, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useIdentity } from '@/hooks/useIdentity';
+import { useAgentAwareness } from '@/hooks/useAgentAwareness';
 
 export default function AgentChat() {
   const [selectedAgent, setSelectedAgent] = useState(null);
@@ -14,6 +15,7 @@ export default function AgentChat() {
   const [isSending, setIsSending] = useState(false);
   const [currentDID, setCurrentDID] = useState(null);
   const { isRecognized } = useIdentity();
+  const { broadcastMessageReceived } = useAgentAwareness();
 
   // Load current DID from storage
   useEffect(() => {
@@ -59,13 +61,28 @@ export default function AgentChat() {
       const senderAgentId = currentDID?.agent_id || localStorage.getItem('user_agent_id') || 'user';
       const convId = `conv-${selectedAgent.id}`;
       
-      await base44.entities.AgentMessage.create({
+      const newMsg = await base44.entities.AgentMessage.create({
         sender_agent_id: senderAgentId,
         conversation_id: convId,
         content: message.trim(),
         message_type: 'text',
         status: 'sent',
       });
+      
+      // Emit signal that message was sent to selected agent
+      window.dispatchEvent(new CustomEvent('agent-chat-message', {
+        detail: {
+          sender: senderAgentId,
+          recipient: selectedAgent.id,
+          message: message.trim(),
+          conversationId: convId,
+          messageId: newMsg.id,
+          timestamp: new Date().toISOString(),
+        }
+      }));
+
+      // Notify agents that a message was received
+      broadcastMessageReceived(selectedAgent.id, true);
       
       setMessage('');
       setTimeout(() => refetchMessages(), 300);
