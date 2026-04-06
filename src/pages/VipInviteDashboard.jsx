@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { hasAdminAccess } from '@/lib/adminAccess';
 import { Link } from 'react-router-dom';
-import { Shield, Globe, Wallet, Sparkles, RefreshCw, Plus, Eye } from 'lucide-react';
+import { Shield, Globe, Wallet, Sparkles, RefreshCw, Plus, Eye, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import VipWalletAssigner from '@/components/vip/VipWalletAssigner';
 import VipWalletCard from '@/components/vip/VipWalletCard';
@@ -97,10 +97,16 @@ export default function VipInviteDashboard() {
               <p className="text-amber-400/60 text-[9px] sm:text-xs truncate">Admin · VIP wallets, DIDs & access</p>
             </div>
           </div>
-          <Button size="sm" variant="outline" onClick={loadData}
-            className="text-[10px] sm:text-xs border-white/20 bg-white/5 text-white hover:bg-white/10 gap-1 sm:gap-1.5 h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0">
-            <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Refresh</span>
-          </Button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link to="/Home"
+              className="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs border border-white/20 bg-white/5 text-white hover:bg-white/10 h-7 sm:h-8 px-2 sm:px-3 rounded-md transition-colors">
+              <Home className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Home</span>
+            </Link>
+            <Button size="sm" variant="outline" onClick={loadData}
+              className="text-[10px] sm:text-xs border-white/20 bg-white/5 text-white hover:bg-white/10 gap-1 sm:gap-1.5 h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0">
+              <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Refresh</span>
+            </Button>
+          </div>
         </div>
       </div>
 
