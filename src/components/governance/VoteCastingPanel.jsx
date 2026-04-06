@@ -130,10 +130,15 @@ export default function VoteCastingPanel({ proposal, selectedAgent, hasVoted, my
         </Badge>
       </div>
 
-      {selectedAgent.classic_address && (
+      {selectedAgent.classic_address ? (
         <div className="bg-black/30 rounded-lg px-3 py-1.5 font-mono text-xs text-purple-300/70 flex items-center gap-2">
           <LinkIcon className="w-3 h-3 flex-shrink-0" />
           <span className="truncate">{selectedAgent.classic_address}</span>
+        </div>
+      ) : (
+        <div className="bg-black/30 rounded-lg px-3 py-1.5 text-xs text-white/40 flex items-center gap-2">
+          <Fingerprint className="w-3 h-3 flex-shrink-0" />
+          <span>Platform identity — no on-chain DID</span>
         </div>
       )}
 

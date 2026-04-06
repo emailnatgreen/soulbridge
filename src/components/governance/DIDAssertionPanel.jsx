@@ -37,11 +37,6 @@ export function getDIDPermissionStatus(agent) {
       pass: agent.status !== 'suspended',
       detail: agent.status === 'suspended' ? 'Suspended agents cannot vote' : 'Not suspended',
     },
-    {
-      label: 'Classic Address (DID) Present',
-      pass: !!agent.classic_address,
-      detail: agent.classic_address ? `DID: ${agent.classic_address.slice(0, 12)}…` : 'No XRPL DID address found',
-    },
   ];
 
   const failed = checks.filter(c => !c.pass);
@@ -71,10 +66,15 @@ export default function DIDAssertionPanel({ agent }) {
         </div>
 
         {/* DID Address */}
-        {agent.classic_address && (
+        {agent.classic_address ? (
           <div className="bg-black/30 rounded-lg px-3 py-2 font-mono text-xs text-purple-300 flex items-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
             <span className="truncate">{agent.classic_address}</span>
+          </div>
+        ) : (
+          <div className="bg-black/30 rounded-lg px-3 py-2 text-xs text-white/40 flex items-center gap-2">
+            <Fingerprint className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+            <span>No on-chain DID — agent can still vote via platform identity</span>
           </div>
         )}
 
