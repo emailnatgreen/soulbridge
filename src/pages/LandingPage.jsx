@@ -317,11 +317,7 @@ export default function LandingPage() {
               </a>
               <button
                 onClick={() => {
-                  if (isAdmin) {
-                    window.location.href = '/home';
-                  } else {
-                    base44.auth.redirectToLogin('/home');
-                  }
+                  window.location.href = '/home';
                 }}
                 className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-[9px] sm:text-xs font-semibold px-2 py-1 rounded-md transition-all"
               >
