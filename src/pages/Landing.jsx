@@ -1,3 +1,4 @@
+/* SoulBridge Landing – cache-bust rebuild */
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -12,8 +13,6 @@ import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
-
-/* SoulBridge Landing page */
 
 if (!window.__soulbridge) window.__soulbridge = {};
 
