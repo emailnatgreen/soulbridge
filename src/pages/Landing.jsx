@@ -13,7 +13,7 @@ import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import GenesisSealBadge from '@/components/GenesisSealBadge';
 
-/* SoulBridge Landing v2 */
+/* SoulBridge Landing page */
 
 if (!window.__soulbridge) window.__soulbridge = {};
 
@@ -108,7 +108,6 @@ export default function Landing() {
   const [didError, setDidError] = useState('');
   const [didConnected, setDidConnected] = useState(null);
 
-  // Check invite code from URL params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const invite = params.get('invite');
@@ -148,7 +147,6 @@ export default function Landing() {
     }, 2 * 60 * 1000);
   };
 
-  // Load stored identity + listen for validation
   useEffect(() => {
     try {
       const stored = localStorage.getItem('soulbridge_identity');
@@ -171,7 +169,6 @@ export default function Landing() {
     return () => window.removeEventListener('did-validated', handleValidated);
   }, []);
 
-  // Inactivity timer
   useEffect(() => {
     if (!didConnected) return;
     const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
@@ -183,7 +180,6 @@ export default function Landing() {
     };
   }, [didConnected]);
 
-  // Fetch public stats
   useEffect(() => {
     const fetchStats = async () => {
       let data = {};

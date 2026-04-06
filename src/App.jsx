@@ -9,7 +9,7 @@ import { OwnerGovernorProvider } from '@/lib/OwnerGovernorContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 // Layout
-const Layout = lazy(() => import('./Layout.jsx'));
+const Layout = lazy(() => import('./Layout'));
 
 // All pages lazy-loaded
 const Landing = lazy(() => import('./pages/Landing'));
