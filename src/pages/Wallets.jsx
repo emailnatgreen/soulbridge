@@ -11,7 +11,6 @@ import { Plus, Wallet, ArrowLeft, Loader2, QrCode, CheckCircle, RefreshCw, Globe
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AskAxiButton from '@/components/AskAxiButton';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import WalletCard from '../components/WalletCard';
 import TransactionAlerts from '../components/TransactionAlerts';
@@ -208,7 +207,7 @@ export default function WalletsPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <Link to={createPageUrl('Home')} className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-4">
+          <Link to="/home" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Link>
