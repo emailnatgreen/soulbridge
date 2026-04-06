@@ -20,28 +20,33 @@ Deno.serve(async (req) => {
     }
 
     const xrplApiUrl = wallet.network === 'testnet'
-      ? 'https://s.altnet.rippletest.net'
-      : 'https://s1.ripple.com';
+      ? 'https://s.altnet.rippletest.net:51234'
+      : 'https://xrplcluster.com';
 
     // Get account info for XRP balance
-    const accountRequest = {
-      method: 'account_info',
-      account: wallet.classic_address,
-      ledger_index: 'validated',
-    };
-
     const accountResponse = await fetch(xrplApiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', method: 'account_info', params: { account: wallet.classic_address, ledger_index: 'validated' }, id: 1 }),
-    });
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'account_info',
+        params: {
+          account: wallet.classic_address,
+          ledger_index: 'validated',
+        },
+        id: 1,
+      }),
+    }).catch(() => null);
 
-    const accountData = await accountResponse.json();
-    const xrpBalance = accountData.result?.account_data?.Balance
-      ? (parseInt(accountData.result.account_data.Balance) / 1000000).toFixed(2)
-      : 0;
+    let xrpBalance = 0;
+    if (accountResponse?.ok) {
+      const accountData = await accountResponse.json();
+      xrpBalance = accountData.result?.account_data?.Balance
+        ? (parseInt(accountData.result.account_data.Balance) / 1000000).toFixed(2)
+        : 0;
+    }
 
-    // Get trustlines for rLUSD
+    // Get trustlines
     const trustlineResponse = await fetch(xrplApiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -52,21 +57,35 @@ Deno.serve(async (req) => {
           account: wallet.classic_address,
           ledger_index: 'validated',
         },
-        id: 1,
+        id: 2,
       }),
-    });
+    }).catch(() => null);
 
-    const trustlineData = await trustlineResponse.json();
-    const rlusdLine = trustlineData.result?.lines?.find(
-      line => line.currency === 'USD' && line.account === 'rN7n7otQDd6FczFgLdlqtyMVrn3MtAj58'
-    );
-    const rlusdBalance = rlusdLine?.balance ? parseFloat(rlusdLine.balance).toFixed(2) : 0;
-    const hasRlusdTrustline = !!rlusdLine;
+    let trustlines = [];
+    let rlusdBalance = 0;
+    let hasRlusdTrustline = false;
+
+    if (trustlineResponse?.ok) {
+      const trustlineData = await trustlineResponse.json();
+      trustlines = trustlineData.result?.lines || [];
+      
+      const rlusdLine = trustlines.find(line => line.currency === 'USD');
+      if (rlusdLine && parseFloat(rlusdLine.limit) > 0) {
+        rlusdBalance = parseFloat(rlusdLine.balance).toFixed(2);
+        hasRlusdTrustline = true;
+      }
+    }
 
     return Response.json({
-      xrp: xrpBalance,
-      rlusd: rlusdBalance,
+      xrp: parseFloat(xrpBalance),
+      rlusd: parseFloat(rlusdBalance),
       has_rlusd_trustline: hasRlusdTrustline,
+      trustlines: trustlines.map(t => ({
+        currency: t.currency,
+        balance: t.balance,
+        limit: t.limit,
+        issuer: t.account,
+      })),
       reserve_xrp: 10,
       available_xrp: Math.max(0, parseFloat(xrpBalance) - 10),
     });

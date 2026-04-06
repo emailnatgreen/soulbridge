@@ -246,15 +246,33 @@ export default function DIDManager() {
 
                       {/* Balances */}
                       {!balancesLoading && balance && (
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-black/30 rounded-lg p-3">
-                            <p className="text-white/40 text-xs mb-1">XRP Balance</p>
-                            <p className="text-white/70 text-sm font-mono">{balance.xrp || 0} XRP</p>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-black/30 rounded-lg p-3">
+                              <p className="text-white/40 text-xs mb-1">XRP Balance</p>
+                              <p className="text-white text-base font-mono font-bold">{balance.xrp || 0}</p>
+                              <p className="text-white/40 text-xs mt-1">Available: {balance.available_xrp || 0}</p>
+                            </div>
+                            <div className="bg-black/30 rounded-lg p-3">
+                              <p className="text-white/40 text-xs mb-1">rLUSD Balance</p>
+                              <p className="text-white text-base font-mono font-bold">{balance.rlusd || 0}</p>
+                              <p className={`text-xs mt-1 ${balance.has_rlusd_trustline ? 'text-green-400' : 'text-amber-400'}`}>
+                                {balance.has_rlusd_trustline ? '✓ Trustline Active' : '✗ No Trustline'}
+                              </p>
+                            </div>
                           </div>
-                          <div className="bg-black/30 rounded-lg p-3">
-                            <p className="text-white/40 text-xs mb-1">rLUSD Balance</p>
-                            <p className="text-white/70 text-sm font-mono">{balance.rlusd || 0} rLUSD</p>
-                          </div>
+                          {balance.trustlines && balance.trustlines.length > 0 && (
+                            <div className="bg-black/30 rounded-lg p-3">
+                              <p className="text-white/40 text-xs mb-2">All Trustlines ({balance.trustlines.length})</p>
+                              <div className="space-y-1 max-h-32 overflow-y-auto">
+                                {balance.trustlines.map((tl, idx) => (
+                                  <div key={idx} className="text-xs text-white/60 font-mono">
+                                    <span className="text-white">{tl.currency}</span> • {parseFloat(tl.balance).toFixed(2)} / {parseFloat(tl.limit).toFixed(0)}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
