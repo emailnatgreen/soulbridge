@@ -178,13 +178,21 @@ export default function AgentChat() {
             {selectedAgent ? (
               <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-full flex flex-col">
                 {/* Chat Header */}
-                <div className="border-b border-white/10 p-4">
-                  <h2 className="text-lg font-medium text-white">{selectedAgent.name}</h2>
-                  <p className="text-xs text-purple-300/60 mt-1">{selectedAgent.purpose}</p>
+                <div className="border-b border-white/10 p-4 flex items-start justify-between">
+                  <div>
+                    <h2 className="text-lg font-medium text-white">{selectedAgent.name}</h2>
+                    <p className="text-xs text-purple-300/60 mt-1">{selectedAgent.purpose}</p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedAgent(null)}
+                    className="text-white/40 hover:text-white/80 transition-colors"
+                  >
+                    ✕
+                  </button>
                 </div>
 
                 {/* Messages */}
-                <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+                <CardContent className="flex-1 overflow-y-scroll p-4 space-y-4 scrollbar scrollbar-thumb-purple-500/50 scrollbar-track-white/5">
                   {conversationMessages.length === 0 ? (
                     <div className="h-full flex items-center justify-center">
                       <div className="text-center">
