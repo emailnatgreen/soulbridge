@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +9,22 @@ import { Link } from 'react-router-dom';
 export default function AgentLeaderboard() {
   const [tab, setTab] = useState('honor');
 
-  const { data: agents = [], isLoading } = useQuery({
+  useEffect(() => {
+    // Trigger retroactive honor processing on page load
+    base44.functions.invoke('awardRetroactiveHonorForVotes', {}).catch(() => {});
+  }, []);
+
+  const { data: agents = [], isLoading, refetch } = useQuery({
     queryKey: ['leaderboard-agents'],
     queryFn: () => base44.entities.Agent.list('-honor_score', 100),
+    staleTime: 0,
+    refetchInterval: 3000,
   });
+
+  useEffect(() => {
+    const unsubscribe = base44.entities.Agent.subscribe(() => refetch());
+    return unsubscribe;
+  }, [refetch]);
 
   const lists = {
     honor: [...agents].sort((a, b) => (b.honor_score || 0) - (a.honor_score || 0)),
