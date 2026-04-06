@@ -152,7 +152,6 @@ export default function Dashboard() {
     try {
       const res = await base44.functions.invoke('publishDID', { wallet_id: targetId });
       const txid = res?.data?.txid || res?.data?.tx_hash || null;
-      // If it's the invite wallet, update localStorage
       if (inviteWallet?.id === targetId) {
         const updated = { ...inviteWallet, is_published: true, published_txid: txid };
         localStorage.setItem('sb_invite_wallet', JSON.stringify(updated));
@@ -160,7 +159,6 @@ export default function Dashboard() {
         setInviteWallet(updated);
         if (txid) setPublishTxid(txid);
       }
-      // Refresh wallets list
       const me = await base44.auth.me().catch(() => null);
       let refreshedWallets = [];
       if (me?.id) {
@@ -170,12 +168,13 @@ export default function Dashboard() {
         refreshedWallets = await base44.entities.Wallet.filter({ classic_address: didAddress }, '-created_date', 20).catch(() => []);
       }
       setWallets(refreshedWallets || []);
-      } catch (e) {
-        setPublishError(e?.response?.data?.error || 'Failed to publish DID. Please try again.');
-      }
+    } catch (e) {
+      setPublishError(e?.response?.data?.error || 'Failed to publish DID. Please try again.');
+    } finally {
       setPublishingDid(false);
       setPublishingWalletId(null);
-      };
+    }
+  };
 
   const handleDisconnect = () => {
     localStorage.removeItem('soulbridge_identity');
