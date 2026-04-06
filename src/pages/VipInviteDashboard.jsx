@@ -104,6 +104,124 @@ export default function VipInviteDashboard() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
+        {/* Operational Guide */}
+        <details className="group bg-white/5 border border-amber-500/20 rounded-2xl overflow-hidden">
+          <summary className="flex items-center justify-between cursor-pointer px-4 sm:px-5 py-3 sm:py-4 hover:bg-white/5 transition-colors">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-amber-300" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-sm">VIP Dashboard — How to Operate</h3>
+                <p className="text-amber-400/60 text-[10px]">Full guide · Features · Functions · Operational notes</p>
+              </div>
+            </div>
+            <span className="text-white/30 text-xs group-open:rotate-90 transition-transform">▶</span>
+          </summary>
+          <div className="px-4 sm:px-5 pb-5 space-y-4 border-t border-white/10 pt-4">
+
+            {/* Operational Funds Notice */}
+            <div className="bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
+              <p className="text-green-300 text-sm font-semibold flex items-center gap-2">✅ Operational Funds Have Been Provided</p>
+              <p className="text-green-300/70 text-xs mt-1">All VIP wallets listed below have been funded with XRP to cover reserve requirements, transaction fees, and DID publication costs. No additional funding is needed to begin operations.</p>
+            </div>
+
+            {/* Purpose */}
+            <div className="space-y-1.5">
+              <h4 className="text-white font-semibold text-xs uppercase tracking-widest">📋 Purpose</h4>
+              <p className="text-white/60 text-xs leading-relaxed">The VIP Invite Dashboard is the admin command centre for managing privileged wallets within the SoulBridge Village. It provides full visibility over VIP wallet balances, DID publication status, RLUSD trustlines, and cross-wallet operations — all from a single interface.</p>
+            </div>
+
+            {/* Features Breakdown */}
+            <div className="space-y-3">
+              <h4 className="text-white font-semibold text-xs uppercase tracking-widest">⚙️ Features & Functions</h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  {
+                    title: '💳 VIP Wallet Cards',
+                    desc: 'Each card displays the wallet name, XRPL address, live XRP and RLUSD balances, DID publication status, linked agent, and role badge. Balances are fetched live from XRPL mainnet on page load and can be manually refreshed.'
+                  },
+                  {
+                    title: '📤 Send Panel',
+                    desc: 'Send XRP from any VIP wallet to any XRPL address. Select the source wallet, enter the destination address, amount, and optional destination tag. Treasury wallets are excluded to prevent accidental sends from governance-controlled funds.'
+                  },
+                  {
+                    title: '📥 Receive Panel',
+                    desc: 'Displays the XRPL address and QR code for any selected VIP wallet, making it easy to receive XRP or RLUSD payments from external sources or exchanges.'
+                  },
+                  {
+                    title: '🔄 DEX Swap Panel',
+                    desc: 'Swap between XRP and RLUSD directly on the XRPL decentralised exchange. Select a VIP wallet, choose the swap direction, enter the amount, and execute. Uses on-chain XRPL DEX order matching.'
+                  },
+                  {
+                    title: '🌐 DID Publication',
+                    desc: 'Each wallet can publish a Decentralised Identifier (DID) to XRPL mainnet. Once published, the DID is permanently anchored on-chain with a verifiable transaction hash. Click "Publish DID to Mainnet" on any unpublished wallet.'
+                  },
+                  {
+                    title: '🔗 RLUSD Trustline',
+                    desc: 'Activates or checks the RLUSD trustline on each wallet. A trustline is required before the wallet can hold or receive RLUSD tokens. The activation button appears on wallets without an active trustline.'
+                  },
+                  {
+                    title: '📱 QR Codes (Xaman Import)',
+                    desc: 'Toggle the QR icon on any wallet card to reveal two QR codes: (1) the public XRPL address for receiving funds, and (2) the secret seed for importing the wallet into the Xaman (formerly Xumm) mobile app. The seed QR is hidden by default and requires explicit reveal for security.'
+                  },
+                  {
+                    title: '✏️ Wallet Editor',
+                    desc: 'Click the pencil icon on any wallet card to edit its name, colour, assigned role, linked agent, and Node DID. Changes are saved directly to the wallet record.'
+                  },
+                  {
+                    title: '➕ Add Wallet to VIP',
+                    desc: 'Use the "Add Wallet to VIP" section to assign existing wallets to the VIP pool. Wallets must have "vip" in their name or notes field to appear in this dashboard.'
+                  },
+                  {
+                    title: '📊 Stats Overview',
+                    desc: 'The top stats bar shows: total VIP wallets, number of published DIDs, combined XRP balance across all VIP wallets, and combined RLUSD balance. All values are fetched live from the XRPL ledger.'
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
+                    <p className="text-white font-medium text-xs mb-1">{item.title}</p>
+                    <p className="text-white/50 text-[10px] leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Xaman Import Steps */}
+            <div className="space-y-1.5">
+              <h4 className="text-white font-semibold text-xs uppercase tracking-widest">📱 How to Import a Wallet into Xaman (Xumm)</h4>
+              <ol className="text-white/60 text-xs leading-relaxed list-decimal list-inside space-y-1 pl-1">
+                <li>Open the Xaman app on your phone</li>
+                <li>Go to <strong className="text-white/80">Settings → Accounts → Add Account</strong></li>
+                <li>Select <strong className="text-white/80">Import an existing account</strong></li>
+                <li>Choose <strong className="text-white/80">Family Seed / Secret Key</strong></li>
+                <li>On the VIP Dashboard, find the wallet card and tap the <strong className="text-white/80">QR icon</strong></li>
+                <li>Click <strong className="text-white/80">Reveal</strong> to show the secret seed QR code</li>
+                <li>Scan the QR code with Xaman, or copy/paste the seed text</li>
+                <li>Xaman will recognise the wallet and add it to your accounts</li>
+              </ol>
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2">
+                <p className="text-red-300/70 text-[10px]">⚠️ <strong>Security:</strong> Never share your seed with anyone. The seed grants full control of the wallet. Only reveal it on a trusted device in a private setting.</p>
+              </div>
+            </div>
+
+            {/* Operational Notes */}
+            <div className="space-y-1.5">
+              <h4 className="text-white font-semibold text-xs uppercase tracking-widest">📌 Operational Notes</h4>
+              <ul className="text-white/60 text-xs leading-relaxed list-disc list-inside space-y-1 pl-1">
+                <li>All wallets operate on <strong className="text-white/80">XRPL Mainnet</strong> — transactions are real and irreversible</li>
+                <li>Minimum XRPL account reserve is <strong className="text-white/80">1 XRP</strong> (base reserve) plus 0.2 XRP per trustline/object</li>
+                <li>DID publication costs approximately <strong className="text-white/80">2 XRP</strong> in owner reserves</li>
+                <li>RLUSD trustline activation requires <strong className="text-white/80">0.2 XRP</strong> additional reserve</li>
+                <li>Treasury wallets are <strong className="text-white/80">excluded</strong> from the Send panel to protect governance-controlled funds</li>
+                <li>Balances refresh automatically on page load and can be manually refreshed per wallet</li>
+                <li>Wallets with encrypted seeds (AES-256-GCM) cannot display seed QR codes — only plain-seed wallets support Xaman import via QR</li>
+              </ul>
+            </div>
+
+          </div>
+        </details>
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {[
