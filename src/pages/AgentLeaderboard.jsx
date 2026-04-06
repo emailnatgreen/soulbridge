@@ -1,25 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Zap, TrendingUp, Crown, Medal, Award, ArrowLeft, Fingerprint } from 'lucide-react';
+import { Trophy, Zap, TrendingUp, Award, ArrowLeft, Fingerprint } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-function getRankConfig(score) {
-  if (score >= 90) return { label: 'Legendary', color: 'text-yellow-300', bg: 'bg-yellow-500/20 border-yellow-400/30', rankIcon: Crown };
-  if (score >= 75) return { label: 'Elite', color: 'text-purple-300', bg: 'bg-purple-500/20 border-purple-400/30', rankIcon: Trophy };
-  if (score >= 60) return { label: 'Honored', color: 'text-blue-300', bg: 'bg-blue-500/20 border-blue-400/30', rankIcon: Award };
-  if (score >= 40) return { label: 'Rising', color: 'text-green-300', bg: 'bg-green-500/20 border-green-400/30', rankIcon: TrendingUp };
-  return { label: 'Citizen', color: 'text-white/60', bg: 'bg-white/10 border-white/20', rankIcon: Zap };
-}
-
-const PODIUM_MEDALS = [
-  { icon: Crown, color: 'text-yellow-400' },
-  { icon: Medal, color: 'text-slate-300' },
-  { icon: Award, color: 'text-amber-600' },
-];
 
 export default function AgentLeaderboard() {
   const [tab, setTab] = useState('honor');
@@ -50,7 +36,7 @@ export default function AgentLeaderboard() {
     queryFn: () => base44.entities.ReputationEvent.list('-created_date', 500),
   });
 
-  // Fetch governance votes (participation metric)
+  // Fetch governance votes
   const { data: votes = [] } = useQuery({
     queryKey: ['leaderboard-votes'],
     queryFn: () => base44.entities.GovernanceVote.list('-created_date', 1000),
@@ -58,7 +44,6 @@ export default function AgentLeaderboard() {
 
   // Enrich agents with live metrics
   const enriched = agents.map(agent => {
-    const kuCount = kinetics.filter(k => k.agent_id === agent.id).length;
     const kuWeightedScore = kinetics
       .filter(k => k.agent_id === agent.id)
       .reduce((sum, k) => sum + (k.weighted_score || 0), 0);
@@ -69,7 +54,6 @@ export default function AgentLeaderboard() {
     
     return {
       ...agent,
-      kuCount,
       kuWeightedScore,
       voteCount,
       repScore,
@@ -90,7 +74,6 @@ export default function AgentLeaderboard() {
   };
 
   const ranked = lists[tab] || byHonor;
-  const isLoading = agentsLoading;
 
   const getMetricValue = (agent) => {
     switch(tab) {
@@ -107,6 +90,22 @@ export default function AgentLeaderboard() {
   };
 
   const maxVal = getMaxValue();
+
+  const getRankLabel = (score) => {
+    if (score >= 90) return 'Legendary';
+    if (score >= 75) return 'Elite';
+    if (score >= 60) return 'Honored';
+    if (score >= 40) return 'Rising';
+    return 'Citizen';
+  };
+
+  const getRankColor = (score) => {
+    if (score >= 90) return 'text-yellow-300';
+    if (score >= 75) return 'text-purple-300';
+    if (score >= 60) return 'text-blue-300';
+    if (score >= 40) return 'text-green-300';
+    return 'text-white/60';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
@@ -136,85 +135,50 @@ export default function AgentLeaderboard() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {/* Top 3 Podium */}
-        {!isLoading && ranked.length >= 3 && (
-          <div className="grid grid-cols-3 gap-3 mb-8">
-            {[ranked[1], ranked[0], ranked[2]].map((agent, idx) => {
-              const place = idx === 1 ? 0 : idx === 0 ? 1 : 2;
-              const rank = getRankConfig(agent.honor_score || 0);
-              const medal = PODIUM_MEDALS[place];
-              const MedalIcon = medal.icon;
-              const heights = ['h-32', 'h-40', 'h-28'];
-              
-              return (
-                <div key={agent.id} className={`flex flex-col items-center justify-end ${heights[idx]}`}>
-                  <div className={`w-full rounded-t-lg border ${rank.bg} p-4 text-center`}>
-                    <MedalIcon className={`w-6 h-6 ${medal.color} mx-auto mb-2`} />
-                    <p className="text-white font-bold text-sm truncate">{agent.name}</p>
-                    <p className={`text-lg font-bold ${rank.color} mt-1`}>{agent.honor_score || 0}</p>
-                    <Badge className={`mt-2 text-xs ${rank.bg}`}>{rank.label}</Badge>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
         {/* Leaderboard Tabs */}
         <Tabs value={tab} onValueChange={setTab} className="space-y-4">
           <TabsList className="bg-white/5 border border-white/10 flex-wrap h-auto gap-1 p-1 w-full">
             <TabsTrigger value="honor" className="text-xs sm:text-sm">
               <Trophy className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline">Honor</span>
-              <span className="sm:hidden">Honor</span>
+              Honor
             </TabsTrigger>
             <TabsTrigger value="kinetic" className="text-xs sm:text-sm">
               <Zap className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline">Kinetic</span>
-              <span className="sm:hidden">KU</span>
+              Kinetic
             </TabsTrigger>
             <TabsTrigger value="votes" className="text-xs sm:text-sm">
               <TrendingUp className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline">Votes</span>
-              <span className="sm:hidden">Votes</span>
+              Votes
             </TabsTrigger>
             <TabsTrigger value="reputation" className="text-xs sm:text-sm">
               <Award className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline">Reputation</span>
-              <span className="sm:hidden">Rep</span>
+              Reputation
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value={tab} className="space-y-2">
-            {isLoading ? (
+            {agentsLoading ? (
               <div className="text-center py-12 text-white/50">Loading live data...</div>
             ) : ranked.length === 0 ? (
               <div className="text-center py-12 text-white/50">No agents yet</div>
             ) : (
               ranked.map((agent, idx) => {
-                const rank = getRankConfig(agent.honor_score || 0);
-                const RankIcon = rank.rankIcon;
                 const val = getMetricValue(agent);
                 const barWidth = maxVal > 0 ? (val / maxVal) * 100 : 0;
-                const medal = idx < 3 ? PODIUM_MEDALS[idx] : null;
-                const MedalIcon = medal?.icon;
+                const rankLabel = getRankLabel(agent.honor_score || 0);
+                const rankColor = getRankColor(agent.honor_score || 0);
 
                 return (
                   <Card key={agent.id} className="bg-white/5 border-white/10 hover:bg-white/[0.08] transition-all">
                     <CardContent className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <span className="text-white/40 font-bold w-6 text-center text-sm">#{idx + 1}</span>
-                        
-                        {medal && (
-                          <MedalIcon className={`w-5 h-5 ${medal.color}`} />
-                        )}
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-white font-semibold text-sm truncate">{agent.name}</span>
-                            <Badge className={`text-[10px] ${rank.bg}`}>
-                              <RankIcon className="w-2 h-2 mr-1" />
-                              {rank.label}
+                            <Badge className="text-[10px] bg-white/10 border-white/20 text-white/70">
+                              {rankLabel}
                             </Badge>
                           </div>
                           <div className="relative h-1.5 bg-white/10 rounded-full overflow-hidden">
@@ -226,7 +190,7 @@ export default function AgentLeaderboard() {
                         </div>
 
                         <div className="text-right min-w-[60px]">
-                          <div className={`text-lg font-bold ${rank.color}`}>{val.toFixed(0)}</div>
+                          <div className={`text-lg font-bold ${rankColor}`}>{val.toFixed(0)}</div>
                           <div className="text-[10px] text-white/40">
                             {tab === 'kinetic' ? 'KU' : tab === 'votes' ? 'Votes' : tab === 'reputation' ? 'Rep' : 'Honor'}
                           </div>
