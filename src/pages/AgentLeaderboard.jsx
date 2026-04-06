@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, ArrowLeft } from 'lucide-react';
+import { Trophy, ArrowLeft, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function AgentLeaderboard() {
@@ -19,6 +19,21 @@ export default function AgentLeaderboard() {
     queryFn: () => base44.entities.Agent.list('-honor_score', 100),
     staleTime: 0,
     refetchInterval: 3000,
+  });
+
+  const { data: walletsMap = {} } = useQuery({
+    queryKey: ['leaderboard-wallets'],
+    queryFn: async () => {
+      const wallets = await base44.entities.Wallet.list(undefined, 1000);
+      const map = {};
+      wallets.forEach(w => {
+        if (w.owner_id && w.is_published) {
+          map[w.owner_id] = { address: w.classic_address, published: true };
+        }
+      });
+      return map;
+    },
+    staleTime: 30000,
   });
 
   useEffect(() => {
@@ -80,11 +95,17 @@ export default function AgentLeaderboard() {
                   <div className="flex items-center gap-4">
                     <span className="text-white/40 font-bold w-8">#{idx + 1}</span>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-white font-semibold">{agent.name}</span>
-                        <Badge className="bg-white/10 border-white/20 text-white/70 text-xs">
-                          {agent.role || 'citizen'}
-                        </Badge>
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                       <span className="text-white font-semibold">{agent.name}</span>
+                       <Badge className="bg-white/10 border-white/20 text-white/70 text-xs">
+                         {agent.role || 'citizen'}
+                       </Badge>
+                       {walletsMap[agent.id] && (
+                         <Badge className="bg-emerald-500/20 border-emerald-400/30 text-emerald-300 text-xs flex items-center gap-1">
+                           <Shield className="w-3 h-3" />
+                           DID Published
+                         </Badge>
+                       )}
                       </div>
                       <p className="text-white/40 text-xs">{agent.purpose}</p>
                     </div>
