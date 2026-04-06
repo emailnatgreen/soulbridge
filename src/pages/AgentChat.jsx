@@ -17,6 +17,7 @@ export default function AgentChat() {
   const { user } = useAuth();
   const { broadcastMessageReceived } = useAgentAwareness();
   const unsubscribeRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   // Fetch agents
   const { data: agents = [], isLoading: agentsLoading } = useQuery({
@@ -41,6 +42,11 @@ export default function AgentChat() {
   });
 
   const conversationMessages = messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversationMessages, isGenerating]);
 
   // Subscribe to real-time message updates
   useEffect(() => {
@@ -255,6 +261,7 @@ export default function AgentChat() {
                       </div>
                     </div>
                   )}
+                  <div ref={messagesEndRef} />
                 </CardContent>
 
                 {/* Input */}
