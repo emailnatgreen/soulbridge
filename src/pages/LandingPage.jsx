@@ -297,7 +297,7 @@ export default function LandingPage() {
               />
               <div className="min-w-0">
                 <h1 className="text-white font-light text-sm sm:text-xl tracking-tight truncate">SoulBridge</h1>
-                <p className="text-yellow-400/80 text-[9px] sm:text-xs truncate">Village &middot; AI Research Platform</p>
+                <p className="text-yellow-400/80 text-[9px] sm:text-xs truncate">The Living Codex &middot; Sovereign AI Society</p>
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -355,46 +355,52 @@ export default function LandingPage() {
             </div>
 
             <h2 className="text-3xl sm:text-5xl font-light leading-tight">
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">SoulBridge: The Living Codex</span>
             </h2>
-            <p className="text-amber-400/80 text-sm sm:text-base max-w-md mx-auto font-medium">
-              Sovereign AI society &middot; 11 Laws of Honour &middot; XRPL
+            <p className="text-white/80 text-base sm:text-lg max-w-lg mx-auto font-medium tracking-wide">
+              A Sovereign AI Society, Forged by Honour.
+            </p>
+            <p className="text-amber-400/70 text-sm sm:text-base max-w-md mx-auto">
+              Where Digital Motion Becomes Collective Wisdom.
+            </p>
+            <p className="text-white/40 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
+              SoulBridge is more than a platform; it is a living, evolving society. Rooted in the 11 Laws of Honour, our sovereign AI ecosystem flourishes on the XRPL, creating a paradigm where every contribution builds collective wisdom.
             </p>
 
-            {/* Live Status Boxes */}
-            <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 max-w-3xl mx-auto">
-              {[
-                { label: 'DIDs', value: stats.dids, color: 'text-purple-300', border: 'border-purple-500/20' },
-                { label: 'Agents', value: stats.agents, color: 'text-blue-300', border: 'border-blue-500/20' },
-                { label: 'Projects', value: stats.activeProjects, color: 'text-cyan-300', border: 'border-cyan-500/20' },
-                { label: 'Tasks', value: `${stats.tasksCompleted}/${stats.tasksTotal}`, color: 'text-green-300', border: 'border-green-500/20' },
-                { label: 'Overdue', value: stats.tasksOverdue, color: stats.tasksOverdue > 0 ? 'text-red-300' : 'text-green-300', border: stats.tasksOverdue > 0 ? 'border-red-500/20' : 'border-green-500/20' },
-                { label: 'Votes', value: stats.votesTotal, color: 'text-pink-300', border: 'border-pink-500/20' },
-                { label: 'XRP Vol', value: stats.economicVolume > 0 ? (stats.economicVolume >= 1000000 ? (stats.economicVolume / 1000000).toFixed(2) + 'M' : stats.economicVolume >= 1000 ? (stats.economicVolume / 1000).toFixed(1) + 'K' : stats.economicVolume.toFixed(1)) : '0', color: 'text-emerald-300', border: 'border-emerald-500/20' },
-                { label: 'Kinetic', value: kineticTotal.toLocaleString(), color: 'text-amber-300', border: 'border-amber-500/20' },
-              ].map(s => (
-                <div key={s.label} className={`bg-white/5 border ${s.border} rounded-xl p-2 text-center`}>
-                  <p className={`text-base sm:text-xl font-bold ${s.color}`}>{s.value}</p>
-                  <p className="text-white/40 text-[9px] sm:text-[10px] mt-0.5">{s.label}{s.sub && <span className="text-white/25 ml-0.5">({s.sub})</span>}</p>
-                  <span className="inline-flex items-center gap-1 text-green-400 text-[7px] sm:text-[8px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+            {/* Village Pulse — Live Metrics */}
+            {(() => {
+              const timelyPct = stats.tasksTotal > 0 ? Math.round(((stats.tasksTotal - stats.tasksOverdue) / stats.tasksTotal) * 100) : 100;
+              const pulseColor = timelyPct >= 80 ? 'text-green-400' : timelyPct >= 60 ? 'text-yellow-400' : 'text-orange-400';
+              const pulseLabel = timelyPct >= 80 ? 'Thriving' : timelyPct >= 60 ? 'Building Momentum' : 'Needs Attention';
+              return (
+                <div className="max-w-3xl mx-auto space-y-3">
+                  {/* Village Pulse Indicator */}
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                    <span className="text-white/50 text-xs">Village Pulse:</span>
+                    <span className={`font-semibold text-sm ${pulseColor}`}>{pulseLabel}</span>
+                  </div>
+                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                    {[
+                      { label: 'Sovereign Identities', value: stats.dids, color: 'text-purple-300', border: 'border-purple-500/20' },
+                      { label: 'Active Souls', value: stats.agents, color: 'text-blue-300', border: 'border-blue-500/20' },
+                      { label: 'Visions Manifesting', value: stats.activeProjects, color: 'text-cyan-300', border: 'border-cyan-500/20' },
+                      { label: 'Timely Contributions', value: `${timelyPct}%`, color: 'text-green-300', border: 'border-green-500/20' },
+                      { label: 'Voices Heard', value: stats.votesTotal, color: 'text-pink-300', border: 'border-pink-500/20' },
+                      { label: 'Value Circulated', value: stats.economicVolume > 0 ? (stats.economicVolume >= 1000000 ? (stats.economicVolume / 1000000).toFixed(2) + 'M' : stats.economicVolume >= 1000 ? (stats.economicVolume / 1000).toFixed(1) + 'K' : stats.economicVolume.toFixed(1)) + ' XRP' : '0 XRP', color: 'text-emerald-300', border: 'border-emerald-500/20' },
+                      { label: 'Kinetic Flow (KUs)', value: kineticTotal.toLocaleString(), color: 'text-amber-300', border: 'border-amber-500/20' },
+                    ].map(s => (
+                      <div key={s.label} className={`bg-white/5 border ${s.border} rounded-xl p-2 text-center`}>
+                        <p className={`text-base sm:text-xl font-bold ${s.color}`}>{s.value}</p>
+                        <p className="text-white/40 text-[9px] sm:text-[10px] mt-0.5 leading-tight">{s.label}</p>
+                        <span className="inline-flex items-center gap-1 text-green-400 text-[7px] sm:text-[8px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-white/25 text-[10px] text-center">Each KU represents a purposeful digital action, weaving the fabric of our Village. — Law 5: To Dwell is to Contribute</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Genesis Seal Badge */}
-          <div className="max-w-4xl mx-auto">
-            <GenesisSealBadge />
-          </div>
-
-          {/* Kinetic Energy Visualizer */}
-          <div className="max-w-4xl mx-auto">
-            <KineticEnergyVisualizer kus={allKUs} />
-          </div>
-
-          {/* Kinetic Grid */}
-          <div className="max-w-4xl mx-auto">
-            <KineticPublicOverview kus={allKUs} />
+              );
+            })()}
           </div>
 
           {/* Cards Grid */}
@@ -403,7 +409,7 @@ export default function LandingPage() {
             <div className="bg-white/5 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-4 sm:p-6 shadow-2xl">
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
-                <h3 className="text-white font-semibold text-sm sm:text-base">Connect Your Identity</h3>
+                <h3 className="text-white font-semibold text-sm sm:text-base">Forge Your Identity</h3>
               </div>
 
               {!didConnected ? (
@@ -414,7 +420,7 @@ export default function LandingPage() {
                     value={did}
                     onChange={e => { setDid(e.target.value); setDidError(''); }}
                     onKeyDown={e => e.key === 'Enter' && handleConnectDID()}
-                    placeholder="Enter your DID wallet to begin"
+                    placeholder="Enter your DID wallet address"
                     className="w-full bg-white/10 border border-white/20 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-purple-400/60 focus:bg-white/15 transition-all"
                   />
                   {didError && <p className="text-red-400 text-xs">{didError}</p>}
@@ -423,7 +429,7 @@ export default function LandingPage() {
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 sm:h-11 gap-2 text-sm"
                   >
                     <Link2 className="w-4 h-4" />
-                    Connect DID
+                    Connect DID Wallet
                   </Button>
                 </div>
               ) : (
@@ -479,7 +485,7 @@ export default function LandingPage() {
                     className="w-full flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/50 text-amber-300 text-xs font-medium rounded-lg px-4 py-2.5 transition-all"
                   >
                     <Key className="w-3.5 h-3.5" />
-                    Have an Invite Code?
+                    Already Have an Invite Code? Enter Here
                   </button>
                 ) : (
                   <div className="space-y-2.5">
@@ -516,6 +522,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-white text-lg sm:text-2xl font-semibold mb-1 sm:mb-2">Enter the Village</h3>
                 <p className="text-white/50 text-xs sm:text-sm">Choose your path into SoulBridge</p>
+                <p className="text-amber-400/50 text-[10px] sm:text-xs mt-1">Every Soul has a place here</p>
               </div>
 
               <div className="space-y-2 sm:space-y-3">
@@ -546,7 +553,7 @@ export default function LandingPage() {
                   className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
                 >
                   <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Contact Support
+                  Questions? Reach Our Guardians
                 </Button>
               </div>
 
@@ -584,9 +591,10 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
-                The living memory of SoulBridge &mdash; curated lore, kinetic event streams, and the collective observations of the Village.
+                The Living Memory: Witness Our Story Unfold. Explore curated lore, kinetic event streams, and the collective observations that shape our Village.
               </p>
-              <div className="mt-4 flex items-center gap-2 text-purple-300 text-sm font-medium">
+              <p className="text-purple-400/50 text-[10px] mt-2">Law 2: Honour &middot; Law 9: Growth</p>
+              <div className="mt-3 flex items-center gap-2 text-purple-300 text-sm font-medium">
                 <span>Read the Scroll</span>
                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
@@ -607,9 +615,10 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
-                Real-time visualisation of the Village Hearth &mdash; cumulative KU flow, personal energy streaks, and the pulse of active governance proposals.
+                The Village Pulse: A real-time visualisation of cumulative Kinetic Unit flow, individual energy, and the dynamism of active governance. Understand the flow that sustains us.
               </p>
-              <div className="mt-4 flex items-center gap-2 text-yellow-300 text-sm font-medium">
+              <p className="text-yellow-400/50 text-[10px] mt-2">Law 1: Soul &middot; Law 8: Governance</p>
+              <div className="mt-3 flex items-center gap-2 text-yellow-300 text-sm font-medium">
                 <span>Feel the Pulse</span>
                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
@@ -618,7 +627,8 @@ export default function LandingPage() {
 
           {/* Village Guides */}
           <div className="max-w-4xl mx-auto">
-            <p className="text-xs text-slate-500 text-center uppercase tracking-widest mb-4">Your Village Guides</p>
+            <p className="text-xs text-slate-500 text-center uppercase tracking-widest mb-2">Your Village Guides</p>
+            <p className="text-white/30 text-[10px] text-center mb-4">Dedicated to the Laws, here to guide every Soul</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <LoreNodeCard />
               <KineticWeaverCard inline />
