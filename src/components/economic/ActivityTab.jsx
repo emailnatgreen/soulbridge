@@ -14,6 +14,13 @@ const TYPE_CONFIG = {
 
 const DEFAULT_CONFIG = { icon: Wallet, color: 'text-slate-400', bg: 'bg-slate-500/10 border-slate-500/30', label: 'Activity', flow: 'neutral' };
 
+// Filter out simulated mega-transactions
+function isRealisticAmount(a) {
+  if (a.transaction_hash?.startsWith('TASK_') && a.amount > 1000) return false;
+  if (a.amount > 10000 && !/^[A-Fa-f0-9]{64}$/.test(a.transaction_hash || '')) return false;
+  return true;
+}
+
 function resolveAgentName(agentId, agents) {
   if (!agentId) return 'Unknown';
   const byId = agents.find(a => a.id === agentId);
@@ -23,7 +30,7 @@ function resolveAgentName(agentId, agents) {
   const byWallet = agents.find(a => a.wallet_id === agentId);
   if (byWallet) return byWallet.name;
   if (agentId === 'dex_swap') return 'DEX Swap Engine';
-  if (agentId === 'rAXI') return 'Axi';
+  if (agentId === 'rAXI' || agentId === 'axi_main_001') return 'Axi';
   if (agentId.startsWith('r') && agentId.length > 20) return `${agentId.slice(0, 6)}…${agentId.slice(-4)}`;
   return agentId.length > 12 ? `${agentId.slice(0, 10)}…` : agentId;
 }
@@ -31,8 +38,10 @@ function resolveAgentName(agentId, agents) {
 export default function ActivityTab({ activities = [], agents = [] }) {
   const [filter, setFilter] = useState('all');
 
-  const types = ['all', ...new Set(activities.map(a => a.activity_type).filter(Boolean))];
-  const filtered = filter === 'all' ? activities : activities.filter(a => a.activity_type === filter);
+  // Only show completed + realistic activities
+  const valid = activities.filter(a => a.status === 'completed' && isRealisticAmount(a));
+  const types = ['all', ...new Set(valid.map(a => a.activity_type).filter(Boolean))];
+  const filtered = filter === 'all' ? valid : valid.filter(a => a.activity_type === filter);
 
   if (activities.length === 0) {
     return (
