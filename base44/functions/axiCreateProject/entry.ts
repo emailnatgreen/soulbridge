@@ -1,5 +1,5 @@
-// Axi autonomous project creation — redeployed 2026-03-17b
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+// Axi autonomous project creation — with dedup guard
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
  * Axi's autonomous project creation tool.
@@ -40,6 +40,31 @@ Deno.serve(async (req) => {
 
     if (!owner_agent_id) {
       return Response.json({ error: 'No active agent found to own project' }, { status: 400 });
+    }
+
+    // DEDUP GUARD: Check for similar projects created in the last 2 hours
+    const recentProjects = await base44.asServiceRole.entities.AIProject.filter(
+      { owner_agent_id, status: 'planning' },
+      '-created_date',
+      20
+    );
+    const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
+    const visionLower = vision_description.toLowerCase().slice(0, 80);
+    const duplicate = recentProjects.find(p => {
+      const createdAt = new Date(p.created_date).getTime();
+      if (createdAt < twoHoursAgo) return false;
+      const titleWords = (p.title || '').toLowerCase().split(/\s+/);
+      const visionWords = visionLower.split(/\s+/);
+      const overlap = titleWords.filter(w => w.length > 3 && visionWords.includes(w)).length;
+      return overlap >= 3;
+    });
+    if (duplicate) {
+      return Response.json({
+        success: false,
+        error: 'duplicate_detected',
+        message: `Similar project "${duplicate.title}" was created recently (${duplicate.id}). Skipping duplicate creation.`,
+        existing_project_id: duplicate.id
+      }, { status: 409 });
     }
 
     // Build skill map
