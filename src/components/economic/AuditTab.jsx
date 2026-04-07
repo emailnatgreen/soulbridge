@@ -1,8 +1,7 @@
 import React from 'react';
 import ActivityTimeline from '@/components/audit/ActivityTimeline';
-import { resolveAgentName } from '@/lib/economicUtils';
+import { resolveAgentName, isRealHash } from '@/lib/economicUtils';
 
-// Map EconomicActivity types → ActivityTimeline event categories
 const TYPE_MAP = {
   earned:              'transaction',
   spent:               'transaction',
@@ -18,6 +17,8 @@ export default function AuditTab({ activities = [], agents = [] }) {
     const label = (a.activity_type || 'unknown').replace(/_/g, ' ').toUpperCase();
     const agentName = resolveAgentName(a.agent_id, agents);
     const relatedName = a.related_agent_id ? resolveAgentName(a.related_agent_id, agents) : null;
+    const hash = a.transaction_hash;
+    const hasRealHash = isRealHash(hash);
 
     return {
       id: a.id,
@@ -26,12 +27,13 @@ export default function AuditTab({ activities = [], agents = [] }) {
       description: a.description || 'No description',
       actor: agentName,
       timestamp: a.created_date,
+      tx_hash: hasRealHash ? hash : null,
       details: {
         activity_type: a.activity_type,
         status: a.status,
         agent: agentName,
         ...(relatedName ? { related_agent: relatedName } : {}),
-        ...(a.transaction_hash ? { tx_hash: a.transaction_hash } : {}),
+        ...(hasRealHash ? { tx_hash: hash } : {}),
         ...(a.resource_id ? { resource_id: a.resource_id } : {}),
       },
     };

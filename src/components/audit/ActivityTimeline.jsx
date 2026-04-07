@@ -1,36 +1,55 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, Filter, Download, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Info, Zap, Shield, User, DollarSign } from 'lucide-react';
+import { Clock, Filter, Download, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Info, Zap, Shield, User, DollarSign, ExternalLink } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
-/**
- * ActivityTimeline — Reusable audit trail / activity log component.
- *
- * Usage:
- *   import ActivityTimeline from '@/components/audit/ActivityTimeline';
- *
- *   <ActivityTimeline
- *     events={[
- *       { id: '1', type: 'governance', title: 'Vote Cast', description: 'Agent voted FOR proposal #42', actor: 'Maya', timestamp: '2026-03-17T10:00:00Z' },
- *       { id: '2', type: 'transaction', title: 'XRP Sent', description: '50 XRP sent to rXXXX', actor: 'Axi', timestamp: '2026-03-17T09:00:00Z' },
- *     ]}
- *     title="Activity Log"
- *   />
- *
- * Event types: 'governance' | 'transaction' | 'reputation' | 'system' | 'task' | 'agent' | 'error' | 'info'
- */
-
 const TYPE_CONFIG = {
-  governance: { icon: Shield, color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20', badge: 'bg-amber-900/40 text-amber-300' },
-  transaction: { icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', badge: 'bg-emerald-900/40 text-emerald-300' },
-  reputation: { icon: User, color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20', badge: 'bg-blue-900/40 text-blue-300' },
-  system: { icon: Zap, color: 'text-violet-400', bg: 'bg-violet-400/10 border-violet-400/20', badge: 'bg-violet-900/40 text-violet-300' },
-  task: { icon: CheckCircle2, color: 'text-teal-400', bg: 'bg-teal-400/10 border-teal-400/20', badge: 'bg-teal-900/40 text-teal-300' },
-  agent: { icon: User, color: 'text-pink-400', bg: 'bg-pink-400/10 border-pink-400/20', badge: 'bg-pink-900/40 text-pink-300' },
-  error: { icon: AlertCircle, color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20', badge: 'bg-red-900/40 text-red-300' },
-  info: { icon: Info, color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', badge: 'bg-slate-800 text-slate-400' },
+  governance:   { icon: Shield,       color: 'text-amber-400',   bg: 'bg-amber-400/10 border-amber-400/20',   badge: 'bg-amber-900/40 text-amber-300' },
+  transaction:  { icon: DollarSign,   color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', badge: 'bg-emerald-900/40 text-emerald-300' },
+  reputation:   { icon: User,         color: 'text-blue-400',    bg: 'bg-blue-400/10 border-blue-400/20',       badge: 'bg-blue-900/40 text-blue-300' },
+  system:       { icon: Zap,          color: 'text-violet-400',  bg: 'bg-violet-400/10 border-violet-400/20',   badge: 'bg-violet-900/40 text-violet-300' },
+  task:         { icon: CheckCircle2, color: 'text-teal-400',    bg: 'bg-teal-400/10 border-teal-400/20',       badge: 'bg-teal-900/40 text-teal-300' },
+  agent:        { icon: User,         color: 'text-pink-400',    bg: 'bg-pink-400/10 border-pink-400/20',       badge: 'bg-pink-900/40 text-pink-300' },
+  error:        { icon: AlertCircle,  color: 'text-red-400',     bg: 'bg-red-400/10 border-red-400/20',         badge: 'bg-red-900/40 text-red-300' },
+  info:         { icon: Info,         color: 'text-slate-400',   bg: 'bg-slate-400/10 border-slate-400/20',     badge: 'bg-slate-800 text-slate-400' },
 };
+
+function isRealTxHash(hash) {
+  return !!hash && /^[A-Fa-f0-9]{64}$/.test(hash);
+}
+
+function XRPScanLink({ hash }) {
+  if (!isRealTxHash(hash)) return <span className="text-slate-500 font-mono text-xs break-all">{hash}</span>;
+  return (
+    <a
+      href={`https://xrpscan.com/tx/${hash}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-mono text-xs break-all transition-colors"
+    >
+      {hash.slice(0, 12)}…{hash.slice(-8)}
+      <ExternalLink className="w-3 h-3 shrink-0" />
+    </a>
+  );
+}
+
+function DetailValue({ label, value }) {
+  if (label === 'tx_hash') {
+    return (
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</span>
+        <XRPScanLink hash={value} />
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</span>
+      <span className="text-xs text-slate-400 break-all">{String(value)}</span>
+    </div>
+  );
+}
 
 function EventRow({ event, expanded, onToggle }) {
   const cfg = TYPE_CONFIG[event.type] || TYPE_CONFIG.info;
@@ -52,6 +71,21 @@ function EventRow({ event, expanded, onToggle }) {
             {event.actor && <span className="text-xs text-slate-500">by {event.actor}</span>}
           </div>
           <p className="text-xs text-slate-500 mt-0.5 truncate">{event.description}</p>
+          {/* Inline XRPscan badge for events with real tx hashes */}
+          {event.tx_hash && (
+            <div className="mt-1">
+              <a
+                href={`https://xrpscan.com/tx/${event.tx_hash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20 transition-colors font-mono"
+              >
+                <ExternalLink className="w-2.5 h-2.5" />
+                XRPscan · {event.tx_hash.slice(0, 8)}…{event.tx_hash.slice(-6)}
+              </a>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-slate-600 flex items-center gap-1">
@@ -63,10 +97,15 @@ function EventRow({ event, expanded, onToggle }) {
 
       {expanded && event.details && (
         <div className="mt-3 ml-10 p-3 bg-slate-900/60 rounded-lg border border-slate-700/40">
-          {typeof event.details === 'string'
-            ? <p className="text-xs text-slate-400">{event.details}</p>
-            : <pre className="text-xs text-slate-400 whitespace-pre-wrap">{JSON.stringify(event.details, null, 2)}</pre>
-          }
+          {typeof event.details === 'string' ? (
+            <p className="text-xs text-slate-400">{event.details}</p>
+          ) : (
+            <div className="space-y-2">
+              {Object.entries(event.details).map(([key, val]) => (
+                <DetailValue key={key} label={key} value={val} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -94,15 +133,19 @@ export default function ActivityTimeline({
     return true;
   });
 
+  const verifiedCount = events.filter(e => e.tx_hash).length;
+
   const handleExport = () => {
     const csv = [
-      'timestamp,type,title,actor,description',
-      ...filtered.map(e => [e.timestamp, e.type, `"${e.title}"`, e.actor || '', `"${e.description || ''}"`].join(','))
+      'timestamp,type,title,actor,description,tx_hash',
+      ...filtered.map(e => [
+        e.timestamp, e.type, `"${e.title}"`, e.actor || '', `"${e.description || ''}"`, e.tx_hash || ''
+      ].join(','))
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `activity-log-${Date.now()}.csv`; a.click();
+    a.href = url; a.download = `audit-trail-${Date.now()}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -110,10 +153,15 @@ export default function ActivityTimeline({
     <div className="bg-slate-900/40 border border-slate-700/40 rounded-2xl p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Clock className="w-4 h-4 text-amber-400" />
           <h3 className="text-sm font-semibold text-white">{title}</h3>
           <Badge className="bg-slate-800 text-slate-400 border-slate-700 text-xs">{filtered.length}</Badge>
+          {verifiedCount > 0 && (
+            <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 text-[10px]">
+              {verifiedCount} on-chain verified
+            </Badge>
+          )}
         </div>
         <div className="flex gap-1.5">
           {showFilters && (
