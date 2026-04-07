@@ -4,30 +4,30 @@ import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginUnusedImports from "eslint-plugin-unused-imports";
 
+const targetFiles = [
+  "src/components/**/*.{js,mjs,cjs,jsx}",
+  "src/pages/**/*.{js,mjs,cjs,jsx}",
+  "src/Layout.jsx",
+];
+
 export default [
   {
-    files: [
-      "src/components/**/*.{js,mjs,cjs,jsx}",
-      "src/pages/**/*.{js,mjs,cjs,jsx}",
-      "src/Layout.jsx",
-    ],
-    ignores: ["src/lib/**/*", "src/components/ui/**/*"],
-    ...pluginJs.configs.recommended,
-    ...pluginReact.configs.flat.recommended,
+    files: targetFiles,
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: "module",
-        ecmaFeatures: {
-          jsx: true,
-        },
+        ecmaFeatures: { jsx: true },
       },
     },
+    ...pluginJs.configs.recommended,
+  },
+  {
+    files: targetFiles,
+    ...pluginReact.configs.flat.recommended,
     settings: {
-      react: {
-        version: "detect",
-      },
+      react: { version: "detect" },
     },
     plugins: {
       react: pluginReact,
@@ -57,4 +57,4 @@ export default [
       "react-hooks/rules-of-hooks": "error",
     },
   },
-];
+]; 
