@@ -74,10 +74,35 @@ export default function KineticGridDashboard() {
   };
 
   // ── Derived metrics ──
-  // Build agent lookup by ID and by name (for string-literal agent_ids like "axi")
+  // Build comprehensive agent lookup: by ID, name, classic_address, wallet_id, external addresses
   const agentMap = Object.fromEntries(agents.map(a => [a.id, a]));
-  // Also index by lowercase name for KUs that use name strings instead of entity IDs
-  agents.forEach(a => { if (a.name) agentMap[a.name.toLowerCase()] = a; });
+  agents.forEach(a => {
+    if (a.name) agentMap[a.name.toLowerCase()] = a;
+    if (a.classic_address) agentMap[a.classic_address] = a;
+    if (a.wallet_id) agentMap[a.wallet_id] = a;
+    (a.external_classic_addresses || []).forEach(addr => { if (addr) agentMap[addr] = a; });
+  });
+  // Map known system identifiers to descriptive labels
+  const SYSTEM_ACTOR_LABELS = {
+    dex_swap: 'DEX Swap Engine',
+    dex: 'DEX Engine',
+    treasury: 'Village Treasury',
+    system: 'System',
+    external_source: 'External Source',
+  };
+  const resolveAgentName = (agentId) => {
+    if (!agentId) return 'Unknown';
+    const agent = agentMap[agentId] || agentMap[agentId?.toLowerCase?.()];
+    if (agent) return agent.name;
+    // Check system actor labels
+    const lower = agentId.toLowerCase();
+    for (const [key, label] of Object.entries(SYSTEM_ACTOR_LABELS)) {
+      if (lower === key || lower.startsWith(key)) return label;
+    }
+    // If it looks like an XRPL address, show truncated
+    if (agentId.startsWith('r') && agentId.length > 20) return `XRPL:${agentId.slice(0, 8)}…${agentId.slice(-6)}`;
+    return agentId.length > 20 ? `${agentId.slice(0, 12)}…` : agentId;
+  };
   const resolveAgent = (agentId) => agentMap[agentId] || agentMap[agentId?.toLowerCase?.()] || null;
   const totalWeighted = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
   const ingestedKus = kus.filter(k => k.status === 'ingested');
@@ -338,7 +363,7 @@ export default function KineticGridDashboard() {
                   return (
                     <div key={a.id} className="flex items-center gap-2 bg-white/5 rounded-lg px-2.5 py-1.5 text-xs">
                       <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isInflow ? 'bg-green-400' : 'bg-blue-400'}`} />
-                      <span className="text-white/60 flex-1 truncate">{agent?.name || 'Unknown'} — {a.description?.slice(0, 50)}</span>
+                      <span className="text-white/60 flex-1 truncate">{resolveAgentName(a.agent_id)} — {a.description?.slice(0, 50)}</span>
                       <span className={`font-mono text-[10px] flex-shrink-0 ${isInflow ? 'text-green-300' : 'text-blue-300'}`}>
                         {isInflow ? '+' : '-'}{a.amount} XRP
                       </span>

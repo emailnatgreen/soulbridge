@@ -98,7 +98,19 @@ export default function Home() {
     return () => window.removeEventListener('storage', syncIdentity);
   }, []);
 
-  // Helper to resolve agent from activity
+  // Comprehensive agent resolver — checks ID, name, classic_address, wallet_id, external addresses
+  const SYSTEM_ACTORS = { dex_swap: 'DEX Swap Engine', dex: 'DEX Engine', treasury: 'Village Treasury', system: 'System', external_source: 'External Source' };
+  const resolveAgentName = (agentId) => {
+    if (!agentId) return 'Unknown';
+    const agent = agents.find(a => a.id === agentId || a.name === agentId || a.classic_address === agentId || a.wallet_id === agentId || (a.external_classic_addresses || []).includes(agentId));
+    if (agent) return agent.name;
+    const lower = agentId.toLowerCase();
+    for (const [key, label] of Object.entries(SYSTEM_ACTORS)) {
+      if (lower === key || lower.startsWith(key)) return label;
+    }
+    if (agentId.startsWith('r') && agentId.length > 20) return `XRPL:${agentId.slice(0, 8)}…${agentId.slice(-6)}`;
+    return agentId.length > 20 ? `${agentId.slice(0, 12)}…` : agentId;
+  };
   const resolveAgent = (activity) => {
     return agents.find(a => a.id === activity.agent_id) || 
            agents.find(a => a.name === activity.agent_id) ||
@@ -438,7 +450,7 @@ export default function Home() {
                         <Zap className={`w-3 h-3 ${ isInflow ? 'text-green-300' : 'text-blue-300'}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white text-xs truncate font-medium">{agent?.name || 'Unknown Agent'}</p>
+                        <p className="text-white text-xs truncate font-medium">{agent?.name || resolveAgentName(activity.agent_id)}</p>
                         <p className="text-white/40 text-[10px] truncate">{activity.description}</p>
                       </div>
                       <span className={`text-[10px] font-mono flex-shrink-0 ${ isInflow ? 'text-green-300' : 'text-blue-300'}`}>{isInflow ? '+' : '-'}{activity.amount} XRP</span>
