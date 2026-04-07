@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Home, Shield, FileText, HelpCircle, ExternalLink } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
@@ -44,13 +44,7 @@ const MD_COMPONENTS = {
   h2: ({ children }) => <h2 className="text-base sm:text-lg font-semibold text-white my-3">{children}</h2>,
 };
 
-const NAV_LINKS = [
-  { to: '/', icon: Home, label: 'Home' },
-  { to: '/kinetic-compass', icon: ExternalLink, label: 'Kinetic Compass' },
-  { to: '/privacy-policy', icon: Shield, label: 'Privacy' },
-  { to: '/terms', icon: FileText, label: 'Terms' },
-  { to: '/support', icon: HelpCircle, label: 'Support' },
-];
+
 
 export default function AboutUs() {
   return (
