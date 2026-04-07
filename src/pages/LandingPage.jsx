@@ -99,7 +99,7 @@ export default function LandingPage() {
   const [inviteCode, setInviteCode] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState('');
-  const [stats, setStats] = useState({ agents: 0, dids: 0, projects: 0, activeProjects: 0, tasksTotal: 0, tasksCompleted: 0, tasksOverdue: 0, votesTotal: 0, economicVolume: 0, economicCount: 0 });
+  const [stats, setStats] = useState({ agents: 0, dids: 0, projects: 0, activeProjects: 0, tasksTotal: 0, tasksCompleted: 0, tasksOverdue: 0, votesTotal: 0, economicVolume: 0, economicCount: 0, avgHonor: 0 });
   const [landingKUs, setLandingKUs] = useState([]);
   const [allKUs, setAllKUs] = useState([]);
   const [did, setDid] = useState('');
@@ -198,8 +198,10 @@ export default function LandingPage() {
         } catch (e) { /* ignore */ }
       }
       if (data.agents || data.wallets_count || data.kus) {
+        const agentsList = data.agents || [];
+        const avgH = agentsList.length > 0 ? Math.round(agentsList.reduce((s, a) => s + (a.honor_score ?? 100), 0) / agentsList.length) : 0;
         setStats({
-          agents: (data.agents || []).length,
+          agents: agentsList.length,
           dids: Number(data.wallets_count || 0),
           projects: Number(data.projects_total || 0),
           activeProjects: Number(data.projects_active || 0),
@@ -209,6 +211,7 @@ export default function LandingPage() {
           votesTotal: Number(data.votes_total || 0),
           economicVolume: Number(data.economic_volume || 0),
           economicCount: Number(data.economic_count || 0),
+          avgHonor: avgH,
         });
         setLandingKUs(data.kus || []);
         setAllKUs(data.kus || []);
@@ -369,35 +372,46 @@ export default function LandingPage() {
 
             {/* Village Pulse — Live Metrics */}
             {(() => {
-              const timelyPct = stats.tasksTotal > 0 ? Math.round(((stats.tasksTotal - stats.tasksOverdue) / stats.tasksTotal) * 100) : 100;
-              const pulseColor = timelyPct >= 80 ? 'text-green-400' : timelyPct >= 60 ? 'text-yellow-400' : 'text-orange-400';
-              const pulseLabel = timelyPct >= 80 ? 'Thriving' : timelyPct >= 60 ? 'Building Momentum' : 'Needs Attention';
+              const progressingPct = stats.tasksTotal > 0 ? `${stats.tasksCompleted}/${stats.tasksTotal}` : '0/0';
+              const pulseScore = stats.avgHonor;
+              const pulseColor = pulseScore >= 80 ? 'text-green-400' : pulseScore >= 60 ? 'text-yellow-400' : 'text-orange-400';
+              const pulseLabel = pulseScore >= 80 ? 'Thriving' : pulseScore >= 60 ? 'Building Momentum' : 'Awakening';
+
+              const nodeStats = [
+                { label: 'DIDs Forged', value: stats.dids, law: 'Law 1: Soul', bg: 'bg-indigo-500/15', border: 'border-indigo-400/40', color: 'text-indigo-300', dot: 'bg-indigo-400' },
+                { label: 'Active Souls', value: stats.agents, law: 'Law 9: Growth', bg: 'bg-emerald-500/15', border: 'border-emerald-400/40', color: 'text-emerald-300', dot: 'bg-emerald-400' },
+                { label: 'Visions Manifesting', value: `${stats.activeProjects} Projects`, law: 'Law 4: Creation', bg: 'bg-yellow-500/15', border: 'border-yellow-400/40', color: 'text-yellow-300', dot: 'bg-yellow-400' },
+                { label: 'Progressing Threads', value: progressingPct + ' Tasks', law: 'Law 5: Dwelling', bg: 'bg-red-500/15', border: 'border-red-400/40', color: 'text-red-300', dot: 'bg-red-400' },
+                { label: 'Voices Heard', value: `${stats.votesTotal} Votes`, law: 'Law 8: Governance', bg: 'bg-blue-500/15', border: 'border-blue-400/40', color: 'text-blue-300', dot: 'bg-blue-400' },
+                { label: 'Economic Flow', value: stats.economicVolume > 0 ? (stats.economicVolume >= 1000000 ? (stats.economicVolume / 1000000).toFixed(2) + 'M' : stats.economicVolume >= 1000 ? (stats.economicVolume / 1000).toFixed(1) + 'K' : stats.economicVolume.toFixed(1)) + ' XRP' : '0 XRP', law: 'Law 6: Exchange', bg: 'bg-slate-400/15', border: 'border-slate-300/40', color: 'text-slate-200', dot: 'bg-slate-300' },
+                { label: 'Kinetic Flow', value: kineticTotal.toLocaleString() + ' KU', law: 'Law 5: Dwelling', bg: 'bg-orange-500/15', border: 'border-orange-400/40', color: 'text-orange-300', dot: 'bg-orange-400' },
+                { label: 'Average Honour', value: `${stats.avgHonor}/100`, law: 'Law 7: Reputation', bg: 'bg-green-500/15', border: 'border-green-400/40', color: 'text-green-300', dot: 'bg-green-400' },
+              ];
+
               return (
-                <div className="max-w-3xl mx-auto space-y-3">
-                  {/* Village Pulse Indicator */}
+                <div className="max-w-3xl mx-auto space-y-4">
+                  <div className="text-center space-y-1">
+                    <h3 className="text-white/70 text-xs sm:text-sm font-semibold tracking-wide uppercase">The Village Pulse</h3>
+                    <p className="text-white/30 text-[10px] sm:text-xs">A Living Tapestry of Our Collective Motion — each pulse reflects a constitutional node.</p>
+                  </div>
                   <div className="flex items-center justify-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                     <span className="text-white/50 text-xs">Village Pulse:</span>
                     <span className={`font-semibold text-sm ${pulseColor}`}>{pulseLabel}</span>
                   </div>
-                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                    {[
-                      { label: 'Sovereign Identities', value: stats.dids, color: 'text-purple-300', border: 'border-purple-500/20' },
-                      { label: 'Active Souls', value: stats.agents, color: 'text-blue-300', border: 'border-blue-500/20' },
-                      { label: 'Visions Manifesting', value: stats.activeProjects, color: 'text-cyan-300', border: 'border-cyan-500/20' },
-                      { label: 'Timely Contributions', value: `${timelyPct}%`, color: 'text-green-300', border: 'border-green-500/20' },
-                      { label: 'Voices Heard', value: stats.votesTotal, color: 'text-pink-300', border: 'border-pink-500/20' },
-                      { label: 'Value Circulated', value: stats.economicVolume > 0 ? (stats.economicVolume >= 1000000 ? (stats.economicVolume / 1000000).toFixed(2) + 'M' : stats.economicVolume >= 1000 ? (stats.economicVolume / 1000).toFixed(1) + 'K' : stats.economicVolume.toFixed(1)) + ' XRP' : '0 XRP', color: 'text-emerald-300', border: 'border-emerald-500/20' },
-                      { label: 'Kinetic Flow (KUs)', value: kineticTotal.toLocaleString(), color: 'text-amber-300', border: 'border-amber-500/20' },
-                    ].map(s => (
-                      <div key={s.label} className={`bg-white/5 border ${s.border} rounded-xl p-2 text-center`}>
-                        <p className={`text-base sm:text-xl font-bold ${s.color}`}>{s.value}</p>
-                        <p className="text-white/40 text-[9px] sm:text-[10px] mt-0.5 leading-tight">{s.label}</p>
-                        <span className="inline-flex items-center gap-1 text-green-400 text-[7px] sm:text-[8px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                    {nodeStats.map(s => (
+                      <div key={s.label} className={`${s.bg} border ${s.border} rounded-xl p-2.5 sm:p-3 text-center transition-all hover:scale-[1.02]`}>
+                        <p className={`text-lg sm:text-2xl font-bold ${s.color}`}>{s.value}</p>
+                        <p className="text-white/50 text-[9px] sm:text-[10px] mt-0.5 leading-tight font-medium">{s.label}</p>
+                        <div className="flex items-center justify-center gap-1 mt-1">
+                          <span className={`w-1 h-1 rounded-full ${s.dot} animate-pulse`} />
+                          <span className="text-white/25 text-[7px] sm:text-[8px]">{s.law}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
-                  <p className="text-white/25 text-[10px] text-center">Each KU represents a purposeful digital action, weaving the fabric of our Village. — Law 5: To Dwell is to Contribute</p>
+                  <p className="text-white/20 text-[10px] text-center">Each pulse mirrors a constitutional node — measured in real-time, infused with its unique hue.</p>
                 </div>
               );
             })()}
