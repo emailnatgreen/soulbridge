@@ -12,6 +12,7 @@ import EarnersTab from '@/components/economic/EarnersTab';
 import ActivityTab from '@/components/economic/ActivityTab';
 import AuditTab from '@/components/economic/AuditTab';
 import TimeRangeFilter from '@/components/economic/TimeRangeFilter';
+import DataScopeNotice from '@/components/economic/DataScopeNotice';
 import TreasuryXRPscanLink from '@/components/economic/TreasuryXRPscanLink';
 
 const PIE_COLORS = ['#22c55e', '#ef4444', '#f59e0b', '#6366f1', '#ec4899', '#06b6d4', '#f97316'];
@@ -88,13 +89,19 @@ export default function EconomicDashboard() {
           treasury={totalTreasuryBalance}
           transactions={realTxns.length}
           agents={activeAgentCount}
+          internalVolume={internalVolume}
+          internalCount={internalTxns.length}
+          activityCount={filteredActivities.length}
         />
 
-        {internalTxns.length > 0 && (
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-2 text-xs text-amber-300">
-            {internalTxns.length} internal/simulated transactions ({internalVolume.toLocaleString()} XRP) excluded — only verified on-chain XRPL transactions counted.
-          </div>
-        )}
+        {/* Data Scope Explainer */}
+        <DataScopeNotice
+          onChainCount={realTxns.length}
+          onChainVolume={realVolume}
+          internalCount={internalTxns.length}
+          internalVolume={internalVolume}
+          activityCount={filteredActivities.length}
+        />
 
         {/* Tab Navigation */}
         <div className="flex gap-2 flex-wrap">
@@ -165,7 +172,7 @@ function OverviewTab({ realTxns, activities, activeTreasuries }) {
       {/* Volume Chart */}
       <Card className="bg-slate-900/60 border-slate-700/40 md:col-span-2">
         <CardHeader>
-          <CardTitle className="text-white text-sm">Monthly Transaction Volume (XRP)</CardTitle>
+          <CardTitle className="text-white text-sm">Monthly On-Chain Volume (Verified XRPL Transactions)</CardTitle>
         </CardHeader>
         <CardContent>
           {volumeData.length === 0 ? (
