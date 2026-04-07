@@ -68,6 +68,7 @@ import Dashboard from './pages/Dashboard';
 import ProjectManager from './pages/ProjectManager';
 import AIProjectHub from './pages/AIProjectHub';
 import EditLanding from './pages/EditLanding';
+import ScrollOfResonance from './pages/ScrollOfResonance';
 
 
 const LoadingFallback = () => (
@@ -127,7 +128,7 @@ const AuthenticatedApp = () => {
           <Route path="/support" element={<Support />} />
           <Route path="/Support" element={<Support />} />
           <Route path="/EditLanding" element={<EditLanding />} />
-          <Route path="/ScrollOfResonance" element={<LandingPage />} />
+          <Route path="/ScrollOfResonance" element={<ScrollOfResonance />} />
           <Route path="*" element={<LoadingFallback />} />
         </Routes>
       );
