@@ -9,27 +9,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'conversation_id required' }, { status: 400 });
     }
 
-    // Extract and validate JWT token from authorization header
-    const authHeader = (req.headers.get('authorization') || '').trim();
-    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
-
-    // Build a completely fresh request — only include headers we explicitly set
-    const freshHeaders = new Headers();
-    freshHeaders.set('content-type', 'application/json');
+    // Build a clean request — strip any broken auth header for public visitors
+    const cleanHeaders = new Headers();
+    cleanHeaders.set('content-type', 'application/json');
     for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
-        freshHeaders.set(key, value);
+      const k = key.toLowerCase();
+      if (k === 'authorization') continue;
+      if (k.startsWith('base44') || k.startsWith('x-base44') || k.startsWith('x-app')) {
+        cleanHeaders.set(key, value);
       }
     }
-    if (isValidJwt) {
-      freshHeaders.set('authorization', `Bearer ${rawToken}`);
+    // Only forward auth header if it looks like a real JWT
+    const authHeader = (req.headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    if (rawToken && rawToken.includes('.') && rawToken.split('.').length === 3 && rawToken.length > 40) {
+      cleanHeaders.set('authorization', `Bearer ${rawToken}`);
     }
 
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
-      headers: freshHeaders,
+      headers: cleanHeaders,
       body: JSON.stringify(body),
     }));
 
@@ -41,7 +40,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ messages: messages || [] });
   } catch (error) {
-    console.error('Error data:', error?.data || error?.message || error);
+    console.error('Error:', error?.data || error?.message || error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

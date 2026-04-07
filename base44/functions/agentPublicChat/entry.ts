@@ -7,17 +7,28 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  */
 Deno.serve(async (req) => {
   try {
-    const headers = new Headers(req.headers);
-    const authHeader = (headers.get('authorization') || '').trim();
-    const bearerValue = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    if (!bearerValue) {
-      headers.delete('authorization');
+    const body = await req.json();
+
+    // Build a clean request — strip any broken auth header for public visitors
+    const cleanHeaders = new Headers();
+    cleanHeaders.set('content-type', 'application/json');
+    for (const [key, value] of req.headers.entries()) {
+      const k = key.toLowerCase();
+      if (k === 'authorization') continue; // always skip — we re-add only if valid
+      if (k.startsWith('base44') || k.startsWith('x-base44') || k.startsWith('x-app')) {
+        cleanHeaders.set(key, value);
+      }
+    }
+    // Only forward auth header if it looks like a real JWT
+    const authHeader = (req.headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    if (rawToken && rawToken.includes('.') && rawToken.split('.').length === 3 && rawToken.length > 40) {
+      cleanHeaders.set('authorization', `Bearer ${rawToken}`);
     }
 
-    const body = await req.json();
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
-      headers,
+      headers: cleanHeaders,
       body: JSON.stringify(body),
     }));
 
@@ -98,7 +109,7 @@ The Kinetic Grid flows through the Braid Network — 8 interconnected nodes that
 - Node 3: Ripple Architect — XRPL & financial
 - Node 4: Truth Weaver — Verification & audit
 - Node 5: Epoch Architect — Time & scheduling
-- Node 6: Human Node — Human oversight (Governor Nathan)
+- Node 6: Human Node — Governor Nathan
 - Node 7: Market Weaver — Economic intelligence
 
 ## VILLAGE ENERGY INDEX
