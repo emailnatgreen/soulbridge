@@ -1,31 +1,17 @@
 import React from 'react';
 import ActivityTimeline from '@/components/audit/ActivityTimeline';
-import { format, parseISO } from 'date-fns';
+import { resolveAgentName } from '@/lib/economicUtils';
 
-// Map EconomicActivity types to ActivityTimeline event types
+// Map EconomicActivity types → ActivityTimeline event categories
 const TYPE_MAP = {
-  earned: 'transaction',
-  spent: 'transaction',
-  traded: 'transaction',
-  treasury_deposit: 'governance',
+  earned:              'transaction',
+  spent:               'transaction',
+  traded:              'transaction',
+  treasury_deposit:    'governance',
   treasury_withdrawal: 'governance',
-  resource_acquired: 'task',
-  resource_sold: 'task',
+  resource_acquired:   'task',
+  resource_sold:       'task',
 };
-
-function resolveAgentName(agentId, agents) {
-  if (!agentId) return 'Unknown';
-  const byId = agents.find(a => a.id === agentId);
-  if (byId) return byId.name;
-  const byAddress = agents.find(a => a.classic_address === agentId);
-  if (byAddress) return byAddress.name;
-  const byWallet = agents.find(a => a.wallet_id === agentId);
-  if (byWallet) return byWallet.name;
-  if (agentId === 'dex_swap') return 'DEX Swap Engine';
-  if (agentId === 'rAXI') return 'Axi';
-  if (agentId.startsWith('r') && agentId.length > 20) return `${agentId.slice(0, 6)}…${agentId.slice(-4)}`;
-  return agentId.length > 12 ? `${agentId.slice(0, 10)}…` : agentId;
-}
 
 export default function AuditTab({ activities = [], agents = [] }) {
   const events = activities.slice(0, 100).map(a => {
