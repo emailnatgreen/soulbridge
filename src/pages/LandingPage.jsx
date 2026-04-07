@@ -99,7 +99,7 @@ export default function LandingPage() {
   const [inviteCode, setInviteCode] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState('');
-  const [stats, setStats] = useState({ agents: 0, dids: 0, projects: 0, activeProjects: 0, tasksTotal: 0, tasksCompleted: 0, votesTotal: 0, economicVolume: 0 });
+  const [stats, setStats] = useState({ agents: 0, dids: 0, projects: 0, activeProjects: 0, tasksTotal: 0, tasksCompleted: 0, tasksOverdue: 0, votesTotal: 0, economicVolume: 0, economicCount: 0 });
   const [landingKUs, setLandingKUs] = useState([]);
   const [allKUs, setAllKUs] = useState([]);
   const [did, setDid] = useState('');
@@ -205,8 +205,10 @@ export default function LandingPage() {
           activeProjects: Number(data.projects_active || 0),
           tasksTotal: Number(data.tasks_total || 0),
           tasksCompleted: Number(data.tasks_completed || 0),
+          tasksOverdue: Number(data.tasks_overdue || 0),
           votesTotal: Number(data.votes_total || 0),
           economicVolume: Number(data.economic_volume || 0),
+          economicCount: Number(data.economic_count || 0),
         });
         setLandingKUs(data.kus || []);
         setAllKUs(data.kus || []);
@@ -360,13 +362,15 @@ export default function LandingPage() {
             </p>
 
             {/* Live Status Boxes */}
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 max-w-2xl mx-auto">
+            <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 max-w-3xl mx-auto">
               {[
                 { label: 'DIDs', value: stats.dids, color: 'text-purple-300', border: 'border-purple-500/20' },
                 { label: 'Agents', value: stats.agents, color: 'text-blue-300', border: 'border-blue-500/20' },
                 { label: 'Projects', value: stats.activeProjects, color: 'text-cyan-300', border: 'border-cyan-500/20' },
                 { label: 'Tasks', value: `${stats.tasksCompleted}/${stats.tasksTotal}`, color: 'text-green-300', border: 'border-green-500/20' },
+                { label: 'Overdue', value: stats.tasksOverdue, color: stats.tasksOverdue > 0 ? 'text-red-300' : 'text-green-300', border: stats.tasksOverdue > 0 ? 'border-red-500/20' : 'border-green-500/20' },
                 { label: 'Votes', value: stats.votesTotal, color: 'text-pink-300', border: 'border-pink-500/20' },
+                { label: 'XRP Vol', value: stats.economicVolume > 0 ? stats.economicVolume.toFixed(1) : '0', color: 'text-emerald-300', border: 'border-emerald-500/20' },
                 { label: 'Kinetic', value: kineticTotal.toLocaleString(), color: 'text-amber-300', border: 'border-amber-500/20' },
               ].map(s => (
                 <div key={s.label} className={`bg-white/5 border ${s.border} rounded-xl p-2 text-center`}>

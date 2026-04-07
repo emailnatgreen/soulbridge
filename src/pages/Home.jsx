@@ -15,6 +15,7 @@ import {
   Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
+import VillagePulseMini from '@/components/kinetic/VillagePulseMini';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -31,6 +32,8 @@ export default function Home() {
   const [agents, setAgents] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [liveCounts, setLiveCounts] = useState({ agents: 0, proposals: 0, dids: 0, projects: 0, mentors: 0, skills: 0, resources: 0, activeSkills: 0 });
+  const [pulseKUs, setPulseKUs] = useState([]);
+  const [pulseEconomicVol, setPulseEconomicVol] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
@@ -107,7 +110,7 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [proposalData, agentData, allAgentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData] = await Promise.all([
+        const [proposalData, agentData, allAgentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData, kuData] = await Promise.all([
           isAdmin ? base44.entities.GovernanceProposal.list('-created_date', 5) : Promise.resolve([]),
           base44.entities.Agent.list('-created_date', 6),
           base44.entities.Agent.list('-created_date', 500),
@@ -118,6 +121,7 @@ export default function Home() {
           isAdmin ? base44.entities.Skill.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
           isAdmin ? base44.entities.Resource.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
           isAdmin ? base44.entities.AgentSkill?.list?.('-created_date', 500).catch(() => []) : Promise.resolve([]),
+          base44.entities.KineticUnit.list('-created_date', 200).catch(() => []),
         ]);
         setProposals(proposalData || []);
         setAgents(agentData || []);
@@ -132,6 +136,8 @@ export default function Home() {
           resources: resourceData?.length || 0,
           activeSkills: agentSkillData?.filter((s) => s.level > 1).length || 0,
         });
+        setPulseKUs(kuData || []);
+        setPulseEconomicVol((activityData || []).reduce((s, a) => s + (a.amount || 0), 0));
       } catch (e) {}
       setLoading(false);
     };
@@ -317,6 +323,9 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {/* Village Pulse — Live Kinetic Energy */}
+        <VillagePulseMini kus={pulseKUs} agentCount={liveCounts.agents} votesCount={liveCounts.proposals} economicVolume={pulseEconomicVol} />
 
         {/* Trust Strip: RLUSDT + Compliance */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

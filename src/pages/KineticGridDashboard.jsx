@@ -199,6 +199,12 @@ export default function KineticGridDashboard() {
           </div>
         )}
 
+        {/* Live Stat Row */}
+        <KineticStatRow stats={stats} />
+
+        {/* Kinetic Energy Visualizer */}
+        <KineticEnergyVisualizer kus={kus} packets={packets} agents={agents} />
+
         {/* KU Flow + Type Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="bg-white/5 border-white/10 lg:col-span-2">
