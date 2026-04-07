@@ -83,8 +83,10 @@ export default function KineticGridDashboard() {
   const ingestedKus = kus.filter(k => k.status === 'ingested');
   const activeProjects = projects.filter(p => !['cancelled', 'completed'].includes(p.status));
   const completedTasks = tasks.filter(t => t.status === 'completed');
+  const missingDueDate = tasks.filter(t => t.due_date === null || t.due_date === undefined || t.due_date === '');
+  const missingRewardDrops = tasks.filter(t => (t.reward_drops === null || t.reward_drops === undefined) && t.reward_drops !== 0);
   const overdueTasks = tasks.filter(t => t.due_date && t.status !== 'completed' && new Date(t.due_date) < new Date());
-  const totalRewardDrops = tasks.reduce((s, t) => s + (t.reward_drops || 0), 0);
+  const totalRewardDrops = tasks.reduce((s, t) => s + (Number(t.reward_drops) || 0), 0);
   const economicVolume = activities.reduce((s, a) => s + (a.amount || 0), 0);
 
   // Layer breakdown
@@ -183,25 +185,19 @@ export default function KineticGridDashboard() {
             </div>
           </div>
         )}
-        {(overdueTasks.length > 0 || tasks.filter(t => !t.due_date).length > 0 || tasks.filter(t => !t.reward_drops && t.reward_drops !== 0).length > 0) && (
+        {(overdueTasks.length > 0 || missingDueDate.length > 0 || missingRewardDrops.length > 0) && (
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-3 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
             <div className="text-xs text-red-300/80">
               <strong>Integrity Alert:</strong>{' '}
               {overdueTasks.length > 0 && <>{overdueTasks.length} overdue tasks. </>}
-              {tasks.filter(t => !t.due_date).length > 0 && <>{tasks.filter(t => !t.due_date).length} missing due_date. </>}
-              {tasks.filter(t => !t.reward_drops && t.reward_drops !== 0).length > 0 && <>{tasks.filter(t => !t.reward_drops && t.reward_drops !== 0).length} missing reward_drops (Law 3). </>}
-              {overdueTasks.length === 0 && tasks.filter(t => !t.due_date).length === 0 && tasks.filter(t => !t.reward_drops && t.reward_drops !== 0).length === 0 && <>All clear.</>}
+              {missingDueDate.length > 0 && <>{missingDueDate.length} missing due_date. </>}
+              {missingRewardDrops.length > 0 && <>{missingRewardDrops.length} missing reward_drops (Law 3). </>}
+              {overdueTasks.length === 0 && missingDueDate.length === 0 && missingRewardDrops.length === 0 && <>All clear.</>}
               See Project Health below for details.
             </div>
           </div>
         )}
-
-        {/* Stat Row — 6 KPIs */}
-        <KineticStatRow stats={stats} />
-
-        {/* Braid Node Visualizer */}
-        <KineticEnergyVisualizer kus={kus} />
 
         {/* KU Flow + Type Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

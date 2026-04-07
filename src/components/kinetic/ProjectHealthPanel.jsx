@@ -15,12 +15,12 @@ const STATUS_COLOR = {
 export default function ProjectHealthPanel({ projects = [], tasks = [], agents = [] }) {
   const agentMap = Object.fromEntries(agents.map(a => [a.id, a]));
 
-  // Task accountability audit
-  const tasksWithoutDue = tasks.filter(t => !t.due_date);
-  const tasksWithoutReward = tasks.filter(t => !t.reward_drops && t.reward_drops !== 0);
+  // Task accountability audit — explicit null/undefined checks to avoid falsy-value false positives
+  const tasksWithoutDue = tasks.filter(t => t.due_date === null || t.due_date === undefined || t.due_date === '');
+  const tasksWithoutReward = tasks.filter(t => (t.reward_drops === null || t.reward_drops === undefined) && t.reward_drops !== 0);
   const overdueTasks = tasks.filter(t => t.due_date && t.status !== 'completed' && new Date(t.due_date) < new Date());
   const completedTasks = tasks.filter(t => t.status === 'completed');
-  const totalRewardDrops = tasks.reduce((s, t) => s + (t.reward_drops || 0), 0);
+  const totalRewardDrops = tasks.reduce((s, t) => s + (Number(t.reward_drops) || 0), 0);
 
   return (
     <Card className="bg-white/5 border-white/10">
