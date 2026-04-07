@@ -46,11 +46,8 @@ export default function PublicAgentGreeter() {
   const pollRef = useRef(null);
   const initialized = useRef(false);
 
-  // Auto-open after delay (longer to avoid burst with other API calls)
-  useEffect(() => {
-    const timer = setTimeout(() => setIsOpen(true), 3000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Do NOT auto-open — user clicks the floating button to start chat
+  // This prevents automatic axiRespond calls that cause rate limiting
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -90,14 +87,19 @@ export default function PublicAgentGreeter() {
     return () => window.removeEventListener('did-connected', handleDidConnected);
   }, []);
 
-  // Init: always start fresh on landing page visit
+  // Only create conversation when user explicitly opens the chat
   useEffect(() => {
     if (!isOpen || initialized.current) return;
     initialized.current = true;
 
-    // Clear any previous conversation — fresh meet & greet every visit
-    localStorage.removeItem(CONV_KEY);
-    createConversation();
+    // Check if we have an existing conversation from this session
+    const existingConvId = localStorage.getItem(CONV_KEY);
+    if (existingConvId) {
+      convIdRef.current = existingConvId;
+      loadMessages(existingConvId);
+    } else {
+      createConversation();
+    }
 
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);

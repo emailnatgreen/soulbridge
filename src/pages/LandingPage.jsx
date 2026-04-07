@@ -220,7 +220,8 @@ export default function LandingPage() {
     };
 
     fetchStats();
-    const interval = setInterval(fetchStats, 30000);
+    // Poll every 2 minutes instead of 30s to avoid rate limits
+    const interval = setInterval(fetchStats, 120000);
     const handleSignal = (e) => {
       if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') fetchStats();
     };
