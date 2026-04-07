@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from 'recharts';
 import { format, parseISO } from 'date-fns';
-import { isRealHash, FLOW_CONFIG } from '@/lib/economicUtils';
+import { isRealHash, FLOW_CONFIG, filterByTimeRange, xrpToRlusd } from '@/lib/economicUtils';
 
 import EconomicKPIs from '@/components/economic/EconomicKPIs';
 import EarnersTab from '@/components/economic/EarnersTab';
 import ActivityTab from '@/components/economic/ActivityTab';
 import AuditTab from '@/components/economic/AuditTab';
+import TimeRangeFilter from '@/components/economic/TimeRangeFilter';
+import TreasuryXRPscanLink from '@/components/economic/TreasuryXRPscanLink';
 
 const PIE_COLORS = ['#22c55e', '#ef4444', '#f59e0b', '#6366f1', '#ec4899', '#06b6d4', '#f97316'];
 
@@ -23,6 +25,7 @@ const TABS = [
 
 export default function EconomicDashboard() {
   const [tab, setTab] = useState('overview');
+  const [timeRange, setTimeRange] = useState('all');
 
   const { data: transactions = [], isLoading: txLoading } = useQuery({
     queryKey: ['txns-economy'],
@@ -43,8 +46,12 @@ export default function EconomicDashboard() {
 
   const isLoading = txLoading || actLoading;
 
+  // Apply time-range filter
+  const filteredTxns = filterByTimeRange(transactions, timeRange);
+  const filteredActivities = filterByTimeRange(activities, timeRange);
+
   // Separate real on-chain vs internal/simulated transactions
-  const completedTxns = transactions.filter(t => t.status === 'completed');
+  const completedTxns = filteredTxns.filter(t => t.status === 'completed');
   const realTxns = completedTxns.filter(t => isRealHash(t.hash));
   const internalTxns = completedTxns.filter(t => !isRealHash(t.hash));
   const realVolume = realTxns.reduce((s, t) => s + (t.amount ?? 0), 0);
@@ -67,9 +74,13 @@ export default function EconomicDashboard() {
             Economic Dashboard
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            {realTxns.length} on-chain transactions · {activities.length} economic activities · {activeTreasuries.length} active treasuries
+            {realTxns.length} on-chain transactions · {filteredActivities.length} economic activities · {activeTreasuries.length} active treasuries
+            {timeRange !== 'all' && <span className="text-emerald-400 ml-1">({timeRange} window)</span>}
           </p>
         </div>
+
+        {/* Time Range Filter */}
+        <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
 
         {/* KPIs */}
         <EconomicKPIs
@@ -114,13 +125,13 @@ export default function EconomicDashboard() {
         {!isLoading && tab === 'overview' && (
           <OverviewTab
             realTxns={realTxns}
-            activities={activities}
+            activities={filteredActivities}
             activeTreasuries={activeTreasuries}
           />
         )}
-        {!isLoading && tab === 'earners' && <EarnersTab activities={activities} agents={agents} />}
-        {!isLoading && tab === 'activity' && <ActivityTab activities={activities} agents={agents} />}
-        {!isLoading && tab === 'audit' && <AuditTab activities={activities} agents={agents} />}
+        {!isLoading && tab === 'earners' && <EarnersTab activities={filteredActivities} agents={agents} />}
+        {!isLoading && tab === 'activity' && <ActivityTab activities={filteredActivities} agents={agents} />}
+        {!isLoading && tab === 'audit' && <AuditTab activities={filteredActivities} agents={agents} />}
       </div>
     </div>
   );
@@ -220,15 +231,14 @@ function OverviewTab({ realTxns, activities, activeTreasuries }) {
               <div key={t.id} className="flex items-center justify-between p-2 bg-slate-800/40 rounded-lg">
                 <div className="min-w-0">
                   <span className="text-slate-300 text-sm block truncate">{t.name}</span>
-                  {t.classic_address && t.classic_address !== 'N/A - Legacy Record' && (
-                    <span className="text-[10px] text-slate-600 font-mono">
-                      {t.classic_address.slice(0, 8)}…{t.classic_address.slice(-6)}
-                    </span>
-                  )}
+                  <TreasuryXRPscanLink address={t.classic_address} />
                 </div>
-                <span className="text-emerald-400 font-semibold shrink-0">
-                  {(t.total_balance ?? 0).toFixed(2)} XRP
-                </span>
+                <div className="text-right shrink-0">
+                  <span className="text-emerald-400 font-semibold">
+                    {(t.total_balance ?? 0).toFixed(2)} XRP
+                  </span>
+                  <span className="text-slate-500 text-[10px] block">≈${xrpToRlusd(t.total_balance ?? 0)} RLUSD</span>
+                </div>
               </div>
             ))
           )}

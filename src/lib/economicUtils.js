@@ -66,3 +66,33 @@ export function sumAmount(arr) {
 export function getValidActivities(activities) {
   return activities.filter(a => a.status === 'completed' && isRealisticActivity(a));
 }
+
+// ── Agent ID resolution (returns entity id for linking) ─────────────────────
+export function findAgentId(agentId, agents = []) {
+  if (!agentId) return null;
+  const byId = agents.find(a => a.id === agentId);
+  if (byId) return byId.id;
+  const byAddr = agents.find(a => a.classic_address === agentId);
+  if (byAddr) return byAddr.id;
+  const byWallet = agents.find(a => a.wallet_id === agentId);
+  if (byWallet) return byWallet.id;
+  const byExt = agents.find(a => a.external_classic_addresses?.includes(agentId));
+  if (byExt) return byExt.id;
+  return null;
+}
+
+// ── RLUSD conversion (approximate rate) ─────────────────────────────────────
+const XRP_TO_RLUSD_RATE = 2.15; // approximate rate — can be updated
+export function xrpToRlusd(xrpAmount) {
+  return (xrpAmount * XRP_TO_RLUSD_RATE).toFixed(2);
+}
+
+// ── Time range filter ───────────────────────────────────────────────────────
+export function filterByTimeRange(items, range, dateField = 'created_date') {
+  if (range === 'all') return items;
+  const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  return items.filter(item => {
+    try { return new Date(item[dateField]) >= cutoff; } catch { return true; }
+  });
+}

@@ -2,18 +2,20 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, RefreshCw, Wallet, AlertTriangle } from 'lucide-react';
-import { FLOW_CONFIG, resolveAgentName, getValidActivities, sumAmount } from '@/lib/economicUtils';
+import { FLOW_CONFIG, resolveAgentName, getValidActivities, sumAmount, xrpToRlusd, findAgentId } from '@/lib/economicUtils';
+import AgentLink from '@/components/economic/AgentLink';
 
 function aggregateByAgent(items, agents) {
   const map = {};
   items.forEach(a => {
     const name = resolveAgentName(a.agent_id, agents);
-    map[name] = (map[name] || 0) + (a.amount ?? 0);
+    if (!map[name]) map[name] = { amount: 0, agentId: a.agent_id };
+    map[name].amount += (a.amount ?? 0);
   });
   return Object.entries(map)
-    .sort(([, a], [, b]) => b - a)
+    .sort(([, a], [, b]) => b.amount - a.amount)
     .slice(0, 10)
-    .map(([name, amount]) => ({ name, amount: parseFloat(amount.toFixed(2)) }));
+    .map(([name, { amount, agentId }]) => ({ name, amount: parseFloat(amount.toFixed(2)), agentId }));
 }
 
 export default function EarnersTab({ activities = [], agents = [] }) {
@@ -57,10 +59,10 @@ export default function EarnersTab({ activities = [], agents = [] }) {
       </div>
 
       {/* Charts */}
-      {inflows.length > 0 && <ChartCard title="Top Agent Earnings" data={aggregateByAgent(inflows, agents)} color="#22c55e" label="Earned (XRP)" />}
-      {deposits.length > 0 && <ChartCard title="Top Treasury Depositors" data={aggregateByAgent(deposits, agents)} color="#3b82f6" label="Deposited (XRP)" />}
-      {outflows.length > 0 && <ChartCard title="Top Agent Outflows" data={aggregateByAgent(outflows, agents)} color="#ef4444" label="Outflow (XRP)" />}
-      {swaps.length > 0 && <ChartCard title="Trade / Swap Activity" data={aggregateByAgent(swaps, agents)} color="#6366f1" label="Traded (XRP)" />}
+      {inflows.length > 0 && <ChartCard title="Top Agent Earnings" data={aggregateByAgent(inflows, agents)} agents={agents} color="#22c55e" label="Earned (XRP)" />}
+      {deposits.length > 0 && <ChartCard title="Top Treasury Depositors" data={aggregateByAgent(deposits, agents)} agents={agents} color="#3b82f6" label="Deposited (XRP)" />}
+      {outflows.length > 0 && <ChartCard title="Top Agent Outflows" data={aggregateByAgent(outflows, agents)} agents={agents} color="#ef4444" label="Outflow (XRP)" />}
+      {swaps.length > 0 && <ChartCard title="Trade / Swap Activity" data={aggregateByAgent(swaps, agents)} agents={agents} color="#6366f1" label="Traded (XRP)" />}
 
       {/* Net Balance */}
       <NetBalanceTable activities={valid} agents={agents} />
@@ -89,12 +91,13 @@ function SummaryCard({ icon: Icon, label, amount, color, sub, count }) {
       <div className={`text-lg font-bold ${c.text}`}>
         {amount.toFixed(2)} <span className="text-xs font-normal">XRP</span>
       </div>
+      <div className="text-[10px] text-slate-500 mt-0.5">≈${xrpToRlusd(amount)} RLUSD</div>
       <div className={`text-[10px] ${c.sub} mt-0.5`}>{count} entries · {sub}</div>
     </div>
   );
 }
 
-function ChartCard({ title, data, color, label }) {
+function ChartCard({ title, data, agents, color, label }) {
   if (data.length === 0) return null;
   return (
     <Card className="bg-slate-900/60 border-slate-700/40">
@@ -105,10 +108,19 @@ function ChartCard({ title, data, color, label }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
             <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 11 }} />
             <YAxis dataKey="name" type="category" tick={{ fill: '#94a3b8', fontSize: 10 }} width={110} />
-            <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }} formatter={(v) => [`${v} XRP`, label]} />
+            <Tooltip
+              contentStyle={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }}
+              formatter={(v) => [`${v} XRP (≈$${xrpToRlusd(v)} RLUSD)`, label]}
+            />
             <Bar dataKey="amount" fill={color} radius={[0, 4, 4, 0]} name={label} />
           </BarChart>
         </ResponsiveContainer>
+        {/* Agent links below chart */}
+        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-700/40">
+          {data.map(d => (
+            <AgentLink key={d.name} agentId={d.agentId} agents={agents} className="text-xs" />
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
@@ -118,14 +130,14 @@ function NetBalanceTable({ activities, agents }) {
   const balanceMap = {};
   activities.forEach(a => {
     const name = resolveAgentName(a.agent_id, agents);
-    if (!balanceMap[name]) balanceMap[name] = { in: 0, out: 0 };
+    if (!balanceMap[name]) balanceMap[name] = { in: 0, out: 0, agentId: a.agent_id };
     const flow = FLOW_CONFIG[a.activity_type]?.flow;
     if (flow === 'inflow') balanceMap[name].in += a.amount ?? 0;
     if (flow === 'outflow' || flow === 'acquisition') balanceMap[name].out += a.amount ?? 0;
   });
 
   const rows = Object.entries(balanceMap)
-    .map(([name, { in: inAmt, out: outAmt }]) => ({ name, in: inAmt, out: outAmt, net: inAmt - outAmt }))
+    .map(([name, { in: inAmt, out: outAmt, agentId }]) => ({ name, in: inAmt, out: outAmt, net: inAmt - outAmt, agentId }))
     .filter(r => r.in > 0 || r.out > 0)
     .sort((a, b) => b.net - a.net);
 
@@ -138,7 +150,7 @@ function NetBalanceTable({ activities, agents }) {
         <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
           {rows.map(r => (
             <div key={r.name} className="flex items-center justify-between p-2 bg-slate-800/40 rounded-lg text-xs">
-              <span className="text-slate-300 truncate max-w-[140px]">{r.name}</span>
+              <AgentLink agentId={r.agentId} agents={agents} className="truncate max-w-[140px]" />
               <div className="flex items-center gap-4">
                 <span className="text-emerald-400">+{r.in.toFixed(2)}</span>
                 <span className="text-red-400">−{r.out.toFixed(2)}</span>
