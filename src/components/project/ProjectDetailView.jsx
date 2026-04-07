@@ -54,10 +54,10 @@ export default function ProjectDetailView({
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-slate-950 border border-white/10 rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto relative">
           
-          {/* Close Button */}
+          {/* Close Button — sticky positioned */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+            className="sticky top-4 float-right mr-4 mt-4 z-10 w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
             title="Close"
           >
             <X className="w-4 h-4 text-white/60" />
