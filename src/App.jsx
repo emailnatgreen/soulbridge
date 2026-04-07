@@ -97,13 +97,14 @@ const PUBLIC_PATHS = [
   '/terms', '/Terms', '/support', '/Support',
   '/EditLanding',
   '/ScrollOfResonance',
+  '/scroll-of-resonance',
 ];
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
 
-  const isPublicPath = PUBLIC_PATHS.includes(location.pathname);
+  const isPublicPath = PUBLIC_PATHS.includes(location.pathname) || PUBLIC_PATHS.includes(location.pathname.replace(/\/$/, ''));
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     // Let public pages render while auth is loading
@@ -129,6 +130,7 @@ const AuthenticatedApp = () => {
           <Route path="/Support" element={<Support />} />
           <Route path="/EditLanding" element={<EditLanding />} />
           <Route path="/ScrollOfResonance" element={<ScrollOfResonance />} />
+          <Route path="/scroll-of-resonance" element={<ScrollOfResonance />} />
           <Route path="*" element={<LoadingFallback />} />
         </Routes>
       );
@@ -177,6 +179,7 @@ const AuthenticatedApp = () => {
         <Route path="/KineticCompass" element={<KineticCompass />} />
         <Route path="/EditLanding" element={<EditLanding />} />
         <Route path="/ScrollOfResonance" element={<ScrollOfResonance />} />
+        <Route path="/scroll-of-resonance" element={<ScrollOfResonance />} />
 
         {/* CORE USER HUBS */}
         <Route path="/home" element={L("home", Home)} />

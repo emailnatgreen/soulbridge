@@ -5,6 +5,7 @@ import { emitWalletSignal } from '@/hooks/useWalletDidSignal';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock, Info } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useIdentity } from '@/hooks/useIdentity';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
@@ -596,8 +597,8 @@ export default function LandingPage() {
 
           {/* Explore Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
-            <a
-              href="/ScrollOfResonance"
+            <Link
+              to="/ScrollOfResonance"
               className="group relative overflow-hidden bg-gradient-to-br from-purple-900/50 to-pink-900/40 border border-purple-500/40 rounded-2xl p-5 sm:p-7 shadow-2xl hover:border-purple-400/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -618,10 +619,10 @@ export default function LandingPage() {
                 <span>Read the Scroll</span>
                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
-            </a>
+            </Link>
 
-            <a
-              href="/KineticCompass"
+            <Link
+              to="/KineticCompass"
               className="group relative overflow-hidden bg-gradient-to-br from-yellow-900/50 to-orange-900/40 border border-yellow-500/40 rounded-2xl p-5 sm:p-7 shadow-2xl hover:border-yellow-400/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -642,7 +643,7 @@ export default function LandingPage() {
                 <span>Feel the Pulse</span>
                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
-            </a>
+            </Link>
           </div>
 
           {/* Village Guides */}
