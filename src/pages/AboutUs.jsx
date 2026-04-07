@@ -147,22 +147,7 @@ export default function AboutUs() {
             </div>
           </div>
 
-          {/* Navigation Cards — replaces footer menu */}
-          <div className="pt-6 pb-2">
-            <p className="text-white/30 text-xs text-center mb-3 uppercase tracking-wider font-medium">Explore SoulBridge</p>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-              {NAV_LINKS.map(link => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-purple-500/30 transition-all active:scale-95 group"
-                >
-                  <link.icon className="w-4 h-4 text-white/40 group-hover:text-purple-400 transition-colors" />
-                  <span className="text-[10px] sm:text-xs text-white/50 group-hover:text-white/80 text-center leading-tight transition-colors">{link.label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
+
 
           {/* Minimal copyright line */}
           <p className="text-white/15 text-[9px] text-center pb-4">
