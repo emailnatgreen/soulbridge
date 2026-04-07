@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
-import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 
 const AuthContext = createContext();
 
@@ -17,13 +16,17 @@ export const AuthProvider = ({ children }) => {
 
   const fetchPublicSettings = useCallback(async (token, silent = false) => {
     try {
-      const appClient = createAxiosClient({
-        baseURL: `/api/apps/public`,
-        headers: { 'X-App-Id': appParams.appId },
-        token: token,
-        interceptResponses: true
-      });
-      const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
+      const headers = { 'X-App-Id': appParams.appId };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(`/api/apps/public/prod/public-settings/by-id/${appParams.appId}`, { headers });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const err = new Error(errData?.message || 'Failed to fetch public settings');
+        err.status = res.status;
+        err.data = errData;
+        throw err;
+      }
+      const publicSettings = await res.json();
       setAppPublicSettings(publicSettings);
     } catch (appError) {
       if (!silent && appError.status === 403 && appError.data?.extra_data?.reason) {
