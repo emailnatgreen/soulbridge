@@ -11,10 +11,13 @@ export default function ChatLoader() {
 
     const unsubscribe = base44.entities.JukeboxDecision.subscribe((event) => {
       if (event.type === 'create' && event.data) {
-        const { id, action, agent_id, message, conversation_id } = event.data;
+        const { id, action, agent_id, message, conversation_id, status } = event.data;
 
-        // Only handle open_chat actions
-        if (action === 'open_chat' && agent_id === 'axi') {
+        // Skip already-processed decisions (prevents stale data from filling the chat input)
+        if (status === 'processed') return;
+
+        // Only handle open_chat actions for Axi
+        if (action === 'open_chat' && agent_id === 'axi' && message) {
           window.dispatchEvent(new CustomEvent('open-axi-with-message', {
             detail: { message, conversationId: conversation_id, agentId: agent_id }
           }));
