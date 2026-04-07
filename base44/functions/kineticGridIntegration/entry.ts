@@ -176,31 +176,76 @@ async function syncReputationScore(base44, kus, agentMap) {
 }
 
 // ── 4. Enrich GovernanceProposal Context ──────────────────────────────────
-async function syncGovernanceContext(base44, kus) {
+async function syncGovernanceContext(base44, kus, agentMap) {
   const rawProposals = await base44.asServiceRole.entities.GovernanceProposal.list('-created_date', 200);
   const activeProposals = Array.isArray(rawProposals) ? rawProposals : [];
   const open = activeProposals.filter(p => p.status === 'active');
   const enriched = [];
 
+  // Build reverse lookup: email/name → agent ID for proposals created by non-agent IDs
+  const emailToAgent = {};
+  const nameToAgent = {};
+  for (const a of Object.values(agentMap)) {
+    if (a.created_by) emailToAgent[a.created_by] = a.id;
+    if (a.name) nameToAgent[a.name.toLowerCase()] = a.id;
+  }
+
+  // Aggregate ALL KU data for village-wide context
+  const totalKuScore = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
+  const totalGovVotes = kus.filter(k => k.ku_type === 'governance_vote').length;
+  const totalKnowledge = kus.filter(k => k.ku_type === 'knowledge_contribution').length;
+  const uniqueContributors = new Set(kus.map(k => k.agent_id)).size;
+
   for (const proposal of open) {
     const proposerId = proposal.proposed_by;
-    const proposerKus = kus.filter(ku => ku.agent_id === proposerId);
-    if (proposerKus.length === 0) continue;
 
-    const proposerTotal = proposerKus.reduce((s, k) => s + (k.weighted_score || 1), 0);
-    const kinetic_context = {
-      proposer_total_ku_score: proposerTotal,
-      proposer_governance_votes: proposerKus.filter(k => k.ku_type === 'governance_vote').length,
-      proposer_knowledge_contributions: proposerKus.filter(k => k.ku_type === 'knowledge_contribution').length,
-      proposer_ku_types: [...new Set(proposerKus.map(k => k.ku_type))],
-      context_generated_at: new Date().toISOString(),
-      note: "Kinetic Grid context — reflects proposer's measured contribution history under the SoulBridge 11 Laws.",
-    };
+    // Try to resolve proposer to an agent for targeted context
+    let resolvedAgentId = proposerId;
+    if (!agentMap[proposerId]) {
+      // Try email match
+      if (emailToAgent[proposerId]) resolvedAgentId = emailToAgent[proposerId];
+      // Try name match
+      else if (nameToAgent[proposerId?.toLowerCase?.()]) resolvedAgentId = nameToAgent[proposerId.toLowerCase()];
+      // System proposals get village-wide context
+      else resolvedAgentId = null;
+    }
+
+    let kinetic_context;
+    if (resolvedAgentId && agentMap[resolvedAgentId]) {
+      // Proposer-specific context
+      const proposerKus = kus.filter(ku => ku.agent_id === resolvedAgentId);
+      const proposerTotal = proposerKus.reduce((s, k) => s + (k.weighted_score || 1), 0);
+      kinetic_context = {
+        proposer_name: agentMap[resolvedAgentId].name,
+        proposer_total_ku_score: proposerTotal,
+        proposer_governance_votes: proposerKus.filter(k => k.ku_type === 'governance_vote').length,
+        proposer_knowledge_contributions: proposerKus.filter(k => k.ku_type === 'knowledge_contribution').length,
+        proposer_ku_types: [...new Set(proposerKus.map(k => k.ku_type))],
+        village_total_ku_score: totalKuScore,
+        village_unique_contributors: uniqueContributors,
+        context_generated_at: new Date().toISOString(),
+        note: "Kinetic Grid context — proposer's measured contribution history under the 11 Laws.",
+      };
+    } else {
+      // Village-wide context for system/unknown proposers
+      kinetic_context = {
+        proposer_name: proposerId === 'system' ? 'System' : proposerId,
+        proposer_total_ku_score: 0,
+        proposer_governance_votes: 0,
+        proposer_knowledge_contributions: 0,
+        village_total_ku_score: totalKuScore,
+        village_total_governance_votes: totalGovVotes,
+        village_total_knowledge: totalKnowledge,
+        village_unique_contributors: uniqueContributors,
+        context_generated_at: new Date().toISOString(),
+        note: 'Village-wide kinetic context — proposer is system or non-agent identity.',
+      };
+    }
 
     await base44.asServiceRole.entities.GovernanceProposal.update(proposal.id, {
       relevant_context: JSON.stringify(kinetic_context),
     });
-    enriched.push({ proposal_id: proposal.id, proposer: proposerId, ku_score: proposerTotal });
+    enriched.push({ proposal_id: proposal.id, proposer: proposerId, resolved_agent: resolvedAgentId, ku_score: kinetic_context.proposer_total_ku_score });
   }
   return { proposals_enriched: enriched.length, proposals: enriched };
 }
@@ -241,7 +286,7 @@ Deno.serve(async (req) => {
       results.reputation_score = await syncReputationScore(base44, kus, agentMap);
     }
     if (action === 'sync_governance_context' || action === 'sync_all') {
-      results.governance_context = await syncGovernanceContext(base44, kus);
+      results.governance_context = await syncGovernanceContext(base44, kus, agentMap);
     }
 
     if (Object.keys(results).length === 0) {

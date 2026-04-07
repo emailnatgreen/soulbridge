@@ -74,7 +74,11 @@ export default function KineticGridDashboard() {
   };
 
   // ── Derived metrics ──
+  // Build agent lookup by ID and by name (for string-literal agent_ids like "axi")
   const agentMap = Object.fromEntries(agents.map(a => [a.id, a]));
+  // Also index by lowercase name for KUs that use name strings instead of entity IDs
+  agents.forEach(a => { if (a.name) agentMap[a.name.toLowerCase()] = a; });
+  const resolveAgent = (agentId) => agentMap[agentId] || agentMap[agentId?.toLowerCase?.()] || null;
   const totalWeighted = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
   const ingestedKus = kus.filter(k => k.status === 'ingested');
   const activeProjects = projects.filter(p => !['cancelled', 'completed'].includes(p.status));
@@ -100,12 +104,16 @@ export default function KineticGridDashboard() {
   });
   const flowData = Object.entries(flowByDay).slice(-14).map(([day, score]) => ({ day, score: +score.toFixed(2) }));
 
-  // Top agents by KU score
+  // Top agents by KU score — resolve names properly, flag orphaned IDs
   const agentKuMap = {};
   kus.forEach(ku => { agentKuMap[ku.agent_id] = (agentKuMap[ku.agent_id] || 0) + (ku.weighted_score || 1); });
   const topAgents = Object.entries(agentKuMap)
-    .map(([id, score]) => ({ name: agentMap[id]?.name || id?.slice(0, 10), score: +score.toFixed(2) }))
-    .sort((a, b) => b.score - a.score).slice(0, 8);
+    .map(([id, score]) => {
+      const agent = resolveAgent(id);
+      return { name: agent?.name || `⚠ ${id.slice(0, 12)}…`, score: +score.toFixed(2), orphaned: !agent };
+    })
+    .sort((a, b) => b.score - a.score).slice(0, 10);
+  const orphanedAgentIds = topAgents.filter(a => a.orphaned).map(a => a.name);
 
   // Constitutional law alignment radar
   const lawMap = {};
@@ -158,7 +166,23 @@ export default function KineticGridDashboard() {
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
 
-        {/* Data integrity notice */}
+        {/* Data integrity notices */}
+        {orphanedAgentIds.length > 0 && (
+          <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+            <div className="text-xs text-amber-300/80">
+              <strong>Law 1 (Soul) Alert:</strong> {orphanedAgentIds.length} KU agent ID{orphanedAgentIds.length > 1 ? 's' : ''} could not be resolved to a living Agent record. These are marked with ⚠ in the charts. Orphaned IDs should be investigated and either re-linked or archived.
+            </div>
+          </div>
+        )}
+        {layerCounts.meso === 0 && packets.length > 0 && (
+          <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 flex items-start gap-2">
+            <Activity className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+            <div className="text-xs text-blue-300/80">
+              <strong>MWTP Notice:</strong> All {packets.length} packets are micro-layer. Meso aggregation runs automatically every 30 minutes. Next run will aggregate hourly windows with 2+ micro packets.
+            </div>
+          </div>
+        )}
         {(overdueTasks.length > 0 || tasks.filter(t => !t.due_date).length > 0) && (
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-3 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
