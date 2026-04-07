@@ -417,6 +417,12 @@ export default function LandingPage() {
             })()}
           </div>
 
+          {/* Live Kinetic Energy Section */}
+          <div className="max-w-4xl mx-auto space-y-6">
+            <KineticPublicOverview kus={allKUs} />
+            <KineticEnergyVisualizer kus={allKUs} />
+          </div>
+
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
             {/* Left Card: DID Identity */}
