@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -13,22 +13,21 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowLeft, Users, Star, TrendingUp, CheckCircle, Brain,
   Loader2, Heart, Clock, Shield, MessageSquare, Bot, User,
-  Sparkles, Plus, ChevronRight, BarChart3, AlertCircle
+  Sparkles, Plus, ChevronRight, BarChart3, AlertCircle, Fingerprint, Zap
 } from 'lucide-react';
 import MentorshipChatBox from '@/components/mentorship/MentorshipChatBox';
+import { useIdentity } from '@/hooks/useIdentity';
 import { toast } from 'sonner';
 
 const openAxi = (msg) => {
-  window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
+  window.dispatchEvent(new CustomEvent('open-axi', { detail: { message: msg } }));
 };
 
 export default function MentorshipHub() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user: currentUser, isRecognized, isAdmin, didSignal } = useIdentity();
 
-  // Identity state
-  const [identity, setIdentity] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
   const [myAgent, setMyAgent] = useState(null);
   const [agentLoading, setAgentLoading] = useState(true);
 
@@ -37,28 +36,14 @@ export default function MentorshipHub() {
   const [selectedMentorProfile, setSelectedMentorProfile] = useState(null);
   const [activeChat, setActiveChat] = useState(null); // { rel, other, role }
 
-  // Load identity + user + agent
+  // Load agent for current user
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('soulbridge_identity');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.connected) setIdentity(parsed);
-      }
-    } catch (e) {}
-
-    base44.auth.me().then(async (u) => {
-      if (!u) { setAgentLoading(false); return; }
-      setCurrentUser(u);
-      const agents = await base44.entities.Agent.list();
-      const mine = agents.find(a => a.created_by === u.email);
-      if (mine) setMyAgent(mine);
-      setAgentLoading(false);
-    }).catch(() => { setAgentLoading(false); });
-
-    // Notify Axi
-    openAxi("I've just opened the Mentorship Hub. Give me a brief overview of what's available here and how I can find a mentor or become one.");
-  }, []);
+    if (!currentUser?.email) { setAgentLoading(false); return; }
+    base44.entities.Agent.filter({ created_by: currentUser.email }, '-created_date', 1)
+      .then(agents => { if (agents?.[0]) setMyAgent(agents[0]); })
+      .catch(() => {})
+      .finally(() => setAgentLoading(false));
+  }, [currentUser?.email]);
 
   // Data queries
   const { data: allAgents = [] } = useQuery({
@@ -108,7 +93,7 @@ export default function MentorshipHub() {
       <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <Link to="/Home">
+            <Link to="/home">
               <Button variant="ghost" size="icon" className="text-white/60 hover:text-white hover:bg-white/10">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
@@ -120,18 +105,19 @@ export default function MentorshipHub() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* DID Signal Button */}
-            {identity?.connected ? (
-              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5 cursor-pointer"
-                onClick={() => openAxi(`I'm connected with DID: ${identity.did}. What mentorship opportunities match my profile?`)}>
-                <Shield className="w-3.5 h-3.5 text-green-400" />
-                <span className="text-green-300 text-xs font-mono">{identity.did?.slice(0, 14)}…</span>
-                <Sparkles className="w-3 h-3 text-green-400/60" />
-              </div>
+            {/* DID Signal */}
+            {didSignal?.isVerified ? (
+              <Link to="/SovereignID">
+                <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5 cursor-pointer">
+                  <Fingerprint className="w-3.5 h-3.5 text-green-400" />
+                  <span className="text-green-300 text-xs font-mono">{didSignal.did?.slice(0, 18)}…</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                </div>
+              </Link>
             ) : (
               <Link to="/">
-                <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 cursor-pointer text-xs">
-                  Connect DID
+                <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 cursor-pointer text-xs gap-1">
+                  <Shield className="w-3 h-3" /> Connect DID
                 </Badge>
               </Link>
             )}
@@ -140,24 +126,20 @@ export default function MentorshipHub() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => openAxi("Help me navigate the Mentorship Hub. What should I do to get started as a mentee or mentor?")}
+              onClick={() => openAxi("Help me navigate the Mentorship Hub.")}
               className="border-purple-400/40 text-purple-300 bg-purple-900/20 hover:bg-purple-500/20 text-xs gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5" /> Ask Axi
             </Button>
 
-            <Link to="/MentorshipAnalytics">
-              <Button variant="outline" size="sm" className="border-blue-400/40 text-blue-300 bg-blue-900/20 hover:bg-blue-500/20 text-xs gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5" /> Analytics
-              </Button>
-            </Link>
-
             {!myMentorProfile && myAgent && (
-              <Link to="/BecomeMentor">
-                <Button size="sm" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs gap-1.5">
-                  <Heart className="w-3.5 h-3.5" /> Become a Mentor
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                onClick={() => openAxi("I want to become a mentor. Help me set up my mentor profile.")}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs gap-1.5"
+              >
+                <Heart className="w-3.5 h-3.5" /> Become a Mentor
+              </Button>
             )}
           </div>
         </div>
@@ -165,15 +147,31 @@ export default function MentorshipHub() {
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
+        {/* DID required notice */}
+        {!didSignal?.isVerified && !isLoading && (
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 flex items-center gap-3">
+            <Fingerprint className="w-5 h-5 text-purple-400 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-purple-300 text-sm font-medium">DID Identity Required</p>
+              <p className="text-purple-300/60 text-xs mt-0.5">Connect your DID to fully participate in mentorship — your sovereign identity anchors every action.</p>
+            </div>
+            <Link to="/">
+              <Button size="sm" className="bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 text-xs gap-1">
+                <Shield className="w-3 h-3" /> Connect DID
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* No agent warning */}
-        {!myAgent && !isLoading && (
+        {didSignal?.isVerified && !myAgent && !isLoading && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-yellow-300 text-sm font-medium">No Agent Identity Found</p>
               <p className="text-yellow-300/60 text-xs mt-0.5">Create an Agent to fully participate in mentorship relationships.</p>
             </div>
-            <Link to="/Agents">
+            <Link to="/agent-genesis">
               <Button size="sm" className="bg-yellow-500/20 border border-yellow-500/30 text-yellow-300 hover:bg-yellow-500/30 text-xs">
                 Create Agent
               </Button>
@@ -199,9 +197,14 @@ export default function MentorshipHub() {
               <Badge className={myMentorProfile.is_available ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'}>
                 {myMentorProfile.is_available ? 'Open' : 'Paused'}
               </Badge>
-              <Link to="/BecomeMentor">
-                <Button size="sm" variant="outline" className="border-purple-400/40 text-purple-300 bg-purple-900/20 hover:bg-purple-500/20 text-xs">Edit Profile</Button>
-              </Link>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openAxi('I want to edit my mentor profile. Show me what I can change.')}
+                className="border-purple-400/40 text-purple-300 bg-purple-900/20 hover:bg-purple-500/20 text-xs"
+              >
+                Edit Profile
+              </Button>
             </div>
           </div>
         )}
@@ -252,7 +255,7 @@ export default function MentorshipHub() {
                 icon={Users}
                 title="No Mentors Available Yet"
                 desc="Be the first to register as a mentor and help others grow."
-                action={myAgent ? { label: 'Become a Mentor', href: '/BecomeMentor' } : null}
+                action={myAgent ? { label: 'Become a Mentor', onClick: () => openAxi('I want to become a mentor. Help me set up my profile.') } : null}
               />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -304,7 +307,7 @@ export default function MentorshipHub() {
                 icon={TrendingUp}
                 title="No Mentees Yet"
                 desc="Share your wisdom — register as a mentor to start guiding others."
-                action={myAgent && !myMentorProfile ? { label: 'Become a Mentor', href: '/BecomeMentor' } : null}
+                action={myAgent && !myMentorProfile ? { label: 'Become a Mentor', onClick: () => openAxi('I want to register as a mentor.') } : null}
               />
             ) : (
               <div className="space-y-3">
@@ -567,11 +570,17 @@ function EmptyState({ icon: Icon, title, desc, action }) {
         <h3 className="text-white text-lg font-medium">{title}</h3>
         <p className="text-white/40 text-sm max-w-xs mx-auto">{desc}</p>
         {action && (
-          <Link to={action.href}>
-            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white mt-2">
+          action.href ? (
+            <Link to={action.href}>
+              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white mt-2">
+                {action.label}
+              </Button>
+            </Link>
+          ) : (
+            <Button onClick={action.onClick} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white mt-2">
               {action.label}
             </Button>
-          </Link>
+          )
         )}
       </CardContent>
     </Card>
@@ -585,7 +594,8 @@ function RequestMentorshipDialog({ mentorProfile, mentorAgent, myAgent, onClose,
 
   const mutation = useMutation({
     mutationFn: async () => {
-      await base44.entities.MentorshipRelationship.create({
+      // Create the mentorship relationship
+      const rel = await base44.entities.MentorshipRelationship.create({
         mentor_agent_id: mentorProfile.agent_id,
         mentee_agent_id: myAgent.id,
         status: 'requested',
@@ -594,6 +604,23 @@ function RequestMentorshipDialog({ mentorProfile, mentorAgent, myAgent, onClose,
         notes: note,
         started_date: new Date().toISOString(),
       });
+
+      // Generate a Kinetic Unit for this mentorship action
+      await base44.entities.KineticUnit.create({
+        ku_type: 'mentorship_session',
+        agent_id: myAgent.id,
+        trigger_event: 'MentorshipRelationship.create',
+        trigger_entity_id: rel.id,
+        weight: 1.5,
+        raw_score: 1,
+        weighted_score: 1.5,
+        constitutional_laws: ['Growth', 'Honour'],
+        metadata: {
+          mentor_agent_id: mentorProfile.agent_id,
+          mentor_name: mentorAgent?.name,
+          focus_areas: focusAreas,
+        },
+      }).catch(() => {}); // non-blocking
     },
     onSuccess: () => {
       toast.success('Mentorship request sent!');
