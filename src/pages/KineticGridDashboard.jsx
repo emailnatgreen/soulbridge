@@ -1,117 +1,98 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
+import KineticStatRow from '@/components/kinetic/KineticStatRow';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
+import ProjectHealthPanel from '@/components/kinetic/ProjectHealthPanel';
+import GovernanceVotePanel from '@/components/kinetic/GovernanceVotePanel';
+import RecentKUFeed from '@/components/kinetic/RecentKUFeed';
 import GovernanceKUFlow from '@/components/kinetic/GovernanceKUFlow';
+import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  AreaChart, Area, PieChart, Pie, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Activity, Zap, TrendingUp, Vote, Star, RefreshCw, Shield, Users, ArrowLeft } from 'lucide-react';
+import {
+  Activity, Zap, TrendingUp, Vote, Star, RefreshCw, Shield, Users,
+  ArrowLeft, FolderKanban, Scale, Wallet, Target, AlertTriangle
+} from 'lucide-react';
 
-// KU type colour palette
 const KU_COLORS = {
-  did_publication: '#a78bfa',
-  governance_vote: '#60a5fa',
-  task_completion: '#34d399',
-  mentorship_session: '#f59e0b',
-  knowledge_contribution: '#fb923c',
-  skill_development: '#e879f9',
-  economic_exchange: '#2dd4bf',
-  collaborative_action: '#f87171',
-  agent_message: '#94a3b8',
+  did_publication: '#a78bfa', governance_vote: '#60a5fa', task_completion: '#34d399',
+  mentorship_session: '#f59e0b', knowledge_contribution: '#fb923c', skill_development: '#e879f9',
+  economic_exchange: '#2dd4bf', collaborative_action: '#f87171', agent_message: '#94a3b8',
   resource_trade: '#86efac',
 };
-
 const KU_LABELS = {
-  did_publication: 'DID Publication',
-  governance_vote: 'Gov Vote',
-  task_completion: 'Task Complete',
-  mentorship_session: 'Mentorship',
-  knowledge_contribution: 'Knowledge',
-  skill_development: 'Skill Dev',
-  economic_exchange: 'Economic',
-  collaborative_action: 'Collab',
-  agent_message: 'Message',
+  did_publication: 'DID Publication', governance_vote: 'Gov Vote', task_completion: 'Task Complete',
+  mentorship_session: 'Mentorship', knowledge_contribution: 'Knowledge', skill_development: 'Skill Dev',
+  economic_exchange: 'Economic', collaborative_action: 'Collab', agent_message: 'Message',
   resource_trade: 'Resource Trade',
 };
-
-function StatCard({ label, value, sub, color, Icon }) {
-  return (
-    <Card className="bg-white/5 border-white/10">
-      <CardContent className="pt-4 pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-white/50 text-xs">{label}</p>
-            <p className={`text-2xl font-bold ${color}`}>{value}</p>
-            {sub && <p className="text-white/30 text-xs mt-0.5">{sub}</p>}
-          </div>
-          <Icon className="w-7 h-7 opacity-20 text-white" />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function KineticGridDashboard() {
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
+  // ── Core KU data ──
   const { data: kus = [], refetch: refetchKus, isFetching: fetchingKus } = useQuery({
-    queryKey: ['kinetic-grid-kus'],
-    queryFn: () => base44.entities.KineticUnit.list('-created_date', 500),
-    refetchInterval: 30000,
+    queryKey: ['kg-kus'], queryFn: () => base44.entities.KineticUnit.list('-created_date', 500), refetchInterval: 20000,
   });
-
   const { data: packets = [], refetch: refetchPackets } = useQuery({
-    queryKey: ['kinetic-grid-packets'],
-    queryFn: () => base44.entities.MWTPPacket.list('-created_date', 200),
-    refetchInterval: 30000,
+    queryKey: ['kg-packets'], queryFn: () => base44.entities.MWTPPacket.list('-created_date', 200), refetchInterval: 20000,
   });
 
+  // ── Full-spectrum entity data ──
   const { data: agents = [] } = useQuery({
-    queryKey: ['kinetic-grid-agents'],
-    queryFn: () => base44.entities.Agent.list('-created_date', 200),
+    queryKey: ['kg-agents'], queryFn: () => base44.entities.Agent.list('-created_date', 200), staleTime: 15000,
   });
-
+  const { data: projects = [] } = useQuery({
+    queryKey: ['kg-projects'], queryFn: () => base44.entities.AIProject.list('-created_date', 100), refetchInterval: 20000,
+  });
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['kg-tasks'], queryFn: () => base44.entities.ProjectTask.list('-created_date', 500), refetchInterval: 20000,
+  });
+  const { data: votes = [] } = useQuery({
+    queryKey: ['kg-votes'], queryFn: () => base44.entities.GovernanceVote.list('-created_date', 200), refetchInterval: 20000,
+  });
   const { data: proposals = [] } = useQuery({
-    queryKey: ['kinetic-grid-proposals'],
-    queryFn: () => base44.entities.GovernanceProposal.list('-created_date', 50),
+    queryKey: ['kg-proposals'], queryFn: () => base44.entities.GovernanceProposal.list('-created_date', 50), refetchInterval: 20000,
   });
-
-  const { data: perfMetrics = [] } = useQuery({
-    queryKey: ['kinetic-grid-perf'],
-    queryFn: () => base44.entities.AgentPerformanceMetrics.list('-created_date', 100),
+  const { data: wallets = [] } = useQuery({
+    queryKey: ['kg-wallets'], queryFn: () => base44.entities.Wallet.filter({ is_published: true }, '-created_date', 200), staleTime: 30000,
   });
-
-  const { data: reputations = [] } = useQuery({
-    queryKey: ['kinetic-grid-rep'],
-    queryFn: () => base44.entities.ReputationScore.list('-created_date', 100),
+  const { data: activities = [] } = useQuery({
+    queryKey: ['kg-activities'], queryFn: () => base44.entities.EconomicActivity.list('-created_date', 200).catch(() => []), refetchInterval: 20000,
   });
 
   const handleRefresh = () => {
     refetchKus(); refetchPackets(); setLastRefresh(new Date());
   };
 
-  // ── Derived metrics ──────────────────────────────────────────────────────
+  // ── Derived metrics ──
+  const agentMap = Object.fromEntries(agents.map(a => [a.id, a]));
   const totalWeighted = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
   const ingestedKus = kus.filter(k => k.status === 'ingested');
-  const agentMap = Object.fromEntries(agents.map(a => [a.id, a]));
+  const activeProjects = projects.filter(p => !['cancelled', 'completed'].includes(p.status));
+  const completedTasks = tasks.filter(t => t.status === 'completed');
+  const overdueTasks = tasks.filter(t => t.due_date && t.status !== 'completed' && new Date(t.due_date) < new Date());
+  const totalRewardDrops = tasks.reduce((s, t) => s + (t.reward_drops || 0), 0);
+  const economicVolume = activities.reduce((s, a) => s + (a.amount || 0), 0);
+
+  // Layer breakdown
+  const layerCounts = { micro: 0, meso: 0, macro: 0 };
+  packets.forEach(p => { layerCounts[p.layer] = (layerCounts[p.layer] || 0) + 1; });
 
   // KU type distribution (pie)
   const kuTypeData = Object.entries(
-    kus.reduce((acc, ku) => {
-      acc[ku.ku_type] = (acc[ku.ku_type] || 0) + (ku.weighted_score || 1);
-      return acc;
-    }, {})
+    kus.reduce((acc, ku) => { acc[ku.ku_type] = (acc[ku.ku_type] || 0) + (ku.weighted_score || 1); return acc; }, {})
   ).map(([type, value]) => ({ name: KU_LABELS[type] || type, value: +value.toFixed(2), color: KU_COLORS[type] || '#64748b' }));
 
-  // KU flow over time (area chart — group by day)
+  // KU flow over time (area chart — last 14 days)
   const flowByDay = {};
   kus.forEach(ku => {
     const day = new Date(ku.created_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
@@ -121,90 +102,80 @@ export default function KineticGridDashboard() {
 
   // Top agents by KU score
   const agentKuMap = {};
-  kus.forEach(ku => {
-    agentKuMap[ku.agent_id] = (agentKuMap[ku.agent_id] || 0) + (ku.weighted_score || 1);
-  });
+  kus.forEach(ku => { agentKuMap[ku.agent_id] = (agentKuMap[ku.agent_id] || 0) + (ku.weighted_score || 1); });
   const topAgents = Object.entries(agentKuMap)
-    .map(([id, score]) => ({ name: agentMap[id]?.name || 'Unknown', score: +score.toFixed(2) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 8);
+    .map(([id, score]) => ({ name: agentMap[id]?.name || id?.slice(0, 10), score: +score.toFixed(2) }))
+    .sort((a, b) => b.score - a.score).slice(0, 8);
 
-  // Governance proposal KU context enrichment status
-  const enrichedProposals = proposals.filter(p => p.relevant_context);
-
-  // Layer breakdown
-  const layerCounts = { micro: 0, meso: 0, macro: 0 };
-  packets.forEach(p => { layerCounts[p.layer] = (layerCounts[p.layer] || 0) + 1; });
-
-  // Radar for constitutional law alignment
+  // Constitutional law alignment radar
   const lawMap = {};
-  kus.forEach(ku => {
-    (ku.constitutional_laws || []).forEach(law => {
-      lawMap[law] = (lawMap[law] || 0) + (ku.weighted_score || 1);
-    });
-  });
-  const radarData = Object.entries(lawMap).map(([law, value]) => ({
-    law: law.replace('Law ', 'L').replace(': ', ' '),
-    value: +value.toFixed(2),
-  }));
+  kus.forEach(ku => { (ku.constitutional_laws || []).forEach(law => { lawMap[law] = (lawMap[law] || 0) + (ku.weighted_score || 1); }); });
+  const radarData = Object.entries(lawMap).map(([law, value]) => ({ law: law.replace('Law ', 'L').replace(': ', ' '), value: +value.toFixed(2) }));
+
+  const stats = [
+    { label: 'Kinetic Units', value: kus.length, sub: `${ingestedKus.length} ingested`, color: 'text-purple-300', icon: Zap },
+    { label: 'Weighted Score', value: totalWeighted.toFixed(1), sub: 'all agents', color: 'text-amber-300', icon: TrendingUp },
+    { label: 'MWTP Packets', value: packets.length, sub: `μ${layerCounts.micro} ⊕${layerCounts.meso} Ω${layerCounts.macro}`, color: 'text-blue-300', icon: Activity },
+    { label: 'Projects', value: `${activeProjects.length}/${projects.length}`, sub: `${completedTasks.length}/${tasks.length} tasks done`, color: 'text-cyan-300', icon: FolderKanban },
+    { label: 'Votes Cast', value: votes.length, sub: `${proposals.length} proposals`, color: 'text-green-300', icon: Vote },
+    { label: 'Published DIDs', value: wallets.length, sub: `${agents.length} agents`, color: 'text-pink-300', icon: Shield },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <Link to="/Home" className="text-white/40 hover:text-white/80 transition flex items-center gap-1 text-xs">
-              <ArrowLeft className="w-4 h-4" /> Home
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link to="/home" className="text-white/40 hover:text-white/80 transition flex items-center gap-1 text-xs flex-shrink-0">
+              <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Home</span>
             </Link>
-            <span className="text-white/20">|</span>
-            <Link to="/ScrollOfResonance" className="text-purple-400/70 hover:text-purple-300 transition text-xs font-medium">
-              📜 Scroll of Resonance
+            <span className="text-white/20 hidden sm:inline">|</span>
+            <Link to="/KineticCompass" className="text-yellow-400/70 hover:text-yellow-300 transition text-[10px] sm:text-xs font-medium hidden sm:inline">
+              ⚡ Compass
             </Link>
-            <Link to="/KineticCompass" className="text-yellow-400/70 hover:text-yellow-300 transition text-xs font-medium">
-              ⚡ Kinetic Compass
-            </Link>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div>
-              <h1 className="text-white font-semibold text-lg leading-tight">Kinetic Grid Dashboard</h1>
-              <p className="text-purple-300/50 text-xs">Mill Wheel Telemetry · Live Village Heartbeat</p>
+            <div className="min-w-0">
+              <h1 className="text-white font-semibold text-sm sm:text-lg leading-tight truncate">Kinetic Grid Dashboard</h1>
+              <p className="text-purple-300/50 text-[9px] sm:text-xs truncate">Full Spectrum · Live Village Truth · All Entities</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-white/30 text-xs hidden sm:block">
-              Refreshed {lastRefresh.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-white/30 text-[10px] hidden sm:block">
+              {lastRefresh.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
-            <Badge className="bg-green-500/20 text-green-300 border-green-400/30 text-xs flex items-center gap-1">
+            <Badge className="bg-green-500/20 text-green-300 border-green-400/30 text-[10px] flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> LIVE
             </Badge>
-            <Button
-              size="sm" variant="ghost"
-              onClick={handleRefresh}
-              disabled={fetchingKus}
-              className="text-white/50 hover:text-white"
-            >
+            <Button size="sm" variant="ghost" onClick={handleRefresh} disabled={fetchingKus} className="text-white/50 hover:text-white h-8 w-8 p-0">
               <RefreshCw className={`w-4 h-4 ${fetchingKus ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
 
-        {/* Stat Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="Total KUs Generated" value={kus.length} sub={`${ingestedKus.length} ingested`} color="text-purple-300" Icon={Zap} />
-          <StatCard label="Total Weighted Score" value={totalWeighted.toFixed(1)} sub="across all agents" color="text-amber-300" Icon={TrendingUp} />
-          <StatCard label="MWTP Packets" value={packets.length} sub={`micro:${layerCounts.micro} meso:${layerCounts.meso}`} color="text-blue-300" Icon={Activity} />
-          <StatCard label="Proposals Enriched" value={enrichedProposals.length} sub={`of ${proposals.length} total`} color="text-green-300" Icon={Vote} />
-        </div>
+        {/* Data integrity notice */}
+        {(overdueTasks.length > 0 || tasks.filter(t => !t.due_date).length > 0) && (
+          <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-3 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+            <div className="text-xs text-red-300/80">
+              <strong>Integrity Alert:</strong> {overdueTasks.length} overdue tasks, {tasks.filter(t => !t.due_date).length} missing due_date, {tasks.filter(t => !t.reward_drops).length} missing reward_drops. See Project Health below for details.
+            </div>
+          </div>
+        )}
 
+        {/* Stat Row — 6 KPIs */}
+        <KineticStatRow stats={stats} />
+
+        {/* Braid Node Visualizer */}
         <KineticEnergyVisualizer kus={kus} />
 
-        {/* KU Flow Over Time + Type Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* KU Flow + Type Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="bg-white/5 border-white/10 lg:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-sm flex items-center gap-2">
@@ -213,9 +184,9 @@ export default function KineticGridDashboard() {
             </CardHeader>
             <CardContent>
               {flowData.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-white/30 text-sm">No flow data yet</div>
+                <div className="h-44 flex items-center justify-center text-white/30 text-sm">No flow data yet</div>
               ) : (
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={180}>
                   <AreaChart data={flowData}>
                     <defs>
                       <linearGradient id="kuGrad" x1="0" y1="0" x2="0" y2="1">
@@ -223,10 +194,10 @@ export default function KineticGridDashboard() {
                         <stop offset="95%" stopColor="#a78bfa" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="day" tick={{ fill: '#ffffff50', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#ffffff50', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="day" tick={{ fill: '#ffffff50', fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: '#ffffff50', fontSize: 10 }} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #ffffff20', borderRadius: 8, color: '#fff' }} />
-                    <Area type="monotone" dataKey="score" stroke="#a78bfa" fill="url(#kuGrad)" strokeWidth={2} dot={{ fill: '#a78bfa', r: 3 }} />
+                    <Area type="monotone" dataKey="score" stroke="#a78bfa" fill="url(#kuGrad)" strokeWidth={2} dot={{ fill: '#a78bfa', r: 2.5 }} />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -241,23 +212,23 @@ export default function KineticGridDashboard() {
             </CardHeader>
             <CardContent>
               {kuTypeData.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-white/30 text-sm">No data</div>
+                <div className="h-44 flex items-center justify-center text-white/30 text-sm">No data</div>
               ) : (
                 <>
-                  <ResponsiveContainer width="100%" height={140}>
+                  <ResponsiveContainer width="100%" height={130}>
                     <PieChart>
-                      <Pie data={kuTypeData} cx="50%" cy="50%" innerRadius={35} outerRadius={60} dataKey="value" strokeWidth={0}>
+                      <Pie data={kuTypeData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value" strokeWidth={0}>
                         {kuTypeData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                       </Pie>
-                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #ffffff20', borderRadius: 8, color: '#fff', fontSize: 12 }} />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #ffffff20', borderRadius: 8, color: '#fff', fontSize: 11 }} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="space-y-1 mt-2 max-h-32 overflow-y-auto">
+                  <div className="space-y-0.5 mt-1 max-h-28 overflow-y-auto">
                     {kuTypeData.map(d => (
-                      <div key={d.name} className="flex items-center gap-2 text-xs">
+                      <div key={d.name} className="flex items-center gap-2 text-[10px]">
                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                        <span className="text-white/60 flex-1 truncate">{d.name}</span>
-                        <span className="text-white/80 font-mono">{d.value}</span>
+                        <span className="text-white/50 flex-1 truncate">{d.name}</span>
+                        <span className="text-white/70 font-mono">{d.value}</span>
                       </div>
                     ))}
                   </div>
@@ -267,8 +238,14 @@ export default function KineticGridDashboard() {
           </Card>
         </div>
 
+        {/* Project Health + Governance Votes — FULL TRUTH */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ProjectHealthPanel projects={projects} tasks={tasks} agents={agents} />
+          <GovernanceVotePanel votes={votes} proposals={proposals} agents={agents} />
+        </div>
+
         {/* Top Agents + Constitutional Radar */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="bg-white/5 border-white/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-sm flex items-center gap-2">
@@ -277,12 +254,12 @@ export default function KineticGridDashboard() {
             </CardHeader>
             <CardContent>
               {topAgents.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-white/30 text-sm">No agent data</div>
+                <div className="h-44 flex items-center justify-center text-white/30 text-sm">No agent data</div>
               ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={topAgents} layout="vertical" barSize={14}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={topAgents} layout="vertical" barSize={12}>
                     <XAxis type="number" tick={{ fill: '#ffffff50', fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis dataKey="name" type="category" tick={{ fill: '#ffffff70', fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
+                    <YAxis dataKey="name" type="category" tick={{ fill: '#ffffff70', fontSize: 10 }} axisLine={false} tickLine={false} width={75} />
                     <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #ffffff20', borderRadius: 8, color: '#fff', fontSize: 12 }} />
                     <Bar dataKey="score" fill="#a78bfa" radius={[0, 4, 4, 0]} />
                   </BarChart>
@@ -299,12 +276,12 @@ export default function KineticGridDashboard() {
             </CardHeader>
             <CardContent>
               {radarData.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-white/30 text-sm">No law alignment data</div>
+                <div className="h-44 flex items-center justify-center text-white/30 text-sm">No law alignment data</div>
               ) : (
-                <ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={200}>
                   <RadarChart data={radarData}>
                     <PolarGrid stroke="#ffffff15" />
-                    <PolarAngleAxis dataKey="law" tick={{ fill: '#ffffff60', fontSize: 10 }} />
+                    <PolarAngleAxis dataKey="law" tick={{ fill: '#ffffff60', fontSize: 9 }} />
                     <Radar name="KU Score" dataKey="value" stroke="#a78bfa" fill="#a78bfa" fillOpacity={0.25} strokeWidth={2} />
                     <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #ffffff20', borderRadius: 8, color: '#fff', fontSize: 12 }} />
                   </RadarChart>
@@ -314,148 +291,39 @@ export default function KineticGridDashboard() {
           </Card>
         </div>
 
-        {/* Agent Performance + Reputation Table */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Performance Metrics */}
+        {/* Economic Activity Summary */}
+        {activities.length > 0 && (
           <Card className="bg-white/5 border-white/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-sm flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-amber-400" /> Agent Performance Metrics
+                <Wallet className="w-4 h-4 text-amber-400" /> Economic Activity — {activities.length} records · {economicVolume.toFixed(2)} XRP total volume
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {perfMetrics.length === 0 ? (
-                <div className="text-center py-8 text-white/30 text-sm">No performance data yet — run kineticGridIntegration sync_all</div>
-              ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {perfMetrics.slice(0, 10).map(m => {
-                    const agent = agentMap[m.agent_id];
-                    return (
-                      <div key={m.id} className="flex items-center gap-3 bg-white/5 rounded-lg px-3 py-2">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center flex-shrink-0">
-                          <span className="text-purple-300 text-xs font-bold">{(agent?.name || '?')[0]}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-xs font-medium truncate">{agent?.name || m.agent_id}</p>
-                          <p className="text-white/40 text-[10px]">{m.performance_trend || 'stable'}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-amber-300 font-bold text-sm">{m.overall_score}</p>
-                          <p className="text-white/30 text-[10px]">score</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Reputation Scores */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-white text-sm flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-400" /> Reputation Scores
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {reputations.length === 0 ? (
-                <div className="text-center py-8 text-white/30 text-sm">No reputation data yet</div>
-              ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {reputations.slice(0, 10).map(r => {
-                    const trustColor = {
-                      verified: 'text-green-300 bg-green-500/15',
-                      trusted: 'text-blue-300 bg-blue-500/15',
-                      established: 'text-amber-300 bg-amber-500/15',
-                      new: 'text-slate-300 bg-slate-500/15',
-                    }[r.trust_level] || 'text-slate-300 bg-slate-500/15';
-                    return (
-                      <div key={r.id} className="flex items-center gap-3 bg-white/5 rounded-lg px-3 py-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-xs font-medium font-mono truncate">{r.did_classic_address?.slice(0, 18)}…</p>
-                          <p className="text-white/40 text-[10px]">{(r.strengths || []).slice(0, 2).join(', ')}</p>
-                        </div>
-                        <Badge className={`text-xs flex-shrink-0 ${trustColor}`}>{r.trust_level}</Badge>
-                        <span className="text-white font-bold text-sm flex-shrink-0">{r.overall_score}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Governance Proposal Impact */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-white text-sm flex items-center gap-2">
-              <Vote className="w-4 h-4 text-blue-400" /> Governance Proposals — KU Context Enrichment
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {enrichedProposals.length === 0 ? (
-              <div className="text-center py-6 text-white/30 text-sm">No proposals enriched yet</div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {enrichedProposals.map(p => {
-                  let ctx = null;
-                  try { ctx = JSON.parse(p.relevant_context); } catch {}
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {activities.slice(0, 15).map(a => {
+                  const agent = agentMap[a.agent_id];
+                  const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(a.activity_type);
                   return (
-                    <div key={p.id} className="bg-white/5 rounded-lg p-3 border border-white/10 space-y-1.5">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-white text-xs font-medium leading-snug flex-1">{p.title}</p>
-                        <Badge className={`text-[10px] flex-shrink-0 ${p.status === 'active' ? 'bg-yellow-500/20 text-yellow-200' : 'bg-slate-500/20 text-slate-300'}`}>
-                          {p.status}
-                        </Badge>
-                      </div>
-                      {ctx && (
-                        <div className="flex gap-3 text-[10px] text-white/40">
-                          <span>KU Score: <span className="text-amber-300 font-bold">{ctx.proposer_total_ku_score?.toFixed(2)}</span></span>
-                          <span>Gov Votes: <span className="text-blue-300">{ctx.proposer_governance_votes}</span></span>
-                          <span>Knowledge: <span className="text-green-300">{ctx.proposer_knowledge_contributions}</span></span>
-                        </div>
-                      )}
+                    <div key={a.id} className="flex items-center gap-2 bg-white/5 rounded-lg px-2.5 py-1.5 text-xs">
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isInflow ? 'bg-green-400' : 'bg-blue-400'}`} />
+                      <span className="text-white/60 flex-1 truncate">{agent?.name || 'Unknown'} — {a.description?.slice(0, 50)}</span>
+                      <span className={`font-mono text-[10px] flex-shrink-0 ${isInflow ? 'text-green-300' : 'text-blue-300'}`}>
+                        {isInflow ? '+' : '-'}{a.amount} XRP
+                      </span>
+                      <Badge className="text-[9px] bg-white/5 text-white/40">{a.activity_type}</Badge>
                     </div>
                   );
                 })}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Recent KUs */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-white text-sm flex items-center gap-2">
-              <Zap className="w-4 h-4 text-purple-400" /> Recent Kinetic Units
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1.5 max-h-64 overflow-y-auto">
-              {kus.slice(0, 20).map(ku => {
-                const agent = agentMap[ku.agent_id];
-                const color = KU_COLORS[ku.ku_type] || '#64748b';
-                return (
-                  <div key={ku.id} className="flex items-center gap-3 bg-white/5 rounded-lg px-3 py-2">
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                    <span className="text-white/60 text-xs w-32 flex-shrink-0 truncate">{KU_LABELS[ku.ku_type] || ku.ku_type}</span>
-                    <span className="text-white/80 text-xs flex-1 truncate">{agent?.name || ku.agent_id}</span>
-                    <span className="font-mono text-amber-300 text-xs flex-shrink-0">×{ku.weight || 1.0}</span>
-                    <Badge className="text-[10px] bg-purple-500/15 text-purple-300 flex-shrink-0">{ku.status}</Badge>
-                    <span className="text-white/30 text-[10px] flex-shrink-0">{new Date(ku.created_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                );
-              })}
-              {kus.length === 0 && (
-                <div className="text-center py-8 text-white/30 text-sm">No Kinetic Units yet — trigger generate_ku to begin</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Recent KU Feed */}
+        <RecentKUFeed kus={kus} agents={agents} />
 
-        {/* Governance Voting KU Flow */}
+        {/* Governance KU Flow */}
         <Card className="bg-white/5 border-white/10">
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-sm flex items-center gap-2">
@@ -468,8 +336,19 @@ export default function KineticGridDashboard() {
           </CardContent>
         </Card>
 
+        {/* Kinetic Weaver */}
         <KineticWeaverCard />
 
+        {/* Data Source Truth Footer */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-center space-y-1">
+          <p className="text-white/40 text-xs">📡 Full Spectrum Data Sources</p>
+          <p className="text-white/25 text-[10px]">
+            KineticUnit ({kus.length}) · MWTPPacket ({packets.length}) · Agent ({agents.length}) · 
+            AIProject ({projects.length}) · ProjectTask ({tasks.length}) · GovernanceVote ({votes.length}) · 
+            GovernanceProposal ({proposals.length}) · Wallet ({wallets.length}) · EconomicActivity ({activities.length})
+          </p>
+          <p className="text-white/15 text-[10px]">Auto-refresh every 20s · All data live from production database</p>
+        </div>
       </div>
     </div>
   );

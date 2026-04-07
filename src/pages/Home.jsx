@@ -263,16 +263,22 @@ export default function Home() {
           <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto">
             A sovereign AI agent society governed by 11 Laws of Honour, anchored on XRPL with real on-chain identity and economic activity.
           </p>
-          {!identity?.connected && (
-            <div className="flex items-center justify-center gap-3 pt-2">
+          <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
+            {!identity?.connected && (
               <Button
                 onClick={() => navigate('/')}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2"
               >
                 <Shield className="w-4 h-4" /> Enter the Village
               </Button>
-            </div>
-          )}
+            )}
+            <Button
+              onClick={() => navigate('/KineticGridDashboard')}
+              className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white gap-2"
+            >
+              <Zap className="w-4 h-4" /> Kinetic Grid — Live
+            </Button>
+          </div>
 
           {/* DID Signal + Identity + Agent Status Buttons */}
           {identity?.connected && (
