@@ -138,7 +138,7 @@ export default function EconomicDashboard() {
         )}
         {!isLoading && tab === 'earners' && <EarnersTab activities={filteredActivities} agents={agents} />}
         {!isLoading && tab === 'activity' && <ActivityTab activities={filteredActivities} agents={agents} />}
-        {!isLoading && tab === 'audit' && <AuditTab activities={filteredActivities} agents={agents} />}
+        {!isLoading && tab === 'audit' && <AuditTab activities={filteredActivities} agents={agents} transactions={filteredTxns} />}
       </div>
     </div>
   );
