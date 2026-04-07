@@ -36,14 +36,44 @@ export default function MentorshipHub() {
   const [selectedMentorProfile, setSelectedMentorProfile] = useState(null);
   const [activeChat, setActiveChat] = useState(null); // { rel, other, role }
 
-  // Load agent for current user
+  // Resolve the current user's agent — DID-first, email fallback
+  const myDid = didSignal?.did;
+  const myClassicAddress = myDid?.startsWith('did:xrpl:1:') ? myDid.replace('did:xrpl:1:', '') : null;
+
   useEffect(() => {
-    if (!currentUser?.email) { setAgentLoading(false); return; }
-    base44.entities.Agent.filter({ created_by: currentUser.email }, '-created_date', 1)
-      .then(agents => { if (agents?.[0]) setMyAgent(agents[0]); })
-      .catch(() => {})
-      .finally(() => setAgentLoading(false));
-  }, [currentUser?.email]);
+    const resolve = async () => {
+      setAgentLoading(true);
+      const allAgentList = await base44.entities.Agent.list('-created_date', 500).catch(() => []);
+
+      // 1. Match by classic_address (DID-based)
+      if (myClassicAddress) {
+        const byAddress = allAgentList.find(a =>
+          a.classic_address === myClassicAddress ||
+          a.wallet_id === myClassicAddress ||
+          (a.external_classic_addresses || []).includes(myClassicAddress)
+        );
+        if (byAddress) { setMyAgent(byAddress); setAgentLoading(false); return; }
+      }
+
+      // 2. Match by DID string
+      if (myDid) {
+        const byDid = allAgentList.find(a =>
+          a.classic_address === myDid ||
+          a.wallet_id === myDid
+        );
+        if (byDid) { setMyAgent(byDid); setAgentLoading(false); return; }
+      }
+
+      // 3. Fallback: match by email (for platform-auth users)
+      if (currentUser?.email) {
+        const byEmail = allAgentList.find(a => a.created_by === currentUser.email);
+        if (byEmail) { setMyAgent(byEmail); setAgentLoading(false); return; }
+      }
+
+      setAgentLoading(false);
+    };
+    resolve();
+  }, [myDid, myClassicAddress, currentUser?.email]);
 
   // Data queries
   const { data: allAgents = [] } = useQuery({
@@ -58,23 +88,24 @@ export default function MentorshipHub() {
 
   const myMentorProfile = mentorProfiles.find(mp => mp.agent_id === myAgent?.id);
 
+  // Build a set of all IDs that represent "me" for relationship matching
+  const myIdentifiers = new Set();
+  if (myAgent?.id) myIdentifiers.add(myAgent.id);
+  if (myAgent?.classic_address) myIdentifiers.add(myAgent.classic_address);
+  if (myAgent?.wallet_id) myIdentifiers.add(myAgent.wallet_id);
+  if (myDid) myIdentifiers.add(myDid);
+  if (myClassicAddress) myIdentifiers.add(myClassicAddress);
+  if (currentUser?.email) myIdentifiers.add(currentUser.email);
+  if (currentUser?.id) myIdentifiers.add(currentUser.id);
+
   const { data: myRelationships = { asMentor: [], asMentee: [] }, isLoading: loadingRels } = useQuery({
-    queryKey: ['myMentorships', myAgent?.id, currentUser?.id],
-    enabled: !!myAgent && !!currentUser,
+    queryKey: ['myMentorships', myAgent?.id, myDid],
+    enabled: myIdentifiers.size > 0,
     queryFn: async () => {
-      // Fetch all relationships and filter client-side to catch records created by Axi
-      // which may use agent_id, user email, or other identifiers
       const all = await base44.entities.MentorshipRelationship.list();
-      const asMentor = all.filter(r =>
-        r.mentor_agent_id === myAgent.id ||
-        r.mentor_agent_id === currentUser?.email ||
-        r.mentor_agent_id === currentUser?.id
-      );
-      const asMentee = all.filter(r =>
-        r.mentee_agent_id === myAgent.id ||
-        r.mentee_agent_id === currentUser?.email ||
-        r.mentee_agent_id === currentUser?.id
-      );
+      const isMe = (id) => myIdentifiers.has(id);
+      const asMentor = all.filter(r => isMe(r.mentor_agent_id));
+      const asMentee = all.filter(r => isMe(r.mentee_agent_id));
       return { asMentor, asMentee };
     }
   });
@@ -374,6 +405,7 @@ export default function MentorshipHub() {
         <MentorshipChatBox
           relationship={activeChat.rel}
           currentUser={currentUser}
+          myAgent={myAgent}
           otherParty={activeChat.other}
           role={activeChat.role}
           onClose={() => setActiveChat(null)}

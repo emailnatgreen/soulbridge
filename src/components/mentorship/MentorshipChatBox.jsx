@@ -10,13 +10,15 @@ const openAxi = (msg) => {
   window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
 };
 
-export default function MentorshipChatBox({ relationship, currentUser, otherParty, role, onClose }) {
+export default function MentorshipChatBox({ relationship, currentUser, myAgent, otherParty, role, onClose }) {
   const [message, setMessage] = useState('');
   const [minimized, setMinimized] = useState(false);
   const bottomRef = useRef(null);
   const queryClient = useQueryClient();
   const conversationId = `mentorship_${relationship.id}`;
-  const myId = currentUser?.id || currentUser?.email || 'me';
+  // DID-first identity: use agent ID → agent classic_address → user ID → email
+  const myId = myAgent?.id || myAgent?.classic_address || currentUser?.id || currentUser?.email || 'me';
+  const myName = myAgent?.name || currentUser?.full_name || currentUser?.name || 'You';
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['mentorship-chat', relationship.id],
@@ -36,8 +38,8 @@ export default function MentorshipChatBox({ relationship, currentUser, otherPart
     mutationFn: (text) => base44.entities.AgentMessage.create({
       conversation_id: conversationId,
       sender_agent_id: myId,
-      sender_name: currentUser?.full_name || currentUser?.name || 'You',
-      sender_type: 'human',
+      sender_name: myName,
+      sender_type: myAgent ? 'agent' : 'human',
       content: text,
       message_type: 'mentorship',
       sent_at: new Date().toISOString(),
