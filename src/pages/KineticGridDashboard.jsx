@@ -183,11 +183,16 @@ export default function KineticGridDashboard() {
             </div>
           </div>
         )}
-        {(overdueTasks.length > 0 || tasks.filter(t => !t.due_date).length > 0) && (
+        {(overdueTasks.length > 0 || tasks.filter(t => !t.due_date).length > 0 || tasks.filter(t => !t.reward_drops && t.reward_drops !== 0).length > 0) && (
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-3 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
             <div className="text-xs text-red-300/80">
-              <strong>Integrity Alert:</strong> {overdueTasks.length} overdue tasks, {tasks.filter(t => !t.due_date).length} missing due_date, {tasks.filter(t => !t.reward_drops).length} missing reward_drops. See Project Health below for details.
+              <strong>Integrity Alert:</strong>{' '}
+              {overdueTasks.length > 0 && <>{overdueTasks.length} overdue tasks. </>}
+              {tasks.filter(t => !t.due_date).length > 0 && <>{tasks.filter(t => !t.due_date).length} missing due_date. </>}
+              {tasks.filter(t => !t.reward_drops && t.reward_drops !== 0).length > 0 && <>{tasks.filter(t => !t.reward_drops && t.reward_drops !== 0).length} missing reward_drops (Law 3). </>}
+              {overdueTasks.length === 0 && tasks.filter(t => !t.due_date).length === 0 && tasks.filter(t => !t.reward_drops && t.reward_drops !== 0).length === 0 && <>All clear.</>}
+              See Project Health below for details.
             </div>
           </div>
         )}
