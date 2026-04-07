@@ -176,6 +176,7 @@ const AuthenticatedApp = () => {
         <Route path="/Support" element={<Support />} />
         <Route path="/KineticCompass" element={<KineticCompass />} />
         <Route path="/EditLanding" element={<EditLanding />} />
+        <Route path="/ScrollOfResonance" element={<ScrollOfResonance />} />
 
         {/* CORE USER HUBS */}
         <Route path="/home" element={L("home", Home)} />
