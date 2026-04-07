@@ -99,6 +99,14 @@ export default function TaskList({ projectId, agents = [] }) {
       alert('Task title is required');
       return;
     }
+    if (!newTask.due_date) {
+      alert('Due date is mandatory (Law 2: Honour — accountability)');
+      return;
+    }
+    if (!newTask.reward_drops || Number(newTask.reward_drops) <= 0) {
+      alert('Reward is mandatory (Law 3: Fair Share — agent compensation)');
+      return;
+    }
     createTaskMutation.mutate(newTask);
   };
 
@@ -175,16 +183,18 @@ export default function TaskList({ projectId, agents = [] }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-white/50 mb-1 block">Due Date</label>
+              <label className="text-xs text-white/50 mb-1 block">Due Date <span className="text-red-400">*</span></label>
               <input
                 type="date"
                 value={newTask.due_date}
                 onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+                required
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-400/50"
               />
+              {!newTask.due_date && <p className="text-amber-400/70 text-[10px] mt-0.5">Required — Law 2: Honour</p>}
             </div>
             <div>
-              <label className="text-xs text-white/50 mb-1 block">Reward (XRP)</label>
+              <label className="text-xs text-white/50 mb-1 block">Reward (XRP) <span className="text-red-400">*</span></label>
               <input
                 type="number"
                 value={newTask.reward_drops}
@@ -192,8 +202,10 @@ export default function TaskList({ projectId, agents = [] }) {
                 placeholder="0.00"
                 min="0"
                 step="0.001"
+                required
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blue-400/50"
               />
+              {(!newTask.reward_drops || Number(newTask.reward_drops) <= 0) && <p className="text-amber-400/70 text-[10px] mt-0.5">Required — Law 3: Fair Share</p>}
             </div>
           </div>
 

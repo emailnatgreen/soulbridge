@@ -98,7 +98,8 @@ AVAILABLE AGENTS (top by skill):
 ${teamStr || 'All agents available for recruitment.'}
 
 Generate a complete, production-ready project plan that Axi will create directly in the Village system.
-Apply frugal reward philosophy: use micro-drop rewards (reward_rlusd in XRP drops).
+Apply frugal reward philosophy: use micro-drop rewards (reward_drops in XRP drops — 1 XRP = 1000000 drops).
+EVERY task MUST have a due_date_days_from_start (number of days from now) and reward_drops (integer, minimum 50000 drops = 0.05 XRP). These are mandatory per Law 2 (Honour) and Law 3 (Fair Share).
 
 Respond with a JSON object:
 {
@@ -118,7 +119,8 @@ Respond with a JSON object:
       "title": "...",
       "description": "... (include reward reasoning)",
       "estimated_hours": 8,
-      "reward_rlusd": 80000,
+      "reward_drops": 80000,
+      "due_date_days_from_start": 14,
       "priority": "high|medium|low",
       "required_skills": ["skill"],
       "skill_development_outcome": "what agents will learn"
@@ -189,18 +191,21 @@ Respond with a JSON object:
       ai_recommended_team: topAgents.map(r => ({ agent_id: r.agent.id, name: r.agent.name, role: r.agent.role }))
     });
 
-    // Create tasks
+    // Create tasks — enforce mandatory due_date and reward_drops (Law 2 + Law 3)
     const createdTasks = [];
     for (const task of (plan.tasks || [])) {
+      const daysFromStart = task.due_date_days_from_start || 14;
+      const taskDueDate = new Date(Date.now() + daysFromStart * 24 * 60 * 60 * 1000).toISOString();
+      const rewardDrops = task.reward_drops || 50000; // minimum 0.05 XRP
       const t = await base44.asServiceRole.entities.ProjectTask.create({
         project_id: project.id,
         title: task.title,
         description: task.description,
         estimated_hours: task.estimated_hours || 4,
-        reward_rlusd: task.reward_rlusd || 50000,
+        reward_drops: rewardDrops,
+        due_date: taskDueDate,
         priority: task.priority || 'medium',
         status: 'todo',
-        required_skills: task.required_skills || []
       });
       createdTasks.push(t);
     }
