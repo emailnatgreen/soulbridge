@@ -61,6 +61,7 @@ import NewProposalDraft from './pages/NewProposalDraft';
 import TreasuryAllocationProposal from './pages/TreasuryAllocationProposal';
 import AgentTrainingModule from './pages/AgentTrainingModule';
 import KineticGridDashboard from './pages/KineticGridDashboard';
+import EconomicDashboard from './pages/EconomicDashboard';
 
 // LEGACY
 import Dashboard from './pages/Dashboard';
@@ -237,6 +238,8 @@ const AuthenticatedApp = () => {
         <Route path="/TreasuryAllocationProposal" element={L("treasury-proposal", TreasuryAllocationProposal)} />
         <Route path="/AgentTrainingModule" element={L("training-module", AgentTrainingModule)} />
         <Route path="/KineticGridDashboard" element={L("kinetic-grid", KineticGridDashboard)} />
+        <Route path="/Economy" element={L("economy", EconomicDashboard)} />
+        <Route path="/EconomicDashboard" element={L("economy", EconomicDashboard)} />
 
         {/* LEGACY/BACKWARD COMPAT */}
         <Route path="/dashboard" element={L("dashboard", Dashboard)} />
