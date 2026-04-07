@@ -9,12 +9,10 @@ export default function EditLanding() {
   const iframeRef = useRef(null);
   const [iframeKey, setIframeKey] = useState(0);
 
-  // Use the published app URL with a cache-bust to avoid auth loop in preview sandbox
   const previewUrl = window.location.origin + '/?_preview=1';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <Link to="/" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-3">
@@ -30,7 +28,6 @@ export default function EditLanding() {
             </div>
             <div className="flex gap-2 items-center flex-wrap">
               <Badge className="bg-green-500/20 text-green-300 border-green-500/30">● Live</Badge>
-              {/* View mode toggle */}
               <div className="flex items-center bg-white/5 border border-white/10 rounded-lg p-0.5">
                 <button
                   onClick={() => setViewMode('desktop')}
@@ -67,14 +64,12 @@ export default function EditLanding() {
         </div>
       </div>
 
-      {/* Preview Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <div
           className={`mx-auto rounded-2xl overflow-hidden border border-white/15 shadow-2xl shadow-purple-900/40 transition-all duration-300 ${
             viewMode === 'mobile' ? 'max-w-[390px]' : 'w-full'
           }`}
         >
-          {/* Browser chrome bar */}
           <div className="bg-slate-900 border-b border-white/10 px-4 py-2.5 flex items-center gap-3">
             <div className="flex gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
@@ -87,7 +82,6 @@ export default function EditLanding() {
             <Eye className="w-3.5 h-3.5 text-white/30" />
           </div>
 
-          {/* The iframe */}
           <iframe
             key={iframeKey}
             ref={iframeRef}
@@ -105,3 +99,4 @@ export default function EditLanding() {
       </div>
     </div>
   );
+}
