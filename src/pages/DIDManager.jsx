@@ -126,8 +126,10 @@ export default function DIDManager() {
 
   const publishedCount = wallets.filter(w => w.is_published).length;
   const totalXrp = wallets.reduce((sum, w) => sum + (balances[w.id]?.xrp ?? w.balance ?? 0), 0);
-  const totalRlusd = Object.values(balances).reduce((sum, b) => sum + (b?.rlusd || 0), 0);
+  const totalRlusd = Object.values(balances).reduce((sum, b) => sum + (typeof b?.rlusd === 'number' ? b.rlusd : 0), 0);
+  const rlusdTrustlineCount = Object.values(balances).filter(b => b?.has_rlusd_trustline === true).length;
   const missingSeedCount = wallets.filter(w => !w.encrypted_seed && w.classic_address && !w.classic_address.startsWith('rAxi') && !w.classic_address.startsWith('rZoe')).length;
+  const balancesLoaded = Object.keys(balances).length > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
@@ -162,13 +164,14 @@ export default function DIDManager() {
           {[
             { label: 'Total Wallets', value: wallets.length },
             { label: 'DIDs Published', value: publishedCount },
-            { label: 'Total XRP', value: totalXrp.toFixed(2) },
-            { label: 'Total RLUSD', value: totalRlusd.toFixed(2) },
+            { label: 'Total XRP', value: balancesLoaded ? totalXrp.toFixed(2) : '…' },
+            { label: 'Total RLUSD', value: balancesLoaded ? totalRlusd.toFixed(2) : '…', sub: balancesLoaded ? `${rlusdTrustlineCount} trustline${rlusdTrustlineCount !== 1 ? 's' : ''}` : 'loading' },
             { label: 'Missing Seeds', value: missingSeedCount, warn: missingSeedCount > 0 },
           ].map(s => (
             <div key={s.label} className={`bg-white/5 border rounded-xl p-2.5 sm:p-3 text-center ${s.warn ? 'border-red-500/30' : 'border-white/10'}`}>
               <p className={`text-base sm:text-xl font-bold truncate ${s.warn ? 'text-red-300' : 'text-white'}`}>{s.value}</p>
               <p className={`text-[9px] sm:text-xs ${s.warn ? 'text-red-400/60' : 'text-white/40'}`}>{s.label}</p>
+              {s.sub && <p className="text-[8px] text-white/20 mt-0.5">{s.sub}</p>}
             </div>
           ))}
         </div>
@@ -268,6 +271,7 @@ export default function DIDManager() {
                   onRefresh={handleRefreshAll}
                   liveXrpBalance={balances[wallet.id]?.xrp}
                   liveRlusdBalance={balances[wallet.id]?.rlusd}
+                  hasRlusdTrustline={balances[wallet.id]?.has_rlusd_trustline}
                 />
               ))}
             </div>

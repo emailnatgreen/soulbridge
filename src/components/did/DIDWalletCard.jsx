@@ -29,12 +29,13 @@ const roleColors = {
   master: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
 };
 
-export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalance, liveRlusdBalance }) {
+export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalance, liveRlusdBalance, hasRlusdTrustline }) {
   const [publishing, setPublishing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [liveBalance, setLiveBalance] = useState(liveXrpBalance ?? wallet.balance);
   const [rlusdBalance, setRlusdBalance] = useState(liveRlusdBalance ?? null);
+  const [hasTrustline, setHasTrustline] = useState(hasRlusdTrustline ?? null);
   const [publishResult, setPublishResult] = useState(wallet.is_published && wallet.published_txid ? 'published' : null);
   const [editing, setEditing] = useState(false);
   const [assigningSeed, setAssigningSeed] = useState(false);
@@ -46,6 +47,9 @@ export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
   useEffect(() => {
     if (liveRlusdBalance !== undefined) setRlusdBalance(liveRlusdBalance);
   }, [liveRlusdBalance]);
+  useEffect(() => {
+    if (hasRlusdTrustline !== undefined) setHasTrustline(hasRlusdTrustline);
+  }, [hasRlusdTrustline]);
 
   const parsed = parseNotes(wallet.notes);
   const walletColor = parsed.color || '#a855f7';
@@ -83,6 +87,7 @@ export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
       const data = res?.data;
       setLiveBalance(data?.xrp ?? liveBalance);
       setRlusdBalance(data?.rlusd ?? 0);
+      setHasTrustline(data?.has_rlusd_trustline ?? hasTrustline);
     } catch (_) {}
     setRefreshing(false);
   };
@@ -196,7 +201,11 @@ export default function DIDWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
           <p className="text-white/30 text-[9px] uppercase tracking-widest">RLUSD Balance</p>
-          <p className="text-white font-bold text-base sm:text-lg">{rlusdBalance !== null ? rlusdBalance.toFixed(2) : '—'} <span className="text-white/40 text-xs">RLUSD</span></p>
+          {hasTrustline === false ? (
+            <p className="text-amber-400/70 text-xs mt-1">No trustline</p>
+          ) : (
+            <p className="text-white font-bold text-base sm:text-lg">{rlusdBalance !== null ? rlusdBalance.toFixed(2) : '—'} <span className="text-white/40 text-xs">RLUSD</span></p>
+          )}
         </div>
       </div>
       <div className="flex justify-end">

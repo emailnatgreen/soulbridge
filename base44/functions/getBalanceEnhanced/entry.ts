@@ -63,7 +63,12 @@ function decodeHexCurrency(hex) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch (authErr) {
+      console.log('Auth check failed, trying service role:', authErr.message);
+    }
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -109,15 +114,21 @@ Deno.serve(async (req) => {
     if (trustlineData?.result?.lines) {
       trustlines = trustlineData.result.lines;
 
-      // Check for RLUSD trustline
-      const rlusdLine = trustlines.find(line =>
-        line.currency === 'USD' ||
-        line.currency === '524C555344000000000000000000000000000000' ||
-        line.currency === 'RLUSD'
-      );
+      // Check for RLUSD trustline — match all known representations
+      const rlusdLine = trustlines.find(line => {
+        const c = (line.currency || '').toUpperCase();
+        const decoded = decodeHexCurrency(c);
+        return c === '524C555344000000000000000000000000000000' ||
+               decoded === 'RLUSD' ||
+               c === 'RLUSD' ||
+               c === 'USD';
+      });
       if (rlusdLine) {
         hasRlusdTrustline = true;
         rlusdBalance = parseFloat(rlusdLine.balance || '0');
+        console.log(`[getBalanceEnhanced] RLUSD found: balance=${rlusdBalance}, currency=${rlusdLine.currency}, issuer=${rlusdLine.account}`);
+      } else {
+        console.log(`[getBalanceEnhanced] No RLUSD trustline found. Trustline currencies: ${trustlines.map(t => decodeHexCurrency(t.currency)).join(', ')}`);
       }
     }
 
