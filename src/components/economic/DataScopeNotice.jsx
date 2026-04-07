@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Info, ChevronDown, ChevronUp, Globe, Server } from 'lucide-react';
 import { xrpToRlusd } from '@/lib/economicUtils';
+import { useXrpPriceContext } from '@/components/economic/XrpPriceContext';
 
 export default function DataScopeNotice({
   onChainCount,
@@ -10,6 +11,7 @@ export default function DataScopeNotice({
   activityCount,
 }) {
   const [expanded, setExpanded] = useState(false);
+  const { price } = useXrpPriceContext();
   const totalCount = onChainCount + internalCount;
   const totalVolume = onChainVolume + internalVolume;
 
@@ -50,7 +52,7 @@ export default function DataScopeNotice({
                 <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">On-Chain (XRPL Verified)</span>
               </div>
               <div className="text-lg font-bold text-emerald-400">{onChainVolume.toLocaleString()} XRP</div>
-              <div className="text-[10px] text-emerald-300/60">≈${xrpToRlusd(onChainVolume)} RLUSD · {onChainCount} transactions</div>
+              <div className="text-[10px] text-emerald-300/60">≈${xrpToRlusd(onChainVolume, price)} RLUSD · {onChainCount} transactions</div>
               <p className="text-[10px] text-slate-500 mt-1">Verified with 64-char XRPL transaction hashes. These power the primary KPIs.</p>
             </div>
 
@@ -60,7 +62,7 @@ export default function DataScopeNotice({
                 <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Internal / Simulated</span>
               </div>
               <div className="text-lg font-bold text-slate-300">{internalVolume.toLocaleString()} XRP</div>
-              <div className="text-[10px] text-slate-400/60">≈${xrpToRlusd(internalVolume)} RLUSD · {internalCount} transactions</div>
+              <div className="text-[10px] text-slate-400/60">≈${xrpToRlusd(internalVolume, price)} RLUSD · {internalCount} transactions</div>
               <p className="text-[10px] text-slate-500 mt-1">System operations, task rewards, and simulated flows. Included in Total Ecosystem Activity.</p>
             </div>
           </div>

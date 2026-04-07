@@ -81,10 +81,13 @@ export function findAgentId(agentId, agents = []) {
   return null;
 }
 
-// ── RLUSD conversion (approximate rate) ─────────────────────────────────────
-const XRP_TO_RLUSD_RATE = 2.15; // approximate rate — can be updated
-export function xrpToRlusd(xrpAmount) {
-  return (xrpAmount * XRP_TO_RLUSD_RATE).toFixed(2);
+// ── RLUSD conversion ────────────────────────────────────────────────────────
+// RLUSD is pegged 1:1 to USD, so XRP→RLUSD = XRP price in USD.
+// Pass a live rate from useXrpPrice hook; falls back to a conservative default.
+const DEFAULT_XRP_RATE = 1.31; // fallback only — prefer live rate
+export function xrpToRlusd(xrpAmount, liveRate) {
+  const rate = (typeof liveRate === 'number' && liveRate > 0) ? liveRate : DEFAULT_XRP_RATE;
+  return (xrpAmount * rate).toFixed(2);
 }
 
 // ── Time range filter ───────────────────────────────────────────────────────

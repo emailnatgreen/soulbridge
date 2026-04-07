@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { ArrowUpRight, ArrowDownRight, RefreshCw, Landmark, Package, ShoppingCart, Wallet, Clock, Filter } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { FLOW_CONFIG, resolveAgentName, getValidActivities, xrpToRlusd } from '@/lib/economicUtils';
+import { useXrpPriceContext } from '@/components/economic/XrpPriceContext';
 import AgentLink from '@/components/economic/AgentLink';
 
-// Visual config per activity type
 const TYPE_VISUALS = {
   earned: { icon: ArrowUpRight, iconColor: 'text-emerald-400', iconBg: 'bg-emerald-500/15 border-emerald-500/30', amountColor: 'text-emerald-400', prefix: '+', tagColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
   resource_sold: { icon: ShoppingCart, iconColor: 'text-emerald-400', iconBg: 'bg-emerald-500/15 border-emerald-500/30', amountColor: 'text-emerald-400', prefix: '+', tagColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
@@ -21,6 +21,7 @@ const FILTER_ORDER = ['all', 'treasury_deposit', 'resource_acquired', 'treasury_
 
 export default function ActivityTab({ activities = [], agents = [] }) {
   const [filter, setFilter] = useState('all');
+  const { price } = useXrpPriceContext();
   const valid = getValidActivities(activities);
   const presentTypes = new Set(valid.map(a => a.activity_type).filter(Boolean));
   const types = FILTER_ORDER.filter(t => t === 'all' || presentTypes.has(t));
@@ -37,7 +38,6 @@ export default function ActivityTab({ activities = [], agents = [] }) {
 
   return (
     <div className="space-y-4">
-      {/* Filter Bar */}
       <div className="space-y-2">
         <div className="flex items-center gap-1.5 text-slate-500">
           <Filter className="w-3.5 h-3.5" />
@@ -77,7 +77,7 @@ export default function ActivityTab({ activities = [], agents = [] }) {
 
       <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
         {filtered.slice(0, 80).map(a => (
-          <ActivityRow key={a.id} activity={a} agents={agents} />
+          <ActivityRow key={a.id} activity={a} agents={agents} price={price} />
         ))}
         {filtered.length > 80 && (
           <p className="text-center text-slate-600 text-xs py-2">Showing first 80 of {filtered.length} results</p>
@@ -87,7 +87,7 @@ export default function ActivityTab({ activities = [], agents = [] }) {
   );
 }
 
-function ActivityRow({ activity, agents }) {
+function ActivityRow({ activity, agents, price }) {
   const vis = TYPE_VISUALS[activity.activity_type] || DEFAULT_VISUAL;
   const flowCfg = FLOW_CONFIG[activity.activity_type];
   const Icon = vis.icon;
@@ -120,7 +120,7 @@ function ActivityRow({ activity, agents }) {
         <div className={`font-semibold text-sm ${vis.amountColor}`}>
           {vis.prefix}{activity.amount} XRP
         </div>
-        <div className="text-[10px] text-slate-500">≈${xrpToRlusd(activity.amount ?? 0)} RLUSD</div>
+        <div className="text-[10px] text-slate-500">≈${xrpToRlusd(activity.amount ?? 0, price)} RLUSD</div>
         {ts && (
           <div className="flex items-center gap-1 text-[10px] text-slate-600 mt-0.5 justify-end">
             <Clock className="w-2.5 h-2.5" />{ts}

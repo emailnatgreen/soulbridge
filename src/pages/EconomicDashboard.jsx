@@ -7,6 +7,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { format, parseISO } from 'date-fns';
 import { isRealHash, FLOW_CONFIG, filterByTimeRange, xrpToRlusd } from '@/lib/economicUtils';
 
+import { XrpPriceProvider, useXrpPriceContext } from '@/components/economic/XrpPriceContext';
 import EconomicKPIs from '@/components/economic/EconomicKPIs';
 import EarnersTab from '@/components/economic/EarnersTab';
 import ActivityTab from '@/components/economic/ActivityTab';
@@ -25,6 +26,14 @@ const TABS = [
 ];
 
 export default function EconomicDashboard() {
+  return (
+    <XrpPriceProvider>
+      <EconomicDashboardInner />
+    </XrpPriceProvider>
+  );
+}
+
+function EconomicDashboardInner() {
   const [tab, setTab] = useState('overview');
   const [timeRange, setTimeRange] = useState('all');
 
@@ -64,6 +73,8 @@ export default function EconomicDashboard() {
   );
   const totalTreasuryBalance = activeTreasuries.reduce((s, t) => s + (t.total_balance ?? 0), 0);
   const activeAgentCount = agents.filter(a => a.status !== 'suspended' && a.status !== 'dormant').length;
+
+  const { price, source: priceSource } = useXrpPriceContext();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950/20 to-slate-950 p-4 sm:p-6">
@@ -146,6 +157,7 @@ export default function EconomicDashboard() {
 
 // ── Overview Tab (inline, only used here) ───────────────────────────────────
 function OverviewTab({ realTxns, activities, activeTreasuries }) {
+  const { price } = useXrpPriceContext();
   // Monthly volume from real on-chain transactions
   const monthlyVolume = realTxns.reduce((acc, t) => {
     try {
@@ -244,7 +256,7 @@ function OverviewTab({ realTxns, activities, activeTreasuries }) {
                   <span className="text-emerald-400 font-semibold">
                     {(t.total_balance ?? 0).toFixed(2)} XRP
                   </span>
-                  <span className="text-slate-500 text-[10px] block">≈${xrpToRlusd(t.total_balance ?? 0)} RLUSD</span>
+                  <span className="text-slate-500 text-[10px] block">≈${xrpToRlusd(t.total_balance ?? 0, price)} RLUSD</span>
                 </div>
               </div>
             ))

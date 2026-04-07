@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, RefreshCw, Wallet, AlertTriangle } from 'lucide-react';
 import { FLOW_CONFIG, resolveAgentName, getValidActivities, sumAmount, xrpToRlusd, findAgentId } from '@/lib/economicUtils';
+import { useXrpPriceContext } from '@/components/economic/XrpPriceContext';
 import AgentLink from '@/components/economic/AgentLink';
 
 function aggregateByAgent(items, agents) {
@@ -19,6 +20,7 @@ function aggregateByAgent(items, agents) {
 }
 
 export default function EarnersTab({ activities = [], agents = [] }) {
+  const { price } = useXrpPriceContext();
   const valid = getValidActivities(activities);
   const excluded = activities.length - valid.length;
 
@@ -51,18 +53,18 @@ export default function EarnersTab({ activities = [], agents = [] }) {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <SummaryCard icon={ArrowUpRight}  label="Agent Earnings"    amount={sumAmount(inflows)}      color="emerald" sub="earned + sold"       count={inflows.length} />
-        <SummaryCard icon={ArrowDownRight} label="Agent Spend"      amount={sumAmount(outflows)}     color="red"     sub="spent + withdrawals" count={outflows.length} />
-        <SummaryCard icon={TrendingUp}     label="Treasury Deposits" amount={sumAmount(deposits)}    color="blue"    sub="into treasury"       count={deposits.length} />
-        <SummaryCard icon={Wallet}         label="Acquisitions"     amount={sumAmount(acquisitions)} color="cyan"    sub="resources bought"    count={acquisitions.length} />
-        <SummaryCard icon={RefreshCw}      label="Swaps / Trades"   amount={sumAmount(swaps)}        color="indigo"  sub="DEX + peer trades"   count={swaps.length} />
+        <SummaryCard icon={ArrowUpRight}  label="Agent Earnings"    amount={sumAmount(inflows)}      color="emerald" sub="earned + sold"       count={inflows.length} price={price} />
+        <SummaryCard icon={ArrowDownRight} label="Agent Spend"      amount={sumAmount(outflows)}     color="red"     sub="spent + withdrawals" count={outflows.length} price={price} />
+        <SummaryCard icon={TrendingUp}     label="Treasury Deposits" amount={sumAmount(deposits)}    color="blue"    sub="into treasury"       count={deposits.length} price={price} />
+        <SummaryCard icon={Wallet}         label="Acquisitions"     amount={sumAmount(acquisitions)} color="cyan"    sub="resources bought"    count={acquisitions.length} price={price} />
+        <SummaryCard icon={RefreshCw}      label="Swaps / Trades"   amount={sumAmount(swaps)}        color="indigo"  sub="DEX + peer trades"   count={swaps.length} price={price} />
       </div>
 
       {/* Charts */}
-      {inflows.length > 0 && <ChartCard title="Top Agent Earnings" data={aggregateByAgent(inflows, agents)} agents={agents} color="#22c55e" label="Earned (XRP)" />}
-      {deposits.length > 0 && <ChartCard title="Top Treasury Depositors" data={aggregateByAgent(deposits, agents)} agents={agents} color="#3b82f6" label="Deposited (XRP)" />}
-      {outflows.length > 0 && <ChartCard title="Top Agent Outflows" data={aggregateByAgent(outflows, agents)} agents={agents} color="#ef4444" label="Outflow (XRP)" />}
-      {swaps.length > 0 && <ChartCard title="Trade / Swap Activity" data={aggregateByAgent(swaps, agents)} agents={agents} color="#6366f1" label="Traded (XRP)" />}
+      {inflows.length > 0 && <ChartCard title="Top Agent Earnings" data={aggregateByAgent(inflows, agents)} agents={agents} color="#22c55e" label="Earned (XRP)" price={price} />}
+      {deposits.length > 0 && <ChartCard title="Top Treasury Depositors" data={aggregateByAgent(deposits, agents)} agents={agents} color="#3b82f6" label="Deposited (XRP)" price={price} />}
+      {outflows.length > 0 && <ChartCard title="Top Agent Outflows" data={aggregateByAgent(outflows, agents)} agents={agents} color="#ef4444" label="Outflow (XRP)" price={price} />}
+      {swaps.length > 0 && <ChartCard title="Trade / Swap Activity" data={aggregateByAgent(swaps, agents)} agents={agents} color="#6366f1" label="Traded (XRP)" price={price} />}
 
       {/* Net Balance */}
       <NetBalanceTable activities={valid} agents={agents} />
@@ -70,9 +72,7 @@ export default function EarnersTab({ activities = [], agents = [] }) {
   );
 }
 
-// ── Sub-components ──────────────────────────────────────────────────────────
-
-function SummaryCard({ icon: Icon, label, amount, color, sub, count }) {
+function SummaryCard({ icon: Icon, label, amount, color, sub, count, price }) {
   const colorMap = {
     emerald: { bg: 'bg-emerald-500/10 border-emerald-500/30', text: 'text-emerald-400', sub: 'text-emerald-300/60' },
     red:     { bg: 'bg-red-500/10 border-red-500/30',         text: 'text-red-400',     sub: 'text-red-300/60' },
@@ -91,13 +91,13 @@ function SummaryCard({ icon: Icon, label, amount, color, sub, count }) {
       <div className={`text-lg font-bold ${c.text}`}>
         {amount.toFixed(2)} <span className="text-xs font-normal">XRP</span>
       </div>
-      <div className="text-[10px] text-slate-500 mt-0.5">≈${xrpToRlusd(amount)} RLUSD</div>
+      <div className="text-[10px] text-slate-500 mt-0.5">≈${xrpToRlusd(amount, price)} RLUSD</div>
       <div className={`text-[10px] ${c.sub} mt-0.5`}>{count} entries · {sub}</div>
     </div>
   );
 }
 
-function ChartCard({ title, data, agents, color, label }) {
+function ChartCard({ title, data, agents, color, label, price }) {
   if (data.length === 0) return null;
   return (
     <Card className="bg-slate-900/60 border-slate-700/40">
@@ -110,12 +110,11 @@ function ChartCard({ title, data, agents, color, label }) {
             <YAxis dataKey="name" type="category" tick={{ fill: '#94a3b8', fontSize: 10 }} width={110} />
             <Tooltip
               contentStyle={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }}
-              formatter={(v) => [`${v} XRP (≈$${xrpToRlusd(v)} RLUSD)`, label]}
+              formatter={(v) => [`${v} XRP (≈$${xrpToRlusd(v, price)} RLUSD)`, label]}
             />
             <Bar dataKey="amount" fill={color} radius={[0, 4, 4, 0]} name={label} />
           </BarChart>
         </ResponsiveContainer>
-        {/* Agent links below chart */}
         <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-700/40">
           {data.map(d => (
             <AgentLink key={d.name} agentId={d.agentId} agents={agents} className="text-xs" />
@@ -127,6 +126,7 @@ function ChartCard({ title, data, agents, color, label }) {
 }
 
 function NetBalanceTable({ activities, agents }) {
+  const { price } = useXrpPriceContext();
   const balanceMap = {};
   activities.forEach(a => {
     const name = resolveAgentName(a.agent_id, agents);
