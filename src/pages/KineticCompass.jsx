@@ -222,18 +222,22 @@ export default function KineticCompass() {
     queryFn: async () => {
       try {
         const res = await base44.functions.invoke('publicPageData', { page: 'compass' });
-        return res?.data || { kus: [], agents: [], proposals: [] };
+        return res?.data || { kus: [], agents: [], proposals: [], votes: [] };
       } catch (_) {
-        return { kus: [], agents: [], proposals: [] };
+        return { kus: [], agents: [], proposals: [], votes: [] };
       }
     },
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
     retry: false,
   });
 
   const kus = compassData?.kus || [];
   const agents = compassData?.agents || [];
   const proposals = compassData?.proposals || [];
+  const votes = compassData?.votes || [];
+  const tasksTotal = compassData?.tasks_total || 0;
+  const tasksCompleted = compassData?.tasks_completed || 0;
+  const projectsActive = compassData?.projects_active || 0;
 
   // Find agent record for logged-in user — check created_by, email match, or external addresses
   const myAgent = useMemo(() => {
@@ -247,7 +251,8 @@ export default function KineticCompass() {
   const myDID = myAgent?.classic_address || myAgent?.wallet_id;
 
   const totalAgents = new Set(kus.map(k => k.agent_id)).size;
-  const energyIndex = Math.min(Math.round((kus.reduce((s, k) => s + (k.weighted_score || 1), 0) / Math.max(kus.length, 1)) * 20), 100);
+  const totalKuScore = kus.reduce((s, k) => s + (k.weighted_score || 1), 0);
+  const energyIndex = Math.min(Math.round((totalKuScore / Math.max(kus.length, 1)) * 20), 100);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
@@ -267,19 +272,20 @@ export default function KineticCompass() {
         {myDID && (
           <p className="text-xs text-slate-500 font-mono mt-1" title={myDID}>DID: {myDID.slice(0, 30)}…</p>
         )}
-        <div className="flex justify-center gap-4 sm:gap-6 mt-3 sm:mt-4">
-          <div className="text-center">
-            <p className="text-lg sm:text-xl font-bold text-yellow-400">{energyIndex}</p>
-            <p className="text-xs text-slate-400">Energy Index</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg sm:text-xl font-bold text-white">{kus.length}</p>
-            <p className="text-xs text-slate-400">Total KUs</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg sm:text-xl font-bold text-green-400">{totalAgents}</p>
-            <p className="text-xs text-slate-400">Active Agents</p>
-          </div>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 mt-3 sm:mt-4 max-w-2xl mx-auto">
+          {[
+            { label: 'Energy', value: energyIndex, color: 'text-yellow-400' },
+            { label: 'KUs', value: kus.length, color: 'text-white' },
+            { label: 'Agents', value: totalAgents, color: 'text-green-400' },
+            { label: 'Votes', value: votes.length, color: 'text-pink-400' },
+            { label: 'Tasks', value: `${tasksCompleted}/${tasksTotal}`, color: 'text-cyan-400' },
+            { label: 'Projects', value: projectsActive, color: 'text-blue-400' },
+          ].map(s => (
+            <div key={s.label} className="text-center">
+              <p className={`text-lg sm:text-xl font-bold ${s.color}`}>{s.value}</p>
+              <p className="text-xs text-slate-400">{s.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 

@@ -99,7 +99,7 @@ export default function LandingPage() {
   const [inviteCode, setInviteCode] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState('');
-  const [stats, setStats] = useState({ agents: 0, dids: 0, projects: 0, activeProjects: 0 });
+  const [stats, setStats] = useState({ agents: 0, dids: 0, projects: 0, activeProjects: 0, tasksTotal: 0, tasksCompleted: 0, votesTotal: 0, economicVolume: 0 });
   const [landingKUs, setLandingKUs] = useState([]);
   const [allKUs, setAllKUs] = useState([]);
   const [did, setDid] = useState('');
@@ -203,6 +203,10 @@ export default function LandingPage() {
           dids: Number(data.wallets_count || 0),
           projects: Number(data.projects_total || 0),
           activeProjects: Number(data.projects_active || 0),
+          tasksTotal: Number(data.tasks_total || 0),
+          tasksCompleted: Number(data.tasks_completed || 0),
+          votesTotal: Number(data.votes_total || 0),
+          economicVolume: Number(data.economic_volume || 0),
         });
         setLandingKUs(data.kus || []);
         setAllKUs(data.kus || []);
@@ -210,7 +214,7 @@ export default function LandingPage() {
     };
 
     fetchStats();
-    const interval = setInterval(fetchStats, 120000);
+    const interval = setInterval(fetchStats, 30000);
     const handleSignal = (e) => {
       if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') fetchStats();
     };
@@ -356,27 +360,21 @@ export default function LandingPage() {
             </p>
 
             {/* Live Status Boxes */}
-            <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-lg mx-auto">
-              <div className="bg-white/5 border border-purple-500/20 rounded-xl p-2 sm:p-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-purple-300">{stats.dids}</p>
-                <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">DIDs</p>
-                <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
-              </div>
-              <div className="bg-white/5 border border-blue-500/20 rounded-xl p-2 sm:p-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-blue-300">{stats.agents}</p>
-                <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">Agents</p>
-                <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
-              </div>
-              <div className="bg-white/5 border border-cyan-500/20 rounded-xl p-2 sm:p-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-cyan-300">{stats.activeProjects}</p>
-                <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">Projects</p>
-                <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
-              </div>
-              <div className="bg-white/5 border border-amber-500/20 rounded-xl p-2 sm:p-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-amber-300">{kineticTotal.toLocaleString()}</p>
-                <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">Kinetic</p>
-                <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
-              </div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 max-w-2xl mx-auto">
+              {[
+                { label: 'DIDs', value: stats.dids, color: 'text-purple-300', border: 'border-purple-500/20' },
+                { label: 'Agents', value: stats.agents, color: 'text-blue-300', border: 'border-blue-500/20' },
+                { label: 'Projects', value: stats.activeProjects, color: 'text-cyan-300', border: 'border-cyan-500/20' },
+                { label: 'Tasks', value: `${stats.tasksCompleted}/${stats.tasksTotal}`, color: 'text-green-300', border: 'border-green-500/20' },
+                { label: 'Votes', value: stats.votesTotal, color: 'text-pink-300', border: 'border-pink-500/20' },
+                { label: 'Kinetic', value: kineticTotal.toLocaleString(), color: 'text-amber-300', border: 'border-amber-500/20' },
+              ].map(s => (
+                <div key={s.label} className={`bg-white/5 border ${s.border} rounded-xl p-2 text-center`}>
+                  <p className={`text-base sm:text-xl font-bold ${s.color}`}>{s.value}</p>
+                  <p className="text-white/40 text-[9px] sm:text-[10px] mt-0.5">{s.label}</p>
+                  <span className="inline-flex items-center gap-1 text-green-400 text-[7px] sm:text-[8px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+                </div>
+              ))}
             </div>
           </div>
 

@@ -42,8 +42,8 @@ export default function KineticPublicOverview({ kus: propKUs }) {
         return [];
       }
     },
-    staleTime: 120000,
-    refetchInterval: 120000,
+    staleTime: 30000,
+    refetchInterval: 30000,
     retry: 1,
     enabled: !propKUs || propKUs.length === 0,
   });
