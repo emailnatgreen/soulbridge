@@ -352,7 +352,8 @@ export default function KineticGridDashboard() {
           <Card className="bg-white/5 border-white/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-sm flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-amber-400" /> Economic Activity — {activities.length} records · {economicVolume.toFixed(2)} XRP total volume
+                <Wallet className="w-4 h-4 text-amber-400" /> Economic Activity — {activities.length} records · {economicVolume.toFixed(2)} total volume
+                <Badge className="text-[9px] bg-amber-500/20 text-amber-300 border-amber-500/30 ml-1">⚠ mixed units</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>

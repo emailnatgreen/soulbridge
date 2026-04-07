@@ -370,7 +370,7 @@ export default function LandingPage() {
                 { label: 'Tasks', value: `${stats.tasksCompleted}/${stats.tasksTotal}`, color: 'text-green-300', border: 'border-green-500/20' },
                 { label: 'Overdue', value: stats.tasksOverdue, color: stats.tasksOverdue > 0 ? 'text-red-300' : 'text-green-300', border: stats.tasksOverdue > 0 ? 'border-red-500/20' : 'border-green-500/20' },
                 { label: 'Votes', value: stats.votesTotal, color: 'text-pink-300', border: 'border-pink-500/20' },
-                { label: 'XRP Vol', value: stats.economicVolume > 0 ? (stats.economicVolume >= 1000000 ? (stats.economicVolume / 1000000).toFixed(2) + 'M' : stats.economicVolume >= 1000 ? (stats.economicVolume / 1000).toFixed(1) + 'K' : stats.economicVolume.toFixed(1)) : '0', sub: 'from drops', color: 'text-emerald-300', border: 'border-emerald-500/20' },
+                { label: 'Econ Vol', value: stats.economicVolume > 0 ? (stats.economicVolume >= 1000000 ? (stats.economicVolume / 1000000).toFixed(2) + 'M' : stats.economicVolume >= 1000 ? (stats.economicVolume / 1000).toFixed(1) + 'K' : stats.economicVolume.toFixed(1)) : '0', sub: 'mixed units ⚠', color: 'text-emerald-300', border: 'border-amber-500/20' },
                 { label: 'Kinetic', value: kineticTotal.toLocaleString(), color: 'text-amber-300', border: 'border-amber-500/20' },
               ].map(s => (
                 <div key={s.label} className={`bg-white/5 border ${s.border} rounded-xl p-2 text-center`}>
