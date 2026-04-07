@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { FolderKanban, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { FolderKanban, AlertTriangle, CheckCircle2, Clock, Info } from 'lucide-react';
 
 const STATUS_COLOR = {
   planning: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
@@ -70,7 +71,19 @@ export default function ProjectHealthPanel({ projects = [], tasks = [], agents =
           </div>
           <div className="bg-white/5 rounded-lg p-2">
             <p className="text-amber-300 font-bold text-lg">{(totalRewardDrops / 1000000).toFixed(2)}</p>
-            <p className="text-white/40 text-[10px]">XRP Allocated</p>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-white/40 text-[10px] flex items-center justify-center gap-1 cursor-help">
+                    XRP Allocated <span className="text-white/25">(from drops)</span>
+                    <Info className="w-2.5 h-2.5 text-white/30" />
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-slate-900 border-white/20 text-white text-xs max-w-[200px]">
+                  <p>Rewards are stored in drops (1 XRP = 1,000,000 drops). Total: {totalRewardDrops.toLocaleString()} drops.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
 
