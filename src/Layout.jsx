@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Toaster } from "@/components/ui/sonner";
 import GlobalNav from '@/components/GlobalNav';
 import MobileBottomNav from '@/components/MobileBottomNav';
@@ -6,8 +6,7 @@ import ChatLoader from '@/components/axi/ChatLoader';
 import AxiFloatingButton from '@/components/AxiFloatingButtonNew';
 import { useAuth } from '@/lib/AuthContext';
 import { useIdentity } from '@/hooks/useIdentity';
-
-const AxiChat = lazy(() => import('@/components/AxiChat'));
+import AxiChat from '@/components/AxiChat';
 
 // Pages where floating button and chat should NOT appear
 const PUBLIC_PAGES = ['EditLanding', 'Terms', 'Support', 'Landing', 'ScrollOfResonance', 'KineticCompass', 'ContactSupport'];
@@ -63,9 +62,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Axi Chat — only for recognized users, not on public pages */}
       {isRecognized && !isPublic && (
-        <Suspense fallback={null}>
-          <AxiChat isOpen={chatOpen} setIsOpen={setChatOpen} />
-        </Suspense>
+        <AxiChat isOpen={chatOpen} setIsOpen={setChatOpen} />
       )}
 
       {/* Floating Button */}
