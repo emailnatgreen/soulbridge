@@ -83,11 +83,10 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
       }
     } finally {
-      if (!silent || !hasCompletedInitialLoad.current) {
-        setIsLoadingAuth(false);
-        initialCheckDone.current = true;
-        hasCompletedInitialLoad.current = true;
-      }
+      // ALWAYS clear loading — this is the critical fix for desktop whiteout
+      setIsLoadingAuth(false);
+      initialCheckDone.current = true;
+      hasCompletedInitialLoad.current = true;
     }
 
     const token = normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token'));
@@ -101,7 +100,7 @@ export const AuthProvider = ({ children }) => {
     // and are not needed for an already-authenticated session.
   }, [checkAppState]);
 
-  // Hard safety net: force loading off after 4 seconds
+  // Hard safety net: force loading off after 2 seconds (was 4s — reduced to avoid desktop white-screen)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isLoadingAuth) {
@@ -120,8 +119,9 @@ export const AuthProvider = ({ children }) => {
         const hasToken = !!(normalizeToken(appParams.token) || normalizeToken(localStorage.getItem('base44_access_token')) || normalizeToken(localStorage.getItem('token')));
         if (hasToken) setIsAuthenticated(true);
         initialCheckDone.current = true;
+        hasCompletedInitialLoad.current = true;
       }
-    }, 4000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [isLoadingAuth]);
 
