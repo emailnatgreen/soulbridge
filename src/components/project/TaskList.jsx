@@ -22,7 +22,7 @@ const priorityColor = {
 
 export default function TaskList({ projectId, agents = [] }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', description: '', assigned_agent_id: '', priority: 'medium' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', assigned_agent_id: '', priority: 'medium', due_date: '', reward_drops: '' });
 
   // Fetch project tasks
   const { data: tasks = [], isLoading, refetch } = useQuery({
@@ -42,25 +42,35 @@ export default function TaskList({ projectId, agents = [] }) {
   // Create task mutation
   const createTaskMutation = useMutation({
     mutationFn: async (taskData) => {
-      return base44.entities.ProjectTask.create({
+      const payload = {
         project_id: projectId,
-        ...taskData,
-      });
+        title: taskData.title,
+        description: taskData.description,
+        assigned_agent_id: taskData.assigned_agent_id || undefined,
+        priority: taskData.priority,
+      };
+      if (taskData.due_date) payload.due_date = taskData.due_date;
+      if (taskData.reward_drops) payload.reward_drops = Number(taskData.reward_drops) * 1000000;
+      return base44.entities.ProjectTask.create(payload);
     },
     onSuccess: () => {
-      setNewTask({ title: '', description: '', assigned_agent_id: '', priority: 'medium' });
+      setNewTask({ title: '', description: '', assigned_agent_id: '', priority: 'medium', due_date: '', reward_drops: '' });
       setShowCreateForm(false);
       refetch();
+      syncProjectProgress();
     },
   });
 
   // Update task mutation (for status changes)
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, status }) => {
-      return base44.entities.ProjectTask.update(taskId, { status });
+      const updates = { status };
+      if (status === 'completed') updates.completed_date = new Date().toISOString();
+      return base44.entities.ProjectTask.update(taskId, updates);
     },
     onSuccess: () => {
       refetch();
+      syncProjectProgress();
     },
   });
 
@@ -71,8 +81,18 @@ export default function TaskList({ projectId, agents = [] }) {
     },
     onSuccess: () => {
       refetch();
+      syncProjectProgress();
     },
   });
+
+  // Sync progress back to AIProject entity
+  const syncProjectProgress = async () => {
+    const currentTasks = await base44.entities.ProjectTask.filter({ project_id: projectId }, '-created_date', 500);
+    const total = currentTasks.length;
+    const completed = currentTasks.filter(t => t.status === 'completed').length;
+    const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+    await base44.entities.AIProject.update(projectId, { progress_percentage: pct });
+  };
 
   const handleCreateTask = () => {
     if (!newTask.title.trim()) {
@@ -151,6 +171,30 @@ export default function TaskList({ projectId, agents = [] }) {
               <option value="high">High Priority</option>
               <option value="critical">Critical</option>
             </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-white/50 mb-1 block">Due Date</label>
+              <input
+                type="date"
+                value={newTask.due_date}
+                onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-400/50"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-white/50 mb-1 block">Reward (XRP)</label>
+              <input
+                type="number"
+                value={newTask.reward_drops}
+                onChange={(e) => setNewTask({ ...newTask, reward_drops: e.target.value })}
+                placeholder="0.00"
+                min="0"
+                step="0.001"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blue-400/50"
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

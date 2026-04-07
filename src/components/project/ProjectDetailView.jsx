@@ -52,7 +52,7 @@ export default function ProjectDetailView({
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm overflow-y-auto">
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-slate-950 border border-white/10 rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="bg-slate-950 border border-white/10 rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto relative">
           
           {/* Close Button */}
           <button

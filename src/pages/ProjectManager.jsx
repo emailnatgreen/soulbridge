@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import ProjectCard from '@/components/project/ProjectCard';
 import ProjectFilters from '@/components/project/ProjectFilters';
 import ProjectDetailView from '@/components/project/ProjectDetailView';
+import CreateProjectModal from '@/components/project/CreateProjectModal';
 import { Plus, AlertCircle } from 'lucide-react';
 
 // Helper: Enrich projects with aggregated task and collaboration data
@@ -46,6 +47,7 @@ export default function ProjectManager() {
   const [ownerFilter, setOwnerFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Fetch all required data
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
@@ -98,7 +100,7 @@ export default function ProjectManager() {
             <p className="text-white/40 text-sm mt-0.5">Manage active projects, tasks, and team collaboration</p>
           </div>
           <Button
-            onClick={() => navigate('/AIProjectHub')}
+            onClick={() => setShowCreateModal(true)}
             className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white gap-2"
           >
             <Plus className="w-4 h-4" /> New Project
@@ -150,7 +152,7 @@ export default function ProjectManager() {
                     variant="list"
                     ownerAgent={ownerAgent}
                     onClick={() => setSelectedProjectId(project.id)}
-                    onEdit={() => navigate(`/AIProjectHub?id=${project.id}&edit=true`)}
+                    onEdit={() => navigate(`/AIProjectHub?projectId=${project.id}`)}
                   />
                 );
               })
@@ -180,7 +182,7 @@ export default function ProjectManager() {
                     variant="grid"
                     ownerAgent={ownerAgent}
                     onClick={() => setSelectedProjectId(project.id)}
-                    onEdit={() => navigate(`/AIProjectHub?id=${project.id}&edit=true`)}
+                    onEdit={() => navigate(`/AIProjectHub?projectId=${project.id}`)}
                   />
                 );
               })
@@ -199,9 +201,18 @@ export default function ProjectManager() {
           teamMembers={enrichedProjects.find(p => p.id === selectedProjectId)?.teamMembers || []}
           onClose={() => setSelectedProjectId(null)}
           onEdit={() => {
-            navigate(`/AIProjectHub?id=${selectedProjectId}&edit=true`);
+            navigate(`/AIProjectHub?projectId=${selectedProjectId}`);
             setSelectedProjectId(null);
           }}
+        />
+      )}
+
+      {/* Create Project Modal */}
+      {showCreateModal && (
+        <CreateProjectModal
+          agents={agents}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => setShowCreateModal(false)}
         />
       )}
     </div>
