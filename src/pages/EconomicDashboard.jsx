@@ -37,13 +37,23 @@ export default function EconomicDashboard() {
   });
 
   const completedTxns = transactions.filter(t => t.status === 'completed');
-  const totalVolume = completedTxns.reduce((s, t) => s + (t.amount ?? 0), 0);
+
+  // Separate real on-chain transactions from internal/simulated ones
+  // Real XRPL hashes are 64-char hex strings; internal ones start with TASK_ or contain non-hex
+  const isRealTx = (t) => {
+    if (!t.hash) return false;
+    return /^[A-Fa-f0-9]{64}$/.test(t.hash);
+  };
+  const realTxns = completedTxns.filter(isRealTx);
+  const internalTxns = completedTxns.filter(t => !isRealTx(t));
+  const realVolume = realTxns.reduce((s, t) => s + (t.amount ?? 0), 0);
+  const internalVolume = internalTxns.reduce((s, t) => s + (t.amount ?? 0), 0);
   const activeTreasuries = treasuries.filter(t => !t.purpose?.includes('DEPRECATED') && !t.purpose?.includes('Historical'));
   const totalTreasuryBalance = activeTreasuries.reduce((s, t) => s + (t.total_balance ?? 0), 0);
   const activeAgentCount = agents.filter(a => a.status !== 'suspended' && a.status !== 'dormant').length;
 
-  // Monthly volume trend from transactions
-  const monthlyVolume = completedTxns.reduce((acc, t) => {
+  // Monthly volume trend from REAL on-chain transactions only
+  const monthlyVolume = realTxns.reduce((acc, t) => {
     try {
       const month = format(parseISO(t.created_date), 'MMM yy');
       acc[month] = (acc[month] || 0) + (t.amount ?? 0);
@@ -77,17 +87,22 @@ export default function EconomicDashboard() {
             <DollarSign className="w-6 h-6 text-emerald-400" />Economic Dashboard
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            {completedTxns.length} completed transactions · {activities.length} economic activities · {activeTreasuries.length} active treasuries
+            {realTxns.length} on-chain transactions · {activities.length} economic activities · {activeTreasuries.length} active treasuries
           </p>
         </div>
 
         {/* KPIs */}
         <EconomicKPIs
-          volume={totalVolume}
+          volume={realVolume}
           treasury={totalTreasuryBalance}
-          transactions={completedTxns.length}
+          transactions={realTxns.length}
           agents={activeAgentCount}
         />
+        {internalTxns.length > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-2 text-xs text-amber-300">
+            {internalTxns.length} internal/simulated transactions ({internalVolume.toLocaleString()} XRP) excluded from volume — only verified on-chain XRPL transactions are counted.
+          </div>
+        )}
 
         {/* Tab Nav */}
         <div className="flex gap-2 flex-wrap">
