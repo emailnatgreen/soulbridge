@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { resolveAgentName, findAgentId } from '@/lib/economicUtils';
 
 function truncateDID(address) {
@@ -19,9 +18,10 @@ export default function AgentLink({ agentId, agents = [], className = '', showDI
     return <span className={`text-slate-300 ${className}`}>{name}</span>;
   }
 
-  const linkContent = (
+  return (
     <Link
       to={`/agents/${resolvedId}`}
+      title={did ? `DID: ${did}` : undefined}
       className={`inline-flex items-center gap-1.5 text-slate-200 hover:text-emerald-400 transition-colors underline decoration-slate-600 hover:decoration-emerald-400 underline-offset-2 ${className}`}
       onClick={e => e.stopPropagation()}
     >
@@ -30,20 +30,5 @@ export default function AgentLink({ agentId, agents = [], className = '', showDI
         <span className="text-[9px] font-mono text-slate-500 no-underline">({truncated})</span>
       )}
     </Link>
-  );
-
-  if (!did) return linkContent;
-
-  return (
-    <TooltipProvider delayDuration={200}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {linkContent}
-        </TooltipTrigger>
-        <TooltipContent side="top" className="bg-slate-800 border-slate-700 text-slate-200 text-xs font-mono px-3 py-1.5">
-          DID: {did}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   );
 }
