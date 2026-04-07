@@ -51,6 +51,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [mode, setMode] = useState(null);
   const [showAgentPicker, setShowAgentPicker] = useState(false);
   const [didAuthError, setDidAuthError] = useState(null);
+  const [initError, setInitError] = useState(null);
   const didSignal = useDIDSignal();
   const { allAgents, activeAgents, addAgent, removeAgent, findAgentByName, buildRoomContext } = useAgentRoom();
 
@@ -75,6 +76,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     if (!isOpen) return;
 
     const init = async () => {
+      setInitError(null);
       try {
         const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
         const savedConversationId = localStorage.getItem(PERSONAL_CONVERSATION_KEY);
@@ -88,7 +90,19 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
         let conversation = null;
         if (savedConversationId) {
-          conversation = conversations.find(c => c.id === savedConversationId && isPersonalConversation(c)) || null;
+          try {
+            conversation = conversations.find(c => c.id === savedConversationId && isPersonalConversation(c)) || null;
+            // Validate the conversation is loadable (not corrupted/oversized)
+            if (conversation && (!conversation.messages || conversation.messages === null)) {
+              console.warn('[AxiChat] Saved conversation has no messages, may be corrupted. Creating new one.');
+              conversation = null;
+              localStorage.removeItem(PERSONAL_CONVERSATION_KEY);
+            }
+          } catch (loadErr) {
+            console.warn('[AxiChat] Could not load saved conversation, creating fresh one:', loadErr?.message);
+            conversation = null;
+            localStorage.removeItem(PERSONAL_CONVERSATION_KEY);
+          }
         }
 
         if (!conversation) {
@@ -117,7 +131,14 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         });
         return;
       } catch (err) {
-        console.warn('[AxiChat] Agent SDK unavailable, falling back to direct mode:', err?.message);
+        console.warn('[AxiChat] Agent SDK error:', err?.message);
+        // If it's a document size / corruption error, offer to start fresh
+        const errMsg = err?.message || err?.response?.data?.message || '';
+        if (errMsg.includes('16777216') || errMsg.includes('document') || errMsg.includes('too large')) {
+          setInitError('Your Axi conversation has grown too large. Please start a new conversation.');
+          setReady(true);
+          return;
+        }
       }
 
       const convId = localStorage.getItem('sb_axi_did_conv') || `did-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -224,6 +245,32 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  const handleNewConversation = async () => {
+    setReady(false);
+    setInitError(null);
+    setPlatformMessages([]);
+    setLocalAgentMessages([]);
+    if (unsubRef.current) unsubRef.current();
+    localStorage.removeItem(PERSONAL_CONVERSATION_KEY);
+    try {
+      const conversation = await base44.agents.createConversation({
+        agent_name: 'axi',
+        metadata: { name: PERSONAL_CONVERSATION_META_NAME, unified_axi_chat: true, personal_axi_chat: true }
+      });
+      localStorage.setItem(PERSONAL_CONVERSATION_KEY, conversation.id);
+      convoRef.current = conversation;
+      setMode('agent');
+      setReady(true);
+      unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
+        setPlatformMessages((data.messages || []).slice(-PAGE_SIZE));
+      });
+    } catch (err) {
+      console.error('[AxiChat] Failed to create new conversation:', err);
+      setInitError('Could not create a new conversation. Please try again.');
+      setReady(true);
+    }
   };
 
   const handleAddAgent = useCallback(async (agent, options = {}) => {
@@ -382,6 +429,15 @@ export default function AxiChat({ isOpen, setIsOpen }) {
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={handleNewConversation}
+                  className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/10"
+                  title="New conversation"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowAgentPicker((value) => !value)}
                   className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/10"
                   title="Add agent"
@@ -431,6 +487,22 @@ export default function AxiChat({ isOpen, setIsOpen }) {
             <div className="mx-3 mt-2 p-3 rounded-lg bg-red-900/30 border border-red-500/30 flex gap-2">
               <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-red-300">{didAuthError}</p>
+            </div>
+          )}
+
+          {initError && (
+            <div className="mx-3 mt-2 p-3 rounded-lg bg-amber-900/30 border border-amber-500/30 space-y-2">
+              <div className="flex gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-300">{initError}</p>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleNewConversation}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs h-8"
+              >
+                <Sparkles className="w-3 h-3 mr-1" /> Start Fresh Conversation
+              </Button>
             </div>
           )}
 
