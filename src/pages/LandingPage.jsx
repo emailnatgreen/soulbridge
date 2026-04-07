@@ -99,7 +99,7 @@ export default function LandingPage() {
   const [inviteCode, setInviteCode] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState('');
-  const [stats, setStats] = useState({ agents: 0, dids: 0 });
+  const [stats, setStats] = useState({ agents: 0, dids: 0, projects: 0, activeProjects: 0 });
   const [landingKUs, setLandingKUs] = useState([]);
   const [allKUs, setAllKUs] = useState([]);
   const [did, setDid] = useState('');
@@ -198,7 +198,12 @@ export default function LandingPage() {
         } catch (e) { /* ignore */ }
       }
       if (data.agents || data.wallets_count || data.kus) {
-        setStats({ agents: (data.agents || []).length, dids: Number(data.wallets_count || 0) });
+        setStats({
+          agents: (data.agents || []).length,
+          dids: Number(data.wallets_count || 0),
+          projects: Number(data.projects_total || 0),
+          activeProjects: Number(data.projects_active || 0),
+        });
         setLandingKUs(data.kus || []);
         setAllKUs(data.kus || []);
       }
@@ -351,7 +356,7 @@ export default function LandingPage() {
             </p>
 
             {/* Live Status Boxes */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto">
+            <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-lg mx-auto">
               <div className="bg-white/5 border border-purple-500/20 rounded-xl p-2 sm:p-3 text-center">
                 <p className="text-lg sm:text-2xl font-bold text-purple-300">{stats.dids}</p>
                 <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">DIDs</p>
@@ -360,6 +365,11 @@ export default function LandingPage() {
               <div className="bg-white/5 border border-blue-500/20 rounded-xl p-2 sm:p-3 text-center">
                 <p className="text-lg sm:text-2xl font-bold text-blue-300">{stats.agents}</p>
                 <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">Agents</p>
+                <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
+              </div>
+              <div className="bg-white/5 border border-cyan-500/20 rounded-xl p-2 sm:p-3 text-center">
+                <p className="text-lg sm:text-2xl font-bold text-cyan-300">{stats.activeProjects}</p>
+                <p className="text-white/40 text-[9px] sm:text-xs mt-0.5">Projects</p>
                 <span className="inline-flex items-center gap-1 text-green-400 text-[8px] sm:text-[9px] mt-0.5"><span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />Live</span>
               </div>
               <div className="bg-white/5 border border-amber-500/20 rounded-xl p-2 sm:p-3 text-center">

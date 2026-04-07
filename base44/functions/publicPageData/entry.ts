@@ -46,10 +46,11 @@ Deno.serve(async (req) => {
     const base44 = getBase44Client(req, bodyStr);
 
     if (page === 'landing') {
-      const [agents, wallets, kus] = await Promise.all([
+      const [agents, wallets, kus, projects] = await Promise.all([
         base44.asServiceRole.entities.Agent.filter({ status: 'active' }, '-created_date', 50),
         base44.asServiceRole.entities.Wallet.filter({ is_published: true }, 'created_date', 200),
         base44.asServiceRole.entities.KineticUnit.list('-created_date', 100),
+        base44.asServiceRole.entities.AIProject.list('-created_date', 200),
       ]);
 
       const normalizedAgents = agents.map(a => ({
@@ -71,10 +72,14 @@ Deno.serve(async (req) => {
         ...normalizedAgents.flatMap(a => a.external_classic_addresses || []).filter(Boolean)
       ]).size;
 
+      const activeProjects = projects.filter(p => p.status === 'active' || p.status === 'planning' || p.status === 'recruiting');
+
       return Response.json({
         agents: normalizedAgents,
         wallets_count: publishedDidCount,
         kus,
+        projects_total: projects.length,
+        projects_active: activeProjects.length,
       });
     }
 
