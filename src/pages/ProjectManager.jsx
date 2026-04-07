@@ -1,24 +1,22 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import ProjectCard from '@/components/project/ProjectCard';
 import ProjectFilters from '@/components/project/ProjectFilters';
 import ProjectDetailView from '@/components/project/ProjectDetailView';
 import CreateProjectModal from '@/components/project/CreateProjectModal';
-import { Plus, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle, ArrowLeft, FolderKanban, Loader2 } from 'lucide-react';
 
-// Helper: Enrich projects with aggregated task and collaboration data
 const enrichProjects = (projects, tasks, collaborations, agents) => {
   return projects.map(project => {
     const projectTasks = tasks.filter(t => t.project_id === project.id);
     const collaborationQuality = collaborations.find(c => c.project_id === project.id);
-    
     const completedTasks = projectTasks.filter(t => t.status === 'completed').length;
     const totalTasks = projectTasks.length;
     const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-    
     const teamMembers = project.team_members?.map(tm => {
       const agent = agents.find(a => a.id === tm.agent_id);
       return { ...tm, agent };
@@ -49,7 +47,6 @@ export default function ProjectManager() {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Fetch all required data
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ['aiProjects'],
     queryFn: () => base44.entities.AIProject.list('-created_date', 100),
@@ -74,43 +71,78 @@ export default function ProjectManager() {
     staleTime: 15000,
   });
 
-  // Enrich and filter projects
   const enrichedProjects = useMemo(() => {
     const enriched = enrichProjects(projects, tasks, collaborations, agents);
-    
     return enriched.filter(p => {
       const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
       const matchesPriority = priorityFilter === 'all' || p.priority === priorityFilter;
       const matchesOwner = ownerFilter === 'all' || p.owner_agent_id === ownerFilter;
-      const matchesSearch = searchQuery === '' || 
+      const matchesSearch = searchQuery === '' ||
         p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      
       return matchesStatus && matchesPriority && matchesOwner && matchesSearch;
     });
   }, [projects, tasks, collaborations, agents, statusFilter, priorityFilter, ownerFilter, searchQuery]);
 
+  const activeCount = projects.filter(p => p.status === 'active').length;
+  const planningCount = projects.filter(p => p.status === 'planning').length;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 text-white">
+
       {/* Header */}
       <div className="border-b border-white/10 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">AI Project Manager</h1>
-            <p className="text-white/40 text-sm mt-0.5">Manage active projects, tasks, and team collaboration</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
+            {/* Left: Back + Title */}
+            <div className="flex items-center gap-3 min-w-0">
+              <Link
+                to="/home"
+                className="flex items-center gap-1.5 text-white/50 hover:text-white text-sm transition-colors shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Home</span>
+              </Link>
+              <div className="w-px h-6 bg-white/10 hidden sm:block" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <FolderKanban className="w-5 h-5 text-purple-400 shrink-0" />
+                  <h1 className="text-lg sm:text-xl font-semibold text-white truncate">Project Manager</h1>
+                </div>
+                <p className="text-white/40 text-xs mt-0.5 hidden sm:block">
+                  {projects.length} projects · {activeCount} active · {planningCount} planning
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Stats badges + Create button */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="hidden md:flex items-center gap-1.5">
+                <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/25 text-[10px]">
+                  {activeCount} Active
+                </Badge>
+                <Badge className="bg-blue-500/15 text-blue-400 border-blue-500/25 text-[10px]">
+                  {planningCount} Planning
+                </Badge>
+              </div>
+              <Button
+                onClick={() => setShowCreateModal(true)}
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 text-white gap-1.5 text-xs sm:text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">New Project</span>
+                <span className="sm:hidden">New</span>
+              </Button>
+            </div>
           </div>
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white gap-2"
-          >
-            <Plus className="w-4 h-4" /> New Project
-          </Button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
 
-        {/* ProjectFilters Component */}
+        {/* Filters */}
         <ProjectFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -125,89 +157,83 @@ export default function ProjectManager() {
           onViewModeChange={setViewMode}
         />
 
-        {/* Results Summary */}
+        {/* Results count */}
         <div className="flex items-center justify-between">
-          <p className="text-white/60 text-sm">
-            Showing <span className="font-semibold text-white">{enrichedProjects.length}</span> of <span className="font-semibold text-white">{projects.length}</span> projects
+          <p className="text-white/50 text-xs sm:text-sm">
+            Showing <span className="text-white font-medium">{enrichedProjects.length}</span> of {projects.length} projects
           </p>
         </div>
 
-        {/* ProjectListView - List Mode */}
-        {viewMode === 'list' && (
-          <div className="space-y-3">
-            {projectsLoading ? (
-              <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-20 bg-white/5 rounded-lg animate-pulse" />)}</div>
-            ) : enrichedProjects.length === 0 ? (
-              <div className="text-center py-12">
-                <AlertCircle className="w-8 h-8 text-white/30 mx-auto mb-3" />
-                <p className="text-white/40 text-sm">No projects match your filters.</p>
-              </div>
-            ) : (
-              enrichedProjects.map(project => {
-                const ownerAgent = agents.find(a => a.id === project.owner_agent_id);
-                return (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    variant="list"
-                    ownerAgent={ownerAgent}
-                    onClick={() => setSelectedProjectId(project.id)}
-                    onEdit={() => navigate(`/AIProjectHub?projectId=${project.id}`)}
-                  />
-                );
-              })
-            )}
+        {/* Loading */}
+        {projectsLoading && (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
           </div>
         )}
 
-        {/* ProjectListView - Grid Mode */}
-        {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projectsLoading ? (
-              <div className="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1,2,3,4,5,6].map(i => <div key={i} className="h-64 bg-white/5 rounded-xl animate-pulse" />)}
-              </div>
-            ) : enrichedProjects.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <AlertCircle className="w-8 h-8 text-white/30 mx-auto mb-3" />
-                <p className="text-white/40 text-sm">No projects match your filters.</p>
-              </div>
-            ) : (
-              enrichedProjects.map(project => {
-                const ownerAgent = agents.find(a => a.id === project.owner_agent_id);
-                return (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    variant="grid"
-                    ownerAgent={ownerAgent}
-                    onClick={() => setSelectedProjectId(project.id)}
-                    onEdit={() => navigate(`/AIProjectHub?projectId=${project.id}`)}
-                  />
-                );
-              })
-            )}
+        {/* Empty state */}
+        {!projectsLoading && enrichedProjects.length === 0 && (
+          <div className="text-center py-16">
+            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-6 h-6 text-white/30" />
+            </div>
+            <p className="text-white/40 text-sm mb-1">No projects match your filters</p>
+            <p className="text-white/25 text-xs">Try adjusting your search or filters</p>
           </div>
         )}
 
+        {/* List view */}
+        {!projectsLoading && viewMode === 'list' && enrichedProjects.length > 0 && (
+          <div className="space-y-2 sm:space-y-3">
+            {enrichedProjects.map(project => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                variant="list"
+                ownerAgent={agents.find(a => a.id === project.owner_agent_id)}
+                onClick={() => setSelectedProjectId(project.id)}
+                onEdit={() => navigate(`/AIProjectHub?projectId=${project.id}`)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Grid view */}
+        {!projectsLoading && viewMode === 'grid' && enrichedProjects.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {enrichedProjects.map(project => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                variant="grid"
+                ownerAgent={agents.find(a => a.id === project.owner_agent_id)}
+                onClick={() => setSelectedProjectId(project.id)}
+                onEdit={() => navigate(`/AIProjectHub?projectId=${project.id}`)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Project Detail Modal */}
-      {selectedProjectId && (
-        <ProjectDetailView
-          project={enrichedProjects.find(p => p.id === selectedProjectId)}
-          ownerAgent={agents.find(a => a.id === enrichedProjects.find(p => p.id === selectedProjectId)?.owner_agent_id)}
-          taskStats={enrichedProjects.find(p => p.id === selectedProjectId)?.taskStats}
-          teamMembers={enrichedProjects.find(p => p.id === selectedProjectId)?.teamMembers || []}
-          onClose={() => setSelectedProjectId(null)}
-          onEdit={() => {
-            navigate(`/AIProjectHub?projectId=${selectedProjectId}`);
-            setSelectedProjectId(null);
-          }}
-        />
-      )}
+      {/* Detail modal */}
+      {selectedProjectId && (() => {
+        const selected = enrichedProjects.find(p => p.id === selectedProjectId);
+        return selected ? (
+          <ProjectDetailView
+            project={selected}
+            ownerAgent={agents.find(a => a.id === selected.owner_agent_id)}
+            taskStats={selected.taskStats}
+            teamMembers={selected.teamMembers || []}
+            onClose={() => setSelectedProjectId(null)}
+            onEdit={() => {
+              navigate(`/AIProjectHub?projectId=${selectedProjectId}`);
+              setSelectedProjectId(null);
+            }}
+          />
+        ) : null;
+      })()}
 
-      {/* Create Project Modal */}
+      {/* Create modal */}
       {showCreateModal && (
         <CreateProjectModal
           agents={agents}
