@@ -374,7 +374,6 @@ export default function Home() {
         {identity?.connected && <GenesisSealBadge />}
 
         {/* Live Stats */}
-        {isAdmin && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', path: '/Agents' },
@@ -389,7 +388,6 @@ export default function Home() {
             </button>
           ))}
         </div>
-        )}
 
         {/* Features Grid */}
         <div>

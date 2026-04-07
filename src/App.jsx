@@ -69,6 +69,8 @@ import ProjectManager from './pages/ProjectManager';
 import AIProjectHub from './pages/AIProjectHub';
 import EditLanding from './pages/EditLanding';
 import ScrollOfResonance from './pages/ScrollOfResonance';
+import NodeCovenant from './pages/NodeCovenant';
+import MentorshipHub from './pages/MentorshipHub';
 
 
 const LoadingFallback = () => (
@@ -245,6 +247,10 @@ const AuthenticatedApp = () => {
         <Route path="/KineticGridDashboard" element={L("kinetic-grid", KineticGridDashboard)} />
         <Route path="/Economy" element={L("economy", EconomicDashboard)} />
         <Route path="/EconomicDashboard" element={L("economy", EconomicDashboard)} />
+        <Route path="/NodeCovenant" element={L("NodeCovenant", NodeCovenant)} />
+        <Route path="/node-covenant" element={L("NodeCovenant", NodeCovenant)} />
+        <Route path="/MentorshipHub" element={L("MentorshipHub", MentorshipHub)} />
+        <Route path="/mentorship" element={L("MentorshipHub", MentorshipHub)} />
 
         {/* LEGACY/BACKWARD COMPAT */}
         <Route path="/dashboard" element={L("dashboard", Dashboard)} />
