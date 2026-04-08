@@ -1,12 +1,28 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge } from 'lucide-react';
+import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX } from 'lucide-react';
 import { formatDistanceToNow, isPast, parseISO, differenceInHours, subHours, subDays } from 'date-fns';
 
 const STALL_DAYS = 7;
 const EFFICIENCY_THRESHOLD = 0.8;
 const INPUT_SHORTAGE_HOURS = 24;
+const UNACK_CRITICAL_HOURS = 24;
+const PERSISTENT_ALERT_DAYS = 7;
+const RECURRING_ALERT_COUNT = 3;
+
+function wellbeingWasteSignal(alert, allAlerts) {
+  const ageHours = alert.created_date ? differenceInHours(new Date(), new Date(alert.created_date)) : 0;
+  const ageDays = Math.floor(ageHours / 24);
+  if (alert.severity === 'critical' && !alert.acknowledged_at && ageHours >= UNACK_CRITICAL_HOURS)
+    return `Unacknowledged Critical (${ageHours}h)`;
+  if (ageDays >= PERSISTENT_ALERT_DAYS)
+    return `Persistent Alert (${ageDays}d)`;
+  const recurring = allAlerts.filter(a => a.agent_id === alert.agent_id && a.alert_type === alert.alert_type && a.status === 'active');
+  if (recurring.length >= RECURRING_ALERT_COUNT)
+    return `Recurring Type (${recurring.length}×)`;
+  return alert.severity === 'critical' ? 'Critical Alert' : 'High Alert';
+}
 const RECURRING_THRESHOLD = 3; // same automation errors X+ times
 const PERSISTENT_HOURS = 1;    // error unresolved for Y+ hours
 const CRITICAL_AUTOMATIONS = ['monitorGovernanceCompliance', 'syncTreasuryBalance', 'lawGuardianScan', 'masterAutomationOrchestrator'];
@@ -99,6 +115,9 @@ export default function KineticWasteDashboard() {
   const [prodSortBy, setProdSortBy] = useState('efficiency');
   const [prodSortAsc, setProdSortAsc] = useState(true);
   const [expandedChain, setExpandedChain] = useState(null);
+  const [expandedAlert, setExpandedAlert] = useState(null);
+  const [wellSortBy, setWellSortBy] = useState('severity');
+  const [wellSortAsc, setWellSortAsc] = useState(true);
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['project-tasks-all'],
@@ -129,6 +148,12 @@ export default function KineticWasteDashboard() {
   const { data: prodChains = [], isLoading: prodLoading } = useQuery({
     queryKey: ['production-chains-all'],
     queryFn: () => base44.entities.ProductionChain.list('-created_date', 200).catch(() => []),
+  });
+
+  const { data: wellbeingAlerts = [], isLoading: wellLoading } = useQuery({
+    queryKey: ['wellbeing-alerts-active'],
+    queryFn: () => base44.entities.WellbeingAlert.filter({ status: 'active' }, '-created_date', 300).catch(() => []),
+    refetchInterval: 60000,
   });
 
   const agentMap = useMemo(() => Object.fromEntries(agents.map(a => [a.id, a.name])), [agents]);
@@ -263,6 +288,62 @@ export default function KineticWasteDashboard() {
 
   const ProdSortIcon = ({ col }) => prodSortBy === col
     ? (prodSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
+    : null;
+
+  // Wellbeing memos
+  const criticalActiveAlerts = useMemo(() => wellbeingAlerts.filter(a => a.severity === 'critical'), [wellbeingAlerts]);
+  const highOrCriticalAlerts = useMemo(() => wellbeingAlerts.filter(a => ['high', 'critical'].includes(a.severity)), [wellbeingAlerts]);
+  const agentsAtRisk = useMemo(() => new Set(highOrCriticalAlerts.map(a => a.agent_id)).size, [highOrCriticalAlerts]);
+
+  const avgAckHours = useMemo(() => {
+    const acked = wellbeingAlerts.filter(a => a.acknowledged_at && a.created_date);
+    if (!acked.length) return null;
+    const total = acked.reduce((s, a) => s + differenceInHours(new Date(a.acknowledged_at), new Date(a.created_date)), 0);
+    return Math.round(total / acked.length);
+  }, [wellbeingAlerts]);
+
+  const alertTypeBreakdown = useMemo(() => {
+    const map = {};
+    highOrCriticalAlerts.forEach(a => { const k = a.alert_type || 'Unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [highOrCriticalAlerts]);
+
+  const alertSeverityBreakdown = useMemo(() => {
+    const map = {};
+    highOrCriticalAlerts.forEach(a => { const k = a.severity || 'unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [highOrCriticalAlerts]);
+
+  const alertByAgent = useMemo(() => {
+    const map = {};
+    highOrCriticalAlerts.forEach(a => { const k = a.agent_id || 'Unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [highOrCriticalAlerts]);
+
+  const sortedWellAlerts = useMemo(() => {
+    const severityOrder = { critical: 0, high: 1 };
+    const arr = [...highOrCriticalAlerts];
+    arr.sort((a, b) => {
+      if (wellSortBy === 'severity') {
+        const av = severityOrder[a.severity] ?? 2, bv = severityOrder[b.severity] ?? 2;
+        return wellSortAsc ? av - bv : bv - av;
+      }
+      if (wellSortBy === 'age') {
+        const av = new Date(a.created_date || 0).getTime(), bv = new Date(b.created_date || 0).getTime();
+        return wellSortAsc ? av - bv : bv - av;
+      }
+      return 0;
+    });
+    return arr;
+  }, [highOrCriticalAlerts, wellSortBy, wellSortAsc]);
+
+  const toggleWellSort = (col) => {
+    if (wellSortBy === col) setWellSortAsc(a => !a);
+    else { setWellSortBy(col); setWellSortAsc(true); }
+  };
+
+  const WellSortIcon = ({ col }) => wellSortBy === col
+    ? (wellSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
     : null;
   const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.title || p.name])), [projects]);
 
@@ -837,6 +918,168 @@ export default function KineticWasteDashboard() {
                                     <div>
                                       <p className="text-slate-500 text-xs mb-1">Last Updated</p>
                                       <p className="text-slate-300 text-xs">{chain.updated_date ? new Date(chain.updated_date).toLocaleString() : '—'}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── AGENT WELLBEING ALERTS SECTION ── */}
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-600 to-pink-600 flex items-center justify-center">
+                <Heart className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Agent Wellbeing Alert Waste</h2>
+                <p className="text-slate-400 text-sm">Unaddressed alerts eroding agent capacity and Village Soul</p>
+              </div>
+              <div className="ml-auto px-3 py-1.5 bg-rose-900/20 border border-rose-500/30 rounded-lg">
+                <span className="text-rose-300 text-xs">Showing <strong>high</strong> &amp; <strong>critical</strong> active alerts</span>
+              </div>
+            </div>
+
+            {/* Wellbeing Stat Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <StatCard icon={ShieldAlert} label="Active Critical Alerts" value={criticalActiveAlerts.length} color="bg-rose-700" />
+              <StatCard icon={UserX} label="Agents at Risk" value={agentsAtRisk} color="bg-pink-700" />
+              <StatCard icon={Clock} label="Avg Time to Acknowledge" value={avgAckHours != null ? `${avgAckHours}h` : '—'} color="bg-red-800" />
+              <StatCard icon={AlertTriangle} label="Top Alert Type" value={alertTypeBreakdown[0]?.[0]?.replace(/_/g, ' ') || '—'} color="bg-fuchsia-800" />
+            </div>
+
+            {/* Wellbeing Breakdown Bars */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertTriangle className="w-4 h-4 text-rose-400" />
+                  <h3 className="text-white font-semibold">By Alert Type</h3>
+                </div>
+                <div className="space-y-3">
+                  {alertTypeBreakdown.length === 0 && <p className="text-slate-500 text-sm">No active alerts.</p>}
+                  {alertTypeBreakdown.map(([type, count]) => (
+                    <BreakdownBar key={type} label={type.replace(/_/g, ' ')} count={count} max={alertTypeBreakdown[0]?.[1] || 1} color="bg-rose-500" />
+                  ))}
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <ShieldAlert className="w-4 h-4 text-pink-400" />
+                  <h3 className="text-white font-semibold">By Severity</h3>
+                </div>
+                <div className="space-y-3">
+                  {alertSeverityBreakdown.length === 0 && <p className="text-slate-500 text-sm">No active alerts.</p>}
+                  {alertSeverityBreakdown.map(([sev, count]) => (
+                    <BreakdownBar key={sev} label={sev} count={count} max={alertSeverityBreakdown[0]?.[1] || 1} color={sev === 'critical' ? 'bg-red-600' : 'bg-orange-500'} />
+                  ))}
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <UserX className="w-4 h-4 text-fuchsia-400" />
+                  <h3 className="text-white font-semibold">Agents Most Affected</h3>
+                </div>
+                <div className="space-y-3">
+                  {alertByAgent.length === 0 && <p className="text-slate-500 text-sm">No active alerts.</p>}
+                  {alertByAgent.map(([aid, count]) => (
+                    <BreakdownBar key={aid} label={agentMap[aid] || aid} count={count} max={alertByAgent[0]?.[1] || 1} color="bg-fuchsia-500" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Wellbeing Alert Table */}
+            <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-2 p-5 border-b border-slate-700">
+                <Heart className="w-4 h-4 text-rose-400" />
+                <h2 className="text-white font-semibold">Unaddressed Wellbeing Alerts</h2>
+                <span className="ml-auto text-slate-500 text-xs">{highOrCriticalAlerts.length} alerts</span>
+              </div>
+
+              {wellLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="w-6 h-6 border-4 border-rose-400/30 border-t-rose-400 rounded-full animate-spin" />
+                </div>
+              ) : highOrCriticalAlerts.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Heart className="w-10 h-10 text-green-400 mx-auto mb-3" />
+                  <p className="text-green-400 font-semibold">All agents are thriving</p>
+                  <p className="text-slate-500 text-sm mt-1">No active high or critical wellbeing alerts.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400 border-b border-slate-800">
+                        <th className="text-left px-5 py-3">Agent</th>
+                        <th className="text-left px-4 py-3">Alert Type</th>
+                        <th className="text-left px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleWellSort('severity')}>
+                          <span className="flex items-center gap-1">Severity <WellSortIcon col="severity" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Description</th>
+                        <th className="text-left px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleWellSort('age')}>
+                          <span className="flex items-center gap-1">Created <WellSortIcon col="age" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Waste Signal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedWellAlerts.map(alert => {
+                        const signal = wellbeingWasteSignal(alert, wellbeingAlerts);
+                        const isCritical = alert.severity === 'critical';
+                        return (
+                          <>
+                            <tr
+                              key={alert.id}
+                              className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
+                              onClick={() => setExpandedAlert(expandedAlert === alert.id ? null : alert.id)}
+                            >
+                              <td className="px-5 py-3 text-white font-medium">{agentMap[alert.agent_id] || alert.agent_id || '—'}</td>
+                              <td className="px-4 py-3 text-slate-300 text-xs">{(alert.alert_type || '—').replace(/_/g, ' ')}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-0.5 rounded-full text-xs border ${
+                                  isCritical ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                                  : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                                }`}>{alert.severity}</span>
+                              </td>
+                              <td className="px-4 py-3 text-slate-400 text-xs max-w-[200px] truncate">{alert.description || '—'}</td>
+                              <td className="px-4 py-3 text-slate-400 text-xs">
+                                {alert.created_date ? formatDistanceToNow(new Date(alert.created_date), { addSuffix: true }) : '—'}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`flex items-center gap-1 text-xs ${
+                                  isCritical ? 'text-red-400' : 'text-rose-400'
+                                }`}>
+                                  <AlertTriangle className="w-3 h-3" />
+                                  {signal}
+                                </span>
+                              </td>
+                            </tr>
+                            {expandedAlert === alert.id && (
+                              <tr key={`${alert.id}-exp`} className="bg-slate-800/30">
+                                <td colSpan={6} className="px-6 py-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                      <p className="text-slate-500 text-xs mb-1">Triggered By</p>
+                                      <p className="text-slate-300 text-xs">{alert.triggered_by || '—'}</p>
+                                      <p className="text-slate-500 text-xs mt-3 mb-1">Acknowledged At</p>
+                                      <p className={`text-xs ${alert.acknowledged_at ? 'text-green-400' : 'text-red-400'}`}>
+                                        {alert.acknowledged_at ? new Date(alert.acknowledged_at).toLocaleString() : 'Not yet acknowledged'}
+                                      </p>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                      <p className="text-slate-500 text-xs mb-1">Recommended Interventions</p>
+                                      {Array.isArray(alert.recommended_interventions) && alert.recommended_interventions.length > 0
+                                        ? <ul className="list-disc list-inside space-y-1">{alert.recommended_interventions.map((r, i) => <li key={i} className="text-amber-300 text-xs">{r}</li>)}</ul>
+                                        : <p className="text-slate-500 text-xs">None recorded.</p>}
                                     </div>
                                   </div>
                                 </td>
