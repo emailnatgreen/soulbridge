@@ -1,0 +1,319 @@
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
+
+const STALL_DAYS = 7;
+
+function isStalled(task) {
+  const now = new Date();
+  const updatedAt = task.updated_date ? new Date(task.updated_date) : null;
+  const daysSinceUpdate = updatedAt ? (now - updatedAt) / (1000 * 60 * 60 * 24) : 999;
+
+  if ((task.status === 'blocked') && daysSinceUpdate >= STALL_DAYS) return true;
+  if (task.due_date && isPast(parseISO(task.due_date)) && (task.status === 'todo' || task.status === 'in_progress')) return true;
+  return false;
+}
+
+function stallReason(task) {
+  const now = new Date();
+  const updatedAt = task.updated_date ? new Date(task.updated_date) : null;
+  const daysSinceUpdate = updatedAt ? Math.floor((now - updatedAt) / (1000 * 60 * 60 * 24)) : null;
+
+  if (task.status === 'blocked' && daysSinceUpdate >= STALL_DAYS) return `Blocked for ${daysSinceUpdate} days`;
+  if (task.due_date && isPast(parseISO(task.due_date))) return `Overdue since ${formatDistanceToNow(parseISO(task.due_date), { addSuffix: true })}`;
+  return 'Stalled';
+}
+
+function StatCard({ icon: Icon, label, value, color }) {
+  return (
+    <div className={`bg-slate-900 border border-slate-700 rounded-xl p-5 flex items-center gap-4`}>
+      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${color}`}>
+        <Icon className="w-6 h-6 text-white" />
+      </div>
+      <div>
+        <p className="text-slate-400 text-sm">{label}</p>
+        <p className="text-white text-2xl font-bold">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function BreakdownBar({ label, count, max, color }) {
+  const pct = max > 0 ? (count / max) * 100 : 0;
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-slate-300 text-sm truncate w-40 flex-shrink-0">{label}</span>
+      <div className="flex-1 bg-slate-800 rounded-full h-2">
+        <div className={`h-2 rounded-full ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-slate-400 text-sm w-6 text-right">{count}</span>
+    </div>
+  );
+}
+
+export default function KineticWasteDashboard() {
+  const [sortBy, setSortBy] = useState('age');
+  const [sortAsc, setSortAsc] = useState(true);
+  const [expandedTask, setExpandedTask] = useState(null);
+
+  const { data: tasks = [], isLoading: tasksLoading } = useQuery({
+    queryKey: ['project-tasks-all'],
+    queryFn: () => base44.entities.ProjectTask.list('-updated_date', 200),
+  });
+
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents-all'],
+    queryFn: () => base44.entities.Agent.list('-created_date', 200),
+  });
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ['aiprojects-all'],
+    queryFn: () => base44.entities.AIProject.list('-created_date', 200),
+  });
+
+  const agentMap = useMemo(() => Object.fromEntries(agents.map(a => [a.id, a.name])), [agents]);
+  const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.title || p.name])), [projects]);
+
+  const stalledTasks = useMemo(() => tasks.filter(isStalled), [tasks]);
+
+  const totalEstimatedHours = useMemo(
+    () => stalledTasks.reduce((sum, t) => sum + (t.estimated_hours || 0), 0),
+    [stalledTasks]
+  );
+
+  // Breakdown by project
+  const byProject = useMemo(() => {
+    const map = {};
+    stalledTasks.forEach(t => {
+      const key = t.project_id || 'Unknown';
+      map[key] = (map[key] || 0) + 1;
+    });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [stalledTasks]);
+
+  // Breakdown by agent
+  const byAgent = useMemo(() => {
+    const map = {};
+    stalledTasks.forEach(t => {
+      const key = t.assigned_agent_id || 'Unassigned';
+      map[key] = (map[key] || 0) + 1;
+    });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [stalledTasks]);
+
+  // Sort stalled tasks for table
+  const sortedTasks = useMemo(() => {
+    const arr = [...stalledTasks];
+    arr.sort((a, b) => {
+      let av, bv;
+      if (sortBy === 'age') {
+        av = new Date(a.updated_date || 0).getTime();
+        bv = new Date(b.updated_date || 0).getTime();
+        return sortAsc ? av - bv : bv - av;
+      }
+      if (sortBy === 'hours') {
+        av = a.estimated_hours || 0;
+        bv = b.estimated_hours || 0;
+        return sortAsc ? av - bv : bv - av;
+      }
+      if (sortBy === 'title') {
+        return sortAsc ? (a.title || '').localeCompare(b.title || '') : (b.title || '').localeCompare(a.title || '');
+      }
+      return 0;
+    });
+    return arr;
+  }, [stalledTasks, sortBy, sortAsc]);
+
+  const toggleSort = (col) => {
+    if (sortBy === col) setSortAsc(a => !a);
+    else { setSortBy(col); setSortAsc(true); }
+  };
+
+  const SortIcon = ({ col }) => sortBy === col
+    ? (sortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
+    : null;
+
+  const statusColor = {
+    blocked: 'bg-red-500/20 text-red-400 border-red-500/30',
+    todo: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    in_progress: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  };
+
+  const maxProject = byProject[0]?.[1] || 1;
+  const maxAgent = byAgent[0]?.[1] || 1;
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-white p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center">
+            <Zap className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Kinetic Waste Dashboard</h1>
+            <p className="text-slate-400 text-sm">Detection & Annihilation of Stalled Kinetic Flow</p>
+          </div>
+        </div>
+        <div className="mt-3 px-4 py-2 bg-red-900/20 border border-red-500/30 rounded-lg inline-flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-red-400" />
+          <span className="text-red-300 text-sm">
+            Stall threshold: <strong>7 days</strong> in blocked status, or any overdue task still in progress
+          </span>
+        </div>
+      </div>
+
+      {tasksLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+        </div>
+      ) : (
+        <>
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <StatCard icon={AlertTriangle} label="Stalled Tasks" value={stalledTasks.length} color="bg-red-600" />
+            <StatCard icon={Clock} label="Hours Locked In Waste" value={`${totalEstimatedHours}h`} color="bg-orange-600" />
+            <StatCard icon={Folder} label="Projects Affected" value={byProject.length} color="bg-amber-600" />
+            <StatCard icon={Users} label="Agents Affected" value={byAgent.filter(([k]) => k !== 'Unassigned').length} color="bg-rose-600" />
+          </div>
+
+          {/* Breakdown Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Folder className="w-4 h-4 text-amber-400" />
+                <h2 className="text-white font-semibold">Stalled Tasks by Project</h2>
+              </div>
+              <div className="space-y-3">
+                {byProject.length === 0 && <p className="text-slate-500 text-sm">No stalled tasks detected.</p>}
+                {byProject.map(([pid, count]) => (
+                  <BreakdownBar
+                    key={pid}
+                    label={projectMap[pid] || pid}
+                    count={count}
+                    max={maxProject}
+                    color="bg-amber-500"
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Users className="w-4 h-4 text-rose-400" />
+                <h2 className="text-white font-semibold">Stalled Tasks by Agent</h2>
+              </div>
+              <div className="space-y-3">
+                {byAgent.length === 0 && <p className="text-slate-500 text-sm">No stalled tasks detected.</p>}
+                {byAgent.map(([aid, count]) => (
+                  <BreakdownBar
+                    key={aid}
+                    label={agentMap[aid] || (aid === 'Unassigned' ? 'Unassigned' : aid)}
+                    count={count}
+                    max={maxAgent}
+                    color="bg-rose-500"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Stalled Task Table */}
+          <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+            <div className="flex items-center gap-2 p-5 border-b border-slate-700">
+              <TrendingDown className="w-4 h-4 text-red-400" />
+              <h2 className="text-white font-semibold">Oldest Stalled Tasks</h2>
+              <span className="ml-auto text-slate-500 text-xs">{stalledTasks.length} tasks</span>
+            </div>
+
+            {stalledTasks.length === 0 ? (
+              <div className="p-12 text-center">
+                <Zap className="w-10 h-10 text-green-400 mx-auto mb-3" />
+                <p className="text-green-400 font-semibold">No kinetic waste detected</p>
+                <p className="text-slate-500 text-sm mt-1">All tasks are flowing — the Grid is clean.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-slate-800">
+                      <th className="text-left px-5 py-3 cursor-pointer hover:text-white" onClick={() => toggleSort('title')}>
+                        <span className="flex items-center gap-1">Task <SortIcon col="title" /></span>
+                      </th>
+                      <th className="text-left px-4 py-3">Project</th>
+                      <th className="text-left px-4 py-3">Agent</th>
+                      <th className="text-left px-4 py-3">Status</th>
+                      <th className="text-left px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleSort('hours')}>
+                        <span className="flex items-center gap-1">Hours <SortIcon col="hours" /></span>
+                      </th>
+                      <th className="text-left px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleSort('age')}>
+                        <span className="flex items-center gap-1">Last Updated <SortIcon col="age" /></span>
+                      </th>
+                      <th className="text-left px-4 py-3">Waste Signal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedTasks.map(task => (
+                      <>
+                        <tr
+                          key={task.id}
+                          className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
+                          onClick={() => setExpandedTask(expandedTask === task.id ? null : task.id)}
+                        >
+                          <td className="px-5 py-3 text-white font-medium max-w-xs truncate">{task.title}</td>
+                          <td className="px-4 py-3 text-slate-400 truncate max-w-[120px]">{projectMap[task.project_id] || '—'}</td>
+                          <td className="px-4 py-3 text-slate-400 truncate max-w-[120px]">{agentMap[task.assigned_agent_id] || 'Unassigned'}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 rounded-full text-xs border ${statusColor[task.status] || 'bg-slate-700 text-slate-300 border-slate-600'}`}>
+                              {task.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-300">{task.estimated_hours ? `${task.estimated_hours}h` : '—'}</td>
+                          <td className="px-4 py-3 text-slate-400 text-xs">
+                            {task.updated_date ? formatDistanceToNow(new Date(task.updated_date), { addSuffix: true }) : '—'}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="flex items-center gap-1 text-red-400 text-xs">
+                              <AlertTriangle className="w-3 h-3" />
+                              {stallReason(task)}
+                            </span>
+                          </td>
+                        </tr>
+                        {expandedTask === task.id && (
+                          <tr key={`${task.id}-exp`} className="bg-slate-800/30">
+                            <td colSpan={7} className="px-6 py-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                  <p className="text-slate-500 text-xs mb-1">Description</p>
+                                  <p className="text-slate-300">{task.description || 'No description.'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-slate-500 text-xs mb-1">Due Date</p>
+                                  <p className={`${task.due_date && isPast(parseISO(task.due_date)) ? 'text-red-400' : 'text-slate-300'}`}>
+                                    {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-slate-500 text-xs mb-1">Blockers</p>
+                                  {task.blockers?.length > 0
+                                    ? task.blockers.map((b, i) => <p key={i} className="text-amber-300">{b}</p>)
+                                    : <p className="text-slate-500">None recorded</p>}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
