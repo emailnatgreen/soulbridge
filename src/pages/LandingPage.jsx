@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { emitWalletSignal } from '@/hooks/useWalletDidSignal';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock, Info } from 'lucide-react';
@@ -12,7 +11,6 @@ import LoreNodeCard from '@/components/lore/LoreNodeCard';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
-import GenesisSealBadge from '@/components/GenesisSealBadge';
 
 if (!window.__soulbridge) window.__soulbridge = {};
 

@@ -766,7 +766,7 @@ export default function KineticWasteDashboard() {
             )}
           </div>
 
-          {/* ── AUTOMATION ERRORS SECTION ── */
+          {/* ── AUTOMATION ERRORS SECTION ── */}
           <div className="mt-10">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-600 to-violet-600 flex items-center justify-center">
