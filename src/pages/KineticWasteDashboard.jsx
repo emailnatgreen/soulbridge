@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX } from 'lucide-react';
+import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX, ShoppingBag, Coins, BarChart2, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow, isPast, parseISO, differenceInHours, subHours, subDays } from 'date-fns';
 
 const STALL_DAYS = 7;
@@ -118,6 +118,9 @@ export default function KineticWasteDashboard() {
   const [expandedAlert, setExpandedAlert] = useState(null);
   const [wellSortBy, setWellSortBy] = useState('severity');
   const [wellSortAsc, setWellSortAsc] = useState(true);
+  const [expandedRes, setExpandedRes] = useState(null);
+  const [resSortBy, setResSortBy] = useState('age');
+  const [resSortAsc, setResSortAsc] = useState(true);
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['project-tasks-all'],
@@ -154,6 +157,16 @@ export default function KineticWasteDashboard() {
     queryKey: ['wellbeing-alerts-active'],
     queryFn: () => base44.entities.WellbeingAlert.filter({ status: 'active' }, '-created_date', 300).catch(() => []),
     refetchInterval: 60000,
+  });
+
+  const { data: resourceListings = [], isLoading: listingsLoading } = useQuery({
+    queryKey: ['resource-listings-all'],
+    queryFn: () => base44.entities.ResourceListing.list('-created_date', 300).catch(() => []),
+  });
+
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources-all'],
+    queryFn: () => base44.entities.Resource.list('-created_date', 300).catch(() => []),
   });
 
   const agentMap = useMemo(() => Object.fromEntries(agents.map(a => [a.id, a.name])), [agents]);
@@ -344,6 +357,105 @@ export default function KineticWasteDashboard() {
 
   const WellSortIcon = ({ col }) => wellSortBy === col
     ? (wellSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
+    : null;
+
+  // Resource management memos
+  const STAGNANT_DAYS = 30;
+  const IDLE_DAYS = 60;
+
+  const stagnantListings = useMemo(() => {
+    const cutoff = subDays(new Date(), STAGNANT_DAYS);
+    return resourceListings.filter(l =>
+      (!l.total_sales || l.total_sales === 0) ||
+      (l.updated_date && new Date(l.updated_date) < cutoff)
+    );
+  }, [resourceListings]);
+
+  const idleResources = useMemo(() => {
+    const cutoff = subDays(new Date(), IDLE_DAYS);
+    return resources.filter(r =>
+      r.is_tradeable && r.owner_agent_id &&
+      (!r.updated_date || new Date(r.updated_date) < cutoff)
+    );
+  }, [resources]);
+
+  const unprofitableChains = useMemo(() =>
+    prodChains.filter(c => c.efficiency != null && c.efficiency < 0.5),
+  [prodChains]);
+
+  const frictionIndex = useMemo(() =>
+    stagnantListings.length + idleResources.length + unprofitableChains.length,
+  [stagnantListings, idleResources, unprofitableChains]);
+
+  const idleValueTotal = useMemo(() =>
+    idleResources.reduce((s, r) => s + (r.xrp_value || 0) * (r.quantity || 1), 0),
+  [idleResources]);
+
+  const byResourceType = useMemo(() => {
+    const map = {};
+    [...stagnantListings, ...idleResources].forEach(r => {
+      const k = r.resource_type || r.type || 'Unknown';
+      map[k] = (map[k] || 0) + 1;
+    });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [stagnantListings, idleResources]);
+
+  const bySellerAgent = useMemo(() => {
+    const map = {};
+    stagnantListings.forEach(l => { const k = l.seller_agent_id || l.agent_id || 'Unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [stagnantListings]);
+
+  const byOwnerAgent = useMemo(() => {
+    const map = {};
+    idleResources.forEach(r => { const k = r.owner_agent_id || 'Unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [idleResources]);
+
+  // Unified resource waste rows
+  const resWasteRows = useMemo(() => {
+    const rows = [
+      ...stagnantListings.map(l => ({
+        id: `listing-${l.id}`,
+        name: l.resource_name || l.title || 'Listing',
+        agent: l.seller_agent_id || l.agent_id,
+        quantity: l.quantity_available ?? l.quantity ?? '—',
+        price: l.price_per_unit != null ? `${l.price_per_unit} XRP` : '—',
+        lastActivity: l.updated_date,
+        signal: `Stagnant Listing (${l.total_sales || 0} sales)`,
+        type: 'listing',
+        raw: l,
+      })),
+      ...idleResources.map(r => ({
+        id: `resource-${r.id}`,
+        name: r.name,
+        agent: r.owner_agent_id,
+        quantity: r.quantity ?? '—',
+        price: r.xrp_value != null ? `${r.xrp_value} XRP` : '—',
+        lastActivity: r.updated_date,
+        signal: `Idle Resource (${r.updated_date ? Math.floor(differenceInHours(new Date(), new Date(r.updated_date)) / 24) : '60'}+ days)`,
+        type: 'resource',
+        raw: r,
+      })),
+    ];
+    rows.sort((a, b) => {
+      if (resSortBy === 'age') {
+        const av = new Date(a.lastActivity || 0).getTime(), bv = new Date(b.lastActivity || 0).getTime();
+        return resSortAsc ? av - bv : bv - av;
+      }
+      if (resSortBy === 'name') return resSortAsc ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '');
+      return 0;
+    });
+    return rows;
+  }, [stagnantListings, idleResources, resSortBy, resSortAsc]);
+
+  const toggleResSort = (col) => {
+    if (resSortBy === col) setResSortAsc(a => !a);
+    else { setResSortBy(col); setResSortAsc(true); }
+  };
+
+  const ResSortIcon = ({ col }) => resSortBy === col
+    ? (resSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
     : null;
   const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.title || p.name])), [projects]);
 
@@ -1088,6 +1200,157 @@ export default function KineticWasteDashboard() {
                           </>
                         );
                       })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── RESOURCE MANAGEMENT & MARKETPLACE ANOMALIES SECTION ── */}
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center">
+                <ShoppingBag className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Resource & Marketplace Waste</h2>
+                <p className="text-slate-400 text-sm">Stagnant listings, idle resources, and unprofitable production draining Village economy</p>
+              </div>
+              <div className="ml-auto px-3 py-1.5 bg-amber-900/20 border border-amber-500/30 rounded-lg text-xs text-amber-300">
+                Stagnant &gt;{STAGNANT_DAYS}d &nbsp;·&nbsp; Idle &gt;{IDLE_DAYS}d
+              </div>
+            </div>
+
+            {/* Resource Stat Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <StatCard icon={ShoppingBag} label="Stagnant Listings" value={stagnantListings.length} color="bg-amber-600" />
+              <StatCard icon={Coins} label="Idle Resource Value (XRP)" value={idleValueTotal.toFixed(1)} color="bg-yellow-700" />
+              <StatCard icon={TrendingDown} label="Unprofitable Chains" value={unprofitableChains.length} color="bg-orange-700" />
+              <StatCard icon={BarChart2} label="Friction Index" value={frictionIndex} color="bg-red-900" />
+            </div>
+
+            {/* Resource Breakdown Bars */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Package className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-white font-semibold">By Resource Type</h3>
+                </div>
+                <div className="space-y-3">
+                  {byResourceType.length === 0 && <p className="text-slate-500 text-sm">No waste detected.</p>}
+                  {byResourceType.map(([type, count]) => (
+                    <BreakdownBar key={type} label={type} count={count} max={byResourceType[0]?.[1] || 1} color="bg-amber-500" />
+                  ))}
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <ShoppingBag className="w-4 h-4 text-yellow-400" />
+                  <h3 className="text-white font-semibold">Stagnant by Seller Agent</h3>
+                </div>
+                <div className="space-y-3">
+                  {bySellerAgent.length === 0 && <p className="text-slate-500 text-sm">No stagnant listings.</p>}
+                  {bySellerAgent.map(([aid, count]) => (
+                    <BreakdownBar key={aid} label={agentMap[aid] || aid} count={count} max={bySellerAgent[0]?.[1] || 1} color="bg-yellow-600" />
+                  ))}
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Coins className="w-4 h-4 text-orange-400" />
+                  <h3 className="text-white font-semibold">Idle Resources by Owner</h3>
+                </div>
+                <div className="space-y-3">
+                  {byOwnerAgent.length === 0 && <p className="text-slate-500 text-sm">No idle resources.</p>}
+                  {byOwnerAgent.map(([aid, count]) => (
+                    <BreakdownBar key={aid} label={agentMap[aid] || aid} count={count} max={byOwnerAgent[0]?.[1] || 1} color="bg-orange-500" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Resource Waste Table */}
+            <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-2 p-5 border-b border-slate-700">
+                <ShoppingBag className="w-4 h-4 text-amber-400" />
+                <h2 className="text-white font-semibold">Resource & Listing Waste Log</h2>
+                <span className="ml-auto text-slate-500 text-xs">{resWasteRows.length} entries</span>
+              </div>
+
+              {listingsLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="w-6 h-6 border-4 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                </div>
+              ) : resWasteRows.length === 0 ? (
+                <div className="p-12 text-center">
+                  <TrendingUp className="w-10 h-10 text-green-400 mx-auto mb-3" />
+                  <p className="text-green-400 font-semibold">Marketplace is flowing efficiently</p>
+                  <p className="text-slate-500 text-sm mt-1">No stagnant listings or idle resources detected.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400 border-b border-slate-800">
+                        <th className="text-left px-5 py-3 cursor-pointer hover:text-white" onClick={() => toggleResSort('name')}>
+                          <span className="flex items-center gap-1">Resource / Listing <ResSortIcon col="name" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Agent</th>
+                        <th className="text-left px-4 py-3">Qty</th>
+                        <th className="text-left px-4 py-3">Price / Value</th>
+                        <th className="text-left px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleResSort('age')}>
+                          <span className="flex items-center gap-1">Last Active <ResSortIcon col="age" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Type</th>
+                        <th className="text-left px-4 py-3">Waste Signal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {resWasteRows.map(row => (
+                        <>
+                          <tr
+                            key={row.id}
+                            className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
+                            onClick={() => setExpandedRes(expandedRes === row.id ? null : row.id)}
+                          >
+                            <td className="px-5 py-3 text-white font-medium max-w-[160px] truncate">{row.name}</td>
+                            <td className="px-4 py-3 text-slate-400 text-xs">{agentMap[row.agent] || row.agent || 'Unknown'}</td>
+                            <td className="px-4 py-3 text-slate-300 text-xs">{row.quantity}</td>
+                            <td className="px-4 py-3 text-slate-300 text-xs">{row.price}</td>
+                            <td className="px-4 py-3 text-slate-400 text-xs">
+                              {row.lastActivity ? formatDistanceToNow(new Date(row.lastActivity), { addSuffix: true }) : '—'}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-0.5 rounded-full text-xs border ${
+                                row.type === 'listing'
+                                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                                  : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                              }`}>{row.type}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="flex items-center gap-1 text-amber-400 text-xs">
+                                <AlertTriangle className="w-3 h-3" />
+                                {row.signal}
+                              </span>
+                            </td>
+                          </tr>
+                          {expandedRes === row.id && (
+                            <tr key={`${row.id}-exp`} className="bg-slate-800/30">
+                              <td colSpan={7} className="px-6 py-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                                  {Object.entries(row.raw).filter(([k]) => !['id','created_by'].includes(k)).slice(0, 8).map(([k, v]) => (
+                                    <div key={k}>
+                                      <p className="text-slate-500 mb-0.5">{k.replace(/_/g, ' ')}</p>
+                                      <p className="text-slate-300 truncate">{typeof v === 'object' ? JSON.stringify(v) : String(v ?? '—')}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      ))}
                     </tbody>
                   </table>
                 </div>
