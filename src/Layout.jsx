@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import DIDPresenceBadge from '@/components/global/DIDPresenceBadge';
+import KineticPulseIndicator from '@/components/global/KineticPulseIndicator';
+import AxiNotificationBell from '@/components/global/AxiNotificationBell';
 import { Toaster } from "@/components/ui/sonner";
 import GlobalNav from '@/components/GlobalNav';
 import MobileBottomNav from '@/components/MobileBottomNav';
@@ -38,20 +41,21 @@ export default function Layout({ children, currentPageName }) {
     <div className="relative">
       <GlobalNav />
 
-      {/* Background watermark */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{
-          backgroundImage: `url(https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png)`,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center center',
-          backgroundSize: '420px 420px',
-          opacity: 0.06,
-        }}
-      />
+      {/* Global top bar — DID + Kinetic + Notifications */}
+      {isRecognized && !isPublic && (
+        <div className="fixed top-0 right-0 z-30 flex items-center gap-2 p-2 pr-3"
+          style={{ left: isAdmin ? '256px' : 0 }}
+        >
+          <div className="ml-auto flex items-center gap-2">
+            <KineticPulseIndicator />
+            <AxiNotificationBell />
+            <DIDPresenceBadge />
+          </div>
+        </div>
+      )}
 
-      {/* Page content */}
-      <div className={`relative z-10 ${isAdmin ? 'lg:ml-64' : ''} ${isAdmin && !isPublic ? 'pb-16 lg:pb-0' : ''}`}>
+      {/* Background watermark */}
+      <div className={`relative z-10 ${isAdmin ? 'lg:ml-64' : ''} ${isAdmin && !isPublic ? 'pb-16 lg:pb-0' : ''} ${isRecognized && !isPublic ? 'pt-12' : ''}`}>
         {children}
       </div>
 
