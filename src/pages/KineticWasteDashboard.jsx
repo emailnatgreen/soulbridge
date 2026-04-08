@@ -1,10 +1,23 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
-import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
+import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter } from 'lucide-react';
+import { formatDistanceToNow, isPast, parseISO, differenceInHours, subHours, subDays } from 'date-fns';
 
 const STALL_DAYS = 7;
+const RECURRING_THRESHOLD = 3; // same automation errors X+ times
+const PERSISTENT_HOURS = 1;    // error unresolved for Y+ hours
+const CRITICAL_AUTOMATIONS = ['monitorGovernanceCompliance', 'syncTreasuryBalance', 'lawGuardianScan', 'masterAutomationOrchestrator'];
+
+function automationWasteSignal(log, allLogs) {
+  const isoCritical = CRITICAL_AUTOMATIONS.some(n => (log.automation_name || '').toLowerCase().includes(n.toLowerCase()) || (log.function_name || '').toLowerCase().includes(n.toLowerCase()));
+  if (isoCritical) return 'Critical System Failure';
+  const sameKey = allLogs.filter(l => l.automation_name === log.automation_name && l.function_name === log.function_name && ['error', 'warning'].includes(l.status));
+  if (sameKey.length >= RECURRING_THRESHOLD) return `Recurring Error (${sameKey.length}×)`;
+  const hours = log.run_at ? differenceInHours(new Date(), new Date(log.run_at)) : 0;
+  if (hours >= PERSISTENT_HOURS) return `Persistent Error (${hours}h)`;
+  return 'Error';
+}
 
 function isStalled(task) {
   const now = new Date();
@@ -58,6 +71,11 @@ export default function KineticWasteDashboard() {
   const [sortAsc, setSortAsc] = useState(true);
   const [expandedTask, setExpandedTask] = useState(null);
 
+  const [autoTimeFilter, setAutoTimeFilter] = useState('24h');
+  const [autoSortBy, setAutoSortBy] = useState('time');
+  const [autoSortAsc, setAutoSortAsc] = useState(false);
+  const [expandedLog, setExpandedLog] = useState(null);
+
   const { data: tasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['project-tasks-all'],
     queryFn: () => base44.entities.ProjectTask.list('-updated_date', 200),
@@ -73,7 +91,83 @@ export default function KineticWasteDashboard() {
     queryFn: () => base44.entities.AIProject.list('-created_date', 200),
   });
 
+  const { data: autoLogs = [], isLoading: autoLoading } = useQuery({
+    queryKey: ['automation-logs-errors'],
+    queryFn: () => base44.entities.AutomationLog.filter({ status: 'error' }, '-run_at', 300).catch(() => []),
+    refetchInterval: 30000,
+  });
+
+  const { data: warnLogs = [] } = useQuery({
+    queryKey: ['automation-logs-warnings'],
+    queryFn: () => base44.entities.AutomationLog.filter({ status: 'warning' }, '-run_at', 300).catch(() => []),
+  });
+
   const agentMap = useMemo(() => Object.fromEntries(agents.map(a => [a.id, a.name])), [agents]);
+
+  const allErrorLogs = useMemo(() => [...autoLogs, ...warnLogs], [autoLogs, warnLogs]);
+
+  const filteredErrorLogs = useMemo(() => {
+    const cutoff = autoTimeFilter === '24h' ? subHours(new Date(), 24) : subDays(new Date(), 7);
+    return allErrorLogs.filter(l => l.run_at && new Date(l.run_at) >= cutoff);
+  }, [allErrorLogs, autoTimeFilter]);
+
+  const byAutomationName = useMemo(() => {
+    const map = {};
+    filteredErrorLogs.forEach(l => { const k = l.automation_name || 'Unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [filteredErrorLogs]);
+
+  const byFunctionName = useMemo(() => {
+    const map = {};
+    filteredErrorLogs.forEach(l => { const k = l.function_name || 'Unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [filteredErrorLogs]);
+
+  const uniqueErrorAutomations = useMemo(() => new Set(filteredErrorLogs.map(l => l.automation_name)).size, [filteredErrorLogs]);
+
+  const estimatedDowntimeHours = useMemo(() => {
+    const seen = new Set();
+    let total = 0;
+    filteredErrorLogs.forEach(l => {
+      const key = `${l.automation_name}__${l.function_name}`;
+      if (!seen.has(key) && l.run_at) {
+        seen.add(key);
+        total += Math.min(differenceInHours(new Date(), new Date(l.run_at)), 168);
+      }
+    });
+    return total;
+  }, [filteredErrorLogs]);
+
+  const errorTypeBreakdown = useMemo(() => {
+    const map = { 'API Failure': 0, 'Timeout': 0, 'Parse Error': 0, 'Auth Error': 0, 'Other': 0 };
+    filteredErrorLogs.forEach(l => {
+      const msg = (l.message || l.error_detail || '').toLowerCase();
+      if (msg.includes('timeout') || msg.includes('timed out')) map['Timeout']++;
+      else if (msg.includes('auth') || msg.includes('unauthorized') || msg.includes('403') || msg.includes('401')) map['Auth Error']++;
+      else if (msg.includes('parse') || msg.includes('json') || msg.includes('syntax')) map['Parse Error']++;
+      else if (msg.includes('api') || msg.includes('fetch') || msg.includes('network') || msg.includes('500')) map['API Failure']++;
+      else map['Other']++;
+    });
+    return Object.entries(map).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  }, [filteredErrorLogs]);
+
+  const sortedErrorLogs = useMemo(() => {
+    const arr = [...filteredErrorLogs];
+    arr.sort((a, b) => {
+      if (autoSortBy === 'time') {
+        const av = new Date(a.run_at || 0).getTime(), bv = new Date(b.run_at || 0).getTime();
+        return autoSortAsc ? av - bv : bv - av;
+      }
+      if (autoSortBy === 'name') return autoSortAsc ? (a.automation_name || '').localeCompare(b.automation_name || '') : (b.automation_name || '').localeCompare(a.automation_name || '');
+      return 0;
+    });
+    return arr;
+  }, [filteredErrorLogs, autoSortBy, autoSortAsc]);
+
+  const toggleAutoSort = (col) => {
+    if (autoSortBy === col) setAutoSortAsc(a => !a);
+    else { setAutoSortBy(col); setAutoSortAsc(false); }
+  };
   const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.title || p.name])), [projects]);
 
   const stalledTasks = useMemo(() => tasks.filter(isStalled), [tasks]);
@@ -143,6 +237,10 @@ export default function KineticWasteDashboard() {
 
   const maxProject = byProject[0]?.[1] || 1;
   const maxAgent = byAgent[0]?.[1] || 1;
+
+  const AutoSortIcon = ({ col }) => autoSortBy === col
+    ? (autoSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
+    : null;
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6">
@@ -312,6 +410,181 @@ export default function KineticWasteDashboard() {
               </div>
             )}
           </div>
+
+          {/* ── AUTOMATION ERRORS SECTION ── */}
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-600 to-violet-600 flex items-center justify-center">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Automation Error Waste</h2>
+                <p className="text-slate-400 text-sm">Systemic failures consuming resources without delivering value</p>
+              </div>
+              {/* Time Filter */}
+              <div className="ml-auto flex items-center gap-2">
+                <Filter className="w-4 h-4 text-slate-500" />
+                {['24h', '7d'].map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setAutoTimeFilter(f)}
+                    className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+                      autoTimeFilter === f
+                        ? 'bg-fuchsia-600 text-white'
+                        : 'bg-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >{f === '24h' ? 'Last 24h' : 'Last 7 days'}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Automation Stat Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <StatCard icon={Bot} label="Active Error Automations" value={filteredErrorLogs.length} color="bg-fuchsia-700" />
+              <StatCard icon={Clock} label="Est. Downtime Hours" value={`${estimatedDowntimeHours}h`} color="bg-violet-700" />
+              <StatCard icon={Activity} label="Unique Automations Impacted" value={uniqueErrorAutomations} color="bg-purple-700" />
+              <StatCard icon={AlertTriangle} label="Most Common Error" value={errorTypeBreakdown[0]?.[0] || '—'} color="bg-pink-700" />
+            </div>
+
+            {/* Error Type + Automation Breakdowns */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <RefreshCw className="w-4 h-4 text-fuchsia-400" />
+                  <h3 className="text-white font-semibold">Error Types</h3>
+                </div>
+                <div className="space-y-3">
+                  {errorTypeBreakdown.length === 0 && <p className="text-slate-500 text-sm">No errors detected.</p>}
+                  {errorTypeBreakdown.map(([type, count]) => (
+                    <BreakdownBar key={type} label={type} count={count} max={errorTypeBreakdown[0]?.[1] || 1} color="bg-fuchsia-500" />
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Activity className="w-4 h-4 text-violet-400" />
+                  <h3 className="text-white font-semibold">By Automation</h3>
+                </div>
+                <div className="space-y-3">
+                  {byAutomationName.length === 0 && <p className="text-slate-500 text-sm">No errors detected.</p>}
+                  {byAutomationName.map(([name, count]) => (
+                    <BreakdownBar key={name} label={name} count={count} max={byAutomationName[0]?.[1] || 1} color="bg-violet-500" />
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Zap className="w-4 h-4 text-purple-400" />
+                  <h3 className="text-white font-semibold">By Function</h3>
+                </div>
+                <div className="space-y-3">
+                  {byFunctionName.length === 0 && <p className="text-slate-500 text-sm">No errors detected.</p>}
+                  {byFunctionName.map(([name, count]) => (
+                    <BreakdownBar key={name} label={name} count={count} max={byFunctionName[0]?.[1] || 1} color="bg-purple-500" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Automation Error Table */}
+            <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-2 p-5 border-b border-slate-700">
+                <Bot className="w-4 h-4 text-fuchsia-400" />
+                <h2 className="text-white font-semibold">Automation Error Log</h2>
+                <span className="ml-auto text-slate-500 text-xs">{filteredErrorLogs.length} entries</span>
+              </div>
+
+              {autoLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="w-6 h-6 border-4 border-fuchsia-400/30 border-t-fuchsia-400 rounded-full animate-spin" />
+                </div>
+              ) : filteredErrorLogs.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Bot className="w-10 h-10 text-green-400 mx-auto mb-3" />
+                  <p className="text-green-400 font-semibold">No automation errors detected</p>
+                  <p className="text-slate-500 text-sm mt-1">All automations are running clean.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400 border-b border-slate-800">
+                        <th className="text-left px-5 py-3 cursor-pointer hover:text-white" onClick={() => toggleAutoSort('name')}>
+                          <span className="flex items-center gap-1">Automation <AutoSortIcon col="name" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Function</th>
+                        <th className="text-left px-4 py-3">Status</th>
+                        <th className="text-left px-4 py-3">Message</th>
+                        <th className="text-left px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleAutoSort('time')}>
+                          <span className="flex items-center gap-1">Time <AutoSortIcon col="time" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Triggered By</th>
+                        <th className="text-left px-4 py-3">Waste Signal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedErrorLogs.map(log => {
+                        const signal = automationWasteSignal(log, allErrorLogs);
+                        const isCritical = signal === 'Critical System Failure';
+                        return (
+                          <>
+                            <tr
+                              key={log.id}
+                              className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
+                              onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
+                            >
+                              <td className="px-5 py-3 text-white font-medium max-w-[160px] truncate">{log.automation_name || '—'}</td>
+                              <td className="px-4 py-3 text-slate-400 text-xs max-w-[120px] truncate">{log.function_name || '—'}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-0.5 rounded-full text-xs border ${
+                                  log.status === 'error' ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                                  : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                                }`}>{log.status}</span>
+                              </td>
+                              <td className="px-4 py-3 text-slate-400 text-xs max-w-[200px] truncate">{log.message || '—'}</td>
+                              <td className="px-4 py-3 text-slate-400 text-xs">
+                                {log.run_at ? formatDistanceToNow(new Date(log.run_at), { addSuffix: true }) : '—'}
+                              </td>
+                              <td className="px-4 py-3 text-slate-400 text-xs truncate max-w-[100px]">{log.triggered_by || '—'}</td>
+                              <td className="px-4 py-3">
+                                <span className={`flex items-center gap-1 text-xs ${
+                                  isCritical ? 'text-red-400' : 'text-fuchsia-400'
+                                }`}>
+                                  <AlertTriangle className="w-3 h-3" />
+                                  {signal}
+                                </span>
+                              </td>
+                            </tr>
+                            {expandedLog === log.id && (
+                              <tr key={`${log.id}-exp`} className="bg-slate-800/30">
+                                <td colSpan={7} className="px-6 py-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <p className="text-slate-500 text-xs mb-1">Full Error Detail</p>
+                                      <pre className="text-red-300 text-xs bg-slate-950 rounded p-3 whitespace-pre-wrap break-all max-h-40 overflow-auto">{log.error_detail || log.message || 'No detail available.'}</pre>
+                                    </div>
+                                    <div>
+                                      <p className="text-slate-500 text-xs mb-1">Run At</p>
+                                      <p className="text-slate-300 text-xs">{log.run_at ? new Date(log.run_at).toLocaleString() : '—'}</p>
+                                      <p className="text-slate-500 text-xs mt-3 mb-1">Triggered By</p>
+                                      <p className="text-slate-300 text-xs">{log.triggered_by || '—'}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
         </>
       )}
     </div>
