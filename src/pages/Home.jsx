@@ -12,7 +12,7 @@ import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
   TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
-  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown
+  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, TrendingDown
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
 import VillagePulseMini from '@/components/kinetic/VillagePulseMini';
@@ -190,6 +190,7 @@ export default function Home() {
     { icon: Briefcase, title: 'AI Projects', desc: 'Collaborate on live Village projects with on-chain rewards', path: '/AIProjectManager', color: 'text-cyan-400', border: 'border-cyan-500/30', countLabel: 'projects', count: activeProjects.length },
     { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
     { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length },
+    { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
   ];
 
   return (
@@ -295,6 +296,12 @@ export default function Home() {
               className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white gap-2"
             >
               <Zap className="w-4 h-4" /> Kinetic Grid — Live
+            </Button>
+            <Button
+              onClick={() => navigate('/KineticWasteDashboard')}
+              className="bg-gradient-to-r from-red-700 to-orange-600 hover:from-red-800 hover:to-orange-700 text-white gap-2"
+            >
+              <TrendingDown className="w-4 h-4" /> Kinetic Waste — Annihilate
             </Button>
           </div>
 

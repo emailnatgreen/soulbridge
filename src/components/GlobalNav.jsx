@@ -42,6 +42,7 @@ const NAV_GROUPS = [
       { label: 'Governance Hub', path: '/GovernanceHub', icon: Vote },
       { label: '⚖️ Voting Dashboard', path: '/GovernanceVotingDashboard', icon: Vote },
       { label: '🌀 Kinetic Grid', path: '/KineticGridDashboard', icon: Activity },
+      { label: '♻️ Kinetic Waste', path: '/KineticWasteDashboard', icon: Activity },
       { label: 'Treasury Proposals', path: '/TreasuryAllocationProposal', icon: Landmark },
       { label: 'Treasury Signing', path: '/TreasurySigningHelper', icon: Zap },
       { label: 'Risk Register', path: '/RiskRegister', icon: Shield },
