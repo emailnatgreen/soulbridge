@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX, ShoppingBag, Coins, BarChart2, TrendingUp, BellRing, Flame } from 'lucide-react';
@@ -710,9 +710,8 @@ export default function KineticWasteDashboard() {
                   </thead>
                   <tbody>
                     {sortedTasks.map(task => (
-                      <>
+                      <React.Fragment key={task.id}>
                         <tr
-                          key={task.id}
                           className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
                           onClick={() => setExpandedTask(expandedTask === task.id ? null : task.id)}
                         >
@@ -736,7 +735,7 @@ export default function KineticWasteDashboard() {
                           </td>
                         </tr>
                         {expandedTask === task.id && (
-                          <tr key={`${task.id}-exp`} className="bg-slate-800/30">
+                          <tr className="bg-slate-800/30">
                             <td colSpan={7} className="px-6 py-4">
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                                 <div>
@@ -759,7 +758,7 @@ export default function KineticWasteDashboard() {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>
@@ -767,7 +766,7 @@ export default function KineticWasteDashboard() {
             )}
           </div>
 
-          {/* ── AUTOMATION ERRORS SECTION ── */}
+          {/* ── AUTOMATION ERRORS SECTION ── */
           <div className="mt-10">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-600 to-violet-600 flex items-center justify-center">
@@ -885,9 +884,8 @@ export default function KineticWasteDashboard() {
                         const signal = automationWasteSignal(log, allErrorLogs);
                         const isCritical = signal === 'Critical System Failure';
                         return (
-                          <>
+                          <React.Fragment key={log.id}>
                             <tr
-                              key={log.id}
                               className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
                               onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
                             >
@@ -914,7 +912,7 @@ export default function KineticWasteDashboard() {
                               </td>
                             </tr>
                             {expandedLog === log.id && (
-                              <tr key={`${log.id}-exp`} className="bg-slate-800/30">
+                              <tr className="bg-slate-800/30">
                                 <td colSpan={7} className="px-6 py-4">
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                                     <div>
@@ -931,7 +929,7 @@ export default function KineticWasteDashboard() {
                                 </td>
                               </tr>
                             )}
-                          </>
+                          </React.Fragment>
                         );
                       })}
                     </tbody>
@@ -1048,9 +1046,8 @@ export default function KineticWasteDashboard() {
                         const isShortage = chain.status === 'insufficient_resources';
                         const effPct = chain.efficiency != null ? Math.round(chain.efficiency * 100) : null;
                         return (
-                          <>
+                          <React.Fragment key={chain.id}>
                             <tr
-                              key={chain.id}
                               className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
                               onClick={() => setExpandedChain(expandedChain === chain.id ? null : chain.id)}
                             >
@@ -1081,7 +1078,7 @@ export default function KineticWasteDashboard() {
                               </td>
                             </tr>
                             {expandedChain === chain.id && (
-                              <tr key={`${chain.id}-exp`} className="bg-slate-800/30">
+                              <tr className="bg-slate-800/30">
                                 <td colSpan={7} className="px-6 py-4">
                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                                     <div>
@@ -1102,7 +1099,7 @@ export default function KineticWasteDashboard() {
                                 </td>
                               </tr>
                             )}
-                          </>
+                          </React.Fragment>
                         );
                       })}
                     </tbody>
@@ -1215,9 +1212,8 @@ export default function KineticWasteDashboard() {
                         const signal = wellbeingWasteSignal(alert, wellbeingAlerts);
                         const isCritical = alert.severity === 'critical';
                         return (
-                          <>
+                          <React.Fragment key={alert.id}>
                             <tr
-                              key={alert.id}
                               className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
                               onClick={() => setExpandedAlert(expandedAlert === alert.id ? null : alert.id)}
                             >
@@ -1243,7 +1239,7 @@ export default function KineticWasteDashboard() {
                               </td>
                             </tr>
                             {expandedAlert === alert.id && (
-                              <tr key={`${alert.id}-exp`} className="bg-slate-800/30">
+                              <tr className="bg-slate-800/30">
                                 <td colSpan={6} className="px-6 py-4">
                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                                     <div>
@@ -1264,7 +1260,7 @@ export default function KineticWasteDashboard() {
                                 </td>
                               </tr>
                             )}
-                          </>
+                          </React.Fragment>
                         );
                       })}
                     </tbody>
@@ -1375,9 +1371,8 @@ export default function KineticWasteDashboard() {
                     </thead>
                     <tbody>
                       {resWasteRows.map(row => (
-                        <>
+                        <React.Fragment key={row.id}>
                           <tr
-                            key={row.id}
                             className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
                             onClick={() => setExpandedRes(expandedRes === row.id ? null : row.id)}
                           >
@@ -1403,7 +1398,7 @@ export default function KineticWasteDashboard() {
                             </td>
                           </tr>
                           {expandedRes === row.id && (
-                            <tr key={`${row.id}-exp`} className="bg-slate-800/30">
+                            <tr className="bg-slate-800/30">
                               <td colSpan={7} className="px-6 py-4">
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                                   {Object.entries(row.raw).filter(([k]) => !['id','created_by'].includes(k)).slice(0, 8).map(([k, v]) => (
@@ -1416,7 +1411,7 @@ export default function KineticWasteDashboard() {
                               </td>
                             </tr>
                           )}
-                        </>
+                        </React.Fragment>
                       ))}
                     </tbody>
                   </table>
