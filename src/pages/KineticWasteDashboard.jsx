@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX, ShoppingBag, Coins, BarChart2, TrendingUp } from 'lucide-react';
+import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX, ShoppingBag, Coins, BarChart2, TrendingUp, BellRing, Flame } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatDistanceToNow, isPast, parseISO, differenceInHours, subHours, subDays } from 'date-fns';
 
 const STALL_DAYS = 7;
@@ -457,6 +458,51 @@ export default function KineticWasteDashboard() {
   const ResSortIcon = ({ col }) => resSortBy === col
     ? (resSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
     : null;
+
+  // ── GLOBAL ACTION ALERTS ──
+  const globalAlerts = useMemo(() => {
+    const alerts = [];
+    // Unacknowledged critical wellbeing alerts >24h
+    const critUnack = criticalActiveAlerts.filter(a => !a.acknowledged_at && a.created_date && differenceInHours(new Date(), new Date(a.created_date)) >= 24);
+    if (critUnack.length > 0)
+      alerts.push({ level: 'critical', icon: Heart, message: `${critUnack.length} critical wellbeing alert${critUnack.length > 1 ? 's' : ''} unacknowledged for 24h+`, section: 'Wellbeing' });
+    // Critical automation failures
+    const critAuto = filteredErrorLogs.filter(l => CRITICAL_AUTOMATIONS.some(n => (l.automation_name || '').toLowerCase().includes(n.toLowerCase())));
+    if (critAuto.length > 0)
+      alerts.push({ level: 'critical', icon: Bot, message: `${critAuto.length} critical automation system failure${critAuto.length > 1 ? 's' : ''} detected`, section: 'Automations' });
+    // Stalled high-priority tasks
+    const critTasks = stalledTasks.filter(t => t.priority === 'critical');
+    if (critTasks.length > 0)
+      alerts.push({ level: 'critical', icon: AlertTriangle, message: `${critTasks.length} critical-priority task${critTasks.length > 1 ? 's' : ''} stalled`, section: 'Tasks' });
+    // High inefficient chains
+    if (inefficientChains.filter(c => c.status === 'insufficient_resources').length > 0)
+      alerts.push({ level: 'warning', icon: Factory, message: `${inefficientChains.filter(c => c.status === 'insufficient_resources').length} production chain${inefficientChains.filter(c => c.status === 'insufficient_resources').length > 1 ? 's' : ''} stalled due to resource shortage`, section: 'Production' });
+    // Stagnant listings count
+    if (stagnantListings.length >= 5)
+      alerts.push({ level: 'warning', icon: ShoppingBag, message: `${stagnantListings.length} marketplace listings stagnant with zero sales`, section: 'Marketplace' });
+    return alerts;
+  }, [criticalActiveAlerts, filteredErrorLogs, stalledTasks, inefficientChains, stagnantListings]);
+
+  // ── HISTORICAL WASTE TRENDS ──
+  const trendData = useMemo(() => {
+    const days = 14;
+    const result = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const day = subDays(new Date(), i);
+      const label = day.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+      const dayStart = new Date(day); dayStart.setHours(0,0,0,0);
+      const dayEnd = new Date(day); dayEnd.setHours(23,59,59,999);
+      const inRange = (d) => d && new Date(d) >= dayStart && new Date(d) <= dayEnd;
+      result.push({
+        day: label,
+        'Stalled Tasks': stalledTasks.filter(t => inRange(t.updated_date)).length,
+        'Auto Errors': allErrorLogs.filter(l => inRange(l.run_at)).length,
+        'Wellbeing Alerts': wellbeingAlerts.filter(a => inRange(a.created_date)).length,
+        'Inefficient Chains': inefficientChains.filter(c => inRange(c.updated_date)).length,
+      });
+    }
+    return result;
+  }, [stalledTasks, allErrorLogs, wellbeingAlerts, inefficientChains]);
   const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.title || p.name])), [projects]);
 
   const stalledTasks = useMemo(() => tasks.filter(isStalled), [tasks]);
@@ -551,6 +597,31 @@ export default function KineticWasteDashboard() {
           </span>
         </div>
       </div>
+
+      {/* ── GLOBAL ACTION ALERTS ── */}
+      {globalAlerts.length > 0 && (
+        <div className="mb-8 space-y-2">
+          <div className="flex items-center gap-2 mb-3">
+            <BellRing className="w-4 h-4 text-red-400 animate-pulse" />
+            <h2 className="text-white font-semibold text-sm uppercase tracking-widest">Global Action Alerts</h2>
+            <span className="ml-2 px-2 py-0.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs">{globalAlerts.length} active</span>
+          </div>
+          {globalAlerts.map((a, i) => (
+            <div key={i} className={`flex items-center gap-3 rounded-xl px-4 py-3 border ${
+              a.level === 'critical'
+                ? 'bg-red-900/20 border-red-500/40 text-red-300'
+                : 'bg-amber-900/20 border-amber-500/40 text-amber-300'
+            }`}>
+              <a.icon className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm flex-1">{a.message}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                a.level === 'critical' ? 'bg-red-500/20 border-red-500/30 text-red-400' : 'bg-amber-500/20 border-amber-500/30 text-amber-400'
+              }`}>{a.section}</span>
+              {a.level === 'critical' && <Flame className="w-3.5 h-3.5 text-red-500" />}
+            </div>
+          ))}
+        </div>
+      )}
 
       {tasksLoading ? (
         <div className="flex items-center justify-center h-64">
@@ -1355,6 +1426,54 @@ export default function KineticWasteDashboard() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* ── HISTORICAL WASTE TRENDS ── */}
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center">
+                <BarChart2 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Historical Waste Trends</h2>
+                <p className="text-slate-400 text-sm">14-day daily breakdown of waste signals across all categories</p>
+              </div>
+            </div>
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="day" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                  <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
+                    labelStyle={{ color: '#e2e8f0' }}
+                    itemStyle={{ color: '#cbd5e1' }}
+                  />
+                  <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
+                  <Line type="monotone" dataKey="Stalled Tasks" stroke="#f87171" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Auto Errors" stroke="#c084fc" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Wellbeing Alerts" stroke="#fb7185" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Inefficient Chains" stroke="#34d399" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Stalled Tasks', color: 'bg-red-400', total: stalledTasks.length },
+                  { label: 'Auto Errors', color: 'bg-purple-400', total: filteredErrorLogs.length },
+                  { label: 'Wellbeing Alerts', color: 'bg-rose-400', total: highOrCriticalAlerts.length },
+                  { label: 'Inefficient Chains', color: 'bg-emerald-400', total: inefficientChains.length },
+                ].map(s => (
+                  <div key={s.label} className="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2">
+                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${s.color}`} />
+                    <div>
+                      <p className="text-slate-400 text-xs">{s.label}</p>
+                      <p className="text-white font-bold text-sm">{s.total} active</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
