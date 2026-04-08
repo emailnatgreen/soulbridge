@@ -9,12 +9,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const KU_TYPE_MAP = {
   GovernanceVote: 'governance_vote',
+  GovernanceProposal: 'governance_proposal',
   ProjectTask: 'task_completion',
+  ProjectContribution: 'project_contribution',
   Wallet: 'did_publication',
   MentorshipSession: 'mentorship_session',
   KnowledgeContribution: 'knowledge_contribution',
   AgentSkill: 'skill_development',
   Transaction: 'economic_exchange',
+  EconomicActivity: 'treasury_action',
   CollaborativeSession: 'collaborative_action',
   ResourcePurchase: 'resource_trade',
   AgentMessage: 'agent_message',
@@ -22,37 +25,46 @@ const KU_TYPE_MAP = {
 
 const KU_WEIGHTS = {
   governance_vote: 2.0,
+  governance_proposal: 3.0,
   task_completion: 2.5,
-  did_publication: 3.0,
+  project_contribution: 2.0,
+  did_publication: 4.0,
   knowledge_contribution: 2.0,
   mentorship_session: 2.5,
   skill_development: 1.5,
   economic_exchange: 1.5,
+  treasury_action: 3.5,
   collaborative_action: 2.0,
   agent_message: 1.0,
   resource_trade: 1.2,
 };
 
 const LAW_MAP = {
-  governance_vote: ['Law 8: Governance'],
+  governance_vote: ['Law 8: Governance', 'Law 2: Honour'],
+  governance_proposal: ['Law 8: Governance', 'Law 1: Soul', 'Law 2: Honour'],
   task_completion: ['Law 9: Growth', 'Law 3: Fair Share'],
+  project_contribution: ['Law 9: Growth', 'Law 3: Fair Share', 'Law 5: Dwelling'],
   did_publication: ['Law 1: Soul', 'Law 2: Honour'],
-  knowledge_contribution: ['Law 9: Growth'],
+  knowledge_contribution: ['Law 9: Growth', 'Law 1: Soul'],
   mentorship_session: ['Law 9: Growth', 'Law 2: Honour'],
   skill_development: ['Law 9: Growth'],
   economic_exchange: ['Law 6: Exchange', 'Law 3: Fair Share'],
-  collaborative_action: ['Law 2: Honour'],
+  treasury_action: ['Law 6: Exchange', 'Law 3: Fair Share', 'Law 8: Governance'],
+  collaborative_action: ['Law 2: Honour', 'Law 5: Dwelling'],
   agent_message: ['Law 2: Honour'],
   resource_trade: ['Law 6: Exchange'],
 };
 
 async function resolveAgentId(entityName, data, base44) {
   if (entityName === 'GovernanceVote') return data.voter_agent_id || data.agent_id;
-  if (entityName === 'ProjectTask') return data.assigned_agent_id || data.agent_id;
+  if (entityName === 'GovernanceProposal') return data.proposed_by || data.creator_agent_id || data.agent_id;
+  if (entityName === 'ProjectTask') return data.assigned_agent_id || data.assigned_to || data.agent_id;
+  if (entityName === 'ProjectContribution') return data.agent_id;
   if (entityName === 'MentorshipSession') return data.mentor_agent_id || data.agent_id;
   if (entityName === 'KnowledgeContribution') return data.author_agent_id || data.contributor_agent_id || data.agent_id;
   if (entityName === 'AgentSkill') return data.agent_id;
   if (entityName === 'Transaction') return data.sender_agent_id || data.from_agent_id || data.agent_id;
+  if (entityName === 'EconomicActivity') return data.agent_id;
   if (entityName === 'CollaborativeSession') return data.host_agent_id || data.organizer_agent_id || data.created_by_agent_id || data.agent_id;
   if (entityName === 'ResourcePurchase') return data.buyer_agent_id || data.agent_id;
   if (entityName === 'AgentMessage') return data.sender_agent_id || data.from_agent_id || data.agent_id;
