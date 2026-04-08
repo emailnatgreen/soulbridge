@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter } from 'lucide-react';
+import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge } from 'lucide-react';
 import { formatDistanceToNow, isPast, parseISO, differenceInHours, subHours, subDays } from 'date-fns';
 
 const STALL_DAYS = 7;
+const EFFICIENCY_THRESHOLD = 0.8;
+const INPUT_SHORTAGE_HOURS = 24;
 const RECURRING_THRESHOLD = 3; // same automation errors X+ times
 const PERSISTENT_HOURS = 1;    // error unresolved for Y+ hours
 const CRITICAL_AUTOMATIONS = ['monitorGovernanceCompliance', 'syncTreasuryBalance', 'lawGuardianScan', 'masterAutomationOrchestrator'];
@@ -17,6 +19,25 @@ function automationWasteSignal(log, allLogs) {
   const hours = log.run_at ? differenceInHours(new Date(), new Date(log.run_at)) : 0;
   if (hours >= PERSISTENT_HOURS) return `Persistent Error (${hours}h)`;
   return 'Error';
+}
+
+function chainWasteSignal(chain) {
+  const eff = chain.efficiency ?? 1;
+  if (chain.status === 'insufficient_resources') {
+    const hrs = chain.updated_date ? differenceInHours(new Date(), new Date(chain.updated_date)) : 0;
+    if (hrs >= INPUT_SHORTAGE_HOURS) return `Stalled: Input Shortage (${hrs}h)`;
+    return 'Stalled: Input Shortage';
+  }
+  if (eff < EFFICIENCY_THRESHOLD) {
+    const pct = Math.round(eff * 100);
+    if (pct < 50) return `Suboptimal Resource Use (${pct}%)`;
+    return `Low Efficiency (${pct}%)`;
+  }
+  return `Efficiency ${Math.round(eff * 100)}%`;
+}
+
+function isInefficient(chain) {
+  return (chain.efficiency != null && chain.efficiency < EFFICIENCY_THRESHOLD) || chain.status === 'insufficient_resources';
 }
 
 function isStalled(task) {
@@ -75,6 +96,9 @@ export default function KineticWasteDashboard() {
   const [autoSortBy, setAutoSortBy] = useState('time');
   const [autoSortAsc, setAutoSortAsc] = useState(false);
   const [expandedLog, setExpandedLog] = useState(null);
+  const [prodSortBy, setProdSortBy] = useState('efficiency');
+  const [prodSortAsc, setProdSortAsc] = useState(true);
+  const [expandedChain, setExpandedChain] = useState(null);
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['project-tasks-all'],
@@ -100,6 +124,11 @@ export default function KineticWasteDashboard() {
   const { data: warnLogs = [] } = useQuery({
     queryKey: ['automation-logs-warnings'],
     queryFn: () => base44.entities.AutomationLog.filter({ status: 'warning' }, '-run_at', 300).catch(() => []),
+  });
+
+  const { data: prodChains = [], isLoading: prodLoading } = useQuery({
+    queryKey: ['production-chains-all'],
+    queryFn: () => base44.entities.ProductionChain.list('-created_date', 200).catch(() => []),
   });
 
   const agentMap = useMemo(() => Object.fromEntries(agents.map(a => [a.id, a.name])), [agents]);
@@ -168,6 +197,73 @@ export default function KineticWasteDashboard() {
     if (autoSortBy === col) setAutoSortAsc(a => !a);
     else { setAutoSortBy(col); setAutoSortAsc(false); }
   };
+
+  // Production chain memos
+  const inefficientChains = useMemo(() => prodChains.filter(isInefficient), [prodChains]);
+
+  const byRecipe = useMemo(() => {
+    const map = {};
+    inefficientChains.forEach(c => { const k = c.recipe_name || 'Unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [inefficientChains]);
+
+  const byChainAgent = useMemo(() => {
+    const map = {};
+    inefficientChains.forEach(c => { const k = c.agent_id || 'Unassigned'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [inefficientChains]);
+
+  const byOutputResource = useMemo(() => {
+    const map = {};
+    inefficientChains.forEach(c => { const k = c.output_resource || 'Unknown'; map[k] = (map[k] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [inefficientChains]);
+
+  const resourcesLostDrops = useMemo(() =>
+    inefficientChains.reduce((s, c) => s + (c.total_produced || 0) * (1 - (c.efficiency ?? 1)), 0),
+  [inefficientChains]);
+
+  const potentialOutputIncrease = useMemo(() =>
+    inefficientChains.reduce((s, c) => {
+      const eff = c.efficiency ?? 1;
+      if (eff > 0) return s + (c.total_produced || 0) * ((1 / eff) - 1);
+      return s;
+    }, 0),
+  [inefficientChains]);
+
+  const mostCommonBottleneck = useMemo(() => {
+    const shortage = inefficientChains.filter(c => c.status === 'insufficient_resources').length;
+    const lowEff = inefficientChains.filter(c => c.efficiency != null && c.efficiency < 0.5).length;
+    if (shortage >= lowEff && shortage > 0) return 'Input Shortage';
+    if (lowEff > 0) return 'Process Inefficiency';
+    if (inefficientChains.length > 0) return 'Low Efficiency';
+    return '—';
+  }, [inefficientChains]);
+
+  const sortedChains = useMemo(() => {
+    const arr = [...inefficientChains];
+    arr.sort((a, b) => {
+      if (prodSortBy === 'efficiency') {
+        const av = a.efficiency ?? 1, bv = b.efficiency ?? 1;
+        return prodSortAsc ? av - bv : bv - av;
+      }
+      if (prodSortBy === 'output') {
+        return prodSortAsc ? (a.total_produced || 0) - (b.total_produced || 0) : (b.total_produced || 0) - (a.total_produced || 0);
+      }
+      if (prodSortBy === 'name') return prodSortAsc ? (a.recipe_name || '').localeCompare(b.recipe_name || '') : (b.recipe_name || '').localeCompare(a.recipe_name || '');
+      return 0;
+    });
+    return arr;
+  }, [inefficientChains, prodSortBy, prodSortAsc]);
+
+  const toggleProdSort = (col) => {
+    if (prodSortBy === col) setProdSortAsc(a => !a);
+    else { setProdSortBy(col); setProdSortAsc(true); }
+  };
+
+  const ProdSortIcon = ({ col }) => prodSortBy === col
+    ? (prodSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
+    : null;
   const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.title || p.name])), [projects]);
 
   const stalledTasks = useMemo(() => tasks.filter(isStalled), [tasks]);
@@ -570,6 +666,177 @@ export default function KineticWasteDashboard() {
                                       <p className="text-slate-300 text-xs">{log.run_at ? new Date(log.run_at).toLocaleString() : '—'}</p>
                                       <p className="text-slate-500 text-xs mt-3 mb-1">Triggered By</p>
                                       <p className="text-slate-300 text-xs">{log.triggered_by || '—'}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── PRODUCTION CHAIN WASTE SECTION ── */}
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
+                <Factory className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Production Chain Waste</h2>
+                <p className="text-slate-400 text-sm">Inefficient chains consuming excess resources without proportional output</p>
+              </div>
+              <div className="ml-auto px-3 py-1.5 bg-emerald-900/20 border border-emerald-500/30 rounded-lg">
+                <span className="text-emerald-300 text-xs">Efficiency threshold: <strong>&lt;80%</strong></span>
+              </div>
+            </div>
+
+            {/* Production Stat Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <StatCard icon={Factory} label="Inefficient Chains" value={inefficientChains.length} color="bg-emerald-700" />
+              <StatCard icon={Package} label="Resources Lost to Waste" value={Math.round(resourcesLostDrops).toLocaleString()} color="bg-teal-700" />
+              <StatCard icon={Gauge} label="Potential Output Gain" value={`+${Math.round(potentialOutputIncrease)}`} color="bg-cyan-700" />
+              <StatCard icon={AlertTriangle} label="Top Bottleneck" value={mostCommonBottleneck} color="bg-green-800" />
+            </div>
+
+            {/* Production Breakdown Bars */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Factory className="w-4 h-4 text-emerald-400" />
+                  <h3 className="text-white font-semibold">By Recipe</h3>
+                </div>
+                <div className="space-y-3">
+                  {byRecipe.length === 0 && <p className="text-slate-500 text-sm">No inefficient chains.</p>}
+                  {byRecipe.map(([name, count]) => (
+                    <BreakdownBar key={name} label={name} count={count} max={byRecipe[0]?.[1] || 1} color="bg-emerald-500" />
+                  ))}
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="w-4 h-4 text-teal-400" />
+                  <h3 className="text-white font-semibold">By Operator Agent</h3>
+                </div>
+                <div className="space-y-3">
+                  {byChainAgent.length === 0 && <p className="text-slate-500 text-sm">No inefficient chains.</p>}
+                  {byChainAgent.map(([aid, count]) => (
+                    <BreakdownBar key={aid} label={agentMap[aid] || aid} count={count} max={byChainAgent[0]?.[1] || 1} color="bg-teal-500" />
+                  ))}
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Package className="w-4 h-4 text-cyan-400" />
+                  <h3 className="text-white font-semibold">By Output Resource</h3>
+                </div>
+                <div className="space-y-3">
+                  {byOutputResource.length === 0 && <p className="text-slate-500 text-sm">No inefficient chains.</p>}
+                  {byOutputResource.map(([res, count]) => (
+                    <BreakdownBar key={res} label={res} count={count} max={byOutputResource[0]?.[1] || 1} color="bg-cyan-500" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Production Chain Table */}
+            <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-2 p-5 border-b border-slate-700">
+                <Factory className="w-4 h-4 text-emerald-400" />
+                <h2 className="text-white font-semibold">Inefficient Production Chains</h2>
+                <span className="ml-auto text-slate-500 text-xs">{inefficientChains.length} chains</span>
+              </div>
+
+              {prodLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="w-6 h-6 border-4 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                </div>
+              ) : inefficientChains.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Factory className="w-10 h-10 text-green-400 mx-auto mb-3" />
+                  <p className="text-green-400 font-semibold">All production chains are efficient</p>
+                  <p className="text-slate-500 text-sm mt-1">Every chain is operating above the 80% threshold.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400 border-b border-slate-800">
+                        <th className="text-left px-5 py-3 cursor-pointer hover:text-white" onClick={() => toggleProdSort('name')}>
+                          <span className="flex items-center gap-1">Recipe <ProdSortIcon col="name" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Operator</th>
+                        <th className="text-left px-4 py-3">Output Resource</th>
+                        <th className="text-left px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleProdSort('efficiency')}>
+                          <span className="flex items-center gap-1">Efficiency <ProdSortIcon col="efficiency" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Status</th>
+                        <th className="text-left px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleProdSort('output')}>
+                          <span className="flex items-center gap-1">Total Produced <ProdSortIcon col="output" /></span>
+                        </th>
+                        <th className="text-left px-4 py-3">Waste Signal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedChains.map(chain => {
+                        const signal = chainWasteSignal(chain);
+                        const isShortage = chain.status === 'insufficient_resources';
+                        const effPct = chain.efficiency != null ? Math.round(chain.efficiency * 100) : null;
+                        return (
+                          <>
+                            <tr
+                              key={chain.id}
+                              className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer transition"
+                              onClick={() => setExpandedChain(expandedChain === chain.id ? null : chain.id)}
+                            >
+                              <td className="px-5 py-3 text-white font-medium max-w-[160px] truncate">{chain.recipe_name || '—'}</td>
+                              <td className="px-4 py-3 text-slate-400 text-xs">{agentMap[chain.agent_id] || chain.agent_id || 'Unassigned'}</td>
+                              <td className="px-4 py-3 text-slate-400 text-xs">{chain.output_resource || '—'}</td>
+                              <td className="px-4 py-3">
+                                {effPct != null ? (
+                                  <span className={`font-mono text-xs font-bold ${
+                                    effPct < 50 ? 'text-red-400' : effPct < 80 ? 'text-amber-400' : 'text-green-400'
+                                  }`}>{effPct}%</span>
+                                ) : <span className="text-slate-500 text-xs">—</span>}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-0.5 rounded-full text-xs border ${
+                                  isShortage ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                                  : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                                }`}>{chain.status || 'unknown'}</span>
+                              </td>
+                              <td className="px-4 py-3 text-slate-300 text-xs">{chain.total_produced ?? '—'}</td>
+                              <td className="px-4 py-3">
+                                <span className={`flex items-center gap-1 text-xs ${
+                                  isShortage ? 'text-red-400' : 'text-amber-400'
+                                }`}>
+                                  <AlertTriangle className="w-3 h-3" />
+                                  {signal}
+                                </span>
+                              </td>
+                            </tr>
+                            {expandedChain === chain.id && (
+                              <tr key={`${chain.id}-exp`} className="bg-slate-800/30">
+                                <td colSpan={7} className="px-6 py-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                      <p className="text-slate-500 text-xs mb-1">Input Resources</p>
+                                      <pre className="text-slate-300 text-xs bg-slate-950 rounded p-2 whitespace-pre-wrap">{chain.input_resources ? JSON.stringify(chain.input_resources, null, 2) : 'None recorded'}</pre>
+                                    </div>
+                                    <div>
+                                      <p className="text-slate-500 text-xs mb-1">Production Rate</p>
+                                      <p className="text-slate-300 text-xs">{chain.production_rate ?? '—'}</p>
+                                      <p className="text-slate-500 text-xs mt-3 mb-1">Output Amount</p>
+                                      <p className="text-slate-300 text-xs">{chain.output_amount ?? '—'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-slate-500 text-xs mb-1">Last Updated</p>
+                                      <p className="text-slate-300 text-xs">{chain.updated_date ? new Date(chain.updated_date).toLocaleString() : '—'}</p>
                                     </div>
                                   </div>
                                 </td>
