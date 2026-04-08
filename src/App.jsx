@@ -79,15 +79,19 @@ const LoadingFallback = () => (
   </div>
 );
 
-const LayoutWrap = ({ children, pageName }) => (
-  <Suspense fallback={<LoadingFallback />}>
-    <Layout currentPageName={pageName}>{children}</Layout>
-  </Suspense>
-);
 
-const L = (pageName, Component) => (
-  <LayoutWrap pageName={pageName}><Component /></LayoutWrap>
-);
+
+function LayoutWrap({ children, pageName }) {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <Layout currentPageName={pageName}>{children}</Layout>
+    </Suspense>
+  );
+}
+
+function L(pageName, Component) {
+  return <LayoutWrap pageName={pageName}><Component /></LayoutWrap>;
+}
 
 // Public paths that should NEVER require authentication
 const PUBLIC_PATHS = [
