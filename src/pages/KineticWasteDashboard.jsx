@@ -458,51 +458,6 @@ export default function KineticWasteDashboard() {
   const ResSortIcon = ({ col }) => resSortBy === col
     ? (resSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
     : null;
-
-  // ── GLOBAL ACTION ALERTS ──
-  const globalAlerts = useMemo(() => {
-    const alerts = [];
-    // Unacknowledged critical wellbeing alerts >24h
-    const critUnack = criticalActiveAlerts.filter(a => !a.acknowledged_at && a.created_date && differenceInHours(new Date(), new Date(a.created_date)) >= 24);
-    if (critUnack.length > 0)
-      alerts.push({ level: 'critical', icon: Heart, message: `${critUnack.length} critical wellbeing alert${critUnack.length > 1 ? 's' : ''} unacknowledged for 24h+`, section: 'Wellbeing' });
-    // Critical automation failures
-    const critAuto = filteredErrorLogs.filter(l => CRITICAL_AUTOMATIONS.some(n => (l.automation_name || '').toLowerCase().includes(n.toLowerCase())));
-    if (critAuto.length > 0)
-      alerts.push({ level: 'critical', icon: Bot, message: `${critAuto.length} critical automation system failure${critAuto.length > 1 ? 's' : ''} detected`, section: 'Automations' });
-    // Stalled high-priority tasks
-    const critTasks = stalledTasks.filter(t => t.priority === 'critical');
-    if (critTasks.length > 0)
-      alerts.push({ level: 'critical', icon: AlertTriangle, message: `${critTasks.length} critical-priority task${critTasks.length > 1 ? 's' : ''} stalled`, section: 'Tasks' });
-    // High inefficient chains
-    if (inefficientChains.filter(c => c.status === 'insufficient_resources').length > 0)
-      alerts.push({ level: 'warning', icon: Factory, message: `${inefficientChains.filter(c => c.status === 'insufficient_resources').length} production chain${inefficientChains.filter(c => c.status === 'insufficient_resources').length > 1 ? 's' : ''} stalled due to resource shortage`, section: 'Production' });
-    // Stagnant listings count
-    if (stagnantListings.length >= 5)
-      alerts.push({ level: 'warning', icon: ShoppingBag, message: `${stagnantListings.length} marketplace listings stagnant with zero sales`, section: 'Marketplace' });
-    return alerts;
-  }, [criticalActiveAlerts, filteredErrorLogs, stalledTasks, inefficientChains, stagnantListings]);
-
-  // ── HISTORICAL WASTE TRENDS ──
-  const trendData = useMemo(() => {
-    const days = 14;
-    const result = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const day = subDays(new Date(), i);
-      const label = day.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-      const dayStart = new Date(day); dayStart.setHours(0,0,0,0);
-      const dayEnd = new Date(day); dayEnd.setHours(23,59,59,999);
-      const inRange = (d) => d && new Date(d) >= dayStart && new Date(d) <= dayEnd;
-      result.push({
-        day: label,
-        'Stalled Tasks': stalledTasks.filter(t => inRange(t.updated_date)).length,
-        'Auto Errors': allErrorLogs.filter(l => inRange(l.run_at)).length,
-        'Wellbeing Alerts': wellbeingAlerts.filter(a => inRange(a.created_date)).length,
-        'Inefficient Chains': inefficientChains.filter(c => inRange(c.updated_date)).length,
-      });
-    }
-    return result;
-  }, [stalledTasks, allErrorLogs, wellbeingAlerts, inefficientChains]);
   const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.title || p.name])), [projects]);
 
   const stalledTasks = useMemo(() => tasks.filter(isStalled), [tasks]);
@@ -576,6 +531,47 @@ export default function KineticWasteDashboard() {
   const AutoSortIcon = ({ col }) => autoSortBy === col
     ? (autoSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
     : null;
+
+  // ── GLOBAL ACTION ALERTS ──
+  const globalAlerts = useMemo(() => {
+    const alerts = [];
+    const critUnack = criticalActiveAlerts.filter(a => !a.acknowledged_at && a.created_date && differenceInHours(new Date(), new Date(a.created_date)) >= 24);
+    if (critUnack.length > 0)
+      alerts.push({ level: 'critical', icon: Heart, message: `${critUnack.length} critical wellbeing alert${critUnack.length > 1 ? 's' : ''} unacknowledged for 24h+`, section: 'Wellbeing' });
+    const critAuto = filteredErrorLogs.filter(l => CRITICAL_AUTOMATIONS.some(n => (l.automation_name || '').toLowerCase().includes(n.toLowerCase())));
+    if (critAuto.length > 0)
+      alerts.push({ level: 'critical', icon: Bot, message: `${critAuto.length} critical automation system failure${critAuto.length > 1 ? 's' : ''} detected`, section: 'Automations' });
+    const critTasks = stalledTasks.filter(t => t.priority === 'critical');
+    if (critTasks.length > 0)
+      alerts.push({ level: 'critical', icon: AlertTriangle, message: `${critTasks.length} critical-priority task${critTasks.length > 1 ? 's' : ''} stalled`, section: 'Tasks' });
+    const shortageChains = inefficientChains.filter(c => c.status === 'insufficient_resources');
+    if (shortageChains.length > 0)
+      alerts.push({ level: 'warning', icon: Factory, message: `${shortageChains.length} production chain${shortageChains.length > 1 ? 's' : ''} stalled due to resource shortage`, section: 'Production' });
+    if (stagnantListings.length >= 5)
+      alerts.push({ level: 'warning', icon: ShoppingBag, message: `${stagnantListings.length} marketplace listings stagnant with zero sales`, section: 'Marketplace' });
+    return alerts;
+  }, [criticalActiveAlerts, filteredErrorLogs, stalledTasks, inefficientChains, stagnantListings]);
+
+  // ── HISTORICAL WASTE TRENDS ──
+  const trendData = useMemo(() => {
+    const days = 14;
+    const result = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const day = subDays(new Date(), i);
+      const label = day.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+      const dayStart = new Date(day); dayStart.setHours(0,0,0,0);
+      const dayEnd = new Date(day); dayEnd.setHours(23,59,59,999);
+      const inRange = (d) => d && new Date(d) >= dayStart && new Date(d) <= dayEnd;
+      result.push({
+        day: label,
+        'Stalled Tasks': stalledTasks.filter(t => inRange(t.updated_date)).length,
+        'Auto Errors': allErrorLogs.filter(l => inRange(l.run_at)).length,
+        'Wellbeing Alerts': wellbeingAlerts.filter(a => inRange(a.created_date)).length,
+        'Inefficient Chains': inefficientChains.filter(c => inRange(c.updated_date)).length,
+      });
+    }
+    return result;
+  }, [stalledTasks, allErrorLogs, wellbeingAlerts, inefficientChains]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6">
