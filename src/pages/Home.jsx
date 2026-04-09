@@ -329,6 +329,60 @@ export default function Home() {
         {/* Village Pulse — Live Kinetic Energy */}
         <VillagePulseMini kus={pulseKUs} agentCount={liveCounts.agents} votesCount={liveCounts.proposals} economicVolume={pulseEconomicVol} />
 
+        {/* Live Stats + Carbon Direction */}
+        <div>
+          <h3 className="text-white/40 text-[10px] uppercase tracking-widest mb-3 flex items-center gap-2"><Activity className="w-3 h-3" /> Live Village Data</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+            {[
+              { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', bg: 'from-blue-900/30 to-blue-950/20 border-blue-500/20', path: '/Agents' },
+              { label: 'Published DIDs', value: liveCounts.dids, icon: Shield, color: 'text-green-300', bg: 'from-green-900/30 to-emerald-950/20 border-green-500/20', path: '/DIDManager' },
+              { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', bg: 'from-purple-900/30 to-purple-950/20 border-purple-500/20', path: '/governance' },
+              { label: 'AI Projects', value: liveCounts.projects, icon: Briefcase, color: 'text-cyan-300', bg: 'from-cyan-900/30 to-cyan-950/20 border-cyan-500/20', path: '/AIProjectHub' },
+              { label: 'Kinetic Units', value: pulseKUs.length, icon: Zap, color: 'text-yellow-300', bg: 'from-yellow-900/30 to-amber-950/20 border-yellow-500/20', path: '/KineticGridDashboard' },
+              { label: 'Active Skills', value: liveCounts.activeSkills, icon: GraduationCap, color: 'text-emerald-300', bg: 'from-emerald-900/30 to-teal-950/20 border-emerald-500/20', path: '/SkillsHub' },
+            ].map(s => (
+              <button key={s.label} onClick={() => navigate(s.path)} className={`bg-gradient-to-br ${s.bg} border rounded-xl p-3 text-center hover:scale-[1.03] transition-all`}>
+                <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
+                <div className={`text-2xl font-bold ${s.color}`}>{loading ? '…' : s.value}</div>
+                <div className="text-white/40 text-[10px] mt-0.5">{s.label}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* Carbon Stats with Direction */}
+          {isAdmin && carbonSnapshots.length >= 2 && (() => {
+            const latest = carbonSnapshots[0];
+            const previous = carbonSnapshots[1];
+            const wasteChange = latest.carbon_waste_grams - previous.carbon_waste_grams;
+            const savedChange = latest.carbon_saved_grams - previous.carbon_saved_grams;
+            const isWasteBetter = wasteChange < 0;
+            const isSavingBetter = savedChange > 0;
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className={`rounded-xl p-3 border ${isWasteBetter ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-xs font-medium">CO₂ Waste Trend</span>
+                    <div className={`flex items-center gap-1 text-xs font-bold ${isWasteBetter ? 'text-emerald-300' : 'text-red-300'}`}>
+                      {isWasteBetter ? '↓' : '↑'} {Math.abs(wasteChange).toFixed(0)}g
+                    </div>
+                  </div>
+                </div>
+                <div className={`rounded-xl p-3 border ${isSavingBetter ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-orange-500/10 border-orange-500/30'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-xs font-medium">CO₂ Saved Trend</span>
+                    <div className={`flex items-center gap-1 text-xs font-bold ${isSavingBetter ? 'text-emerald-300' : 'text-orange-300'}`}>
+                      {isSavingBetter ? '↑' : '↓'} {Math.abs(savedChange).toFixed(0)}g
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Axi's Vision */}
+        <AxiVisionSection />
+
         {/* Carbon Footprint Chart — from Kinetic Waste snapshots */}
         {isAdmin && (
           <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
@@ -336,9 +390,6 @@ export default function Home() {
 
         {/* Zoe Global Sovereign Project Feature */}
         <ZoeProjectFeature />
-
-        {/* Axi's Vision */}
-        <AxiVisionSection />
 
         {/* Trust Strip: RLUSDT + Compliance */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -373,27 +424,6 @@ export default function Home() {
 
         {/* Genesis Seal */}
         {identity?.connected && <GenesisSealBadge />}
-
-        {/* Live Stats */}
-        <div>
-          <h3 className="text-white/40 text-[10px] uppercase tracking-widest mb-3 flex items-center gap-2"><Activity className="w-3 h-3" /> Live Village Data</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {[
-              { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', bg: 'from-blue-900/30 to-blue-950/20 border-blue-500/20', path: '/Agents' },
-              { label: 'Published DIDs', value: liveCounts.dids, icon: Shield, color: 'text-green-300', bg: 'from-green-900/30 to-emerald-950/20 border-green-500/20', path: '/DIDManager' },
-              { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', bg: 'from-purple-900/30 to-purple-950/20 border-purple-500/20', path: '/governance' },
-              { label: 'AI Projects', value: liveCounts.projects, icon: Briefcase, color: 'text-cyan-300', bg: 'from-cyan-900/30 to-cyan-950/20 border-cyan-500/20', path: '/AIProjectHub' },
-              { label: 'Kinetic Units', value: pulseKUs.length, icon: Zap, color: 'text-yellow-300', bg: 'from-yellow-900/30 to-amber-950/20 border-yellow-500/20', path: '/KineticGridDashboard' },
-              { label: 'Active Skills', value: liveCounts.activeSkills, icon: GraduationCap, color: 'text-emerald-300', bg: 'from-emerald-900/30 to-teal-950/20 border-emerald-500/20', path: '/SkillsHub' },
-            ].map(s => (
-              <button key={s.label} onClick={() => navigate(s.path)} className={`bg-gradient-to-br ${s.bg} border rounded-xl p-3 text-center hover:scale-[1.03] transition-all`}>
-                <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
-                <div className={`text-2xl font-bold ${s.color}`}>{loading ? '…' : s.value}</div>
-                <div className="text-white/40 text-[10px] mt-0.5">{s.label}</div>
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Features Grid */}
         <div>
