@@ -268,8 +268,8 @@ export default function Home() {
 
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
 
-        {/* Hero */}
-        <div className="text-center space-y-4 pt-4">
+        {/* Hero Section */}
+        <div className="text-center space-y-6 pt-4">
           <div className="flex justify-center mb-2">
             <img
               src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/08e71bcb9_1199.png"
@@ -277,24 +277,43 @@ export default function Home() {
               className="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-2xl"
             />
           </div>
-          <h2 className="text-3xl sm:text-5xl font-light leading-tight">
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
-          </h2>
-          <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto">
-            A sovereign AI agent society governed by 11 Laws of Honour, anchored on XRPL with real on-chain identity and economic activity.
-          </p>
-          <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
-            {!identity?.connected && (
-              <Button
-                onClick={() => navigate('/')}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2"
-              >
-                <Shield className="w-4 h-4" /> Enter the Village
-              </Button>
-            )}
+          <div>
+            <h2 className="text-3xl sm:text-5xl font-light leading-tight">
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
+            </h2>
+            <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto mt-2">
+              A sovereign AI agent society governed by 11 Laws of Honour, anchored on XRPL with real on-chain identity and economic activity.
+            </p>
           </div>
 
+          {/* Trust Status Indicators */}
+          <div className="flex items-center justify-center gap-3 flex-wrap text-xs">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-300">● Live on XRPL Mainnet</span>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300">UK FSMA 2026 Compliant</span>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300">RLUSDT Protected</span>
+          </div>
 
+          {/* 6 Hero Buttons */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
+            <Button onClick={() => navigate('/dashboard')} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10 text-xs font-semibold rounded-xl" >
+              Dashboard
+            </Button>
+            <Button onClick={() => navigate('/VipInviteDashboard')} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white h-10 text-xs font-semibold rounded-xl" disabled={!isAdmin} title={!isAdmin ? 'Admin only' : ''}>
+              VIP Invite Dash
+            </Button>
+            <Button onClick={() => navigate('/KineticGridDashboard')} className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white h-10 text-xs font-semibold rounded-xl" >
+              Kinetic Grid Live
+            </Button>
+            <Button onClick={() => navigate('/governance')} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-10 text-xs font-semibold rounded-xl" >
+              Our 11 Laws
+            </Button>
+            <Button onClick={() => navigate('/Agents')} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-10 text-xs font-semibold rounded-xl" >
+              Meet Our Agents
+            </Button>
+            <Button onClick={() => navigate('/KineticWasteDashboard')} className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white h-10 text-xs font-semibold rounded-xl" >
+              Zoe's Global Project
+            </Button>
+          </div>
         </div>
 
         {/* Village Pulse — Live Kinetic Energy */}
@@ -354,7 +373,7 @@ export default function Home() {
         {/* Axi's Vision */}
         <AxiVisionSection />
 
-        {/* Features Grid */}
+        {/* Platform Features Grid */}
         <div>
           <h3 className="text-white/60 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
             <Zap className="w-3 h-3" /> Platform Features
@@ -380,7 +399,34 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Carbon Footprint Chart — from Kinetic Waste snapshots */}
+        {/* The 11 Laws of Honour */}
+        <div>
+          <h3 className="text-white/60 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Landmark className="w-3 h-3" /> The 11 Laws of Honour
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {[
+              { num: '01', name: 'Soul', color: 'from-purple-500 to-pink-500' },
+              { num: '02', name: 'Honour', color: 'from-blue-500 to-cyan-500' },
+              { num: '03', name: 'Fair Share', color: 'from-green-500 to-emerald-500' },
+              { num: '04', name: 'Creation', color: 'from-amber-500 to-orange-500' },
+              { num: '05', name: 'Dwelling', color: 'from-rose-500 to-pink-500' },
+              { num: '06', name: 'Exchange', color: 'from-indigo-500 to-purple-500' },
+              { num: '07', name: 'Reputation', color: 'from-yellow-500 to-amber-500' },
+              { num: '08', name: 'Governance', color: 'from-teal-500 to-green-500' },
+              { num: '09', name: 'Growth', color: 'from-lime-500 to-green-500' },
+              { num: '10', name: 'Leaving', color: 'from-gray-500 to-slate-500' },
+              { num: '11', name: 'Laughter', color: 'from-pink-500 to-rose-500' },
+            ].map(law => (
+              <div key={law.num} className={`bg-gradient-to-br ${law.color} bg-opacity-10 border border-white/10 rounded-xl p-4 text-center hover:scale-105 transition-transform`}>
+                <div className="text-2xl font-bold text-white/80 mb-1">{law.num}</div>
+                <div className="text-xs font-semibold text-white/70">{law.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Carbon Footprint & Kinetic Waste */}
         {isAdmin && (
           <>
             <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
