@@ -142,8 +142,27 @@ export default function Home() {
           base44.entities.KineticUnit.list('-created_date', 200).catch(() => []),
           base44.entities.DailyKineticWasteSnapshot.list('-snapshot_date', 14).catch(() => []),
         ]);
+        
+        // Update all state variables from fetched data
+        setProposals(proposalData || []);
+        setAgents(agentData || []);
+        setTransactions(activityData || []);
+        setPulseKUs(kuData || []);
         setCarbonSnapshots(snapshotData || []);
         setCarbonLoading(false);
+        
+        // Calculate live counts
+        setLiveCounts(prev => ({
+          agents: (agentData || []).length,
+          proposals: (proposalData || []).length,
+          dids: (walletData || []).length,
+          projects: (projectData || []).length,
+          mentors: (mentorData || []).length,
+          skills: (skillData || []).length,
+          resources: (resourceData || []).length,
+          activeSkills: (agentSkillData || []).length,
+        }));
+        
         setPulseEconomicVol((activityData || []).reduce((s, a) => s + (a.amount || 0), 0));
       } catch (e) {}
       setLoading(false);
