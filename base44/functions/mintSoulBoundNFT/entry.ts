@@ -46,6 +46,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'agent_id, nft_type, and badge_name are required' }, { status: 400 });
     }
 
+    // Guard: reject invalid agent IDs (e.g. 'visitor', unauthenticated callers, non-ObjectID strings)
+    const isValidId = typeof agent_id === 'string' && /^[a-f0-9]{24}$/.test(agent_id);
+    if (!isValidId && agent_id !== 'axi') {
+      return Response.json({ error: `Invalid agent_id: '${agent_id}'. Must be a valid 24-character hex ID.` }, { status: 400 });
+    }
+
     // Fetch agent
     if (agent_id === 'axi') {
       return Response.json({

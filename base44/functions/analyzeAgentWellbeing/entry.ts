@@ -213,16 +213,28 @@ Be empathetic and holistic in your assessment.`;
         // Create wellbeing record
         await base44.asServiceRole.entities.AgentWellbeing.create(wellbeingData);
 
-        // Create alerts if needed
+        // Create alerts if needed — with 24h deduplication guard
         if (aiResponse.warning_signs && aiResponse.warning_signs.length > 0) {
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const existingAlerts = await base44.asServiceRole.entities.WellbeingAlert.filter({ agent_id, status: 'active' }, '-created_date', 50);
+
             for (const warning of aiResponse.warning_signs) {
                 if (warning.severity === 'high' || warning.severity === 'critical') {
+                    const alertType = warning.sign.toLowerCase().includes('burnout') ? 'burnout_risk' :
+                                     warning.sign.toLowerCase().includes('workload') ? 'workload_overload' :
+                                     warning.sign.toLowerCase().includes('isolation') ? 'social_isolation' :
+                                     'stress_spike';
+
+                    // Dedup: skip if same agent + same alert_type already has an active alert from last 24h
+                    const isDuplicate = existingAlerts.some(a =>
+                        a.alert_type === alertType &&
+                        a.created_date && new Date(a.created_date).toISOString() > oneDayAgo
+                    );
+                    if (isDuplicate) continue;
+
                     await base44.asServiceRole.entities.WellbeingAlert.create({
                         agent_id,
-                        alert_type: warning.sign.toLowerCase().includes('burnout') ? 'burnout_risk' :
-                                   warning.sign.toLowerCase().includes('workload') ? 'workload_overload' :
-                                   warning.sign.toLowerCase().includes('isolation') ? 'social_isolation' :
-                                   'stress_spike',
+                        alert_type: alertType,
                         severity: warning.severity,
                         description: warning.sign,
                         indicators: [warning.sign],
