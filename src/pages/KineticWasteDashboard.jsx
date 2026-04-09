@@ -1283,7 +1283,7 @@ export default function KineticWasteDashboard() {
                                     <div className="sm:col-span-2">
                                       <p className="text-slate-500 text-xs mb-1">Recommended Interventions</p>
                                       {Array.isArray(alert.recommended_interventions) && alert.recommended_interventions.length > 0
-                                        ? <ul className="list-disc list-inside space-y-1">{alert.recommended_interventions.map((r, i) => <li key={i} className="text-amber-300 text-xs">{r}</li>)}</ul>
+                                        ? <ul className="list-disc list-inside space-y-1">{alert.recommended_interventions.map((r, i) => <li key={i} className="text-amber-300 text-xs">{typeof r === 'object' ? (r.intervention || r.urgency || JSON.stringify(r)) : r}</li>)}</ul>
                                         : <p className="text-slate-500 text-xs">None recorded.</p>}
                                     </div>
                                   </div>
