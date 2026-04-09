@@ -13,6 +13,7 @@ export default function BulkBundlePanel({ onComplete }) {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ bundled: 0, deleted: 0, batches: 0, errors: [] });
   const [deleteAfter, setDeleteAfter] = useState(false);
+  const [preserveOriginals, setPreserveOriginals] = useState(true);
   const [completed, setCompleted] = useState(false);
   const abortRef = useRef(false);
 
@@ -40,9 +41,10 @@ export default function BulkBundlePanel({ onComplete }) {
       try {
         const res = await base44.functions.invoke('bulkBundleMemories', {
           action: 'bundle_batch',
-          offset: deleteAfter ? 0 : offset, // If deleting, always start at 0 since previous are gone
+          offset: deleteAfter ? 0 : offset,
           limit: BATCH_SIZE,
           delete_after_bundle: deleteAfter,
+          preserve_originals: preserveOriginals,
         });
 
         const data = res.data;
@@ -128,15 +130,33 @@ export default function BulkBundlePanel({ onComplete }) {
           <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-xl">
             <input
               type="checkbox"
+              id="preserveOriginals"
+              checked={preserveOriginals}
+              onChange={e => setPreserveOriginals(e.target.checked)}
+              className="accent-emerald-500"
+            />
+            <label htmlFor="preserveOriginals" className="text-sm text-slate-300 flex-1">
+              <span className="font-medium">Preserve original memories (RECOMMENDED)</span>
+              <br />
+              <span className="text-xs text-slate-500">Keeps raw memories linked to synthesis bundles for Axi's context retrieval</span>
+            </label>
+            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs flex-shrink-0">
+              Production Safe
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-red-900/20 border border-red-500/30 rounded-xl">
+            <input
+              type="checkbox"
               id="deleteAfter"
               checked={deleteAfter}
               onChange={e => setDeleteAfter(e.target.checked)}
               className="accent-red-500"
             />
             <label htmlFor="deleteAfter" className="text-sm text-slate-300 flex-1">
-              <span className="font-medium">Delete original memories after bundling</span>
+              <span className="font-medium">Destructive: Delete originals after bundling</span>
               <br />
-              <span className="text-xs text-slate-500">Archives into Synthesis records, then removes raw memories to free space</span>
+              <span className="text-xs text-red-400">⚠️ WARNING: Removes raw memories. Only for archive/cleanup after verification.</span>
             </label>
             {deleteAfter && (
               <Badge className="bg-red-500/20 text-red-300 border-red-500/30 text-xs flex-shrink-0">

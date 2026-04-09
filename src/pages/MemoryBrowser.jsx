@@ -53,7 +53,19 @@ export default function MemoryBrowser() {
 
   const { data: memories = [], isLoading } = useQuery({
     queryKey: ['memories-browser'],
-    queryFn: () => base44.entities.Memory.list('-importance', 500),
+    queryFn: async () => {
+      const allMemories = [];
+      let skip = 0;
+      const pageSize = 500;
+      while (true) {
+        const batch = await base44.entities.Memory.list('-importance', pageSize, skip);
+        if (!batch || batch.length === 0) break;
+        allMemories.push(...batch);
+        skip += batch.length;
+        if (batch.length < pageSize) break;
+      }
+      return allMemories;
+    },
   });
 
   const deleteMutation = useMutation({

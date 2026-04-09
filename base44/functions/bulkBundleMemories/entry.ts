@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     }
 
     const payload = await req.json();
-    const { action, offset = 0, limit = 500, delete_after_bundle = false } = payload;
+    const { action, offset = 0, limit = 500, delete_after_bundle = false, preserve_originals = true } = payload;
 
     if (action === 'count') {
       // Count total memories so UI knows how many there are
@@ -143,11 +143,20 @@ ${transcript}`,
         synthesisIds.push(synthesis.id);
         bundledCount += chunk.length;
 
-        // Delete original memories if requested
-        if (delete_after_bundle) {
+        // Only delete originals if explicitly requested AND preservation is disabled
+        if (delete_after_bundle && !preserve_originals) {
           for (const m of chunk) {
             await base44.asServiceRole.entities.Memory.delete(m.id);
             deletedCount++;
+          }
+        } else if (preserve_originals) {
+          // Link original memories to synthesis record for retrieval
+          // Mark originals as archived so Axi retrieves from synthesis first
+          for (const m of chunk) {
+            await base44.asServiceRole.entities.Memory.update(m.id, {
+              is_archived: true,
+              linked_synthesis_id: synthesis.id
+            });
           }
         }
       }
