@@ -73,6 +73,7 @@ import EditLanding from './pages/EditLanding';
 import ScrollOfResonance from './pages/ScrollOfResonance';
 import NodeCovenant from './pages/NodeCovenant';
 import MentorshipHub from './pages/MentorshipHub';
+import ImageStorage from './pages/ImageStorage';
 
 
 const LoadingFallback = () => (
@@ -259,6 +260,8 @@ const AuthenticatedApp = () => {
         <Route path="/node-covenant" element={L("NodeCovenant", NodeCovenant)} />
         <Route path="/MentorshipHub" element={L("MentorshipHub", MentorshipHub)} />
         <Route path="/mentorship" element={L("MentorshipHub", MentorshipHub)} />
+        <Route path="/ImageStorage" element={L("image-storage", ImageStorage)} />
+        <Route path="/image-storage" element={L("image-storage", ImageStorage)} />
 
         {/* LEGACY/BACKWARD COMPAT */}
         <Route path="/dashboard" element={L("dashboard", Dashboard)} />
