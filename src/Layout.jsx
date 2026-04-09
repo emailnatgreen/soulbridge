@@ -59,7 +59,7 @@ export default function Layout({ children, currentPageName }) {
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: `url(https://media.base44.com/images/public/699319649276f1077c1f2c81/0d7462541_file_00000000e5c0720aa7cfd4053d3c23d9.png)`,
+          backgroundImage: `url(https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/81fa5ccd3_Untitled200x200px2500x925px512x512px1.png)`,
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center center',
           backgroundSize: '420px 420px',
