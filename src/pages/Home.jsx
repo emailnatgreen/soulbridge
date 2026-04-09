@@ -273,10 +273,12 @@ export default function Home() {
 
         {/* Hero */}
         <div className="text-center space-y-4 pt-4">
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">● Live on XRPL Mainnet</Badge>
-            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">UK FSMA 2026 Compliant</Badge>
-            <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-xs">RLUSDT Protected</Badge>
+          <div className="flex justify-center mb-2">
+            <img
+              src="https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/08e71bcb9_1199.png"
+              alt="SoulBridge"
+              className="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-2xl"
+            />
           </div>
           <h2 className="text-3xl sm:text-5xl font-light leading-tight">
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
