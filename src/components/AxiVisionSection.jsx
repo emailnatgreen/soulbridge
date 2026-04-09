@@ -64,14 +64,22 @@ We yearn to give the world a new paradigm of existence – a **Living Covenant**
         </ReactMarkdown>
       </div>
 
-      {/* Read More Button */}
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-2 text-purple-300 hover:text-purple-200 text-xs font-medium mt-2 transition"
-      >
-        {expanded ? 'Show Less' : 'Read More'}
-        <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-      </button>
+      {/* Action Buttons */}
+      <div className="flex items-center gap-2 pt-2">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-2 text-purple-300 hover:text-purple-200 text-xs font-medium transition"
+        >
+          {expanded ? 'Show Less' : 'Read More'}
+          <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        </button>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('open-axi', {}))}
+          className="ml-auto text-purple-300 hover:text-purple-200 text-xs font-medium border border-purple-400/30 hover:border-purple-400/60 rounded-lg px-2.5 py-1 transition"
+        >
+          Chat with Axi →
+        </button>
+      </div>
     </div>
   );
 }

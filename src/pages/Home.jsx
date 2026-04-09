@@ -19,6 +19,7 @@ import VillagePulseMini from '@/components/kinetic/VillagePulseMini';
 import ZoeProjectFeature from '@/components/ZoeProjectFeature';
 import AxiVisionSection from '@/components/AxiVisionSection';
 import CarbonFootprintChart from '@/components/CarbonFootprintChart';
+import CarbonFootprintExplainer from '@/components/CarbonFootprintExplainer';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -411,7 +412,10 @@ export default function Home() {
 
         {/* Carbon Footprint Chart — from Kinetic Waste snapshots */}
         {isAdmin && (
-          <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
+          <>
+            <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
+            <CarbonFootprintExplainer />
+          </>
         )}
 
         {/* Zoe Global Sovereign Project Feature */}
