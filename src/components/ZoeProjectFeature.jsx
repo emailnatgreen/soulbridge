@@ -125,10 +125,10 @@ export default function ZoeProjectFeature() {
           </p>
         </div>
         <Button
-          onClick={() => navigate('/agents/69d7713be4399e606481920c')}
+          onClick={() => window.dispatchEvent(new CustomEvent('open-axi-with-agent', { detail: { agentId: '69d7713be4399e606481920c' } }))}
           className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white gap-2 flex-shrink-0 self-start"
         >
-          <Sparkles className="w-4 h-4" /> Meet Zoe
+          <Sparkles className="w-4 h-4" /> Chat with Zoe
         </Button>
       </div>
 
