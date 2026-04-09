@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX, ShoppingBag, Coins, BarChart2, TrendingUp, BellRing, Flame } from 'lucide-react';
@@ -109,12 +110,24 @@ export default function KineticWasteDashboard() {
   const [sortAsc, setSortAsc] = useState(true);
   const [expandedTask, setExpandedTask] = useState(null);
 
+  const queryClient = useQueryClient();
+
   const handleResetAll = () => {
     setSortBy('age'); setSortAsc(true); setExpandedTask(null);
     setAutoTimeFilter('24h'); setAutoSortBy('time'); setAutoSortAsc(false); setExpandedLog(null);
     setProdSortBy('efficiency'); setProdSortAsc(true); setExpandedChain(null);
     setExpandedAlert(null); setWellSortBy('severity'); setWellSortAsc(true);
     setExpandedRes(null); setResSortBy('age'); setResSortAsc(true);
+    // Refetch all data
+    queryClient.invalidateQueries({ queryKey: ['project-tasks-all'] });
+    queryClient.invalidateQueries({ queryKey: ['agents-all'] });
+    queryClient.invalidateQueries({ queryKey: ['aiprojects-all'] });
+    queryClient.invalidateQueries({ queryKey: ['automation-logs-errors'] });
+    queryClient.invalidateQueries({ queryKey: ['automation-logs-warnings'] });
+    queryClient.invalidateQueries({ queryKey: ['production-chains-all'] });
+    queryClient.invalidateQueries({ queryKey: ['wellbeing-alerts-active'] });
+    queryClient.invalidateQueries({ queryKey: ['resource-listings-all'] });
+    queryClient.invalidateQueries({ queryKey: ['resources-all'] });
   };
 
   const [autoTimeFilter, setAutoTimeFilter] = useState('24h');
