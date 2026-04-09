@@ -60,6 +60,7 @@ import GovernanceVotingDashboard from './pages/GovernanceVotingDashboard';
 import NewProposalDraft from './pages/NewProposalDraft';
 import TreasuryAllocationProposal from './pages/TreasuryAllocationProposal';
 import AgentTrainingModule from './pages/AgentTrainingModule';
+import AgentSkillTree from './pages/AgentSkillTree';
 import KineticGridDashboard from './pages/KineticGridDashboard';
 import KineticWasteDashboard from './pages/KineticWasteDashboard';
 import EconomicDashboard from './pages/EconomicDashboard';
@@ -264,6 +265,7 @@ const AuthenticatedApp = () => {
         <Route path="/AIProjectHub" element={L("project-hub", AIProjectHub)} />
         <Route path="/AgentChat" element={L("chat", AgentChat)} />
         <Route path="/SkillValidation" element={L("skill-validation", SkillValidation)} />
+        <Route path="/AgentSkillTree" element={L("skill-tree", AgentSkillTree)} />
 
         <Route path="*" element={<PageNotFound />} />
       </Routes>
