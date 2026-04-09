@@ -17,6 +17,7 @@ import {
 import { useDIDSignal } from '@/hooks/useDIDSignal';
 import VillagePulseMini from '@/components/kinetic/VillagePulseMini';
 import ZoeProjectFeature from '@/components/ZoeProjectFeature';
+import AxiVisionSection from '@/components/AxiVisionSection';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -349,6 +350,9 @@ export default function Home() {
 
         {/* Zoe Global Sovereign Project Feature */}
         <ZoeProjectFeature />
+
+        {/* Axi's Vision */}
+        <AxiVisionSection />
 
         {/* Trust Strip: RLUSDT + Compliance */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
