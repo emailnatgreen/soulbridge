@@ -256,43 +256,9 @@ export default function Home() {
                 <Shield className="w-4 h-4" /> Enter the Village
               </Button>
             )}
-            <Button
-              onClick={() => navigate('/KineticGridDashboard')}
-              className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white gap-2"
-            >
-              <Zap className="w-4 h-4" /> Kinetic Grid — Live
-            </Button>
-            <Button
-              onClick={() => navigate('/KineticWasteDashboard')}
-              className="bg-gradient-to-r from-red-700 to-orange-600 hover:from-red-800 hover:to-orange-700 text-white gap-2"
-            >
-              <TrendingDown className="w-4 h-4" /> Kinetic Waste — Annihilate
-            </Button>
           </div>
 
-          {/* Agent Status Buttons */}
-          {identity?.connected && (
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
-              <button
-                onClick={() => navigate('/Agents')}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/40 hover:border-blue-400/60 rounded-xl px-4 py-2.5 transition-all group"
-              >
-                <Bot className="w-4 h-4 text-blue-400" />
-                <span className="text-white text-sm font-medium">Agents</span>
-                <span className="text-xs text-blue-300 bg-blue-500/20 px-1.5 py-0.5 rounded-full">{liveCounts.agents}</span>
-                <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white/60 transition" />
-              </button>
-              <button
-                onClick={() => navigate('/DIDHealthDashboard')}
-                className="flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/40 hover:border-green-400/60 rounded-xl px-4 py-2.5 transition-all group"
-              >
-                <Radio className="w-4 h-4 text-green-400" />
-                <span className="text-white text-sm font-medium">DID Signal</span>
-                {didSignal?.isVerified && <span className="w-2 h-2 rounded-full bg-green-400" />}
-                <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white/60 transition" />
-              </button>
-            </div>
-          )}
+
         </div>
 
         {/* Village Pulse — Live Kinetic Energy */}
