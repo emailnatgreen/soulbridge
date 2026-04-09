@@ -535,69 +535,6 @@ export default function Home() {
         </div>
 
 
-        {/* 11 Laws */}
-        <div className="bg-gradient-to-br from-amber-900/20 to-orange-900/10 border border-amber-500/20 rounded-2xl p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-amber-400" />
-            <h3 className="font-semibold text-amber-300 text-sm">11 Laws of Honour</h3>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-            {[
-              'Law: Soul', 'Law of Honour', 'Law: Fair Share', 'Law: Creation',
-              'Law: Dwelling', 'Law of Exchange', 'Law: Reputation', 'Law: Governance',
-              'Law: Growth', 'Law: Leaving', 'Law: Laughter',
-            ].map((law, i) => (
-              <div key={law} className="flex items-center gap-2 text-white/50 text-xs">
-                <span className="text-amber-500/60 font-mono text-[10px] flex-shrink-0">{String(i+1).padStart(2,'0')}</span>
-                {law}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Personalised section for connected DID users */}
-        {identity?.connected && (
-          <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-2xl p-5">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold text-sm">Welcome back, Honoured Member</h3>
-                <p className="text-purple-300 text-xs">Your DID identity is active · Auto-locks after 5 min inactivity</p>
-              </div>
-              <Button
-                onClick={() => navigate('/dashboard')}
-                className="ml-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-8 gap-1.5 text-xs px-3"
-              >
-                <ArrowRight className="w-3.5 h-3.5" /> Back to Dashboard
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { label: 'Village Agents', path: '/Agents', icon: Users, count: liveCounts.agents },
-                { label: 'Published DIDs', path: '/DIDManager', icon: Shield, count: liveCounts.dids },
-                ...(isAdmin ? [
-                  { label: 'Active Votes', path: '/governance', icon: Vote, count: proposals.filter(p => p.status === 'active').length },
-                  { label: 'AI Projects', path: '/AIProjectManager', icon: Briefcase, count: activeProjects.length },
-                ] : []),
-              ].map(item => (
-                <button
-                  key={item.label}
-                  onClick={() => navigate(item.path)}
-                  className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-3 text-center transition"
-                >
-                  <item.icon className="w-4 h-4 text-purple-300 mx-auto mb-1" />
-                  {item.count !== null && (
-                    <div className="text-white font-bold text-base">{loading ? '…' : item.count}</div>
-                  )}
-                  <span className="text-white/70 text-xs">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
       </div>
 
       <footer className="border-t border-white/10 bg-black/20 py-5 mt-10">
