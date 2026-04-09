@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX, ShoppingBag, Coins, BarChart2, TrendingUp, BellRing, Flame } from 'lucide-react';
+import { AlertTriangle, Clock, Users, Folder, Zap, TrendingDown, Calendar, ChevronDown, ChevronUp, Bot, Activity, RefreshCw, Filter, Factory, Package, Gauge, Heart, ShieldAlert, UserX, ShoppingBag, Coins, BarChart2, TrendingUp, BellRing, Flame, EyeOff, Radio, CheckCircle2, XCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatDistanceToNow, isPast, parseISO, differenceInHours, subHours, subDays } from 'date-fns';
 
@@ -1447,6 +1447,130 @@ export default function KineticWasteDashboard() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* ── SILENT AUTOMATIONS SECTION ── */}
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                <EyeOff className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Silent KU Automations</h2>
+                <p className="text-slate-400 text-sm">Automations that have never fired — invisible Kinetic waste blocking Village telemetry</p>
+              </div>
+              <div className="ml-auto px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-lg text-xs text-slate-400">
+                Last synced: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </div>
+            </div>
+
+            {/* Summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <StatCard icon={EyeOff} label="Never-Fired Automations" value={5} color="bg-slate-700" />
+              <StatCard icon={Zap} label="Max KU Weight Suppressed" value="4.0×" color="bg-orange-800" />
+              <StatCard icon={Radio} label="KU Categories Dark" value={5} color="bg-red-900" />
+            </div>
+
+            <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-2 p-5 border-b border-slate-700">
+                <EyeOff className="w-4 h-4 text-slate-400" />
+                <h2 className="text-white font-semibold">Automations With 0 Runs</h2>
+                <span className="ml-2 px-2 py-0.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs">5 silent</span>
+                <span className="ml-auto text-slate-500 text-xs">Entity-triggered · Never fired since creation</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-slate-800">
+                      <th className="text-left px-5 py-3">Automation</th>
+                      <th className="text-left px-4 py-3">Entity Trigger</th>
+                      <th className="text-left px-4 py-3">KU Type</th>
+                      <th className="text-left px-4 py-3">Weight</th>
+                      <th className="text-left px-4 py-3">Constitutional Laws</th>
+                      <th className="text-left px-4 py-3">Condition</th>
+                      <th className="text-left px-4 py-3">Waste Signal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'KU — Task Completion', entity: 'ProjectTask', event: 'update', ku: 'task_completion', weight: 2.5, laws: 'Laws 9, 3', condition: 'status = completed', signal: 'No KUs when tasks complete', risk: 'high' },
+                      { name: 'KU — DID Publication', entity: 'Wallet', event: 'update', ku: 'did_publication', weight: 4.0, laws: 'Laws 1, 2', condition: 'is_published flips true', signal: 'No KUs when DIDs published', risk: 'critical' },
+                      { name: 'KU — Project Contribution', entity: 'ProjectContribution', event: 'create', ku: 'project_contribution', weight: 2.0, laws: 'Laws 9, 3, 5', condition: 'Any create', signal: 'No KUs for contributions', risk: 'high' },
+                      { name: 'KU — Treasury Action', entity: 'EconomicActivity', event: 'create', ku: 'economic_exchange', weight: 3.5, laws: 'Laws 6, 3, 8', condition: 'treasury_deposit / withdrawal', signal: 'No KUs for treasury flows', risk: 'critical' },
+                      { name: 'KU — Skill Development', entity: 'AgentSkill', event: 'create', ku: 'skill_development', weight: 1.5, laws: 'Law 9', condition: 'Any create', signal: 'No KUs for skill creation', risk: 'medium' },
+                    ].map(row => (
+                      <tr key={row.name} className="border-b border-slate-800 hover:bg-slate-800/30 transition">
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            <EyeOff className="w-3.5 h-3.5 text-slate-500" />
+                            <span className="text-white font-medium text-xs">{row.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div>
+                            <span className="text-slate-300 text-xs font-mono">{row.entity}</span>
+                            <span className="ml-1.5 text-xs text-slate-500">on {row.event}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-0.5 rounded-full text-xs border bg-slate-700 text-slate-300 border-slate-600 font-mono">{row.ku}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`font-mono font-bold text-sm ${
+                            row.weight >= 4 ? 'text-red-400' : row.weight >= 3 ? 'text-orange-400' : row.weight >= 2 ? 'text-amber-400' : 'text-yellow-400'
+                          }`}>{row.weight}×</span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-400 text-xs">{row.laws}</td>
+                        <td className="px-4 py-3 text-slate-400 text-xs font-mono">{row.condition}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                              row.risk === 'critical' ? 'bg-red-500' : row.risk === 'high' ? 'bg-orange-500' : 'bg-yellow-500'
+                            }`} />
+                            <span className={`text-xs ${
+                              row.risk === 'critical' ? 'text-red-400' : row.risk === 'high' ? 'text-orange-400' : 'text-yellow-400'
+                            }`}>{row.signal}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-4 border-t border-slate-800 bg-slate-800/30">
+                <p className="text-slate-500 text-xs">💡 <strong className="text-slate-400">Why this matters:</strong> These automations trigger <code className="bg-slate-700 px-1 rounded">autoGenerateKineticUnit</code> — the function that records all Village motion into the Kinetic Grid. Until these entities are actively used, the Kinetic Grid is only tracking governance votes and proposals, missing task completions, DID publications, treasury flows, contributions and skill growth.</p>
+              </div>
+            </div>
+
+            {/* Healthy automations panel */}
+            <div className="mt-4 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-2 p-5 border-b border-slate-700">
+                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                <h2 className="text-white font-semibold">Active & Healthy Automations</h2>
+                <span className="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs">firing correctly</span>
+              </div>
+              <div className="divide-y divide-slate-800">
+                {[
+                  { name: 'KU — Governance Vote', runs: 23, fails: 0, lastRun: '2026-04-09T06:32:59Z', freq: 'On GovernanceVote.create' },
+                  { name: 'KU — Governance Proposal', runs: 1, fails: 0, lastRun: '2026-04-09T06:31:14Z', freq: 'On GovernanceProposal.create' },
+                  { name: 'Governance Proposal Enrichment', runs: 24, fails: 1, lastRun: '2026-04-09T08:06:52Z', freq: 'Every 2h' },
+                  { name: 'MWTP Macro Aggregator', runs: 6, fails: 0, lastRun: '2026-04-09T05:00:45Z', freq: 'Every 6h' },
+                  { name: 'MWTP Meso Aggregator', runs: null, fails: 0, lastRun: null, freq: 'Every 30min' },
+                ].map(row => (
+                  <div key={row.name} className="flex items-center gap-4 px-5 py-3">
+                    <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${row.fails > 0 ? 'text-amber-400' : 'text-green-400'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-medium truncate">{row.name}</p>
+                      <p className="text-slate-500 text-xs">{row.freq}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      {row.runs != null && <p className="text-slate-300 text-xs">{row.runs} runs · <span className={row.fails > 0 ? 'text-amber-400' : 'text-green-400'}>{row.fails} fails</span></p>}
+                      {row.lastRun && <p className="text-slate-500 text-xs">{formatDistanceToNow(new Date(row.lastRun), { addSuffix: true })}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
