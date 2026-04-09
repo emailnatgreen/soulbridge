@@ -383,6 +383,32 @@ export default function Home() {
         {/* Axi's Vision */}
         <AxiVisionSection />
 
+        {/* Features Grid */}
+        <div>
+          <h3 className="text-white/60 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Zap className="w-3 h-3" /> Platform Features
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {features.filter(f => isAdmin || ['AI Agents', 'DID Identity'].includes(f.title)).map(f => (
+              <button
+                key={f.title}
+                onClick={() => navigate(f.path)}
+                className={`bg-gradient-to-br from-slate-900/80 to-slate-950/60 border ${f.border} rounded-2xl p-4 text-left hover:scale-[1.02] hover:shadow-lg transition-all group`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <f.icon className={`w-5 h-5 ${f.color}`} />
+                  <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition" />
+                </div>
+                <h4 className="text-white font-semibold text-sm">{f.title}</h4>
+                <p className="text-white/40 text-xs mt-1 leading-relaxed">{f.desc}</p>
+                <div className={`mt-3 text-xs font-semibold ${f.color}`}>
+                  {loading ? '…' : f.count} {f.countLabel}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Carbon Footprint Chart — from Kinetic Waste snapshots */}
         {isAdmin && (
           <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
@@ -425,6 +451,9 @@ export default function Home() {
         {/* Genesis Seal */}
         {identity?.connected && <GenesisSealBadge />}
 
+        {/* Axi's Vision */}
+        <AxiVisionSection />
+
         {/* Features Grid */}
         <div>
           <h3 className="text-white/60 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -450,6 +479,11 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        {/* Carbon Footprint Chart */}
+        {isAdmin && (
+          <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
+        )}
 
         {/* Real-time On-Chain Activity + Governance */}
         {isAdmin && (
