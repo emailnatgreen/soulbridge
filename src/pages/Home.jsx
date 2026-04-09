@@ -226,7 +226,24 @@ export default function Home() {
             </div>
           )}
 
-
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => navigate('/dashboard')}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-8 gap-1.5 text-xs px-3"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+              Dashboard
+            </Button>
+            {isAdmin && (
+              <Button
+                onClick={() => navigate('/VipInviteDashboard')}
+                className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white h-8 gap-1.5 text-xs px-3"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                VIP Invite
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
