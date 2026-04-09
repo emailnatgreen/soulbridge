@@ -625,7 +625,7 @@ export default function GovernanceHub() {
             <div className="space-y-4">
               {completedProposals.map(proposal => {
                 const totalVotes = (proposal.votes_for || 0) + (proposal.votes_against || 0) + (proposal.votes_abstain || 0);
-                const approved = proposal.status === 'approved';
+                const approved = proposal.status === 'passed' || proposal.status === 'executed';
 
                 return (
                   <Card key={proposal.id} className="bg-white/10 border-white/20 backdrop-blur-xl">
