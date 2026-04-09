@@ -18,6 +18,7 @@ import { useDIDSignal } from '@/hooks/useDIDSignal';
 import VillagePulseMini from '@/components/kinetic/VillagePulseMini';
 import ZoeProjectFeature from '@/components/ZoeProjectFeature';
 import AxiVisionSection from '@/components/AxiVisionSection';
+import CarbonFootprintChart from '@/components/CarbonFootprintChart';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -37,6 +38,8 @@ export default function Home() {
   const [pulseKUs, setPulseKUs] = useState([]);
   const [pulseEconomicVol, setPulseEconomicVol] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [carbonSnapshots, setCarbonSnapshots] = useState([]);
+  const [carbonLoading, setCarbonLoading] = useState(true);
   const [search, setSearch] = useState('');
   const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
   const didSignal = useDIDSignal();
@@ -124,7 +127,7 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [proposalData, agentData, allAgentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData, kuData] = await Promise.all([
+        const [proposalData, agentData, allAgentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData, kuData, snapshotData] = await Promise.all([
           isAdmin ? base44.entities.GovernanceProposal.list('-created_date', 5) : Promise.resolve([]),
           base44.entities.Agent.list('-created_date', 6),
           base44.entities.Agent.list('-created_date', 500),
@@ -136,21 +139,10 @@ export default function Home() {
           isAdmin ? base44.entities.Resource.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
           isAdmin ? base44.entities.AgentSkill?.list?.('-created_date', 500).catch(() => []) : Promise.resolve([]),
           base44.entities.KineticUnit.list('-created_date', 200).catch(() => []),
+          base44.entities.DailyKineticWasteSnapshot.list('-snapshot_date', 14).catch(() => []),
         ]);
-        setProposals(proposalData || []);
-        setAgents(agentData || []);
-        setTransactions(activityData || []);
-        setLiveCounts({
-          agents: allAgentData?.length || 0,
-          proposals: proposalData?.length || 0,
-          dids: walletData?.length || 0,
-          projects: projectData?.length || 0,
-          mentors: mentorData?.length || 0,
-          skills: skillData?.length || 0,
-          resources: resourceData?.length || 0,
-          activeSkills: agentSkillData?.filter((s) => s.level > 1).length || 0,
-        });
-        setPulseKUs(kuData || []);
+        setCarbonSnapshots(snapshotData || []);
+        setCarbonLoading(false);
         setPulseEconomicVol((activityData || []).reduce((s, a) => s + (a.amount || 0), 0));
       } catch (e) {}
       setLoading(false);
@@ -337,6 +329,11 @@ export default function Home() {
         {/* Village Pulse — Live Kinetic Energy */}
         <VillagePulseMini kus={pulseKUs} agentCount={liveCounts.agents} votesCount={liveCounts.proposals} economicVolume={pulseEconomicVol} />
 
+        {/* Carbon Footprint Chart — from Kinetic Waste snapshots */}
+        {isAdmin && (
+          <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
+        )}
+
         {/* Zoe Global Sovereign Project Feature */}
         <ZoeProjectFeature />
 
@@ -378,19 +375,24 @@ export default function Home() {
         {identity?.connected && <GenesisSealBadge />}
 
         {/* Live Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', path: '/Agents' },
-            { label: 'Published DIDs', value: liveCounts.dids, icon: Shield, color: 'text-green-300', path: '/DIDManager' },
-            { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', path: '/governance' },
-            { label: 'AI Projects', value: liveCounts.projects, icon: Briefcase, color: 'text-cyan-300', path: '/AIProjectHub' },
-          ].map(s => (
-            <button key={s.label} onClick={() => navigate(s.path)} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center hover:bg-white/10 transition">
-              <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
-              <div className={`text-2xl font-bold ${s.color}`}>{loading ? '…' : s.value}</div>
-              <div className="text-white/40 text-[10px] mt-0.5">{s.label}</div>
-            </button>
-          ))}
+        <div>
+          <h3 className="text-white/40 text-[10px] uppercase tracking-widest mb-3 flex items-center gap-2"><Activity className="w-3 h-3" /> Live Village Data</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[
+              { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', bg: 'from-blue-900/30 to-blue-950/20 border-blue-500/20', path: '/Agents' },
+              { label: 'Published DIDs', value: liveCounts.dids, icon: Shield, color: 'text-green-300', bg: 'from-green-900/30 to-emerald-950/20 border-green-500/20', path: '/DIDManager' },
+              { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', bg: 'from-purple-900/30 to-purple-950/20 border-purple-500/20', path: '/governance' },
+              { label: 'AI Projects', value: liveCounts.projects, icon: Briefcase, color: 'text-cyan-300', bg: 'from-cyan-900/30 to-cyan-950/20 border-cyan-500/20', path: '/AIProjectHub' },
+              { label: 'Kinetic Units', value: pulseKUs.length, icon: Zap, color: 'text-yellow-300', bg: 'from-yellow-900/30 to-amber-950/20 border-yellow-500/20', path: '/KineticGridDashboard' },
+              { label: 'Active Skills', value: liveCounts.activeSkills, icon: GraduationCap, color: 'text-emerald-300', bg: 'from-emerald-900/30 to-teal-950/20 border-emerald-500/20', path: '/SkillsHub' },
+            ].map(s => (
+              <button key={s.label} onClick={() => navigate(s.path)} className={`bg-gradient-to-br ${s.bg} border rounded-xl p-3 text-center hover:scale-[1.03] transition-all`}>
+                <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
+                <div className={`text-2xl font-bold ${s.color}`}>{loading ? '…' : s.value}</div>
+                <div className="text-white/40 text-[10px] mt-0.5">{s.label}</div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Features Grid */}
@@ -403,7 +405,7 @@ export default function Home() {
               <button
                 key={f.title}
                 onClick={() => navigate(f.path)}
-                className={`bg-white/5 border ${f.border} rounded-2xl p-4 text-left hover:bg-white/10 transition-all group`}
+                className={`bg-gradient-to-br from-slate-900/80 to-slate-950/60 border ${f.border} rounded-2xl p-4 text-left hover:scale-[1.02] hover:shadow-lg transition-all group`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <f.icon className={`w-5 h-5 ${f.color}`} />
