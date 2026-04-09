@@ -326,6 +326,243 @@ export default function Home() {
           )}
         </div>
 
+        {/* Village Pulse — Live Kinetic Energy */}
+        <VillagePulseMini kus={pulseKUs} agentCount={liveCounts.agents} votesCount={liveCounts.proposals} economicVolume={pulseEconomicVol} />
+
+        {/* Live Stats + Carbon Direction */}
+        <div>
+          <h3 className="text-white/40 text-[10px] uppercase tracking-widest mb-3 flex items-center gap-2"><Activity className="w-3 h-3" /> Live Village Data</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+            {[
+              { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', bg: 'from-blue-900/30 to-blue-950/20 border-blue-500/20', path: '/Agents' },
+              { label: 'Published DIDs', value: liveCounts.dids, icon: Shield, color: 'text-green-300', bg: 'from-green-900/30 to-emerald-950/20 border-green-500/20', path: '/DIDManager' },
+              { label: 'Proposals', value: liveCounts.proposals, icon: Vote, color: 'text-purple-300', bg: 'from-purple-900/30 to-purple-950/20 border-purple-500/20', path: '/governance' },
+              { label: 'AI Projects', value: liveCounts.projects, icon: Briefcase, color: 'text-cyan-300', bg: 'from-cyan-900/30 to-cyan-950/20 border-cyan-500/20', path: '/AIProjectHub' },
+              { label: 'Kinetic Units', value: pulseKUs.length, icon: Zap, color: 'text-yellow-300', bg: 'from-yellow-900/30 to-amber-950/20 border-yellow-500/20', path: '/KineticGridDashboard' },
+              { label: 'Active Skills', value: liveCounts.activeSkills, icon: GraduationCap, color: 'text-emerald-300', bg: 'from-emerald-900/30 to-teal-950/20 border-emerald-500/20', path: '/SkillsHub' },
+            ].map(s => (
+              <button key={s.label} onClick={() => navigate(s.path)} className={`bg-gradient-to-br ${s.bg} border rounded-xl p-3 text-center hover:scale-[1.03] transition-all`}>
+                <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
+                <div className={`text-2xl font-bold ${s.color}`}>{loading ? '…' : s.value}</div>
+                <div className="text-white/40 text-[10px] mt-0.5">{s.label}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* Carbon Stats with Direction */}
+          {isAdmin && carbonSnapshots.length >= 2 && (() => {
+            const latest = carbonSnapshots[0];
+            const previous = carbonSnapshots[1];
+            const wasteChange = latest.carbon_waste_grams - previous.carbon_waste_grams;
+            const savedChange = latest.carbon_saved_grams - previous.carbon_saved_grams;
+            const isWasteBetter = wasteChange < 0;
+            const isSavingBetter = savedChange > 0;
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className={`rounded-xl p-3 border ${isWasteBetter ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-xs font-medium">CO₂ Waste Trend</span>
+                    <div className={`flex items-center gap-1 text-xs font-bold ${isWasteBetter ? 'text-emerald-300' : 'text-red-300'}`}>
+                      {isWasteBetter ? '↓' : '↑'} {Math.abs(wasteChange).toFixed(0)}g
+                    </div>
+                  </div>
+                </div>
+                <div className={`rounded-xl p-3 border ${isSavingBetter ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-orange-500/10 border-orange-500/30'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-xs font-medium">CO₂ Saved Trend</span>
+                    <div className={`flex items-center gap-1 text-xs font-bold ${isSavingBetter ? 'text-emerald-300' : 'text-orange-300'}`}>
+                      {isSavingBetter ? '↑' : '↓'} {Math.abs(savedChange).toFixed(0)}g
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Axi's Vision */}
+        <AxiVisionSection />
+
+        {/* Features Grid */}
+        <div>
+          <h3 className="text-white/60 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Zap className="w-3 h-3" /> Platform Features
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {features.filter(f => isAdmin || ['AI Agents', 'DID Identity'].includes(f.title)).map(f => (
+              <button
+                key={f.title}
+                onClick={() => navigate(f.path)}
+                className={`bg-gradient-to-br from-slate-900/80 to-slate-950/60 border ${f.border} rounded-2xl p-4 text-left hover:scale-[1.02] hover:shadow-lg transition-all group`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <f.icon className={`w-5 h-5 ${f.color}`} />
+                  <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition" />
+                </div>
+                <h4 className="text-white font-semibold text-sm">{f.title}</h4>
+                <p className="text-white/40 text-xs mt-1 leading-relaxed">{f.desc}</p>
+                <div className={`mt-3 text-xs font-semibold ${f.color}`}>
+                  {loading ? '…' : f.count} {f.countLabel}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Carbon Footprint Chart — from Kinetic Waste snapshots */}
+        {isAdmin && (
+          <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
+        )}
+
+        {/* Zoe Global Sovereign Project Feature */}
+        <ZoeProjectFeature />
+
+        {/* Trust Strip: RLUSDT + Compliance */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border border-green-500/30 rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+              <Lock className="w-5 h-5 text-green-400" />
+            </div>
+            <div>
+              <h3 className="text-green-300 font-semibold text-sm">RLUSDT Protection Shield</h3>
+              <p className="text-white/40 text-xs mt-0.5">All stable-value holdings are protected via Ripple's RLUSDT framework — your funds are secured on-chain.</p>
+            </div>
+          </div>
+          <div className="bg-gradient-to-br from-blue-900/30 to-indigo-900/20 border border-blue-500/30 rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-blue-300 font-semibold text-sm">UK FSMA 2026 Compliant</h3>
+              <p className="text-white/40 text-xs mt-0.5">SoulBridge operates within UK Financial Services & Markets Act 2026 guidelines during our pre-authorisation technical testing phase.</p>
+            </div>
+          </div>
+          <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+              <Globe className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-purple-300 font-semibold text-sm">On-Chain Transparency</h3>
+              <p className="text-white/40 text-xs mt-0.5">Every DID, transaction and governance vote is anchored on XRPL mainnet. Nothing is hidden — full auditability by design.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Genesis Seal */}
+        {identity?.connected && <GenesisSealBadge />}
+
+        {/* Real-time On-Chain Activity + Governance */}
+        {isAdmin && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* Live On-Chain Activity */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-green-400" />
+              <h3 className="font-semibold text-white text-sm">Live On-Chain Activity</h3>
+              <span className="ml-auto flex items-center gap-1 text-green-400 text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> LIVE
+              </span>
+            </div>
+            {loading ? (
+              <div className="space-y-2">{[1,2,3,4].map(i => <div key={i} className="h-10 bg-white/5 rounded-lg animate-pulse" />)}</div>
+            ) : transactions.length === 0 ? (
+              <div className="text-center py-6">
+                <Activity className="w-6 h-6 text-white/20 mx-auto mb-2" />
+                <p className="text-white/30 text-xs">No economic activity recorded yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {transactions.map(activity => {
+                  const agent = resolveAgent(activity);
+                  const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
+                  return (
+                    <div key={activity.id} className="flex items-center gap-3 bg-white/5 rounded-xl p-2.5">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        isInflow ? 'bg-green-500/30' : 'bg-blue-500/30'
+                      }`}>
+                        <Zap className={`w-3 h-3 ${ isInflow ? 'text-green-300' : 'text-blue-300'}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-xs truncate font-medium">{agent?.name || resolveAgentName(activity.agent_id)}</p>
+                        <p className="text-white/40 text-[10px] truncate">{activity.description}</p>
+                      </div>
+                      <span className={`text-[10px] font-mono flex-shrink-0 ${ isInflow ? 'text-green-300' : 'text-blue-300'}`}>{isInflow ? '+' : '-'}{activity.amount} XRP</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Latest Governance */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Vote className="w-4 h-4 text-purple-400" />
+              <h3 className="font-semibold text-white text-sm">Governance Updates</h3>
+              <button onClick={() => navigate('/governance')} className="ml-auto text-purple-400 text-xs hover:text-purple-300 flex items-center gap-1">
+                View all <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+            {loading ? (
+              <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-12 bg-white/5 rounded-lg animate-pulse" />)}</div>
+            ) : proposals.length === 0 ? (
+              <p className="text-white/30 text-sm">No proposals yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {proposals.map(p => (
+                  <div key={p.id} className="bg-white/5 rounded-xl p-3 space-y-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-white text-xs font-medium leading-snug flex-1">{p.title}</p>
+                      <Badge className={`text-[10px] flex-shrink-0 ${statusColor[p.status] || statusColor.expired}`}>
+                        {p.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-1 text-white/30 text-[10px]">
+                      <Clock className="w-2.5 h-2.5" />
+                      {p.created_date ? new Date(p.created_date).toLocaleDateString() : 'Recently'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        )}
+
+        {/* Village Agents */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-blue-400" />
+            <h3 className="font-semibold text-white text-sm">Village Agents</h3>
+            <button onClick={() => navigate('/Agents')} className="ml-auto text-blue-400 text-xs hover:text-blue-300 flex items-center gap-1">
+              View all <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {[1,2,3,4,5,6].map(i => <div key={i} className="h-16 bg-white/5 rounded-lg animate-pulse" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {agents.map(agent => (
+                <div key={agent.id} className="bg-white/5 rounded-xl p-3 flex items-center gap-2">
+                  {agent.avatar_url ? (
+                    <img src={agent.avatar_url} alt={agent.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-purple-300 text-xs font-bold">{agent.name?.[0] || '?'}</span>
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-white text-xs font-medium truncate">{agent.name}</p>
+                    <p className="text-white/40 text-[10px] truncate capitalize">{agent.role}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
       </div>
 
