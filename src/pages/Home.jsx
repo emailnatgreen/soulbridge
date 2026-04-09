@@ -185,7 +185,7 @@ export default function Home() {
     { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
     { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length },
     { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
-  ];
+  ].filter(f => f.title !== 'DID Identity');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
@@ -534,41 +534,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* More Pages — pages not in the features grid */}
-        {isAdmin && (
-          <div>
-            <h3 className="text-white/60 text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Settings className="w-3 h-3" /> More Pages
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {[
-                { title: 'Sovereign ID', path: '/SovereignID', icon: Fingerprint, color: 'text-purple-400', border: 'border-purple-500/30' },
-                { title: 'Skill Validation', path: '/SkillValidation', icon: Award, color: 'text-emerald-400', border: 'border-emerald-500/30' },
-                { title: 'Sync Audit', path: '/SyncAuditReport', icon: FileCheck, color: 'text-cyan-400', border: 'border-cyan-500/30' },
-                { title: 'Invite Links', path: '/InviteLinkManager', icon: Link2, color: 'text-pink-400', border: 'border-pink-500/30' },
-                { title: 'Village Calendar', path: '/VillageCalendar', icon: CalendarDays, color: 'text-indigo-400', border: 'border-indigo-500/30' },
-                { title: 'Scroll of Resonance', path: '/ScrollOfResonance', icon: ScrollText, color: 'text-amber-400', border: 'border-amber-500/30' },
-                { title: 'Kinetic Compass', path: '/KineticCompass', icon: Zap, color: 'text-yellow-400', border: 'border-yellow-500/30' },
-                { title: 'Service Marketplace', path: '/ServiceSkillMarketplace', icon: Briefcase, color: 'text-orange-400', border: 'border-orange-500/30' },
-                { title: 'Agent Comms', path: '/AgentCommsDashboard', icon: MessageSquare, color: 'text-blue-400', border: 'border-blue-500/30' },
-                { title: 'Axi Command', path: '/AxiCommandDashboard', icon: Sparkles, color: 'text-violet-400', border: 'border-violet-500/30' },
-                { title: 'Integration Credits', path: '/IntegrationCreditDashboard', icon: BarChart3, color: 'text-teal-400', border: 'border-teal-500/30' },
-                { title: 'Project Sanctuary', path: '/ProjectSanctuary', icon: Globe, color: 'text-sky-400', border: 'border-sky-500/30' },
-                { title: 'Memory Browser', path: '/MemoryBrowser', icon: BookOpen, color: 'text-rose-400', border: 'border-rose-500/30' },
-              ].map(p => (
-                <button
-                  key={p.path}
-                  onClick={() => navigate(p.path)}
-                  className={`bg-white/5 border ${p.border} rounded-xl p-3 text-left hover:bg-white/10 transition-all group flex items-center gap-2.5`}
-                >
-                  <p.icon className={`w-4 h-4 ${p.color} flex-shrink-0`} />
-                  <span className="text-white text-xs font-medium truncate">{p.title}</span>
-                  <ChevronRight className="w-3 h-3 text-white/20 group-hover:text-white/50 transition ml-auto flex-shrink-0" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* 11 Laws */}
         <div className="bg-gradient-to-br from-amber-900/20 to-orange-900/10 border border-amber-500/20 rounded-2xl p-5 space-y-3">
