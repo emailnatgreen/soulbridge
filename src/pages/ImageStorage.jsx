@@ -36,7 +36,7 @@ export default function ImageStorage() {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
         await base44.entities.ImageAsset.create({
           name: file.name,
-          url: file_url,
+          file_url: file_url,
           file_size: file.size,
           mime_type: file.type,
         });
@@ -120,14 +120,14 @@ export default function ImageStorage() {
               <div key={img.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden group hover:border-purple-500/40 transition">
                 <div className="aspect-square bg-slate-900 relative overflow-hidden">
                   <img
-                    src={img.url}
+                    src={img.file_url}
                     alt={img.name}
                     className="w-full h-full object-cover"
                     onError={e => { e.target.style.display = 'none'; }}
                   />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
                     <button
-                      onClick={() => copyUrl(img.url, img.id)}
+                      onClick={() => copyUrl(img.file_url, img.id)}
                       className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center"
                       title="Copy URL"
                     >
