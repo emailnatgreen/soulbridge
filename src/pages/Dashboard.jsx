@@ -484,6 +484,35 @@ export default function Dashboard() {
               </div>
             )}
 
+            {/* DID Identity Quick Access Panel */}
+            <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="w-4 h-4 text-purple-400" />
+                <h3 className="text-white font-semibold text-sm">Your DID Identity</h3>
+                {identityDid && (
+                  <span className="ml-auto flex items-center gap-1 text-green-300 text-[10px] bg-green-500/10 border border-green-500/30 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> Active
+                  </span>
+                )}
+              </div>
+              {identityDid && (
+                <p className="text-purple-200/50 text-[10px] font-mono truncate mb-3 bg-black/20 px-3 py-1.5 rounded-lg border border-white/10">{identityDid}</p>
+              )}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { label: 'Sovereign ID', path: '/SovereignID', icon: Shield, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30 hover:border-purple-400/50' },
+                  { label: 'DID Manager', path: '/DIDManager', icon: Globe, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/30 hover:border-blue-400/50' },
+                  { label: 'DID Health', path: '/DIDHealthDashboard', icon: ArrowDownUp, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/30 hover:border-green-400/50' },
+                  { label: 'DID Credentials', path: '/DidCredentials', icon: Sparkles, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/30 hover:border-amber-400/50' },
+                ].map(item => (
+                  <Link key={item.path} to={item.path} className={`flex flex-col items-center gap-1.5 border rounded-xl p-3 transition-all ${item.bg}`}>
+                    <item.icon className={`w-5 h-5 ${item.color}`} />
+                    <span className="text-white text-[10px] font-medium text-center">{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
             {/* Phase 0 — Core DID Status (on-chain truth) */}
             <CoreDIDStatusModule wallets={wallets} identityDid={identityDid} />
 

@@ -309,22 +309,9 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* DID Signal + Identity + Agent Status Buttons */}
+          {/* Agent Status Buttons */}
           {identity?.connected && (
             <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
-              <button
-                onClick={() => navigate('/SovereignID')}
-                className="flex items-center gap-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/40 hover:border-purple-400/60 rounded-xl px-4 py-2.5 transition-all group"
-              >
-                <Fingerprint className="w-4 h-4 text-purple-400" />
-                <span className="text-white text-sm font-medium">DID Identity</span>
-                {didSignal?.isVerified ? (
-                  <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" title="DID Verified" />
-                ) : (
-                  <span className="w-2 h-2 rounded-full bg-amber-400" title="DID Unverified" />
-                )}
-                <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white/60 transition" />
-              </button>
               <button
                 onClick={() => navigate('/Agents')}
                 className="flex items-center gap-2 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/40 hover:border-blue-400/60 rounded-xl px-4 py-2.5 transition-all group"
