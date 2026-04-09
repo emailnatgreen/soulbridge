@@ -549,21 +549,21 @@ export default function GovernanceHub() {
                                     <Button
                                       variant={voteChoice === 'for' ? 'default' : 'outline'}
                                       onClick={() => setVoteChoice('for')}
-                                      className={voteChoice === 'for' ? 'bg-green-600 hover:bg-green-700' : 'border-green-400/30 text-green-200 hover:bg-green-500/10'}
+                                      className={voteChoice === 'for' ? 'bg-green-600 hover:bg-green-700 text-white' : 'border-green-500 bg-green-500/20 text-green-200 hover:bg-green-500/40'}
                                     >
                                       <ThumbsUp className="w-4 h-4 mr-2" />For
                                     </Button>
                                     <Button
                                       variant={voteChoice === 'against' ? 'default' : 'outline'}
                                       onClick={() => setVoteChoice('against')}
-                                      className={voteChoice === 'against' ? 'bg-red-600 hover:bg-red-700' : 'border-red-400/30 text-red-200 hover:bg-red-500/10'}
+                                      className={voteChoice === 'against' ? 'bg-red-600 hover:bg-red-700 text-white' : 'border-red-500 bg-red-500/20 text-red-200 hover:bg-red-500/40'}
                                     >
                                       <ThumbsDown className="w-4 h-4 mr-2" />Against
                                     </Button>
                                     <Button
                                       variant={voteChoice === 'abstain' ? 'default' : 'outline'}
                                       onClick={() => setVoteChoice('abstain')}
-                                      className={voteChoice === 'abstain' ? 'bg-gray-600 hover:bg-gray-700' : 'border-gray-400/30 text-gray-200 hover:bg-gray-500/10'}
+                                      className={voteChoice === 'abstain' ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'border-slate-400 bg-slate-500/20 text-slate-200 hover:bg-slate-500/40'}
                                     >
                                       <MinusCircle className="w-4 h-4 mr-2" />Abstain
                                     </Button>
