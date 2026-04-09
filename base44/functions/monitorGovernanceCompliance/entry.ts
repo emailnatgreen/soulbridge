@@ -71,7 +71,9 @@ Deno.serve(async (req) => {
       for (const guardian of guardians) {
         const notification = await base44.asServiceRole.entities.AgentNotification.create({
           recipient_agent_id: guardian.id,
+          notification_type: 'governance_alert',
           title: `⚠️ Governance Compliance Alert`,
+          message: `Proposal "${issue.proposal_title}" has ${issue.issues.length} compliance concerns: ${issue.issues.join('; ')}`,
           content: `Proposal "${issue.proposal_title}" has ${issue.issues.length} compliance concerns: ${issue.issues.join('; ')}`,
           priority: 'high',
           source: 'governance_monitor',

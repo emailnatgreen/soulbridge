@@ -63,11 +63,16 @@ Deno.serve(async (req) => {
 
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    let user = null;
+    try {
+      user = await base44.auth.me();
+    } catch (_) {
+      // Called by scheduler or unauthenticated — no user token
+    }
 
     if (!user) {
       return Response.json(
-        { isVerified: false, error: 'Unauthorized' },
+        { isVerified: false, error: 'Unauthorized — user token required' },
         { status: 401 }
       );
     }
