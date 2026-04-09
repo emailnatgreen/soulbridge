@@ -226,39 +226,7 @@ export default function Home() {
             </div>
           )}
 
-          <div className="flex items-center gap-2">
-            {identity?.did && (
-              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2 py-1 sm:px-2.5 sm:py-1.5">
-                <CheckCircle className="w-3 h-3 text-green-400" />
-                <span className="text-green-300 text-[10px] sm:text-xs">DID Connected</span>
-              </div>
-            )}
-            <Button
-              onClick={() => navigate('/dashboard')}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-8 gap-1.5 text-xs px-3"
-            >
-              <ArrowRight className="w-3.5 h-3.5" />
-              Dashboard
-            </Button>
-            {isAdmin && (
-              <Button
-                onClick={() => navigate('/VipInviteDashboard')}
-                className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white h-8 gap-1.5 text-xs px-3"
-              >
-                <Crown className="w-3.5 h-3.5" />
-                VIP Dash
-              </Button>
-            )}
-            {!identity?.connected && (
-              <Button
-                onClick={() => navigate('/')}
-                className="bg-purple-600 hover:bg-purple-700 text-white h-8 text-xs px-3 gap-1.5"
-              >
-                <Shield className="w-3 h-3" />
-                Connect DID
-              </Button>
-            )}
-          </div>
+
         </div>
       </div>
 
