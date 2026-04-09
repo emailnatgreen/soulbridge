@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import WasteTrendsChart from '@/components/kinetic/WasteTrendsChart';
+import CarbonConversionSection from '@/components/kinetic/CarbonConversionSection';
 import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -1576,51 +1578,20 @@ export default function KineticWasteDashboard() {
 
           {/* ── HISTORICAL WASTE TRENDS ── */}
           <div className="mt-10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center">
-                <BarChart2 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Historical Waste Trends</h2>
-                <p className="text-slate-400 text-sm">14-day daily breakdown of waste signals across all categories</p>
-              </div>
-            </div>
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="day" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                  <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
-                    labelStyle={{ color: '#e2e8f0' }}
-                    itemStyle={{ color: '#cbd5e1' }}
-                  />
-                  <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
-                  <Line type="monotone" dataKey="Stalled Tasks" stroke="#f87171" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Auto Errors" stroke="#c084fc" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Wellbeing Alerts" stroke="#fb7185" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Inefficient Chains" stroke="#34d399" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { label: 'Stalled Tasks', color: 'bg-red-400', total: stalledTasks.length },
-                  { label: 'Auto Errors', color: 'bg-purple-400', total: filteredErrorLogs.length },
-                  { label: 'Wellbeing Alerts', color: 'bg-rose-400', total: highOrCriticalAlerts.length },
-                  { label: 'Inefficient Chains', color: 'bg-emerald-400', total: inefficientChains.length },
-                ].map(s => (
-                  <div key={s.label} className="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2">
-                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${s.color}`} />
-                    <div>
-                      <p className="text-slate-400 text-xs">{s.label}</p>
-                      <p className="text-white font-bold text-sm">{s.total} active</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <WasteTrendsChart />
           </div>
+
+          {/* ── CARBON CONVERSION SECTION ── */}
+          <CarbonConversionSection
+            currentMetrics={{
+              stalledHoursLocked: totalEstimatedHours,
+              automationErrors: filteredErrorLogs.length,
+              inefficientChains: inefficientChains.length,
+              critUnack24h: criticalActiveAlerts.filter(a => !a.acknowledged_at && a.created_date && differenceInHours(new Date(), new Date(a.created_date)) >= 24).length,
+              idleResources: idleResources.length,
+              stagnantListings: stagnantListings.length,
+            }}
+          />
 
         </>
       )}
