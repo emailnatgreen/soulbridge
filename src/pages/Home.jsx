@@ -301,36 +301,27 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Compliance & Trust Badges */}
+          {/* Agent Status Buttons */}
           {identity?.connected && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border border-green-500/30 rounded-lg p-3 flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Lock className="w-4 h-4 text-green-400" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-green-300 font-semibold text-xs">RLUSDT Protected</p>
-                  <p className="text-white/30 text-[10px] mt-0.5">Stable-value protection via Ripple RLUSDT</p>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-blue-900/30 to-indigo-900/20 border border-blue-500/30 rounded-lg p-3 flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <CheckCircle className="w-4 h-4 text-blue-400" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-blue-300 font-semibold text-xs">FSMA 2026 Compliant</p>
-                  <p className="text-white/30 text-[10px] mt-0.5">UK Financial Services Act guidelines</p>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-lg p-3 flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Globe className="w-4 h-4 text-purple-400" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-purple-300 font-semibold text-xs">On-Chain Transparent</p>
-                  <p className="text-white/30 text-[10px] mt-0.5">Full auditability on XRPL mainnet</p>
-                </div>
-              </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+              <button
+                onClick={() => navigate('/Agents')}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/40 hover:border-blue-400/60 rounded-xl px-4 py-2.5 transition-all group"
+              >
+                <Bot className="w-4 h-4 text-blue-400" />
+                <span className="text-white text-sm font-medium">Agents</span>
+                <span className="text-xs text-blue-300 bg-blue-500/20 px-1.5 py-0.5 rounded-full">{liveCounts.agents}</span>
+                <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white/60 transition" />
+              </button>
+              <button
+                onClick={() => navigate('/DIDHealthDashboard')}
+                className="flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/40 hover:border-green-400/60 rounded-xl px-4 py-2.5 transition-all group"
+              >
+                <Radio className="w-4 h-4 text-green-400" />
+                <span className="text-white text-sm font-medium">DID Signal</span>
+                {didSignal?.isVerified && <span className="w-2 h-2 rounded-full bg-green-400" />}
+                <ChevronRight className="w-3 h-3 text-white/30 group-hover:text-white/60 transition" />
+              </button>
             </div>
           )}
         </div>
