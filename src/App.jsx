@@ -197,6 +197,7 @@ const AuthenticatedApp = () => {
         <Route path="/agents/:id" element={L("agent-profile", AgentProfile)} />
         <Route path="/AgentProfile" element={L("agent-profile", AgentProfile)} />
         <Route path="/governance" element={L("governance", GovernanceHub)} />
+        <Route path="/GovernanceHub" element={L("governance", GovernanceHub)} />
         <Route path="/wallets" element={L("wallets", Wallets)} />
         <Route path="/Wallets" element={L("wallets", Wallets)} />
         <Route path="/memory-browser" element={L("memory", MemoryBrowser)} />
