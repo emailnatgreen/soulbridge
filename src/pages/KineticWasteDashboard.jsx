@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import WasteTrendsChart from '@/components/kinetic/WasteTrendsChart';
 import CarbonConversionSection from '@/components/kinetic/CarbonConversionSection';
 import { useQueryClient } from '@tanstack/react-query';
@@ -114,37 +114,20 @@ export default function KineticWasteDashboard() {
 
   const queryClient = useQueryClient();
 
-  const handleResetAll = () => {
-    setSortBy('age'); setSortAsc(true); setExpandedTask(null);
-    setAutoTimeFilter('24h'); setAutoSortBy('time'); setAutoSortAsc(false); setExpandedLog(null);
-    setProdSortBy('efficiency'); setProdSortAsc(true); setExpandedChain(null);
-    setExpandedAlert(null); setWellSortBy('severity'); setWellSortAsc(true);
-    setExpandedRes(null); setResSortBy('age'); setResSortAsc(true);
-    // Refetch all data
-    queryClient.invalidateQueries({ queryKey: ['project-tasks-all'] });
-    queryClient.invalidateQueries({ queryKey: ['agents-all'] });
-    queryClient.invalidateQueries({ queryKey: ['aiprojects-all'] });
-    queryClient.invalidateQueries({ queryKey: ['automation-logs-errors'] });
-    queryClient.invalidateQueries({ queryKey: ['automation-logs-warnings'] });
-    queryClient.invalidateQueries({ queryKey: ['production-chains-all'] });
-    queryClient.invalidateQueries({ queryKey: ['wellbeing-alerts-active'] });
-    queryClient.invalidateQueries({ queryKey: ['resource-listings-all'] });
-    queryClient.invalidateQueries({ queryKey: ['resources-all'] });
-  };
-
-  const [autoTimeFilter, setAutoTimeFilter] = useState('24h');
-  const [autoSortBy, setAutoSortBy] = useState('time');
-  const [autoSortAsc, setAutoSortAsc] = useState(false);
-  const [expandedLog, setExpandedLog] = useState(null);
-  const [prodSortBy, setProdSortBy] = useState('efficiency');
-  const [prodSortAsc, setProdSortAsc] = useState(true);
-  const [expandedChain, setExpandedChain] = useState(null);
-  const [expandedAlert, setExpandedAlert] = useState(null);
-  const [wellSortBy, setWellSortBy] = useState('severity');
-  const [wellSortAsc, setWellSortAsc] = useState(true);
-  const [expandedRes, setExpandedRes] = useState(null);
-  const [resSortBy, setResSortBy] = useState('age');
-  const [resSortAsc, setResSortAsc] = useState(true);
+  // Real-time subscriptions
+  useEffect(() => {
+    const unsubAuto = base44.entities.AutomationLog.subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: ['automation-logs-errors'] });
+      queryClient.invalidateQueries({ queryKey: ['automation-logs-warnings'] });
+    });
+    const unsubWell = base44.entities.WellbeingAlert.subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: ['wellbeing-alerts-active'] });
+    });
+    const unsubTasks = base44.entities.ProjectTask.subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: ['project-tasks-all'] });
+    });
+    return () => { unsubAuto(); unsubWell(); unsubTasks(); };
+  }, [queryClient]);
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['project-tasks-all'],
