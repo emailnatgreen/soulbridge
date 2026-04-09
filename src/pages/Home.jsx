@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
 import VillagePulseMini from '@/components/kinetic/VillagePulseMini';
+import ZoeProjectFeature from '@/components/ZoeProjectFeature';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -345,6 +346,9 @@ export default function Home() {
 
         {/* Village Pulse — Live Kinetic Energy */}
         <VillagePulseMini kus={pulseKUs} agentCount={liveCounts.agents} votesCount={liveCounts.proposals} economicVolume={pulseEconomicVol} />
+
+        {/* Zoe Global Sovereign Project Feature */}
+        <ZoeProjectFeature />
 
         {/* Trust Strip: RLUSDT + Compliance */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
