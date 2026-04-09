@@ -38,16 +38,16 @@ Deno.serve(async (req) => {
         // Calculate results
         const totalVotes = (proposal.votes_for || 0) + (proposal.votes_against || 0) + (proposal.votes_abstain || 0);
         const activeAgents = await base44.asServiceRole.entities.Agent.filter({ status: 'active' });
-        const quorumMet = totalVotes >= (activeAgents.length * (proposal.quorum_threshold / 100));
+        const quorumMet = totalVotes >= (activeAgents.length * ((proposal.quorum_required || 50) / 100));
         
         const approvalRate = totalVotes > 0 
             ? ((proposal.votes_for || 0) / totalVotes * 100)
             : 0;
         
-        const approved = quorumMet && approvalRate >= proposal.approval_threshold;
+        const approved = quorumMet && approvalRate >= (proposal.pass_threshold || 60);
 
         // Update proposal status
-        const newStatus = approved ? 'approved' : 'rejected';
+        const newStatus = approved ? 'passed' : 'rejected';
         await base44.asServiceRole.entities.GovernanceProposal.update(proposal_id, {
             status: newStatus,
             executed_date: new Date().toISOString()
