@@ -111,6 +111,27 @@ export default function KineticWasteDashboard() {
   const [sortBy, setSortBy] = useState('age');
   const [sortAsc, setSortAsc] = useState(true);
   const [expandedTask, setExpandedTask] = useState(null);
+  const [autoTimeFilter, setAutoTimeFilter] = useState('24h');
+  const [autoSortBy, setAutoSortBy] = useState('time');
+  const [autoSortAsc, setAutoSortAsc] = useState(false);
+  const [expandedLog, setExpandedLog] = useState(null);
+  const [expandedChain, setExpandedChain] = useState(null);
+  const [expandedAlert, setExpandedAlert] = useState(null);
+  const [expandedRes, setExpandedRes] = useState(null);
+  const [prodSortBy, setProdSortBy] = useState('efficiency');
+  const [prodSortAsc, setProdSortAsc] = useState(true);
+  const [wellSortBy, setWellSortBy] = useState('severity');
+  const [wellSortAsc, setWellSortAsc] = useState(true);
+  const [resSortBy, setResSortBy] = useState('age');
+  const [resSortAsc, setResSortAsc] = useState(true);
+
+  const handleResetAll = () => {
+    setSortBy('age'); setSortAsc(true);
+    setAutoTimeFilter('24h'); setAutoSortBy('time'); setAutoSortAsc(false);
+    setProdSortBy('efficiency'); setProdSortAsc(true);
+    setWellSortBy('severity'); setWellSortAsc(true);
+    setResSortBy('age'); setResSortAsc(true);
+  };
 
   const queryClient = useQueryClient();
 
