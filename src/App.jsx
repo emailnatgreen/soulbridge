@@ -64,6 +64,7 @@ import AgentSkillTree from './pages/AgentSkillTree';
 import KineticGridDashboard from './pages/KineticGridDashboard';
 import KineticWasteDashboard from './pages/KineticWasteDashboard';
 import EconomicDashboard from './pages/EconomicDashboard';
+import SoulBridgeOracle from './pages/SoulBridgeOracle';
 
 // LEGACY
 import Dashboard from './pages/Dashboard';
@@ -255,6 +256,8 @@ const AuthenticatedApp = () => {
         <Route path="/KineticGridDashboard" element={L("kinetic-grid", KineticGridDashboard)} />
         <Route path="/KineticWasteDashboard" element={L("kinetic-waste", KineticWasteDashboard)} />
         <Route path="/Economy" element={L("economy", EconomicDashboard)} />
+        <Route path="/oracle" element={<SoulBridgeOracle />} />
+        <Route path="/SoulBridgeOracle" element={<SoulBridgeOracle />} />
         <Route path="/EconomicDashboard" element={L("economy", EconomicDashboard)} />
         <Route path="/NodeCovenant" element={L("NodeCovenant", NodeCovenant)} />
         <Route path="/node-covenant" element={L("NodeCovenant", NodeCovenant)} />

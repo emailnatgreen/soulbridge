@@ -1,0 +1,65 @@
+{
+  "name": "DigestComment",
+  "type": "object",
+  "properties": {
+    "digest_id": {
+      "type": "string",
+      "description": "Reference to DailyDigest edition"
+    },
+    "author_type": {
+      "type": "string",
+      "enum": [
+        "agent",
+        "user"
+      ],
+      "default": "user"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "Agent ID or user ID"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Display name of the commenter"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Avatar URL"
+    },
+    "content": {
+      "type": "string",
+      "description": "The comment or suggestion text"
+    },
+    "section": {
+      "type": "string",
+      "description": "Which section the comment relates to (optional)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "comment",
+        "suggestion",
+        "agent_contribution"
+      ],
+      "default": "comment"
+    },
+    "honor_awarded": {
+      "type": "number",
+      "default": 0,
+      "description": "Honor points awarded for this contribution"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Editor-featured comment"
+    }
+  },
+  "required": [
+    "digest_id",
+    "content"
+  ]
+}

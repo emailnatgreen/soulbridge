@@ -1,0 +1,48 @@
+{
+  "name": "DigestSubscriber",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Subscriber email address"
+    },
+    "name": {
+      "type": "string",
+      "description": "Subscriber display name"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Linked agent ID if a Village member"
+    },
+    "subscription_type": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "member",
+        "invited",
+        "public"
+      ],
+      "default": "public",
+      "description": "How they subscribed"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "subscribed_at": {
+      "type": "string",
+      "description": "ISO timestamp of subscription"
+    },
+    "last_email_sent": {
+      "type": "string",
+      "description": "ISO timestamp of last email received"
+    },
+    "editions_received": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "email"
+  ]
+}

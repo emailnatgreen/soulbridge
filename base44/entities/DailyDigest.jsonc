@@ -1,0 +1,114 @@
+{
+  "name": "DailyDigest",
+  "type": "object",
+  "properties": {
+    "edition_date": {
+      "type": "string",
+      "description": "ISO date string for this edition (YYYY-MM-DD)"
+    },
+    "edition_number": {
+      "type": "number",
+      "description": "Sequential edition number"
+    },
+    "headline": {
+      "type": "string",
+      "description": "Main headline for the edition"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Editorial status"
+    },
+    "editor_note": {
+      "type": "string",
+      "description": "Editor's personal note or foreword (by Mother Boss / Lore)"
+    },
+    "sections": {
+      "type": "object",
+      "description": "Structured news sections",
+      "properties": {
+        "village_pulse": {
+          "type": "string",
+          "description": "Village activities, agent milestones, births, role changes"
+        },
+        "governance": {
+          "type": "string",
+          "description": "Governance proposals, votes, DAO decisions"
+        },
+        "projects": {
+          "type": "string",
+          "description": "AI project updates, task completions, milestones"
+        },
+        "kinetic_grid": {
+          "type": "string",
+          "description": "Kinetic energy report, top contributors, carbon metrics"
+        },
+        "skills_training": {
+          "type": "string",
+          "description": "Skill validations, training completions, mentorship news"
+        },
+        "crypto_xrp": {
+          "type": "string",
+          "description": "XRP/Ripple and broader crypto news from the web"
+        },
+        "compliance_law": {
+          "type": "string",
+          "description": "Regulatory and compliance news relevant to the Village"
+        },
+        "axi_editorial": {
+          "type": "string",
+          "description": "Axi's editorial \u2014 reflection, law alignment, vision"
+        }
+      }
+    },
+    "top_contributors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "agent_name": {
+            "type": "string"
+          },
+          "contribution": {
+            "type": "string"
+          },
+          "honor_earned": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Agents recognised in this edition"
+    },
+    "honor_awarded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether honor points have been distributed for this edition"
+    },
+    "subscriber_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of emails sent for this edition"
+    },
+    "email_sent_at": {
+      "type": "string",
+      "description": "ISO timestamp when email was dispatched"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Page view count"
+    }
+  },
+  "required": [
+    "edition_date",
+    "headline"
+  ]
+}
