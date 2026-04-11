@@ -34,7 +34,7 @@ export default function AdminInquiries() {
       return;
     }
     const subject = encodeURIComponent(composeSubject.trim());
-    const body = encodeURIComponent(composeBody + '\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org');
+    const body = encodeURIComponent(composeBody + '\n\n---\nNathan Green\nSoulBridge Foundation\nsupport@soulbridge-foundation.org');
     window.open(`mailto:${composeTo.trim()}?subject=${subject}&body=${body}`, '_blank');
     toast.success('Email client opened!');
     setComposeOpen(false);

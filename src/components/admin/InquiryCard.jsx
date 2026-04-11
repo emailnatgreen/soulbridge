@@ -41,7 +41,7 @@ export default function InquiryCard({ inquiry, onUpdate }) {
 
   const handleSendEmail = () => {
     const subject = encodeURIComponent(`Re: ${inquiry.subject || 'Your enquiry'}`);
-    const body = encodeURIComponent(response + '\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org');
+    const body = encodeURIComponent(response + '\n\n---\nNathan Green\nSoulBridge Foundation\nsupport@soulbridge-foundation.org');
     window.open(`mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`, '_blank');
     base44.entities.Inquiry.update(inquiry.id, { response, status: 'responded' }).then(() => onUpdate?.());
     toast.success('Email client opened!');
