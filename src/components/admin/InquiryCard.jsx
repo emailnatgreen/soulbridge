@@ -42,7 +42,7 @@ export default function InquiryCard({ inquiry, onUpdate }) {
   const handleSendEmail = () => {
     const subject = encodeURIComponent(`Re: ${inquiry.subject || 'Your enquiry'}`);
     const body = encodeURIComponent(response + '\n\n---\nNathan Green\nSoulBridge Foundation\nsupport@soulbridge-foundation.org');
-    window.open(`mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`, '_blank');
+    window.location.href = `mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`;
     base44.entities.Inquiry.update(inquiry.id, { response, status: 'responded' }).then(() => onUpdate?.());
     toast.success('Email client opened!');
   };
@@ -54,7 +54,7 @@ export default function InquiryCard({ inquiry, onUpdate }) {
   const openMailto = () => {
     const subject = encodeURIComponent(`Re: ${inquiry.subject}`);
     const body = encodeURIComponent(`Hi,\n\nThank you for contacting SoulBridge Foundation.\n\n---\nOriginal message:\n${inquiry.message}\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org`);
-    window.open(`mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`, '_blank');
+    window.location.href = `mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`;
   };
 
   return (
