@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Wallet, Shield, Users, Sparkles } from 'lucide-react';
+import { Home, Wallet, Shield, Users, Sparkles, Mail } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { hasAdminAccess } from '@/lib/adminAccess';
 
@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { icon: Home, label: 'Home', path: '/Home' },
   { icon: Wallet, label: 'Wallets', path: '/Wallets' },
   { icon: Shield, label: 'DID', path: '/SovereignID' },
-  { icon: Sparkles, label: 'VIP', path: '/VipInviteDashboard' },
+  { icon: Mail, label: 'Inquiries', path: '/AdminInquiries' },
   { icon: Users, label: 'Agents', path: '/Agents' },
 ];
 
