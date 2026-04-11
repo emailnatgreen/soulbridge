@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Send, Sparkles, Loader2, ArrowLeft, UserPlus, ChevronUp, Volume2, VolumeX, AlertCircle, FileText } from 'lucide-react';
+import { Send, Sparkles, Loader2, ArrowLeft, UserPlus, ChevronUp, Volume2, VolumeX, AlertCircle, FileText, Mail, Inbox, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import moment from 'moment';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import MessageBubble from '../components/MessageBubble';
@@ -30,6 +31,15 @@ export default function AxiPage() {
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
   const [briefingMessages, setBriefingMessages] = useState([]);
+  const [inquiries, setInquiries] = useState([]);
+  const [inquiriesLoading, setInquiriesLoading] = useState(false);
+
+  const loadInquiries = useCallback(async () => {
+    setInquiriesLoading(true);
+    const data = await base44.entities.Inquiry.list('-created_date', 50);
+    setInquiries(data);
+    setInquiriesLoading(false);
+  }, []);
   const ttsEnabledRef = useRef(false);
   const lastSpokenRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -298,6 +308,10 @@ export default function AxiPage() {
                     Summary
                   </TabsTrigger>
                 )}
+                <TabsTrigger value="emails" onClick={loadInquiries} className="text-white/70 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-purple-500 gap-2">
+                  <Mail className="w-4 h-4" />
+                  Emails
+                </TabsTrigger>
               </TabsList>
 
               {/* Chat Content */}
@@ -370,6 +384,59 @@ export default function AxiPage() {
                     briefingMessages.map((msg, idx) => (
                       <MemoizedMessageBubble key={`brief-${idx}-${msg.created_date}`} message={msg} />
                     ))
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Emails Content */}
+              <TabsContent value="emails" className="flex-1 overflow-y-auto m-0">
+                <div className="max-w-4xl mx-auto px-6 py-8 space-y-3">
+                  {inquiriesLoading ? (
+                    <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto" /></div>
+                  ) : inquiries.length === 0 ? (
+                    <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                      <CardContent className="text-center py-12">
+                        <Inbox className="w-10 h-10 text-white/30 mx-auto mb-3" />
+                        <p className="text-white/60 text-sm">No emails yet</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    inquiries.map(inq => {
+                      const isOutbound = inq.source?.startsWith('agent_');
+                      return (
+                        <Card key={inq.id} className="bg-white/5 border-white/10 backdrop-blur-xl">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isOutbound ? 'bg-purple-500/20' : 'bg-blue-500/20'}`}>
+                                {isOutbound ? <ArrowUpRight className="w-4 h-4 text-purple-400" /> : <ArrowDownLeft className="w-4 h-4 text-blue-400" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                  <span className={`text-xs px-2 py-0.5 rounded-full border ${isOutbound ? 'bg-purple-500/10 text-purple-300 border-purple-500/30' : 'bg-blue-500/10 text-blue-300 border-blue-500/30'}`}>
+                                    {isOutbound ? 'Outbound' : 'Incoming'}
+                                  </span>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                                    inq.status === 'new' ? 'bg-yellow-500/10 text-yellow-300 border-yellow-500/30' :
+                                    inq.status === 'responded' ? 'bg-green-500/10 text-green-300 border-green-500/30' :
+                                    'bg-slate-500/10 text-slate-400 border-slate-500/30'
+                                  }`}>{inq.status}</span>
+                                  <span className="text-white/30 text-xs ml-auto">{moment(inq.created_date).fromNow()}</span>
+                                </div>
+                                <p className="text-white font-medium text-sm">{inq.subject || '(no subject)'}</p>
+                                <p className="text-white/50 text-xs mt-0.5 font-mono">{inq.sender_email}</p>
+                                <p className="text-white/60 text-xs mt-2 line-clamp-2">{inq.message}</p>
+                                {inq.response && (
+                                  <div className="mt-2 pt-2 border-t border-white/10">
+                                    <p className="text-purple-300/60 text-xs font-semibold mb-1">REPLY SENT</p>
+                                    <p className="text-white/50 text-xs line-clamp-2">{inq.response}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })
                   )}
                 </div>
               </TabsContent>
