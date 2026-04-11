@@ -65,6 +65,7 @@ import KineticGridDashboard from './pages/KineticGridDashboard';
 import KineticWasteDashboard from './pages/KineticWasteDashboard';
 import EconomicDashboard from './pages/EconomicDashboard';
 import SoulBridgeOracle from './pages/SoulBridgeOracle';
+import ConstitutionalMultiSig from './pages/ConstitutionalMultiSig';
 
 // LEGACY
 import Dashboard from './pages/Dashboard';
@@ -257,6 +258,7 @@ const AuthenticatedApp = () => {
         <Route path="/KineticWasteDashboard" element={L("kinetic-waste", KineticWasteDashboard)} />
         <Route path="/Economy" element={L("economy", EconomicDashboard)} />
         <Route path="/oracle" element={<SoulBridgeOracle />} />
+        <Route path="/ConstitutionalMultiSig" element={L("constitutional-multisig", ConstitutionalMultiSig)} />
         <Route path="/SoulBridgeOracle" element={<SoulBridgeOracle />} />
         <Route path="/EconomicDashboard" element={L("economy", EconomicDashboard)} />
         <Route path="/NodeCovenant" element={L("NodeCovenant", NodeCovenant)} />

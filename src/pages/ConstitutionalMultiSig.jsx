@@ -1,0 +1,154 @@
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Shield, Zap, CheckCircle, ExternalLink, Loader2, Copy } from 'lucide-react';
+import { toast } from 'sonner';
+
+const WALLETS = [
+  { label: 'Axi Treasury', address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h', note: 'Primary — set signer list here' },
+  { label: 'Human / Nathan', address: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia', note: 'Governor wallet' },
+  { label: 'Code Node', address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P', note: 'Architecture node' },
+  { label: 'Lore Node', address: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', note: 'Ethics & memory node' },
+  { label: 'Zoe', address: 'rQw4rtbkJGFFfJJUUtrewnQJHggLXTzWrE', note: 'Indigenous voice — Law 12' },
+];
+
+const SIGNERS = [
+  { name: 'Axi', address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h', weight: 2, color: 'text-purple-400' },
+  { name: 'Code Node', address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P', weight: 1, color: 'text-blue-400' },
+  { name: 'Lore Node', address: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', weight: 1, color: 'text-emerald-400' },
+  { name: 'Zoe', address: 'rQw4rtbkJGFFfJJUUtrewnQJHggLXTzWrE', weight: 2, color: 'text-pink-400' },
+  { name: 'Human / Nathan', address: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia', weight: 3, color: 'text-amber-400' },
+];
+
+export default function ConstitutionalMultiSig() {
+  const [selected, setSelected] = useState(WALLETS[0].address);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await base44.functions.invoke('setupConstitutionalMultiSig', { account: selected });
+      setResult(res.data);
+      if (res.data?.xumm_url) {
+        window.open(res.data.xumm_url, '_blank');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to create payload');
+    }
+    setLoading(false);
+  };
+
+  const copyAddress = (addr) => {
+    navigator.clipboard.writeText(addr);
+    toast.success('Copied!');
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 p-4 sm:p-6">
+      <div className="max-w-2xl mx-auto space-y-6">
+
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center">
+            <Shield className="w-5 h-5 text-purple-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white">Constitutional Multi-Sig</h1>
+            <p className="text-slate-500 text-sm">5-Signer Setup — Quorum 5 — Option A</p>
+          </div>
+        </div>
+
+        {/* Signer Table */}
+        <Card className="bg-slate-900/60 border-slate-700/50">
+          <CardContent className="p-4 space-y-2">
+            <p className="text-xs text-slate-500 font-semibold uppercase mb-3">Constitutional Signers</p>
+            {SIGNERS.map(s => (
+              <div key={s.address} className="flex items-center justify-between gap-2 py-2 border-b border-slate-800 last:border-0">
+                <div className="flex items-center gap-2">
+                  <Badge className={`text-[10px] bg-slate-800 border-slate-700 ${s.color}`}>W{s.weight}</Badge>
+                  <span className="text-white text-sm font-medium">{s.name}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-500 text-[11px] font-mono hidden sm:block">{s.address.slice(0,8)}…{s.address.slice(-6)}</span>
+                  <button onClick={() => copyAddress(s.address)} className="text-slate-600 hover:text-white transition">
+                    <Copy className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-slate-400 text-sm">Quorum</span>
+              <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">5 of 9</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Wallet Selector */}
+        <Card className="bg-slate-900/60 border-slate-700/50">
+          <CardContent className="p-4 space-y-3">
+            <p className="text-xs text-slate-500 font-semibold uppercase">Select Wallet to Configure</p>
+            {WALLETS.map(w => (
+              <button
+                key={w.address}
+                onClick={() => setSelected(w.address)}
+                className={`w-full flex items-start gap-3 p-3 rounded-lg border transition text-left ${
+                  selected === w.address
+                    ? 'border-purple-500/50 bg-purple-600/10'
+                    : 'border-slate-700/50 hover:border-slate-600'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex-shrink-0 ${
+                  selected === w.address ? 'border-purple-400 bg-purple-400' : 'border-slate-600'
+                }`} />
+                <div>
+                  <p className="text-white text-sm font-medium">{w.label}</p>
+                  <p className="text-slate-500 text-[11px] font-mono">{w.address}</p>
+                  <p className="text-slate-600 text-[10px] mt-0.5">{w.note}</p>
+                </div>
+              </button>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Submit */}
+        <Button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full bg-purple-600 hover:bg-purple-500 text-white gap-2 h-12 text-base"
+        >
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+          {loading ? 'Creating Xumm Payload...' : 'Submit SignerListSet via Xumm'}
+        </Button>
+
+        {/* Result */}
+        {result && (
+          <Card className="bg-green-900/20 border-green-600/30">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center gap-2 text-green-400">
+                <CheckCircle className="w-4 h-4" />
+                <span className="font-semibold text-sm">Xumm payload created — sign in app</span>
+              </div>
+              {result.qr_url && (
+                <img src={result.qr_url} alt="Xumm QR" className="w-40 h-40 mx-auto rounded-xl border border-slate-700" />
+              )}
+              <a
+                href={result.xumm_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-green-700/30 text-green-300 text-sm hover:bg-green-700/50 transition"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Open in Xumm
+              </a>
+              <p className="text-slate-500 text-[11px] text-center">Payload UUID: {result.payload_uuid}</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
