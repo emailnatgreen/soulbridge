@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Wallet, Copy, RefreshCw, Eye, EyeOff, History, UserPlus, Loader2, Send, Pencil, Check, X, Trash2 } from "lucide-react";
+import { Wallet, Copy, RefreshCw, Eye, EyeOff, History, UserPlus, Loader2, Send, Pencil, Check, X, Trash2, Shield } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import WalletTransactionHistory from './WalletTransactionHistory';
 import WalletQRCode from './WalletQRCode';
 import WalletTrustlines from './WalletTrustlines';
+import MultiSigPanel from '@/components/did/MultiSigPanel';
 import CurrencyConverter from './CurrencyConverter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -26,6 +27,7 @@ export default function WalletCard({ wallet, onRefresh }) {
     const [deleting, setDeleting] = useState(false);
     const [editingNotes, setEditingNotes] = useState(false);
     const [savingNotes, setSavingNotes] = useState(false);
+    const [showMultiSig, setShowMultiSig] = useState(false);
     const queryClient = useQueryClient();
 
     // Parse structured notes from wallet.notes (stored as key:value lines)
@@ -313,6 +315,21 @@ export default function WalletCard({ wallet, onRefresh }) {
                 <WalletQRCode wallet={wallet} currentUser={currentUser} />
 
                 <WalletTrustlines wallet={wallet} />
+
+                {/* Multi-Sig Security */}
+                {wallet.is_published && wallet.published_txid && showMultiSig && (
+                    <MultiSigPanel
+                        wallet={wallet}
+                        onClose={() => setShowMultiSig(false)}
+                        onRefresh={() => onRefresh(wallet.id)}
+                    />
+                )}
+                {wallet.is_published && wallet.published_txid && !showMultiSig && (
+                    <Button variant="outline" className="w-full gap-2 text-purple-600 border-purple-200 hover:bg-purple-50" onClick={() => setShowMultiSig(true)}>
+                        <Shield className="w-4 h-4" />
+                        Manage Multi-Sig Security
+                    </Button>
+                )}
 
                 {wallet.classic_address && (
                     <Link to={createPageUrl('Send') + `?from_wallet_id=${wallet.id}`} className="block">

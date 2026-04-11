@@ -4,6 +4,7 @@ import { Wallet, Globe, ExternalLink, RefreshCw, Loader2, CheckCircle, CircleDas
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VipWalletEditPanel from './VipWalletEditPanel';
+import MultiSigPanel from '@/components/did/MultiSigPanel';
 import TrustlineActivateButton from '@/components/wallet/TrustlineActivateButton';
 import WalletQRCodes from './WalletQRCodes';
 
@@ -35,6 +36,7 @@ export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
   const [rlusdBalance, setRlusdBalance] = useState(liveRlusdBalance ?? null);
   const [publishResult, setPublishResult] = useState(wallet.is_published && wallet.published_txid ? 'published' : null);
   const [editing, setEditing] = useState(false);
+  const [showMultiSig, setShowMultiSig] = useState(false);
 
   // Sync live balances from parent when they change
   React.useEffect(() => {
@@ -183,6 +185,15 @@ export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
       <TrustlineActivateButton wallet={wallet} />
 
       {/* DID Status */}
+      {/* Multi-Sig Panel */}
+      {showMultiSig && isPublished && (
+        <MultiSigPanel
+          wallet={wallet}
+          onClose={() => setShowMultiSig(false)}
+          onRefresh={onRefresh}
+        />
+      )}
+
       {isPublished ? (
         <div className="bg-green-500/5 border border-green-500/20 rounded-xl px-3 py-2.5 space-y-1.5">
           <div className="flex items-center gap-1.5">
@@ -204,6 +215,12 @@ export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
               </a>
             )}
           </div>
+          {!showMultiSig && (
+            <button onClick={() => setShowMultiSig(true)}
+              className="flex items-center gap-1.5 mt-1.5 text-[10px] text-purple-400 hover:text-purple-300 transition">
+              <Shield className="w-3 h-3" /> Manage Multi-Sig Security
+            </button>
+          )}
         </div>
       ) : (
         <Button onClick={handlePublishDID} disabled={publishing}
