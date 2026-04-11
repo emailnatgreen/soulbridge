@@ -3,8 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Mail, Inbox, Clock, CheckCircle, X, RefreshCw, ArrowLeft, Users } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Mail, Inbox, Clock, CheckCircle, X, RefreshCw, ArrowLeft, Users, Send, Loader2, PenSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import InquiryCard from '@/components/admin/InquiryCard';
 
 const FILTER_TABS = [
@@ -18,6 +22,31 @@ const FILTER_TABS = [
 
 export default function AdminInquiries() {
   const [filter, setFilter] = useState('all');
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeTo, setComposeTo] = useState('');
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeBody, setComposeBody] = useState('');
+  const [composeSending, setComposeSending] = useState(false);
+
+  const handleComposeSend = async () => {
+    if (!composeTo.trim() || !composeSubject.trim() || !composeBody.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    setComposeSending(true);
+    await base44.integrations.Core.SendEmail({
+      to: composeTo.trim(),
+      subject: composeSubject.trim(),
+      body: composeBody + '\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org',
+      from_name: 'SoulBridge Foundation'
+    });
+    setComposeSending(false);
+    toast.success('Email sent!');
+    setComposeOpen(false);
+    setComposeTo('');
+    setComposeSubject('');
+    setComposeBody('');
+  };
 
   const { data: inquiries = [], isLoading, refetch } = useQuery({
     queryKey: ['admin-inquiries'],
@@ -67,14 +96,24 @@ export default function AdminInquiries() {
               Manage incoming messages. Reply via your email client.
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => refetch()}
-            className="text-slate-400 hover:text-white flex-shrink-0"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button
+              size="sm"
+              onClick={() => setComposeOpen(true)}
+              className="bg-purple-600 hover:bg-purple-500 text-white gap-1.5 text-xs"
+            >
+              <PenSquare className="w-3.5 h-3.5" />
+              Compose
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => refetch()}
+              className="text-slate-400 hover:text-white"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Filter Tabs — mobile scrollable */}
@@ -164,6 +203,56 @@ export default function AdminInquiries() {
           </div>
         )}
       </div>
+
+      {/* Compose Dialog */}
+      <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+        <DialogContent className="bg-slate-900 border-slate-700 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Mail className="w-5 h-5 text-purple-400" />
+              Compose New Email
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">To</label>
+              <Input
+                value={composeTo}
+                onChange={e => setComposeTo(e.target.value)}
+                placeholder="recipient@email.com"
+                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-600"
+              />
+            </div>
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">Subject</label>
+              <Input
+                value={composeSubject}
+                onChange={e => setComposeSubject(e.target.value)}
+                placeholder="Subject..."
+                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-600"
+              />
+            </div>
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">Message</label>
+              <Textarea
+                value={composeBody}
+                onChange={e => setComposeBody(e.target.value)}
+                placeholder="Write your message..."
+                rows={6}
+                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-600"
+              />
+            </div>
+            <Button
+              onClick={handleComposeSend}
+              disabled={composeSending}
+              className="w-full bg-purple-600 hover:bg-purple-500 text-white gap-2"
+            >
+              {composeSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {composeSending ? 'Sending...' : 'Send Email'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

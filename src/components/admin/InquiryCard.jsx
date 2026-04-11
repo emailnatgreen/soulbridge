@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
-import { Mail, Clock, CheckCircle, Eye, X, ExternalLink, Copy } from 'lucide-react';
+import { Mail, Clock, CheckCircle, Eye, X, ExternalLink, Copy, Send, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import moment from 'moment';
 
 const STATUS_CONFIG = {
@@ -35,6 +36,21 @@ export default function InquiryCard({ inquiry, onUpdate }) {
     setSaving(true);
     await base44.entities.Inquiry.update(inquiry.id, { response, status: 'responded' });
     setSaving(false);
+    onUpdate?.();
+  };
+
+  const handleSendEmail = async () => {
+    if (!response.trim() || !inquiry.sender_email) return;
+    setSaving(true);
+    await base44.integrations.Core.SendEmail({
+      to: inquiry.sender_email,
+      subject: `Re: ${inquiry.subject || 'Your enquiry'}`,
+      body: response + '\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org',
+      from_name: 'SoulBridge Foundation'
+    });
+    await base44.entities.Inquiry.update(inquiry.id, { response, status: 'responded' });
+    setSaving(false);
+    toast.success('Reply sent successfully!');
     onUpdate?.();
   };
 
@@ -101,12 +117,22 @@ export default function InquiryCard({ inquiry, onUpdate }) {
             {/* Actions */}
             <div className="flex items-center gap-2 flex-wrap">
               <Button
-                onClick={openMailto}
+                onClick={handleSendEmail}
                 size="sm"
+                disabled={saving || !response.trim()}
                 className="bg-purple-600 hover:bg-purple-500 text-white gap-1.5 text-xs"
               >
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                Send Reply
+              </Button>
+              <Button
+                onClick={openMailto}
+                size="sm"
+                variant="outline"
+                className="border-slate-600 text-slate-400 hover:text-white gap-1.5 text-xs"
+              >
                 <ExternalLink className="w-3.5 h-3.5" />
-                Reply via Email
+                Open in Mail App
               </Button>
               <Button
                 onClick={handleSaveResponse}
