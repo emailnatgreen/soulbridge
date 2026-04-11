@@ -58,19 +58,32 @@ export default function AdminInquiries() {
   const [composeBody, setComposeBody] = useState('');
   const [composeSending, setComposeSending] = useState(false);
 
-  const handleComposeSend = () => {
+  const handleComposeSend = async () => {
     if (!composeTo.trim() || !composeSubject.trim() || !composeBody.trim()) {
       toast.error('Please fill in all fields');
       return;
     }
-    const subject = encodeURIComponent(composeSubject.trim());
-    const body = encodeURIComponent(composeBody + '\n\n---\nNathan Green\nSoulBridge Foundation\nsupport@soulbridge-foundation.org');
-    window.location.href = `mailto:${composeTo.trim()}?subject=${subject}&body=${body}`;
-    toast.success('Email client opened!');
-    setComposeOpen(false);
-    setComposeTo('');
-    setComposeSubject('');
-    setComposeBody('');
+    setComposeSending(true);
+    try {
+      await base44.integrations.Core.SendEmail({
+        from_name: 'SoulBridge Foundation',
+        to: composeTo.trim(),
+        subject: composeSubject.trim(),
+        body: `<div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <p style="color: #1f2937; font-size: 14px; white-space: pre-wrap;">${composeBody.trim()}</p>
+  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+  <p style="color: #6b7280; font-size: 12px;">Nathan Green<br/>SoulBridge Foundation<br/>support@soulbridge-foundation.org</p>
+</div>`,
+      });
+      toast.success('Email sent!');
+      setComposeOpen(false);
+      setComposeTo('');
+      setComposeSubject('');
+      setComposeBody('');
+    } catch (err) {
+      toast.error('Failed to send email: ' + (err.message || 'Unknown error'));
+    }
+    setComposeSending(false);
   };
 
   const { data: inquiries = [], isLoading, refetch } = useQuery({
