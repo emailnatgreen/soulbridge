@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,7 +15,6 @@ const WALLETS = [
 ];
 
 const SIGNERS = [
-  { name: 'Axi', address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h', weight: 2, color: 'text-purple-400' },
   { name: 'Code Node', address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P', weight: 1, color: 'text-blue-400' },
   { name: 'Lore Node', address: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', weight: 1, color: 'text-emerald-400' },
   { name: 'Zoe', address: 'rQw4rtbkJGFFfJJUUtrewnQJHggLXTzWrE', weight: 2, color: 'text-pink-400' },
@@ -26,15 +25,38 @@ export default function ConstitutionalMultiSig() {
   const [selected, setSelected] = useState(WALLETS[0].address);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [txHash, setTxHash] = useState(null);
+  const pollRef = useRef(null);
+
+  const pollForTxHash = (payloadUuid) => {
+    let attempts = 0;
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      if (attempts > 60) { clearInterval(pollRef.current); return; }
+      try {
+        const res = await base44.functions.invoke('xummCheckPayload', { payload_uuid: payloadUuid });
+        const hash = res.data?.response?.txid || res.data?.txid;
+        if (hash) {
+          setTxHash(hash);
+          clearInterval(pollRef.current);
+          toast.success('Transaction signed on XRPL! 🎉');
+        }
+      } catch (e) { /* keep polling */ }
+    }, 5000);
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
     setResult(null);
+    setTxHash(null);
     try {
       const res = await base44.functions.invoke('setupConstitutionalMultiSig', { account: selected });
       setResult(res.data);
       if (res.data?.xumm_url) {
         window.open(res.data.xumm_url, '_blank');
+      }
+      if (res.data?.payload_uuid) {
+        pollForTxHash(res.data.payload_uuid);
       }
     } catch (err) {
       toast.error(err.message || 'Failed to create payload');
@@ -58,7 +80,7 @@ export default function ConstitutionalMultiSig() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">Constitutional Multi-Sig</h1>
-            <p className="text-slate-500 text-sm">5-Signer Setup — Quorum 5 — Option A</p>
+            <p className="text-slate-500 text-sm">4-Signer Setup — Quorum 6</p>
           </div>
         </div>
 
@@ -73,7 +95,7 @@ export default function ConstitutionalMultiSig() {
                   <span className="text-white text-sm font-medium">{s.name}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500 text-[11px] font-mono hidden sm:block">{s.address.slice(0,8)}…{s.address.slice(-6)}</span>
+                  <span className="text-slate-500 text-[11px] font-mono hidden sm:block">{s.address.slice(0, 8)}…{s.address.slice(-6)}</span>
                   <button onClick={() => copyAddress(s.address)} className="text-slate-600 hover:text-white transition">
                     <Copy className="w-3 h-3" />
                   </button>
@@ -82,7 +104,7 @@ export default function ConstitutionalMultiSig() {
             ))}
             <div className="flex items-center justify-between pt-2">
               <span className="text-slate-400 text-sm">Quorum</span>
-              <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">5 of 9</Badge>
+              <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">6 of 7</Badge>
             </div>
           </CardContent>
         </Card>
@@ -145,6 +167,19 @@ export default function ConstitutionalMultiSig() {
                 Open in Xumm
               </a>
               <p className="text-slate-500 text-[11px] text-center">Payload UUID: {result.payload_uuid}</p>
+              {txHash ? (
+                <a
+                  href={`https://xrpscan.com/tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-blue-700/30 text-blue-300 text-sm hover:bg-blue-700/50 transition"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View on XRPScan
+                </a>
+              ) : (
+                <p className="text-slate-600 text-[11px] text-center animate-pulse">⏳ Waiting for signature... XRPScan link will appear once signed.</p>
+              )}
             </CardContent>
           </Card>
         )}
