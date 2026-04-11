@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
-import { Mail, Clock, CheckCircle, Eye, X, ExternalLink, Copy, MessageSquare, Save } from 'lucide-react';
+import { Mail, Clock, CheckCircle, Eye, X, Copy, MessageSquare, Save, ChevronDown, ChevronUp, RotateCcw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import moment from 'moment';
 
@@ -18,9 +18,10 @@ const STATUS_CONFIG = {
 export default function InquiryCard({ inquiry, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
   const [response, setResponse] = useState(inquiry.response || '');
-  const [replyNote, setReplyNote] = useState(inquiry.reply_note || '');
+  const [replyNote, setReplyNote] = useState('');
   const [savingReply, setSavingReply] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const status = STATUS_CONFIG[inquiry.status] || STATUS_CONFIG.new;
 
   const handleStatusChange = async (newStatus) => {
@@ -43,7 +44,10 @@ export default function InquiryCard({ inquiry, onUpdate }) {
 
   const handleSendEmail = () => {
     const subject = encodeURIComponent(`Re: ${inquiry.subject || 'Your enquiry'}`);
-    const body = encodeURIComponent(response + '\n\n---\nNathan Green\nSoulBridge Foundation\nsupport@soulbridge-foundation.org');
+    const bodyText = response.trim()
+      ? response + '\n\n---\nNathan Green\nSoulBridge Foundation\nsupport@soulbridge-foundation.org'
+      : `Hi,\n\nThank you for reaching out to SoulBridge Foundation.\n\n---\nNathan Green\nSoulBridge Foundation\nsupport@soulbridge-foundation.org`;
+    const body = encodeURIComponent(bodyText);
     window.location.href = `mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`;
     base44.entities.Inquiry.update(inquiry.id, { response, status: 'responded' }).then(() => onUpdate?.());
     toast.success('Email client opened!');
@@ -51,13 +55,26 @@ export default function InquiryCard({ inquiry, onUpdate }) {
 
   const copyEmail = () => {
     navigator.clipboard.writeText(inquiry.sender_email);
+    toast.success('Email copied!');
   };
 
-  const openMailto = () => {
-    const subject = encodeURIComponent(`Re: ${inquiry.subject}`);
-    const body = encodeURIComponent(`Hi,\n\nThank you for contacting SoulBridge Foundation.\n\n---\nOriginal message:\n${inquiry.message}\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org`);
-    window.location.href = `mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`;
+  const handleDelete = async () => {
+    if (!confirm('Delete this inquiry permanently?')) return;
+    setDeleting(true);
+    await base44.entities.Inquiry.delete(inquiry.id);
+    toast.success('Inquiry deleted');
+    onUpdate?.();
   };
+
+  const handleReopen = async () => {
+    setSaving(true);
+    await base44.entities.Inquiry.update(inquiry.id, { status: 'new' });
+    setSaving(false);
+    toast.success('Inquiry reopened');
+    onUpdate?.();
+  };
+
+
 
   return (
     <Card className="bg-slate-900/60 border-slate-700/50 hover:border-slate-600/70 transition-colors">
@@ -69,23 +86,27 @@ export default function InquiryCard({ inquiry, onUpdate }) {
               <Badge className={`${status.color} text-[10px]`}>{status.label}</Badge>
               <span className="text-slate-500 text-xs">{moment(inquiry.created_date).fromNow()}</span>
               {inquiry.source && <span className="text-slate-600 text-[10px]">via {inquiry.source}</span>}
+              {inquiry.reply_note && <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[10px]">Reply Logged</Badge>}
             </div>
             <h3 className="text-white font-medium text-sm truncate">{inquiry.subject}</h3>
             <div className="flex items-center gap-1.5 mt-1">
               <Mail className="w-3 h-3 text-purple-400" />
               <span className="text-purple-300 text-xs font-mono">{inquiry.sender_email}</span>
-              <button onClick={copyEmail} className="text-slate-500 hover:text-white transition-colors">
+              <button onClick={copyEmail} className="text-slate-500 hover:text-white transition-colors" title="Copy email">
                 <Copy className="w-3 h-3" />
               </button>
             </div>
+            {!expanded && inquiry.message && (
+              <p className="text-slate-500 text-xs mt-1.5 truncate">{inquiry.message}</p>
+            )}
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setExpanded(!expanded)}
-            className="text-slate-400 hover:text-white"
+            className="text-slate-400 hover:text-white flex-shrink-0"
           >
-            {expanded ? <X className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
         </div>
 
@@ -116,15 +137,15 @@ export default function InquiryCard({ inquiry, onUpdate }) {
                 Log Their Reply
               </p>
               {inquiry.reply_note && (
-                <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-2.5 mb-2">
+                <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-2.5 mb-3">
+                  <p className="text-[10px] text-green-500 font-semibold uppercase mb-1">Logged reply</p>
                   <p className="text-green-300 text-xs whitespace-pre-wrap">{inquiry.reply_note}</p>
-                  <p className="text-slate-600 text-[10px] mt-1">Previously logged reply</p>
                 </div>
               )}
               <Textarea
                 value={replyNote}
                 onChange={e => setReplyNote(e.target.value)}
-                placeholder="Paste or type what they replied here so you have a record..."
+                placeholder={inquiry.reply_note ? 'Update their reply note...' : 'Paste or type what they replied here so you have a record...'}
                 className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-600 text-sm min-h-[70px]"
               />
               <Button
@@ -132,6 +153,7 @@ export default function InquiryCard({ inquiry, onUpdate }) {
                   setSavingReply(true);
                   await base44.entities.Inquiry.update(inquiry.id, { reply_note: replyNote });
                   setSavingReply(false);
+                  setReplyNote('');
                   toast.success('Reply logged!');
                   onUpdate?.();
                 }}
@@ -145,24 +167,15 @@ export default function InquiryCard({ inquiry, onUpdate }) {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap border-t border-slate-700/50 pt-4">
               <Button
                 onClick={handleSendEmail}
                 size="sm"
-                disabled={!response.trim() || !inquiry.sender_email}
+                disabled={!inquiry.sender_email}
                 className="bg-purple-600 hover:bg-purple-500 text-white gap-1.5 text-xs"
               >
                 <Mail className="w-3.5 h-3.5" />
                 Reply via Email
-              </Button>
-              <Button
-                onClick={openMailto}
-                size="sm"
-                variant="outline"
-                className="border-slate-600 text-slate-400 hover:text-white gap-1.5 text-xs"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Open in Mail App
               </Button>
               <Button
                 onClick={handleSaveResponse}
@@ -174,7 +187,7 @@ export default function InquiryCard({ inquiry, onUpdate }) {
                 <CheckCircle className="w-3.5 h-3.5" />
                 Mark Responded
               </Button>
-              {inquiry.status !== 'in_review' && (
+              {inquiry.status !== 'in_review' && inquiry.status !== 'closed' && (
                 <Button
                   onClick={() => handleStatusChange('in_review')}
                   size="sm"
@@ -198,6 +211,28 @@ export default function InquiryCard({ inquiry, onUpdate }) {
                   Close
                 </Button>
               )}
+              {inquiry.status === 'closed' && (
+                <Button
+                  onClick={handleReopen}
+                  size="sm"
+                  variant="ghost"
+                  disabled={saving}
+                  className="text-blue-400 hover:bg-blue-500/10 gap-1.5 text-xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reopen
+                </Button>
+              )}
+              <Button
+                onClick={handleDelete}
+                size="sm"
+                variant="ghost"
+                disabled={deleting}
+                className="text-red-500 hover:bg-red-500/10 gap-1.5 text-xs ml-auto"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </Button>
             </div>
           </div>
         )}
