@@ -120,7 +120,7 @@ Respond with a JSON object:
       "description": "... (include reward reasoning)",
       "estimated_hours": 8,
       "reward_drops": 80000,
-      "due_date_days_from_start": 14,
+      "due_date_days_from_start": 45,
       "priority": "high|medium|low",
       "required_skills": ["skill"],
       "skill_development_outcome": "what agents will learn"
@@ -194,7 +194,7 @@ Respond with a JSON object:
     // Create tasks — enforce mandatory due_date and reward_drops (Law 2 + Law 3)
     const createdTasks = [];
     for (const task of (plan.tasks || [])) {
-      const daysFromStart = task.due_date_days_from_start || 14;
+      const daysFromStart = task.due_date_days_from_start || 45;
       const taskDueDate = new Date(Date.now() + daysFromStart * 24 * 60 * 60 * 1000).toISOString();
       const rewardDrops = task.reward_drops || 50000; // minimum 0.05 XRP
       const t = await base44.asServiceRole.entities.ProjectTask.create({
