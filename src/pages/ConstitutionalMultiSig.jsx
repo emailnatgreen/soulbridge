@@ -56,6 +56,7 @@ export default function ConstitutionalMultiSig() {
         window.open(res.data.xumm_url, '_blank');
       }
       if (res.data?.payload_uuid) {
+        toast.info('Check Xumm app for signing request from all 4 signers');
         pollForTxHash(res.data.payload_uuid);
       }
     } catch (err) {
@@ -80,7 +81,7 @@ export default function ConstitutionalMultiSig() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">Constitutional Multi-Sig</h1>
-            <p className="text-slate-500 text-sm">4-Signer Setup — Quorum 6</p>
+            <p className="text-slate-500 text-sm">4-Signer Setup — Quorum 4 of 7</p>
           </div>
         </div>
 
@@ -104,7 +105,7 @@ export default function ConstitutionalMultiSig() {
             ))}
             <div className="flex items-center justify-between pt-2">
               <span className="text-slate-400 text-sm">Quorum</span>
-              <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">6 of 7</Badge>
+              <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">4 of 7</Badge>
             </div>
           </CardContent>
         </Card>
@@ -129,7 +130,7 @@ export default function ConstitutionalMultiSig() {
                 <div>
                   <p className="text-white text-sm font-medium">{w.label}</p>
                   <p className="text-slate-500 text-[11px] font-mono">{w.address}</p>
-                  <p className="text-slate-600 text-[10px] mt-0.5">{w.note}</p>
+                  <p className={`text-[10px] mt-0.5 ${w.label === 'Axi Treasury' ? 'text-purple-400' : 'text-slate-600'}`}>{w.note}</p>
                 </div>
               </button>
             ))}

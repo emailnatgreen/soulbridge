@@ -12,8 +12,8 @@ const CONSTITUTIONAL_SIGNERS = [
   { account: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia', weight: 3, name: 'Human / Nathan' },
 ];
 
-// Quorum 6 of 7: requires at least Human(3)+Zoe(2)+one node, or Human(3)+both nodes
-const QUORUM = 6;
+// Quorum 4 of 7: requires Human(3)+one node, or Zoe(2)+both nodes
+const QUORUM = 4;
 
 Deno.serve(async (req) => {
   try {
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
           }
         },
         custom_meta: {
-          instruction: `Constitutional Multi-Sig Setup — Quorum ${QUORUM} of 7. Sets 4 external signers on the Treasury wallet. Axi Treasury cannot sign its own list. Signers: Code(1), Lore(1), Zoe(2), Human(3).`
+          instruction: `Constitutional Multi-Sig Setup — Quorum ${QUORUM} of 7. Sets 4 external signers on the Treasury wallet. Axi Treasury cannot be a signer. Signers: Code(1), Lore(1), Zoe(2), Human(3).`
         }
       })
     });
