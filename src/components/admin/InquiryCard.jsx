@@ -42,10 +42,10 @@ export default function InquiryCard({ inquiry, onUpdate }) {
   const handleSendEmail = async () => {
     if (!response.trim() || !inquiry.sender_email) return;
     setSaving(true);
-    await base44.integrations.Core.SendEmail({
+    await base44.functions.invoke('sendEmailFromAgent', {
       to: inquiry.sender_email,
       subject: `Re: ${inquiry.subject || 'Your enquiry'}`,
-      body: response + '\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org',
+      body: response,
       from_name: 'SoulBridge Foundation'
     });
     await base44.entities.Inquiry.update(inquiry.id, { response, status: 'responded' });

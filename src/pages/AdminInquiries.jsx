@@ -34,10 +34,10 @@ export default function AdminInquiries() {
       return;
     }
     setComposeSending(true);
-    await base44.integrations.Core.SendEmail({
+    await base44.functions.invoke('sendEmailFromAgent', {
       to: composeTo.trim(),
       subject: composeSubject.trim(),
-      body: composeBody + '\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org',
+      body: composeBody,
       from_name: 'SoulBridge Foundation'
     });
     setComposeSending(false);
