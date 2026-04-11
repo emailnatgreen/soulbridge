@@ -29,6 +29,12 @@
       ]
     },
     {
+      "entity_name": "WorldEvent",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
       "function_name": "searchSynthesis",
       "description": "Search archived memory bundles by keyword, theme, or topic. Use this to access the Village's compressed long-term knowledge."
     }
