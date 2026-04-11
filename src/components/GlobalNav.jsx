@@ -205,7 +205,7 @@ export default function GlobalNav() {
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
           {NAV_GROUPS.filter(group => !group.adminOnly || isAdmin).map((group, i) => (
-            <NavGroup key={group.label} group={group} isOpen={i === 0} />
+            <NavGroup key={group.label} group={group} isOpen={i === 0 || group.label === 'Governance'} />
           ))}
         </div>
       </nav>
@@ -236,7 +236,7 @@ export default function GlobalNav() {
                 <NavGroup
                   key={group.label}
                   group={group}
-                  isOpen={i === 0}
+                  isOpen={i === 0 || group.label === 'Governance'}
                   onNavigate={() => setIsOpen(false)}
                 />
               ))}
