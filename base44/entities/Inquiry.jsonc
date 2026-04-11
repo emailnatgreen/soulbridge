@@ -36,6 +36,16 @@
     "source": {
       "type": "string",
       "description": "Where the inquiry came from (e.g. landing page, support page)"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "neutral",
+        "negative",
+        "urgent"
+      ],
+      "description": "AI-analyzed sentiment of the inquiry"
     }
   },
   "required": [

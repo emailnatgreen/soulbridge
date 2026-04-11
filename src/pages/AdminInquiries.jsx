@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Mail, Inbox, Clock, CheckCircle, X, RefreshCw, ArrowLeft, Users, Send, Loader2, PenSquare } from 'lucide-react';
+import { Mail, Inbox, Clock, CheckCircle, X, RefreshCw, ArrowLeft, Users, Send, Loader2, PenSquare, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import InquiryCard from '@/components/admin/InquiryCard';
@@ -22,6 +22,7 @@ const FILTER_TABS = [
 
 export default function AdminInquiries() {
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeTo, setComposeTo] = useState('');
   const [composeSubject, setComposeSubject] = useState('');
@@ -55,11 +56,19 @@ export default function AdminInquiries() {
     refetchInterval: 60000,
   });
 
-  const filtered = filter === 'invites' 
-    ? [] 
-    : filter === 'all' 
-      ? inquiries 
+  const filteredByStatus = filter === 'invites'
+    ? []
+    : filter === 'all'
+      ? inquiries
       : inquiries.filter(i => i.status === filter);
+
+  const filtered = search.trim()
+    ? filteredByStatus.filter(i =>
+        i.subject?.toLowerCase().includes(search.toLowerCase()) ||
+        i.sender_email?.toLowerCase().includes(search.toLowerCase()) ||
+        i.message?.toLowerCase().includes(search.toLowerCase())
+      )
+    : filteredByStatus;
 
   const counts = {
     all: inquiries.length,
@@ -109,6 +118,23 @@ export default function AdminInquiries() {
               <RefreshCw className="w-4 h-4" />
             </Button>
           </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by subject, email or message..."
+            className="w-full bg-slate-900 border border-slate-700 text-white text-sm placeholder:text-slate-600 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Filter Tabs — mobile scrollable */}
