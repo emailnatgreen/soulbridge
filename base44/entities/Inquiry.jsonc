@@ -1,0 +1,46 @@
+{
+  "name": "Inquiry",
+  "type": "object",
+  "properties": {
+    "sender_email": {
+      "type": "string",
+      "description": "Email address of the person submitting the inquiry"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Subject of the inquiry"
+    },
+    "message": {
+      "type": "string",
+      "description": "Full message content of the inquiry"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "in_review",
+        "responded",
+        "closed"
+      ],
+      "default": "new",
+      "description": "Current status of the inquiry"
+    },
+    "response": {
+      "type": "string",
+      "description": "Support team response to the inquiry"
+    },
+    "reply_note": {
+      "type": "string",
+      "description": "Logged reply received from the sender (manually entered)"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where the inquiry came from (e.g. landing page, support page)"
+    }
+  },
+  "required": [
+    "sender_email",
+    "subject",
+    "message"
+  ]
+}

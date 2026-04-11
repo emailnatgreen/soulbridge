@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
-import { Mail, Clock, CheckCircle, Eye, X, ExternalLink, Copy } from 'lucide-react';
+import { Mail, Clock, CheckCircle, Eye, X, ExternalLink, Copy, MessageSquare, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import moment from 'moment';
 
@@ -18,6 +18,8 @@ const STATUS_CONFIG = {
 export default function InquiryCard({ inquiry, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
   const [response, setResponse] = useState(inquiry.response || '');
+  const [replyNote, setReplyNote] = useState(inquiry.reply_note || '');
+  const [savingReply, setSavingReply] = useState(false);
   const [saving, setSaving] = useState(false);
   const status = STATUS_CONFIG[inquiry.status] || STATUS_CONFIG.new;
 
@@ -105,6 +107,41 @@ export default function InquiryCard({ inquiry, onUpdate }) {
                 placeholder="Write your response notes here..."
                 className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-600 text-sm min-h-[80px]"
               />
+            </div>
+
+            {/* Their Reply Note */}
+            <div className="border-t border-slate-700/50 pt-4">
+              <p className="text-xs text-slate-500 mb-1.5 font-semibold uppercase flex items-center gap-1.5">
+                <MessageSquare className="w-3 h-3" />
+                Log Their Reply
+              </p>
+              {inquiry.reply_note && (
+                <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-2.5 mb-2">
+                  <p className="text-green-300 text-xs whitespace-pre-wrap">{inquiry.reply_note}</p>
+                  <p className="text-slate-600 text-[10px] mt-1">Previously logged reply</p>
+                </div>
+              )}
+              <Textarea
+                value={replyNote}
+                onChange={e => setReplyNote(e.target.value)}
+                placeholder="Paste or type what they replied here so you have a record..."
+                className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-600 text-sm min-h-[70px]"
+              />
+              <Button
+                onClick={async () => {
+                  setSavingReply(true);
+                  await base44.entities.Inquiry.update(inquiry.id, { reply_note: replyNote });
+                  setSavingReply(false);
+                  toast.success('Reply logged!');
+                  onUpdate?.();
+                }}
+                size="sm"
+                disabled={savingReply || !replyNote.trim()}
+                className="mt-2 bg-green-700/30 hover:bg-green-700/50 text-green-300 border border-green-600/30 gap-1.5 text-xs"
+              >
+                <Save className="w-3.5 h-3.5" />
+                {savingReply ? 'Saving...' : 'Save Reply Note'}
+              </Button>
             </div>
 
             {/* Actions */}
