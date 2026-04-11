@@ -87,11 +87,14 @@ export default function GovernanceHub() {
 
   const createProposalMutation = useMutation({
     mutationFn: async (proposalData) => {
+      const votingEnd = new Date();
+      votingEnd.setDate(votingEnd.getDate() + (proposalData.voting_period_days || 7));
       return await base44.entities.GovernanceProposal.create({
         title: proposalData.title,
         description: proposalData.description,
         proposal_type: proposalData.proposal_type,
         proposed_by: proposalData.proposer_agent_id,
+        voting_period_end: votingEnd.toISOString(),
       });
     },
     onSuccess: (data) => {
