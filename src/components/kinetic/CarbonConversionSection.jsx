@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Leaf, Flame, TrendingDown, Wind, Info } from 'lucide-react';
+import { Leaf, Flame, TrendingDown, Wind, Info, Target } from 'lucide-react';
 import { subDays, parseISO, format } from 'date-fns';
 
 const CARBON_FACTORS = {
@@ -72,6 +72,24 @@ export default function CarbonConversionSection({ currentMetrics }) {
 
   const savingsPercent = totalWasteGrams > 0
     ? Math.min(100, Math.round((totalSavedGrams / totalWasteGrams) * 100))
+    : 0;
+
+  const latestSnap = snapshots[snapshots.length - 1];
+  const sourceBreakdown = useMemo(() => {
+    const m = latestSnap || {};
+    const items = [
+      { label: 'Stalled Task Hours', grams: (m.stalled_hours_locked || 0) * CARBON_FACTORS.per_stalled_hour, count: `${m.stalled_tasks_count || 0} tasks · ${m.stalled_hours_locked || 0}h locked`, color: '#f87171', priority: 'critical' },
+      { label: 'Automation Errors', grams: (m.automation_errors_count || 0) * CARBON_FACTORS.per_automation_error, count: `${m.automation_errors_count || 0} errors`, color: '#c084fc', priority: 'high' },
+      { label: 'Critical Alerts (unresolved)', grams: (m.critical_alerts_count || 0) * CARBON_FACTORS.per_critical_alert_24h, count: `${m.agents_at_risk || 0} agents at risk`, color: '#fb7185', priority: 'high' },
+      { label: 'Inefficient Chains', grams: (m.inefficient_chains_count || 0) * CARBON_FACTORS.per_inefficient_chain, count: `${m.inefficient_chains_count || 0} chains`, color: '#34d399', priority: 'medium' },
+      { label: 'Stagnant Listings', grams: (m.stagnant_listings_count || 0) * CARBON_FACTORS.per_stagnant_listing, count: `${m.stagnant_listings_count || 0} listings`, color: '#fbbf24', priority: 'low' },
+    ].filter(i => i.grams > 0).sort((a, b) => b.grams - a.grams);
+    const total = items.reduce((s, i) => s + i.grams, 0);
+    return items.map(i => ({ ...i, pct: total > 0 ? Math.round((i.grams / total) * 100) : 0 }));
+  }, [latestSnap]);
+
+  const trendDelta = snapshots.length >= 2
+    ? (snapshots[snapshots.length - 1]?.carbon_waste_grams || 0) - (snapshots[snapshots.length - 2]?.carbon_waste_grams || 0)
     : 0;
 
   return (
@@ -173,6 +191,53 @@ export default function CarbonConversionSection({ currentMetrics }) {
           color="bg-cyan-900/30 border-cyan-700/40 text-cyan-300"
         />
       </div>
+
+      {/* Waste Reduction Insights */}
+      {sourceBreakdown.length > 0 && (
+        <div className="mb-6 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+          <div className="flex items-center gap-2 p-4 border-b border-slate-800">
+            <Target className="w-4 h-4 text-orange-400" />
+            <h3 className="text-white font-semibold text-sm">Carbon Source Breakdown — Where to Act</h3>
+            <span className={`ml-auto flex items-center gap-1 text-xs font-semibold ${
+              trendDelta < 0 ? 'text-green-400' : trendDelta > 0 ? 'text-red-400' : 'text-slate-400'
+            }`}>
+              {trendDelta < 0 ? '▼' : trendDelta > 0 ? '▲' : '—'} {trendDelta === 0 ? 'Flat' : `${trendDelta > 0 ? '+' : ''}${trendDelta.toFixed(1)}g vs prev day`}
+            </span>
+          </div>
+          <div className="p-4 space-y-3">
+            {sourceBreakdown.map(item => (
+              <div key={item.label} className="flex items-center gap-3">
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${
+                  item.priority === 'critical' ? 'bg-red-500/20 border-red-500/40 text-red-400' :
+                  item.priority === 'high' ? 'bg-orange-500/20 border-orange-500/40 text-orange-400' :
+                  item.priority === 'medium' ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' :
+                  'bg-slate-700 border-slate-600 text-slate-400'
+                }`}>{item.priority.toUpperCase()}</span>
+                <span className="text-slate-300 text-xs w-44 flex-shrink-0 truncate">{item.label}</span>
+                <div className="flex-1 bg-slate-800 rounded-full h-2">
+                  <div className="h-2 rounded-full" style={{ width: `${item.pct}%`, backgroundColor: item.color }} />
+                </div>
+                <span className="text-white font-mono text-xs w-10 text-right flex-shrink-0">{item.pct}%</span>
+                <span className="text-slate-500 text-[10px] w-16 text-right flex-shrink-0">{item.grams.toFixed(1)}g CO2e</span>
+                <span className="text-slate-600 text-[10px] w-36 text-right flex-shrink-0 hidden sm:block">{item.count}</span>
+              </div>
+            ))}
+          </div>
+          <div className="px-4 pb-4">
+            <div className="bg-emerald-900/20 border border-emerald-700/30 rounded-lg px-4 py-3">
+              <p className="text-emerald-400 text-xs font-semibold mb-1">🎯 Top Reduction Priority</p>
+              {sourceBreakdown[0] && (
+                <p className="text-slate-300 text-xs">
+                  <strong>{sourceBreakdown[0].label}</strong> is driving <strong>{sourceBreakdown[0].pct}%</strong> of today's carbon footprint ({sourceBreakdown[0].grams.toFixed(1)}g CO2e).{' '}
+                  {sourceBreakdown[0].label === 'Stalled Task Hours' && 'Unblock or reassign overdue tasks in the Task Waste section above — each hour cleared saves 0.5g CO2e directly.'}
+                  {sourceBreakdown[0].label === 'Automation Errors' && 'Resolve failing automations — each error eliminated saves 2g CO2e.'}
+                  {sourceBreakdown[0].label === 'Critical Alerts (unresolved)' && 'Acknowledge and act on critical wellbeing alerts to prevent agent capacity erosion and carbon buildup.'}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Carbon Chart */}
       <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
