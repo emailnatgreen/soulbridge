@@ -46,6 +46,35 @@
         "urgent"
       ],
       "description": "AI-analyzed sentiment of the inquiry"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Technical Support",
+        "Partnership",
+        "Donation",
+        "General Enquiry",
+        "Feedback",
+        "Media / Press",
+        "Membership",
+        "Other"
+      ],
+      "description": "AI-classified category of the inquiry"
+    },
+    "queue": {
+      "type": "string",
+      "enum": [
+        "support",
+        "partnerships",
+        "finance",
+        "general",
+        "media"
+      ],
+      "description": "Routing queue assigned based on category"
+    },
+    "ai_classification_notes": {
+      "type": "string",
+      "description": "AI reasoning for the assigned category"
     }
   },
   "required": [

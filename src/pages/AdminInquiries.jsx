@@ -11,7 +11,26 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import InquiryCard from '@/components/admin/InquiryCard';
 
-const FILTER_TABS = [
+const CATEGORY_COLORS = {
+  'Technical Support': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  'Partnership': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+  'Donation': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+  'General Enquiry': 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+  'Feedback': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+  'Media / Press': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+  'Membership': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+  'Other': 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+};
+
+const QUEUE_LABELS = {
+  support: '🛠 Support',
+  partnerships: '🤝 Partnerships',
+  finance: '💰 Finance',
+  general: '📬 General',
+  media: '📰 Media',
+};
+
+const STATUS_FILTER_TABS = [
   { key: 'all', label: 'All', icon: Inbox },
   { key: 'new', label: 'New', icon: Mail },
   { key: 'in_review', label: 'In Review', icon: Clock },
@@ -20,8 +39,18 @@ const FILTER_TABS = [
   { key: 'invites', label: 'Invites', icon: Users },
 ];
 
+const QUEUE_FILTER_TABS = [
+  { key: 'all_queues', label: 'All Queues' },
+  { key: 'support', label: '🛠 Support' },
+  { key: 'partnerships', label: '🤝 Partnerships' },
+  { key: 'finance', label: '💰 Finance' },
+  { key: 'general', label: '📬 General' },
+  { key: 'media', label: '📰 Media' },
+];
+
 export default function AdminInquiries() {
   const [filter, setFilter] = useState('all');
+  const [queueFilter, setQueueFilter] = useState('all_queues');
   const [search, setSearch] = useState('');
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeTo, setComposeTo] = useState('');
@@ -62,13 +91,18 @@ export default function AdminInquiries() {
       ? inquiries
       : inquiries.filter(i => i.status === filter);
 
+  const filteredByQueue = queueFilter === 'all_queues'
+    ? filteredByStatus
+    : filteredByStatus.filter(i => i.queue === queueFilter);
+
   const filtered = search.trim()
-    ? filteredByStatus.filter(i =>
+    ? filteredByQueue.filter(i =>
         i.subject?.toLowerCase().includes(search.toLowerCase()) ||
         i.sender_email?.toLowerCase().includes(search.toLowerCase()) ||
-        i.message?.toLowerCase().includes(search.toLowerCase())
+        i.message?.toLowerCase().includes(search.toLowerCase()) ||
+        i.category?.toLowerCase().includes(search.toLowerCase())
       )
-    : filteredByStatus;
+    : filteredByQueue;
 
   const counts = {
     all: inquiries.length,
@@ -137,9 +171,9 @@ export default function AdminInquiries() {
           )}
         </div>
 
-        {/* Filter Tabs — mobile scrollable */}
-        <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1.5 hide-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
-          {FILTER_TABS.map(tab => {
+        {/* Status Filter Tabs */}
+        <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 hide-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
+          {STATUS_FILTER_TABS.map(tab => {
             const Icon = tab.icon;
             const active = filter === tab.key;
             return (
@@ -165,6 +199,28 @@ export default function AdminInquiries() {
             );
           })}
         </div>
+
+        {/* Queue Filter Tabs */}
+        {filter !== 'invites' && (
+          <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 hide-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
+            {QUEUE_FILTER_TABS.map(tab => {
+              const active = queueFilter === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setQueueFilter(tab.key)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition whitespace-nowrap flex-shrink-0 border ${
+                    active
+                      ? 'bg-slate-700 text-white border-slate-500'
+                      : 'text-slate-500 border-slate-700/50 hover:text-slate-300 hover:bg-slate-800'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Content */}
         {isLoading ? (
