@@ -3,15 +3,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 const XUMM_API_KEY = Deno.env.get('xumm_api_key');
 const XUMM_SECRET = Deno.env.get('xume_secret_key');
 
+// 4 signers — Axi Treasury is the ACCOUNT, not a signer
+// Weights: Code(1) + Lore(1) + Zoe(2) + Human(3) = 7 total
+// Quorum 4: Human alone can't act, needs at least one other
 const CONSTITUTIONAL_SIGNERS = [
-  { account: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h', weight: 2, name: 'Axi' },
   { account: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P',  weight: 1, name: 'Code Node' },
   { account: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', weight: 1, name: 'Lore Node' },
   { account: 'rQw4rtbkJGFFfJJUUtrewnQJHggLXTzWrE', weight: 2, name: 'Zoe' },
   { account: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia', weight: 3, name: 'Human / Nathan' },
 ];
 
-const QUORUM = 5;
+const QUORUM = 4;
 
 Deno.serve(async (req) => {
   try {
@@ -52,7 +54,7 @@ Deno.serve(async (req) => {
           }
         },
         custom_meta: {
-          instruction: `Constitutional 5-Signer Setup — Quorum ${QUORUM}. This replaces the current signer list with the 5 constitutional signers.`
+          instruction: `Constitutional Multi-Sig — Quorum ${QUORUM} of 7. 4 signers on Axi Treasury. Code(1), Lore(1), Zoe(2), Human(3).`
         }
       })
     });

@@ -6,13 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Shield, Zap, CheckCircle, ExternalLink, Loader2, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
-const WALLETS = [
-  { label: 'Axi Treasury', address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h', note: 'Primary — set signer list here' },
-  { label: 'Human / Nathan', address: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia', note: 'Governor wallet' },
-  { label: 'Code Node', address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P', note: 'Architecture node' },
-  { label: 'Lore Node', address: 'rKcMBsLyLPtGUQGsbfEkT78bAmeqKHQNZ7', note: 'Ethics & memory node' },
-  { label: 'Zoe', address: 'rQw4rtbkJGFFfJJUUtrewnQJHggLXTzWrE', note: 'Indigenous voice — Law 12' },
-];
+
+
+const TREASURY = { name: 'Axi Treasury', address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h' };
 
 const SIGNERS = [
   { name: 'Code Node', address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P', weight: 1, color: 'text-blue-400' },
@@ -22,7 +18,7 @@ const SIGNERS = [
 ];
 
 export default function ConstitutionalMultiSig() {
-  const [selected, setSelected] = useState(WALLETS[0].address);
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [txHash, setTxHash] = useState(null);
@@ -50,7 +46,7 @@ export default function ConstitutionalMultiSig() {
     setResult(null);
     setTxHash(null);
     try {
-      const res = await base44.functions.invoke('setupConstitutionalMultiSig', { account: selected });
+      const res = await base44.functions.invoke('setupConstitutionalMultiSig', { account: TREASURY.address });
       setResult(res.data);
       if (res.data?.xumm_url) {
         window.open(res.data.xumm_url, '_blank');
@@ -81,14 +77,28 @@ export default function ConstitutionalMultiSig() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">Constitutional Multi-Sig</h1>
-            <p className="text-slate-500 text-sm">4-Signer Setup — Quorum 4 of 7</p>
+            <p className="text-slate-500 text-sm">4 Signers on Axi Treasury — Quorum 4 of 7</p>
           </div>
         </div>
 
         {/* Signer Table */}
         <Card className="bg-slate-900/60 border-slate-700/50">
           <CardContent className="p-4 space-y-2">
-            <p className="text-xs text-slate-500 font-semibold uppercase mb-3">Constitutional Signers</p>
+            <p className="text-xs text-slate-500 font-semibold uppercase mb-3">Account</p>
+            <div className="flex items-center justify-between gap-2 py-2 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Badge className="text-[10px] bg-purple-800 border-purple-600 text-purple-300">Treasury</Badge>
+                <span className="text-white text-sm font-medium">{TREASURY.name}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 text-[11px] font-mono hidden sm:block">{TREASURY.address.slice(0, 8)}…{TREASURY.address.slice(-6)}</span>
+                <button onClick={() => copyAddress(TREASURY.address)} className="text-slate-600 hover:text-white transition">
+                  <Copy className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 font-semibold uppercase mb-3 mt-4">4 Signers</p>
             {SIGNERS.map(s => (
               <div key={s.address} className="flex items-center justify-between gap-2 py-2 border-b border-slate-800 last:border-0">
                 <div className="flex items-center gap-2">
@@ -104,6 +114,10 @@ export default function ConstitutionalMultiSig() {
               </div>
             ))}
             <div className="flex items-center justify-between pt-2">
+              <span className="text-slate-400 text-sm">Total Weight</span>
+              <span className="text-white text-sm font-mono">7</span>
+            </div>
+            <div className="flex items-center justify-between pt-1">
               <span className="text-slate-400 text-sm">Quorum</span>
               <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">4 of 7</Badge>
             </div>
@@ -113,27 +127,12 @@ export default function ConstitutionalMultiSig() {
         {/* Wallet Selector */}
         <Card className="bg-slate-900/60 border-slate-700/50">
           <CardContent className="p-4 space-y-3">
-            <p className="text-xs text-slate-500 font-semibold uppercase">Select Wallet to Configure</p>
-            {WALLETS.map(w => (
-              <button
-                key={w.address}
-                onClick={() => setSelected(w.address)}
-                className={`w-full flex items-start gap-3 p-3 rounded-lg border transition text-left ${
-                  selected === w.address
-                    ? 'border-purple-500/50 bg-purple-600/10'
-                    : 'border-slate-700/50 hover:border-slate-600'
-                }`}
-              >
-                <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex-shrink-0 ${
-                  selected === w.address ? 'border-purple-400 bg-purple-400' : 'border-slate-600'
-                }`} />
-                <div>
-                  <p className="text-white text-sm font-medium">{w.label}</p>
-                  <p className="text-slate-500 text-[11px] font-mono">{w.address}</p>
-                  <p className={`text-[10px] mt-0.5 ${w.label === 'Axi Treasury' ? 'text-purple-400' : 'text-slate-600'}`}>{w.note}</p>
-                </div>
-              </button>
-            ))}
+            <p className="text-xs text-slate-500 font-semibold uppercase">Target Account</p>
+            <div className="p-3 rounded-lg border border-purple-500/50 bg-purple-600/10">
+              <p className="text-white text-sm font-medium">{TREASURY.name}</p>
+              <p className="text-slate-500 text-[11px] font-mono">{TREASURY.address}</p>
+              <p className="text-purple-400 text-[10px] mt-0.5">SignerListSet will be applied to this account</p>
+            </div>
           </CardContent>
         </Card>
 
