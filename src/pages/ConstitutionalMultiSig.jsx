@@ -1,12 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Zap, CheckCircle, ExternalLink, Loader2, Copy } from 'lucide-react';
+import { Shield, Copy, ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-
-
 
 const TREASURY = { name: 'Axi Treasury', address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h' };
 
@@ -17,54 +14,24 @@ const SIGNERS = [
   { name: 'Human / Nathan', address: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia', weight: 3, color: 'text-amber-400' },
 ];
 
+const QUORUM = 4;
+
+const TX_JSON = {
+  TransactionType: 'SignerListSet',
+  Account: TREASURY.address,
+  SignerQuorum: QUORUM,
+  SignerEntries: SIGNERS.map(s => ({
+    SignerEntry: { Account: s.address, SignerWeight: s.weight }
+  }))
+};
+
 export default function ConstitutionalMultiSig() {
-
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [txHash, setTxHash] = useState(null);
-  const pollRef = useRef(null);
-
-  const pollForTxHash = (payloadUuid) => {
-    let attempts = 0;
-    pollRef.current = setInterval(async () => {
-      attempts++;
-      if (attempts > 60) { clearInterval(pollRef.current); return; }
-      try {
-        const res = await base44.functions.invoke('xummCheckPayload', { payload_uuid: payloadUuid });
-        const hash = res.data?.response?.txid || res.data?.txid;
-        if (hash) {
-          setTxHash(hash);
-          clearInterval(pollRef.current);
-          toast.success('Transaction signed on XRPL! 🎉');
-        }
-      } catch (e) { /* keep polling */ }
-    }, 5000);
+  const copyText = (text, label) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied!`);
   };
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setResult(null);
-    setTxHash(null);
-    try {
-      const res = await base44.functions.invoke('setupConstitutionalMultiSig', { account: TREASURY.address });
-      setResult(res.data);
-      if (res.data?.xumm_url) {
-        window.open(res.data.xumm_url, '_blank');
-      }
-      if (res.data?.payload_uuid) {
-        toast.info('Check Xumm app for signing request from all 4 signers');
-        pollForTxHash(res.data.payload_uuid);
-      }
-    } catch (err) {
-      toast.error(err.message || 'Failed to create payload');
-    }
-    setLoading(false);
-  };
-
-  const copyAddress = (addr) => {
-    navigator.clipboard.writeText(addr);
-    toast.success('Copied!');
-  };
+  const txJsonString = JSON.stringify(TX_JSON, null, 2);
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 sm:p-6">
@@ -77,7 +44,7 @@ export default function ConstitutionalMultiSig() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">Constitutional Multi-Sig</h1>
-            <p className="text-slate-500 text-sm">4 Signers on Axi Treasury — Quorum 4 of 7</p>
+            <p className="text-slate-500 text-sm">4 Signers on Axi Treasury — Quorum {QUORUM} of 7</p>
           </div>
         </div>
 
@@ -92,7 +59,7 @@ export default function ConstitutionalMultiSig() {
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="text-slate-500 text-[11px] font-mono hidden sm:block">{TREASURY.address.slice(0, 8)}…{TREASURY.address.slice(-6)}</span>
-                <button onClick={() => copyAddress(TREASURY.address)} className="text-slate-600 hover:text-white transition">
+                <button onClick={() => copyText(TREASURY.address, 'Address')} className="text-slate-600 hover:text-white transition">
                   <Copy className="w-3 h-3" />
                 </button>
               </div>
@@ -107,7 +74,7 @@ export default function ConstitutionalMultiSig() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-slate-500 text-[11px] font-mono hidden sm:block">{s.address.slice(0, 8)}…{s.address.slice(-6)}</span>
-                  <button onClick={() => copyAddress(s.address)} className="text-slate-600 hover:text-white transition">
+                  <button onClick={() => copyText(s.address, s.name)} className="text-slate-600 hover:text-white transition">
                     <Copy className="w-3 h-3" />
                   </button>
                 </div>
@@ -119,70 +86,66 @@ export default function ConstitutionalMultiSig() {
             </div>
             <div className="flex items-center justify-between pt-1">
               <span className="text-slate-400 text-sm">Quorum</span>
-              <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">4 of 7</Badge>
+              <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">{QUORUM} of 7</Badge>
             </div>
           </CardContent>
         </Card>
 
-        {/* Wallet Selector */}
+        {/* Transaction JSON */}
         <Card className="bg-slate-900/60 border-slate-700/50">
           <CardContent className="p-4 space-y-3">
-            <p className="text-xs text-slate-500 font-semibold uppercase">Target Account</p>
-            <div className="p-3 rounded-lg border border-purple-500/50 bg-purple-600/10">
-              <p className="text-white text-sm font-medium">{TREASURY.name}</p>
-              <p className="text-slate-500 text-[11px] font-mono">{TREASURY.address}</p>
-              <p className="text-purple-400 text-[10px] mt-0.5">SignerListSet will be applied to this account</p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-slate-500 font-semibold uppercase">Transaction JSON — Copy to Xumm Toolkit</p>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-purple-400 hover:text-white gap-1.5 h-7 text-xs"
+                onClick={() => copyText(txJsonString, 'Transaction JSON')}
+              >
+                <Copy className="w-3 h-3" />
+                Copy JSON
+              </Button>
             </div>
+            <pre className="bg-slate-950 border border-slate-800 rounded-lg p-3 text-[11px] text-slate-300 font-mono overflow-x-auto whitespace-pre leading-relaxed">
+              {txJsonString}
+            </pre>
           </CardContent>
         </Card>
 
-        {/* Submit */}
-        <Button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full bg-purple-600 hover:bg-purple-500 text-white gap-2 h-12 text-base"
-        >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
-          {loading ? 'Creating Xumm Payload...' : 'Submit SignerListSet via Xumm'}
-        </Button>
+        {/* Instructions */}
+        <Card className="bg-amber-900/10 border-amber-600/20">
+          <CardContent className="p-4 space-y-2">
+            <p className="text-amber-400 text-sm font-semibold">How to submit via Xumm Toolkit</p>
+            <ol className="text-slate-400 text-xs space-y-1.5 list-decimal list-inside">
+              <li>Copy the JSON above</li>
+              <li>Open <a href="https://xrpl.services/tools/signerlistset" target="_blank" rel="noopener noreferrer" className="text-purple-400 underline hover:text-purple-300">XRPL Services</a> or the Xumm developer toolkit</li>
+              <li>Paste the transaction JSON and sign with the Treasury account</li>
+              <li>Confirm the transaction in your Xumm wallet</li>
+            </ol>
+          </CardContent>
+        </Card>
 
-        {/* Result */}
-        {result && (
-          <Card className="bg-green-900/20 border-green-600/30">
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center gap-2 text-green-400">
-                <CheckCircle className="w-4 h-4" />
-                <span className="font-semibold text-sm">Xumm payload created — sign in app</span>
-              </div>
-              {result.qr_url && (
-                <img src={result.qr_url} alt="Xumm QR" className="w-40 h-40 mx-auto rounded-xl border border-slate-700" />
-              )}
-              <a
-                href={result.xumm_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-green-700/30 text-green-300 text-sm hover:bg-green-700/50 transition"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Open in Xumm
-              </a>
-              <p className="text-slate-500 text-[11px] text-center">Payload UUID: {result.payload_uuid}</p>
-              {txHash ? (
-                <a
-                  href={`https://xrpscan.com/tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-blue-700/30 text-blue-300 text-sm hover:bg-blue-700/50 transition"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  View on XRPScan
-                </a>
-              ) : (
-                <p className="text-slate-600 text-[11px] text-center animate-pulse">⏳ Waiting for signature... XRPScan link will appear once signed.</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* Quick links */}
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={`https://xrpscan.com/account/${TREASURY.address}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 text-xs hover:text-white transition"
+          >
+            <ExternalLink className="w-3 h-3" />
+            View Treasury on XRPScan
+          </a>
+          <a
+            href="https://xrpl.services/tools/signerlistset"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 text-xs hover:text-white transition"
+          >
+            <ExternalLink className="w-3 h-3" />
+            XRPL Services Toolkit
+          </a>
+        </div>
       </div>
     </div>
   );
