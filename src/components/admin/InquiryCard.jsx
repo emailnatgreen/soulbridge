@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
-import { Mail, Clock, CheckCircle, Eye, X, ExternalLink, Copy, Send, Loader2 } from 'lucide-react';
+import { Mail, Clock, CheckCircle, Eye, X, ExternalLink, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import moment from 'moment';
 
@@ -39,19 +39,12 @@ export default function InquiryCard({ inquiry, onUpdate }) {
     onUpdate?.();
   };
 
-  const handleSendEmail = async () => {
-    if (!response.trim() || !inquiry.sender_email) return;
-    setSaving(true);
-    await base44.functions.invoke('sendEmailFromAgent', {
-      to: inquiry.sender_email,
-      subject: `Re: ${inquiry.subject || 'Your enquiry'}`,
-      body: response,
-      from_name: 'SoulBridge Foundation'
-    });
-    await base44.entities.Inquiry.update(inquiry.id, { response, status: 'responded' });
-    setSaving(false);
-    toast.success('Reply sent successfully!');
-    onUpdate?.();
+  const handleSendEmail = () => {
+    const subject = encodeURIComponent(`Re: ${inquiry.subject || 'Your enquiry'}`);
+    const body = encodeURIComponent(response + '\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org');
+    window.open(`mailto:${inquiry.sender_email}?subject=${subject}&body=${body}`, '_blank');
+    base44.entities.Inquiry.update(inquiry.id, { response, status: 'responded' }).then(() => onUpdate?.());
+    toast.success('Email client opened!');
   };
 
   const copyEmail = () => {
@@ -119,11 +112,11 @@ export default function InquiryCard({ inquiry, onUpdate }) {
               <Button
                 onClick={handleSendEmail}
                 size="sm"
-                disabled={saving || !response.trim()}
+                disabled={!response.trim() || !inquiry.sender_email}
                 className="bg-purple-600 hover:bg-purple-500 text-white gap-1.5 text-xs"
               >
-                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                Send Reply
+                <Mail className="w-3.5 h-3.5" />
+                Reply via Email
               </Button>
               <Button
                 onClick={openMailto}

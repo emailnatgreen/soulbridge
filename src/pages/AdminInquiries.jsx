@@ -28,20 +28,15 @@ export default function AdminInquiries() {
   const [composeBody, setComposeBody] = useState('');
   const [composeSending, setComposeSending] = useState(false);
 
-  const handleComposeSend = async () => {
+  const handleComposeSend = () => {
     if (!composeTo.trim() || !composeSubject.trim() || !composeBody.trim()) {
       toast.error('Please fill in all fields');
       return;
     }
-    setComposeSending(true);
-    await base44.functions.invoke('sendEmailFromAgent', {
-      to: composeTo.trim(),
-      subject: composeSubject.trim(),
-      body: composeBody,
-      from_name: 'SoulBridge Foundation'
-    });
-    setComposeSending(false);
-    toast.success('Email sent!');
+    const subject = encodeURIComponent(composeSubject.trim());
+    const body = encodeURIComponent(composeBody + '\n\n---\nBest regards,\nSoulBridge Foundation Support\nsupport@soulbridge-foundation.org');
+    window.open(`mailto:${composeTo.trim()}?subject=${subject}&body=${body}`, '_blank');
+    toast.success('Email client opened!');
     setComposeOpen(false);
     setComposeTo('');
     setComposeSubject('');
