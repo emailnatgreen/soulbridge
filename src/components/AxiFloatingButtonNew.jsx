@@ -83,7 +83,7 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
   const agentName = activeAgent?.name || 'Axi';
 
   return (
-    <div className="fixed bottom-20 lg:bottom-6 right-4 lg:right-6 z-[100]">
+    <div className="fixed bottom-[4.5rem] lg:bottom-6 right-4 lg:right-6 z-[100]">
       <button
         onClick={() => {
           setChatOpen(true);
