@@ -193,8 +193,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white overflow-x-hidden">
 
-      {/* Sticky Header */}
-      <div className="border-b border-white/10 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-20">
+      {/* Sticky Header — sits below Layout's global top bar (h-12 = top-12) */}
+      <div className="border-b border-white/10 bg-slate-950/80 backdrop-blur-xl sticky top-12 z-20">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <img

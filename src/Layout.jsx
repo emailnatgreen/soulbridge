@@ -44,8 +44,10 @@ export default function Layout({ children, currentPageName }) {
       {/* Global top bar — DID + Kinetic + Notifications */}
       {isRecognized && !isPublic && (
         <div
-          className={`fixed top-0 right-0 z-30 flex items-center gap-2 p-2 pr-3 bg-slate-950 border-b border-slate-800 left-0 ${isAdmin ? 'lg:left-64' : ''}`}
+          className={`fixed top-0 right-0 z-30 flex items-center gap-2 p-2 pr-3 bg-slate-950/95 backdrop-blur-sm border-b border-slate-800 left-0 ${isAdmin ? 'lg:left-64' : ''}`}
         >
+          {/* Spacer for mobile hamburger button */}
+          <div className="w-10 lg:hidden" />
           <div className="ml-auto flex items-center gap-2">
             <KineticPulseIndicator />
             <AxiNotificationBell />
