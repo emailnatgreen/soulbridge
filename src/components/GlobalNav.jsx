@@ -6,7 +6,8 @@ import {
   TrendingUp, Network, MessageSquare, Star, ChevronDown, ChevronRight,
   Swords, TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
   FileText, ShoppingBag, Heart, Landmark, Database, Link2 as LinkIcon,
-  MailWarning
+  MailWarning,
+  GitBranch
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -114,6 +115,7 @@ const NAV_GROUPS = [
       { label: 'Edit Landing', path: '/EditLanding', icon: FileText },
       { label: '📧 Inquiries', path: '/AdminInquiries', icon: MailWarning },
       { label: '⭐ VIP Dashboard', path: '/VipInviteDashboard', icon: Star },
+      { label: '🚀 Ripple Grants', path: '/grants', icon: GitBranch },
     ]
   },
 ];

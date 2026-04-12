@@ -14,6 +14,10 @@ module.exports = {
       'data-[state=active]:to-orange-500',
       'data-[state=active]:to-purple-600',
       'data-[state=active]:bg-gradient-to-r',
+      'bg-purple-500/20', 'text-purple-400',
+      'bg-green-500/20', 'text-green-400',
+      'bg-blue-500/20', 'text-blue-400',
+      'bg-emerald-500/20', 'text-emerald-400',
     ],
   theme: {
   	extend: {

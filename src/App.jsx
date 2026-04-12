@@ -76,6 +76,7 @@ import ScrollOfResonance from './pages/ScrollOfResonance';
 import NodeCovenant from './pages/NodeCovenant';
 import MentorshipHub from './pages/MentorshipHub';
 import ImageStorage from './pages/ImageStorage';
+import RippleGrantDashboard from './pages/RippleGrantDashboard';
 
 
 const LoadingFallback = () => (
@@ -267,6 +268,8 @@ const AuthenticatedApp = () => {
         <Route path="/mentorship" element={L("MentorshipHub", MentorshipHub)} />
         <Route path="/ImageStorage" element={L("image-storage", ImageStorage)} />
         <Route path="/image-storage" element={L("image-storage", ImageStorage)} />
+        <Route path="/grants" element={L("grants", RippleGrantDashboard)} />
+        <Route path="/RippleGrantDashboard" element={L("grants", RippleGrantDashboard)} />
 
         {/* LEGACY/BACKWARD COMPAT */}
         <Route path="/dashboard" element={L("dashboard", Dashboard)} />

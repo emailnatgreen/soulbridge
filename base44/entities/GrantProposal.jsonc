@@ -1,0 +1,192 @@
+{
+  "name": "GrantProposal",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Grant proposal title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Summary of the grant proposal"
+    },
+    "grant_program": {
+      "type": "string",
+      "enum": [
+        "ripple_xrpl_grants",
+        "ripple_creator_fund",
+        "ripple_defi_fund",
+        "ripple_cbdc_fund",
+        "other"
+      ],
+      "default": "ripple_xrpl_grants",
+      "description": "Which Ripple grant program this targets"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "drafting",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+        "in_progress",
+        "milestone_review",
+        "completed",
+        "cancelled"
+      ],
+      "default": "drafting",
+      "description": "Current proposal status"
+    },
+    "ai_project_id": {
+      "type": "string",
+      "description": "Linked AIProject entity ID"
+    },
+    "github_repo_url": {
+      "type": "string",
+      "description": "URL of the dedicated GitHub repository"
+    },
+    "github_repo_name": {
+      "type": "string",
+      "description": "GitHub repository name"
+    },
+    "requested_amount_usd": {
+      "type": "number",
+      "description": "Grant amount requested in USD"
+    },
+    "approved_amount_usd": {
+      "type": "number",
+      "description": "Approved grant amount in USD"
+    },
+    "xrp_allocation": {
+      "type": "number",
+      "description": "XRP allocation if applicable"
+    },
+    "proposal_lead": {
+      "type": "string",
+      "description": "Agent ID or name of the proposal lead"
+    },
+    "team_members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "agent_id": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Team members involved in the proposal"
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "target_date": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "string"
+          },
+          "budget_usd": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "submitted",
+              "approved",
+              "rejected"
+            ]
+          },
+          "github_issue_number": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Grant milestones with deliverables"
+    },
+    "submission_date": {
+      "type": "string",
+      "description": "When the proposal was submitted to Ripple"
+    },
+    "approval_date": {
+      "type": "string",
+      "description": "When the proposal was approved"
+    },
+    "completion_date": {
+      "type": "string",
+      "description": "When the grant was completed"
+    },
+    "proposal_document_url": {
+      "type": "string",
+      "description": "Link to the main proposal document"
+    },
+    "budget_breakdown": {
+      "type": "object",
+      "properties": {
+        "development": {
+          "type": "number"
+        },
+        "research": {
+          "type": "number"
+        },
+        "infrastructure": {
+          "type": "number"
+        },
+        "marketing": {
+          "type": "number"
+        },
+        "operations": {
+          "type": "number"
+        },
+        "other": {
+          "type": "number"
+        }
+      },
+      "description": "Budget breakdown by category"
+    },
+    "ripple_contact": {
+      "type": "string",
+      "description": "Ripple contact person or team"
+    },
+    "external_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "External links (Ripple portal, documentation, etc.)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorization"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or context"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "grant_program"
+  ]
+}
