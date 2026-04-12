@@ -1,13 +1,28 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-// v2 — auth header sanitized for mobile browsers
+
+// v3 — forced redeploy — auth header sanitized for mobile browsers
+function sanitizeRequest(req, bodyStr) {
+  const authHeader = (req.headers.get('authorization') || '').trim();
+  const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+  const h = new Headers();
+  h.set('content-type', 'application/json');
+  for (const [key, value] of req.headers.entries()) {
+    if (key.toLowerCase() === 'authorization') continue;
+    if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+      h.set(key, value);
+    }
+  }
+  h.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
+  return new Request(req.url, { method: req.method, headers: h, body: bodyStr });
+}
 
 /**
- * CRITICAL FIX: Verify DID by querying XRPL MAINNET directly via RPC.
- * Does NOT rely on is_published database flag.
- * This is the true source of truth for DID verification.
+ * Verify DID by querying XRPL MAINNET directly via RPC.
+ * Does NOT rely on is_published database flag — this is the source of truth.
  */
 Deno.serve(async (req) => {
-  // Reliable public XRPL RPC endpoints
   const RPC_ENDPOINTS = [
     'https://xrpl.ws',
     'https://xrplcluster.com',
@@ -18,155 +33,84 @@ Deno.serve(async (req) => {
     let lastError;
     for (const endpoint of RPC_ENDPOINTS) {
       try {
-        const body = JSON.stringify({
-          method: 'account_info',
-          params: [{ account: classicAddress }]
-        });
-
-        const rpcPayload = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body
-        };
-
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
-        
-        const rpcResponse = await fetch(endpoint, { ...rpcPayload, signal: controller.signal });
+        const rpcResponse = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method: 'account_info', params: [{ account: classicAddress }] }),
+          signal: controller.signal
+        });
         clearTimeout(timeoutId);
-        
-        if (!rpcResponse.ok) {
-          throw new Error(`HTTP ${rpcResponse.status}`);
-        }
-
+        if (!rpcResponse.ok) throw new Error(`HTTP ${rpcResponse.status}`);
         const rpcData = await rpcResponse.json();
-        
-        if (rpcData.error) {
-          throw new Error(rpcData.error.message || JSON.stringify(rpcData.error));
-        }
-
-        // xrpl.ws returns result directly, not nested
+        if (rpcData.error) throw new Error(rpcData.error.message || JSON.stringify(rpcData.error));
         const accountData = rpcData.result?.account_data || rpcData.account_data || rpcData.result;
-        if (accountData) {
-          return { success: true, data: accountData };
-        }
-
+        if (accountData) return { success: true, data: accountData };
         throw new Error('No account data in response');
       } catch (err) {
         lastError = err;
         console.warn(`[verifyDIDStatusMainnet] ${endpoint} failed:`, err.message);
-        continue; // Try next endpoint
+        continue;
       }
     }
-    
     return { success: false, error: lastError?.message || 'All RPC endpoints failed' };
   };
 
   try {
-    const body = await req.json().catch(() => ({}));
+    const bodyStr = await req.text();
+    const body = JSON.parse(bodyStr || '{}');
 
-    // Sanitize auth header — preview sandbox can send malformed tokens
+    const base44 = createClientFromRequest(sanitizeRequest(req, bodyStr || '{}'));
+
+    // Check auth
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
     const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
 
-    const freshHeaders = new Headers();
-    freshHeaders.set('content-type', 'application/json');
-    for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
-        freshHeaders.set(key, value);
-      }
-    }
-    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
-
-    const base44 = createClientFromRequest(new Request(req.url, {
-      method: req.method,
-      headers: freshHeaders,
-      body: JSON.stringify(body),
-    }));
-
     let user = null;
     if (isValidJwt) {
-      try {
-        user = await base44.auth.me();
-      } catch (authErr) {
+      try { user = await base44.auth.me(); } catch (authErr) {
         console.warn('[verifyDIDStatusMainnet] auth.me() failed:', authErr?.message);
       }
     }
 
     if (!user) {
-      return Response.json(
-        { isVerified: false, error: 'Unauthorized \u2014 user token required' },
-        { status: 401 }
-      );
+      return Response.json({ isVerified: false, error: 'Unauthorized — user token required' }, { status: 401 });
     }
 
-    // Fetch user's wallet
     const wallets = await base44.asServiceRole.entities.Wallet.filter(
-      { owner_id: user.id },
-      '-updated_date',
-      1
+      { owner_id: user.id }, '-updated_date', 1
     );
 
     if (!wallets || wallets.length === 0) {
-      return Response.json({
-        isVerified: false,
-        error: 'No wallet found',
-        userId: user.id,
-        email: user.email
-      });
+      return Response.json({ isVerified: false, error: 'No wallet found', userId: user.id, email: user.email });
     }
 
     const wallet = wallets[0];
     const classicAddress = wallet.classic_address;
 
-    // Query XRPL mainnet with fallback RPC endpoints
     const xrplResult = await queryXRPL(classicAddress);
-    
+
     if (!xrplResult.success) {
       console.error('[verifyDIDStatusMainnet] XRPL Query Error:', xrplResult.error);
-      return Response.json({
-        isVerified: false,
-        error: `Failed to query XRPL: ${xrplResult.error}`,
-        classic_address: classicAddress,
-        network: 'mainnet'
-      });
+      return Response.json({ isVerified: false, error: `Failed to query XRPL: ${xrplResult.error}`, classic_address: classicAddress, network: 'mainnet' });
     }
 
     const accountData = xrplResult.data;
 
-    // Account exists on mainnet — DID is verified
-    // Update database flag if it wasn't already set
     if (!wallet.is_published) {
       try {
-        await base44.asServiceRole.entities.Wallet.update(wallet.id, {
-          is_published: true,
-          published_at: new Date().toISOString()
-        });
-        console.log(`[verifyDIDStatusMainnet] Updated wallet ${wallet.id} is_published=true`);
+        await base44.asServiceRole.entities.Wallet.update(wallet.id, { is_published: true, published_at: new Date().toISOString() });
       } catch (updateErr) {
         console.error('[verifyDIDStatusMainnet] Failed to update wallet flag:', updateErr);
-        // Continue — verification still succeeds even if DB update fails
       }
     }
 
-    // Fetch agent profile
-    const agents = await base44.asServiceRole.entities.Agent.filter(
-      { classic_address: classicAddress },
-      '',
-      1
-    );
-
+    const agents = await base44.asServiceRole.entities.Agent.filter({ classic_address: classicAddress }, '', 1);
     const agent = agents?.[0];
     const role = agent?.role || 'citizen';
-    const permissions = agent?.permissions || {
-      can_create_agents: false,
-      can_send_xrp: true,
-      can_access_treasury: false,
-      can_vote: true,
-      can_evaluate_agents: false
-    };
+    const permissions = agent?.permissions || { can_create_agents: false, can_send_xrp: true, can_access_treasury: false, can_vote: true, can_evaluate_agents: false };
 
     return Response.json({
       isVerified: true,
@@ -177,8 +121,8 @@ Deno.serve(async (req) => {
       walletId: wallet.id,
       network: 'mainnet',
       publishedAt: wallet.published_at || new Date().toISOString(),
-      role: role,
-      permissions: permissions,
+      role,
+      permissions,
       agentId: agent?.id || null,
       xrplData: {
         sequence: accountData.Sequence,
@@ -205,9 +149,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('[verifyDIDStatusMainnet] Unhandled Error:', error);
-    return Response.json(
-      { isVerified: false, error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
+    return Response.json({ isVerified: false, error: error.message || 'Internal server error' }, { status: 500 });
   }
 });

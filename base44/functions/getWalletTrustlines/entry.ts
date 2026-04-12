@@ -1,41 +1,42 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-// v2 — auth header sanitized for mobile browsers
+
+// v3 — forced redeploy — auth header sanitized for mobile browsers
+function sanitizeRequest(req, bodyStr) {
+  const authHeader = (req.headers.get('authorization') || '').trim();
+  const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+  const h = new Headers();
+  h.set('content-type', 'application/json');
+  for (const [key, value] of req.headers.entries()) {
+    if (key.toLowerCase() === 'authorization') continue;
+    if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+      h.set(key, value);
+    }
+  }
+  h.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
+  return new Request(req.url, { method: req.method, headers: h, body: bodyStr });
+}
 
 Deno.serve(async (req) => {
   try {
-    const body = await req.json();
+    const bodyStr = await req.text();
+    const body = JSON.parse(bodyStr);
 
+    const base44 = createClientFromRequest(sanitizeRequest(req, bodyStr));
+
+    let user = null;
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
     const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
-
-    const freshHeaders = new Headers();
-    freshHeaders.set('content-type', 'application/json');
-    for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
-        freshHeaders.set(key, value);
-      }
-    }
-    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
-
-    const base44 = createClientFromRequest(new Request(req.url, {
-      method: req.method,
-      headers: freshHeaders,
-      body: JSON.stringify(body),
-    }));
-
-    let user = null;
     if (isValidJwt) {
       try { user = await base44.auth.me(); } catch (_) {}
     }
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { wallet_id, address } = body;
-
     let classicAddress = address;
 
-    // Resolve address from wallet_id if needed
     if (!classicAddress && wallet_id) {
       const wallet = await base44.asServiceRole.entities.Wallet.get(wallet_id);
       if (!wallet) return Response.json({ error: 'Wallet not found' }, { status: 404 });
@@ -44,7 +45,6 @@ Deno.serve(async (req) => {
 
     if (!classicAddress) return Response.json({ error: 'wallet_id or address required' }, { status: 400 });
 
-    // Query XRPL for account lines (trustlines) with retry on rate limit
     const endpoints = ['https://xrplcluster.com', 'https://s1.ripple.com:51234', 'https://s2.ripple.com:51234'];
     let rpcData = null;
     let lastError = null;
@@ -59,7 +59,6 @@ Deno.serve(async (req) => {
             params: [{ account: classicAddress, ledger_index: 'validated' }]
           })
         });
-
         const text = await rpcRes.text();
         if (text.startsWith('Rate limit') || rpcRes.status === 429) {
           lastError = 'Rate limited on ' + endpoint;

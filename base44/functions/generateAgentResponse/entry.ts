@@ -1,31 +1,34 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-// v2 — auth header sanitized for mobile browsers
+
+// v3 — forced redeploy — auth header sanitized for mobile browsers
+function sanitizeRequest(req, bodyStr) {
+  const authHeader = (req.headers.get('authorization') || '').trim();
+  const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+  const h = new Headers();
+  h.set('content-type', 'application/json');
+  for (const [key, value] of req.headers.entries()) {
+    if (key.toLowerCase() === 'authorization') continue;
+    if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+      h.set(key, value);
+    }
+  }
+  h.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
+  return new Request(req.url, { method: req.method, headers: h, body: bodyStr });
+}
 
 Deno.serve(async (req) => {
   try {
-    const body = await req.json();
+    const bodyStr = await req.text();
+    const body = JSON.parse(bodyStr);
 
-    // Extract and validate JWT token
+    const base44 = createClientFromRequest(sanitizeRequest(req, bodyStr));
+
+    // Validate user auth
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
     const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
-
-    // Build a completely fresh request — only include headers we explicitly set
-    const freshHeaders = new Headers();
-    freshHeaders.set('content-type', 'application/json');
-    for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
-        freshHeaders.set(key, value);
-      }
-    }
-    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
-
-    const base44 = createClientFromRequest(new Request(req.url, {
-      method: req.method,
-      headers: freshHeaders,
-      body: JSON.stringify(body),
-    }));
 
     let user = null;
     if (isValidJwt) {
@@ -125,20 +128,18 @@ Deno.serve(async (req) => {
           }
         }
 
-        // addMessage sends the user message and triggers agent response
         await base44.asServiceRole.agents.addMessage(convo, {
           role: 'user',
           content: user_message
         });
 
-        // Poll for the assistant's response — addMessage may return before streaming completes
+        // Poll for the assistant's response
         let reply = '';
         const maxAttempts = 12;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
           await new Promise(r => setTimeout(r, 2000));
           const freshConvo = await base44.asServiceRole.agents.getConversation(convo.id);
           const msgs = freshConvo?.messages || [];
-          // Find the last assistant message
           const lastAssistant = [...msgs].reverse().find(m => m.role === 'assistant');
           if (lastAssistant?.content && lastAssistant.content.trim().length > 0) {
             reply = lastAssistant.content;

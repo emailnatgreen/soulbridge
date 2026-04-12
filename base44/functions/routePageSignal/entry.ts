@@ -1,79 +1,62 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-// v2 — auth header sanitized for mobile browsers
+
+// v3 — forced redeploy — auth header sanitized for mobile browsers
+function sanitizeRequest(req, bodyStr) {
+  const authHeader = (req.headers.get('authorization') || '').trim();
+  const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+  const h = new Headers();
+  h.set('content-type', 'application/json');
+  for (const [key, value] of req.headers.entries()) {
+    if (key.toLowerCase() === 'authorization') continue;
+    if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+      h.set(key, value);
+    }
+  }
+  h.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
+  return new Request(req.url, { method: req.method, headers: h, body: bodyStr });
+}
 
 Deno.serve(async (req) => {
   try {
-    const body = await req.json();
+    const bodyStr = await req.text();
+    const body = JSON.parse(bodyStr);
 
-    // Extract and validate JWT token from authorization header
+    const base44 = createClientFromRequest(sanitizeRequest(req, bodyStr));
+
+    // Resolve user context (optional — signals work even for anon visitors)
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
     const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
 
-    // Build a completely fresh request — only include headers we explicitly set
-    const freshHeaders = new Headers();
-    freshHeaders.set('content-type', 'application/json');
-    // Copy over platform headers needed by the SDK (base44-*, x-base44-*, x-app-*)
-    for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
-        freshHeaders.set(key, value);
-      }
-    }
-    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
-
-    const base44 = createClientFromRequest(new Request(req.url, {
-      method: req.method,
-      headers: freshHeaders,
-      body: JSON.stringify(body),
-    }));
-    const { 
-      page, 
-      path, 
-      timestamp, 
-      userEmail, 
-      userId,
-      search,
-      metadata 
-    } = body;
-
-    // Authenticate user context only when a valid JWT session exists
     let user = null;
     if (isValidJwt) {
-      try {
-        user = await base44.auth.me();
-      } catch (e) {
-        user = null;
-      }
+      try { user = await base44.auth.me(); } catch (_) {}
     }
 
-    // Create comprehensive Signal record for Jukebox Brain
-    const signal = await base44.asServiceRole.entities.Signal.create({
-      signal_type: 'page_view',
-      source: 'frontend',
-      page_name: page,
-      page_path: path,
-      user_email: user?.email || userEmail,
-      user_id: user?.id || userId,
-      timestamp: timestamp,
-      metadata: {
-        viewport: metadata?.viewport,
-        referrer: metadata?.referrer,
-        pageTitle: metadata?.title,
-        searchParams: search,
-        signal_time: new Date().toISOString(),
-      },
+    const { page, path, referrer, metadata } = body;
+
+    // Store signal in JukeboxDecision entity (page_view type)
+    await base44.asServiceRole.entities.JukeboxDecision.create({
+      decision_type: 'page_view',
+      context: JSON.stringify({
+        page: page || path || 'unknown',
+        path: path || '',
+        referrer: referrer || '',
+        user_id: user?.id || 'anonymous',
+        user_email: user?.email || 'anonymous',
+        user_role: user?.role || 'visitor',
+        timestamp: new Date().toISOString(),
+        ...(metadata || {})
+      }),
+      status: 'executed',
+      outcome: `Page view: ${page || path || 'unknown'}`,
     });
 
-    return Response.json({ 
-      success: true,
-      signal: 'page_view_routed',
-      signalId: signal.id,
-      page: page,
-      timestamp: timestamp,
-    });
+    return Response.json({ success: true, page: page || path });
   } catch (error) {
-    console.error('Page signal routing error:', error);
+    console.error('[routePageSignal] Error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

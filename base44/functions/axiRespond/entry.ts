@@ -1,5 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-// v2 — auth header sanitized for mobile browsers
+
+// v3 — forced redeploy — auth header sanitized for mobile browsers
+function sanitizeRequest(req, bodyStr) {
+  const authHeader = (req.headers.get('authorization') || '').trim();
+  const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+  const h = new Headers();
+  h.set('content-type', 'application/json');
+  for (const [key, value] of req.headers.entries()) {
+    if (key.toLowerCase() === 'authorization') continue;
+    if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+      h.set(key, value);
+    }
+  }
+  h.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
+  return new Request(req.url, { method: req.method, headers: h, body: bodyStr });
+}
 
 function normalizeText(value) {
   return String(value || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -17,35 +34,15 @@ function scoreSynthesis(synthesis, terms) {
     ...(synthesis.retrieval_hints || []),
     ...((synthesis.entities || []).map((entity) => `${entity.name || ''} ${entity.notes || ''}`))
   ].join(' '));
-
   return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
 }
 
 Deno.serve(async (req) => {
   try {
-    const body = await req.json();
+    const bodyStr = await req.text();
+    const body = JSON.parse(bodyStr);
 
-    // Extract and validate JWT token from authorization header
-    const authHeader = (req.headers.get('authorization') || '').trim();
-    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
-
-    // Build a completely fresh request — only include headers we explicitly set
-    const freshHeaders = new Headers();
-    freshHeaders.set('content-type', 'application/json');
-    for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
-        freshHeaders.set(key, value);
-      }
-    }
-    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
-
-    const base44 = createClientFromRequest(new Request(req.url, {
-      method: req.method,
-      headers: freshHeaders,
-      body: JSON.stringify(body),
-    }));
+    const base44 = createClientFromRequest(sanitizeRequest(req, bodyStr));
     
     let conversation_id, user_message;
     
@@ -55,18 +52,15 @@ Deno.serve(async (req) => {
       conversation_id = msg?.conversation_id || msg?.context?.conversation_id;
       user_message = msg?.content || msg?.message;
       
-      // Skip if this is Axi's own response (avoid infinite loop)
       if (msg?.sender_agent_id === 'axi') {
         console.log('[Axi] Skipping own message');
         return Response.json({ skipped: true });
       }
-      // Skip visitor messages — they are handled by direct axiRespond calls from the frontend
       if (msg?.sender_agent_id === 'visitor') {
         console.log('[Axi] Skipping visitor message (handled by direct call)');
         return Response.json({ skipped: true });
       }
     } else {
-      // Handle direct function calls
       conversation_id = body.conversation_id;
       user_message = body.user_message;
     }
@@ -76,10 +70,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing message content' }, { status: 400 });
     }
 
-    // If no conversation_id, generate response anyway (for standalone messages)
     console.log('[Axi] Processing message:', { conversation_id, has_message: !!user_message });
 
-    // Save user message + fetch syntheses in parallel
     const isDirectCall = !body.event;
     const isSystemMsg = user_message?.startsWith('[SYSTEM]') || user_message?.startsWith('[NEW_VISITOR]');
     console.log(`[Axi] Generating response for: "${user_message}"`);
@@ -128,7 +120,6 @@ Key facts: Agents have on-chain DIDs and wallets, earn RLUSD/XRP, vote on propos
 
     console.log(`[Axi] Generated response: "${llmResponse}"`);
 
-    // Save Axi's response asynchronously — don't block the response to the user
     if (llmResponse && typeof llmResponse === 'string' && conversation_id) {
       base44.asServiceRole.entities.AgentMessage.create({
         conversation_id,
@@ -140,7 +131,6 @@ Key facts: Agents have on-chain DIDs and wallets, earn RLUSD/XRP, vote on propos
         .catch(e => console.error('[Axi] Failed to save response:', e.message));
     }
 
-    // Return immediately — don't wait for DB write
     return Response.json({ success: true, response: llmResponse });
   } catch (error) {
     console.error('[Axi] Error:', error);
