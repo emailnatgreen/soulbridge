@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 /**
  * Public data endpoint — no user auth needed.
  * All queries use asServiceRole exclusively.
+ * v2 — auth header sanitized for mobile browsers
  */
 Deno.serve(async (req) => {
   try {

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+// v2 — auth header sanitized for mobile browsers
 
 Deno.serve(async (req) => {
   try {
