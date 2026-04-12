@@ -156,7 +156,7 @@ export default function Home() {
     };
     fetchData();
     
-    const pollInterval = setInterval(fetchData, 7000);
+    const pollInterval = setInterval(fetchData, 60000);
     const handleSignal = (e) => {
       if (e.detail?.type === 'agent_created' || e.detail?.type === 'proposal_created' || e.detail?.type === 'wallet_published') {
         fetchData();

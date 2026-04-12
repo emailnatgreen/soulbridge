@@ -64,32 +64,13 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
 
-    // Clean auth header to prevent SDK crash on malformed tokens
-    const authHeader = (req.headers.get('authorization') || '').trim();
-    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
-
-    const freshHeaders = new Headers();
-    freshHeaders.set('content-type', 'application/json');
-    for (const [key, value] of req.headers.entries()) {
-      if (key.toLowerCase() === 'authorization') continue;
-      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
-        freshHeaders.set(key, value);
-      }
-    }
-    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anonymous');
-
-    const base44 = createClientFromRequest(new Request(req.url, {
-      method: req.method,
-      headers: freshHeaders,
-      body: JSON.stringify(body),
-    }));
+    const base44 = createClientFromRequest(req);
 
     let user = null;
-    if (isValidJwt) {
-      try {
-        user = await base44.auth.me();
-      } catch (_) {}
+    try {
+      user = await base44.auth.me();
+    } catch (authErr) {
+      console.warn('[verifyDIDStatusMainnet] auth.me() failed:', authErr?.message);
     }
 
     if (!user) {

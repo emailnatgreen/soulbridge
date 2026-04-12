@@ -76,6 +76,7 @@ export default function AxiFloatingButton({ chatOpen, setChatOpen, currentPageNa
     if (connectedDid) return { color: 'bg-green-400', pulse: false, title: `DID: ${connectedDid.address?.slice(0, 8)}… · ${connectedDid.agentName || 'Axi'}` };
     if (didSignal?.loading) return { color: 'bg-yellow-400', pulse: true, title: 'Verifying DID...' };
     if (didSignal?.isVerified) return { color: 'bg-green-400', pulse: false, title: `DID Verified: ${didSignal?.did?.slice(0, 10)}...` };
+    if (isRecognized) return { color: 'bg-green-400', pulse: false, title: 'Authenticated' };
     return { color: 'bg-amber-400', pulse: false, title: 'No DID connected' };
   };
 

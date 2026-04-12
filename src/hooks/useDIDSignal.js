@@ -45,6 +45,25 @@ export function useDIDSignal() {
   const mountedRef = useRef(true);
   useEffect(() => () => { mountedRef.current = false; }, []);
 
+  // Auto-verify on mount if not already verified from cache/localStorage
+  useEffect(() => {
+    if (_cachedSignal?.isVerified) return; // Already verified
+    const local = getLocalIdentity();
+    if (local?.isVerified) return; // localStorage has valid identity
+    // No cached or local identity — trigger backend verification once
+    const doVerify = async () => {
+      try {
+        const isAuthed = await base44.auth.isAuthenticated();
+        if (!isAuthed) return; // Can't verify without auth
+        // Small delay to avoid competing with initial page load API calls
+        await new Promise(r => setTimeout(r, 1500));
+        if (!mountedRef.current) return;
+        verify();
+      } catch (_) {}
+    };
+    doVerify();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const verify = useCallback(async () => {
     // De-duplicate: if a verify is already in flight, reuse it
     if (_verifyPromise) return _verifyPromise;
@@ -61,6 +80,7 @@ export function useDIDSignal() {
               role: response.data.role,
               permissions: response.data.permissions,
               agentId: response.data.agentId,
+              classicAddress: response.data.classic_address || null,
               loading: false,
               error: null
             }
@@ -69,6 +89,22 @@ export function useDIDSignal() {
               agentId: null, loading: false,
               error: response?.data?.error || 'DID verification failed'
             };
+        // Persist verified identity to localStorage so other components pick it up
+        if (result.isVerified && result.did) {
+          try {
+            const identityData = {
+              did: result.did,
+              connected: true,
+              role: result.role,
+              agentId: result.agentId,
+              classicAddress: result.classicAddress,
+              timestamp: Date.now(),
+              source: 'did_verification'
+            };
+            localStorage.setItem('soulbridge_identity', JSON.stringify(identityData));
+            window.dispatchEvent(new CustomEvent('did-validated', { detail: identityData }));
+          } catch (_) {}
+        }
         _cachedSignal = result;
         if (mountedRef.current) setSignal(result);
       } catch (err) {
