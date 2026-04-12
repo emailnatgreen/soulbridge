@@ -1,4 +1,19 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+function sanitizeRequest(req, bodyStr) {
+  const auth = (req.headers.get('authorization') || '').trim();
+  const isProperJwt = /^Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(auth);
+  const h = new Headers();
+  h.set('content-type', 'application/json');
+  for (const [key, value] of req.headers.entries()) {
+    if (key.toLowerCase() === 'authorization') continue;
+    if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+      h.set(key, value);
+    }
+  }
+  if (isProperJwt) h.set('authorization', auth);
+  return new Request(req.url, { method: req.method, headers: h, body: bodyStr });
+}
 
 const SENDER_NAME = 'soulbridge-foundation.org';
 const ADMIN_NOTIFICATION_EMAIL = 'cynthiao@base44.com';
@@ -23,9 +38,9 @@ const QUEUE_LABELS = {
 };
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
-
-  const { sender_email, subject, message, source } = await req.json();
+  const bodyStr = await req.text();
+  const { sender_email, subject, message, source } = JSON.parse(bodyStr);
+  const base44 = createClientFromRequest(sanitizeRequest(req, bodyStr));
 
   if (!sender_email || !subject || !message) {
     return Response.json({ error: 'sender_email, subject, and message are required.' }, { status: 400 });
