@@ -1,11 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useIdentity } from '@/hooks/useIdentity';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
@@ -91,7 +89,6 @@ function ParticleCanvas() {
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { isAdmin } = useIdentity();
   const inactivityRef = useRef(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [showInviteEntry, setShowInviteEntry] = useState(false);
@@ -420,7 +417,9 @@ export default function LandingPage() {
           {/* Live Kinetic Energy Section */}
           <div className="max-w-4xl mx-auto space-y-6">
             <KineticPublicOverview kus={allKUs} />
-            <KineticEnergyVisualizer kus={allKUs} />
+            <div className="hidden sm:block">
+              <KineticEnergyVisualizer kus={allKUs} />
+            </div>
           </div>
 
           {/* Cards Grid */}
