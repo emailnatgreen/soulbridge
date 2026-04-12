@@ -1,10 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // v3 — forced redeploy — auth header sanitized for mobile browsers
+// Proper anon JWT (valid base64url header+payload, dummy sig) for SDK format validation
+const ANON_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbm9uIiwiaWF0IjowfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+
 function sanitizeRequest(req, bodyStr) {
-  const authHeader = (req.headers.get('authorization') || '').trim();
-  const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-  const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+  const auth = (req.headers.get('authorization') || '').trim();
+  // Must be Bearer + 3-part dot-separated base64url token
+  const isProperJwt = /^Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(auth);
 
   const h = new Headers();
   h.set('content-type', 'application/json');
@@ -14,7 +17,7 @@ function sanitizeRequest(req, bodyStr) {
       h.set(key, value);
     }
   }
-  h.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
+  h.set('authorization', isProperJwt ? auth : `Bearer ${ANON_JWT}`);
   return new Request(req.url, { method: req.method, headers: h, body: bodyStr });
 }
 
