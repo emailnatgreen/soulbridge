@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Zap, TrendingUp, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
@@ -8,8 +8,6 @@ export default function KineticPulseIndicator() {
   const [open, setOpen] = useState(false);
   const [stats, setStats] = useState({ total: 0, recent: 0, health: 'nominal' });
   const [recentKUs, setRecentKUs] = useState([]);
-  const canvasRef = useRef(null);
-  const animRef = useRef(null);
 
   useEffect(() => {
     loadStats();
@@ -17,45 +15,7 @@ export default function KineticPulseIndicator() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    let angle = 0;
 
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
-      const r = 10;
-
-      // Outer ring
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(168,85,247,0.3)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      // Spinning arc
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, angle, angle + Math.PI * 0.7);
-      ctx.strokeStyle = '#a855f7';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      // Center dot
-      ctx.beginPath();
-      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-      ctx.fillStyle = stats.health === 'critical' ? '#ef4444' : stats.health === 'low' ? '#f59e0b' : '#a855f7';
-      ctx.fill();
-
-      angle += 0.04;
-      animRef.current = requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => cancelAnimationFrame(animRef.current);
-  }, [stats.health]);
 
   const loadStats = async () => {
     try {
@@ -79,7 +39,14 @@ export default function KineticPulseIndicator() {
         className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-800/50 border border-slate-600/30 hover:bg-slate-700/50 transition-all"
         title="Kinetic Grid Pulse"
       >
-        <canvas ref={canvasRef} width={24} height={24} className="flex-shrink-0" />
+        <div className="relative w-6 h-6 flex items-center justify-center flex-shrink-0">
+          <div className={`w-2.5 h-2.5 rounded-full ${
+            stats.health === 'critical' ? 'bg-red-400' : stats.health === 'low' ? 'bg-amber-400' : 'bg-purple-400'
+          }`} />
+          <div className={`absolute inset-0 rounded-full border-2 ${
+            stats.health === 'critical' ? 'border-red-500/40' : stats.health === 'low' ? 'border-amber-500/40' : 'border-purple-500/30'
+          }`} />
+        </div>
         <span className={`text-xs font-mono hidden sm:block ${healthColor}`}>{stats.recent} KU</span>
       </button>
 
