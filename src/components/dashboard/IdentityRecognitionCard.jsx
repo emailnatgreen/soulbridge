@@ -99,8 +99,23 @@ function IdentityRecognitionModal({ isOpen, onClose, user }) {
     setIsConnectedToButton(true);
     localStorage.setItem('sb_connected_did', JSON.stringify(connection));
     localStorage.setItem('sb_floating_button_enabled', 'true');
+
+    // CRITICAL: Also update soulbridge_identity — this is what useIdentity/useDIDSignal/Layout use
+    const identityData = {
+      did: connection.did,
+      connected: true,
+      role: linkedAgent?.role || null,
+      agentId: linkedAgent?.id || null,
+      classicAddress: wallet.classic_address,
+      timestamp: Date.now(),
+      source: 'identity_recognition_modal'
+    };
+    localStorage.setItem('soulbridge_identity', JSON.stringify(identityData));
+
     window.dispatchEvent(new CustomEvent('sb-floating-button-toggle', { detail: { enabled: true, connection } }));
     window.dispatchEvent(new CustomEvent('sb-did-connected', { detail: connection }));
+    window.dispatchEvent(new CustomEvent('did-connected', { detail: identityData }));
+    window.dispatchEvent(new CustomEvent('did-validated', { detail: identityData }));
   };
 
   const handleDisconnectDid = () => {
