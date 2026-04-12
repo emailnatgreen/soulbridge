@@ -20,13 +20,18 @@ export default function InquiryForm({ source = 'website' }) {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        const res = await base44.functions.invoke('submitInquiry', { ...form, source });
-        if (res.data?.success) {
-            setSubmitted(true);
-        } else {
-            setError('Something went wrong. Please try again.');
+        try {
+            const res = await base44.functions.invoke('submitInquiry', { ...form, source });
+            if (res.data?.success) {
+                setSubmitted(true);
+            } else {
+                setError(res.data?.error || 'Something went wrong. Please try again.');
+            }
+        } catch (err) {
+            setError('Could not send your message. Please try again.');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     if (submitted) {
