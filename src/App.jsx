@@ -77,6 +77,7 @@ import NodeCovenant from './pages/NodeCovenant';
 import MentorshipHub from './pages/MentorshipHub';
 import ImageStorage from './pages/ImageStorage';
 import RippleGrantDashboard from './pages/RippleGrantDashboard';
+import UserDashboardPreview from './pages/UserDashboardPreview';
 
 
 const LoadingFallback = () => (
@@ -269,6 +270,7 @@ const AuthenticatedApp = () => {
         <Route path="/ImageStorage" element={L("image-storage", ImageStorage)} />
         <Route path="/image-storage" element={L("image-storage", ImageStorage)} />
         <Route path="/grants" element={L("grants", RippleGrantDashboard)} />
+        <Route path="/admin/user-dashboard-preview" element={L("user-dashboard-preview", UserDashboardPreview)} />
         <Route path="/RippleGrantDashboard" element={L("grants", RippleGrantDashboard)} />
 
         {/* LEGACY/BACKWARD COMPAT */}
