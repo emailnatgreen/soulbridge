@@ -17,10 +17,26 @@
         "ripple_creator_fund",
         "ripple_defi_fund",
         "ripple_cbdc_fund",
+        "ripple_ai_fund",
+        "ripple_accelerator",
         "other"
       ],
       "default": "ripple_xrpl_grants",
       "description": "Which Ripple grant program this targets"
+    },
+    "use_case_category": {
+      "type": "string",
+      "enum": [
+        "defi",
+        "rwa_tokenization",
+        "payments",
+        "trade_finance",
+        "ai",
+        "infrastructure",
+        "developer_tooling",
+        "other"
+      ],
+      "description": "XRPL Grants priority use case category"
     },
     "status": {
       "type": "string",
@@ -79,6 +95,15 @@
           },
           "agent_id": {
             "type": "string"
+          },
+          "github_url": {
+            "type": "string"
+          },
+          "linkedin_url": {
+            "type": "string"
+          },
+          "technical_skills": {
+            "type": "string"
           }
         }
       },
@@ -116,10 +141,104 @@
           },
           "github_issue_number": {
             "type": "number"
+          },
+          "success_criteria": {
+            "type": "string"
           }
         }
       },
       "description": "Grant milestones with deliverables"
+    },
+    "xrpl_integration": {
+      "type": "object",
+      "properties": {
+        "xrpl_features_used": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "XRPL features leveraged (e.g. DEX, Hooks, AMM, DID, NFTs, Escrow, Payment Channels)"
+        },
+        "onchain_activity_description": {
+          "type": "string",
+          "description": "How this project drives on-chain transactions on XRPL"
+        },
+        "xrpl_network": {
+          "type": "string",
+          "enum": [
+            "mainnet",
+            "testnet",
+            "devnet",
+            "both"
+          ],
+          "description": "Which XRPL network(s) the project targets"
+        },
+        "integration_timeline": {
+          "type": "string",
+          "description": "When XRPL integration is planned/completed"
+        }
+      },
+      "description": "XRPL-specific integration details \u2014 critical for grant judges"
+    },
+    "market_opportunity": {
+      "type": "object",
+      "properties": {
+        "problem_statement": {
+          "type": "string",
+          "description": "What problem does this solve?"
+        },
+        "target_market": {
+          "type": "string",
+          "description": "Who is the target audience?"
+        },
+        "market_size": {
+          "type": "string",
+          "description": "Estimated addressable market"
+        },
+        "competitive_landscape": {
+          "type": "string",
+          "description": "Key competitors and differentiation"
+        }
+      },
+      "description": "Market opportunity assessment"
+    },
+    "traction": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "number",
+          "description": "Number of users"
+        },
+        "transactions": {
+          "type": "number",
+          "description": "Number of on-chain transactions"
+        },
+        "revenue_usd": {
+          "type": "number",
+          "description": "Revenue generated"
+        },
+        "partnerships": {
+          "type": "string",
+          "description": "Notable partnerships or integrations"
+        },
+        "community_size": {
+          "type": "number",
+          "description": "Community/social following"
+        },
+        "traction_summary": {
+          "type": "string",
+          "description": "Overall traction narrative"
+        }
+      },
+      "description": "Project traction metrics"
+    },
+    "sustainability_plan": {
+      "type": "string",
+      "description": "Long-term financial sustainability plan beyond grant funding"
+    },
+    "technical_architecture": {
+      "type": "string",
+      "description": "Overview of technical architecture and stack"
     },
     "submission_date": {
       "type": "string",
