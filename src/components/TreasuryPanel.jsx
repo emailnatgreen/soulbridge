@@ -115,7 +115,7 @@ export default function TreasuryPanel({ treasuryId, canManage = false }) {
                                     <Badge className="bg-green-500/20 text-green-300 text-[10px]">DID Published</Badge>
                                     {treasuryWallet.published_txid && (
                                         <a
-                                            href={`https://xrpscan.com/tx/${wallet.published_txid}`}
+                                            href={`https://xrpscan.com/tx/${treasuryWallet.published_txid}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="ml-1"
