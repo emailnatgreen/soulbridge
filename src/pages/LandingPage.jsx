@@ -568,7 +568,7 @@ export default function LandingPage() {
                   )}
                 </Button>
                 <Button
-                  onClick={() => { window.location.href = '/ContactSupport'; }}
+                  onClick={() => navigate('/contact-support')}
                   variant="outline"
                   className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 h-10 sm:h-12 text-sm sm:text-base gap-2 sm:gap-3"
                 >
