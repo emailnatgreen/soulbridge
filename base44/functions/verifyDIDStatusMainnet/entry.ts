@@ -64,18 +64,39 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
 
-    const base44 = createClientFromRequest(req);
+    // Sanitize auth header — preview sandbox can send malformed tokens
+    const authHeader = (req.headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+    const freshHeaders = new Headers();
+    freshHeaders.set('content-type', 'application/json');
+    for (const [key, value] of req.headers.entries()) {
+      if (key.toLowerCase() === 'authorization') continue;
+      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+        freshHeaders.set(key, value);
+      }
+    }
+    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
+
+    const base44 = createClientFromRequest(new Request(req.url, {
+      method: req.method,
+      headers: freshHeaders,
+      body: JSON.stringify(body),
+    }));
 
     let user = null;
-    try {
-      user = await base44.auth.me();
-    } catch (authErr) {
-      console.warn('[verifyDIDStatusMainnet] auth.me() failed:', authErr?.message);
+    if (isValidJwt) {
+      try {
+        user = await base44.auth.me();
+      } catch (authErr) {
+        console.warn('[verifyDIDStatusMainnet] auth.me() failed:', authErr?.message);
+      }
     }
 
     if (!user) {
       return Response.json(
-        { isVerified: false, error: 'Unauthorized — user token required' },
+        { isVerified: false, error: 'Unauthorized \u2014 user token required' },
         { status: 401 }
       );
     }

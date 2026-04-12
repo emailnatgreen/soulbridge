@@ -498,10 +498,9 @@ export default function Dashboard() {
               {identityDid && (
                 <p className="text-purple-200/50 text-[10px] font-mono truncate mb-3 bg-black/20 px-3 py-1.5 rounded-lg border border-white/10">{identityDid}</p>
               )}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {[
                   { label: 'Sovereign ID', path: '/SovereignID', icon: Shield, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30 hover:border-purple-400/50' },
-                  { label: 'DID Manager', path: '/DIDManager', icon: Globe, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/30 hover:border-blue-400/50' },
                   { label: 'DID Health', path: '/DIDHealthDashboard', icon: ArrowDownUp, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/30 hover:border-green-400/50' },
                   { label: 'DID Credentials', path: '/DidCredentials', icon: Sparkles, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/30 hover:border-amber-400/50' },
                 ].map(item => (

@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     // Only forward auth header if it looks like a real JWT
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    cleanHeaders.set('authorization', (rawToken && rawToken.includes('.') && rawToken.length > 40) ? `Bearer ${rawToken}` : 'Bearer anonymous');
+    cleanHeaders.set('authorization', (rawToken && rawToken.includes('.') && rawToken.length > 40) ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
 
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
