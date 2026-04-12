@@ -48,12 +48,7 @@ export default function CarbonFootprintChart({ snapshots = [], loading = false }
             <p className="text-emerald-300/50 text-[10px]">CO₂e generated vs saved · Last 14 daily snapshots</p>
           </div>
         </div>
-        <button
-          onClick={() => navigate('/KineticWasteDashboard')}
-          className="text-emerald-400 text-xs hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 rounded-lg px-3 py-1.5 transition flex items-center gap-1"
-        >
-          Full Analysis →
-        </button>
+
       </div>
 
       {/* KPI Pills */}
