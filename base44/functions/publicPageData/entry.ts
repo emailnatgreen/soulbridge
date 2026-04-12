@@ -1,41 +1,35 @@
-import { createClient, createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
  * Public data endpoint — no user auth needed.
  * All queries use asServiceRole exclusively.
- * Now serves full-spectrum live data for landing, compass, scroll, and agent_lookup.
  */
-
-function getBase44Client(req, bodyStr) {
-  try {
-    const headers = new Headers(req.headers);
-    const auth = headers.get('authorization') || '';
-    if (auth && auth.startsWith('Bearer ') && auth.length > 30) {
-      const newReq = new Request(req.url, { method: req.method, headers, body: bodyStr });
-      return createClientFromRequest(newReq);
-    }
-  } catch (_) {}
-
-  try {
-    const headers = new Headers(req.headers);
-    headers.set('authorization', 'Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJwdWJsaWMiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6OTk5OTk5OTk5OX0.');
-    const newReq = new Request(req.url, { method: req.method, headers, body: bodyStr });
-    return createClientFromRequest(newReq);
-  } catch (_) {}
-
-  return createClient({
-    appId: Deno.env.get('BASE44_APP_ID'),
-    requiresAuth: false,
-  });
-}
-
 Deno.serve(async (req) => {
   try {
     const bodyStr = await req.text();
     const body = JSON.parse(bodyStr);
     const { page } = body;
 
-    const base44 = getBase44Client(req, bodyStr);
+    // Clean auth header — always provide a valid Bearer format for the SDK
+    const authHeader = (req.headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+    const freshHeaders = new Headers();
+    freshHeaders.set('content-type', 'application/json');
+    for (const [key, value] of req.headers.entries()) {
+      if (key.toLowerCase() === 'authorization') continue;
+      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+        freshHeaders.set(key, value);
+      }
+    }
+    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anonymous');
+
+    const base44 = createClientFromRequest(new Request(req.url, {
+      method: req.method,
+      headers: freshHeaders,
+      body: bodyStr,
+    }));
 
     if (page === 'landing') {
       const [agents, wallets, kus, projects, tasks, votes, activities] = await Promise.all([

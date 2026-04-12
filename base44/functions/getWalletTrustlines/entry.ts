@@ -1,12 +1,36 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const body = await req.json();
+
+    const authHeader = (req.headers.get('authorization') || '').trim();
+    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
+
+    const freshHeaders = new Headers();
+    freshHeaders.set('content-type', 'application/json');
+    for (const [key, value] of req.headers.entries()) {
+      if (key.toLowerCase() === 'authorization') continue;
+      if (key.startsWith('base44') || key.startsWith('x-base44') || key.startsWith('x-app')) {
+        freshHeaders.set(key, value);
+      }
+    }
+    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anonymous');
+
+    const base44 = createClientFromRequest(new Request(req.url, {
+      method: req.method,
+      headers: freshHeaders,
+      body: JSON.stringify(body),
+    }));
+
+    let user = null;
+    if (isValidJwt) {
+      try { user = await base44.auth.me(); } catch (_) {}
+    }
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { wallet_id, address } = await req.json();
+    const { wallet_id, address } = body;
 
     let classicAddress = address;
 

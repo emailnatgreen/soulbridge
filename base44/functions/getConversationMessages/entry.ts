@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -22,9 +22,7 @@ Deno.serve(async (req) => {
     // Only forward auth header if it looks like a real JWT
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    if (rawToken && rawToken.includes('.') && rawToken.split('.').length === 3 && rawToken.length > 40) {
-      cleanHeaders.set('authorization', `Bearer ${rawToken}`);
-    }
+    cleanHeaders.set('authorization', (rawToken && rawToken.includes('.') && rawToken.length > 40) ? `Bearer ${rawToken}` : 'Bearer anonymous');
 
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,

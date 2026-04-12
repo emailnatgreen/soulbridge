@@ -19,9 +19,7 @@ Deno.serve(async (req) => {
         freshHeaders.set(key, value);
       }
     }
-    if (isValidJwt) {
-      freshHeaders.set('authorization', `Bearer ${rawToken}`);
-    }
+    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anonymous');
 
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,
