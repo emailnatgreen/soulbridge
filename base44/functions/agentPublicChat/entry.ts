@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
  * Public chat function for agent-specific conversations.
@@ -22,9 +22,9 @@ Deno.serve(async (req) => {
     // Only forward auth header if it looks like a real JWT
     const authHeader = (req.headers.get('authorization') || '').trim();
     const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    if (rawToken && rawToken.includes('.') && rawToken.split('.').length === 3 && rawToken.length > 40) {
-      cleanHeaders.set('authorization', `Bearer ${rawToken}`);
-    }
+    // SDK requires a JWT-shaped token — use anon.anon.anon as fallback
+    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.split('.').length === 3 && rawToken.length > 40;
+    cleanHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
 
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,

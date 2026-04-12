@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -18,9 +18,7 @@ Deno.serve(async (req) => {
         freshHeaders.set(key, value);
       }
     }
-    if (isValidJwt) {
-      freshHeaders.set('authorization', `Bearer ${rawToken}`);
-    }
+    freshHeaders.set('authorization', isValidJwt ? `Bearer ${rawToken}` : 'Bearer anon.anon.anon');
 
     const base44 = createClientFromRequest(new Request(req.url, {
       method: req.method,

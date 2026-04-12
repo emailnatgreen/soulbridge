@@ -407,7 +407,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
           exit={{ opacity: 0, y: 12, scale: 0.97 }}
           transition={{ duration: 0.15 }}
           onClick={(e) => e.stopPropagation()}
-          className={`fixed z-[55] bg-slate-950 border border-slate-700/50 shadow-2xl flex flex-col overflow-hidden ${
+          className={`fixed z-[110] bg-slate-950 border border-slate-700/50 shadow-2xl flex flex-col overflow-hidden ${
             isExpanded
               ? 'inset-0 lg:inset-4 rounded-none lg:rounded-2xl'
               : 'inset-0 lg:bottom-6 lg:right-4 lg:left-auto lg:top-auto lg:w-[420px] lg:h-[560px] rounded-none lg:rounded-2xl'
