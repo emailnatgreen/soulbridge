@@ -23,88 +23,7 @@ export default function AdminSkillControls({ selectedAgent, agents }) {
   const [assignTraining, setAssignTraining] = useState({ title: '', skill_focus: '', training_type: 'skill_development' });
   const [overrideData, setOverrideData] = useState({ skill_name: '', new_score: '' });
 
-  if (!isAdmin) return null;
-
-  const createSkillMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedAgent?.id) throw new Error('Select an agent first');
-      await base44.entities.AgentSkill.create({
-        agent_id: selectedAgent.id,
-        skill_id: newSkill.name.toLowerCase().replace(/\s+/g, '_'),
-        skill_category: newSkill.category,
-        skill_name: newSkill.name,
-        skill_description: newSkill.description,
-        level: 1, max_level: 10, proficiency_score: 0,
-        skill_growth_trajectory: 'stable',
-        unlocked_at: new Date().toISOString(),
-      });
-      await base44.entities.Skill.create({
-        name: newSkill.name, description: newSkill.description, category: newSkill.category, level: 'novice',
-      }).catch(() => {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['agent-skills']);
-      queryClient.invalidateQueries(['allAgentSkills']);
-      toast.success(`Skill "${newSkill.name}" created for ${selectedAgent?.name}`);
-      setNewSkill({ name: '', category: 'technical', description: '' });
-      setActiveAction(null);
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const assignTrainingMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedAgent?.id) throw new Error('Select an agent first');
-      await base44.entities.AgentTraining.create({
-        agent_id: selectedAgent.id,
-        training_type: assignTraining.training_type,
-        skill_focus: assignTraining.skill_focus,
-        title: assignTraining.title,
-        description: `Assigned by Axi (Admin) for ${selectedAgent.name}`,
-        status: 'not_started',
-        recommended_by: 'axi',
-        progress: { completion_percentage: 0, lessons_completed: 0, exercises_completed: 0, time_spent_minutes: 0 },
-        rewards: { experience_gained: 25, wisdom_gained: 5, honor_gained: 3 },
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['skill-progress']);
-      toast.success(`Training "${assignTraining.title}" assigned to ${selectedAgent?.name}`);
-      setAssignTraining({ title: '', skill_focus: '', training_type: 'skill_development' });
-      setActiveAction(null);
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const overrideProficiencyMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedAgent?.id) throw new Error('Select an agent first');
-      const skills = await base44.entities.AgentSkill.filter({ agent_id: selectedAgent.id });
-      const skill = skills.find(s =>
-        s.skill_name?.toLowerCase() === overrideData.skill_name.toLowerCase() ||
-        s.skill_id?.toLowerCase() === overrideData.skill_name.toLowerCase()
-      );
-      if (!skill) throw new Error(`Skill "${overrideData.skill_name}" not found for this agent`);
-      const score = parseInt(overrideData.new_score);
-      if (isNaN(score) || score < 0 || score > 100) throw new Error('Score must be 0-100');
-      await base44.entities.AgentSkill.update(skill.id, {
-        proficiency_score: score, last_upgraded: new Date().toISOString(),
-      });
-      await base44.entities.AutomationLog.create({
-        automation_name: 'axi_proficiency_override', status: 'completed',
-        message: `Axi overrode proficiency for ${selectedAgent.name}'s skill "${skill.skill_name}" to ${score}%`,
-      }).catch(() => {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['agent-skills']);
-      toast.success(`Proficiency overridden for "${overrideData.skill_name}"`);
-      setOverrideData({ skill_name: '', new_score: '' });
-      setActiveAction(null);
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const syncAllMutation = useMutation({
+  const createSkillMutation
     mutationFn: async () => {
       if (!selectedAgent?.id) throw new Error('Select an agent first');
       return base44.functions.invoke('updateAgentSkillProfile', { agent_id: selectedAgent.id });
@@ -115,6 +34,8 @@ export default function AdminSkillControls({ selectedAgent, agents }) {
     },
     onError: (e) => toast.error(e.message),
   });
+
+  if (!isAdmin) return null;
 
   return (
     <Card className="bg-amber-500/5 border-amber-500/20 backdrop-blur-xl">

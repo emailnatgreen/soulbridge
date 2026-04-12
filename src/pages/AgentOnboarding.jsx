@@ -601,12 +601,12 @@ export default function AgentOnboarding() {
                         </Card>
 
                         <div className="flex gap-4">
-                            <Link to={createPageUrl('SkillDevelopment')} className="flex-1">
+                            <Link to="/SkillDevelopment" className="flex-1">
                                 <Button className="w-full bg-purple-600 hover:bg-purple-700">
                                     View Development Plan <ArrowRight className="w-4 h-4 ml-2" />
                                 </Button>
                             </Link>
-                            <Link to={createPageUrl('Home')} className="flex-1">
+                            <Link to="/Home" className="flex-1">
                                 <Button variant="outline" className="w-full">
                                     Explore Village
                                 </Button>

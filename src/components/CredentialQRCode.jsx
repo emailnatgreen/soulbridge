@@ -33,8 +33,8 @@ function buildXummSignURL(credential) {
       Memos: [
         {
           Memo: {
-            MemoData: Buffer.from(memo).toString('hex').toUpperCase(),
-            MemoType: Buffer.from('DID_CREDENTIAL_VERIFY').toString('hex').toUpperCase(),
+            MemoData: Array.from(new TextEncoder().encode(memo)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase(),
+            MemoType: Array.from(new TextEncoder().encode('DID_CREDENTIAL_VERIFY')).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase(),
           },
         },
       ],

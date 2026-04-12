@@ -1,8 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// v3 — forced redeploy — auth header sanitized for mobile browsers
-const ANON_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbm9uIiwiaWF0IjowfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
-
+// v4 — omit auth header when malformed
 function sanitizeRequest(req, bodyStr) {
   const auth = (req.headers.get('authorization') || '').trim();
   const isProperJwt = /^Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(auth);
@@ -15,7 +13,7 @@ function sanitizeRequest(req, bodyStr) {
       h.set(key, value);
     }
   }
-  h.set('authorization', isProperJwt ? auth : `Bearer ${ANON_JWT}`);
+  if (isProperJwt) h.set('authorization', auth);
   return new Request(req.url, { method: req.method, headers: h, body: bodyStr });
 }
 

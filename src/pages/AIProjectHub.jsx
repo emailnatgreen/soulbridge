@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Send, CheckCircle2, Circle, Loader2, MessageSquare, ListTodo, Target, Users, Calendar, DollarSign, AlertCircle, Brain, Sparkles, TrendingUp, Shield, Zap } from 'lucide-react';
+import { ArrowLeft, Send, CheckCircle2, Circle, Loader2, MessageSquare, ListTodo, Target, Users, Calendar, DollarSign, AlertCircle, Brain, Sparkles, TrendingUp, Shield, Zap, Plus } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import AgentMatcher from '../components/AgentMatcher';
 import AskAxiButton from '@/components/AskAxiButton';

@@ -36,6 +36,14 @@ export default function TreasuryPanel({ treasuryId, canManage = false }) {
         refetchInterval: 15000,
     });
 
+    const { data: activities = [] } = useQuery({
+        queryKey: ['treasury-activities', treasuryId],
+        queryFn: () => base44.entities.EconomicActivity.filter({ treasury_id: treasuryId }, '-created_date', 30).catch(() => []),
+        enabled: !!treasuryId,
+    });
+
+    const treasuryWallet = treasury?.classic_address ? { is_published: !!treasury.classic_address, classic_address: treasury.classic_address, published_txid: null } : null;
+
     const manageMutation = useMutation({
         mutationFn: async () => {
             const user = await base44.auth.me();
@@ -100,12 +108,12 @@ export default function TreasuryPanel({ treasuryId, canManage = false }) {
                             <Badge className="bg-purple-500/10 text-purple-300 border-purple-500/20">
                                 {treasury.access_level}
                             </Badge>
-                            {wallet?.is_published ? (
+                            {treasuryWallet?.is_published ? (
                                 <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-1.5">
                                     <Shield className="w-4 h-4 text-green-400" />
-                                    <span className="text-green-300 text-xs font-mono">{wallet.classic_address?.slice(0, 12)}…</span>
+                                    <span className="text-green-300 text-xs font-mono">{treasuryWallet.classic_address?.slice(0, 12)}…</span>
                                     <Badge className="bg-green-500/20 text-green-300 text-[10px]">DID Published</Badge>
-                                    {wallet.published_txid && (
+                                    {treasuryWallet.published_txid && (
                                         <a
                                             href={`https://xrpscan.com/tx/${wallet.published_txid}`}
                                             target="_blank"

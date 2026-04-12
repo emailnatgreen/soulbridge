@@ -285,10 +285,10 @@ export default function ProjectDetailView({
             <RisksSection project={project} onUpdate={handleProjectUpdate} />
 
             {/* Resources & Budget */}
-            <ResourcesBudgetSection project={project} agents={agents || []} />
+            <ResourcesBudgetSection project={project} agents={teamMembers.map(tm => tm.agent).filter(Boolean)} />
 
             {/* Activity Log & Communication */}
-            <ActivityLogCommunicationSection project={project} agents={agents || []} />
+            <ActivityLogCommunicationSection project={project} agents={teamMembers.map(tm => tm.agent).filter(Boolean)} />
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-4 border-t border-white/10">
