@@ -430,15 +430,16 @@ export default function LandingPage() {
 
           {/* Live Kinetic Energy Section */}
           <div className="max-w-4xl mx-auto space-y-6">
-            <KineticPublicOverview kus={allKUs} />
-            {/* Desktop: animated braid visualizer */}
-            <div className="hidden sm:block">
+            {/* Desktop: Kinetic overview + animated visualizer */}
+            <div className="hidden sm:block space-y-6">
+              <KineticPublicOverview kus={allKUs} />
               <KineticEnergyVisualizer kus={allKUs} />
             </div>
-            {/* Mobile: stable carbon chart + explainer */}
+            {/* Mobile: carbon chart → explainer dropdown → kinetic overview */}
             <div className="sm:hidden space-y-4">
               <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
               <CarbonFootprintExplainer />
+              <KineticPublicOverview kus={allKUs} />
             </div>
           </div>
 
