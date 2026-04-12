@@ -279,19 +279,19 @@ export default function Home() {
             </Button>
             <Button onClick={() => navigate('/KineticGridDashboard')} className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline\">Kinetic</span><span className="sm:hidden">KU</span>
+              <span className="hidden sm:inline">Kinetic</span><span className="sm:hidden">KU</span>
             </Button>
             <Button onClick={() => navigate('/governance')} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <Landmark className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline\">Laws</span><span className="sm:hidden">11</span>
+              <span className="hidden sm:inline">Laws</span><span className="sm:hidden">11</span>
             </Button>
             <Button onClick={() => navigate('/Agents')} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline\">Agents</span><span className="sm:hidden">AI</span>
+              <span className="hidden sm:inline">Agents</span><span className="sm:hidden">AI</span>
             </Button>
             <Button onClick={() => navigate('/KineticWasteDashboard')} className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline\">Zoe</span><span className="sm:hidden">♀</span>
+              <span className="hidden sm:inline">Zoe</span><span className="sm:hidden">♀</span>
             </Button>
           </div>
         </div>
