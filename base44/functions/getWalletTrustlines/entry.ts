@@ -26,15 +26,7 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(sanitizeRequest(req, bodyStr));
 
-    let user = null;
-    const authHeader = (req.headers.get('authorization') || '').trim();
-    const rawToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    const isValidJwt = rawToken && rawToken.includes('.') && rawToken.length > 20;
-    if (isValidJwt) {
-      try { user = await base44.auth.me(); } catch (_) {}
-    }
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
+    // XRPL trustlines are public data — no user auth needed, use asServiceRole for wallet lookup
     const { wallet_id, address } = body;
     let classicAddress = address;
 

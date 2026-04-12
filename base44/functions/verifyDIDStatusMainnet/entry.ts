@@ -76,19 +76,28 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (!user) {
-      return Response.json({ isVerified: false, error: 'Unauthorized — user token required' }, { status: 401 });
+    // If user auth failed, try classic_address from body as fallback
+    const bodyAddress = body.classic_address || body.address || null;
+
+    let wallet = null;
+    if (user) {
+      const wallets = await base44.asServiceRole.entities.Wallet.filter(
+        { owner_id: user.id }, '-updated_date', 1
+      );
+      wallet = wallets?.[0] || null;
     }
 
-    const wallets = await base44.asServiceRole.entities.Wallet.filter(
-      { owner_id: user.id }, '-updated_date', 1
-    );
-
-    if (!wallets || wallets.length === 0) {
-      return Response.json({ isVerified: false, error: 'No wallet found', userId: user.id, email: user.email });
+    if (!wallet && bodyAddress) {
+      const wallets = await base44.asServiceRole.entities.Wallet.filter(
+        { classic_address: bodyAddress }, '-updated_date', 1
+      );
+      wallet = wallets?.[0] || null;
     }
 
-    const wallet = wallets[0];
+    if (!wallet) {
+      return Response.json({ isVerified: false, error: 'No wallet found' });
+    }
+
     const classicAddress = wallet.classic_address;
 
     const xrplResult = await queryXRPL(classicAddress);

@@ -1,4 +1,19 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+// v2 — proper JWT fallback for mobile/broken auth headers
+const ANON_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbm9uIiwiaWF0IjowfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+function sanitizeReq(req) {
+  const auth = (req.headers.get('authorization') || '').trim();
+  const isProperJwt = /^Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(auth);
+  const h = new Headers();
+  for (const [k, v] of req.headers.entries()) {
+    if (k.toLowerCase() === 'authorization') continue;
+    if (k.startsWith('base44') || k.startsWith('x-base44') || k.startsWith('x-app')) h.set(k, v);
+  }
+  h.set('content-type', 'application/json');
+  h.set('authorization', isProperJwt ? auth : `Bearer ${ANON_JWT}`);
+  return new Request(req.url, { method: req.method, headers: h });
+}
 
 const MAINNET_NODES = [
   'https://xrplcluster.com',
@@ -57,7 +72,7 @@ async function getXrpBalance(address, network) {
 }
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
+  const base44 = createClientFromRequest(sanitizeReq(req));
 
   try {
     const wallets = await base44.asServiceRole.entities.Wallet.list('-created_date', 200);
