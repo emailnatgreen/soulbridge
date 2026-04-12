@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock, Info } from 'lucide-react';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
+import CarbonFootprintChart from '@/components/CarbonFootprintChart';
+import CarbonFootprintExplainer from '@/components/CarbonFootprintExplainer';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
@@ -101,6 +103,8 @@ export default function LandingPage() {
   const [did, setDid] = useState('');
   const [didError, setDidError] = useState('');
   const [didConnected, setDidConnected] = useState(null);
+  const [carbonSnapshots, setCarbonSnapshots] = useState([]);
+  const [carbonLoading, setCarbonLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -215,7 +219,6 @@ export default function LandingPage() {
     };
 
     fetchStats();
-    // Poll every 2 minutes instead of 30s to avoid rate limits
     const interval = setInterval(fetchStats, 120000);
     const handleSignal = (e) => {
       if (e.detail?.type === 'wallet_created' || e.detail?.type === 'did_published') fetchStats();
@@ -225,6 +228,17 @@ export default function LandingPage() {
       clearInterval(interval);
       window.removeEventListener('soulbridge-signal', handleSignal);
     };
+  }, []);
+
+  useEffect(() => {
+    const fetchCarbon = async () => {
+      try {
+        const snaps = await base44.entities.DailyKineticWasteSnapshot.list('-snapshot_date', 14);
+        setCarbonSnapshots(snaps || []);
+      } catch (_) { /* silent — chart shows empty state */ }
+      setCarbonLoading(false);
+    };
+    fetchCarbon();
   }, []);
 
   const handleInviteSubmit = async () => {
@@ -417,8 +431,14 @@ export default function LandingPage() {
           {/* Live Kinetic Energy Section */}
           <div className="max-w-4xl mx-auto space-y-6">
             <KineticPublicOverview kus={allKUs} />
+            {/* Desktop: animated braid visualizer */}
             <div className="hidden sm:block">
               <KineticEnergyVisualizer kus={allKUs} />
+            </div>
+            {/* Mobile: stable carbon chart + explainer */}
+            <div className="sm:hidden space-y-4">
+              <CarbonFootprintChart snapshots={carbonSnapshots} loading={carbonLoading} />
+              <CarbonFootprintExplainer />
             </div>
           </div>
 
