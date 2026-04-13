@@ -1,0 +1,36 @@
+{
+  "name": "CulturalAnchor",
+  "type": "object",
+  "properties": {
+    "community_name": {
+      "type": "string",
+      "description": "Name of the community this anchor represents"
+    },
+    "representative_names": {
+      "type": "string",
+      "description": "Name(s) of the designated human representative(s) or council"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "vetoed"
+      ],
+      "default": "pending",
+      "description": "Current approval status of this Cultural Anchor"
+    },
+    "scope_of_authority": {
+      "type": "string",
+      "description": "Which data types and pipeline stages this anchor governs"
+    },
+    "attestation_log": {
+      "type": "string",
+      "description": "Chronological record of what this anchor has reviewed and approved"
+    }
+  },
+  "required": [
+    "community_name",
+    "representative_names"
+  ]
+}
