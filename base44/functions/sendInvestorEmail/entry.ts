@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createMimeMessage } from 'npm:mimetext@3.0.22';
 
 const LOGO_URL = 'https://base44.app/api/apps/699319649276f1077c1f2c81/files/mp/public/699319649276f1077c1f2c81/81fa5ccd3_Untitled200x200px2500x925px512x512px1.png';
 
@@ -166,12 +167,35 @@ Deno.serve(async (req) => {
     const name = recipient_name || 'Valued Partner';
     const htmlBody = buildHtmlBody(name);
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      from_name: 'SoulBridge Foundation',
-      to: recipient_email,
-      subject: EMAIL_SUBJECT,
-      body: htmlBody,
+    // Get Gmail access token via connector
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+
+    // Build RFC 2822 MIME message using mimetext
+    const msg = createMimeMessage();
+    msg.setSender({ name: 'Nathan Green | SoulBridge Foundation', addr: 'emailnatgreen@gmail.com' });
+    msg.setRecipient(recipient_email);
+    msg.setSubject(EMAIL_SUBJECT);
+    msg.addMessage({ contentType: 'text/html', data: htmlBody });
+
+    const rawMessage = msg.asRaw();
+    const bytes = new TextEncoder().encode(rawMessage);
+    const binary = Array.from(bytes).map(b => String.fromCharCode(b)).join('');
+    const encodedMessage = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    // Send via Gmail API
+    const gmailRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ raw: encodedMessage }),
     });
+
+    if (!gmailRes.ok) {
+      const err = await gmailRes.text();
+      return Response.json({ error: `Gmail API error: ${err}` }, { status: 500 });
+    }
 
     // Update or create contact record
     const contacts = await base44.asServiceRole.entities.Contact.filter({ email: recipient_email });
