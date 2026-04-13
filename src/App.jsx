@@ -78,6 +78,7 @@ import MentorshipHub from './pages/MentorshipHub';
 import ImageStorage from './pages/ImageStorage';
 import RippleGrantDashboard from './pages/RippleGrantDashboard';
 import UserDashboardPreview from './pages/UserDashboardPreview';
+import InviteLinkManager from './pages/InviteLinkManager';
 
 
 const LoadingFallback = () => (
@@ -250,6 +251,8 @@ const AuthenticatedApp = () => {
         <Route path="/admin/treasury" element={L("treasury", TreasurySigningHelper)} />
         <Route path="/TreasurySigningHelper" element={L("treasury", TreasurySigningHelper)} />
         <Route path="/admin/vip-invites" element={L("vip-invites", VipInviteDashboard)} />
+        <Route path="/InviteLinkManager" element={L("invite-manager", InviteLinkManager)} />
+        <Route path="/invite-manager" element={L("invite-manager", InviteLinkManager)} />
         <Route path="/VipInviteDashboard" element={L("vip-invites", VipInviteDashboard)} />
         <Route path="/GovernanceVotingDashboard" element={L("governance-voting", GovernanceVotingDashboard)} />
         <Route path="/NewProposalDraft" element={L("new-proposal", NewProposalDraft)} />
