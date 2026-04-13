@@ -143,6 +143,7 @@ function buildHtmlBody(recipientName = 'Valued Partner') {
           <tr>
             <td style="background:#0f172a;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #1e293b;">
               <p style="color:#475569;font-size:11px;margin:0 0 6px;">SoulBridge Foundation · The Living Codex · Forged by Honour</p>
+              <a href="https://soulbridge-foundation.org" style="color:#7c3aed;font-size:12px;text-decoration:none;display:block;margin-bottom:6px;">soulbridge-foundation.org</a>
               <p style="color:#334155;font-size:10px;margin:0;">Built on the XRP Ledger · Governed by the 11 Laws of Honour</p>
             </td>
           </tr>
