@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Mail, Inbox, Clock, CheckCircle, X, RefreshCw, ArrowLeft, Users, Send, Loader2, PenSquare, Search } from 'lucide-react';
+import { Mail, Inbox, Clock, CheckCircle, X, RefreshCw, ArrowLeft, Users, Send, Loader2, PenSquare, Search, BookUser } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import InquiryCard from '@/components/admin/InquiryCard';
+import ContactListPanel from '@/components/admin/ContactListPanel';
 
 const CATEGORY_COLORS = {
   'Technical Support': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
@@ -37,6 +38,7 @@ const STATUS_FILTER_TABS = [
   { key: 'responded', label: 'Responded', icon: CheckCircle },
   { key: 'closed', label: 'Closed', icon: X },
   { key: 'invites', label: 'Invites', icon: Users },
+  { key: 'contacts', label: 'Contacts', icon: BookUser },
 ];
 
 const QUEUE_FILTER_TABS = [
@@ -98,7 +100,7 @@ export default function AdminInquiries() {
     refetchInterval: 60000,
   });
 
-  const filteredByStatus = filter === 'invites'
+  const filteredByStatus = filter === 'invites' || filter === 'contacts'
     ? []
     : filter === 'all'
       ? inquiries
@@ -201,7 +203,7 @@ export default function AdminInquiries() {
               >
                 <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 {tab.label}
-                {counts[tab.key] > 0 && (
+                {(tab.key === 'contacts' || counts[tab.key] > 0) && (
                   <Badge className={`text-[9px] px-1.5 py-0 ${
                     active ? 'bg-purple-500/30 text-purple-200' : 'bg-slate-700 text-slate-400'
                   }`}>
@@ -240,6 +242,8 @@ export default function AdminInquiries() {
           <div className="flex items-center justify-center py-20">
             <div className="w-6 h-6 border-2 border-slate-600 border-t-purple-400 rounded-full animate-spin" />
           </div>
+        ) : filter === 'contacts' ? (
+          <ContactListPanel />
         ) : filter === 'invites' ? (
           /* Invite Tokens List */
           inviteTokens.length === 0 ? (

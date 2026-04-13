@@ -1,0 +1,42 @@
+{
+  "name": "Contact",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Full name of the contact"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address"
+    },
+    "organisation": {
+      "type": "string",
+      "description": "Organisation or affiliation"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for grouping (e.g. partner, press, community)"
+    },
+    "is_subscriber": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this contact is a digest subscriber"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes about this contact"
+    },
+    "last_emailed": {
+      "type": "string",
+      "description": "ISO timestamp of last email sent to this contact"
+    }
+  },
+  "required": [
+    "name",
+    "email"
+  ]
+}
