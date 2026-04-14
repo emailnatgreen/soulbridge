@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
       duration_ms: duration,
       run_at: new Date().toISOString(),
       triggered_by: 'scheduler',
-    });
+    }).catch(logErr => console.warn('AutomationLog write skipped:', logErr.message));
 
     return Response.json({ status: 'success', duration_ms: duration, ku_count: kus.length, results });
 
@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
         duration_ms: duration,
         run_at: new Date().toISOString(),
         triggered_by: 'scheduler',
-      });
+      }).catch(() => {});
     } catch {}
     return Response.json({ error: error.message }, { status: 500 });
   }
