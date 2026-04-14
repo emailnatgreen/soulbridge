@@ -76,17 +76,35 @@ export default function CarbonConversionSection({ currentMetrics }) {
 
   const latestSnap = snapshots[snapshots.length - 1];
   const sourceBreakdown = useMemo(() => {
-    const m = latestSnap || {};
-    const items = [
-      { label: 'Stalled Task Hours', grams: (m.stalled_hours_locked || 0) * CARBON_FACTORS.per_stalled_hour, count: `${m.stalled_tasks_count || 0} tasks · ${m.stalled_hours_locked || 0}h locked`, color: '#f87171', priority: 'critical' },
-      { label: 'Automation Errors', grams: (m.automation_errors_count || 0) * CARBON_FACTORS.per_automation_error, count: `${m.automation_errors_count || 0} errors`, color: '#c084fc', priority: 'high' },
-      { label: 'Critical Alerts (unresolved)', grams: (m.critical_alerts_count || 0) * CARBON_FACTORS.per_critical_alert_24h, count: `${m.agents_at_risk || 0} agents at risk`, color: '#fb7185', priority: 'high' },
-      { label: 'Inefficient Chains', grams: (m.inefficient_chains_count || 0) * CARBON_FACTORS.per_inefficient_chain, count: `${m.inefficient_chains_count || 0} chains`, color: '#34d399', priority: 'medium' },
-      { label: 'Stagnant Listings', grams: (m.stagnant_listings_count || 0) * CARBON_FACTORS.per_stagnant_listing, count: `${m.stagnant_listings_count || 0} listings`, color: '#fbbf24', priority: 'low' },
-    ].filter(i => i.grams > 0).sort((a, b) => b.grams - a.grams);
-    const total = items.reduce((s, i) => s + i.grams, 0);
-    return items.map(i => ({ ...i, pct: total > 0 ? Math.round((i.grams / total) * 100) : 0 }));
-  }, [latestSnap]);
+    // Prefer live currentMetrics; fall back to latest snapshot only if no live data
+    const useLive = currentMetrics && (
+      currentMetrics.stalledHoursLocked > 0 ||
+      currentMetrics.automationErrors > 0 ||
+      currentMetrics.inefficientChains > 0 ||
+      currentMetrics.critUnack24h > 0 ||
+      currentMetrics.idleResources > 0 ||
+      currentMetrics.stagnantListings > 0
+    );
+    const items = useLive ? [
+      { label: 'Stalled Task Hours', grams: (currentMetrics.stalledHoursLocked || 0) * CARBON_FACTORS.per_stalled_hour, count: `${currentMetrics.stalledHoursLocked || 0}h locked`, color: '#f87171', priority: 'critical' },
+      { label: 'Automation Errors', grams: (currentMetrics.automationErrors || 0) * CARBON_FACTORS.per_automation_error, count: `${currentMetrics.automationErrors || 0} errors`, color: '#c084fc', priority: 'high' },
+      { label: 'Critical Alerts (unresolved)', grams: (currentMetrics.critUnack24h || 0) * CARBON_FACTORS.per_critical_alert_24h, count: `${currentMetrics.critUnack24h || 0} unacked 24h+`, color: '#fb7185', priority: 'high' },
+      { label: 'Inefficient Chains', grams: (currentMetrics.inefficientChains || 0) * CARBON_FACTORS.per_inefficient_chain, count: `${currentMetrics.inefficientChains || 0} chains`, color: '#34d399', priority: 'medium' },
+      { label: 'Stagnant Listings', grams: (currentMetrics.stagnantListings || 0) * CARBON_FACTORS.per_stagnant_listing, count: `${currentMetrics.stagnantListings || 0} listings`, color: '#fbbf24', priority: 'low' },
+    ] : (() => {
+      const m = latestSnap || {};
+      return [
+        { label: 'Stalled Task Hours', grams: (m.stalled_hours_locked || 0) * CARBON_FACTORS.per_stalled_hour, count: `${m.stalled_tasks_count || 0} tasks · ${m.stalled_hours_locked || 0}h locked`, color: '#f87171', priority: 'critical' },
+        { label: 'Automation Errors', grams: (m.automation_errors_count || 0) * CARBON_FACTORS.per_automation_error, count: `${m.automation_errors_count || 0} errors`, color: '#c084fc', priority: 'high' },
+        { label: 'Critical Alerts (unresolved)', grams: (m.critical_alerts_count || 0) * CARBON_FACTORS.per_critical_alert_24h, count: `${m.agents_at_risk || 0} agents at risk`, color: '#fb7185', priority: 'high' },
+        { label: 'Inefficient Chains', grams: (m.inefficient_chains_count || 0) * CARBON_FACTORS.per_inefficient_chain, count: `${m.inefficient_chains_count || 0} chains`, color: '#34d399', priority: 'medium' },
+        { label: 'Stagnant Listings', grams: (m.stagnant_listings_count || 0) * CARBON_FACTORS.per_stagnant_listing, count: `${m.stagnant_listings_count || 0} listings`, color: '#fbbf24', priority: 'low' },
+      ];
+    })();
+    const filtered = items.filter(i => i.grams > 0).sort((a, b) => b.grams - a.grams);
+    const total = filtered.reduce((s, i) => s + i.grams, 0);
+    return filtered.map(i => ({ ...i, pct: total > 0 ? Math.round((i.grams / total) * 100) : 0 }));
+  }, [latestSnap, currentMetrics]);
 
   const trendDelta = snapshots.length >= 2
     ? (snapshots[snapshots.length - 1]?.carbon_waste_grams || 0) - (snapshots[snapshots.length - 2]?.carbon_waste_grams || 0)
