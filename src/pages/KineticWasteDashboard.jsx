@@ -614,12 +614,6 @@ export default function KineticWasteDashboard() {
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="px-4 py-2 bg-red-900/20 border border-red-500/30 rounded-lg inline-flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
-            <span className="text-red-300 text-sm">
-              Stall threshold: <strong>7 days</strong> in blocked status, or any overdue task still in progress
-            </span>
-          </div>
           <button
             onClick={handleResetAll}
             className="ml-auto flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white rounded-lg text-sm transition"
