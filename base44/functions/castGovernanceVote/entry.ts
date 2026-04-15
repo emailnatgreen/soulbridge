@@ -59,6 +59,13 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // Verify proposal exists
+    const allProposals = await base44.entities.GovernanceProposal.list();
+    const proposal = allProposals.find(p => p.id === proposal_id);
+    if (!proposal) {
+      return Response.json({ error: 'Proposal not found', code: 'PROPOSAL_NOT_FOUND' }, { status: 404 });
+    }
+
     // Get the agent to calculate voting power
     const agents = await base44.entities.Agent.list();
     const voter = agents.find(a => a.id === agent_id);
