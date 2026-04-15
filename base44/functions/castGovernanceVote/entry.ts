@@ -129,10 +129,7 @@ Deno.serve(async (req) => {
       else if (v.vote_choice === 'abstain') totalAbstain += v.voting_power || 0;
     }
 
-    // Update proposal vote tallies
-    const allProposals = await base44.entities.GovernanceProposal.list();
-    const proposal = allProposals.find(p => p.id === proposal_id);
-    
+    // Update proposal vote tallies (proposal already fetched above)
     if (proposal) {
       await base44.entities.GovernanceProposal.update(proposal_id, {
         votes_for: totalFor,
