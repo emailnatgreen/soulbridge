@@ -1,0 +1,159 @@
+{
+  "name": "Widget",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the widget"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the widget's capabilities and purpose"
+    },
+    "widget_type": {
+      "type": "string",
+      "enum": [
+        "service",
+        "unlock"
+      ],
+      "description": "Categorizes the widget as service (active, streaming) or unlock (passive feature access)"
+    },
+    "widget_class": {
+      "type": "string",
+      "enum": [
+        "service",
+        "unlock"
+      ],
+      "description": "Explicit classification for UI sorting and system routing"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "agent_creation",
+        "skill",
+        "environment",
+        "governance",
+        "training",
+        "wallet_management",
+        "did_management",
+        "other"
+      ],
+      "description": "High-level category of the widget"
+    },
+    "nft_id": {
+      "type": "string",
+      "description": "Unique identifier of the underlying NFT on the XRPL"
+    },
+    "version": {
+      "type": "string",
+      "description": "Current version of the widget metadata"
+    },
+    "minted_by": {
+      "type": "string",
+      "description": "Agent ID or entity that minted this widget"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "Current activation status of the widget in a user's dashboard"
+    },
+    "cost_per_stream_interval": {
+      "type": "number",
+      "description": "Cost in RLUSD for each micro-streaming interval. Required for service widgets."
+    },
+    "stream_interval_unit": {
+      "type": "string",
+      "enum": [
+        "second",
+        "minute",
+        "hour",
+        "day"
+      ],
+      "description": "Unit for the streaming interval. Required for service widgets."
+    },
+    "required_agent_role": {
+      "type": "string",
+      "description": "Minimum agent role required to activate this widget"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of other Widget NFT IDs this widget depends on"
+    },
+    "deprecation_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "warning",
+        "deprecated",
+        "disabled"
+      ],
+      "default": "none",
+      "description": "Status indicating if the widget is nearing deprecation or disabled by governance"
+    },
+    "governance_notes": {
+      "type": "string",
+      "description": "Relevant governance decisions or alerts concerning this widget"
+    },
+    "creator_id": {
+      "type": "string",
+      "description": "Agent ID or entity that created the widget's underlying service/feature"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL to a visual representation or icon for the widget"
+    },
+    "ui_behavior": {
+      "type": "string",
+      "enum": [
+        "toggle",
+        "unlock_page",
+        "upgrade",
+        "badge",
+        "activate_feature"
+      ],
+      "description": "Defines how the widget behaves in the dashboard UI"
+    },
+    "feature_path": {
+      "type": "string",
+      "description": "Internal path or identifier to the feature unlocked by this widget. Required for unlock widgets."
+    },
+    "royalties_config": {
+      "type": "object",
+      "properties": {
+        "treasury_percent": {
+          "type": "number",
+          "description": "Percentage to Village Treasury"
+        },
+        "creator_percent": {
+          "type": "number",
+          "description": "Percentage to widget creator"
+        },
+        "referral_percent": {
+          "type": "number",
+          "description": "Percentage to referral agent"
+        }
+      },
+      "description": "Revenue split for streaming service charges. Required for service widgets."
+    },
+    "allowed_agent_permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific permissions an agent gains when this widget is active"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "widget_type",
+    "widget_class",
+    "category",
+    "version",
+    "minted_by",
+    "ui_behavior"
+  ]
+}
