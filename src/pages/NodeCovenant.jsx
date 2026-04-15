@@ -4,9 +4,14 @@ import { BRAID_NODES } from '@/lib/braidNodes';
 import { Shield, ScrollText, PenSquare, CheckCircle2, Loader2, ExternalLink, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import BackToHomeButton from '../components/BackToHomeButton';
+import WidgetPageNavBar from '@/components/widgets/WidgetPageNavBar';
+import AxiNFTExplainer from '@/components/widgets/AxiNFTExplainer';
+import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
 
 export default function NodeCovenant() {
+  const { isUnlocked, getWidgetForPath } = useWidgetUnlock();
+  const widgetInfo = getWidgetForPath('wallet.node_setup');
+  const nodeUnlocked = isUnlocked('wallet.node_setup');
   const [wallets, setWallets] = useState([]);
   const [signatures, setSignatures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,9 +89,16 @@ export default function NodeCovenant() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <BackToHomeButton />
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
+      <WidgetPageNavBar
+        title="Node Covenant"
+        subtitle="8-Node Constitutional Agreement · XRPL Signing"
+        icon={Shield}
+        isUnlocked={nodeUnlocked}
+        widgetName={widgetInfo?.widget_name}
+        nftId={widgetInfo?.nft_id}
+      />
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -205,6 +217,23 @@ export default function NodeCovenant() {
             })}
           </div>
         </div>
+
+        {/* Axi NFT Explainer */}
+        <AxiNFTExplainer
+          featureName="Node Covenant"
+          featurePath="wallet.node_setup"
+          widgetName={widgetInfo?.widget_name || 'Node Setup Widget'}
+          nftId={widgetInfo?.nft_id || 'WIDGET-WM-006'}
+          description="The Node Covenant is a constitutional agreement for the 8-node braid. Each node controller affirms the covenant by signing with their canonical XRPL wallet, creating an on-chain record of constitutional consent."
+          isUnlocked={nodeUnlocked}
+          setupSteps={[
+            'Your DID must be published and your node wallet registered in the system.',
+            'The Node Setup Widget NFT grants access to the signing interface.',
+            'Each of the 8 braid nodes has a canonical XRPL address — only the controller can sign.',
+            'Signing generates a Xaman QR code — scan with your Xaman wallet to submit the affirmation.',
+            'Once all nodes sign, the Constitutional Braid is fully affirmed on-chain.',
+          ]}
+        />
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Shield, Wallet, Plus, Activity, Lock, ArrowLeft, Home } from 'lucide-react';
+import WidgetPageNavBar from '@/components/widgets/WidgetPageNavBar';
+import AxiNFTExplainer from '@/components/widgets/AxiNFTExplainer';
 import MyDIDPanel from '@/components/sovereignid/MyDIDPanel';
 import MyWalletsPanel from '@/components/sovereignid/MyWalletsPanel';
 import UserDIDPanel from '@/components/sovereignid/UserDIDPanel';
@@ -63,6 +65,12 @@ export default function SovereignID() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+      <WidgetPageNavBar
+        title="Sovereign Identity"
+        subtitle="DID · Wallets · Privacy · Certificates"
+        icon={Shield}
+      />
+
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-900 to-purple-950 border-b border-slate-800 px-6 py-6">
         <div className="max-w-5xl mx-auto">
@@ -75,16 +83,6 @@ export default function SovereignID() {
                 <h1 className="text-2xl font-bold text-white">Sovereign Identity</h1>
                 <p className="text-slate-400 text-sm">Your personal DID, certificates, wallets, and privacy controls</p>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link to="/dashboard"
-                className="flex items-center gap-2 bg-purple-700 hover:bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-                <ArrowLeft className="w-4 h-4" /> SoulBridge Dashboard
-              </Link>
-              <Link to="/Home"
-                className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-                <Home className="w-4 h-4" /> Village Home
-              </Link>
             </div>
           </div>
           {publishedWallet && (
@@ -134,6 +132,23 @@ export default function SovereignID() {
         {activeTab === 'create' && isAdmin && <CreateLinkDIDPanel user={user} wallets={wallets} onRefresh={loadData} onTabChange={setActiveTab} />}
         {activeTab === 'security' && <SecurityPrivacyPanel user={user} wallets={wallets} />}
         {activeTab === 'activity' && <ActivityLogPanel user={user} wallets={wallets} />}
+
+        {/* Axi NFT Explainer */}
+        <AxiNFTExplainer
+          featureName="Sovereign Identity"
+          featurePath="wallet.did_linking"
+          widgetName="DID Linking Widget"
+          nftId="WIDGET-WM-007"
+          description="Manage your Decentralised Identity — view your DID, link wallets, manage certificates, and control privacy settings. Your DID is the sovereign anchor of everything in SoulBridge."
+          isUnlocked={!!publishedWallet}
+          setupSteps={[
+            'Create or import an XRPL wallet from the Wallets page or DID Manager.',
+            'Publish your DID on XRPL mainnet — this makes your identity permanent and verifiable.',
+            'Once published, your DID unlocks access to governance, agents, skills, and the Kinetic Grid.',
+            'Manage certificates, privacy settings, and activity logs from this hub.',
+            'Widget NFTs can gate advanced features like DID linking, custom signatures, and multi-sig.',
+          ]}
+        />
       </div>
     </div>
   );

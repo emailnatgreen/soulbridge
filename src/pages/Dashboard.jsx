@@ -240,10 +240,15 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!hasInviteSession && (
+          {!hasInviteSession && hasPublishedWallet && (
             <Link to="/Home" className="text-xs text-white/50 hover:text-white border border-white/15 rounded-lg px-2.5 py-1.5 transition hidden sm:flex items-center gap-1">
               <Home className="w-3.5 h-3.5" /> Home
             </Link>
+          )}
+          {!hasInviteSession && !hasPublishedWallet && (
+            <span className="text-xs text-white/20 border border-white/10 rounded-lg px-2.5 py-1.5 hidden sm:flex items-center gap-1 cursor-not-allowed" title="Publish your DID to unlock Village Home">
+              <Home className="w-3.5 h-3.5" /> Home 🔒
+            </span>
           )}
           <button onClick={handleDisconnect}
             className="text-xs text-red-400 border border-red-500/30 hover:border-red-400/60 rounded-lg px-2.5 py-1.5 transition flex items-center gap-1">

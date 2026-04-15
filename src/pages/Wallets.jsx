@@ -16,6 +16,8 @@ import { logAdminAction } from '@/lib/adminAuditLog';
 import WalletCard from '../components/WalletCard';
 import TransactionAlerts from '../components/TransactionAlerts';
 import { Badge } from "@/components/ui/badge";
+import WidgetPageNavBar from '@/components/widgets/WidgetPageNavBar';
+import AxiNFTExplainer from '@/components/widgets/AxiNFTExplainer';
 
 export default function WalletsPage() {
   const [showCreate, setShowCreate] = useState(false);
@@ -207,12 +209,13 @@ export default function WalletsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+      <WidgetPageNavBar
+        title="XRPL Wallets"
+        subtitle="Manage your DIDs & XRPL wallets"
+        icon={Wallet}
+      />
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <Link to="/home" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-light tracking-tight text-white mb-1">
@@ -389,6 +392,21 @@ export default function WalletsPage() {
         ) : (
           <>
             <TransactionAlerts wallets={wallets} pollInterval={60000} />
+            <AxiNFTExplainer
+              featureName="XRPL Wallets"
+              featurePath="wallet.create"
+              widgetName="Create New Wallet Widget"
+              nftId="WIDGET-WM-005"
+              description="Create, import, and manage XRPL wallets. Each wallet can hold XRP, RLUSD, and serve as a DID anchor for your sovereign identity in the Village."
+              isUnlocked={true}
+              setupSteps={[
+                'Your DID must be published on XRPL mainnet — this is your sovereign identity anchor.',
+                'You can generate new wallets or import existing ones via Xaman (Xumm) QR scanning.',
+                'Each wallet is encrypted and stored securely — only you control the keys.',
+                'Publish a wallet as a DID to anchor your identity on-chain permanently.',
+                'Widget NFTs can gate advanced wallet features like multi-sig and custom signatures.',
+              ]}
+            />
             <Tabs defaultValue="all" className="space-y-5">
               <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl flex gap-1 h-auto w-fit">
                 {[
