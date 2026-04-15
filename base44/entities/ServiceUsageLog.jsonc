@@ -1,0 +1,91 @@
+{
+  "name": "ServiceUsageLog",
+  "type": "object",
+  "properties": {
+    "service_id": {
+      "type": "string",
+      "description": "Which service was invoked"
+    },
+    "service_definition_id": {
+      "type": "string",
+      "description": "Entity ID of the ServiceDefinition record"
+    },
+    "widget_id": {
+      "type": "string",
+      "description": "Widget entity ID that gated this invocation"
+    },
+    "widget_nft_id": {
+      "type": "string",
+      "description": "NFT ID of the widget (e.g. WIDGET-WM-001)"
+    },
+    "user_did": {
+      "type": "string",
+      "description": "DID of the invoking user"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the invoking user"
+    },
+    "invocation_type": {
+      "type": "string",
+      "enum": [
+        "execute",
+        "start_stream",
+        "stop_stream",
+        "toggle_on",
+        "toggle_off",
+        "scheduled_tick"
+      ],
+      "description": "What kind of invocation this was"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "denied_ownership",
+        "denied_rate_limit",
+        "denied_honor",
+        "denied_auth",
+        "timeout",
+        "error"
+      ],
+      "description": "Outcome of the invocation"
+    },
+    "error_detail": {
+      "type": "string",
+      "description": "Error message if status is not success"
+    },
+    "duration_ms": {
+      "type": "number",
+      "description": "How long the execution took in milliseconds"
+    },
+    "input_params": {
+      "type": "object",
+      "description": "Parameters passed to the service handler"
+    },
+    "output_summary": {
+      "type": "object",
+      "description": "Summary of the handler response (not full payload)"
+    },
+    "cost_drops": {
+      "type": "number",
+      "default": 0,
+      "description": "Cost charged for this invocation (0 during placeholder phase)"
+    },
+    "ip_hash": {
+      "type": "string",
+      "description": "Hashed IP for audit without PII"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Client session identifier for grouping related invocations"
+    }
+  },
+  "required": [
+    "service_id",
+    "user_did",
+    "invocation_type",
+    "status"
+  ]
+}

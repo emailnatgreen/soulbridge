@@ -1,0 +1,185 @@
+{
+  "name": "ServiceDefinition",
+  "type": "object",
+  "properties": {
+    "service_id": {
+      "type": "string",
+      "description": "Unique identifier for this service (e.g. 'svc-multisig-setup')"
+    },
+    "widget_id": {
+      "type": "string",
+      "description": "Reference to the Widget entity ID that gates this service"
+    },
+    "widget_nft_id": {
+      "type": "string",
+      "description": "The NFT ID of the widget (e.g. 'WIDGET-WM-001') for quick lookup"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "one_shot",
+        "streaming",
+        "toggle",
+        "metered",
+        "scheduled"
+      ],
+      "description": "Execution model: one_shot (single invocation), streaming (continuous), toggle (on/off), metered (usage-counted), scheduled (cron-based)"
+    },
+    "runtime_behavior": {
+      "type": "object",
+      "properties": {
+        "handler_function": {
+          "type": "string",
+          "description": "Backend function name that executes this service"
+        },
+        "timeout_ms": {
+          "type": "number",
+          "default": 30000,
+          "description": "Maximum execution time in milliseconds"
+        },
+        "retries": {
+          "type": "number",
+          "default": 0,
+          "description": "Number of retry attempts on failure"
+        },
+        "requires_confirmation": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the service requires user confirmation before execution"
+        }
+      },
+      "description": "Defines how the service executes at runtime"
+    },
+    "usage_limits": {
+      "type": "object",
+      "properties": {
+        "max_invocations_per_day": {
+          "type": "number",
+          "description": "Maximum daily invocations per user (0 = unlimited)"
+        },
+        "max_invocations_per_hour": {
+          "type": "number",
+          "description": "Maximum hourly invocations per user (0 = unlimited)"
+        },
+        "cooldown_seconds": {
+          "type": "number",
+          "default": 0,
+          "description": "Minimum seconds between invocations"
+        },
+        "requires_minimum_honor": {
+          "type": "number",
+          "default": 0,
+          "description": "Minimum honor score required to invoke"
+        }
+      },
+      "description": "Rate limits and access constraints"
+    },
+    "pricing_model": {
+      "type": "object",
+      "properties": {
+        "model_type": {
+          "type": "string",
+          "enum": [
+            "free",
+            "per_invocation",
+            "per_minute",
+            "per_hour",
+            "subscription",
+            "placeholder"
+          ],
+          "default": "placeholder",
+          "description": "Billing model (placeholder until Payment Layer is built)"
+        },
+        "cost_drops": {
+          "type": "number",
+          "default": 0,
+          "description": "Cost per unit in drops (1 XRP = 1,000,000 drops)"
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "XRP",
+            "RLUSD"
+          ],
+          "default": "XRP",
+          "description": "Payment currency"
+        },
+        "royalties_config": {
+          "type": "object",
+          "properties": {
+            "treasury_percent": {
+              "type": "number",
+              "default": 50
+            },
+            "creator_percent": {
+              "type": "number",
+              "default": 40
+            },
+            "referral_percent": {
+              "type": "number",
+              "default": 10
+            }
+          },
+          "description": "Revenue split when payments are active"
+        }
+      },
+      "description": "Pricing configuration (placeholder phase)"
+    },
+    "metadata_uri": {
+      "type": "string",
+      "description": "URI to extended metadata (IPFS, XRPL, or internal)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable service name"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this service does"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "wallet_management",
+        "identity",
+        "governance",
+        "kinetic",
+        "agent",
+        "village",
+        "ai",
+        "other"
+      ],
+      "description": "Service category for routing and filtering"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "paused",
+        "deprecated",
+        "disabled"
+      ],
+      "default": "draft",
+      "description": "Lifecycle status of this service"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0",
+      "description": "Semantic version of the service definition"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Other service_ids this service depends on"
+    }
+  },
+  "required": [
+    "service_id",
+    "widget_id",
+    "service_type",
+    "name"
+  ]
+}
