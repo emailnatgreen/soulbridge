@@ -1,0 +1,45 @@
+{
+  "name": "GovernanceAssignment",
+  "type": "object",
+  "properties": {
+    "user_did": {
+      "type": "string",
+      "description": "DID or email of the user assigned to this role"
+    },
+    "role_id": {
+      "type": "string",
+      "description": "Reference to GovernanceRole.role_id"
+    },
+    "assigned_by": {
+      "type": "string",
+      "description": "DID or email of the assigner"
+    },
+    "assigned_date": {
+      "type": "string",
+      "description": "ISO timestamp of when assignment was made"
+    },
+    "expiry": {
+      "type": "string",
+      "description": "ISO timestamp of when this assignment expires (null = permanent)"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Why this role was assigned"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired"
+      ],
+      "default": "active",
+      "description": "Current assignment status"
+    }
+  },
+  "required": [
+    "user_did",
+    "role_id",
+    "assigned_by"
+  ]
+}

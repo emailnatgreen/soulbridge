@@ -1,0 +1,44 @@
+{
+  "name": "GovernanceRole",
+  "type": "object",
+  "properties": {
+    "role_id": {
+      "type": "string",
+      "description": "Unique identifier for this role (e.g. 'governor', 'creator', 'auditor')"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name of the role"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this role is responsible for"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of permission keys this role grants (e.g. 'can_mint_widgets', 'can_assign_roles')"
+    },
+    "min_honor_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Minimum honor score required to hold this role (Law 2 integration)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "deprecated"
+      ],
+      "default": "active",
+      "description": "Whether this role is currently active in the system"
+    }
+  },
+  "required": [
+    "role_id",
+    "name",
+    "permissions"
+  ]
+}

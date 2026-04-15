@@ -1,0 +1,74 @@
+{
+  "name": "GovernanceRule",
+  "type": "object",
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "description": "Unique identifier for this rule (e.g. 'max_widgets_per_creator', 'min_pricing_rlusd')"
+    },
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "widget_minting",
+        "widget_deprecation",
+        "pricing",
+        "royalties",
+        "service_creation",
+        "rate_limit",
+        "creator_onboarding",
+        "role_management",
+        "treasury",
+        "honor_threshold",
+        "general"
+      ],
+      "description": "Category of the rule for routing and filtering"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name of the rule"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this rule enforces"
+    },
+    "value": {
+      "type": "object",
+      "description": "The rule's constraint value \u2014 structure depends on rule_type (e.g. { max: 10 }, { min: 0.01, max: 1000 }, { percent: 50 })"
+    },
+    "enforcement": {
+      "type": "string",
+      "enum": [
+        "hard",
+        "soft",
+        "advisory"
+      ],
+      "default": "hard",
+      "description": "hard = block action, soft = warn but allow, advisory = log only"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context for the rule"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "deprecated"
+      ],
+      "default": "active",
+      "description": "Lifecycle status of this rule"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0",
+      "description": "Semantic version of this rule definition"
+    }
+  },
+  "required": [
+    "rule_id",
+    "rule_type",
+    "name",
+    "value"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "name": "GovernanceLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "The governance action performed (e.g. 'assign_role', 'mint_widget', 'update_rule')"
+    },
+    "actor_did": {
+      "type": "string",
+      "description": "DID or email of who performed the action"
+    },
+    "target": {
+      "type": "string",
+      "description": "What was acted upon (user DID, widget ID, rule ID, service ID, etc.)"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "role",
+        "user",
+        "widget",
+        "service",
+        "rule",
+        "pricing",
+        "treasury",
+        "other"
+      ],
+      "description": "Category of the target for filtering"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "denied_permission",
+        "denied_rule",
+        "denied_honor",
+        "failed",
+        "advisory"
+      ],
+      "default": "success",
+      "description": "Outcome of the governance action"
+    },
+    "permissions_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which permissions were checked for this action"
+    },
+    "rules_evaluated": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which rule_ids were evaluated"
+    },
+    "denial_reason": {
+      "type": "string",
+      "description": "Why the action was denied (if status is denied_*)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Action-specific data (e.g. old/new values, params passed)"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO timestamp of when the action occurred"
+    }
+  },
+  "required": [
+    "action",
+    "actor_did",
+    "status"
+  ]
+}
