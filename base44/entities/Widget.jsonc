@@ -46,7 +46,16 @@
     },
     "version": {
       "type": "string",
-      "description": "Current version of the widget metadata"
+      "description": "Current version of the widget metadata (semver)"
+    },
+    "metadata_version": {
+      "type": "string",
+      "default": "1.0.0",
+      "description": "Version of the Widget Metadata Standard this record conforms to"
+    },
+    "metadata_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the canonical metadata JSON at time of minting \u2014 ensures immutability verification"
     },
     "minted_by": {
       "type": "string",
@@ -144,6 +153,67 @@
         "type": "string"
       },
       "description": "Specific permissions an agent gains when this widget is active"
+    },
+    "mint_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "prepared",
+        "simulated",
+        "minted_mainnet",
+        "failed"
+      ],
+      "default": "draft",
+      "description": "Lifecycle status of the XRPL minting process"
+    },
+    "xrpl_mint_payload": {
+      "type": "object",
+      "description": "Prepared NFTokenMint transaction payload for XRPL (populated by prepareMainnetMint)"
+    },
+    "xrpl_tx_hash": {
+      "type": "string",
+      "description": "XRPL transaction hash once minted on mainnet"
+    },
+    "xrpl_network": {
+      "type": "string",
+      "enum": [
+        "mainnet",
+        "testnet",
+        "devnet"
+      ],
+      "default": "mainnet",
+      "description": "Target XRPL network for this widget NFT"
+    },
+    "metadata_uri": {
+      "type": "string",
+      "description": "URI to the off-chain metadata (IPFS or internal) stored in the NFT"
+    },
+    "transferable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this NFT can be transferred between accounts (soul-bound if false)"
+    },
+    "burnable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the issuer can burn this NFT"
+    },
+    "taxon": {
+      "type": "number",
+      "default": 0,
+      "description": "XRPL NFToken taxon \u2014 used for grouping widget classes"
+    },
+    "transfer_fee": {
+      "type": "number",
+      "default": 0,
+      "description": "XRPL transfer fee (0-50000 = 0%-50%) for secondary sales"
+    },
+    "immutable_after_mint": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of field names that cannot be changed after mint_status reaches 'minted_mainnet'"
     }
   },
   "required": [

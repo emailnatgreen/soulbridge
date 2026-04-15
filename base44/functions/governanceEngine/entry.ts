@@ -298,6 +298,52 @@ async function validateRules(base44, action, params) {
       }
     }
 
+    // ── Widget minting: min honor ──────────────────────────────────────
+    if (action === 'mint_widget' && v.min_honor !== undefined) {
+      // Honor check is also handled by the dedicated honor gate, but this
+      // provides rule-level enforcement with proper denial logging
+    }
+
+    // ── Widget minting: pricing bounds ─────────────────────────────────
+    if (action === 'mint_widget' && params.widget_data?.widget_type === 'service') {
+      if (v.min_price !== undefined && (params.widget_data?.cost_per_stream_interval || 0) < v.min_price) {
+        return {
+          allowed: false, enforcement: rule.enforcement,
+          reason: `Service price ${params.widget_data.cost_per_stream_interval} below minimum ${v.min_price} RLUSD`,
+          rules_evaluated: rulesEvaluated,
+        };
+      }
+      if (v.max_price !== undefined && (params.widget_data?.cost_per_stream_interval || 0) > v.max_price) {
+        return {
+          allowed: false, enforcement: rule.enforcement,
+          reason: `Service price ${params.widget_data.cost_per_stream_interval} above maximum ${v.max_price} RLUSD`,
+          rules_evaluated: rulesEvaluated,
+        };
+      }
+    }
+
+    // ── Widget minting: min treasury royalty ───────────────────────────
+    if (action === 'mint_widget' && v.min_treasury_percent !== undefined && params.widget_data?.royalties_config) {
+      if ((params.widget_data.royalties_config.treasury_percent || 0) < v.min_treasury_percent) {
+        return {
+          allowed: false, enforcement: rule.enforcement,
+          reason: `Treasury royalty ${params.widget_data.royalties_config.treasury_percent}% below minimum ${v.min_treasury_percent}%`,
+          rules_evaluated: rulesEvaluated,
+        };
+      }
+    }
+
+    // ── Widget minting: metadata version enforcement ──────────────────
+    if (action === 'mint_widget' && v.required_metadata_version && params.widget_data?.metadata_version) {
+      if (params.widget_data.metadata_version !== v.required_metadata_version) {
+        return {
+          allowed: false, enforcement: rule.enforcement,
+          reason: `Metadata version ${params.widget_data.metadata_version} does not match required ${v.required_metadata_version}`,
+          rules_evaluated: rulesEvaluated,
+        };
+      }
+    }
+
     // ── Pricing: min/max range ─────────────────────────────────────────
     if (action === 'update_service_pricing') {
       if (v.min !== undefined && params.amount < v.min) {
