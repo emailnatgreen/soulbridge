@@ -82,6 +82,8 @@ import InviteLinkManager from './pages/InviteLinkManager';
 import InvestorEmailTemplate from './pages/InvestorEmailTemplate';
 import WidgetMarketplace from './pages/WidgetMarketplace';
 import WidgetDetail from './pages/WidgetDetail';
+import ServiceDefinitions from './pages/ServiceDefinitions';
+import ServiceUsageLogs from './pages/ServiceUsageLogs';
 
 
 const LoadingFallback = () => (
@@ -291,6 +293,10 @@ const AuthenticatedApp = () => {
         {/* MARKETPLACE */}
         <Route path="/widget-marketplace" element={L("widget-marketplace", WidgetMarketplace)} />
         <Route path="/widget-marketplace/:id" element={L("widget-detail", WidgetDetail)} />
+
+        {/* SERVICE ENGINE */}
+        <Route path="/service-definitions" element={L("service-definitions", ServiceDefinitions)} />
+        <Route path="/service-usage-logs" element={L("service-usage-logs", ServiceUsageLogs)} />
 
         <Route path="*" element={<PageNotFound />} />
       </Routes>

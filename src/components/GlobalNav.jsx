@@ -119,6 +119,14 @@ const NAV_GROUPS = [
       { label: '🚀 Ripple Grants', path: '/grants', icon: GitBranch },
     ]
   },
+  {
+    label: 'Service Engine',
+    adminOnly: true,
+    links: [
+      { label: '⚙️ Service Definitions', path: '/service-definitions', icon: Settings },
+      { label: '📊 Usage Logs', path: '/service-usage-logs', icon: Activity },
+    ]
+  },
 ];
 
 function NavGroup({ group, isOpen: defaultOpen = false, onNavigate }) {
