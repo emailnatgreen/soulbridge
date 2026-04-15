@@ -73,6 +73,7 @@ const NAV_GROUPS = [
       { label: 'Resource Market', path: '/ResourceMarketplace', icon: Globe },
       { label: 'Axi DEX', path: '/ArisDex', icon: TrendingUp },
       { label: 'Send XRP', path: '/Send', icon: Zap },
+      { label: '🛒 Widget Marketplace', path: '/widget-marketplace', icon: ShoppingBag },
     ]
   },
   {
