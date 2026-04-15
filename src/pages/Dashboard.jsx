@@ -20,6 +20,7 @@ import UniversalDashboardStatus from '@/components/dashboard/UniversalDashboardS
 import IdentityRecognitionModal from '@/components/dashboard/IdentityRecognitionCard';
 import WidgetInventoryPanel from '@/components/widgets/WidgetInventoryPanel';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
+import WidgetFeatureStatusBar from '@/components/widgets/WidgetFeatureStatusBar';
 
 if (typeof window !== 'undefined') {
   window.__sb = window.__sb || { signals: [] };
@@ -72,7 +73,7 @@ export default function Dashboard() {
   });
   const [identityModalOpen, setIdentityModalOpen] = useState(false);
   const [walletCreated] = useState(() => !!localStorage.getItem('sb_invite_wallet'));
-  const { widgets: allWidgets, loading: widgetsLoading } = useWidgetUnlock();
+  const { widgets: allWidgets, loading: widgetsLoading, routeMap, isUnlocked, getWidgetForPath } = useWidgetUnlock();
 
   // ── Data loading ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -492,7 +493,7 @@ export default function Dashboard() {
             <DexSwapPanel wallets={userWallets} />
           </div>
 
-          <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} />
+          <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
 
           <MemorySynthesisTrigger />
 
@@ -566,7 +567,7 @@ export default function Dashboard() {
         )}
 
         {/* Widget NFT Inventory */}
-        <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} />
+        <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
 
         {/* Axi chat section */}
         <AxiChatSection displayName={displayName} firstName={firstName} hasInviteSession={false} invite={null} inviteWallet={null} />

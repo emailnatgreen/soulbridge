@@ -4,36 +4,43 @@ import { base44 } from '@/api/base44Client';
 /**
  * Hook: useWidgetUnlock
  * 
- * Fetches the user's widget ownership state and provides
- * unlock checking utilities for the dashboard.
- * 
- * Returns:
- *   widgets       - all wallet_management widgets with ownership flag
- *   ownedWidgets  - only owned widgets
- *   unlockedPaths - array of feature_path strings the user has access to
- *   isUnlocked(featurePath) - check if a specific feature is unlocked
- *   loading       - fetch in progress
- *   refresh()     - manually re-fetch
+ * Single source of truth for widget ownership on the frontend.
+ * Fetches from the Unlock Engine backend and exposes:
+ *   - widgets / ownedWidgets / unlockedPaths
+ *   - routeMap: { [feature_path]: { unlocked, route, widget_name, nft_id, ... } }
+ *   - isUnlocked(featurePath): boolean
+ *   - getWidgetForPath(featurePath): widget metadata or null
+ *   - loading / refresh
  */
 export function useWidgetUnlock() {
   const [widgets, setWidgets] = useState([]);
   const [ownedWidgets, setOwnedWidgets] = useState([]);
   const [unlockedPaths, setUnlockedPaths] = useState([]);
+  const [routeMap, setRouteMap] = useState({});
   const [loading, setLoading] = useState(true);
 
   const fetchWidgets = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('getOwnedWidgets', {});
+      // Pass user DID if available from local identity
+      let did = null;
+      try {
+        const identity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
+        did = identity?.did || null;
+      } catch (_) {}
+
+      const res = await base44.functions.invoke('getOwnedWidgets', { did });
       const data = res.data;
       setWidgets(data.all_widgets || []);
       setOwnedWidgets(data.owned_widgets || []);
       setUnlockedPaths(data.unlocked_paths || []);
+      setRouteMap(data.route_map || {});
     } catch (e) {
       console.error('Widget unlock fetch failed:', e);
       setWidgets([]);
       setOwnedWidgets([]);
       setUnlockedPaths([]);
+      setRouteMap({});
     } finally {
       setLoading(false);
     }
@@ -48,11 +55,18 @@ export function useWidgetUnlock() {
     [unlockedPaths]
   );
 
+  const getWidgetForPath = useCallback(
+    (featurePath) => routeMap[featurePath] || null,
+    [routeMap]
+  );
+
   return {
     widgets,
     ownedWidgets,
     unlockedPaths,
+    routeMap,
     isUnlocked,
+    getWidgetForPath,
     loading,
     refresh: fetchWidgets,
   };

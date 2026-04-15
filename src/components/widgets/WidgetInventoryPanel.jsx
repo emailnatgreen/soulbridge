@@ -1,5 +1,6 @@
 import React from 'react';
-import { Lock, Unlock, Shield, Wallet, Globe, Link2, Server, KeyRound, PenTool } from 'lucide-react';
+import { Lock, Unlock, Shield, Wallet, Globe, Link2, Server, KeyRound, PenTool, ArrowRight, Tag, Layers } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const FEATURE_ICONS = {
   'wallet.multisig': Shield,
@@ -11,11 +12,13 @@ const FEATURE_ICONS = {
   'wallet.did_linking': Link2,
 };
 
-function WidgetCard({ widget }) {
+function WidgetCard({ widget, routeMap }) {
   const Icon = FEATURE_ICONS[widget.feature_path] || Shield;
   const owned = widget.is_owned;
+  const routeInfo = routeMap?.[widget.feature_path];
+  const route = routeInfo?.route;
 
-  return (
+  const CardContent = (
     <div className={`relative rounded-xl border p-3 sm:p-4 transition-all ${
       owned
         ? 'bg-gradient-to-br from-emerald-900/30 to-teal-900/20 border-emerald-500/40 hover:border-emerald-400/60'
@@ -25,7 +28,7 @@ function WidgetCard({ widget }) {
         <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
           owned ? 'bg-emerald-500/20' : 'bg-white/10'
         }`}>
-          <Icon className={`w-4.5 h-4.5 ${owned ? 'text-emerald-400' : 'text-white/40'}`} />
+          <Icon className={`w-4 h-4 ${owned ? 'text-emerald-400' : 'text-white/40'}`} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -42,10 +45,13 @@ function WidgetCard({ widget }) {
             {widget.description}
           </p>
         </div>
+        {owned && route && (
+          <ArrowRight className="w-3.5 h-3.5 text-emerald-400/50 flex-shrink-0 mt-1" />
+        )}
       </div>
 
-      {/* NFT ID badge */}
-      <div className="mt-2 flex items-center gap-2">
+      {/* Metadata tags */}
+      <div className="mt-2 flex items-center gap-1.5 flex-wrap">
         <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded border ${
           owned
             ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
@@ -53,6 +59,13 @@ function WidgetCard({ widget }) {
         }`}>
           {widget.nft_id}
         </span>
+        {widget.widget_type && (
+          <span className={`inline-flex items-center gap-0.5 text-[8px] px-1.5 py-0.5 rounded border ${
+            owned ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-white/5 border-white/10 text-white/25'
+          }`}>
+            <Layers className="w-2 h-2" /> {widget.widget_type}
+          </span>
+        )}
         <span className={`text-[8px] px-1.5 py-0.5 rounded border ${
           owned
             ? 'bg-green-500/20 border-green-500/30 text-green-300'
@@ -63,9 +76,15 @@ function WidgetCard({ widget }) {
       </div>
     </div>
   );
+
+  // If owned and has a route, make it clickable
+  if (owned && route) {
+    return <Link to={route}>{CardContent}</Link>;
+  }
+  return CardContent;
 }
 
-export default function WidgetInventoryPanel({ widgets, loading }) {
+export default function WidgetInventoryPanel({ widgets, loading, routeMap }) {
   if (loading) {
     return (
       <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
@@ -110,7 +129,7 @@ export default function WidgetInventoryPanel({ widgets, loading }) {
             <Unlock className="w-3 h-3" /> Unlocked Features
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {owned.map(w => <WidgetCard key={w.id} widget={w} />)}
+            {owned.map(w => <WidgetCard key={w.id} widget={w} routeMap={routeMap} />)}
           </div>
         </div>
       )}
@@ -122,7 +141,7 @@ export default function WidgetInventoryPanel({ widgets, loading }) {
             <Lock className="w-3 h-3" /> Requires Widget NFT
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {locked.map(w => <WidgetCard key={w.id} widget={w} />)}
+            {locked.map(w => <WidgetCard key={w.id} widget={w} routeMap={routeMap} />)}
           </div>
         </div>
       )}
