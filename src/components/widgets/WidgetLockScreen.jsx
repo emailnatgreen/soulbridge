@@ -87,12 +87,18 @@ export default function WidgetLockScreen({
         {/* Actions */}
         <div className="flex flex-col gap-2">
           <Link
-            to="/dashboard"
+            to="/widget-marketplace"
             className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold text-sm rounded-xl py-3 px-6 transition-all"
           >
             <Shield className="w-4 h-4" />
-            Go to Dashboard
+            Browse Marketplace
             <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white/60 text-sm rounded-xl py-2.5 px-6 transition-all"
+          >
+            Go to Dashboard
           </Link>
           <p className="text-white/20 text-[10px]">
             Powered by XRPL · Governed by the 11 Laws of Honour

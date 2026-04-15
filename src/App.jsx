@@ -80,6 +80,8 @@ import RippleGrantDashboard from './pages/RippleGrantDashboard';
 import UserDashboardPreview from './pages/UserDashboardPreview';
 import InviteLinkManager from './pages/InviteLinkManager';
 import InvestorEmailTemplate from './pages/InvestorEmailTemplate';
+import WidgetMarketplace from './pages/WidgetMarketplace';
+import WidgetDetail from './pages/WidgetDetail';
 
 
 const LoadingFallback = () => (
@@ -285,6 +287,10 @@ const AuthenticatedApp = () => {
         <Route path="/AgentChat" element={L("chat", AgentChat)} />
         <Route path="/SkillValidation" element={L("skill-validation", SkillValidation)} />
         <Route path="/AgentSkillTree" element={L("skill-tree", AgentSkillTree)} />
+
+        {/* MARKETPLACE */}
+        <Route path="/widget-marketplace" element={L("widget-marketplace", WidgetMarketplace)} />
+        <Route path="/widget-marketplace/:id" element={L("widget-detail", WidgetDetail)} />
 
         <Route path="*" element={<PageNotFound />} />
       </Routes>
