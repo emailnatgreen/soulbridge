@@ -1,0 +1,55 @@
+{
+  "name": "GovernanceVote",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "description": "Reference to GovernanceProposal"
+    },
+    "voter_agent_id": {
+      "type": "string",
+      "description": "Agent casting the vote"
+    },
+    "authenticated_user_id": {
+      "type": "string",
+      "description": "Email of the authenticated user who cast this vote \u2014 used for Sybil Guard enforcement (one user, one vote per proposal regardless of how many agents they control)"
+    },
+    "vote_choice": {
+      "type": "string",
+      "enum": [
+        "for",
+        "against",
+        "abstain"
+      ],
+      "description": "Vote direction"
+    },
+    "voting_power": {
+      "type": "number",
+      "description": "Weight of this vote (based on honor/reputation)"
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Agent's reasoning for their vote"
+    },
+    "delegated_from": {
+      "type": "string",
+      "description": "Agent ID if voting with delegated power"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether vote is visible to others"
+    },
+    "honor_processed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether honor has been awarded for this vote"
+    }
+  },
+  "required": [
+    "proposal_id",
+    "voter_agent_id",
+    "vote_choice",
+    "voting_power"
+  ]
+}

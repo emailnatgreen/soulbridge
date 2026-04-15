@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -21,12 +21,38 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid vote_choice. Must be for, against, or abstain' }, { status: 400 });
     }
 
-    // Check if agent has already voted on this proposal
-    const existingVotes = await base44.entities.GovernanceVote.filter({
-      proposal_id,
-      voter_agent_id: agent_id
+    // ── SYBIL GUARD: One User, One Vote ───────────────────────────────────
+    // Law 8 (The Village decides together) + Law 1 (Presence, Not a Product)
+    // A single authenticated user may only cast ONE vote per proposal,
+    // regardless of how many Agents they control. This prevents Sybil
+    // amplification where multiple DIDs/Agents inflate a single actor's voice.
+
+    // 1. Find ALL agents owned by this authenticated user
+    const userAgents = await base44.entities.Agent.filter({
+      created_by: user.email
+    });
+    const userAgentIds = userAgents.map(a => a.id);
+
+    // 2. Fetch all votes on this proposal
+    const proposalVotesAll = await base44.entities.GovernanceVote.filter({
+      proposal_id
     });
 
+    // 3. Check if ANY of the user's agents have already voted
+    const userPriorVote = proposalVotesAll.find(v => userAgentIds.includes(v.voter_agent_id));
+    if (userPriorVote) {
+      const priorAgent = userAgents.find(a => a.id === userPriorVote.voter_agent_id);
+      return Response.json({
+        error: `One User, One Vote — you have already voted on this proposal via agent "${priorAgent?.name || userPriorVote.voter_agent_id}". ` +
+               `Law 8 requires that each user casts only one vote per proposal, regardless of how many agents they control.`,
+        code: 'SYBIL_GUARD_BLOCKED',
+        existing_vote_id: userPriorVote.id,
+        existing_agent_id: userPriorVote.voter_agent_id,
+      }, { status: 403 });
+    }
+
+    // 4. Also check the specific agent (redundant safety net)
+    const existingVotes = proposalVotesAll.filter(v => v.voter_agent_id === agent_id);
     if (existingVotes.length > 0) {
       return Response.json({ 
         error: 'Agent has already voted on this proposal' 
@@ -50,14 +76,15 @@ Deno.serve(async (req) => {
     const roleMultiplier = roleMultipliers[voter.role?.toLowerCase()] || 1.0;
     const votingPower = baseHonor * roleMultiplier;
 
-    // Create the vote record
+    // Create the vote record — includes authenticated_user_id for Sybil audit trail
     const vote = await base44.entities.GovernanceVote.create({
       proposal_id,
       voter_agent_id: agent_id,
       vote_choice,
       voting_power: votingPower,
       rationale: rationale || '',
-      is_public: true
+      is_public: true,
+      authenticated_user_id: user.email,
     });
 
     // ── Generate Kinetic Unit for this governance vote ──
