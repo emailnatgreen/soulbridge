@@ -289,7 +289,7 @@ export default function DIDManager() {
             'Create a new XRPL wallet or import one from Xaman — your wallet is your identity root.',
             'Fund your wallet with at least 10 XRP (the XRPL reserve requirement).',
             'Publish your DID to make it permanent on the XRP Ledger — this requires the Publish to Mainnet Widget NFT.',
-            'Once published, your DID becomes verifiable by anyone on the XRPL — it's your sovereign proof of existence.',
+            'Once published, your DID becomes verifiable by anyone on the XRPL — your sovereign proof of existence.',
             'Set up RLUSD trustlines and manage the Constitutional Braid from this page.',
           ]}
         />
