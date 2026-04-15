@@ -180,6 +180,34 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── 6b. Payment Layer — Pre-execution billing ─────────────────────────
+    // If a PaymentDefinition exists for this service, call the Payment Engine
+    let paymentResult = null;
+    try {
+      paymentResult = await processPayment(base44, service.service_id, user, session_id);
+    } catch (payErr) {
+      console.error('[ServiceEngine] Payment processing error:', payErr.message);
+    }
+
+    // If payment was required but failed, deny execution
+    if (paymentResult && !paymentResult.success && paymentResult.charged !== false) {
+      await logUsage(base44, {
+        service_id, service_definition_id: service.id,
+        widget_id: service.widget_id, widget_nft_id: service.widget_nft_id,
+        user_did: userDid, user_email: user.email,
+        invocation_type: action, status: 'denied_payment',
+        error_detail: paymentResult.error || 'Payment failed',
+        duration_ms: Date.now() - startTime, session_id,
+      });
+      return Response.json({
+        error: paymentResult.error || 'Payment required',
+        code: paymentResult.code || 'PAYMENT_FAILED',
+        balance: paymentResult.balance,
+        required: paymentResult.required,
+        currency: 'RLUSD',
+      }, { status: paymentResult.status || 402 });
+    }
+
     // ── 7. Runtime Router — widget → service → handler → output ──────────
     const handlerKey = resolveHandler(service);
     const handler = SERVICE_HANDLERS[handlerKey] || SERVICE_HANDLERS['__default__'];
@@ -227,6 +255,12 @@ Deno.serve(async (req) => {
       message: result.message || null,
       duration_ms: duration,
       cost_drops: service.pricing_model?.cost_drops || 0,
+      payment: paymentResult ? {
+        charged: paymentResult.charged || false,
+        amount: paymentResult.amount || 0,
+        currency: 'RLUSD',
+        balance_after: paymentResult.balance_after,
+      } : null,
     });
 
   } catch (error) {
@@ -363,6 +397,108 @@ async function logUsage(base44, data) {
     // Never let logging failure break the service invocation
     console.error('[ServiceEngine] Failed to log usage:', e.message);
   }
+}
+
+
+// ── Helper: Process payment via Payment Layer ─────────────────────────────
+async function processPayment(base44, serviceId, user, sessionId) {
+  // Look up PaymentDefinition for this service
+  const payDefs = await base44.asServiceRole.entities.PaymentDefinition.filter(
+    { service_id: serviceId, status: 'active' },
+    '-created_date',
+    1
+  );
+
+  // No payment definition = free, pass through
+  if (!payDefs || payDefs.length === 0) {
+    return { success: true, charged: false, amount: 0 };
+  }
+
+  const payDef = payDefs[0];
+
+  // Free services pass through
+  if (payDef.pricing_model === 'free' || payDef.amount <= 0) {
+    return { success: true, charged: false, amount: 0 };
+  }
+
+  // Get user's RLUSD ledger
+  const ledgers = await base44.asServiceRole.entities.RLUSDLedger.filter(
+    { user_email: user.email }, '-created_date', 1
+  );
+
+  const ledger = ledgers?.[0];
+  if (!ledger) {
+    return {
+      success: false, charged: false,
+      error: 'No RLUSD account found — use the faucet first',
+      code: 'NO_LEDGER_ACCOUNT', status: 402,
+      balance: 0, required: payDef.amount,
+    };
+  }
+
+  if (ledger.status !== 'active') {
+    return {
+      success: false, charged: false,
+      error: `RLUSD account is ${ledger.status}`,
+      code: 'ACCOUNT_FROZEN', status: 403,
+    };
+  }
+
+  // Check balance
+  if (ledger.balance < payDef.amount) {
+    // Log insufficient balance
+    await base44.asServiceRole.entities.PaymentUsageLog.create({
+      user_id: user.email, user_email: user.email,
+      service_id: serviceId, payment_definition_id: payDef.id,
+      amount: payDef.amount, currency: 'RLUSD',
+      pricing_model: payDef.pricing_model, billing_behavior: payDef.billing_behavior,
+      status: 'insufficient_balance',
+      error_detail: `Balance ${ledger.balance} < cost ${payDef.amount}`,
+      balance_before: ledger.balance, balance_after: ledger.balance,
+      session_id: sessionId,
+    });
+    return {
+      success: false, charged: false,
+      error: 'Insufficient RLUSD balance',
+      code: 'INSUFFICIENT_BALANCE', status: 402,
+      balance: ledger.balance, required: payDef.amount,
+    };
+  }
+
+  // Deduct
+  const newBalance = ledger.balance - payDef.amount;
+  await base44.asServiceRole.entities.RLUSDLedger.update(ledger.id, {
+    balance: newBalance,
+    total_debited: (ledger.total_debited || 0) + payDef.amount,
+  });
+
+  // Calculate royalties
+  const rc = payDef.royalties_config || {};
+  const royaltiesSplit = {
+    treasury_amount: Math.round(payDef.amount * ((rc.treasury_percent || 50) / 100) * 100) / 100,
+    creator_amount: Math.round(payDef.amount * ((rc.creator_percent || 40) / 100) * 100) / 100,
+    referral_amount: Math.round(payDef.amount * ((rc.referral_percent || 10) / 100) * 100) / 100,
+  };
+
+  // Log success
+  await base44.asServiceRole.entities.PaymentUsageLog.create({
+    user_id: user.email, user_email: user.email,
+    service_id: serviceId, payment_definition_id: payDef.id,
+    amount: payDef.amount, currency: 'RLUSD',
+    pricing_model: payDef.pricing_model, billing_behavior: payDef.billing_behavior,
+    status: 'success',
+    balance_before: ledger.balance, balance_after: newBalance,
+    royalties_split: royaltiesSplit,
+    session_id: sessionId,
+  });
+
+  return {
+    success: true, charged: true,
+    amount: payDef.amount,
+    balance_before: ledger.balance,
+    balance_after: newBalance,
+    royalties_split: royaltiesSplit,
+  };
 }
 
 

@@ -1,0 +1,47 @@
+{
+  "name": "RLUSDLedger",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID or DID \u2014 one record per user"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email for quick lookup"
+    },
+    "balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Current simulated RLUSD balance"
+    },
+    "total_credited": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime total RLUSD credited (faucet + rewards)"
+    },
+    "total_debited": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime total RLUSD spent on services"
+    },
+    "last_faucet_claim": {
+      "type": "string",
+      "description": "ISO timestamp of last faucet claim (rate-limit faucet abuse)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "frozen",
+        "suspended"
+      ],
+      "default": "active",
+      "description": "Ledger account status"
+    }
+  },
+  "required": [
+    "user_id",
+    "balance"
+  ]
+}

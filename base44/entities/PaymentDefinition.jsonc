@@ -1,0 +1,109 @@
+{
+  "name": "PaymentDefinition",
+  "type": "object",
+  "properties": {
+    "service_id": {
+      "type": "string",
+      "description": "Reference to the ServiceDefinition service_id this payment rule applies to"
+    },
+    "pricing_model": {
+      "type": "string",
+      "enum": [
+        "flat",
+        "per_use",
+        "per_minute",
+        "per_stream",
+        "free"
+      ],
+      "default": "free",
+      "description": "How the service is priced: flat (one-time), per_use (each invocation), per_minute (time-based), per_stream (streaming interval), free (no charge)"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "RLUSD"
+      ],
+      "default": "RLUSD",
+      "description": "Payment currency \u2014 RLUSD only (stable, non-speculative)"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Cost per unit in the chosen pricing model (e.g. 0.50 RLUSD per use)"
+    },
+    "billing_behavior": {
+      "type": "string",
+      "enum": [
+        "prepay",
+        "postpay",
+        "streaming"
+      ],
+      "default": "prepay",
+      "description": "When the charge occurs: prepay (before execution), postpay (after execution), streaming (continuous deduction)"
+    },
+    "rate_limits": {
+      "type": "object",
+      "properties": {
+        "max_spend_per_day": {
+          "type": "number",
+          "description": "Maximum RLUSD a user can spend per day on this service (0 = unlimited)"
+        },
+        "max_spend_per_hour": {
+          "type": "number",
+          "description": "Maximum RLUSD a user can spend per hour on this service (0 = unlimited)"
+        }
+      },
+      "description": "Optional spending rate limits"
+    },
+    "royalties_config": {
+      "type": "object",
+      "properties": {
+        "treasury_percent": {
+          "type": "number",
+          "default": 50,
+          "description": "Percentage to Village Treasury"
+        },
+        "creator_percent": {
+          "type": "number",
+          "default": 40,
+          "description": "Percentage to service/widget creator"
+        },
+        "referral_percent": {
+          "type": "number",
+          "default": 10,
+          "description": "Percentage to referral agent"
+        }
+      },
+      "description": "Revenue split configuration for each payment"
+    },
+    "metadata_uri": {
+      "type": "string",
+      "description": "URI to extended pricing metadata (IPFS, internal, or external)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "deprecated"
+      ],
+      "default": "active",
+      "description": "Lifecycle status of this payment definition"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the pricing rule"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0",
+      "description": "Semantic version of this payment definition"
+    }
+  },
+  "required": [
+    "service_id",
+    "pricing_model",
+    "currency",
+    "amount"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "name": "PaymentUsageLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID or DID of the payer"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the payer for quick lookup"
+    },
+    "service_id": {
+      "type": "string",
+      "description": "Which service was paid for"
+    },
+    "payment_definition_id": {
+      "type": "string",
+      "description": "Entity ID of the PaymentDefinition record used"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount charged in RLUSD"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "RLUSD"
+      ],
+      "default": "RLUSD",
+      "description": "Currency used"
+    },
+    "pricing_model": {
+      "type": "string",
+      "description": "Pricing model applied (flat, per_use, per_minute, per_stream)"
+    },
+    "billing_behavior": {
+      "type": "string",
+      "description": "Whether this was prepay, postpay, or streaming"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "insufficient_balance",
+        "refunded",
+        "pending"
+      ],
+      "default": "success",
+      "description": "Payment outcome"
+    },
+    "error_detail": {
+      "type": "string",
+      "description": "Error details if payment failed"
+    },
+    "balance_before": {
+      "type": "number",
+      "description": "User's RLUSD balance before this transaction"
+    },
+    "balance_after": {
+      "type": "number",
+      "description": "User's RLUSD balance after this transaction"
+    },
+    "royalties_split": {
+      "type": "object",
+      "properties": {
+        "treasury_amount": {
+          "type": "number"
+        },
+        "creator_amount": {
+          "type": "number"
+        },
+        "referral_amount": {
+          "type": "number"
+        }
+      },
+      "description": "How the payment was split according to royalties config"
+    },
+    "service_usage_log_id": {
+      "type": "string",
+      "description": "Reference to the ServiceUsageLog entry for this invocation"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Client session for grouping related payments"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional payment context"
+    }
+  },
+  "required": [
+    "user_id",
+    "service_id",
+    "amount",
+    "status"
+  ]
+}
