@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
     try {
@@ -32,12 +32,12 @@ Deno.serve(async (req) => {
             },
         };
 
-        const res = await fetch('https://xumm.app/api/v1/platform/payload', {
+        const res = await fetch('https://xaman.app/api/v1/platform/payload', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': xummApiKey,
-                'x-api-secret': xummApiSecret,
+                'X-API-Key': xummApiKey,
+                'X-API-Secret': xummApiSecret,
             },
             body: JSON.stringify(payload),
         });
