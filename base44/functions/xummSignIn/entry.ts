@@ -8,6 +8,9 @@ Deno.serve(async (req) => {
 
     const apiKey = Deno.env.get('xumm_api_key');
     const apiSecret = Deno.env.get('xume_secret_key');
+    
+    console.log('API Key length:', apiKey?.length, 'starts with:', apiKey?.substring(0, 8));
+    console.log('API Secret length:', apiSecret?.length, 'starts with:', apiSecret?.substring(0, 8));
 
     const payload = {
       txjson: {
