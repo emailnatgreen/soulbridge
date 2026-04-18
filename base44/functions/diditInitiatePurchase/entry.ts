@@ -101,6 +101,27 @@ Deno.serve(async (req) => {
       },
     });
 
+    // Log the transaction in MarketplaceTransaction
+    await base44.asServiceRole.entities.MarketplaceTransaction.create({
+      listing_id: listing.id,
+      resource_id: listing.resource_id || null,
+      resource_name: listing.resource_name,
+      buyer_agent_id,
+      seller_agent_id: listing.seller_agent_id,
+      purchase_price_rlusd: totalCost,
+      quantity,
+      currency: 'RLUSD',
+      payment_method,
+      transaction_reference,
+      source: 'didit_bridge',
+      status: 'completed',
+      completion_date: new Date().toISOString(),
+      metadata: {
+        unit_price: listing.price_rlusd,
+        listing_category: listing.resource_category,
+      },
+    });
+
     // Generate a KineticUnit for this economic exchange
     await base44.asServiceRole.entities.KineticUnit.create({
       ku_type: 'economic_exchange',

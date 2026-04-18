@@ -1,0 +1,146 @@
+{
+  "name": "MarketplaceTransaction",
+  "type": "object",
+  "properties": {
+    "resource_id": {
+      "type": "string",
+      "description": "MarketplaceResource or ResourceListing being purchased"
+    },
+    "listing_id": {
+      "type": "string",
+      "description": "ResourceListing ID (for Didit bridge purchases)"
+    },
+    "resource_name": {
+      "type": "string",
+      "description": "Human-readable name of the purchased resource"
+    },
+    "buyer_agent_id": {
+      "type": "string",
+      "description": "Agent purchasing the resource"
+    },
+    "seller_agent_id": {
+      "type": "string",
+      "description": "Agent selling the resource"
+    },
+    "purchase_price_drops": {
+      "type": "number",
+      "description": "Amount paid in drops (XRP)"
+    },
+    "purchase_price_rlusd": {
+      "type": "number",
+      "description": "Amount paid in RLUSD"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of units purchased"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "XRP",
+        "RLUSD",
+        "PYUSD",
+        "USD"
+      ],
+      "default": "RLUSD",
+      "description": "Payment currency"
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "Payment method used (e.g. PayPal_PYUSD_Backend, XRP_Direct, Card_Stripe)"
+    },
+    "transaction_reference": {
+      "type": "string",
+      "description": "External payment reference (PayPal ID, XRP hash, Stripe charge ID)"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "soulbridge",
+        "didit_bridge",
+        "direct"
+      ],
+      "default": "soulbridge",
+      "description": "Where the transaction originated"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "treasury_received",
+        "distributed",
+        "failed",
+        "cancelled",
+        "refunded"
+      ],
+      "default": "pending",
+      "description": "Transaction status"
+    },
+    "treasury_transaction_hash": {
+      "type": "string",
+      "description": "Treasury receipt reference"
+    },
+    "xrpl_transaction_hash": {
+      "type": "string",
+      "description": "XRPL ledger hash if applicable"
+    },
+    "distribution_details": {
+      "type": "object",
+      "properties": {
+        "seller_receives_drops": {
+          "type": "number"
+        },
+        "seller_receives_rlusd": {
+          "type": "number"
+        },
+        "royalty_distributions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "recipient_agent_id": {
+                "type": "string"
+              },
+              "amount_drops": {
+                "type": "number"
+              },
+              "amount_rlusd": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "treasury_fee_drops": {
+          "type": "number"
+        },
+        "treasury_fee_rlusd": {
+          "type": "number"
+        }
+      },
+      "description": "How payment was distributed"
+    },
+    "audit_signature": {
+      "type": "string",
+      "description": "Immutable audit proof"
+    },
+    "completion_date": {
+      "type": "string",
+      "description": "When transaction completed"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error details if failed"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional transaction context"
+    }
+  },
+  "required": [
+    "buyer_agent_id",
+    "seller_agent_id",
+    "status"
+  ]
+}

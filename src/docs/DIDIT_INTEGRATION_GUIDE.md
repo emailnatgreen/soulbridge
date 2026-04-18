@@ -13,6 +13,7 @@ The SoulBridge Agent Metadata Bridge API provides four endpoints that allow the 
 1. **Read** agent profiles and NFT metadata from SoulBridge
 2. **Browse** marketplace listings
 3. **Initiate** purchases on behalf of authenticated Didit users
+4. **Query** transaction history for audit, receipts, and analytics
 
 All endpoints are hosted as serverless functions on the SoulBridge platform.
 
@@ -371,6 +372,10 @@ export async function initiatePurchase({ listingId, buyerAgentId, quantity, paym
     transaction_reference: transactionReference,
   });
 }
+
+export async function getTransactionHistory(filters = {}) {
+  return callSoulBridge('diditGetTransactionHistory', filters);
+}
 ```
 
 ### 3. Recommended Didit Page Flow
@@ -414,6 +419,16 @@ export async function initiatePurchase({ listingId, buyerAgentId, quantity, paym
 │         transaction_reference                │
 │       })                                     │
 │  4. Show success/failure to user             │
+└──────────────┬──────────────────────────────┘
+               │ After purchase / on profile
+               ▼
+┌─────────────────────────────────────────────┐
+│  TRANSACTION HISTORY PAGE                    │
+│                                              │
+│  → getTransactionHistory({ agent_id })       │
+│  → Display list of purchases and sales       │
+│  → Filter by status, source, date            │
+│  → Paginate with limit/offset                │
 └─────────────────────────────────────────────┘
 ```
 
@@ -460,6 +475,94 @@ A webhook system for real-time notifications (e.g., "listing updated", "new NFT 
                                     │  - EconomicActivity│
                                     │  - KineticUnit    │
                                     └──────────────────┘
+```
+
+---
+
+## Endpoint 5: Get Transaction History
+
+**Function Name:** `diditGetTransactionHistory`
+
+**Purpose:** Retrieve marketplace transaction history with flexible filtering. Supports pagination.
+
+### Request
+
+```http
+POST /api/functions/diditGetTransactionHistory
+Content-Type: application/json
+x-didit-api-key: <YOUR_KEY>
+
+{
+  "agent_id": "69da4c6f76ee7655b...",
+  "status": "completed",
+  "source": "didit_bridge",
+  "limit": 20,
+  "offset": 0
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agent_id` | string | ❌ | Filter by buyer OR seller (either side of transaction) |
+| `buyer_agent_id` | string | ❌ | Filter by buyer only |
+| `seller_agent_id` | string | ❌ | Filter by seller only |
+| `listing_id` | string | ❌ | Filter by specific listing |
+| `status` | string | ❌ | Filter by status: `pending`, `completed`, `failed`, `cancelled`, `refunded` |
+| `source` | string | ❌ | Filter by origin: `soulbridge`, `didit_bridge`, `direct` |
+| `limit` | number | ❌ | Max results (default: 50, max: 200) |
+| `offset` | number | ❌ | Pagination offset (default: 0) |
+
+> **Tip:** Send an empty body `{}` to retrieve all recent transactions.
+
+### Response (200 OK)
+
+```json
+{
+  "success": true,
+  "transactions": [
+    {
+      "transaction_id": "tx_abc123",
+      "listing_id": "abc123",
+      "resource_id": null,
+      "resource_name": "Sovereign Seed NFT",
+      "buyer_agent_id": "69da4c6f76ee7655b...",
+      "buyer_agent_name": "Nathan Green",
+      "seller_agent_id": "69e1e907c62779a5610bb936",
+      "seller_agent_name": "SoulBridge Treasury & Marketplace Steward",
+      "quantity": 1,
+      "purchase_price_rlusd": 250.00,
+      "purchase_price_drops": null,
+      "currency": "RLUSD",
+      "payment_method": "PayPal_PYUSD_Backend",
+      "transaction_reference": "PAY-5XJ12345ABC",
+      "source": "didit_bridge",
+      "status": "completed",
+      "completion_date": "2026-04-18T14:30:00.000Z",
+      "created_date": "2026-04-18T14:30:00.000Z",
+      "distribution_details": null
+    }
+  ],
+  "total_count": 1,
+  "offset": 0,
+  "limit": 50
+}
+```
+
+### Didit Usage Examples
+
+**Get all transactions for a user:**
+```javascript
+const history = await getTransactionHistory({ agent_id: userAgentId });
+```
+
+**Get only Didit purchases:**
+```javascript
+const diditPurchases = await getTransactionHistory({ source: 'didit_bridge', status: 'completed' });
+```
+
+**Paginate through results:**
+```javascript
+const page2 = await getTransactionHistory({ limit: 20, offset: 20 });
 ```
 
 ---
