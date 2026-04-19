@@ -84,6 +84,7 @@ import WidgetMarketplace from './pages/WidgetMarketplace';
 import WidgetDetail from './pages/WidgetDetail';
 import ServiceDefinitions from './pages/ServiceDefinitions';
 import ServiceUsageLogs from './pages/ServiceUsageLogs';
+import Send from './pages/Send';
 
 
 const LoadingFallback = () => (
@@ -297,6 +298,10 @@ const AuthenticatedApp = () => {
         {/* SERVICE ENGINE */}
         <Route path="/service-definitions" element={L("service-definitions", ServiceDefinitions)} />
         <Route path="/service-usage-logs" element={L("service-usage-logs", ServiceUsageLogs)} />
+
+        {/* SEND */}
+        <Route path="/send" element={L("send", Send)} />
+        <Route path="/Send" element={L("send", Send)} />
 
         <Route path="*" element={<PageNotFound />} />
       </Routes>

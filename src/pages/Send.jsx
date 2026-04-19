@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from '@/components/ui/slider';
 import { ArrowLeft, Send, Loader2, Wallet, ArrowRight, Globe, FlaskConical } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+// Navigation uses react-router Link
 import { toast } from 'sonner';
 
 export default function SendPage() {
@@ -111,7 +111,7 @@ export default function SendPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-3xl mx-auto px-6 py-6">
-          <Link to={createPageUrl('Wallets')} className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-4">
+          <Link to="/wallets" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Wallets
           </Link>
