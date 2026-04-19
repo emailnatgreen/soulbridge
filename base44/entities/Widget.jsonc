@@ -154,6 +154,69 @@
       },
       "description": "Specific permissions an agent gains when this widget is active"
     },
+    "webmcp_manifest": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "WebMCP manifest version (e.g. '2026.1')"
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Tool function name callable by the browser agent"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "What this tool does when invoked"
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "description": "JSON Schema of parameters this tool accepts"
+                  }
+                }
+              },
+              "description": "Agent-native tools the NFT provides to the browser via Chrome skill integration"
+            }
+          },
+          "description": "Structured capabilities this NFT exposes to WebMCP-compatible browsers"
+        }
+      },
+      "description": "WebMCP manifest \u2014 makes this NFT 'Agent-Native' by declaring structured browser tools (e.g. Gemini Side Panel skills) that Chrome can discover and execute when the NFT is detected"
+    },
+    "chrome_skill_instructions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill_name": {
+            "type": "string",
+            "description": "Display name for the Chrome custom skill (e.g. 'Axi Pharmacy Unlock')"
+          },
+          "instructions": {
+            "type": "string",
+            "description": "Natural language instructions for the browser agent to follow when this skill is triggered"
+          },
+          "trigger_command": {
+            "type": "string",
+            "description": "Slash command or trigger phrase (e.g. '/Axi')"
+          },
+          "requires_didit_verification": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether Didit human verification + RLUSD payment is required before execution"
+          }
+        }
+      },
+      "description": "Chrome Gemini Side Panel skill definitions \u2014 human-readable instruction boxes that pair with webmcp_manifest tools"
+    },
     "mint_status": {
       "type": "string",
       "enum": [
