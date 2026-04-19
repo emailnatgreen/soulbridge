@@ -23,9 +23,12 @@ Deno.serve(async (req) => {
 
     const resolved = data?.meta?.resolved ?? false;
     const expired = data?.meta?.expired ?? false;
+    const signed = data?.meta?.signed ?? false;
     const account = data?.response?.account ?? null;
+    const txid = data?.response?.txid ?? null;
+    const dispatched = data?.response?.dispatched_result ?? null;
 
-    return Response.json({ resolved, expired, account });
+    return Response.json({ resolved, expired, signed, account, txid, dispatched });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
