@@ -13,9 +13,9 @@ Deno.serve(async (req) => {
     const widget = await base44.asServiceRole.entities.Widget.get(widget_id);
     if (!widget) return Response.json({ error: 'Widget not found' }, { status: 404 });
 
-    if (widget.mint_status !== 'prepared') {
+    if (widget.mint_status !== 'prepared' && widget.mint_status !== 'simulated') {
       return Response.json({ 
-        error: `Widget mint_status is '${widget.mint_status}', expected 'prepared'. Run prepareMainnetMint first.` 
+        error: `Widget mint_status is '${widget.mint_status}', expected 'prepared' or 'simulated'. Run prepareMainnetMint first.` 
       }, { status: 400 });
     }
 
