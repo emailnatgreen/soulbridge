@@ -43,12 +43,8 @@ Deno.serve(async (req) => {
     try { body = await req.json(); } catch (_) {}
     const userDid = body.did || null;
 
-    // Fetch all wallet_management widgets
-    const allWidgets = await base44.asServiceRole.entities.Widget.filter(
-      { category: 'wallet_management' },
-      'name',
-      50
-    );
+    // Fetch ALL widgets across all categories
+    const allWidgets = await base44.asServiceRole.entities.Widget.list('name', 200);
 
     // Ownership check via simulator model (is_active flag)
     // In production XRPL mode, this will query NFTokens by DID/address

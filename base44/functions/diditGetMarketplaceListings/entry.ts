@@ -24,14 +24,43 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
-    const { category, seller_agent_id, tags, steward_only } = body;
+    const { category, seller_agent_id, tags, steward_only, nft_id, search, include_unlisted, status: statusFilter } = body;
 
-    // Build filter for available listings
-    const filter = { status: 'available' };
+    // Build filter for listings
+    const filter = {};
+    if (statusFilter === 'all') {
+      // No status filter — return everything
+    } else {
+      filter.status = statusFilter || 'available';
+    }
     if (category) filter.resource_category = category;
     if (seller_agent_id) filter.seller_agent_id = seller_agent_id;
 
     let listings = await base44.asServiceRole.entities.ResourceListing.filter(filter);
+
+    // Include unlisted if requested
+    if (include_unlisted) {
+      const unlisted = await base44.asServiceRole.entities.ResourceListing.filter({ status: 'unlisted' });
+      listings = [...listings, ...unlisted];
+    }
+
+    // Filter by nft_id in specifications
+    if (nft_id) {
+      listings = listings.filter(l => l.specifications?.nft_id === nft_id);
+    }
+
+    // Text search across name, description, tags, and specifications
+    if (search) {
+      const q = search.toLowerCase();
+      listings = listings.filter(l =>
+        (l.resource_name || '').toLowerCase().includes(q) ||
+        (l.description || '').toLowerCase().includes(q) ||
+        (l.tags || []).some(t => t.toLowerCase().includes(q)) ||
+        (l.specifications?.nft_id || '').toLowerCase().includes(q) ||
+        (l.specifications?.widget_id || '').toLowerCase().includes(q) ||
+        (l.specifications?.issuer_address || '').toLowerCase().includes(q)
+      );
+    }
 
     // If steward_only, find the Steward agent and filter
     if (steward_only) {
