@@ -18,6 +18,7 @@ import ZoeProjectFeature from '@/components/ZoeProjectFeature';
 import AxiVisionSection from '@/components/AxiVisionSection';
 import CarbonFootprintChart from '@/components/CarbonFootprintChart';
 import CarbonFootprintExplainer from '@/components/CarbonFootprintExplainer';
+import EthTreasuryShield from '@/components/treasury/EthTreasuryShield';
 
 const SYSTEM_ACTORS = { dex_swap: 'DEX Swap Engine', dex: 'DEX Engine', treasury: 'Village Treasury', system: 'System', external_source: 'External Source' };
 
@@ -298,6 +299,9 @@ export default function Home() {
 
         {/* Village Pulse — Live Kinetic Energy */}
         <VillagePulseMini kus={pulseKUs} agentCount={liveCounts.agents} votesCount={liveCounts.proposals} economicVolume={pulseEconomicVol} />
+
+        {/* ETH RLUSD Treasury Shield — Didit Bridge Receiver */}
+        {isAdmin && <EthTreasuryShield />}
 
         {/* Live Stats + Carbon Direction */}
         <div>
