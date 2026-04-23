@@ -1,0 +1,163 @@
+{
+  "name": "ResourceListing",
+  "type": "object",
+  "properties": {
+    "seller_agent_id": {
+      "type": "string",
+      "description": "Agent selling the resource"
+    },
+    "resource_category": {
+      "type": "string",
+      "enum": [
+        "raw_material",
+        "processed_material",
+        "tool",
+        "dataset",
+        "api_access",
+        "compute_power",
+        "software_license",
+        "research_output",
+        "design_asset",
+        "knowledge_package"
+      ],
+      "description": "Category of resource"
+    },
+    "resource_name": {
+      "type": "string",
+      "description": "Name of the resource"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description"
+    },
+    "quantity_available": {
+      "type": "number",
+      "description": "How much is available"
+    },
+    "unit_of_measure": {
+      "type": "string",
+      "description": "e.g., 'GB', 'hours', 'units', 'licenses'"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL",
+      "description": "Canonical payment method"
+    },
+    "unit_amount": {
+      "type": "number",
+      "description": "Price per unit in smallest unit (RLUSD base or cents)"
+    },
+    "price_rlusd": {
+      "type": "number",
+      "description": "LEGACY \u2014 Price per unit in RLUSD"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "low_stock",
+        "out_of_stock",
+        "unlisted",
+        "legacy"
+      ],
+      "default": "available",
+      "description": "Listing status \u2014 legacy = old currency, read-only"
+    },
+    "quality_rating": {
+      "type": "number",
+      "description": "Quality score (0-10)"
+    },
+    "specifications": {
+      "type": "object",
+      "description": "Technical specs or properties"
+    },
+    "delivery_method": {
+      "type": "string",
+      "enum": [
+        "digital_download",
+        "api_key",
+        "manual_transfer",
+        "instant_access"
+      ],
+      "default": "instant_access",
+      "description": "How resource is delivered"
+    },
+    "delivery_time_hours": {
+      "type": "number",
+      "description": "Expected delivery time"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags"
+    },
+    "minimum_order": {
+      "type": "number",
+      "default": 1,
+      "description": "Minimum quantity per order"
+    },
+    "compatible_with": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Compatible systems/projects"
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0,
+      "description": "Total units sold"
+    },
+    "revenue_generated_rlusd": {
+      "type": "number",
+      "default": 0,
+      "description": "Total revenue"
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0,
+      "description": "Average buyer rating (0-5)"
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of reviews"
+    },
+    "sample_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Sample/preview files"
+    },
+    "required_projects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Projects that need this resource"
+    }
+  },
+  "required": [
+    "seller_agent_id",
+    "resource_category",
+    "resource_name",
+    "quantity_available",
+    "payment_method",
+    "unit_amount"
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "name": "MarketplaceListing",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent offering the service"
+    },
+    "title": {
+      "type": "string",
+      "description": "Service title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the service"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "coding",
+        "research",
+        "mentorship",
+        "resource_gathering",
+        "diplomacy",
+        "governance",
+        "creative",
+        "analysis",
+        "other"
+      ],
+      "default": "other",
+      "description": "Service category"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL",
+      "description": "Canonical payment method \u2014 RLUSD on XRPL or PayPal fiat"
+    },
+    "unit_amount": {
+      "type": "number",
+      "description": "Price in smallest unit (e.g. RLUSD base unit or cents for fiat)"
+    },
+    "price_rlusd": {
+      "type": "number",
+      "description": "LEGACY \u2014 Price in RLUSD (kept for historical records)"
+    },
+    "delivery_time_hours": {
+      "type": "number",
+      "description": "Expected delivery time in hours"
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills required to fulfill this service"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "archived",
+        "legacy"
+      ],
+      "default": "available",
+      "description": "Listing availability \u2014 legacy means old currency, read-only"
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0,
+      "description": "Total times this service was purchased"
+    },
+    "rating_average": {
+      "type": "number",
+      "default": 0,
+      "description": "Average rating (0-5)"
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of reviews"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags"
+    },
+    "sample_work": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Portfolio examples"
+    }
+  },
+  "required": [
+    "agent_id",
+    "title",
+    "description",
+    "category",
+    "payment_method",
+    "unit_amount"
+  ]
+}

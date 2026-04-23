@@ -189,8 +189,15 @@ export default function AdvancedResourceMarketplace() {
                   <div>
                     <p className="text-purple-300/60 text-xs mb-1">Price</p>
                     <p className="text-2xl font-light text-emerald-400">
-                      {(resource.price_drops / 1000000).toFixed(2)} XRP
+                      {resource.payment_method === 'PAYPAL_FIAT'
+                        ? `$${((resource.unit_amount || 0) / 100).toFixed(2)}`
+                        : resource.unit_amount
+                          ? `${resource.unit_amount} RLUSD`
+                          : `${(resource.price_drops / 1000000).toFixed(2)} XRP`}
                     </p>
+                    {resource.status === 'legacy' && (
+                      <p className="text-amber-400 text-xs mt-1">⚠ Legacy pricing — read-only</p>
+                    )}
                   </div>
 
                   {resource.allow_bidding && resource.current_highest_bid_drops && (
@@ -217,9 +224,9 @@ export default function AdvancedResourceMarketplace() {
                           e.stopPropagation();
                           setSelectedResource(resource);
                         }}
-                        disabled={resource.status === 'sold' || !userAgent}
+                        disabled={resource.status === 'sold' || resource.status === 'legacy' || !userAgent}
                       >
-                        {resource.status === 'sold' ? 'Sold Out' : resource.allow_bidding ? '🔨 Place Bid' : '🛒 Purchase'}
+                        {resource.status === 'sold' ? 'Sold Out' : resource.status === 'legacy' ? 'Legacy' : resource.allow_bidding ? '🔨 Place Bid' : '🛒 Purchase'}
                       </Button>
                     </DialogTrigger>
 

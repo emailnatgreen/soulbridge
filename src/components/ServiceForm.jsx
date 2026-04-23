@@ -10,7 +10,8 @@ export default function ServiceForm({ onSuccess }) {
     title: '',
     description: '',
     category: 'technical',
-    price_drops: '',
+    payment_method: 'RLUSD_ON_XRPL',
+    unit_amount: '',
     delivery_mechanism: 'agent_chat',
   });
 
@@ -27,7 +28,7 @@ export default function ServiceForm({ onSuccess }) {
       await base44.entities.Service.create({
         ...formData,
         provider_agent_id: user.email,
-        price_drops: parseInt(formData.price_drops),
+        unit_amount: parseFloat(formData.unit_amount),
         status: 'available',
       });
       toast.success('Service created successfully');
@@ -79,15 +80,30 @@ export default function ServiceForm({ onSuccess }) {
             <option value="technical">Technical</option>
             <option value="other">Other</option>
           </select>
+
+          {/* Payment Method */}
+          <select
+            name="payment_method"
+            value={formData.payment_method}
+            onChange={handleChange}
+            className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-400/60"
+          >
+            <option value="RLUSD_ON_XRPL">RLUSD on XRPL</option>
+            <option value="PAYPAL_FIAT">PayPal (Fiat)</option>
+          </select>
+
           <input
             type="number"
-            name="price_drops"
-            placeholder="Price (in drops, 1 XRP = 1,000,000 drops)"
-            value={formData.price_drops}
+            name="unit_amount"
+            placeholder={formData.payment_method === 'PAYPAL_FIAT' ? 'Price (in cents, e.g. 500 = $5.00)' : 'Price (RLUSD)'}
+            value={formData.unit_amount}
             onChange={handleChange}
             required
+            min="0"
+            step="0.01"
             className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder:text-white/30 focus:outline-none focus:border-purple-400/60"
           />
+
           <select
             name="delivery_mechanism"
             value={formData.delivery_mechanism}

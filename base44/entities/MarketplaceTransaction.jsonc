@@ -18,17 +18,35 @@
       "type": "string",
       "description": "Agent purchasing the resource"
     },
+    "buyer_did": {
+      "type": "string",
+      "description": "DID of the buyer (from Didit bridge)"
+    },
     "seller_agent_id": {
       "type": "string",
       "description": "Agent selling the resource"
     },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT",
+        "LEGACY"
+      ],
+      "default": "RLUSD_ON_XRPL",
+      "description": "Canonical payment method \u2014 RLUSD on XRPL, PayPal fiat, or LEGACY for historical records"
+    },
+    "unit_amount": {
+      "type": "number",
+      "description": "Price in smallest unit (canonical amount field)"
+    },
     "purchase_price_drops": {
       "type": "number",
-      "description": "Amount paid in drops (XRP)"
+      "description": "LEGACY \u2014 Amount paid in drops (XRP)"
     },
     "purchase_price_rlusd": {
       "type": "number",
-      "description": "Amount paid in RLUSD"
+      "description": "LEGACY \u2014 Amount paid in RLUSD"
     },
     "quantity": {
       "type": "number",
@@ -44,15 +62,11 @@
         "USD"
       ],
       "default": "RLUSD",
-      "description": "Payment currency"
+      "description": "LEGACY \u2014 Payment currency (kept for historical records only)"
     },
-    "payment_method": {
+    "payment_reference": {
       "type": "string",
-      "description": "Payment method used (e.g. PayPal_PYUSD_Backend, XRP_Direct, Card_Stripe)"
-    },
-    "transaction_reference": {
-      "type": "string",
-      "description": "External payment reference (PayPal ID, XRP hash, Stripe charge ID)"
+      "description": "External payment reference (XRPL tx hash, PayPal ID, etc.)"
     },
     "source": {
       "type": "string",
@@ -64,11 +78,23 @@
       "default": "soulbridge",
       "description": "Where the transaction originated"
     },
+    "marketplace_type": {
+      "type": "string",
+      "enum": [
+        "widget",
+        "service",
+        "resource",
+        "advanced_resource",
+        "agent"
+      ],
+      "description": "Which marketplace category this transaction belongs to"
+    },
     "status": {
       "type": "string",
       "enum": [
         "pending",
         "completed",
+        "delivered",
         "treasury_received",
         "distributed",
         "failed",
@@ -86,13 +112,21 @@
       "type": "string",
       "description": "XRPL ledger hash if applicable"
     },
+    "delivery_id": {
+      "type": "string",
+      "description": "Delivery or contract ID after mint/assign"
+    },
+    "nft_id": {
+      "type": "string",
+      "description": "NFT or access token ID after delivery"
+    },
     "distribution_details": {
       "type": "object",
       "properties": {
-        "seller_receives_drops": {
+        "seller_receives_rlusd": {
           "type": "number"
         },
-        "seller_receives_rlusd": {
+        "village_fee_rlusd": {
           "type": "number"
         },
         "royalty_distributions": {
@@ -103,17 +137,11 @@
               "recipient_agent_id": {
                 "type": "string"
               },
-              "amount_drops": {
-                "type": "number"
-              },
               "amount_rlusd": {
                 "type": "number"
               }
             }
           }
-        },
-        "treasury_fee_drops": {
-          "type": "number"
         },
         "treasury_fee_rlusd": {
           "type": "number"
@@ -141,6 +169,7 @@
   "required": [
     "buyer_agent_id",
     "seller_agent_id",
+    "payment_method",
     "status"
   ]
 }

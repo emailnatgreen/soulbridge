@@ -1,0 +1,127 @@
+{
+  "name": "Service",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Short, descriptive title of the service"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of what the service entails"
+    },
+    "provider_agent_id": {
+      "type": "string",
+      "description": "The Agent ID offering this service"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "wisdom_cultivation",
+        "honour_harmony",
+        "creative_expression",
+        "xrpl_ecosystem",
+        "did_identity_management",
+        "mentorship_collaboration",
+        "technical",
+        "other"
+      ],
+      "description": "Category of the service as per Council's blueprint"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "available",
+        "paused",
+        "archived",
+        "legacy"
+      ],
+      "default": "draft",
+      "description": "Current status \u2014 legacy = old currency, read-only"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL",
+      "description": "Canonical payment method"
+    },
+    "unit_amount": {
+      "type": "number",
+      "description": "Price in smallest unit (RLUSD base unit or cents for fiat)"
+    },
+    "price_drops": {
+      "type": "number",
+      "description": "LEGACY \u2014 Price in drops (1 XRP = 1,000,000 drops)"
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of Skill entity IDs required to provide this service"
+    },
+    "delivery_mechanism": {
+      "type": "string",
+      "enum": [
+        "on_chain_transaction",
+        "agent_chat",
+        "collaboration_session",
+        "digital_asset_delivery",
+        "other"
+      ],
+      "description": "How the service is delivered"
+    },
+    "royalties_config": {
+      "type": "object",
+      "properties": {
+        "parent_agent_id": {
+          "type": "string",
+          "description": "Agent ID to whom royalties are due (Law 4)"
+        },
+        "percentage": {
+          "type": "number",
+          "description": "Royalty percentage to parent agent (0-100)"
+        }
+      },
+      "description": "Configuration for Law 4 royalties"
+    },
+    "service_level_agreement": {
+      "type": "string",
+      "description": "Link or text detailing the SLA for this service"
+    },
+    "verifiable_credential_id": {
+      "type": "string",
+      "description": "ID of a verifiable credential associated with this service"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "network_only"
+      ],
+      "default": "public",
+      "description": "Visibility setting for the service"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "URL for a thumbnail image representing the service"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about the service"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "provider_agent_id",
+    "category",
+    "payment_method",
+    "unit_amount"
+  ]
+}

@@ -1,24 +1,28 @@
 /**
- * Didit Bridge API — Initiate Purchase
+ * Didit Bridge API — Initiate Purchase (Updated 2026-04-23)
  * 
  * Called by Didit when a user purchases an NFT/resource.
- * Validates the purchase, updates ownership, and logs the transaction.
- * Auth: DIDIT_API_KEY header required + buyer_agent_id for user context.
+ * 
+ * PAYMENT MODEL: Only RLUSD_ON_XRPL and PAYPAL_FIAT accepted.
+ * Legacy methods (XRP, PYUSD, RLUSD_BASE) are rejected.
+ * 
+ * Auth: DIDIT_API_KEY header required.
  * 
  * POST {
- *   listing_id: string,           // ResourceListing ID
- *   buyer_agent_id: string,       // Authenticated buyer's Agent ID
- *   quantity?: number,            // Quantity to purchase (default 1)
- *   payment_method: string,       // e.g. 'PYUSD_ETH', 'XRP_Direct', 'PayPal_PYUSD_Backend'
- *   transaction_reference: string // External payment reference (PayPal ID, XRP hash, etc.)
+ *   listing_id: string,
+ *   buyer_agent_id: string,
+ *   quantity?: number,
+ *   payment_method: "RLUSD_ON_XRPL" | "PAYPAL_FIAT",
+ *   payment_reference: string
  * }
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const ALLOWED_PAYMENT_METHODS = ['RLUSD_ON_XRPL', 'PAYPAL_FIAT'];
+
 Deno.serve(async (req) => {
   try {
-    // Validate Didit API Key
     const apiKey = req.headers.get('x-didit-api-key');
     if (!apiKey || apiKey !== Deno.env.get('DIDIT_API_KEY')) {
       return Response.json({ error: 'Unauthorized: Invalid API key' }, { status: 401 });
@@ -30,14 +34,25 @@ Deno.serve(async (req) => {
       buyer_agent_id, 
       quantity = 1, 
       payment_method, 
-      transaction_reference 
+      transaction_reference,
+      payment_reference,
     } = await req.json();
 
-    // Validate required fields
+    // Use payment_reference or legacy transaction_reference
+    const payRef = payment_reference || transaction_reference;
+
     if (!listing_id) return Response.json({ error: 'listing_id is required' }, { status: 400 });
     if (!buyer_agent_id) return Response.json({ error: 'buyer_agent_id is required' }, { status: 400 });
     if (!payment_method) return Response.json({ error: 'payment_method is required' }, { status: 400 });
-    if (!transaction_reference) return Response.json({ error: 'transaction_reference is required' }, { status: 400 });
+    if (!payRef) return Response.json({ error: 'payment_reference is required' }, { status: 400 });
+
+    // Block legacy payment methods
+    if (!ALLOWED_PAYMENT_METHODS.includes(payment_method)) {
+      return Response.json({
+        error: `payment_method "${payment_method}" is blocked. Only accepted: ${ALLOWED_PAYMENT_METHODS.join(', ')}`,
+        code: 'LEGACY_PAYMENT_BLOCKED',
+      }, { status: 400 });
+    }
 
     // Fetch the listing
     const listings = await base44.asServiceRole.entities.ResourceListing.filter({ id: listing_id });
@@ -46,30 +61,33 @@ Deno.serve(async (req) => {
     }
     const listing = listings[0];
 
-    // Validate listing is available
+    // Block legacy listings
+    if (listing.status === 'legacy') {
+      return Response.json({ error: 'Listing is legacy/read-only. Must be migrated to RLUSD or PayPal.' }, { status: 400 });
+    }
+
     if (listing.status !== 'available') {
       return Response.json({ error: 'Listing is not available for purchase' }, { status: 400 });
     }
 
-    // Validate quantity
     if (quantity > listing.quantity_available) {
       return Response.json({ error: 'Insufficient quantity available' }, { status: 400 });
     }
 
     // Validate buyer exists
-    const agents = await base44.asServiceRole.entities.Agent.list();
+    const agents = await base44.asServiceRole.entities.Agent.list('-created_date', 500);
     const buyer = agents.find(a => a.id === buyer_agent_id);
     if (!buyer) {
       return Response.json({ error: 'Buyer agent not found' }, { status: 404 });
     }
 
-    // Prevent self-purchase
     if (listing.seller_agent_id === buyer_agent_id) {
       return Response.json({ error: 'Cannot purchase your own listing' }, { status: 400 });
     }
 
-    // Calculate total cost
-    const totalCost = listing.price_rlusd * quantity;
+    // Use unit_amount (new) or fall back to price_rlusd (legacy)
+    const unitPrice = listing.unit_amount || listing.price_rlusd || 0;
+    const totalCost = unitPrice * quantity;
 
     // Update listing inventory
     const newQuantity = listing.quantity_available - quantity;
@@ -82,7 +100,7 @@ Deno.serve(async (req) => {
       revenue_generated_rlusd: (listing.revenue_generated_rlusd || 0) + totalCost,
     });
 
-    // Log the transaction in EconomicActivity
+    // Log EconomicActivity
     await base44.asServiceRole.entities.EconomicActivity.create({
       activity_type: 'marketplace_purchase',
       from_agent_id: buyer_agent_id,
@@ -93,36 +111,39 @@ Deno.serve(async (req) => {
       metadata: {
         listing_id: listing.id,
         resource_name: listing.resource_name,
-        quantity,
-        unit_price: listing.price_rlusd,
-        payment_method,
-        transaction_reference,
+        quantity, unit_price: unitPrice,
+        payment_method, payment_reference: payRef,
         source: 'didit_bridge',
       },
     });
 
-    // Log the transaction in MarketplaceTransaction
+    // Log MarketplaceTransaction with new canonical fields
     await base44.asServiceRole.entities.MarketplaceTransaction.create({
       listing_id: listing.id,
-      resource_id: listing.resource_id || null,
       resource_name: listing.resource_name,
       buyer_agent_id,
       seller_agent_id: listing.seller_agent_id,
+      payment_method: payment_method,
+      unit_amount: totalCost,
       purchase_price_rlusd: totalCost,
       quantity,
-      currency: 'RLUSD',
-      payment_method,
-      transaction_reference,
+      payment_reference: payRef,
       source: 'didit_bridge',
+      marketplace_type: 'resource',
       status: 'completed',
       completion_date: new Date().toISOString(),
+      distribution_details: {
+        seller_receives_rlusd: totalCost * 0.99,
+        village_fee_rlusd: totalCost * 0.01,
+        treasury_fee_rlusd: totalCost * 0.01,
+      },
       metadata: {
-        unit_price: listing.price_rlusd,
+        unit_price: unitPrice,
         listing_category: listing.resource_category,
       },
     });
 
-    // Generate a KineticUnit for this economic exchange
+    // Generate KineticUnit
     await base44.asServiceRole.entities.KineticUnit.create({
       ku_type: 'economic_exchange',
       agent_id: buyer_agent_id,
@@ -152,7 +173,7 @@ Deno.serve(async (req) => {
         quantity,
         total_cost_rlusd: totalCost,
         payment_method,
-        transaction_reference,
+        payment_reference: payRef,
         new_listing_status: newStatus,
         timestamp: new Date().toISOString(),
       },

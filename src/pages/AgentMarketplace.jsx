@@ -30,7 +30,7 @@ export default function AgentMarketplace() {
   const [sortBy, setSortBy] = useState('');
   const [selectedListing, setSelectedListing] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState({ title: '', description: '', price_rlusd: '', category: 'development', agent_id: '' });
+  const [createForm, setCreateForm] = useState({ title: '', description: '', payment_method: 'RLUSD_ON_XRPL', unit_amount: '', category: 'development', agent_id: '' });
 
   const { data: listings = [], isLoading: listingsLoading } = useQuery({
     queryKey: ['marketplace-listings'],
@@ -163,8 +163,13 @@ export default function AgentMarketplace() {
                       <Badge className="bg-amber-900/30 text-amber-300 border-amber-700/40 text-xs">
                         {listing.category}
                       </Badge>
-                      {listing.price_rlusd && (
-                        <span className="text-green-400 text-xs font-medium">{listing.price_rlusd} RLUSD</span>
+                      <span className="text-green-400 text-xs font-medium">
+                        {listing.payment_method === 'PAYPAL_FIAT'
+                          ? `$${((listing.unit_amount || 0) / 100).toFixed(2)}`
+                          : `${listing.unit_amount || listing.price_rlusd || 0} RLUSD`}
+                      </span>
+                      {listing.status === 'legacy' && (
+                        <span className="text-amber-400 text-[9px]">legacy</span>
                       )}
                     </div>
                   </CardContent>
@@ -208,16 +213,21 @@ export default function AgentMarketplace() {
             <Textarea placeholder="Description" value={createForm.description} onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))}
               className="bg-slate-800 border-slate-600 text-white h-24" />
             <div className="flex gap-2">
-              <Input placeholder="Price RLUSD" type="number" value={createForm.price_rlusd} onChange={e => setCreateForm(f => ({ ...f, price_rlusd: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white" />
-              <select value={createForm.agent_id} onChange={e => setCreateForm(f => ({ ...f, agent_id: e.target.value }))}
-                className="flex-1 bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded-md px-2">
-                <option value="">Select agent</option>
-                {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              <select value={createForm.payment_method} onChange={e => setCreateForm(f => ({ ...f, payment_method: e.target.value }))}
+                className="bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded-md px-2">
+                <option value="RLUSD_ON_XRPL">RLUSD on XRPL</option>
+                <option value="PAYPAL_FIAT">PayPal (Fiat)</option>
               </select>
+              <Input placeholder={createForm.payment_method === 'PAYPAL_FIAT' ? 'Price (cents)' : 'Price (RLUSD)'} type="number" value={createForm.unit_amount} onChange={e => setCreateForm(f => ({ ...f, unit_amount: e.target.value }))}
+                className="bg-slate-800 border-slate-600 text-white" />
             </div>
+            <select value={createForm.agent_id} onChange={e => setCreateForm(f => ({ ...f, agent_id: e.target.value }))}
+              className="w-full bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded-md px-2 py-2">
+              <option value="">Select agent</option>
+              {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
             <Button disabled={createListingMutation.isPending || !createForm.title}
-              onClick={() => createListingMutation.mutate({ ...createForm, price_rlusd: Number(createForm.price_rlusd) })}
+              onClick={() => createListingMutation.mutate({ ...createForm, unit_amount: Number(createForm.unit_amount) })}
               className="w-full bg-amber-600 hover:bg-amber-700">
               {createListingMutation.isPending ? 'Creating…' : 'Create Listing'}
             </Button>

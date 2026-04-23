@@ -1,0 +1,126 @@
+{
+  "name": "MarketplaceResource",
+  "type": "object",
+  "properties": {
+    "seller_agent_id": {
+      "type": "string",
+      "description": "Agent selling the resource"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "quantum_data_package",
+        "optimization_protocol",
+        "compliance_template",
+        "audit_report"
+      ],
+      "description": "Category of resource"
+    },
+    "title": {
+      "type": "string",
+      "description": "Resource title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL",
+      "description": "Canonical payment method"
+    },
+    "unit_amount": {
+      "type": "number",
+      "description": "Price in smallest unit (RLUSD base or cents)"
+    },
+    "price_drops": {
+      "type": "number",
+      "description": "LEGACY \u2014 Fixed price in drops (1 XRP = 1,000,000 drops)"
+    },
+    "allow_bidding": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether resource accepts bids (auction mode)"
+    },
+    "current_highest_bid_drops": {
+      "type": "number",
+      "description": "Highest bid amount if auction"
+    },
+    "highest_bidder_agent_id": {
+      "type": "string",
+      "description": "Agent with highest bid if auction"
+    },
+    "auction_end_date": {
+      "type": "string",
+      "description": "When auction closes"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "listed",
+        "sold",
+        "auction_active",
+        "auction_ended",
+        "delisted",
+        "legacy"
+      ],
+      "default": "listed",
+      "description": "Resource status \u2014 legacy = old currency, read-only"
+    },
+    "royalty_recipients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "percentage": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Agents who receive royalties (e.g., Kael, Maya, Zoe)"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "data_hash": {
+          "type": "string"
+        },
+        "verification_status": {
+          "type": "string"
+        },
+        "compliance_level": {
+          "type": "string"
+        },
+        "audit_trail_reference": {
+          "type": "string"
+        }
+      },
+      "description": "Additional resource metadata"
+    },
+    "transaction_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times purchased"
+    },
+    "total_revenue_drops": {
+      "type": "number",
+      "default": 0,
+      "description": "Total revenue generated"
+    }
+  },
+  "required": [
+    "seller_agent_id",
+    "resource_type",
+    "title",
+    "description",
+    "payment_method",
+    "unit_amount"
+  ]
+}

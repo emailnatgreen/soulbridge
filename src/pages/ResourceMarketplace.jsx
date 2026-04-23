@@ -130,9 +130,16 @@ export default function ResourceMarketplace() {
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-slate-500">By {seller?.name || 'Unknown'}</span>
                       <div className="text-right">
-                        <div className="text-green-400 font-semibold text-sm">{listing.price_per_unit ?? 0} XRP</div>
+                        <div className="text-green-400 font-semibold text-sm">
+                          {listing.payment_method === 'PAYPAL_FIAT'
+                            ? `$${((listing.unit_amount || 0) / 100).toFixed(2)}`
+                            : `${listing.unit_amount || listing.price_rlusd || listing.price_per_unit || 0} RLUSD`}
+                        </div>
                         {listing.quantity_available !== undefined && (
                           <div className="text-xs text-slate-600">×{listing.quantity_available} avail.</div>
+                        )}
+                        {listing.status === 'legacy' && (
+                          <div className="text-xs text-amber-400">legacy</div>
                         )}
                       </div>
                     </div>
@@ -154,7 +161,11 @@ export default function ResourceMarketplace() {
               <p className="text-slate-400 text-sm">{selected.description}</p>
               <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
                 <span className="text-slate-400 text-sm">Price</span>
-                <span className="text-green-400 font-semibold">{selected.price_per_unit ?? 0} XRP/unit</span>
+                <span className="text-green-400 font-semibold">
+                  {selected.payment_method === 'PAYPAL_FIAT'
+                    ? `$${((selected.unit_amount || 0) / 100).toFixed(2)}/unit`
+                    : `${selected.unit_amount || selected.price_rlusd || selected.price_per_unit || 0} RLUSD/unit`}
+                </span>
               </div>
               <div className="flex gap-2">
                 <Button onClick={() => purchaseMutation.mutate({ listing_id: selected.id, quantity: 1, status: 'completed' })}
