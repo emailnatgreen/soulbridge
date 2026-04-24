@@ -1,0 +1,25 @@
+{
+  "name": "AppSettings",
+  "type": "object",
+  "properties": {
+    "setting_key": {
+      "type": "string",
+      "description": "Unique setting identifier"
+    },
+    "setting_value": {
+      "type": "boolean",
+      "description": "Setting value (true/false)"
+    },
+    "setting_data": {
+      "type": "object",
+      "description": "Flexible JSON data for complex settings (e.g. cursors, config objects)"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this setting controls"
+    }
+  },
+  "required": [
+    "setting_key"
+  ]
+}
