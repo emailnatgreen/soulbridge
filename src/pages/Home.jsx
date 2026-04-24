@@ -10,7 +10,7 @@ import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
   TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
-  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, TrendingDown
+  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, TrendingDown, Hammer
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
 import VillagePulseMini from '@/components/kinetic/VillagePulseMini';
@@ -189,6 +189,7 @@ export default function Home() {
     { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
     { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length },
     { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
+    { icon: Hammer, title: 'NFT Workshop', desc: 'Mint Widget NFTs, Chrome Skill NFTs and AI Agent NFTs — the sovereign creation environment', path: '/nft-workshop', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: '', count: null },
   ];
 
   return (
@@ -293,6 +294,10 @@ export default function Home() {
             <Button onClick={() => navigate('/KineticWasteDashboard')} className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Zoe</span><span className="sm:hidden">♀</span>
+            </Button>
+            <Button onClick={() => navigate('/nft-workshop')} className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
+              <Hammer className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">NFT Workshop</span><span className="sm:hidden">NFT</span>
             </Button>
           </div>
         </div>

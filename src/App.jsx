@@ -85,6 +85,7 @@ import WidgetDetail from './pages/WidgetDetail';
 import ServiceDefinitions from './pages/ServiceDefinitions';
 import ServiceUsageLogs from './pages/ServiceUsageLogs';
 import Send from './pages/Send';
+import NFTWorkshop from './pages/NFTWorkshop';
 
 
 const LoadingFallback = () => (
@@ -298,6 +299,9 @@ const AuthenticatedApp = () => {
         {/* SERVICE ENGINE */}
         <Route path="/service-definitions" element={L("service-definitions", ServiceDefinitions)} />
         <Route path="/service-usage-logs" element={L("service-usage-logs", ServiceUsageLogs)} />
+
+        {/* NFT WORKSHOP */}
+        <Route path="/nft-workshop" element={L("nft-workshop", NFTWorkshop)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />
