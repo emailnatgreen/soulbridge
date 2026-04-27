@@ -10,7 +10,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { Client, Wallet } from 'npm:xrpl@3.0.0';
+import { Wallet } from 'npm:xrpl@3.0.0';
 
 const FIRST_WALLET_COST = 12;
 const ADDITIONAL_WALLET_COST = 2;
@@ -126,44 +126,8 @@ Deno.serve(async (req) => {
         });
       } catch (_) {}
 
-      // 5. Generate XRPL wallet on mainnet
-      const client = new Client('wss://xrplcluster.com');
-      await client.connect();
+      // 5. Generate XRPL wallet on mainnet (unfunded — user pays activation)
       const wallet = Wallet.generate();
-
-      // Auto-fund with 13 XRP from sponsor
-      const sponsorSeed = Deno.env.get('XRPL_SENDER_SEED');
-      let funded = false;
-      if (sponsorSeed) {
-        try {
-          const sponsorWallet = Wallet.fromSeed(sponsorSeed);
-          const payment = {
-            TransactionType: 'Payment',
-            Account: sponsorWallet.classicAddress,
-            Destination: wallet.classicAddress,
-            Amount: '13000000',
-          };
-          const prepared = await client.autofill(payment);
-          const signed = sponsorWallet.sign(prepared);
-          await client.submitAndWait(signed.tx_blob);
-          funded = true;
-        } catch (e) {
-          console.log('Sponsor funding failed:', e.message);
-        }
-      }
-
-      // Get balance
-      let balance = 0;
-      try {
-        const resp = await client.request({
-          command: 'account_info',
-          account: wallet.classicAddress,
-          ledger_index: 'validated',
-        });
-        balance = Number(resp.result.account_data.Balance) / 1000000;
-      } catch (_) {}
-
-      await client.disconnect();
 
       // 6. Encrypt seed & store wallet
       const enc = await encryptSeed(wallet.seed);
@@ -175,7 +139,7 @@ Deno.serve(async (req) => {
         encryption_iv: enc.iv,
         encryption_salt: enc.salt,
         network: 'mainnet',
-        balance,
+        balance: 0,
         last_accessed: new Date().toISOString(),
       });
 
@@ -197,14 +161,13 @@ Deno.serve(async (req) => {
           id: walletData.id,
           name: walletData.name,
           classic_address: wallet.classicAddress,
-          balance,
+          balance: 0,
           network: 'mainnet',
         },
         cost_charged: cost,
         balance_after: newBalance,
         wallet_number: count + 1,
-        funded,
-        message: `Wallet #${count + 1} created! Charged ${cost} RLUSD.`,
+        message: `Wallet #${count + 1} created! Charged ${cost} RLUSD. Fund it with 13 XRP to activate and publish DID.`,
       });
     }
 

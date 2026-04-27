@@ -139,7 +139,7 @@ export default function SeedWalletCreatorPanel() {
 
         <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-300 flex items-start gap-2">
           <Coins className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-          <span>This will charge <strong>{pricing?.next_cost} RLUSD</strong> from your balance. The wallet will be auto-funded with 13 XRP for DID publication.</span>
+          <span>This will charge <strong>{pricing?.next_cost} RLUSD</strong> from your balance. You must then fund the wallet with <strong>13 XRP</strong> (12 reserve + 1 for DID publishing) before you can activate and publish.</span>
         </div>
 
         <Button
@@ -184,13 +184,11 @@ export default function SeedWalletCreatorPanel() {
               <span className="text-green-300 text-xs">{lastCreated.balance_after?.toFixed(2)} RLUSD</span>
             </div>
           </div>
-          <a
-            href={`https://xrpscan.com/account/${lastCreated.wallet.classic_address}`}
-            target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300"
-          >
-            <ExternalLink className="w-3 h-3" /> View on XRPScan
-          </a>
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-300 flex items-start gap-2">
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Send <strong>13 XRP</strong> to this address to activate it on XRPL. You need at least 1 XRP remaining after the 12 XRP reserve to publish your DID.</span>
+          </div>
+          <p className="text-white/20 text-[10px] font-mono break-all select-all cursor-pointer">{lastCreated.wallet.classic_address}</p>
         </div>
       )}
 
