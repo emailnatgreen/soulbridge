@@ -46,8 +46,8 @@ export default function WorkshopBalanceGate({ nftType, children }) {
         </Button>
       </div>
 
-      {/* Insufficient balance warning */}
-      {!pricing?.can_afford && (
+      {/* Insufficient balance warning — skip for zero-cost (admin infrastructure) mints */}
+      {!pricing?.can_afford && pricing?.cost > 0 && (
         <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
           <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
           <div>
@@ -61,7 +61,7 @@ export default function WorkshopBalanceGate({ nftType, children }) {
 
       {/* Render the form, passing canAfford and pricing down */}
       {typeof children === 'function' 
-        ? children({ canAfford: pricing?.can_afford, cost: pricing?.cost, balance: pricing?.balance, refreshPricing: loadPricing })
+        ? children({ canAfford: pricing?.can_afford || pricing?.cost === 0, cost: pricing?.cost, balance: pricing?.balance, refreshPricing: loadPricing })
         : children
       }
     </div>
