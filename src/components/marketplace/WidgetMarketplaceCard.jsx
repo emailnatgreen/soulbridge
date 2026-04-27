@@ -28,11 +28,15 @@ export default function WidgetMarketplaceCard({ widget }) {
     >
       {/* Header row */}
       <div className="flex items-start gap-3 mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-          owned ? 'bg-emerald-500/20' : 'bg-purple-500/15'
-        }`}>
-          <Shield className={`w-5 h-5 ${owned ? 'text-emerald-400' : 'text-purple-400'}`} />
-        </div>
+        {widget.image_url ? (
+          <img src={widget.image_url} alt={widget.name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-white/10" />
+        ) : (
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+            owned ? 'bg-emerald-500/20' : 'bg-purple-500/15'
+          }`}>
+            <Shield className={`w-5 h-5 ${owned ? 'text-emerald-400' : 'text-purple-400'}`} />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <h3 className="text-white font-semibold text-sm truncate group-hover:text-purple-200 transition-colors">
             {widget.name}

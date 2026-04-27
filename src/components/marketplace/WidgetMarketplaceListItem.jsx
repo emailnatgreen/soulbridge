@@ -15,11 +15,15 @@ export default function WidgetMarketplaceListItem({ widget }) {
       }`}
     >
       {/* Icon */}
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-        owned ? 'bg-emerald-500/20' : 'bg-purple-500/15'
-      }`}>
-        <Shield className={`w-5 h-5 ${owned ? 'text-emerald-400' : 'text-purple-400'}`} />
-      </div>
+      {widget.image_url ? (
+        <img src={widget.image_url} alt={widget.name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-white/10" />
+      ) : (
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+          owned ? 'bg-emerald-500/20' : 'bg-purple-500/15'
+        }`}>
+          <Shield className={`w-5 h-5 ${owned ? 'text-emerald-400' : 'text-purple-400'}`} />
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 min-w-0">

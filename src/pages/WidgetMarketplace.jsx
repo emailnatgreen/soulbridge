@@ -18,7 +18,11 @@ export default function WidgetMarketplace() {
 
   // Derived filtered + sorted list
   const filteredWidgets = useMemo(() => {
-    let list = [...widgets];
+    // Hide test/internal NFTs from the public marketplace
+    let list = widgets.filter(w =>
+      !(w.nft_id || '').includes('TST') &&
+      w.mint_status !== 'failed'
+    );
 
     // Search
     if (search.trim()) {
