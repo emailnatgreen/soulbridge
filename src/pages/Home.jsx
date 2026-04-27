@@ -190,6 +190,7 @@ export default function Home() {
     { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length },
     { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
     { icon: Hammer, title: 'NFT Workshop', desc: 'Mint Widget NFTs, Chrome Skill NFTs and AI Agent NFTs — the sovereign creation environment', path: '/nft-workshop', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: '', count: null },
+    { icon: Fingerprint, title: 'Sovereign Identity', desc: 'Your personal DID hub — view published DIDs, manage wallets, privacy controls and verification certificates', path: '/sovereign-id', color: 'text-indigo-400', border: 'border-indigo-500/30', countLabel: 'published DIDs', count: liveCounts.dids, userVisible: true },
   ];
 
   return (
@@ -368,7 +369,7 @@ export default function Home() {
             <Zap className="w-3 h-3" /> Platform Features
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {features.filter(f => isAdmin || ['AI Agents'].includes(f.title)).map(f => (
+            {features.filter(f => isAdmin || f.userVisible || ['AI Agents'].includes(f.title)).map(f => (
               <button
                 key={f.title}
                 onClick={() => navigate(f.path)}
