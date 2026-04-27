@@ -9,11 +9,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // Pricing per NFT type (in RLUSD)
+// Infrastructure = 0 (admin-only, minted at cost for the platform)
 const NFT_PRICING = {
   widget: 5,
   chrome_skill: 8,
   agent: 15,
-  infrastructure: 25,
+  infrastructure: 0,
 };
 
 Deno.serve(async (req) => {
@@ -32,6 +33,11 @@ Deno.serve(async (req) => {
     }
 
     const cost = NFT_PRICING[nft_type];
+
+    // Infrastructure NFTs are admin-only — reject non-admins
+    if (nft_type === 'infrastructure' && user.role !== 'admin') {
+      return Response.json({ error: 'Infrastructure NFTs are admin-only' }, { status: 403 });
+    }
 
     // Get or create ledger
     const ledgers = await base44.asServiceRole.entities.RLUSDLedger.filter(
