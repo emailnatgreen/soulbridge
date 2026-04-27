@@ -24,6 +24,7 @@ export default function InfrastructureNFTForm() {
   const [form, setForm] = useState({
     name: '', description: '', category: 'governance',
     nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day',
+    serviceFeePercent: '',
     imageUrl: '', taxon: '0', transferFee: '0',
     featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock',
   });
@@ -56,14 +57,14 @@ export default function InfrastructureNFTForm() {
           cost_per_stream_interval: parseFloat(form.streamCost) || 0,
           stream_interval_unit: form.streamUnit,
           immutable_after_mint: IMMUTABLE_FIELDS,
-          governance_notes: `Infrastructure NFT — NFT cost: ${parseFloat(form.nftCost) || 0} RLUSD, service price: ${fixedPrice} RLUSD, stream: ${parseFloat(form.streamCost) || 0} RLUSD/${form.streamUnit}. Immutable after mint.`,
+          governance_notes: `Infrastructure NFT — NFT cost: ${parseFloat(form.nftCost) || 0} RLUSD, service price: ${fixedPrice} RLUSD, service fee: ${parseFloat(form.serviceFeePercent) || 0}% → Treasury, stream: ${parseFloat(form.streamCost) || 0} RLUSD/${form.streamUnit}. Immutable after mint.`,
         },
       });
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message || 'Infrastructure NFT created as draft (immutable after mint)');
-      setForm({ name: '', description: '', category: 'governance', nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
+      setForm({ name: '', description: '', category: 'governance', nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day', serviceFeePercent: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricing?.();
     },
@@ -153,6 +154,11 @@ export default function InfrastructureNFTForm() {
               <Label className="text-amber-300 text-xs">Service Price (RLUSD)</Label>
               <Input type="number" value={form.fixedPrice} onChange={e => set('fixedPrice', e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
               <p className="text-white/30 text-[9px]">Per-use charge for the service (0 = free)</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-green-300 text-xs">Service Fee % → Treasury</Label>
+              <Input type="number" value={form.serviceFeePercent} onChange={e => set('serviceFeePercent', e.target.value)} placeholder="1" min="0" max="100" step="0.1" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">% of each transaction sent to Village Treasury (e.g. 1 = 1%)</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-amber-300 text-xs">Stream Cost (RLUSD)</Label>

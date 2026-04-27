@@ -13,7 +13,7 @@ import DIDManagementPanel from '@/components/dashboard/DIDManagementPanel';
 import CoreDIDStatusModule from '@/components/dashboard/CoreDIDStatusModule';
 import MemorySynthesisTrigger from '@/components/dashboard/MemorySynthesisTrigger';
 import ConstitutionalBraidLive from '@/components/ConstitutionalBraidLive';
-import DexSwapPanel from '@/components/dex/DexSwapPanel';
+import DexSwapGate from '@/components/dex/DexSwapGate';
 import SendPanel from '@/components/wallet/SendPanel';
 import ReceivePanel from '@/components/wallet/ReceivePanel';
 import UniversalDashboardStatus from '@/components/dashboard/UniversalDashboardStatus';
@@ -499,7 +499,7 @@ export default function Dashboard() {
               <SendPanel wallets={userWallets} />
               <ReceivePanel wallets={userWallets} />
             </div>
-            <DexSwapPanel wallets={userWallets} />
+            <DexSwapGate wallets={userWallets} isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
           </div>
 
           <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
@@ -589,6 +589,9 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* DEX Swap — NFT gated */}
+        <DexSwapGate wallets={userWallets} isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
 
         {/* Widget NFT Inventory */}
         <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
