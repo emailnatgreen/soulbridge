@@ -106,9 +106,23 @@ export default function MintActionButton({ widget }) {
 
   if (alreadyMinted) {
     return (
-      <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px] gap-1">
-        <CheckCircle2 className="w-3 h-3" /> Minted
-      </Badge>
+      <div className="flex items-center gap-1.5">
+        <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-[9px] gap-1">
+          <CheckCircle2 className="w-3 h-3" /> Minted
+        </Badge>
+        {widget.xrpl_tx_hash && (
+          <a
+            href={`https://xrpscan.com/tx/${widget.xrpl_tx_hash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
+            className="flex items-center gap-1 text-[9px] text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 border border-cyan-500/30 rounded px-1.5 py-0.5 transition-colors"
+            title="Verify on XRPScan"
+          >
+            <ExternalLink className="w-2.5 h-2.5" /> XRPScan
+          </a>
+        )}
+      </div>
     );
   }
 
@@ -156,6 +170,19 @@ export default function MintActionButton({ widget }) {
                 <div className="flex items-center justify-between">
                   <span className="text-white/40 text-[10px]">Feature Path</span>
                   <span className="text-purple-300 text-xs font-mono">{widget.feature_path}</span>
+                </div>
+              )}
+              {widget.xrpl_tx_hash && (
+                <div className="flex items-center justify-between">
+                  <span className="text-white/40 text-[10px]">XRPL Proof</span>
+                  <a
+                    href={`https://xrpscan.com/tx/${widget.xrpl_tx_hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-cyan-300 hover:text-cyan-200 text-xs transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" /> XRPScan
+                  </a>
                 </div>
               )}
               {widget.transferable === false && (
@@ -231,12 +258,24 @@ export default function MintActionButton({ widget }) {
 
             {/* Step: Success */}
             {step === 'success' && (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-                <CheckCircle2 className="w-5 h-5 text-green-400" />
-                <div>
-                  <p className="text-green-300 text-xs font-semibold">Minted on XRPL Mainnet! 🎉</p>
-                  <p className="text-green-200/50 text-[10px]">Your NFT is now live on the XRP Ledger</p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  <div>
+                    <p className="text-green-300 text-xs font-semibold">Minted on XRPL Mainnet! 🎉</p>
+                    <p className="text-green-200/50 text-[10px]">Your NFT is now live on the XRP Ledger</p>
+                  </div>
                 </div>
+                {widget.xrpl_tx_hash && (
+                  <a
+                    href={`https://xrpscan.com/tx/${widget.xrpl_tx_hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 text-xs text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 py-2 transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> Verify on XRPScan
+                  </a>
+                )}
               </div>
             )}
 

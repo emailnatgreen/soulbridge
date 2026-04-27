@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers, Sparkles, Chrome, Bot, Shield } from 'lucide-react';
+import { Layers, Sparkles, Chrome, Bot, Shield, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MintActionButton from './MintActionButton';
 
@@ -82,6 +82,18 @@ export default function MyMintedNFTs() {
               <Badge className={`text-[9px] ${STATUS_COLORS[w.mint_status] || STATUS_COLORS.draft}`}>
                 {w.mint_status?.replace(/_/g, ' ') || 'draft'}
               </Badge>
+              {w.xrpl_tx_hash && (
+                <a
+                  href={`https://xrpscan.com/tx/${w.xrpl_tx_hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  className="flex items-center gap-1 text-[9px] text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 border border-cyan-500/30 rounded px-1.5 py-0.5 transition-colors"
+                  title="Verify on XRPScan"
+                >
+                  <ExternalLink className="w-2.5 h-2.5" /> XRPScan
+                </a>
+              )}
               <MintActionButton widget={w} />
             </div>
           </Link>
