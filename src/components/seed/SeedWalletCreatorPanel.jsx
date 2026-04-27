@@ -1,32 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Wallet, Plus, Loader2, CheckCircle, Coins, TreePine, AlertTriangle, ExternalLink, RefreshCw
+  Wallet, Plus, Loader2, CheckCircle, Coins, TreePine, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
+import SeedWalletCard from './SeedWalletCard';
 
 export default function SeedWalletCreatorPanel() {
   const [pricing, setPricing] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [pricingLoading, setPricingLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [walletName, setWalletName] = useState('');
   const [lastCreated, setLastCreated] = useState(null);
+  const queryClient = useQueryClient();
+
+  // Fetch user's wallets
+  const { data: wallets = [], isLoading: walletsLoading, refetch: refetchWallets } = useQuery({
+    queryKey: ['seedWallets'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      return base44.entities.Wallet.filter({ owner_id: user.id }, '-created_date', 50);
+    },
+    staleTime: 10000,
+  });
 
   const loadPricing = async () => {
-    setLoading(true);
+    setPricingLoading(true);
     try {
       const res = await base44.functions.invoke('seedWalletCreate', { action: 'price_check' });
       setPricing(res.data);
     } catch (e) {
       toast.error('Failed to load pricing');
     }
-    setLoading(false);
+    setPricingLoading(false);
   };
 
   useEffect(() => { loadPricing(); }, []);
+  const loading = pricingLoading;
 
   const handleCreate = async () => {
     if (!walletName.trim()) {
@@ -44,6 +58,7 @@ export default function SeedWalletCreatorPanel() {
       setWalletName('');
       toast.success(res.data.message);
       loadPricing();
+      refetchWallets();
     } catch (e) {
       const msg = e.response?.data?.error || e.message;
       toast.error(msg);
@@ -155,49 +170,57 @@ export default function SeedWalletCreatorPanel() {
         </Button>
       </div>
 
-      {/* Last Created Result */}
+      {/* Last Created Banner */}
       {lastCreated?.success && (
-        <div className="bg-green-500/5 border border-green-500/20 rounded-2xl p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-400" />
-            <h4 className="text-green-300 font-semibold text-sm">Wallet #{lastCreated.wallet_number} Created!</h4>
+        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+          <div>
+            <p className="text-green-300 text-xs font-semibold">Wallet #{lastCreated.wallet_number} Created!</p>
+            <p className="text-green-200/50 text-[10px]">Charged {lastCreated.cost_charged} RLUSD. Fund it with 13 XRP below, then publish your DID.</p>
           </div>
-          <div className="bg-black/20 rounded-xl px-3 py-2 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-white/40 text-[10px]">Name</span>
-              <span className="text-white text-xs">{lastCreated.wallet.name}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-white/40 text-[10px]">Address</span>
-              <span className="text-purple-300 text-xs font-mono">{lastCreated.wallet.classic_address}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-white/40 text-[10px]">Balance</span>
-              <span className="text-white text-xs">{lastCreated.wallet.balance} XRP</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-white/40 text-[10px]">Charged</span>
-              <span className="text-amber-300 text-xs">{lastCreated.cost_charged} RLUSD</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-white/40 text-[10px]">Remaining Balance</span>
-              <span className="text-green-300 text-xs">{lastCreated.balance_after?.toFixed(2)} RLUSD</span>
-            </div>
-          </div>
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-300 flex items-start gap-2">
-            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-            <span>Send <strong>13 XRP</strong> to this address to activate it on XRPL. You need at least 1 XRP remaining after the 12 XRP reserve to publish your DID.</span>
-          </div>
-          <p className="text-white/20 text-[10px] font-mono break-all select-all cursor-pointer">{lastCreated.wallet.classic_address}</p>
         </div>
       )}
 
-      {/* Refresh */}
-      <div className="flex justify-center">
-        <Button variant="ghost" size="sm" onClick={loadPricing} className="text-white/30 hover:text-white gap-1.5 text-[10px]">
-          <RefreshCw className="w-3 h-3" /> Refresh Pricing
-        </Button>
-      </div>
+      {/* My Wallets List */}
+      {wallets.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-white font-semibold text-sm flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-purple-400" /> My Node Wallets
+              <span className="text-white/30 text-[10px] font-normal">({wallets.length})</span>
+            </h4>
+            <Button variant="ghost" size="sm" onClick={() => { refetchWallets(); loadPricing(); }}
+              className="text-white/30 hover:text-white gap-1 text-[10px] h-6">
+              <RefreshCw className="w-3 h-3" /> Refresh All
+            </Button>
+          </div>
+
+          {/* Summary */}
+          <div className="flex gap-2 text-[10px]">
+            <span className="bg-green-500/10 text-green-300 border border-green-500/20 px-2 py-1 rounded-lg">
+              {wallets.filter(w => w.is_published).length} Published
+            </span>
+            <span className="bg-purple-500/10 text-purple-300 border border-purple-500/20 px-2 py-1 rounded-lg">
+              {wallets.filter(w => !w.is_published && (w.balance || 0) >= 13).length} Ready
+            </span>
+            <span className="bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-1 rounded-lg">
+              {wallets.filter(w => !w.is_published && (w.balance || 0) < 13).length} Needs Funding
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            {wallets.map(w => (
+              <SeedWalletCard key={w.id} wallet={w} onRefresh={() => { refetchWallets(); loadPricing(); }} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {walletsLoading && wallets.length === 0 && (
+        <div className="flex items-center justify-center py-6">
+          <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+        </div>
+      )}
     </div>
   );
 }
