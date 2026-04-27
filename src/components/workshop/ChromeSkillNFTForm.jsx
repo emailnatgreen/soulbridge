@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Chrome, Loader2, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
@@ -18,6 +19,9 @@ export default function ChromeSkillNFTForm() {
   const [nftId, setNftId] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [servicePrice, setServicePrice] = useState('');
+  const [streamCost, setStreamCost] = useState('');
+  const [streamUnit, setStreamUnit] = useState('day');
   const [taxon, setTaxon] = useState('0');
   const [transferFee, setTransferFee] = useState('0');
   const [skills, setSkills] = useState([{ ...EMPTY_SKILL }]);
@@ -51,6 +55,8 @@ export default function ChromeSkillNFTForm() {
           taxon: parseInt(taxon) || 0,
           transfer_fee: parseInt(transferFee) || 0,
           chrome_skill_instructions: skills.filter(s => s.skill_name && s.instructions),
+          cost_per_stream_interval: parseFloat(streamCost) || 0,
+          stream_interval_unit: streamUnit,
         },
       });
       return res.data;
@@ -58,6 +64,7 @@ export default function ChromeSkillNFTForm() {
     onSuccess: (data) => {
       toast.success(data.message || 'Chrome Skill NFT created as draft');
       setName(''); setNftId(''); setDescription(''); setImageUrl('');
+      setServicePrice(''); setStreamCost(''); setStreamUnit('day');
       setTaxon('0'); setTransferFee('0');
       setSkills([{ ...EMPTY_SKILL }]);
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
@@ -107,6 +114,32 @@ export default function ChromeSkillNFTForm() {
         <div className="space-y-1.5">
           <Label className="text-white/60 text-xs">Description *</Label>
           <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What Chrome skill does this NFT unlock?" className="bg-white/5 border-white/10 text-white min-h-[60px]" />
+        </div>
+
+        {/* Economics Section */}
+        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
+          <p className="text-amber-300 text-xs font-semibold">💰 NFT Economics</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Service Price (RLUSD)</Label>
+              <Input type="number" value={servicePrice} onChange={e => setServicePrice(e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">What users pay to acquire/use this NFT</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Stream Cost (RLUSD)</Label>
+              <Input type="number" value={streamCost} onChange={e => setStreamCost(e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">Ongoing cost per interval (0 = none)</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Stream Interval</Label>
+              <Select value={streamUnit} onValueChange={v => setStreamUnit(v)}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {['second', 'minute', 'hour', 'day'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {/* Skill definitions */}

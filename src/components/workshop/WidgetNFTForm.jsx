@@ -19,7 +19,7 @@ const INITIAL = {
   name: '', description: '', image_url: '', category: 'other',
   widget_type: 'unlock', widget_class: 'unlock', ui_behavior: 'unlock_page',
   version: '1.0.0', feature_path: '', nft_id: '',
-  cost_per_stream_interval: '', stream_interval_unit: 'hour',
+  service_price: '', cost_per_stream_interval: '', stream_interval_unit: 'hour',
   taxon: '0', transferFee: '0', transferable: false, burnable: false,
 };
 
@@ -122,23 +122,35 @@ export default function WidgetNFTForm() {
             <Input value={form.feature_path} onChange={e => set('feature_path', e.target.value)} placeholder="/my-feature" className="bg-white/5 border-white/10 text-white" />
           </div>
         </div>
-        {form.widget_type === 'service' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+        {/* Economics Section */}
+        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
+          <p className="text-amber-300 text-xs font-semibold">💰 NFT Economics</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-amber-300 text-xs">Cost per interval (RLUSD)</Label>
-              <Input type="number" value={form.cost_per_stream_interval} onChange={e => set('cost_per_stream_interval', e.target.value)} placeholder="0.01" className="bg-white/5 border-white/10 text-white" />
+              <Label className="text-amber-300 text-xs">Service Price (RLUSD)</Label>
+              <Input type="number" value={form.service_price} onChange={e => set('service_price', e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">What users pay to acquire/use this NFT</p>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-amber-300 text-xs">Interval Unit</Label>
-              <Select value={form.stream_interval_unit} onValueChange={v => set('stream_interval_unit', v)}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {['second', 'minute', 'hour', 'day'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {form.widget_type === 'service' && (
+              <>
+                <div className="space-y-1.5">
+                  <Label className="text-amber-300 text-xs">Stream Cost (RLUSD)</Label>
+                  <Input type="number" value={form.cost_per_stream_interval} onChange={e => set('cost_per_stream_interval', e.target.value)} placeholder="0.01" className="bg-white/5 border-white/10 text-white" />
+                  <p className="text-white/30 text-[9px]">Ongoing cost per interval</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-amber-300 text-xs">Stream Interval</Label>
+                  <Select value={form.stream_interval_unit} onValueChange={v => set('stream_interval_unit', v)}>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {['second', 'minute', 'hour', 'day'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Image URL</Label>

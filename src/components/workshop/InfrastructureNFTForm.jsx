@@ -23,7 +23,8 @@ const IMMUTABLE_FIELDS = [
 export default function InfrastructureNFTForm() {
   const [form, setForm] = useState({
     name: '', description: '', category: 'governance',
-    nftId: '', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0',
+    nftId: '', fixedPrice: '', streamCost: '', streamUnit: 'day',
+    imageUrl: '', taxon: '0', transferFee: '0',
     featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock',
   });
   const queryClient = useQueryClient();
@@ -52,17 +53,17 @@ export default function InfrastructureNFTForm() {
           burnable: false,
           taxon: parseInt(form.taxon) || 0,
           transfer_fee: parseInt(form.transferFee) || 0,
-          cost_per_stream_interval: fixedPrice,
-          stream_interval_unit: 'day',
+          cost_per_stream_interval: parseFloat(form.streamCost) || 0,
+          stream_interval_unit: form.streamUnit,
           immutable_after_mint: IMMUTABLE_FIELDS,
-          governance_notes: `Infrastructure NFT — fixed price cap: ${fixedPrice} RLUSD. Immutable after mint.`,
+          governance_notes: `Infrastructure NFT — service price: ${fixedPrice} RLUSD, stream: ${parseFloat(form.streamCost) || 0} RLUSD/${form.streamUnit}. Immutable after mint.`,
         },
       });
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message || 'Infrastructure NFT created as draft (immutable after mint)');
-      setForm({ name: '', description: '', category: 'governance', nftId: '', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
+      setForm({ name: '', description: '', category: 'governance', nftId: '', fixedPrice: '', streamCost: '', streamUnit: 'day', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricing?.();
     },
@@ -139,11 +140,33 @@ export default function InfrastructureNFTForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-1.5">
-            <Label className="text-red-300 text-xs">Fixed Price Cap (RLUSD) *</Label>
-            <Input type="number" value={form.fixedPrice} onChange={e => set('fixedPrice', e.target.value)} placeholder="100" className="bg-white/5 border-white/10 text-white" />
+        {/* Economics Section */}
+        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
+          <p className="text-amber-300 text-xs font-semibold">💰 NFT Economics</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-red-300 text-xs">Service Price (RLUSD) *</Label>
+              <Input type="number" value={form.fixedPrice} onChange={e => set('fixedPrice', e.target.value)} placeholder="60" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">What users pay to acquire/use this NFT</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Stream Cost (RLUSD)</Label>
+              <Input type="number" value={form.streamCost} onChange={e => set('streamCost', e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">Ongoing cost per interval (0 = no streaming)</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Stream Interval</Label>
+              <Select value={form.streamUnit} onValueChange={v => set('streamUnit', v)}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {['second', 'minute', 'hour', 'day'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Taxon</Label>
             <Input type="number" value={form.taxon} onChange={e => set('taxon', e.target.value)} className="bg-white/5 border-white/10 text-white" />

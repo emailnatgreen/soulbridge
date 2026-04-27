@@ -18,6 +18,7 @@ export default function AgentNFTForm() {
   const [form, setForm] = useState({
     agentName: '', purpose: '', personality: '', role: 'citizen',
     bio: '', tagline: '', imageUrl: '', nftId: '',
+    servicePrice: '', streamCost: '', streamUnit: 'day',
     bindToDID: true, soulBound: true,
   });
   const queryClient = useQueryClient();
@@ -53,6 +54,8 @@ export default function AgentNFTForm() {
           taxon: 0,
           transfer_fee: 0,
           allowed_agent_permissions: ['can_vote', 'can_send_xrp'],
+          cost_per_stream_interval: parseFloat(form.streamCost) || 0,
+          stream_interval_unit: form.streamUnit,
         },
         agent_data: {
           name: form.agentName,
@@ -80,6 +83,7 @@ export default function AgentNFTForm() {
       setForm({
         agentName: '', purpose: '', personality: '', role: 'citizen',
         bio: '', tagline: '', imageUrl: '', nftId: '',
+        servicePrice: '', streamCost: '', streamUnit: 'day',
         bindToDID: true, soulBound: true,
       });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
@@ -153,6 +157,32 @@ export default function AgentNFTForm() {
         <div className="space-y-1.5">
           <Label className="text-white/60 text-xs">Bio</Label>
           <Textarea value={form.bio} onChange={e => set('bio', e.target.value)} placeholder="Detailed biography and introduction…" className="bg-white/5 border-white/10 text-white min-h-[60px]" />
+        </div>
+
+        {/* Economics Section */}
+        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
+          <p className="text-amber-300 text-xs font-semibold">💰 NFT Economics</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Service Price (RLUSD)</Label>
+              <Input type="number" value={form.servicePrice} onChange={e => set('servicePrice', e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">What users pay to acquire/use this agent</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Stream Cost (RLUSD)</Label>
+              <Input type="number" value={form.streamCost} onChange={e => set('streamCost', e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">Ongoing cost per interval (0 = none)</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Stream Interval</Label>
+              <Select value={form.streamUnit} onValueChange={v => set('streamUnit', v)}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {['second', 'minute', 'hour', 'day'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {/* Soul-Bound toggle */}
