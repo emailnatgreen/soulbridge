@@ -20,7 +20,7 @@ const IMMUTABLE_FIELDS = [
 export default function InfrastructureNFTForm() {
   const [form, setForm] = useState({
     name: '', description: '', category: 'governance',
-    fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0',
+    nftId: '', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0',
     featurePath: '',
   });
   const queryClient = useQueryClient();
@@ -32,6 +32,7 @@ export default function InfrastructureNFTForm() {
       const fixedPrice = parseFloat(form.fixedPrice) || 0;
       return base44.entities.Widget.create({
         name: form.name,
+        nft_id: form.nftId || undefined,
         description: form.description,
         widget_type: 'unlock',
         widget_class: 'unlock',
@@ -56,7 +57,7 @@ export default function InfrastructureNFTForm() {
     },
     onSuccess: () => {
       toast.success('Infrastructure NFT created as draft (immutable after mint)');
-      setForm({ name: '', description: '', category: 'governance', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '' });
+      setForm({ name: '', description: '', category: 'governance', nftId: '', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '' });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
     },
   });
@@ -85,6 +86,10 @@ export default function InfrastructureNFTForm() {
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Name *</Label>
             <Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Village Treasury Core" className="bg-white/5 border-white/10 text-white" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Widget NFT ID *</Label>
+            <Input value={form.nftId} onChange={e => set('nftId', e.target.value)} placeholder="e.g. WIDGET-WM-007" className="bg-white/5 border-white/10 text-white" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Category</Label>
