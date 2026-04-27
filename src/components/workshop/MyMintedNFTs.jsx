@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Layers, Sparkles, Chrome, Bot, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import MintActionButton from './MintActionButton';
 
 const STATUS_COLORS = {
   draft: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
@@ -77,9 +78,12 @@ export default function MyMintedNFTs() {
                 <span className="text-white/30 text-[9px]">{w.category?.replace(/_/g, ' ')}</span>
               </div>
             </div>
-            <Badge className={`text-[9px] ${STATUS_COLORS[w.mint_status] || STATUS_COLORS.draft}`}>
-              {w.mint_status?.replace(/_/g, ' ') || 'draft'}
-            </Badge>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Badge className={`text-[9px] ${STATUS_COLORS[w.mint_status] || STATUS_COLORS.draft}`}>
+                {w.mint_status?.replace(/_/g, ' ') || 'draft'}
+              </Badge>
+              <MintActionButton widget={w} />
+            </div>
           </Link>
         ))}
       </CardContent>
