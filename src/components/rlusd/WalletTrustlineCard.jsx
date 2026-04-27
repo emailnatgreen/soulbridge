@@ -1,11 +1,10 @@
 import React from 'react';
-import { CheckCircle, AlertTriangle, Loader2, Wallet as WalletIcon } from 'lucide-react';
+import { CheckCircle, Loader2, Wallet as WalletIcon } from 'lucide-react';
 
 export default function WalletTrustlineCard({ wallet, checkData, loading, selected, onSelect }) {
   const address = wallet.classic_address || '—';
   const shortAddr = address.length > 12 ? `${address.slice(0, 6)}…${address.slice(-6)}` : address;
   const hasTrustline = checkData?.has_trustline;
-  const needsXrp = checkData?.needs_xrp;
 
   return (
     <button
@@ -38,23 +37,11 @@ export default function WalletTrustlineCard({ wallet, checkData, loading, select
               <CheckCircle className="w-4 h-4 text-emerald-400" />
               <span className="text-[10px] text-emerald-300 font-semibold">Active</span>
             </div>
-          ) : needsXrp ? (
-            <div className="flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[10px] text-amber-300">Need XRP</span>
-            </div>
           ) : (
             <span className="text-[10px] text-cyan-400 font-semibold">Select →</span>
           )}
         </div>
       </div>
-
-      {checkData && !hasTrustline && (
-        <div className="mt-2 pt-2 border-t border-white/5 flex gap-4 text-[10px] text-slate-500">
-          <span>XRP: {checkData.xrp_balance?.toFixed(2) || '0'}</span>
-          {needsXrp && <span className="text-amber-400">Need {checkData.xrp_needed} more XRP</span>}
-        </div>
-      )}
     </button>
   );
 }

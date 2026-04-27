@@ -42,25 +42,7 @@ async function checkOnChainTrustline(address) {
   return { exists: false, funded: true, error: 'XRPL unreachable' };
 }
 
-async function getAccountBalance(address) {
-  const endpoints = ['https://xrplcluster.com', 'https://s1.ripple.com:51234'];
-  for (const endpoint of endpoints) {
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          method: 'account_info',
-          params: [{ account: address, ledger_index: 'validated' }]
-        })
-      });
-      const data = await res.json();
-      if (data.result?.error === 'actNotFound') return 0;
-      return parseFloat(data.result?.account_data?.Balance || '0') / 1000000;
-    } catch (_) { continue; }
-  }
-  return 0;
-}
+
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -83,7 +65,6 @@ Deno.serve(async (req) => {
 
       const address = wallet.classic_address;
       const onChain = await checkOnChainTrustline(address);
-      const xrpBalance = await getAccountBalance(address);
 
       // Get user RLUSD ledger balance
       const ledgers = await base44.asServiceRole.entities.RLUSDLedger.filter(
@@ -94,14 +75,10 @@ Deno.serve(async (req) => {
       return Response.json({
         wallet_id,
         address,
-        xrp_balance: xrpBalance,
         has_trustline: onChain.exists,
-        is_funded: onChain.funded,
         can_afford: (ledger?.balance || 0) >= TRUSTLINE_COST_RLUSD,
         rlusd_balance: ledger?.balance || 0,
         cost: TRUSTLINE_COST_RLUSD,
-        needs_xrp: xrpBalance < 1.2,
-        xrp_needed: xrpBalance < 1.2 ? (1.2 - xrpBalance).toFixed(4) : 0,
       });
     }
 
@@ -123,16 +100,7 @@ Deno.serve(async (req) => {
         }, { status: 409 });
       }
 
-      // 2) Check XRP balance for reserve
-      const xrpBalance = await getAccountBalance(address);
-      if (xrpBalance < 1.2) {
-        return Response.json({
-          error: `Insufficient XRP. Need at least 1.2 XRP, wallet has ${xrpBalance.toFixed(4)} XRP.`,
-          needs_funding: true,
-        }, { status: 400 });
-      }
-
-      // 3) Get or create RLUSD ledger
+      // 2) Get or create RLUSD ledger
       const ledgers = await base44.asServiceRole.entities.RLUSDLedger.filter(
         { user_email: user.email }, '-created_date', 1
       );
