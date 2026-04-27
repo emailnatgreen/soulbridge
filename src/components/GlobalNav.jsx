@@ -185,14 +185,14 @@ export default function GlobalNav() {
 
   return (
     <>
-      {/* Mobile Toggle — positioned inside the top header bar area */}
-      <div className="fixed top-2 left-2 z-50 lg:hidden">
+      {/* Mobile Toggle — must sit above ALL fixed/sticky headers */}
+      <div className="fixed top-1.5 left-1.5 z-[60] lg:hidden">
         <button
           onClick={() => setIsOpen(o => !o)}
-          style={{ touchAction: 'manipulation' }}
-          className="flex items-center justify-center w-8 h-8 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-md"
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          className="flex items-center justify-center w-10 h-10 bg-slate-800/95 hover:bg-slate-700 active:bg-slate-600 text-white border border-slate-600 rounded-lg shadow-lg backdrop-blur-sm"
         >
-          {isOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
@@ -224,7 +224,7 @@ export default function GlobalNav() {
 
       {/* Mobile Sidebar */}
       {isOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-[55] lg:hidden">
           <div onClick={() => setIsOpen(false)} className="absolute inset-0 bg-black/60" />
           <div className="absolute left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
             <div className="p-5 pb-3 flex-shrink-0">
