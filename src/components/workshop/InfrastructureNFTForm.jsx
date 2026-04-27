@@ -23,7 +23,7 @@ const IMMUTABLE_FIELDS = [
 export default function InfrastructureNFTForm() {
   const [form, setForm] = useState({
     name: '', description: '', category: 'governance',
-    nftId: '', fixedPrice: '', streamCost: '', streamUnit: 'day',
+    nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day',
     imageUrl: '', taxon: '0', transferFee: '0',
     featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock',
   });
@@ -56,14 +56,14 @@ export default function InfrastructureNFTForm() {
           cost_per_stream_interval: parseFloat(form.streamCost) || 0,
           stream_interval_unit: form.streamUnit,
           immutable_after_mint: IMMUTABLE_FIELDS,
-          governance_notes: `Infrastructure NFT — service price: ${fixedPrice} RLUSD, stream: ${parseFloat(form.streamCost) || 0} RLUSD/${form.streamUnit}. Immutable after mint.`,
+          governance_notes: `Infrastructure NFT — NFT cost: ${parseFloat(form.nftCost) || 0} RLUSD, service price: ${fixedPrice} RLUSD, stream: ${parseFloat(form.streamCost) || 0} RLUSD/${form.streamUnit}. Immutable after mint.`,
         },
       });
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message || 'Infrastructure NFT created as draft (immutable after mint)');
-      setForm({ name: '', description: '', category: 'governance', nftId: '', fixedPrice: '', streamCost: '', streamUnit: 'day', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
+      setForm({ name: '', description: '', category: 'governance', nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricing?.();
     },
@@ -143,11 +143,16 @@ export default function InfrastructureNFTForm() {
         {/* Economics Section */}
         <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
           <p className="text-amber-300 text-xs font-semibold">💰 NFT Economics</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-red-300 text-xs">Service Price (RLUSD) *</Label>
-              <Input type="number" value={form.fixedPrice} onChange={e => set('fixedPrice', e.target.value)} placeholder="60" className="bg-white/5 border-white/10 text-white" />
-              <p className="text-white/30 text-[9px]">What users pay to acquire/use this NFT</p>
+              <Label className="text-red-300 text-xs">Cost of NFT (RLUSD) *</Label>
+              <Input type="number" value={form.nftCost} onChange={e => set('nftCost', e.target.value)} placeholder="60" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">One-time price users pay to own this NFT</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-amber-300 text-xs">Service Price (RLUSD)</Label>
+              <Input type="number" value={form.fixedPrice} onChange={e => set('fixedPrice', e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">Per-use charge for the service (0 = free)</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-amber-300 text-xs">Stream Cost (RLUSD)</Label>
@@ -182,7 +187,7 @@ export default function InfrastructureNFTForm() {
           <Input value={form.imageUrl} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
         </div>
 
-        <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || !form.fixedPrice || mutation.isPending || !canAfford} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 w-full sm:w-auto">
+        <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || !form.nftCost || mutation.isPending || !canAfford} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
           Create Infrastructure NFT — {cost} RLUSD
         </Button>
