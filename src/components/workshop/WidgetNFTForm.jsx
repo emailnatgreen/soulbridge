@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,8 +17,9 @@ const UI_BEHAVIORS = ['toggle', 'unlock_page', 'upgrade', 'badge', 'activate_fea
 const INITIAL = {
   name: '', description: '', image_url: '', category: 'other',
   widget_type: 'unlock', widget_class: 'unlock', ui_behavior: 'unlock_page',
-  version: '1.0.0', feature_path: '', cost_per_stream_interval: '',
-  stream_interval_unit: 'hour',
+  version: '1.0.0', feature_path: '', nft_id: '',
+  cost_per_stream_interval: '', stream_interval_unit: 'hour',
+  taxon: '0', transferFee: '0', transferable: false, burnable: false,
 };
 
 export default function WidgetNFTForm() {
@@ -32,11 +34,17 @@ export default function WidgetNFTForm() {
       const payload = {
         ...form,
         widget_class: form.widget_type,
+        nft_id: form.nft_id || undefined,
         minted_by: user.email,
         creator_id: user.email,
         mint_status: 'draft',
         metadata_version: '1.0.0',
+        taxon: parseInt(form.taxon) || 0,
+        transfer_fee: parseInt(form.transferFee) || 0,
+        transferable: form.transferable,
+        burnable: form.burnable,
       };
+      delete payload.transferFee;
       if (form.widget_type === 'service') {
         payload.cost_per_stream_interval = parseFloat(form.cost_per_stream_interval) || 0;
       } else {
@@ -64,6 +72,12 @@ export default function WidgetNFTForm() {
             <Label className="text-white/60 text-xs">Name *</Label>
             <Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Governance Voice Pass" className="bg-white/5 border-white/10 text-white" />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Widget NFT ID</Label>
+            <Input value={form.nft_id} onChange={e => set('nft_id', e.target.value)} placeholder="e.g. WIDGET-GOV-001" className="bg-white/5 border-white/10 text-white" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Category</Label>
             <Select value={form.category} onValueChange={v => set('category', v)}>
@@ -124,6 +138,26 @@ export default function WidgetNFTForm() {
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Version</Label>
             <Input value={form.version} onChange={e => set('version', e.target.value)} className="bg-white/5 border-white/10 text-white" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Taxon</Label>
+            <Input type="number" value={form.taxon} onChange={e => set('taxon', e.target.value)} className="bg-white/5 border-white/10 text-white" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Transfer Fee (0-50000)</Label>
+            <Input type="number" value={form.transferFee} onChange={e => set('transferFee', e.target.value)} className="bg-white/5 border-white/10 text-white" />
+          </div>
+          <div className="flex items-end gap-4 pb-1">
+            <div className="flex items-center gap-2">
+              <Switch checked={form.transferable} onCheckedChange={v => set('transferable', v)} />
+              <Label className="text-white/50 text-[10px]">Transferable</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={form.burnable} onCheckedChange={v => set('burnable', v)} />
+              <Label className="text-white/50 text-[10px]">Burnable</Label>
+            </div>
           </div>
         </div>
         <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || mutation.isPending} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 w-full sm:w-auto">

@@ -16,7 +16,7 @@ const AGENT_ROLES = ['citizen', 'guardian', 'creator', 'trader', 'teacher', 'hea
 export default function AgentNFTForm() {
   const [form, setForm] = useState({
     agentName: '', purpose: '', personality: '', role: 'citizen',
-    bio: '', tagline: '', imageUrl: '',
+    bio: '', tagline: '', imageUrl: '', nftId: '',
     bindToDID: true, soulBound: true,
   });
   const queryClient = useQueryClient();
@@ -57,6 +57,7 @@ export default function AgentNFTForm() {
       // 2. Create the corresponding Widget NFT for this agent
       const widget = await base44.entities.Widget.create({
         name: `Agent NFT: ${form.agentName}`,
+        nft_id: form.nftId || undefined,
         description: `Soul-bound NFT representing AI Agent "${form.agentName}". Purpose: ${form.purpose}`,
         widget_type: 'unlock',
         widget_class: 'unlock',
@@ -70,6 +71,8 @@ export default function AgentNFTForm() {
         metadata_version: '1.0.0',
         transferable: !form.soulBound,
         burnable: false,
+        taxon: 0,
+        transfer_fee: 0,
         feature_path: `/agents/${agent.id}`,
         allowed_agent_permissions: ['can_vote', 'can_send_xrp'],
       });
@@ -80,7 +83,7 @@ export default function AgentNFTForm() {
       toast.success(`AI Agent "${agent.name}" created with its soul-bound NFT`);
       setForm({
         agentName: '', purpose: '', personality: '', role: 'citizen',
-        bio: '', tagline: '', imageUrl: '',
+        bio: '', tagline: '', imageUrl: '', nftId: '',
         bindToDID: true, soulBound: true,
       });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
@@ -110,6 +113,12 @@ export default function AgentNFTForm() {
             <Label className="text-white/60 text-xs">Agent Name *</Label>
             <Input value={form.agentName} onChange={e => set('agentName', e.target.value)} placeholder="e.g. Nova" className="bg-white/5 border-white/10 text-white" />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Widget NFT ID</Label>
+            <Input value={form.nftId} onChange={e => set('nftId', e.target.value)} placeholder="e.g. WIDGET-AGT-001" className="bg-white/5 border-white/10 text-white" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Role</Label>
             <Select value={form.role} onValueChange={v => set('role', v)}>

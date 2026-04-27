@@ -14,8 +14,11 @@ const EMPTY_SKILL = { skill_name: '', instructions: '', trigger_command: '', req
 
 export default function ChromeSkillNFTForm() {
   const [name, setName] = useState('');
+  const [nftId, setNftId] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [taxon, setTaxon] = useState('0');
+  const [transferFee, setTransferFee] = useState('0');
   const [skills, setSkills] = useState([{ ...EMPTY_SKILL }]);
   const queryClient = useQueryClient();
 
@@ -30,6 +33,7 @@ export default function ChromeSkillNFTForm() {
       const user = await base44.auth.me();
       return base44.entities.Widget.create({
         name,
+        nft_id: nftId || undefined,
         description,
         image_url: imageUrl,
         widget_type: 'unlock',
@@ -41,12 +45,17 @@ export default function ChromeSkillNFTForm() {
         creator_id: user.email,
         mint_status: 'draft',
         metadata_version: '1.0.0',
+        transferable: false,
+        burnable: false,
+        taxon: parseInt(taxon) || 0,
+        transfer_fee: parseInt(transferFee) || 0,
         chrome_skill_instructions: skills.filter(s => s.skill_name && s.instructions),
       });
     },
     onSuccess: () => {
       toast.success('Chrome Skill NFT created as draft');
-      setName(''); setDescription(''); setImageUrl('');
+      setName(''); setNftId(''); setDescription(''); setImageUrl('');
+      setTaxon('0'); setTransferFee('0');
       setSkills([{ ...EMPTY_SKILL }]);
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
     },
@@ -67,8 +76,24 @@ export default function ChromeSkillNFTForm() {
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Axi Pharmacy Unlock" className="bg-white/5 border-white/10 text-white" />
           </div>
           <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Widget NFT ID</Label>
+            <Input value={nftId} onChange={e => setNftId(e.target.value)} placeholder="e.g. WIDGET-CS-001" className="bg-white/5 border-white/10 text-white" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Image URL</Label>
             <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-white/60 text-xs">Taxon</Label>
+              <Input type="number" value={taxon} onChange={e => setTaxon(e.target.value)} className="bg-white/5 border-white/10 text-white" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-white/60 text-xs">Transfer Fee</Label>
+              <Input type="number" value={transferFee} onChange={e => setTransferFee(e.target.value)} className="bg-white/5 border-white/10 text-white" />
+            </div>
           </div>
         </div>
         <div className="space-y-1.5">
