@@ -86,6 +86,7 @@ import ServiceDefinitions from './pages/ServiceDefinitions';
 import ServiceUsageLogs from './pages/ServiceUsageLogs';
 import Send from './pages/Send';
 import NFTWorkshop from './pages/NFTWorkshop';
+import SeedGoldenAcorn from './pages/SeedGoldenAcorn';
 
 
 const LoadingFallback = () => (
@@ -302,6 +303,9 @@ const AuthenticatedApp = () => {
 
         {/* NFT WORKSHOP */}
         <Route path="/nft-workshop" element={L("nft-workshop", NFTWorkshop)} />
+
+        {/* SEED GOLDEN ACORN */}
+        <Route path="/seed-golden-acorn" element={L("seed-golden-acorn", SeedGoldenAcorn)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />
