@@ -11,6 +11,8 @@ import { Shield, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const INFRA_CATEGORIES = ['governance', 'wallet_management', 'did_management', 'environment', 'training'];
+const UI_BEHAVIORS = ['toggle', 'unlock_page', 'upgrade', 'badge', 'activate_feature'];
+const WIDGET_TYPES = ['unlock', 'service'];
 
 const IMMUTABLE_FIELDS = [
   'name', 'description', 'category', 'widget_type', 'widget_class',
@@ -21,7 +23,7 @@ export default function InfrastructureNFTForm() {
   const [form, setForm] = useState({
     name: '', description: '', category: 'governance',
     nftId: '', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0',
-    featurePath: '',
+    featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock',
   });
   const queryClient = useQueryClient();
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
@@ -34,10 +36,10 @@ export default function InfrastructureNFTForm() {
         name: form.name,
         nft_id: form.nftId || undefined,
         description: form.description,
-        widget_type: 'unlock',
-        widget_class: 'unlock',
+        widget_type: form.widgetType,
+        widget_class: form.widgetType,
         category: form.category,
-        ui_behavior: 'unlock_page',
+        ui_behavior: form.uiBehavior,
         feature_path: form.featurePath || undefined,
         version: '1.0.0',
         image_url: form.imageUrl,
@@ -57,7 +59,7 @@ export default function InfrastructureNFTForm() {
     },
     onSuccess: () => {
       toast.success('Infrastructure NFT created as draft (immutable after mint)');
-      setForm({ name: '', description: '', category: 'governance', nftId: '', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '' });
+      setForm({ name: '', description: '', category: 'governance', nftId: '', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
     },
   });
@@ -105,10 +107,28 @@ export default function InfrastructureNFTForm() {
           <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="What platform infrastructure does this NFT represent?" className="bg-white/5 border-white/10 text-white min-h-[80px]" />
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-white/60 text-xs">Feature Path</Label>
-          <Input value={form.featurePath} onChange={e => set('featurePath', e.target.value)} placeholder="/did-manager" className="bg-white/5 border-white/10 text-white" />
-          <p className="text-white/30 text-[9px]">The page or feature this NFT unlocks (e.g. /did-manager, /sovereign-id)</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Widget Type</Label>
+            <Select value={form.widgetType} onValueChange={v => set('widgetType', v)}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {WIDGET_TYPES.map(t => <SelectItem key={t} value={t}>{t === 'unlock' ? 'Unlock (passive)' : 'Service (active/streaming)'}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">UI Behavior</Label>
+            <Select value={form.uiBehavior} onValueChange={v => set('uiBehavior', v)}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+              <SelectContent>{UI_BEHAVIORS.map(b => <SelectItem key={b} value={b}>{b.replace(/_/g, ' ')}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Feature Path</Label>
+            <Input value={form.featurePath} onChange={e => set('featurePath', e.target.value)} placeholder="/did-manager" className="bg-white/5 border-white/10 text-white" />
+            <p className="text-white/30 text-[9px]">The page or feature this NFT unlocks</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
