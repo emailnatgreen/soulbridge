@@ -21,6 +21,7 @@ import IdentityRecognitionModal from '@/components/dashboard/IdentityRecognition
 import WidgetInventoryPanel from '@/components/widgets/WidgetInventoryPanel';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
 import WidgetFeatureStatusBar from '@/components/widgets/WidgetFeatureStatusBar';
+import CitizenshipGate from '@/components/dashboard/CitizenshipGate';
 
 if (typeof window !== 'undefined') {
   window.__sb = window.__sb || { signals: [] };
@@ -31,6 +32,8 @@ if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('sb-signal', { detail: s }));
   };
 }
+
+const CITIZENSHIP_FEATURE_PATH = 'wallet.did_linking';
 
 // ── Village navigation links for published members ──────────────────────────
 const VILLAGE_LINKS = [
@@ -512,6 +515,21 @@ export default function Dashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   // VIEW 4: PUBLISHED MEMBER DASHBOARD
   // ══════════════════════════════════════════════════════════════════════════
+  const isCitizen = isUnlocked(CITIZENSHIP_FEATURE_PATH);
+
+  // Not yet a citizen — show gated dashboard with DID + NFT acquisition CTA
+  if (!isCitizen) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
+        <Header />
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+          <CitizenshipGate identityDid={identityDid} firstName={firstName} />
+        </div>
+      </div>
+    );
+  }
+
+  // Full citizen dashboard
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
       <Header />
@@ -529,7 +547,7 @@ export default function Dashboard() {
               </h2>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-green-300 text-xs">DID Active · Published on XRPL</span>
+                <span className="text-green-300 text-xs">DID Active · Full Citizen</span>
               </div>
             </div>
           </div>
