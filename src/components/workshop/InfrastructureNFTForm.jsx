@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Shield, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import WorkshopBalanceGate from './WorkshopBalanceGate';
 
 const INFRA_CATEGORIES = ['governance', 'wallet_management', 'did_management', 'environment', 'training'];
 const UI_BEHAVIORS = ['toggle', 'unlock_page', 'upgrade', 'badge', 'activate_feature'];
@@ -28,43 +29,50 @@ export default function InfrastructureNFTForm() {
   const queryClient = useQueryClient();
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
+  const [refreshPricing, setRefreshPricing] = useState(null);
+
   const mutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
       const fixedPrice = parseFloat(form.fixedPrice) || 0;
-      return base44.entities.Widget.create({
-        name: form.name,
-        nft_id: form.nftId || undefined,
-        description: form.description,
-        widget_type: form.widgetType,
-        widget_class: form.widgetType,
-        category: form.category,
-        ui_behavior: form.uiBehavior,
-        feature_path: form.featurePath || undefined,
-        version: '1.0.0',
-        image_url: form.imageUrl,
-        minted_by: user.email,
-        creator_id: user.email,
-        mint_status: 'draft',
-        metadata_version: '1.0.0',
-        transferable: false,
-        burnable: false,
-        taxon: parseInt(form.taxon) || 0,
-        transfer_fee: parseInt(form.transferFee) || 0,
-        cost_per_stream_interval: fixedPrice,
-        stream_interval_unit: 'day',
-        immutable_after_mint: IMMUTABLE_FIELDS,
-        governance_notes: `Infrastructure NFT — fixed price cap: ${fixedPrice} RLUSD. Immutable after mint.`,
+      const res = await base44.functions.invoke('workshopNFTCreate', {
+        action: 'create',
+        nft_type: 'infrastructure',
+        widget_data: {
+          name: form.name,
+          nft_id: form.nftId || undefined,
+          description: form.description,
+          widget_type: form.widgetType,
+          widget_class: form.widgetType,
+          category: form.category,
+          ui_behavior: form.uiBehavior,
+          feature_path: form.featurePath || undefined,
+          version: '1.0.0',
+          image_url: form.imageUrl,
+          transferable: false,
+          burnable: false,
+          taxon: parseInt(form.taxon) || 0,
+          transfer_fee: parseInt(form.transferFee) || 0,
+          cost_per_stream_interval: fixedPrice,
+          stream_interval_unit: 'day',
+          immutable_after_mint: IMMUTABLE_FIELDS,
+          governance_notes: `Infrastructure NFT — fixed price cap: ${fixedPrice} RLUSD. Immutable after mint.`,
+        },
       });
+      return res.data;
     },
-    onSuccess: () => {
-      toast.success('Infrastructure NFT created as draft (immutable after mint)');
+    onSuccess: (data) => {
+      toast.success(data.message || 'Infrastructure NFT created as draft (immutable after mint)');
       setForm({ name: '', description: '', category: 'governance', nftId: '', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
+      refreshPricing?.();
     },
   });
 
   return (
+    <WorkshopBalanceGate nftType="infrastructure">
+      {({ canAfford, cost, refreshPricing: rp }) => {
+        if (!refreshPricing && rp) setRefreshPricing(() => rp);
+        return (
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base"><Shield className="w-4 h-4 text-red-400" /> Create Infrastructure NFT</CardTitle>
@@ -151,11 +159,14 @@ export default function InfrastructureNFTForm() {
           <Input value={form.imageUrl} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
         </div>
 
-        <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || !form.fixedPrice || mutation.isPending} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 w-full sm:w-auto">
+        <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || !form.fixedPrice || mutation.isPending || !canAfford} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-          Create Infrastructure NFT Draft
+          Create Infrastructure NFT — {cost} RLUSD
         </Button>
       </CardContent>
     </Card>
+        );
+      }}
+    </WorkshopBalanceGate>
   );
 }

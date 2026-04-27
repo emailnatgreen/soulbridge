@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import WorkshopBalanceGate from './WorkshopBalanceGate';
 
 const CATEGORIES = ['agent_creation', 'skill', 'environment', 'governance', 'training', 'wallet_management', 'did_management', 'other'];
 const UI_BEHAVIORS = ['toggle', 'unlock_page', 'upgrade', 'badge', 'activate_feature'];
@@ -28,17 +29,15 @@ export default function WidgetNFTForm() {
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
+  const [refreshPricing, setRefreshPricing] = useState(null);
+
   const mutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
       const payload = {
         ...form,
         widget_class: form.widget_type,
         nft_id: form.nft_id || undefined,
-        minted_by: user.email,
-        creator_id: user.email,
-        mint_status: 'draft',
-        metadata_version: '1.0.0',
+        version: form.version || '1.0.0',
         taxon: parseInt(form.taxon) || 0,
         transfer_fee: parseInt(form.transferFee) || 0,
         transferable: form.transferable,
@@ -51,16 +50,26 @@ export default function WidgetNFTForm() {
         delete payload.cost_per_stream_interval;
         delete payload.stream_interval_unit;
       }
-      return base44.entities.Widget.create(payload);
+      const res = await base44.functions.invoke('workshopNFTCreate', {
+        action: 'create',
+        nft_type: 'widget',
+        widget_data: payload,
+      });
+      return res.data;
     },
-    onSuccess: () => {
-      toast.success('Widget NFT created as draft');
+    onSuccess: (data) => {
+      toast.success(data.message || 'Widget NFT created as draft');
       setForm(INITIAL);
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
+      refreshPricing?.();
     },
   });
 
   return (
+    <WorkshopBalanceGate nftType="widget">
+      {({ canAfford, cost, refreshPricing: rp }) => {
+        if (!refreshPricing && rp) setRefreshPricing(() => rp);
+        return (
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base"><Sparkles className="w-4 h-4 text-purple-400" /> Create Widget NFT</CardTitle>
@@ -160,11 +169,14 @@ export default function WidgetNFTForm() {
             </div>
           </div>
         </div>
-        <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || mutation.isPending} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 w-full sm:w-auto">
+        <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || mutation.isPending || !canAfford} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          Create Widget NFT Draft
+          Create Widget NFT — {cost} RLUSD
         </Button>
       </CardContent>
     </Card>
+        );
+      }}
+    </WorkshopBalanceGate>
   );
 }

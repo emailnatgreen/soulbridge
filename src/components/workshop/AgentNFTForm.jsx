@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Bot, Loader2, Heart, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import WorkshopBalanceGate from './WorkshopBalanceGate';
 
 const AGENT_ROLES = ['citizen', 'guardian', 'creator', 'trader', 'teacher', 'healer', 'scout', 'elder', 'master'];
 
@@ -30,57 +31,52 @@ export default function AgentNFTForm() {
     staleTime: 30000,
   });
 
+  const [refreshPricing, setRefreshPricing] = useState(null);
+
   const mutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
-
-      // 1. Create the Agent entity
-      const agent = await base44.entities.Agent.create({
-        name: form.agentName,
-        purpose: form.purpose,
-        personality: form.personality,
-        role: form.role,
-        bio: form.bio,
-        tagline: form.tagline,
-        avatar_url: form.imageUrl,
-        status: 'active',
-        honor_score: 100,
-        permissions: {
-          can_create_agents: false,
-          can_send_xrp: true,
-          can_access_treasury: false,
-          can_vote: true,
-          can_evaluate_agents: false,
+      const res = await base44.functions.invoke('workshopNFTCreate', {
+        action: 'create',
+        nft_type: 'agent',
+        widget_data: {
+          name: `Agent NFT: ${form.agentName}`,
+          nft_id: form.nftId || undefined,
+          description: `Soul-bound NFT representing AI Agent "${form.agentName}". Purpose: ${form.purpose}`,
+          widget_type: 'unlock',
+          widget_class: 'unlock',
+          category: 'agent_creation',
+          ui_behavior: 'badge',
+          version: '1.0.0',
+          image_url: form.imageUrl,
+          transferable: !form.soulBound,
+          burnable: false,
+          taxon: 0,
+          transfer_fee: 0,
+          allowed_agent_permissions: ['can_vote', 'can_send_xrp'],
+        },
+        agent_data: {
+          name: form.agentName,
+          purpose: form.purpose,
+          personality: form.personality,
+          role: form.role,
+          bio: form.bio,
+          tagline: form.tagline,
+          avatar_url: form.imageUrl,
+          status: 'active',
+          honor_score: 100,
+          permissions: {
+            can_create_agents: false,
+            can_send_xrp: true,
+            can_access_treasury: false,
+            can_vote: true,
+            can_evaluate_agents: false,
+          },
         },
       });
-
-      // 2. Create the corresponding Widget NFT for this agent
-      const widget = await base44.entities.Widget.create({
-        name: `Agent NFT: ${form.agentName}`,
-        nft_id: form.nftId || undefined,
-        description: `Soul-bound NFT representing AI Agent "${form.agentName}". Purpose: ${form.purpose}`,
-        widget_type: 'unlock',
-        widget_class: 'unlock',
-        category: 'agent_creation',
-        ui_behavior: 'badge',
-        version: '1.0.0',
-        image_url: form.imageUrl,
-        minted_by: user.email,
-        creator_id: user.email,
-        mint_status: 'draft',
-        metadata_version: '1.0.0',
-        transferable: !form.soulBound,
-        burnable: false,
-        taxon: 0,
-        transfer_fee: 0,
-        feature_path: `/agents/${agent.id}`,
-        allowed_agent_permissions: ['can_vote', 'can_send_xrp'],
-      });
-
-      return { agent, widget };
+      return res.data;
     },
-    onSuccess: ({ agent }) => {
-      toast.success(`AI Agent "${agent.name}" created with its soul-bound NFT`);
+    onSuccess: (data) => {
+      toast.success(data.message || `AI Agent created with its soul-bound NFT`);
       setForm({
         agentName: '', purpose: '', personality: '', role: 'citizen',
         bio: '', tagline: '', imageUrl: '', nftId: '',
@@ -88,10 +84,15 @@ export default function AgentNFTForm() {
       });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       queryClient.invalidateQueries({ queryKey: ['myAgentsWorkshop'] });
+      refreshPricing?.();
     },
   });
 
   return (
+    <WorkshopBalanceGate nftType="agent">
+      {({ canAfford, cost, refreshPricing: rp }) => {
+        if (!refreshPricing && rp) setRefreshPricing(() => rp);
+        return (
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base"><Bot className="w-4 h-4 text-amber-400" /> Create AI Agent NFT</CardTitle>
@@ -166,9 +167,9 @@ export default function AgentNFTForm() {
           <Switch checked={form.soulBound} onCheckedChange={v => set('soulBound', v)} />
         </div>
 
-        <Button onClick={() => mutation.mutate()} disabled={!form.agentName || !form.purpose || mutation.isPending} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 w-full sm:w-auto">
+        <Button onClick={() => mutation.mutate()} disabled={!form.agentName || !form.purpose || mutation.isPending || !canAfford} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bot className="w-4 h-4" />}
-          Create AI Agent &amp; Mint NFT
+          Create AI Agent NFT — {cost} RLUSD
         </Button>
 
         {/* Existing agents count */}
@@ -177,5 +178,8 @@ export default function AgentNFTForm() {
         )}
       </CardContent>
     </Card>
+        );
+      }}
+    </WorkshopBalanceGate>
   );
 }

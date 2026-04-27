@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Chrome, Loader2, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import WorkshopBalanceGate from './WorkshopBalanceGate';
 
 const EMPTY_SKILL = { skill_name: '', instructions: '', trigger_command: '', requires_didit_verification: true };
 
@@ -28,40 +29,47 @@ export default function ChromeSkillNFTForm() {
   const addSkill = () => setSkills(prev => [...prev, { ...EMPTY_SKILL }]);
   const removeSkill = (idx) => setSkills(prev => prev.filter((_, i) => i !== idx));
 
+  const [refreshPricing, setRefreshPricing] = useState(null);
+
   const mutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
-      return base44.entities.Widget.create({
-        name,
-        nft_id: nftId || undefined,
-        description,
-        image_url: imageUrl,
-        widget_type: 'unlock',
-        widget_class: 'unlock',
-        category: 'skill',
-        ui_behavior: 'activate_feature',
-        version: '1.0.0',
-        minted_by: user.email,
-        creator_id: user.email,
-        mint_status: 'draft',
-        metadata_version: '1.0.0',
-        transferable: false,
-        burnable: false,
-        taxon: parseInt(taxon) || 0,
-        transfer_fee: parseInt(transferFee) || 0,
-        chrome_skill_instructions: skills.filter(s => s.skill_name && s.instructions),
+      const res = await base44.functions.invoke('workshopNFTCreate', {
+        action: 'create',
+        nft_type: 'chrome_skill',
+        widget_data: {
+          name,
+          nft_id: nftId || undefined,
+          description,
+          image_url: imageUrl,
+          widget_type: 'unlock',
+          widget_class: 'unlock',
+          category: 'skill',
+          ui_behavior: 'activate_feature',
+          version: '1.0.0',
+          transferable: false,
+          burnable: false,
+          taxon: parseInt(taxon) || 0,
+          transfer_fee: parseInt(transferFee) || 0,
+          chrome_skill_instructions: skills.filter(s => s.skill_name && s.instructions),
+        },
       });
+      return res.data;
     },
-    onSuccess: () => {
-      toast.success('Chrome Skill NFT created as draft');
+    onSuccess: (data) => {
+      toast.success(data.message || 'Chrome Skill NFT created as draft');
       setName(''); setNftId(''); setDescription(''); setImageUrl('');
       setTaxon('0'); setTransferFee('0');
       setSkills([{ ...EMPTY_SKILL }]);
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
+      refreshPricing?.();
     },
   });
 
   return (
+    <WorkshopBalanceGate nftType="chrome_skill">
+      {({ canAfford, cost, refreshPricing: rp }) => {
+        if (!refreshPricing && rp) setRefreshPricing(() => rp);
+        return (
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base"><Chrome className="w-4 h-4 text-emerald-400" /> Create Chrome Skill NFT</CardTitle>
@@ -141,11 +149,14 @@ export default function ChromeSkillNFTForm() {
           ))}
         </div>
 
-        <Button onClick={() => mutation.mutate()} disabled={!name || !description || skills.every(s => !s.skill_name) || mutation.isPending} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 w-full sm:w-auto">
+        <Button onClick={() => mutation.mutate()} disabled={!name || !description || skills.every(s => !s.skill_name) || mutation.isPending || !canAfford} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Chrome className="w-4 h-4" />}
-          Create Chrome Skill NFT Draft
+          Create Chrome Skill NFT — {cost} RLUSD
         </Button>
       </CardContent>
     </Card>
+        );
+      }}
+    </WorkshopBalanceGate>
   );
 }
