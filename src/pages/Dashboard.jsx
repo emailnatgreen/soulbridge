@@ -42,6 +42,7 @@ const VILLAGE_LINKS = [
   { label: 'Skills', desc: 'Grow & develop', path: '/skills', icon: BookOpen, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30' },
   { label: 'Marketplace', desc: 'Browse widgets', path: '/widget-marketplace', icon: ShoppingBag, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/30' },
   { label: 'Wallets', desc: 'XRP & RLUSD', path: '/wallets', icon: Wallet, color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/30' },
+  { label: 'Seed Acorn', desc: 'Create wallets', path: '/seed-golden-acorn', icon: Globe, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/30' },
   { label: 'Kinetic Grid', desc: 'Energy & motion', path: '/KineticCompass', icon: Zap, color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30' },
 ];
 

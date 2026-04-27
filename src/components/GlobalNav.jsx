@@ -68,6 +68,7 @@ const NAV_GROUPS = [
     label: 'Economy & Wallets',
     links: [
       { label: 'Wallets', path: '/Wallets', icon: Wallet },
+      { label: '🌰 Seed Golden Acorn', path: '/seed-golden-acorn', icon: Wallet },
       { label: 'Treasury Signing', path: '/TreasurySigningHelper', icon: Archive },
       { label: 'Economy', path: '/Economy', icon: Landmark },
       { label: 'Resource Market', path: '/ResourceMarketplace', icon: Globe },

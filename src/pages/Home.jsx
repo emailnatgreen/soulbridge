@@ -191,6 +191,7 @@ export default function Home() {
     { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
     { icon: Hammer, title: 'NFT Workshop', desc: 'Mint Widget NFTs, Chrome Skill NFTs and AI Agent NFTs — the sovereign creation environment', path: '/nft-workshop', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: '', count: null },
     { icon: Fingerprint, title: 'Sovereign Identity', desc: 'Your personal DID hub — view published DIDs, manage wallets, privacy controls and verification certificates', path: '/sovereign-id', color: 'text-indigo-400', border: 'border-indigo-500/30', countLabel: 'published DIDs', count: liveCounts.dids },
+    { icon: Globe, title: 'Seed Golden Acorn', desc: 'Create and manage multi-node XRPL wallets — the gateway to sovereign DID identity publishing', path: '/seed-golden-acorn', color: 'text-green-400', border: 'border-green-500/30', countLabel: '', count: null },
   ];
 
   return (
