@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { Shield, Wallet, Plus, Activity, Lock, ArrowLeft, Home } from 'lucide-react';
 import WidgetPageNavBar from '@/components/widgets/WidgetPageNavBar';
 import AxiNFTExplainer from '@/components/widgets/AxiNFTExplainer';
+import WidgetLockScreen from '@/components/widgets/WidgetLockScreen';
+import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
 import MyDIDPanel from '@/components/sovereignid/MyDIDPanel';
 import MyWalletsPanel from '@/components/sovereignid/MyWalletsPanel';
 import UserDIDPanel from '@/components/sovereignid/UserDIDPanel';
@@ -27,11 +29,14 @@ const USER_TABS = [
   { id: 'activity', label: 'Activity Log', icon: Activity },
 ];
 
+const FEATURE_PATH = 'wallet.did_linking';
+
 export default function SovereignID() {
   const [activeTab, setActiveTab] = useState('did');
   const [user, setUser] = useState(null);
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { isUnlocked, getWidgetForPath, loading: widgetLoading } = useWidgetUnlock();
 
   useEffect(() => {
     loadData();
@@ -55,10 +60,29 @@ export default function SovereignID() {
   const isAdmin = user?.role === 'admin';
   const visibleTabs = isAdmin ? ADMIN_TABS : USER_TABS;
 
-  if (loading) {
+  if (loading || widgetLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Widget NFT gating — admins bypass, everyone else needs the widget
+  if (!isAdmin && !isUnlocked(FEATURE_PATH)) {
+    const widgetMeta = getWidgetForPath(FEATURE_PATH);
+    return (
+      <div className="min-h-screen bg-slate-950 text-white">
+        <WidgetPageNavBar title="Sovereign Identity" subtitle="DID · Wallets · Privacy · Certificates" icon={Shield} />
+        <WidgetLockScreen
+          widgetName={widgetMeta?.widget_name || 'Publish DID Widget'}
+          widgetDescription={widgetMeta?.description || 'This NFT unlocks access to your Sovereign Identity hub — manage your DID, wallets, privacy controls, and verification certificates.'}
+          nftId={widgetMeta?.nft_id || 'WIDGET-WM-007'}
+          featurePath={FEATURE_PATH}
+          widgetType={widgetMeta?.widget_type || 'unlock'}
+          category={widgetMeta?.category || 'did_management'}
+          uiBehavior={widgetMeta?.ui_behavior || 'unlock_page'}
+        />
       </div>
     );
   }
