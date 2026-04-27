@@ -72,11 +72,12 @@ export default function XummImportWallet({ onComplete, onClose }) {
       return;
     }
     try {
+      const user = await base44.auth.me();
       await base44.entities.Wallet.create({
         name: walletName.trim(),
         classic_address: resolvedAddress,
         network: 'mainnet',
-        owner_id: 'xumm_import',
+        owner_id: user.id,
         balance: 0,
       });
       toast.success(`Wallet "${walletName}" imported from Xumm`);

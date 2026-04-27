@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Wallet, Plus, Loader2, CheckCircle, Coins, TreePine, AlertTriangle, RefreshCw
+  Wallet, Plus, Loader2, CheckCircle, Coins, TreePine, AlertTriangle, RefreshCw, Smartphone, PenLine
 } from 'lucide-react';
 import { toast } from 'sonner';
 import SeedWalletCard from './SeedWalletCard';
+import XummImportWallet from '@/components/did/XummImportWallet';
+import ManualAddressImport from './ManualAddressImport';
 
 export default function SeedWalletCreatorPanel() {
   const [pricing, setPricing] = useState(null);
@@ -16,6 +18,8 @@ export default function SeedWalletCreatorPanel() {
   const [creating, setCreating] = useState(false);
   const [walletName, setWalletName] = useState('');
   const [lastCreated, setLastCreated] = useState(null);
+  const [addMode, setAddMode] = useState('create'); // create | xumm | manual
+  const [showXumm, setShowXumm] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch user's wallets
@@ -124,50 +128,98 @@ export default function SeedWalletCreatorPanel() {
         </div>
       </div>
 
-      {/* Create Wallet Form */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
-        <h4 className="text-white font-semibold text-sm flex items-center gap-2">
-          <Wallet className="w-4 h-4 text-purple-400" /> Create New Node Wallet
-        </h4>
+      {/* Add Account Mode Tabs */}
+      <div className="space-y-4">
+        <div className="flex gap-2">
+          <button onClick={() => setAddMode('create')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition border ${
+              addMode === 'create' 
+                ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' 
+                : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'
+            }`}>
+            <TreePine className="w-3.5 h-3.5" /> Create New
+          </button>
+          <button onClick={() => setAddMode('xumm')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition border ${
+              addMode === 'xumm' 
+                ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' 
+                : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'
+            }`}>
+            <Smartphone className="w-3.5 h-3.5" /> Via Xaman
+          </button>
+          <button onClick={() => setAddMode('manual')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition border ${
+              addMode === 'manual' 
+                ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' 
+                : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'
+            }`}>
+            <PenLine className="w-3.5 h-3.5" /> Manual
+          </button>
+        </div>
 
-        {!pricing?.can_afford && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
-            <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-red-300 text-xs font-semibold">Insufficient RLUSD Balance</p>
-              <p className="text-red-200/50 text-[10px]">
-                You need {pricing?.next_cost} RLUSD but only have {pricing?.balance?.toFixed(2)}. Use the RLUSD Faucet to top up.
-              </p>
+        {/* Create New Wallet (RLUSD) */}
+        {addMode === 'create' && (
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
+            <h4 className="text-white font-semibold text-sm flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-amber-400" /> Create New Node Wallet
+            </h4>
+
+            {!pricing?.can_afford && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-red-300 text-xs font-semibold">Insufficient RLUSD Balance</p>
+                  <p className="text-red-200/50 text-[10px]">
+                    You need {pricing?.next_cost} RLUSD but only have {pricing?.balance?.toFixed(2)}. Use the RLUSD Faucet to top up.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label className="text-white/60 text-xs">Wallet Name</Label>
+              <Input
+                value={walletName}
+                onChange={e => setWalletName(e.target.value)}
+                placeholder={`e.g. Node Wallet #${(pricing?.wallet_count || 0) + 1}`}
+                className="bg-white/5 border-white/10 text-white"
+              />
             </div>
+
+            <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-300 flex items-start gap-2">
+              <Coins className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+              <span>This will charge <strong>{pricing?.next_cost} RLUSD</strong> from your balance. You must then fund the wallet with <strong>13 XRP</strong> (12 reserve + 1 for DID publishing) before you can activate and publish.</span>
+            </div>
+
+            <Button
+              onClick={handleCreate}
+              disabled={creating || !walletName.trim() || !pricing?.can_afford}
+              className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white gap-2"
+            >
+              {creating ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Creating Wallet & Charging {pricing?.next_cost} RLUSD…</>
+              ) : (
+                <><TreePine className="w-4 h-4" /> Create Wallet — {pricing?.next_cost} RLUSD</>
+              )}
+            </Button>
           </div>
         )}
 
-        <div className="space-y-1.5">
-          <Label className="text-white/60 text-xs">Wallet Name</Label>
-          <Input
-            value={walletName}
-            onChange={e => setWalletName(e.target.value)}
-            placeholder={`e.g. Node Wallet #${(pricing?.wallet_count || 0) + 1}`}
-            className="bg-white/5 border-white/10 text-white"
+        {/* Xaman Import */}
+        {addMode === 'xumm' && (
+          <XummImportWallet
+            onComplete={() => { refetchWallets(); loadPricing(); setAddMode('create'); }}
+            onClose={() => setAddMode('create')}
           />
-        </div>
+        )}
 
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-300 flex items-start gap-2">
-          <Coins className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-          <span>This will charge <strong>{pricing?.next_cost} RLUSD</strong> from your balance. You must then fund the wallet with <strong>13 XRP</strong> (12 reserve + 1 for DID publishing) before you can activate and publish.</span>
-        </div>
-
-        <Button
-          onClick={handleCreate}
-          disabled={creating || !walletName.trim() || !pricing?.can_afford}
-          className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white gap-2"
-        >
-          {creating ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Creating Wallet & Charging {pricing?.next_cost} RLUSD…</>
-          ) : (
-            <><TreePine className="w-4 h-4" /> Create Wallet — {pricing?.next_cost} RLUSD</>
-          )}
-        </Button>
+        {/* Manual Address Entry */}
+        {addMode === 'manual' && (
+          <ManualAddressImport
+            onComplete={() => { refetchWallets(); loadPricing(); setAddMode('create'); }}
+            onClose={() => setAddMode('create')}
+          />
+        )}
       </div>
 
       {/* Last Created Banner */}
