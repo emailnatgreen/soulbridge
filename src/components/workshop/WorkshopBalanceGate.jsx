@@ -7,12 +7,22 @@ export default function WorkshopBalanceGate({ nftType, children }) {
   const [pricing, setPricing] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [error, setError] = useState(null);
+
   const loadPricing = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await base44.functions.invoke('workshopNFTCreate', { action: 'price_check', nft_type: nftType });
       setPricing(res.data);
-    } catch (_) {}
+    } catch (e) {
+      console.error('[WorkshopBalanceGate] price_check failed:', e.response?.data || e.message);
+      setError(e.response?.data?.error || e.message);
+      // For infrastructure (admin-only, cost=0), allow proceeding even if price_check fails
+      if (nftType === 'infrastructure') {
+        setPricing({ cost: 0, balance: 0, can_afford: true });
+      }
+    }
     setLoading(false);
   };
 
