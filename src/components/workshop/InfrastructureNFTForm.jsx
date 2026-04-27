@@ -68,6 +68,11 @@ export default function InfrastructureNFTForm() {
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricing?.();
     },
+    onError: (error) => {
+      const msg = error?.response?.data?.error || error?.message || 'Failed to create NFT';
+      toast.error(msg);
+      console.error('[InfrastructureNFTForm] Create failed:', msg);
+    },
   });
 
   return (
