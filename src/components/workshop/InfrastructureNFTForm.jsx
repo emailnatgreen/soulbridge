@@ -14,13 +14,14 @@ const INFRA_CATEGORIES = ['governance', 'wallet_management', 'did_management', '
 
 const IMMUTABLE_FIELDS = [
   'name', 'description', 'category', 'widget_type', 'widget_class',
-  'transferable', 'burnable', 'taxon', 'transfer_fee',
+  'transferable', 'burnable', 'taxon', 'transfer_fee', 'feature_path',
 ];
 
 export default function InfrastructureNFTForm() {
   const [form, setForm] = useState({
     name: '', description: '', category: 'governance',
     fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0',
+    featurePath: '',
   });
   const queryClient = useQueryClient();
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
@@ -36,6 +37,7 @@ export default function InfrastructureNFTForm() {
         widget_class: 'unlock',
         category: form.category,
         ui_behavior: 'unlock_page',
+        feature_path: form.featurePath || undefined,
         version: '1.0.0',
         image_url: form.imageUrl,
         minted_by: user.email,
@@ -54,7 +56,7 @@ export default function InfrastructureNFTForm() {
     },
     onSuccess: () => {
       toast.success('Infrastructure NFT created as draft (immutable after mint)');
-      setForm({ name: '', description: '', category: 'governance', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0' });
+      setForm({ name: '', description: '', category: 'governance', fixedPrice: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '' });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
     },
   });
@@ -96,6 +98,12 @@ export default function InfrastructureNFTForm() {
         <div className="space-y-1.5">
           <Label className="text-white/60 text-xs">Description *</Label>
           <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="What platform infrastructure does this NFT represent?" className="bg-white/5 border-white/10 text-white min-h-[80px]" />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-white/60 text-xs">Feature Path</Label>
+          <Input value={form.featurePath} onChange={e => set('featurePath', e.target.value)} placeholder="/did-manager" className="bg-white/5 border-white/10 text-white" />
+          <p className="text-white/30 text-[9px]">The page or feature this NFT unlocks (e.g. /did-manager, /sovereign-id)</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
