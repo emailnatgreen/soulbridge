@@ -69,14 +69,24 @@ export default function MintActionButton({ widget }) {
   const handleCheckStatus = async () => {
     if (!xummPayload?.uuid) return;
     try {
-      const res = await base44.functions.invoke('xummCheckPayload', { payload_uuid: xummPayload.uuid });
+      const res = await base44.functions.invoke('xummCheckPayload', { payload_id: xummPayload.uuid });
       const data = res.data;
-      if (data?.signed || data?.resolved) {
+      if (data?.signed) {
+        // Update widget to minted_mainnet
+        try {
+          await base44.entities.Widget.update(widget.id, {
+            mint_status: 'minted_mainnet',
+            xrpl_tx_hash: data.txid || null,
+          });
+        } catch (_) {}
         setStep('success');
         queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
         toast.success('NFT minted successfully on XRPL!');
       } else if (data?.expired) {
         setError('Signing request expired. Try again.');
+        setStep('error');
+      } else if (data?.resolved && !data?.signed) {
+        setError('Transaction was rejected or cancelled.');
         setStep('error');
       } else {
         toast.info('Still waiting for signature — check Xaman app');
