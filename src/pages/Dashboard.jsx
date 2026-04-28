@@ -22,6 +22,8 @@ import WidgetInventoryPanel from '@/components/widgets/WidgetInventoryPanel';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
 import WidgetFeatureStatusBar from '@/components/widgets/WidgetFeatureStatusBar';
 import CitizenshipGate from '@/components/dashboard/CitizenshipGate';
+import MyAgentsPanel from '@/components/dashboard/MyAgentsPanel';
+import DIDAgentLinkOverview from '@/components/agents/DIDAgentLinkOverview';
 
 if (typeof window !== 'undefined') {
   window.__sb = window.__sb || { signals: [] };
@@ -502,6 +504,9 @@ export default function Dashboard() {
             <DexSwapGate wallets={userWallets} isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
           </div>
 
+          <MyAgentsPanel userEmail={user?.email} />
+          <DIDAgentLinkOverview userEmail={user?.email} />
+
           <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
 
           <MemorySynthesisTrigger />
@@ -589,6 +594,10 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Agent Command Center — NFT gated */}
+        <MyAgentsPanel userEmail={user?.email} />
+        <DIDAgentLinkOverview userEmail={user?.email} />
 
         {/* DEX Swap — NFT gated */}
         <DexSwapGate wallets={userWallets} isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
