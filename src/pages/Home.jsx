@@ -276,26 +276,21 @@ export default function Home() {
               <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
               Dashboard
             </Button>
-            <Button onClick={() => navigate('/VipInviteDashboard')} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3" disabled={!isAdmin} title={!isAdmin ? 'Admin only' : ''}>
-              <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">VIP</span>
-              <span className="sm:hidden">VIP</span>
+            <Button onClick={() => navigate('/agents')} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Village Agents</span><span className="sm:hidden">Agents</span>
+            </Button>
+            <Button onClick={() => navigate('/governance')} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
+              <Landmark className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Governance</span><span className="sm:hidden">Gov</span>
+            </Button>
+            <Button onClick={() => navigate('/wallets')} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Wallets</span><span className="sm:hidden">Wallet</span>
             </Button>
             <Button onClick={() => navigate('/KineticGridDashboard')} className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Kinetic</span><span className="sm:hidden">KU</span>
-            </Button>
-            <Button onClick={() => navigate('/governance')} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <Landmark className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Laws</span><span className="sm:hidden">11</span>
-            </Button>
-            <Button onClick={() => navigate('/Agents')} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Agents</span><span className="sm:hidden">AI</span>
-            </Button>
-            <Button onClick={() => navigate('/KineticWasteDashboard')} className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Zoe</span><span className="sm:hidden">♀</span>
             </Button>
             <Button onClick={() => navigate('/nft-workshop')} className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <Hammer className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -542,31 +537,44 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-blue-400" />
             <h3 className="font-semibold text-white text-xs sm:text-sm">Village Agents</h3>
-            <button onClick={() => navigate('/Agents')} className="ml-auto text-blue-400 text-[8px] sm:text-xs hover:text-blue-300 flex items-center gap-0.5 sm:gap-1">
+            <button onClick={() => navigate('/agents')} className="ml-auto text-blue-400 text-[8px] sm:text-xs hover:text-blue-300 flex items-center gap-0.5 sm:gap-1">
               View all <ChevronRight className="w-3 h-3" />
             </button>
           </div>
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
-              {[1,2,3,4,5,6].map(i => <div key={i} className="h-14 sm:h-16 bg-white/5 rounded-lg animate-pulse" />)}
+              {[1,2,3,4,5,6].map(i => <div key={i} className="h-20 sm:h-24 bg-white/5 rounded-lg animate-pulse" />)}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
-              {agents.map(agent => (
-                <div key={agent.id} className="bg-white/5 rounded-lg sm:rounded-xl p-2 sm:p-3 flex items-center gap-1.5 sm:gap-2">
-                  {agent.avatar_url ? (
-                    <img src={agent.avatar_url} alt={agent.name} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-purple-300 text-[8px] sm:text-xs font-bold">{agent.name?.[0] || '?'}</span>
+              {agents.map(agent => {
+                const hasDID = agent.classic_address && agent.classic_address.startsWith('r');
+                return (
+                  <button
+                    key={agent.id}
+                    onClick={() => navigate(`/agents/${agent.id}`)}
+                    className="bg-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 hover:bg-white/10 hover:border-purple-500/30 transition-all text-left group border border-transparent"
+                  >
+                    {agent.avatar_url ? (
+                      <img src={agent.avatar_url} alt={agent.name} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover ring-1 ring-white/10 flex-shrink-0" />
+                    ) : (
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
+                        {agent.name?.[0] || '?'}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-white text-[9px] sm:text-xs font-medium truncate group-hover:text-purple-300 transition-colors">{agent.name}</p>
+                      <p className="text-white/40 text-[7px] sm:text-[10px] truncate capitalize">{agent.role}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-amber-300 text-[7px] sm:text-[9px] font-bold">{agent.honor_score || 100}</span>
+                        {hasDID && (
+                          <span className="text-green-400 text-[7px]">● On-Chain</span>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-white text-[8px] sm:text-xs font-medium truncate">{agent.name}</p>
-                    <p className="text-white/40 text-[7px] sm:text-[10px] truncate capitalize">{agent.role}</p>
-                  </div>
-                </div>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

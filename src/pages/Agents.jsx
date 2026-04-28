@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Award, MessageSquare, BookOpen, Briefcase, Fingerprint, Search, Filter } from 'lucide-react';
+import { Sparkles, Award, MessageSquare, BookOpen, Briefcase, Fingerprint, Search, Filter, Home, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import VillagePulseHero from '@/components/agents/VillagePulseHero';
 import AgentCard from '@/components/agents/AgentCard';
@@ -65,15 +65,27 @@ export default function Agents() {
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              {currentDID && (
+          {/* Breadcrumb nav */}
+          <div className="flex items-center gap-2 mb-3">
+            <Link to="/home" className="inline-flex items-center text-white/40 hover:text-white/60 text-xs transition-colors">
+              <Home className="w-3.5 h-3.5 mr-1" /> Home
+            </Link>
+            <span className="text-white/20">·</span>
+            <Link to="/dashboard" className="inline-flex items-center text-white/40 hover:text-white/60 text-xs transition-colors">
+              <BarChart3 className="w-3.5 h-3.5 mr-1" /> Dashboard
+            </Link>
+            {currentDID && (
+              <>
+                <span className="text-white/20 ml-auto" />
                 <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 text-[10px] sm:text-xs">
                   <Fingerprint className="w-3 h-3 mr-1" />
                   DID: {currentDID.did?.slice(0, 16)}...
                 </Badge>
-              )}
-            </div>
+              </>
+            )}
+          </div>
+          <div className="flex items-center justify-between">
+            <div></div>
             <Link to="/agent-genesis">
               <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0">
                 <Sparkles className="w-4 h-4 mr-2" />

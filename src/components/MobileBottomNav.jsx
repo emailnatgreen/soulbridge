@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Wallet, Shield, Users, Vote, GitBranch } from 'lucide-react';
+import { Home, Wallet, Shield, Users, Vote, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { hasAdminAccess } from '@/lib/adminAccess';
 
 const NAV_ITEMS = [
-  { icon: Home, label: 'Home', path: '/Home' },
-  { icon: Users, label: 'Agents', path: '/Agents' },
-  { icon: Vote, label: 'Govern', path: '/GovernanceHub' },
-  { icon: Wallet, label: 'Wallets', path: '/Wallets' },
-  { icon: Shield, label: 'DID', path: '/SovereignID' },
+  { icon: Home, label: 'Home', path: '/home' },
+  { icon: BarChart3, label: 'Dash', path: '/dashboard' },
+  { icon: Users, label: 'Agents', path: '/agents' },
+  { icon: Vote, label: 'Govern', path: '/governance' },
+  { icon: Wallet, label: 'Wallets', path: '/wallets' },
 ];
 
 export default function MobileBottomNav() {

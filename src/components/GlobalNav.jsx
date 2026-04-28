@@ -19,7 +19,8 @@ const NAV_GROUPS = [
   {
     label: 'Core',
     links: [
-      { label: 'Home', path: '/Home', icon: Home },
+      { label: 'Home', path: '/home', icon: Home },
+      { label: 'Dashboard', path: '/dashboard', icon: BarChart3 },
       { label: 'Axi Command', path: '/AxiCommandDashboard', icon: Brain },
       { label: 'Village Calendar', path: '/VillageCalendar', icon: Calendar },
     ]
@@ -27,14 +28,12 @@ const NAV_GROUPS = [
   {
     label: 'Agents',
     links: [
-      { label: 'Village Agents', path: '/Agents', icon: Users },
-      { label: 'Agent Profile', path: '/AgentProfile', icon: Star },
-      { label: 'Marketplace', path: '/AgentMarketplace', icon: ShoppingBag },
-      { label: 'Leaderboard', path: '/AgentLeaderboard', icon: Award },
-      { label: 'Messaging', path: '/AgentMessaging', icon: MessageSquare },
-      { label: 'Agent Comms', path: '/AgentCommsDashboard', icon: MessageSquare },
+      { label: 'Village Agents', path: '/agents', icon: Users },
+      { label: 'Leaderboard', path: '/leaderboard', icon: Award },
+      { label: 'Agent Genesis', path: '/agent-genesis', icon: Star },
+      { label: 'Agent Chat', path: '/AgentChat', icon: MessageSquare },
+      { label: 'Training', path: '/AgentTrainingModule', icon: GraduationCap },
       { label: 'Wellbeing', path: '/AgentWellbeing', icon: Heart },
-      { label: 'Reputation', path: '/AgentReputation', icon: TrendingUp },
     ]
   },
   {
