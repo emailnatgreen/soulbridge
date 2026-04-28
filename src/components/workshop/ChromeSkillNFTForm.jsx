@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Chrome, Loader2, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
+import MetadataJsonEditor from './MetadataJsonEditor';
+import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetadataSchemas';
 
 const EMPTY_SKILL = { skill_name: '', instructions: '', trigger_command: '', requires_didit_verification: true };
 
@@ -25,7 +27,33 @@ export default function ChromeSkillNFTForm() {
   const [taxon, setTaxon] = useState('0');
   const [transferFee, setTransferFee] = useState('0');
   const [skills, setSkills] = useState([{ ...EMPTY_SKILL }]);
+  const [customData, setCustomData] = useState(getDefaultCustomData('chrome_skill'));
   const queryClient = useQueryClient();
+
+  // Sync form → custom_data
+  useEffect(() => {
+    setCustomData({
+      skills: skills.filter(s => s.skill_name || s.instructions),
+      pricing: {
+        service_price_rlusd: parseFloat(servicePrice) || 0,
+        stream_cost_rlusd: parseFloat(streamCost) || 0,
+        stream_interval: streamUnit,
+      },
+    });
+  }, [skills, servicePrice, streamCost, streamUnit]);
+
+  // Sync custom_data → form (from JSON editor)
+  const handleCustomDataChange = (newData) => {
+    setCustomData(newData);
+    if (Array.isArray(newData.skills)) {
+      setSkills(newData.skills.length > 0 ? newData.skills : [{ ...EMPTY_SKILL }]);
+    }
+    if (newData.pricing) {
+      if (newData.pricing.service_price_rlusd !== undefined) setServicePrice(String(newData.pricing.service_price_rlusd || ''));
+      if (newData.pricing.stream_cost_rlusd !== undefined) setStreamCost(String(newData.pricing.stream_cost_rlusd || ''));
+      if (newData.pricing.stream_interval) setStreamUnit(newData.pricing.stream_interval);
+    }
+  };
 
   const updateSkill = (idx, key, val) => {
     setSkills(prev => prev.map((s, i) => i === idx ? { ...s, [key]: val } : s));
@@ -40,6 +68,8 @@ export default function ChromeSkillNFTForm() {
       const res = await base44.functions.invoke('workshopNFTCreate', {
         action: 'create',
         nft_type: 'chrome_skill',
+        custom_data: customData,
+        metadata_standard_version: METADATA_STANDARD_VERSION,
         widget_data: {
           name,
           nft_id: nftId || undefined,
@@ -67,6 +97,7 @@ export default function ChromeSkillNFTForm() {
       setServicePrice(''); setStreamCost(''); setStreamUnit('day');
       setTaxon('0'); setTransferFee('0');
       setSkills([{ ...EMPTY_SKILL }]);
+      setCustomData(getDefaultCustomData('chrome_skill'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricing?.();
     },
@@ -181,6 +212,19 @@ export default function ChromeSkillNFTForm() {
             </div>
           ))}
         </div>
+
+        {/* Dynamic Metadata JSON Editor */}
+        <MetadataJsonEditor
+          nftType="chrome_skill"
+          customData={customData}
+          onCustomDataChange={handleCustomDataChange}
+          commonFields={{
+            name, description, nft_id: nftId, image_url: imageUrl,
+            version: '1.0.0', taxon: parseInt(taxon) || 0,
+            transfer_fee: parseInt(transferFee) || 0,
+            transferable: false, burnable: false,
+          }}
+        />
 
         <Button onClick={() => mutation.mutate()} disabled={!name || !description || skills.every(s => !s.skill_name) || mutation.isPending || !canAfford} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Chrome className="w-4 h-4" />}

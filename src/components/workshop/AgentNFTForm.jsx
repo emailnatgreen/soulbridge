@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Bot, Loader2, Heart, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
+import MetadataJsonEditor from './MetadataJsonEditor';
+import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetadataSchemas';
 
 const AGENT_ROLES = ['citizen', 'guardian', 'creator', 'trader', 'teacher', 'healer', 'scout', 'elder', 'master'];
 
@@ -21,9 +23,47 @@ export default function AgentNFTForm() {
     servicePrice: '', streamCost: '', streamUnit: 'day',
     bindToDID: true, soulBound: true,
   });
+  const [customData, setCustomData] = useState(getDefaultCustomData('agent'));
   const queryClient = useQueryClient();
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
+
+  // Sync form → custom_data
+  useEffect(() => {
+    setCustomData({
+      agent_name: form.agentName,
+      role: form.role,
+      purpose: form.purpose,
+      personality: form.personality,
+      tagline: form.tagline,
+      bio: form.bio,
+      avatar_url: form.imageUrl,
+      soul_bound: form.soulBound,
+      pricing: {
+        service_price_rlusd: parseFloat(form.servicePrice) || 0,
+        stream_cost_rlusd: parseFloat(form.streamCost) || 0,
+        stream_interval: form.streamUnit,
+      },
+    });
+  }, [form.agentName, form.role, form.purpose, form.personality, form.tagline, form.bio, form.imageUrl, form.soulBound, form.servicePrice, form.streamCost, form.streamUnit]);
+
+  // Sync custom_data → form (from JSON editor)
+  const handleCustomDataChange = (newData) => {
+    setCustomData(newData);
+    if (newData.agent_name !== undefined) set('agentName', newData.agent_name);
+    if (newData.role) set('role', newData.role);
+    if (newData.purpose !== undefined) set('purpose', newData.purpose);
+    if (newData.personality !== undefined) set('personality', newData.personality);
+    if (newData.tagline !== undefined) set('tagline', newData.tagline);
+    if (newData.bio !== undefined) set('bio', newData.bio);
+    if (newData.avatar_url !== undefined) set('imageUrl', newData.avatar_url);
+    if (newData.soul_bound !== undefined) set('soulBound', newData.soul_bound);
+    if (newData.pricing) {
+      if (newData.pricing.service_price_rlusd !== undefined) set('servicePrice', String(newData.pricing.service_price_rlusd || ''));
+      if (newData.pricing.stream_cost_rlusd !== undefined) set('streamCost', String(newData.pricing.stream_cost_rlusd || ''));
+      if (newData.pricing.stream_interval) set('streamUnit', newData.pricing.stream_interval);
+    }
+  };
 
   // Fetch user's agents for context
   const { data: myAgents = [] } = useQuery({
@@ -39,6 +79,8 @@ export default function AgentNFTForm() {
       const res = await base44.functions.invoke('workshopNFTCreate', {
         action: 'create',
         nft_type: 'agent',
+        custom_data: customData,
+        metadata_standard_version: METADATA_STANDARD_VERSION,
         widget_data: {
           name: `Agent NFT: ${form.agentName}`,
           nft_id: form.nftId || undefined,
@@ -86,6 +128,7 @@ export default function AgentNFTForm() {
         servicePrice: '', streamCost: '', streamUnit: 'day',
         bindToDID: true, soulBound: true,
       });
+      setCustomData(getDefaultCustomData('agent'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       queryClient.invalidateQueries({ queryKey: ['myAgentsWorkshop'] });
       refreshPricing?.();
@@ -196,6 +239,20 @@ export default function AgentNFTForm() {
           </div>
           <Switch checked={form.soulBound} onCheckedChange={v => set('soulBound', v)} />
         </div>
+
+        {/* Dynamic Metadata JSON Editor */}
+        <MetadataJsonEditor
+          nftType="agent"
+          customData={customData}
+          onCustomDataChange={handleCustomDataChange}
+          commonFields={{
+            name: `Agent NFT: ${form.agentName}`,
+            description: `Soul-bound NFT representing AI Agent "${form.agentName}". Purpose: ${form.purpose}`,
+            nft_id: form.nftId, image_url: form.imageUrl,
+            version: '1.0.0', taxon: 0, transfer_fee: 0,
+            transferable: !form.soulBound, burnable: false,
+          }}
+        />
 
         <Button onClick={() => mutation.mutate()} disabled={!form.agentName || !form.purpose || mutation.isPending || !canAfford} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bot className="w-4 h-4" />}

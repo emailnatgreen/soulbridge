@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
+import MetadataJsonEditor from './MetadataJsonEditor';
+import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetadataSchemas';
 
 const CATEGORIES = ['agent_creation', 'skill', 'environment', 'governance', 'training', 'wallet_management', 'did_management', 'other'];
 const UI_BEHAVIORS = ['toggle', 'unlock_page', 'upgrade', 'badge', 'activate_feature'];
@@ -25,9 +27,42 @@ const INITIAL = {
 
 export default function WidgetNFTForm() {
   const [form, setForm] = useState(INITIAL);
+  const [customData, setCustomData] = useState(getDefaultCustomData('widget'));
   const queryClient = useQueryClient();
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
+
+  // Sync form fields → custom_data
+  const syncFormToCustomData = useCallback(() => {
+    setCustomData({
+      category: form.category,
+      widget_type: form.widget_type,
+      ui_behavior: form.ui_behavior,
+      feature_path: form.feature_path,
+      pricing: {
+        service_price_rlusd: parseFloat(form.service_price) || 0,
+        stream_cost_rlusd: parseFloat(form.cost_per_stream_interval) || 0,
+        stream_interval: form.stream_interval_unit,
+      },
+    });
+  }, [form.category, form.widget_type, form.ui_behavior, form.feature_path, form.service_price, form.cost_per_stream_interval, form.stream_interval_unit]);
+
+  // Sync custom_data → form fields (when JSON editor changes)
+  const handleCustomDataChange = (newData) => {
+    setCustomData(newData);
+    if (newData.category) set('category', newData.category);
+    if (newData.widget_type) { set('widget_type', newData.widget_type); set('widget_class', newData.widget_type); }
+    if (newData.ui_behavior) set('ui_behavior', newData.ui_behavior);
+    if (newData.feature_path !== undefined) set('feature_path', newData.feature_path);
+    if (newData.pricing) {
+      if (newData.pricing.service_price_rlusd !== undefined) set('service_price', String(newData.pricing.service_price_rlusd || ''));
+      if (newData.pricing.stream_cost_rlusd !== undefined) set('cost_per_stream_interval', String(newData.pricing.stream_cost_rlusd || ''));
+      if (newData.pricing.stream_interval) set('stream_interval_unit', newData.pricing.stream_interval);
+    }
+  };
+
+  // Keep custom_data in sync when form fields change
+  React.useEffect(() => { syncFormToCustomData(); }, [syncFormToCustomData]);
 
   const [refreshPricing, setRefreshPricing] = useState(null);
 
@@ -54,12 +89,15 @@ export default function WidgetNFTForm() {
         action: 'create',
         nft_type: 'widget',
         widget_data: payload,
+        custom_data: customData,
+        metadata_standard_version: METADATA_STANDARD_VERSION,
       });
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message || 'Widget NFT created as draft');
       setForm(INITIAL);
+      setCustomData(getDefaultCustomData('widget'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricing?.();
     },
@@ -181,6 +219,19 @@ export default function WidgetNFTForm() {
             </div>
           </div>
         </div>
+        {/* Dynamic Metadata JSON Editor */}
+        <MetadataJsonEditor
+          nftType="widget"
+          customData={customData}
+          onCustomDataChange={handleCustomDataChange}
+          commonFields={{
+            name: form.name, description: form.description, nft_id: form.nft_id,
+            image_url: form.image_url, version: form.version,
+            taxon: parseInt(form.taxon) || 0, transfer_fee: parseInt(form.transferFee) || 0,
+            transferable: form.transferable, burnable: form.burnable,
+          }}
+        />
+
         <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || mutation.isPending || !canAfford} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
           Create Widget NFT — {cost} RLUSD

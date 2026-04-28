@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
 
     // === CREATE ===
     if (action === 'create') {
-      const { widget_data, agent_data } = body;
+      const { widget_data, agent_data, custom_data, metadata_standard_version } = body;
       if (!widget_data) return Response.json({ error: 'widget_data required' }, { status: 400 });
 
       // Check balance
@@ -98,14 +98,26 @@ Deno.serve(async (req) => {
         });
       } catch (_) {}
 
-      // Create widget entity
+      // Create widget entity — merge custom_data into metadata if provided
       const widgetPayload = {
         ...widget_data,
         minted_by: user.email,
         creator_id: user.email,
         mint_status: 'draft',
-        metadata_version: '1.0.0',
+        metadata_version: metadata_standard_version || '1.0.0',
       };
+      // Store custom_data in governance_notes as structured JSON (preserves extensibility)
+      if (custom_data && typeof custom_data === 'object') {
+        const existingNotes = widgetPayload.governance_notes || '';
+        const metaEnvelope = {
+          metadata_standard: `SoulBridgeNFTMetadata_v${metadata_standard_version || '1.0.0'}`,
+          nft_type,
+          custom_data,
+        };
+        widgetPayload.governance_notes = existingNotes
+          ? `${existingNotes}\n---\n${JSON.stringify(metaEnvelope)}`
+          : JSON.stringify(metaEnvelope);
+      }
       const widget = await base44.asServiceRole.entities.Widget.create(widgetPayload);
 
       // For agent NFTs, also create the Agent entity
@@ -139,7 +151,9 @@ Deno.serve(async (req) => {
         balance_after: newBalance,
         widget,
         agent,
-        message: `${nft_type} NFT draft created — charged ${cost} RLUSD`,
+        custom_data: custom_data || null,
+        metadata_standard_version: metadata_standard_version || '1.0.0',
+        message: `${nft_type} NFT draft created — charged ${cost} RLUSD (Metadata v${metadata_standard_version || '1.0.0'})`,
       });
     }
 
