@@ -34,15 +34,20 @@ export default function MyMintedNFTs() {
     queryKey: ['myMintedNFTs'],
     queryFn: async () => {
       const user = await base44.auth.me();
-      const [byMinter, byCreator, byBuiltIn] = await Promise.all([
+      const isAdmin = user?.role === 'admin';
+
+      // Admins see all widgets; regular users see only their own
+      if (isAdmin) {
+        return base44.entities.Widget.list('-created_date', 100);
+      }
+
+      const [byMinter, byCreator] = await Promise.all([
         base44.entities.Widget.filter({ minted_by: user.email }, '-created_date', 50),
         base44.entities.Widget.filter({ creator_id: user.email }, '-created_date', 50),
-        base44.entities.Widget.filter({ created_by: user.email }, '-created_date', 50),
       ]);
-      // Merge and deduplicate
       const seen = new Set();
       const merged = [];
-      for (const w of [...byMinter, ...byCreator, ...byBuiltIn]) {
+      for (const w of [...byMinter, ...byCreator]) {
         if (!seen.has(w.id)) { seen.add(w.id); merged.push(w); }
       }
       return merged;
