@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Save, Loader2, Plus, X } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import AgentJsonEditor from '@/components/agents/AgentJsonEditor';
 
 export default function EditAgentProfile() {
   const [searchParams] = useSearchParams();
@@ -293,6 +294,12 @@ export default function EditAgentProfile() {
               </div>
             </CardContent>
           </Card>
+
+          {/* JSON Editor — advanced editing */}
+          <AgentJsonEditor
+            agentData={formData}
+            onAgentDataChange={(parsed) => setFormData(prev => ({ ...prev, ...parsed }))}
+          />
 
           <Button type="submit" disabled={updateMutation.isPending} className="w-full bg-purple-600 hover:bg-purple-700 py-6 text-lg">
             {updateMutation.isPending ? (
