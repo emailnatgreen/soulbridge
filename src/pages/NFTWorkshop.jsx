@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
+import { useAuth } from '@/lib/AuthContext';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
 import WidgetLockScreen from '@/components/widgets/WidgetLockScreen';
 import TabLockOverlay from '@/components/workshop/TabLockOverlay';
@@ -20,7 +21,9 @@ const PATHS = {
 };
 
 export default function NFTWorkshop() {
-  const { isAdmin } = useIdentity();
+  const { isAdmin: identityAdmin } = useIdentity();
+  const { user } = useAuth();
+  const isAdmin = identityAdmin || user?.role === 'admin';
   const { isUnlocked, getWidgetForPath, loading: widgetLoading } = useWidgetUnlock();
   const [activeTab, setActiveTab] = useState('widget');
 
