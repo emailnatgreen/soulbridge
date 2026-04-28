@@ -1,0 +1,100 @@
+{
+  "name": "StorefrontOrder",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string",
+      "description": "Reference to StorefrontListing"
+    },
+    "storefront_id": {
+      "type": "string",
+      "description": "Reference to Storefront"
+    },
+    "buyer_email": {
+      "type": "string",
+      "description": "Buyer's email"
+    },
+    "buyer_did": {
+      "type": "string",
+      "description": "Buyer's DID"
+    },
+    "seller_email": {
+      "type": "string",
+      "description": "Seller's email"
+    },
+    "listing_title": {
+      "type": "string",
+      "description": "Snapshot of listing title at time of purchase"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Quantity ordered"
+    },
+    "unit_price_rlusd": {
+      "type": "number",
+      "description": "Price per unit at time of purchase"
+    },
+    "total_price_rlusd": {
+      "type": "number",
+      "description": "Total amount charged"
+    },
+    "village_fee_rlusd": {
+      "type": "number",
+      "description": "1% Village fee amount"
+    },
+    "seller_receives_rlusd": {
+      "type": "number",
+      "description": "Amount seller receives after fees"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL"
+    },
+    "payment_reference": {
+      "type": "string",
+      "description": "XRPL tx hash or PayPal reference"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "fulfilled",
+        "completed",
+        "cancelled",
+        "refunded",
+        "disputed"
+      ],
+      "default": "pending",
+      "description": "Order lifecycle status"
+    },
+    "fulfillment_data": {
+      "type": "object",
+      "description": "Delivery details (download link, tracking info, etc.)"
+    },
+    "buyer_rating": {
+      "type": "number",
+      "description": "Buyer's rating (1-5)"
+    },
+    "buyer_review": {
+      "type": "string",
+      "description": "Buyer's text review"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional order metadata"
+    }
+  },
+  "required": [
+    "listing_id",
+    "storefront_id",
+    "buyer_email",
+    "seller_email",
+    "total_price_rlusd"
+  ]
+}

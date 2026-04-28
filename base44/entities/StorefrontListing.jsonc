@@ -1,0 +1,132 @@
+{
+  "name": "StorefrontListing",
+  "type": "object",
+  "properties": {
+    "storefront_id": {
+      "type": "string",
+      "description": "Reference to Storefront entity ID"
+    },
+    "seller_email": {
+      "type": "string",
+      "description": "Email of the seller"
+    },
+    "seller_did": {
+      "type": "string",
+      "description": "DID of the seller"
+    },
+    "title": {
+      "type": "string",
+      "description": "Product or service title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description"
+    },
+    "listing_type": {
+      "type": "string",
+      "enum": [
+        "product",
+        "service",
+        "digital_asset",
+        "nft",
+        "subscription"
+      ],
+      "default": "product",
+      "description": "Type of listing"
+    },
+    "category": {
+      "type": "string",
+      "description": "Category within the storefront"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Product/service images"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL",
+      "description": "Payment method for this listing"
+    },
+    "price_rlusd": {
+      "type": "number",
+      "description": "Price in RLUSD"
+    },
+    "quantity_available": {
+      "type": "number",
+      "default": -1,
+      "description": "Available stock (-1 = unlimited)"
+    },
+    "quantity_sold": {
+      "type": "number",
+      "default": 0,
+      "description": "Units sold"
+    },
+    "delivery_method": {
+      "type": "string",
+      "enum": [
+        "digital_download",
+        "api_key",
+        "manual_transfer",
+        "instant_access",
+        "physical_shipping"
+      ],
+      "default": "instant_access",
+      "description": "How the product/service is delivered"
+    },
+    "delivery_time_hours": {
+      "type": "number",
+      "description": "Expected delivery time in hours"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "sold_out",
+        "archived",
+        "draft"
+      ],
+      "default": "draft",
+      "description": "Listing status"
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0,
+      "description": "Average buyer rating (0-5)"
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of reviews"
+    },
+    "village_fee_percent": {
+      "type": "number",
+      "default": 1,
+      "description": "Village fee percentage (Law 6: Exchange)"
+    },
+    "custom_data": {
+      "type": "object",
+      "description": "Flexible metadata for this listing"
+    }
+  },
+  "required": [
+    "storefront_id",
+    "seller_email",
+    "title",
+    "price_rlusd"
+  ]
+}

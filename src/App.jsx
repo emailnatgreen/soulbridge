@@ -88,6 +88,7 @@ import Send from './pages/Send';
 import NFTWorkshop from './pages/NFTWorkshop';
 import SeedGoldenAcorn from './pages/SeedGoldenAcorn';
 import RLUSDTrustlineGate from './pages/RLUSDTrustlineGate';
+import StorefrontHub from './pages/StorefrontHub';
 
 
 const LoadingFallback = () => (
@@ -310,6 +311,9 @@ const AuthenticatedApp = () => {
 
         {/* RLUSD TRUSTLINE GATE */}
         <Route path="/rlusd-gate" element={L("rlusd-gate", RLUSDTrustlineGate)} />
+
+        {/* STOREFRONT */}
+        <Route path="/storefront" element={L("storefront", StorefrontHub)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />

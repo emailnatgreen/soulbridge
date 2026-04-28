@@ -1,0 +1,110 @@
+{
+  "name": "Storefront",
+  "type": "object",
+  "properties": {
+    "owner_did": {
+      "type": "string",
+      "description": "DID of the storefront owner"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the storefront owner"
+    },
+    "name": {
+      "type": "string",
+      "description": "Storefront display name"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short tagline or motto"
+    },
+    "description": {
+      "type": "string",
+      "description": "About the storefront \u2014 story, mission, offerings"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL to storefront logo/avatar"
+    },
+    "banner_url": {
+      "type": "string",
+      "description": "URL to storefront banner image"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Product/service categories this storefront offers"
+    },
+    "payment_methods": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "RLUSD_ON_XRPL",
+          "PAYPAL_FIAT"
+        ]
+      },
+      "description": "Accepted payment methods"
+    },
+    "honor_score_at_creation": {
+      "type": "number",
+      "description": "Owner's honor score when storefront was created"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "suspended",
+        "archived"
+      ],
+      "default": "active",
+      "description": "Storefront operational status"
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0,
+      "description": "Total completed sales"
+    },
+    "total_revenue_rlusd": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime revenue in RLUSD"
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0,
+      "description": "Average buyer rating (0-5)"
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of buyer reviews"
+    },
+    "social_links": {
+      "type": "object",
+      "properties": {
+        "website": {
+          "type": "string"
+        },
+        "twitter": {
+          "type": "string"
+        },
+        "github": {
+          "type": "string"
+        }
+      },
+      "description": "External links"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional storefront metadata"
+    }
+  },
+  "required": [
+    "owner_email",
+    "name"
+  ]
+}
