@@ -191,8 +191,10 @@ export default function AgentMarketplace() {
               <p className="text-slate-300 text-sm">{selectedListing.title}</p>
               <p className="text-slate-400 text-sm">{selectedListing.description}</p>
               <div className="flex gap-2">
-                <Button onClick={() => purchaseMutation.mutate({ listingId: selectedListing.id, agentId: agents[0]?.id })}
-                  disabled={purchaseMutation.isPending}
+                <Button onClick={() => {
+                    toast.info('Marketplace purchasing coming soon');
+                    setSelectedListing(null);
+                  }}
                   className="flex-1 bg-amber-600 hover:bg-amber-700">
                   <ShoppingCart className="w-4 h-4 mr-2" />Create Contract
                 </Button>

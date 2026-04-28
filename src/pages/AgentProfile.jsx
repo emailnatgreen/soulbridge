@@ -180,8 +180,14 @@ export default function AgentProfile() {
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-white font-medium">{listing.title}</h3>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-white">{listing.price_rlusd}</div>
-                      <div className="text-xs text-white/50">RLUSD</div>
+                      <div className="text-lg font-bold text-white">
+                        {listing.payment_method === 'PAYPAL_FIAT'
+                          ? `$${((listing.unit_amount || 0) / 100).toFixed(2)}`
+                          : `${listing.unit_amount || listing.price_rlusd || 0}`}
+                      </div>
+                      <div className="text-xs text-white/50">
+                        {listing.payment_method === 'PAYPAL_FIAT' ? 'USD' : 'RLUSD'}
+                      </div>
                     </div>
                   </div>
                   <p className="text-sm text-white/60">{listing.description}</p>

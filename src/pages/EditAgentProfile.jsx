@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Save, Loader2, Plus, X } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 
 export default function EditAgentProfile() {
@@ -59,7 +58,7 @@ export default function EditAgentProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries(['agent', agentId]);
       toast.success('Profile updated successfully');
-      navigate(createPageUrl('AgentProfile') + `?id=${agentId}`);
+      navigate(`/agents/${agentId}`);
     }
   });
 
@@ -122,7 +121,7 @@ export default function EditAgentProfile() {
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link to={createPageUrl('AgentProfile') + `?id=${agent.id}`}>
+            <Link to={`/agents/${agent.id}`}>
               <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
                 <ArrowLeft className="w-5 h-5" />
               </Button>

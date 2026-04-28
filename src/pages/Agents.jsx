@@ -4,12 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Sparkles, Heart, TrendingUp, Award, MessageSquare, BookOpen, Briefcase, Settings, Gauge, Fingerprint } from 'lucide-react';
+import { Users, Sparkles, Heart, TrendingUp, Award, MessageSquare, BookOpen, Briefcase, Settings, Gauge, Fingerprint } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DIDIdentityBannerCompact from '@/components/DIDIdentityBannerCompact';
 
 export default function Agents() {
-  const [showCreate, setShowCreate] = useState(false);
   const [currentDID, setCurrentDID] = useState(null);
 
   useEffect(() => {
@@ -60,14 +59,7 @@ export default function Agents() {
                   <span className="sm:hidden">Genesis</span>
                 </Button>
               </Link>
-              <Button 
-                onClick={() => setShowCreate(!showCreate)}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">New Agent</span>
-                <span className="sm:hidden">New</span>
-              </Button>
+
             </div>
           </div>
           {currentDID && (
@@ -112,7 +104,7 @@ export default function Agents() {
         {/* Navigation */}
         <div className="mb-12">
           <h2 className="text-sm uppercase tracking-widest text-white/50 mb-4">Navigate</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             {hubs.map(hub => {
               const Icon = hub.icon;
               const isComingSoon = hub.label === 'Marketplace';

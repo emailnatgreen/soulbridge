@@ -20,7 +20,7 @@ export default function AgentLeaderboard() {
     queryKey: ['leaderboard-agents'],
     queryFn: () => base44.entities.Agent.list('-honor_score', 100),
     staleTime: 0,
-    refetchInterval: 3000,
+    refetchInterval: 15000,
   });
 
   const { data: walletsMap = {} } = useQuery({
