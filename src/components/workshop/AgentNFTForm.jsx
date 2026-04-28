@@ -20,7 +20,8 @@ export default function AgentNFTForm() {
   const [form, setForm] = useState({
     agentName: '', purpose: '', personality: '', role: 'citizen',
     bio: '', tagline: '', imageUrl: '', nftId: '',
-    servicePrice: '', streamCost: '', streamUnit: 'day',
+    nftCost: '', servicePrice: '', serviceFeePercent: '',
+    streamCost: '', streamUnit: 'day',
     bindToDID: true, soulBound: true,
   });
   const [customData, setCustomData] = useState(getDefaultCustomData('agent'));
@@ -39,13 +40,15 @@ export default function AgentNFTForm() {
       bio: form.bio,
       avatar_url: form.imageUrl,
       soul_bound: form.soulBound,
+      nft_cost_rlusd: parseFloat(form.nftCost) || 0,
+      service_fee_percent: parseFloat(form.serviceFeePercent) || 0,
       pricing: {
         service_price_rlusd: parseFloat(form.servicePrice) || 0,
         stream_cost_rlusd: parseFloat(form.streamCost) || 0,
         stream_interval: form.streamUnit,
       },
     });
-  }, [form.agentName, form.role, form.purpose, form.personality, form.tagline, form.bio, form.imageUrl, form.soulBound, form.servicePrice, form.streamCost, form.streamUnit]);
+  }, [form.agentName, form.role, form.purpose, form.personality, form.tagline, form.bio, form.imageUrl, form.soulBound, form.nftCost, form.serviceFeePercent, form.servicePrice, form.streamCost, form.streamUnit]);
 
   // Sync custom_data → form (from JSON editor)
   const handleCustomDataChange = (newData) => {
@@ -58,6 +61,8 @@ export default function AgentNFTForm() {
     if (newData.bio !== undefined) set('bio', newData.bio);
     if (newData.avatar_url !== undefined) set('imageUrl', newData.avatar_url);
     if (newData.soul_bound !== undefined) set('soulBound', newData.soul_bound);
+    if (newData.nft_cost_rlusd !== undefined) set('nftCost', String(newData.nft_cost_rlusd || ''));
+    if (newData.service_fee_percent !== undefined) set('serviceFeePercent', String(newData.service_fee_percent || ''));
     if (newData.pricing) {
       if (newData.pricing.service_price_rlusd !== undefined) set('servicePrice', String(newData.pricing.service_price_rlusd || ''));
       if (newData.pricing.stream_cost_rlusd !== undefined) set('streamCost', String(newData.pricing.stream_cost_rlusd || ''));
@@ -125,7 +130,8 @@ export default function AgentNFTForm() {
       setForm({
         agentName: '', purpose: '', personality: '', role: 'citizen',
         bio: '', tagline: '', imageUrl: '', nftId: '',
-        servicePrice: '', streamCost: '', streamUnit: 'day',
+        nftCost: '', servicePrice: '', serviceFeePercent: '',
+        streamCost: '', streamUnit: 'day',
         bindToDID: true, soulBound: true,
       });
       setCustomData(getDefaultCustomData('agent'));
@@ -205,11 +211,21 @@ export default function AgentNFTForm() {
         {/* Economics Section */}
         <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
           <p className="text-amber-300 text-xs font-semibold">💰 NFT Economics</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-red-300 text-xs">Cost of NFT (RLUSD) *</Label>
+              <Input type="number" value={form.nftCost} onChange={e => set('nftCost', e.target.value)} placeholder="60" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">One-time price users pay to own this agent NFT</p>
+            </div>
             <div className="space-y-1.5">
               <Label className="text-amber-300 text-xs">Service Price (RLUSD)</Label>
               <Input type="number" value={form.servicePrice} onChange={e => set('servicePrice', e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
-              <p className="text-white/30 text-[9px]">What users pay to acquire/use this agent</p>
+              <p className="text-white/30 text-[9px]">Per-use charge for the service (0 = free)</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-green-300 text-xs">Service Fee % → Treasury</Label>
+              <Input type="number" value={form.serviceFeePercent} onChange={e => set('serviceFeePercent', e.target.value)} placeholder="1" min="0" max="100" step="0.1" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">% of each transaction sent to Village Treasury (e.g. 1 = 1%)</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-amber-300 text-xs">Stream Cost (RLUSD)</Label>

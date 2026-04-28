@@ -21,7 +21,9 @@ export default function ChromeSkillNFTForm() {
   const [nftId, setNftId] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [nftCost, setNftCost] = useState('');
   const [servicePrice, setServicePrice] = useState('');
+  const [serviceFeePercent, setServiceFeePercent] = useState('');
   const [streamCost, setStreamCost] = useState('');
   const [streamUnit, setStreamUnit] = useState('day');
   const [taxon, setTaxon] = useState('0');
@@ -34,13 +36,15 @@ export default function ChromeSkillNFTForm() {
   useEffect(() => {
     setCustomData({
       skills: skills.filter(s => s.skill_name || s.instructions),
+      nft_cost_rlusd: parseFloat(nftCost) || 0,
+      service_fee_percent: parseFloat(serviceFeePercent) || 0,
       pricing: {
         service_price_rlusd: parseFloat(servicePrice) || 0,
         stream_cost_rlusd: parseFloat(streamCost) || 0,
         stream_interval: streamUnit,
       },
     });
-  }, [skills, servicePrice, streamCost, streamUnit]);
+  }, [skills, nftCost, serviceFeePercent, servicePrice, streamCost, streamUnit]);
 
   // Sync custom_data → form (from JSON editor)
   const handleCustomDataChange = (newData) => {
@@ -48,6 +52,8 @@ export default function ChromeSkillNFTForm() {
     if (Array.isArray(newData.skills)) {
       setSkills(newData.skills.length > 0 ? newData.skills : [{ ...EMPTY_SKILL }]);
     }
+    if (newData.nft_cost_rlusd !== undefined) setNftCost(String(newData.nft_cost_rlusd || ''));
+    if (newData.service_fee_percent !== undefined) setServiceFeePercent(String(newData.service_fee_percent || ''));
     if (newData.pricing) {
       if (newData.pricing.service_price_rlusd !== undefined) setServicePrice(String(newData.pricing.service_price_rlusd || ''));
       if (newData.pricing.stream_cost_rlusd !== undefined) setStreamCost(String(newData.pricing.stream_cost_rlusd || ''));
@@ -94,7 +100,8 @@ export default function ChromeSkillNFTForm() {
     onSuccess: (data) => {
       toast.success(data.message || 'Chrome Skill NFT created as draft');
       setName(''); setNftId(''); setDescription(''); setImageUrl('');
-      setServicePrice(''); setStreamCost(''); setStreamUnit('day');
+      setNftCost(''); setServicePrice(''); setServiceFeePercent('');
+      setStreamCost(''); setStreamUnit('day');
       setTaxon('0'); setTransferFee('0');
       setSkills([{ ...EMPTY_SKILL }]);
       setCustomData(getDefaultCustomData('chrome_skill'));
@@ -150,11 +157,21 @@ export default function ChromeSkillNFTForm() {
         {/* Economics Section */}
         <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
           <p className="text-amber-300 text-xs font-semibold">💰 NFT Economics</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-red-300 text-xs">Cost of NFT (RLUSD) *</Label>
+              <Input type="number" value={nftCost} onChange={e => setNftCost(e.target.value)} placeholder="60" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">One-time price users pay to own this NFT</p>
+            </div>
             <div className="space-y-1.5">
               <Label className="text-amber-300 text-xs">Service Price (RLUSD)</Label>
               <Input type="number" value={servicePrice} onChange={e => setServicePrice(e.target.value)} placeholder="0" className="bg-white/5 border-white/10 text-white" />
-              <p className="text-white/30 text-[9px]">What users pay to acquire/use this NFT</p>
+              <p className="text-white/30 text-[9px]">Per-use charge for the service (0 = free)</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-green-300 text-xs">Service Fee % → Treasury</Label>
+              <Input type="number" value={serviceFeePercent} onChange={e => setServiceFeePercent(e.target.value)} placeholder="1" min="0" max="100" step="0.1" className="bg-white/5 border-white/10 text-white" />
+              <p className="text-white/30 text-[9px]">% of each transaction sent to Village Treasury (e.g. 1 = 1%)</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-amber-300 text-xs">Stream Cost (RLUSD)</Label>
