@@ -1,9 +1,10 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers, Sparkles, Chrome, Bot, Shield, ExternalLink } from 'lucide-react';
+import { Layers, Sparkles, Chrome, Bot, Shield, ExternalLink, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MintActionButton from './MintActionButton';
 
@@ -29,7 +30,22 @@ function getTypeLabel(widget) {
   return 'Widget';
 }
 
+const DELETABLE_STATUSES = ['draft', 'prepared', 'simulated', 'failed'];
+
 export default function MyMintedNFTs() {
+  const queryClient = useQueryClient();
+  const [deleting, setDeleting] = useState(null);
+
+  const handleDelete = async (e, widget) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(`Delete "${widget.name}"? This cannot be undone.`)) return;
+    setDeleting(widget.id);
+    await base44.entities.Widget.delete(widget.id);
+    queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
+    setDeleting(null);
+  };
+
   const { data: widgets = [], isLoading } = useQuery({
     queryKey: ['myMintedNFTs'],
     queryFn: async () => {
@@ -110,6 +126,18 @@ export default function MyMintedNFTs() {
                 </a>
               )}
               <MintActionButton widget={w} />
+              {DELETABLE_STATUSES.includes(w.mint_status || 'draft') && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-red-400/60 hover:text-red-300 hover:bg-red-500/20"
+                  onClick={(e) => handleDelete(e, w)}
+                  disabled={deleting === w.id}
+                  title="Delete draft"
+                >
+                  <Trash2 className={`w-3.5 h-3.5 ${deleting === w.id ? 'animate-spin' : ''}`} />
+                </Button>
+              )}
             </div>
           </Link>
         ))}
