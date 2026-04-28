@@ -1,5 +1,5 @@
 /**
- * SoulBridge NFT Metadata Standard v3.0.0
+ * SoulBridge NFT Metadata Standard v2.0.0
  * 
  * Defines the unified metadata schema with type-specific `custom_data` sub-schemas.
  * Each NFT type (widget, chrome_skill, agent) has:
@@ -8,7 +8,7 @@
  *   - defaults (schema-level defaults applied before validation)
  */
 
-export const METADATA_STANDARD_VERSION = '3.0.0';
+export const METADATA_STANDARD_VERSION = '2.0.0';
 
 // ── Common fields shared across ALL NFT types ────────────────────────────────
 export const COMMON_FIELDS = {

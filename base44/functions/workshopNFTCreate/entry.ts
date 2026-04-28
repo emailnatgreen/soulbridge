@@ -104,13 +104,13 @@ Deno.serve(async (req) => {
         minted_by: user.email,
         creator_id: user.email,
         mint_status: 'draft',
-        metadata_version: metadata_standard_version || '1.0.0',
+        metadata_version: metadata_standard_version || '2.0.0',
       };
       // Store custom_data in governance_notes as structured JSON (preserves extensibility)
       if (custom_data && typeof custom_data === 'object') {
         const existingNotes = widgetPayload.governance_notes || '';
         const metaEnvelope = {
-          metadata_standard: `SoulBridgeNFTMetadata_v${metadata_standard_version || '1.0.0'}`,
+          metadata_standard: `SoulBridgeNFTMetadata_v${metadata_standard_version || '2.0.0'}`,
           nft_type,
           custom_data,
         };
@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
         agent,
         custom_data: custom_data || null,
         metadata_standard_version: metadata_standard_version || '1.0.0',
-        message: `${nft_type} NFT draft created — charged ${cost} RLUSD (Metadata v${metadata_standard_version || '1.0.0'})`,
+        message: `${nft_type} NFT draft created — charged ${cost} RLUSD (Metadata v${metadata_standard_version || '2.0.0'})`,
       });
     }
 
