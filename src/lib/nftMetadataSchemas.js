@@ -158,11 +158,84 @@ export const AGENT_CUSTOM_DATA_SCHEMA = {
   },
 };
 
+// ── Infrastructure NFT custom_data schema ────────────────────────────────────
+export const INFRASTRUCTURE_CUSTOM_DATA_SCHEMA = {
+  type: 'object',
+  label: 'Infrastructure Configuration',
+  description: 'Admin-only platform infrastructure NFT — immutable after mint',
+  properties: {
+    category: {
+      type: 'string',
+      enum: ['agent_creation', 'governance', 'wallet_management', 'did_management', 'environment', 'training'],
+      default: 'governance',
+      label: 'Category',
+    },
+    widget_type: {
+      type: 'string',
+      enum: ['unlock', 'service'],
+      default: 'unlock',
+      label: 'Widget Type',
+    },
+    ui_behavior: {
+      type: 'string',
+      enum: ['toggle', 'unlock_page', 'upgrade', 'badge', 'activate_feature'],
+      default: 'unlock_page',
+      label: 'UI Behavior',
+    },
+    feature_path: {
+      type: 'string',
+      label: 'Feature Path',
+      description: 'Internal path this NFT unlocks',
+    },
+    nft_cost_rlusd: {
+      type: 'number',
+      default: 0,
+      label: 'NFT Cost (RLUSD)',
+      description: 'One-time price users pay to own this NFT',
+    },
+    service_fee_percent: {
+      type: 'number',
+      default: 0,
+      min: 0,
+      max: 100,
+      label: 'Service Fee % → Treasury',
+    },
+    pricing: {
+      type: 'object',
+      label: 'Service Pricing',
+      properties: {
+        fixed_price_rlusd: { type: 'number', default: 0, label: 'Fixed Price (RLUSD)' },
+        stream_cost_rlusd: { type: 'number', default: 0, label: 'Stream Cost (RLUSD)' },
+        stream_interval: {
+          type: 'string',
+          enum: ['second', 'minute', 'hour', 'day'],
+          default: 'day',
+          label: 'Stream Interval',
+        },
+      },
+    },
+    immutable_after_mint: {
+      type: 'array',
+      label: 'Immutable Fields',
+      description: 'Fields locked after minting on mainnet',
+    },
+  },
+  defaults: {
+    category: 'governance',
+    widget_type: 'unlock',
+    widget_class: 'unlock',
+    ui_behavior: 'unlock_page',
+    transferable: false,
+    burnable: false,
+  },
+};
+
 // ── Schema registry keyed by nft_type ────────────────────────────────────────
 export const NFT_TYPE_SCHEMAS = {
   widget: WIDGET_CUSTOM_DATA_SCHEMA,
   chrome_skill: CHROME_SKILL_CUSTOM_DATA_SCHEMA,
   agent: AGENT_CUSTOM_DATA_SCHEMA,
+  infrastructure: INFRASTRUCTURE_CUSTOM_DATA_SCHEMA,
 };
 
 // ── Validate custom_data against its schema ──────────────────────────────────

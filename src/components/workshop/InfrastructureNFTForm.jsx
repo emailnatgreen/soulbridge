@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Shield, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
+import MetadataJsonEditor from './MetadataJsonEditor';
+import { METADATA_STANDARD_VERSION } from '@/lib/nftMetadataSchemas';
 
 const INFRA_CATEGORIES = ['agent_creation', 'governance', 'wallet_management', 'did_management', 'environment', 'training'];
 const UI_BEHAVIORS = ['toggle', 'unlock_page', 'upgrade', 'badge', 'activate_feature'];
@@ -28,8 +30,48 @@ export default function InfrastructureNFTForm() {
     imageUrl: '', taxon: '0', transferFee: '0',
     featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock',
   });
+  const [customData, setCustomData] = useState({
+    category: 'governance', widget_type: 'unlock', ui_behavior: 'unlock_page',
+    feature_path: '', nft_cost_rlusd: 0, service_fee_percent: 0,
+    pricing: { fixed_price_rlusd: 0, stream_cost_rlusd: 0, stream_interval: 'day' },
+    immutable_after_mint: IMMUTABLE_FIELDS,
+  });
   const queryClient = useQueryClient();
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
+
+  // Sync form → custom_data
+  useEffect(() => {
+    setCustomData({
+      category: form.category,
+      widget_type: form.widgetType,
+      ui_behavior: form.uiBehavior,
+      feature_path: form.featurePath,
+      nft_cost_rlusd: parseFloat(form.nftCost) || 0,
+      service_fee_percent: parseFloat(form.serviceFeePercent) || 0,
+      pricing: {
+        fixed_price_rlusd: parseFloat(form.fixedPrice) || 0,
+        stream_cost_rlusd: parseFloat(form.streamCost) || 0,
+        stream_interval: form.streamUnit,
+      },
+      immutable_after_mint: IMMUTABLE_FIELDS,
+    });
+  }, [form.category, form.widgetType, form.uiBehavior, form.featurePath, form.nftCost, form.serviceFeePercent, form.fixedPrice, form.streamCost, form.streamUnit]);
+
+  // Sync custom_data → form (from JSON editor)
+  const handleCustomDataChange = (newData) => {
+    setCustomData(newData);
+    if (newData.category) set('category', newData.category);
+    if (newData.widget_type) set('widgetType', newData.widget_type);
+    if (newData.ui_behavior) set('uiBehavior', newData.ui_behavior);
+    if (newData.feature_path !== undefined) set('featurePath', newData.feature_path);
+    if (newData.nft_cost_rlusd !== undefined) set('nftCost', String(newData.nft_cost_rlusd || ''));
+    if (newData.service_fee_percent !== undefined) set('serviceFeePercent', String(newData.service_fee_percent || ''));
+    if (newData.pricing) {
+      if (newData.pricing.fixed_price_rlusd !== undefined) set('fixedPrice', String(newData.pricing.fixed_price_rlusd || ''));
+      if (newData.pricing.stream_cost_rlusd !== undefined) set('streamCost', String(newData.pricing.stream_cost_rlusd || ''));
+      if (newData.pricing.stream_interval) set('streamUnit', newData.pricing.stream_interval);
+    }
+  };
 
   const [refreshPricing, setRefreshPricing] = useState(null);
 
@@ -39,6 +81,8 @@ export default function InfrastructureNFTForm() {
       const res = await base44.functions.invoke('workshopNFTCreate', {
         action: 'create',
         nft_type: 'infrastructure',
+        custom_data: customData,
+        metadata_standard_version: METADATA_STANDARD_VERSION,
         widget_data: {
           name: form.name,
           nft_id: form.nftId || undefined,
@@ -65,6 +109,7 @@ export default function InfrastructureNFTForm() {
     onSuccess: (data) => {
       toast.success(data.message || 'Infrastructure NFT created as draft (immutable after mint)');
       setForm({ name: '', description: '', category: 'governance', nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day', serviceFeePercent: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
+      setCustomData({ category: 'governance', widget_type: 'unlock', ui_behavior: 'unlock_page', feature_path: '', nft_cost_rlusd: 0, service_fee_percent: 0, pricing: { fixed_price_rlusd: 0, stream_cost_rlusd: 0, stream_interval: 'day' }, immutable_after_mint: IMMUTABLE_FIELDS });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricing?.();
     },
@@ -197,6 +242,19 @@ export default function InfrastructureNFTForm() {
           <Label className="text-white/60 text-xs">Image URL</Label>
           <Input value={form.imageUrl} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
         </div>
+
+        {/* Dynamic Metadata JSON Editor */}
+        <MetadataJsonEditor
+          nftType="infrastructure"
+          customData={customData}
+          onCustomDataChange={handleCustomDataChange}
+          commonFields={{
+            name: form.name, description: form.description, nft_id: form.nftId,
+            image_url: form.imageUrl, version: '1.0.0',
+            taxon: parseInt(form.taxon) || 0, transfer_fee: parseInt(form.transferFee) || 0,
+            transferable: false, burnable: false,
+          }}
+        />
 
         <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || mutation.isPending} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
