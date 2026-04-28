@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { useIdentity } from '@/hooks/useIdentity';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
 import WidgetLockScreen from '@/components/widgets/WidgetLockScreen';
+import TabLockOverlay from '@/components/workshop/TabLockOverlay';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Sparkles, Bot, Chrome, Shield, Layers } from 'lucide-react';
+import { Sparkles, Bot, Chrome, Shield } from 'lucide-react';
 import WorkshopHeader from '@/components/workshop/WorkshopHeader';
 import WidgetNFTForm from '@/components/workshop/WidgetNFTForm';
 import ChromeSkillNFTForm from '@/components/workshop/ChromeSkillNFTForm';
@@ -13,16 +12,23 @@ import AgentNFTForm from '@/components/workshop/AgentNFTForm';
 import InfrastructureNFTForm from '@/components/workshop/InfrastructureNFTForm';
 import MyMintedNFTs from '@/components/workshop/MyMintedNFTs';
 
-const WORKSHOP_FEATURE_PATH = '/nft-workshop';
+// Each tab has its own feature path gated by a separate NFT
+const PATHS = {
+  widget: '/nft-workshop',
+  chromeSkill: '/nft-workshop/chrome-skill',
+  agent: '/nft-workshop/agent-nft',
+};
 
 export default function NFTWorkshop() {
-  const { isAdmin, isRecognized } = useIdentity();
+  const { isAdmin } = useIdentity();
   const { isUnlocked, getWidgetForPath, loading: widgetLoading } = useWidgetUnlock();
   const [activeTab, setActiveTab] = useState('widget');
 
-  // Check ownership of the Workshop NFT
-  const hasAccess = isAdmin || isUnlocked(WORKSHOP_FEATURE_PATH);
-  const workshopWidget = getWidgetForPath(WORKSHOP_FEATURE_PATH);
+  // Page-level gate: must own at least ONE of the three passes (or be admin)
+  const hasWidgetPass = isUnlocked(PATHS.widget);
+  const hasChromePass = isUnlocked(PATHS.chromeSkill);
+  const hasAgentPass = isUnlocked(PATHS.agent);
+  const hasAnyAccess = isAdmin || hasWidgetPass || hasChromePass || hasAgentPass;
 
   if (widgetLoading) {
     return (
@@ -32,16 +38,17 @@ export default function NFTWorkshop() {
     );
   }
 
-  if (!hasAccess) {
+  if (!hasAnyAccess) {
+    const workshopWidget = getWidgetForPath(PATHS.widget);
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
         <WidgetLockScreen
-          widgetName={workshopWidget?.widget_name || 'NFT Workshop Pass'}
-          widgetDescription="The NFT Workshop is a sovereign creation environment for minting Widget NFTs, Chrome Skill NFTs, and AI Agent NFTs on the XRPL. Access requires ownership of the Workshop Pass NFT."
-          nftId={workshopWidget?.nft_id || 'WIDGET-WORKSHOP-001'}
-          featurePath={WORKSHOP_FEATURE_PATH}
+          widgetName={workshopWidget?.widget_name || 'Workshop Pass'}
+          widgetDescription="The NFT Workshop requires at least one Workshop Pass NFT — Widget Pass, Chrome Skill Pass, or Agent Creator Pass — to access. Each pass unlocks its respective minting tab."
+          nftId={workshopWidget?.nft_id || 'WIDGET-WS-001'}
+          featurePath={PATHS.widget}
           widgetType="unlock"
-          category="governance"
+          category="skill"
           uiBehavior="unlock_page"
         />
       </div>
@@ -71,15 +78,34 @@ export default function NFTWorkshop() {
             )}
           </TabsList>
 
+          {/* Widget tab — gated by Workshop Pass */}
           <TabsContent value="widget" className="mt-4">
-            <WidgetNFTForm />
+            {isAdmin || hasWidgetPass ? (
+              <WidgetNFTForm />
+            ) : (
+              <TabLockOverlay nftName="Workshop Pass" nftId="WIDGET-WS-001" featurePath={PATHS.widget} />
+            )}
           </TabsContent>
+
+          {/* Chrome Skill tab — gated by Chrome Skill Pass */}
           <TabsContent value="chrome-skill" className="mt-4">
-            <ChromeSkillNFTForm />
+            {isAdmin || hasChromePass ? (
+              <ChromeSkillNFTForm />
+            ) : (
+              <TabLockOverlay nftName="Chrome Skill Pass" nftId="WIDGET-CS-001" featurePath={PATHS.chromeSkill} />
+            )}
           </TabsContent>
+
+          {/* Agent tab — gated by Agent Creator Pass */}
           <TabsContent value="agent-nft" className="mt-4">
-            <AgentNFTForm />
+            {isAdmin || hasAgentPass ? (
+              <AgentNFTForm />
+            ) : (
+              <TabLockOverlay nftName="Agent Creator Pass" nftId="WIDGET-AC-001" featurePath={PATHS.agent} />
+            )}
           </TabsContent>
+
+          {/* Infrastructure — admin only */}
           {isAdmin && (
             <TabsContent value="infrastructure" className="mt-4">
               <InfrastructureNFTForm />
