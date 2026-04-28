@@ -18,9 +18,9 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// ── Widget Metadata Standard v1.0.0 ────────────────────────────────────────
+// ── Widget Metadata Standard v2.0.0 ────────────────────────────────────────
 const METADATA_STANDARD = {
-  version: '1.0.0',
+  version: '2.0.0',
   required_fields: [
     'name', 'description', 'widget_type', 'widget_class',
     'category', 'version', 'minted_by', 'ui_behavior'
@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
         errors: validationErrors,
       });
       return Response.json({
-        error: 'Widget metadata does not conform to the Metadata Standard v1.0.0',
+        error: 'Widget metadata does not conform to the Metadata Standard v2.0.0',
         code: 'METADATA_INVALID',
         validation_errors: validationErrors,
         standard_version: METADATA_STANDARD.version,
