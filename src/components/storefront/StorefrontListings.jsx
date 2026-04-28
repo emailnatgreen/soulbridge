@@ -58,6 +58,8 @@ export default function StorefrontListings({ storefront, listings }) {
     setShowForm(true);
   };
 
+  const LISTING_FEE_RLUSD = 2;
+
   const save = useMutation({
     mutationFn: async () => {
       const data = {
@@ -78,12 +80,26 @@ export default function StorefrontListings({ storefront, listings }) {
       if (editing) {
         return base44.entities.StorefrontListing.update(editing.id, data);
       }
+      // Charge 2 RLUSD listing fee for new listings
+      const ledgers = await base44.entities.RLUSDLedger.filter({ user_email: storefront.owner_email }, '-created_date', 1);
+      const ledger = ledgers?.[0];
+      if (!ledger || ledger.balance < LISTING_FEE_RLUSD) {
+        throw new Error(`Insufficient RLUSD balance. You need ${LISTING_FEE_RLUSD} RLUSD to create a listing. Current balance: ${ledger?.balance || 0}`);
+      }
+      // Deduct fee
+      await base44.entities.RLUSDLedger.update(ledger.id, {
+        balance: ledger.balance - LISTING_FEE_RLUSD,
+        total_debited: (ledger.total_debited || 0) + LISTING_FEE_RLUSD,
+      });
       return base44.entities.StorefrontListing.create(data);
     },
     onSuccess: () => {
-      toast.success(editing ? 'Listing updated' : 'Listing created');
+      toast.success(editing ? 'Listing updated' : `Listing created (${LISTING_FEE_RLUSD} RLUSD charged)`);
       setShowForm(false);
       queryClient.invalidateQueries({ queryKey: ['storefrontListings'] });
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Failed to create listing');
     },
   });
 
@@ -217,14 +233,15 @@ export default function StorefrontListings({ storefront, listings }) {
               <Input value={form.tags} onChange={e => set('tags', e.target.value)} className="bg-white/5 border-white/10 text-white" placeholder="art, digital, nft" />
             </div>
 
-            <div className="flex items-center gap-2 pt-2 text-[10px] text-white/30">
-              <span>1% Village fee applies to all sales (Law 6: Exchange)</span>
+            <div className="space-y-1 pt-2 text-[10px] text-white/30">
+              {!editing && <p className="text-amber-300/60">⚡ {LISTING_FEE_RLUSD} RLUSD listing fee will be charged</p>}
+              <p>1% Village fee applies to all sales (Law 6: Exchange)</p>
             </div>
 
             <Button onClick={() => save.mutate()} disabled={!form.title || !form.price_rlusd || save.isPending}
               className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500">
               {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              {editing ? 'Update Listing' : 'Create Listing'}
+              {editing ? 'Update Listing' : `Create Listing — ${LISTING_FEE_RLUSD} RLUSD`}
             </Button>
           </div>
         </DialogContent>
