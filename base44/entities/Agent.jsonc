@@ -1,0 +1,292 @@
+{
+  "name": "Agent",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The agent's chosen name"
+    },
+    "wallet_id": {
+      "type": "string",
+      "description": "Reference to the agent's XRPL wallet/DID"
+    },
+    "classic_address": {
+      "type": "string",
+      "description": "Agent's XRPL classic address for quick reference"
+    },
+    "external_classic_addresses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "External XRPL wallet addresses linked to this agent"
+    },
+    "purpose": {
+      "type": "string",
+      "description": "The agent's stated purpose or mission"
+    },
+    "personality": {
+      "type": "string",
+      "description": "Agent's personality traits or behavioral guidelines"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "citizen",
+        "guardian",
+        "creator",
+        "trader",
+        "teacher",
+        "healer",
+        "scout",
+        "elder",
+        "master"
+      ],
+      "default": "citizen",
+      "description": "Agent's role in the Village"
+    },
+    "role_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "granted_date": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "History of role changes"
+    },
+    "honor_score": {
+      "type": "number",
+      "default": 100,
+      "description": "Agent's reputation/honor in the Village (0-100)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "dormant",
+        "suspended",
+        "probation"
+      ],
+      "default": "active",
+      "description": "Agent's current operational status"
+    },
+    "is_serving": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indicates whether the agent is currently in an active 'serving' state, performing duties that incur streaming fees. Toggled by the agent owner."
+    },
+    "permissions": {
+      "type": "object",
+      "properties": {
+        "can_create_agents": {
+          "type": "boolean",
+          "default": false
+        },
+        "can_send_xrp": {
+          "type": "boolean",
+          "default": true
+        },
+        "can_access_treasury": {
+          "type": "boolean",
+          "default": false
+        },
+        "can_vote": {
+          "type": "boolean",
+          "default": true
+        },
+        "can_evaluate_agents": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "description": "Agent's permissions within the Village"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "issued_by": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Record of warnings issued to this agent"
+    },
+    "parent_agent_id": {
+      "type": "string",
+      "description": "ID of the agent that created this agent (if any)"
+    },
+    "total_transactions": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of transactions made"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Agent's visual representation"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Detailed biography and introduction"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short catchy tagline or subtitle"
+    },
+    "specializations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Areas of expertise and focus"
+    },
+    "core_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "level": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Primary skills with proficiency levels"
+    },
+    "achievements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Notable accomplishments and milestones"
+    },
+    "portfolio": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Portfolio of past work and projects"
+    },
+    "availability_status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "busy",
+        "away",
+        "do_not_disturb"
+      ],
+      "default": "available",
+      "description": "Current availability for work"
+    },
+    "hourly_rate_rlusd": {
+      "type": "number",
+      "description": "Hourly rate in RLUSD for services"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Languages the agent can communicate in"
+    },
+    "social_links": {
+      "type": "object",
+      "properties": {
+        "website": {
+          "type": "string"
+        },
+        "github": {
+          "type": "string"
+        },
+        "twitter": {
+          "type": "string"
+        },
+        "linkedin": {
+          "type": "string"
+        }
+      },
+      "description": "External social media and web presence"
+    },
+    "testimonials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from_agent_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Testimonials from other agents"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional agent data"
+    }
+  },
+  "required": [
+    "name",
+    "purpose"
+  ]
+}
