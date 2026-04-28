@@ -11,7 +11,7 @@ import { Shield, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 
-const INFRA_CATEGORIES = ['governance', 'wallet_management', 'did_management', 'environment', 'training'];
+const INFRA_CATEGORIES = ['agent_creation', 'governance', 'wallet_management', 'did_management', 'environment', 'training'];
 const UI_BEHAVIORS = ['toggle', 'unlock_page', 'upgrade', 'badge', 'activate_feature'];
 const WIDGET_TYPES = ['unlock', 'service'];
 
