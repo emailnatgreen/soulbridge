@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const { action, nft_type } = body;
 
     if (!action) return Response.json({ error: 'action required' }, { status: 400 });
-    if (!nft_type || !NFT_PRICING[nft_type]) {
+    if (!nft_type || !(nft_type in NFT_PRICING)) {
       return Response.json({ error: `Invalid nft_type. Use: ${Object.keys(NFT_PRICING).join(', ')}` }, { status: 400 });
     }
 
