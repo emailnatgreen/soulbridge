@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
 
     // === CREATE ===
     if (action === 'create') {
-      const { widget_data, agent_data, custom_data, metadata_standard_version } = body;
+      const { widget_data, agent_data, custom_data, metadata_standard_version, service_definition } = body;
       if (!widget_data) return Response.json({ error: 'widget_data required' }, { status: 400 });
 
       // Check balance
@@ -124,10 +124,39 @@ Deno.serve(async (req) => {
       let agent = null;
       if (nft_type === 'agent' && agent_data) {
         agent = await base44.asServiceRole.entities.Agent.create(agent_data);
-        // Update widget with agent feature path
-        await base44.asServiceRole.entities.Widget.update(widget.id, {
-          feature_path: `/agents/${agent.id}`,
-        });
+        // Update widget with agent feature path (only if no explicit feature_path was set)
+        if (!widget_data.feature_path) {
+          await base44.asServiceRole.entities.Widget.update(widget.id, {
+            feature_path: `/agents/${agent.id}`,
+          });
+        }
+      }
+
+      // Handle ServiceDefinition creation/linking for service-type NFTs
+      let serviceDefinitionResult = null;
+      if (service_definition) {
+        if (typeof service_definition === 'object' && service_definition._new) {
+          // Create a new ServiceDefinition
+          const { _new, ...svcData } = service_definition;
+          if (svcData.service_id && svcData.name) {
+            serviceDefinitionResult = await base44.asServiceRole.entities.ServiceDefinition.create({
+              ...svcData,
+              widget_id: widget.id,
+              widget_nft_id: widget_data.nft_id || widget.id,
+              status: 'draft',
+              version: '1.0.0',
+            });
+          }
+        } else if (typeof service_definition === 'string') {
+          // Link existing ServiceDefinition — update it to reference this widget
+          try {
+            await base44.asServiceRole.entities.ServiceDefinition.update(service_definition, {
+              widget_id: widget.id,
+              widget_nft_id: widget_data.nft_id || widget.id,
+            });
+            serviceDefinitionResult = { id: service_definition, linked: true };
+          } catch (_) {}
+        }
       }
 
       // Log to ServiceUsageLog
@@ -151,9 +180,10 @@ Deno.serve(async (req) => {
         balance_after: newBalance,
         widget,
         agent,
+        service_definition: serviceDefinitionResult,
         custom_data: custom_data || null,
         metadata_standard_version: metadata_standard_version || '1.0.0',
-        message: `${nft_type} NFT draft created — charged ${cost} RLUSD (Metadata v${metadata_standard_version || '2.0.0'})`,
+        message: `${nft_type} NFT draft created — charged ${cost} RLUSD (Metadata v${metadata_standard_version || '2.0.0'})${serviceDefinitionResult ? ' + ServiceDefinition linked' : ''}`,
       });
     }
 

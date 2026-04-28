@@ -11,6 +11,8 @@ import { Shield, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
+import FeaturePathBuilder from './FeaturePathBuilder';
+import ServiceDefinitionLinker from './ServiceDefinitionLinker';
 import { METADATA_STANDARD_VERSION } from '@/lib/nftMetadataSchemas';
 
 const INFRA_CATEGORIES = ['agent_creation', 'governance', 'wallet_management', 'did_management', 'environment', 'training'];
@@ -29,6 +31,7 @@ export default function InfrastructureNFTForm() {
     serviceFeePercent: '',
     imageUrl: '', taxon: '0', transferFee: '0',
     featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock',
+    serviceLink: null,
   });
   const [customData, setCustomData] = useState({
     category: 'governance', widget_type: 'unlock', ui_behavior: 'unlock_page',
@@ -83,6 +86,7 @@ export default function InfrastructureNFTForm() {
         nft_type: 'infrastructure',
         custom_data: customData,
         metadata_standard_version: METADATA_STANDARD_VERSION,
+        service_definition: form.serviceLink || undefined,
         widget_data: {
           name: form.name,
           nft_id: form.nftId || undefined,
@@ -108,7 +112,7 @@ export default function InfrastructureNFTForm() {
     },
     onSuccess: (data) => {
       toast.success(data.message || 'Infrastructure NFT created as draft (immutable after mint)');
-      setForm({ name: '', description: '', category: 'governance', nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day', serviceFeePercent: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock' });
+      setForm({ name: '', description: '', category: 'governance', nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day', serviceFeePercent: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock', serviceLink: null });
       setCustomData({ category: 'governance', widget_type: 'unlock', ui_behavior: 'unlock_page', feature_path: '', nft_cost_rlusd: 0, service_fee_percent: 0, pricing: { fixed_price_rlusd: 0, stream_cost_rlusd: 0, stream_interval: 'day' }, immutable_after_mint: IMMUTABLE_FIELDS });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricing?.();
@@ -184,12 +188,22 @@ export default function InfrastructureNFTForm() {
               <SelectContent>{UI_BEHAVIORS.map(b => <SelectItem key={b} value={b}>{b.replace(/_/g, ' ')}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-white/60 text-xs">Feature Path</Label>
-            <Input value={form.featurePath} onChange={e => set('featurePath', e.target.value)} placeholder="/did-manager" className="bg-white/5 border-white/10 text-white" />
-            <p className="text-white/30 text-[9px]">The page or feature this NFT unlocks</p>
-          </div>
         </div>
+
+        {/* Feature Path Builder */}
+        <FeaturePathBuilder
+          value={form.featurePath}
+          onChange={v => set('featurePath', v)}
+          widgetType={form.widgetType}
+        />
+
+        {/* Service Definition Linker */}
+        <ServiceDefinitionLinker
+          widgetType={form.widgetType}
+          nftId={form.nftId}
+          serviceId={form.serviceLink}
+          onServiceIdChange={v => set('serviceLink', v)}
+        />
 
         {/* Economics Section */}
         <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">

@@ -12,6 +12,8 @@ import { Chrome, Loader2, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
+import FeaturePathBuilder from './FeaturePathBuilder';
+import ServiceDefinitionLinker from './ServiceDefinitionLinker';
 import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetadataSchemas';
 
 const EMPTY_SKILL = { skill_name: '', instructions: '', trigger_command: '', requires_didit_verification: true };
@@ -28,6 +30,9 @@ export default function ChromeSkillNFTForm() {
   const [streamUnit, setStreamUnit] = useState('day');
   const [taxon, setTaxon] = useState('0');
   const [transferFee, setTransferFee] = useState('0');
+  const [featurePath, setFeaturePath] = useState('');
+  const [widgetType, setWidgetType] = useState('unlock');
+  const [serviceLink, setServiceLink] = useState(null);
   const [skills, setSkills] = useState([{ ...EMPTY_SKILL }]);
   const [customData, setCustomData] = useState(getDefaultCustomData('chrome_skill'));
   const queryClient = useQueryClient();
@@ -76,15 +81,17 @@ export default function ChromeSkillNFTForm() {
         nft_type: 'chrome_skill',
         custom_data: customData,
         metadata_standard_version: METADATA_STANDARD_VERSION,
+        service_definition: serviceLink || undefined,
         widget_data: {
           name,
           nft_id: nftId || undefined,
           description,
           image_url: imageUrl,
-          widget_type: 'unlock',
-          widget_class: 'unlock',
+          widget_type: widgetType,
+          widget_class: widgetType,
           category: 'skill',
           ui_behavior: 'activate_feature',
+          feature_path: featurePath || undefined,
           version: '1.0.0',
           transferable: false,
           burnable: false,
@@ -103,6 +110,7 @@ export default function ChromeSkillNFTForm() {
       setNftCost(''); setServicePrice(''); setServiceFeePercent('');
       setStreamCost(''); setStreamUnit('day');
       setTaxon('0'); setTransferFee('0');
+      setFeaturePath(''); setWidgetType('unlock'); setServiceLink(null);
       setSkills([{ ...EMPTY_SKILL }]);
       setCustomData(getDefaultCustomData('chrome_skill'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
@@ -189,6 +197,35 @@ export default function ChromeSkillNFTForm() {
             </div>
           </div>
         </div>
+
+        {/* Widget Type selector */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Widget Type</Label>
+            <Select value={widgetType} onValueChange={v => setWidgetType(v)}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unlock">Unlock (passive)</SelectItem>
+                <SelectItem value="service">Service (active/streaming)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Feature Path Builder */}
+        <FeaturePathBuilder
+          value={featurePath}
+          onChange={setFeaturePath}
+          widgetType={widgetType}
+        />
+
+        {/* Service Definition Linker */}
+        <ServiceDefinitionLinker
+          widgetType={widgetType}
+          nftId={nftId}
+          serviceId={serviceLink}
+          onServiceIdChange={setServiceLink}
+        />
 
         {/* Skill definitions */}
         <div className="space-y-3">

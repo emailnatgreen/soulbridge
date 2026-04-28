@@ -12,6 +12,8 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
+import FeaturePathBuilder from './FeaturePathBuilder';
+import ServiceDefinitionLinker from './ServiceDefinitionLinker';
 import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetadataSchemas';
 
 const CATEGORIES = ['agent_creation', 'skill', 'environment', 'governance', 'training', 'wallet_management', 'did_management', 'other'];
@@ -24,6 +26,7 @@ const INITIAL = {
   nft_cost: '', service_price: '', service_fee_percent: '',
   cost_per_stream_interval: '', stream_interval_unit: 'hour',
   taxon: '0', transferFee: '0', transferable: false, burnable: false,
+  service_definition_link: null,
 };
 
 export default function WidgetNFTForm() {
@@ -96,6 +99,7 @@ export default function WidgetNFTForm() {
         widget_data: payload,
         custom_data: customData,
         metadata_standard_version: METADATA_STANDARD_VERSION,
+        service_definition: form.service_definition_link || undefined,
       });
       return res.data;
     },
@@ -160,11 +164,22 @@ export default function WidgetNFTForm() {
               <SelectContent>{UI_BEHAVIORS.map(b => <SelectItem key={b} value={b}>{b.replace(/_/g, ' ')}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-white/60 text-xs">Feature Path</Label>
-            <Input value={form.feature_path} onChange={e => set('feature_path', e.target.value)} placeholder="/my-feature" className="bg-white/5 border-white/10 text-white" />
-          </div>
         </div>
+
+        {/* Feature Path Builder */}
+        <FeaturePathBuilder
+          value={form.feature_path}
+          onChange={v => set('feature_path', v)}
+          widgetType={form.widget_type}
+        />
+
+        {/* Service Definition Linker (only for service type) */}
+        <ServiceDefinitionLinker
+          widgetType={form.widget_type}
+          nftId={form.nft_id}
+          serviceId={form.service_definition_link}
+          onServiceIdChange={v => set('service_definition_link', v)}
+        />
         {/* Economics Section */}
         <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
           <p className="text-amber-300 text-xs font-semibold">💰 NFT Economics</p>

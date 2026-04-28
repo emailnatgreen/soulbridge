@@ -12,6 +12,8 @@ import { Bot, Loader2, Heart, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
+import FeaturePathBuilder from './FeaturePathBuilder';
+import ServiceDefinitionLinker from './ServiceDefinitionLinker';
 import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetadataSchemas';
 
 const AGENT_ROLES = ['citizen', 'guardian', 'creator', 'trader', 'teacher', 'healer', 'scout', 'elder', 'master'];
@@ -23,6 +25,7 @@ export default function AgentNFTForm() {
     nftCost: '', servicePrice: '', serviceFeePercent: '',
     streamCost: '', streamUnit: 'day',
     bindToDID: true, soulBound: true,
+    featurePath: '', widgetType: 'unlock', serviceLink: null,
   });
   const [customData, setCustomData] = useState(getDefaultCustomData('agent'));
   const queryClient = useQueryClient();
@@ -86,14 +89,16 @@ export default function AgentNFTForm() {
         nft_type: 'agent',
         custom_data: customData,
         metadata_standard_version: METADATA_STANDARD_VERSION,
+        service_definition: form.serviceLink || undefined,
         widget_data: {
           name: `Agent NFT: ${form.agentName}`,
           nft_id: form.nftId || undefined,
           description: `Soul-bound NFT representing AI Agent "${form.agentName}". Purpose: ${form.purpose}`,
-          widget_type: 'unlock',
-          widget_class: 'unlock',
+          widget_type: form.widgetType,
+          widget_class: form.widgetType,
           category: 'agent_creation',
-          ui_behavior: 'badge',
+          ui_behavior: form.widgetType === 'service' ? 'activate_feature' : 'badge',
+          feature_path: form.featurePath || undefined,
           version: '1.0.0',
           image_url: form.imageUrl,
           transferable: !form.soulBound,
@@ -133,6 +138,7 @@ export default function AgentNFTForm() {
         nftCost: '', servicePrice: '', serviceFeePercent: '',
         streamCost: '', streamUnit: 'day',
         bindToDID: true, soulBound: true,
+        featurePath: '', widgetType: 'unlock', serviceLink: null,
       });
       setCustomData(getDefaultCustomData('agent'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
@@ -243,6 +249,35 @@ export default function AgentNFTForm() {
             </div>
           </div>
         </div>
+
+        {/* Widget Type for agent */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-white/60 text-xs">Widget Type</Label>
+            <Select value={form.widgetType} onValueChange={v => set('widgetType', v)}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unlock">Unlock (passive)</SelectItem>
+                <SelectItem value="service">Service (active/streaming)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Feature Path Builder */}
+        <FeaturePathBuilder
+          value={form.featurePath}
+          onChange={v => set('featurePath', v)}
+          widgetType={form.widgetType}
+        />
+
+        {/* Service Definition Linker */}
+        <ServiceDefinitionLinker
+          widgetType={form.widgetType}
+          nftId={form.nftId}
+          serviceId={form.serviceLink}
+          onServiceIdChange={v => set('serviceLink', v)}
+        />
 
         {/* Soul-Bound toggle */}
         <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
