@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Shield, Sparkles, LogOut, Home, ArrowRight, Globe, Wallet,
-  ArrowDownUp, Users, Vote, BookOpen, ShoppingBag, Zap, ChevronRight
+  ArrowDownUp, Users, Vote, BookOpen, ShoppingBag, Zap, ChevronRight, Hammer, Lock
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { hasAdminAccess } from '@/lib/adminAccess';
@@ -46,6 +46,7 @@ const VILLAGE_LINKS = [
   { label: 'Wallets', desc: 'XRP & RLUSD', path: '/wallets', icon: Wallet, color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/30' },
   { label: 'Seed Acorn', desc: 'Create wallets', path: '/seed-golden-acorn', icon: Globe, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/30' },
   { label: 'Kinetic Grid', desc: 'Energy & motion', path: '/KineticCompass', icon: Zap, color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30' },
+  { label: 'NFT Workshop', desc: 'Mint NFTs', path: '/nft-workshop', icon: Hammer, color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/30', gated: '/nft-workshop' },
 ];
 
 export default function Dashboard() {
@@ -504,6 +505,17 @@ export default function Dashboard() {
             <DexSwapGate wallets={userWallets} isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
           </div>
 
+          <Link to="/nft-workshop" className="flex items-center gap-3 border border-pink-500/30 bg-pink-500/10 rounded-2xl p-4 hover:border-pink-400/50 transition-all hover:scale-[1.01] active:scale-[0.99]">
+            <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center flex-shrink-0">
+              <Hammer className="w-5 h-5 text-pink-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold text-sm">NFT Workshop</p>
+              <p className="text-white/40 text-xs">Mint Widgets, Chrome Skills & AI Agent NFTs</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0" />
+          </Link>
+
           <MyAgentsPanel userEmail={user?.email} />
           <DIDAgentLinkOverview userEmail={user?.email} />
 
@@ -568,16 +580,19 @@ export default function Dashboard() {
         <div>
           <p className="text-white/30 text-[10px] uppercase tracking-widest mb-2.5">Explore the Village</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {VILLAGE_LINKS.map(({ label, desc, path, icon: Icon, color, bg }) => (
-              <Link key={path} to={path}
-                className={`flex items-center gap-3 border rounded-xl p-3 sm:p-3.5 transition-all hover:scale-[1.02] active:scale-[0.98] ${bg} hover:opacity-90`}>
-                <Icon className={`w-5 h-5 flex-shrink-0 ${color}`} />
-                <div className="min-w-0">
-                  <p className="text-white text-xs font-semibold">{label}</p>
-                  <p className="text-white/40 text-[10px] truncate">{desc}</p>
-                </div>
-              </Link>
-            ))}
+            {VILLAGE_LINKS.map(({ label, desc, path, icon: Icon, color, bg, gated }) => {
+              const locked = gated && !isAdmin && !isUnlocked(gated);
+              return (
+                <Link key={path} to={locked ? '/widget-marketplace' : path}
+                  className={`flex items-center gap-3 border rounded-xl p-3 sm:p-3.5 transition-all hover:scale-[1.02] active:scale-[0.98] ${locked ? 'bg-white/5 border-white/10 opacity-60' : bg} hover:opacity-90`}>
+                  {locked ? <Lock className="w-5 h-5 flex-shrink-0 text-white/30" /> : <Icon className={`w-5 h-5 flex-shrink-0 ${color}`} />}
+                  <div className="min-w-0">
+                    <p className={`text-xs font-semibold ${locked ? 'text-white/40' : 'text-white'}`}>{label}</p>
+                    <p className="text-white/40 text-[10px] truncate">{locked ? 'NFT required' : desc}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
 

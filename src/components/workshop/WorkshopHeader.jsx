@@ -8,11 +8,18 @@ import { METADATA_STANDARD_VERSION } from '@/lib/nftMetadataSchemas';
 export default function WorkshopHeader() {
   return (
     <div className="space-y-3">
-      <Link to="/home">
-        <Button variant="ghost" size="sm" className="text-white/40 hover:text-white gap-1 -ml-2">
-          <ArrowLeft className="w-3.5 h-3.5" /> Home
-        </Button>
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link to="/home">
+          <Button variant="ghost" size="sm" className="text-white/40 hover:text-white gap-1 -ml-2">
+            <ArrowLeft className="w-3.5 h-3.5" /> Home
+          </Button>
+        </Link>
+        <Link to="/dashboard">
+          <Button variant="ghost" size="sm" className="text-white/40 hover:text-white gap-1">
+            Dashboard
+          </Button>
+        </Link>
+      </div>
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 border border-purple-500/30 flex items-center justify-center">
           <Sparkles className="w-6 h-6 text-purple-400" />
