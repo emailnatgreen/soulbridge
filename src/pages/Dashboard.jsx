@@ -49,7 +49,7 @@ const VILLAGE_LINKS = [
   { label: 'Wallets', desc: 'XRP & RLUSD', path: '/wallets', icon: Wallet, color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/30' },
   { label: 'Seed Acorn', desc: 'Create wallets', path: '/seed-golden-acorn', icon: Globe, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/30' },
   { label: 'Kinetic Grid', desc: 'Energy & motion', path: '/KineticCompass', icon: Zap, color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30' },
-  { label: 'NFT Workshop', desc: 'Mint NFTs', path: '/nft-workshop', icon: Hammer, color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/30', gated: '/nft-workshop' },
+  { label: 'NFT Workshop', desc: 'Mint NFTs', path: '/nft-workshop', icon: ShoppingBag, color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/30', gated: '/nft-workshop' },
   { label: 'Storefront', desc: 'Your shop', path: '/storefront', icon: ShoppingBag, color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', gated: '/storefront' },
 ];
 
