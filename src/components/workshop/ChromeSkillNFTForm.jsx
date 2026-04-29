@@ -153,7 +153,12 @@ export default function ChromeSkillNFTForm() {
       setSkills([{ ...EMPTY_SKILL }]);
       setCustomData(getDefaultCustomData('chrome_skill'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
+      queryClient.invalidateQueries({ queryKey: ['existingWidgetIds'] });
       refreshPricingRef.current?.();
+    },
+    onError: (error) => {
+      const msg = error?.response?.data?.error || error?.message || 'Failed to create Chrome Skill NFT';
+      toast.error(msg);
     },
   });
 
