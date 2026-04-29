@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { logAdminAction } from '@/lib/adminAuditLog';
+import PageBreadcrumb from '@/components/PageBreadcrumb';
 
 export default function AgentGenesis() {
   const navigate = useNavigate();
@@ -114,15 +115,18 @@ export default function AgentGenesis() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-4 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-purple-400" />
-            <h1 className="text-2xl font-semibold">Axi's Genesis Journey</h1>
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <PageBreadcrumb className="mb-3" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-6 h-6 text-purple-400" />
+              <h1 className="text-2xl font-semibold">Axi's Genesis Journey</h1>
+            </div>
+            <Button variant="ghost" onClick={() => navigate('/agents')} className="text-white/60 hover:text-white">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
           </div>
-          <Button variant="ghost" onClick={() => navigate('/agents')} className="text-white/60 hover:text-white">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
         </div>
       </div>
 

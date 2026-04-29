@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import PageBreadcrumb from '@/components/PageBreadcrumb';
 import PersonalisedPlanCard from '@/components/PersonalisedPlanCard';
 import AskAxiButton from '@/components/AskAxiButton';
 import SkillGapAlertsPanel from '@/components/SkillGapAlertsPanel';
@@ -144,9 +145,10 @@ export default function SkillDevelopment() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-4">
+          <PageBreadcrumb className="mb-3" />
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-4">
-              <Link to="/home">
+              <Link to="/agents">
                 <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
                   <ArrowLeft className="w-5 h-5" />
                 </Button>

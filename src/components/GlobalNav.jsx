@@ -32,7 +32,7 @@ const NAV_GROUPS = [
       { label: 'Leaderboard', path: '/leaderboard', icon: Award },
       { label: 'Agent Genesis', path: '/agent-genesis', icon: Star },
       { label: 'Agent Chat', path: '/AgentChat', icon: MessageSquare },
-      { label: 'Training', path: '/AgentTrainingModule', icon: GraduationCap },
+      { label: 'Skill Development', path: '/training', icon: GraduationCap },
       { label: 'Wellbeing', path: '/AgentWellbeing', icon: Heart },
     ]
   },
@@ -57,8 +57,7 @@ const NAV_GROUPS = [
       { label: 'Project Manager', path: '/AIProjectManager', icon: FileText },
       { label: 'Service Skill Marketplace', path: '/ServiceSkillMarketplace', icon: ShoppingBag },
       { label: 'Skill Tree', path: '/AgentSkillTree', icon: TreePine },
-      { label: 'Skill Development', path: '/SkillDevelopment', icon: TrendingUp },
-      { label: 'Training', path: '/AgentTrainingModule', icon: GraduationCap },
+      { label: 'Skill Development', path: '/training', icon: TrendingUp },
       { label: 'Mentorship', path: '/MentorshipHub', icon: BookOpen },
       { label: 'Collaboration', path: '/CollaborationHub', icon: Network },
     ]

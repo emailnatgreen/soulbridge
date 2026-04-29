@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Star, Award, Zap, Globe, ExternalLink, Pencil, MessageSquare, Send, Wallet, Shield, ShieldCheck } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import PageBreadcrumb from '@/components/PageBreadcrumb';
 import AdminAgentOverridePanel from '@/components/admin/AdminAgentOverridePanel';
 import AgentWalletLinker from '@/components/agents/AgentWalletLinker';
 import AgentAvatarGenerator from '@/components/agents/AgentAvatarGenerator';
@@ -67,9 +68,7 @@ export default function AgentProfile() {
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
         <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-            <Link to="/agents" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 text-sm">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Village
-            </Link>
+            <PageBreadcrumb />
           </div>
         </div>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
@@ -131,10 +130,9 @@ export default function AgentProfile() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link to="/agents" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 text-sm">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Village
-          </Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <PageBreadcrumb className="mb-3" />
+          <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <Link to={`/AgentChat`}>
               <Button size="sm" variant="ghost" className="text-white/60 hover:text-white">
@@ -148,6 +146,7 @@ export default function AgentProfile() {
                 </Button>
               </Link>
             )}
+          </div>
           </div>
         </div>
       </div>
