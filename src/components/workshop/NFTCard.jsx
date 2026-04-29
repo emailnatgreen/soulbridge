@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Chrome, Bot, Sparkles, Shield, ExternalLink, Trash2,
-  FileJson, Zap, Globe, CreditCard, Clock
+  FileJson, Zap, Globe, CreditCard, Clock, BadgeCheck
 } from 'lucide-react';
 import MintActionButton from './MintActionButton';
 
@@ -52,6 +52,7 @@ export default function NFTCard({ widget, onDelete, deleting }) {
   const skillCount = widget.chrome_skill_instructions?.length || 0;
   const hasManifest = !!widget.webmcp_manifest;
   const isMinted = widget.mint_status === 'minted_mainnet';
+  const isVerified = isMinted && hasManifest && skillCount > 0;
   const streamCost = widget.cost_per_stream_interval || 0;
 
   return (
@@ -70,6 +71,18 @@ export default function NFTCard({ widget, onDelete, deleting }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-white text-xs font-semibold truncate">{widget.name}</p>
+                {type === 'chrome_skill' && isVerified && (
+                  <span className="flex items-center gap-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full px-1.5 py-0.5 flex-shrink-0" title="Verified Chrome Skill — minted on XRPL with WebMCP manifest">
+                    <BadgeCheck className="w-3 h-3 text-emerald-400" />
+                    <span className="text-[7px] text-emerald-300 font-semibold">Verified</span>
+                  </span>
+                )}
+                {type === 'chrome_skill' && !isVerified && skillCount > 0 && (
+                  <span className="flex items-center gap-0.5 bg-amber-500/10 border border-amber-500/20 rounded-full px-1.5 py-0.5 flex-shrink-0" title="Unverified — needs mainnet mint and WebMCP manifest">
+                    <BadgeCheck className="w-3 h-3 text-amber-400/50" />
+                    <span className="text-[7px] text-amber-300/60 font-medium">Unverified</span>
+                  </span>
+                )}
                 <Badge className={`text-[8px] flex-shrink-0 ${STATUS_COLORS[widget.mint_status] || STATUS_COLORS.draft}`}>
                   {widget.mint_status?.replace(/_/g, ' ') || 'draft'}
                 </Badge>
