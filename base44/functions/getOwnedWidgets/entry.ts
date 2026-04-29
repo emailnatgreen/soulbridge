@@ -49,13 +49,28 @@ Deno.serve(async (req) => {
     let body = {};
     try { body = await req.json(); } catch (_) {}
     const userDid = body.did || null;
+    const userEmail = user?.email || null;
+    const buyerLabel = userEmail || userDid || null;
 
     // Fetch ALL widgets across all categories
     const allWidgets = await base44.asServiceRole.entities.Widget.list('name', 200);
 
-    // Ownership check via simulator model (is_active flag)
-    // In production XRPL mode, this will query NFTokens by DID/address
-    const ownedWidgets = allWidgets.filter(w => w.is_active === true);
+    // Ownership check — based on completed purchase transactions for this user
+    let purchasedNftIds = new Set();
+    if (buyerLabel) {
+      const purchases = await base44.asServiceRole.entities.MarketplaceTransaction.filter(
+        { buyer_agent_id: buyerLabel, marketplace_type: 'widget', status: 'completed' },
+        '-created_date', 200
+      );
+      for (const p of (purchases || [])) {
+        if (p.nft_id) purchasedNftIds.add(p.nft_id);
+      }
+    }
+
+    // Admin override — admins own everything
+    const isAdmin = user?.role === 'admin';
+
+    const ownedWidgets = allWidgets.filter(w => isAdmin || purchasedNftIds.has(w.nft_id));
     const unlockedPaths = ownedWidgets
       .filter(w => w.feature_path)
       .map(w => w.feature_path);
@@ -64,7 +79,7 @@ Deno.serve(async (req) => {
     const routeMap = {};
     for (const w of allWidgets) {
       if (!w.feature_path) continue;
-      const isOwned = w.is_active === true;
+      const isOwned = isAdmin || purchasedNftIds.has(w.nft_id);
       routeMap[w.feature_path] = {
         unlocked: isOwned,
         route: FEATURE_ROUTE_MAP[w.feature_path] || null,
@@ -130,7 +145,7 @@ Deno.serve(async (req) => {
         feature_path: w.feature_path,
         ui_behavior: w.ui_behavior,
         image_url: w.image_url,
-        is_owned: w.is_active === true,
+        is_owned: isAdmin || purchasedNftIds.has(w.nft_id),
         deprecation_status: w.deprecation_status,
       })),
       user_did: userDid,
