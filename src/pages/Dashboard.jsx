@@ -251,15 +251,20 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!hasInviteSession && hasPublishedWallet && (
+          {!hasInviteSession && hasPublishedWallet && isUnlocked(CITIZENSHIP_FEATURE_PATH) && (
             <Link to="/Home" className="text-xs text-white/50 hover:text-white border border-white/15 rounded-lg px-2.5 py-1.5 transition hidden sm:flex items-center gap-1">
               <Home className="w-3.5 h-3.5" /> Home
             </Link>
           )}
-          {!hasInviteSession && !hasPublishedWallet && (
-            <span className="text-xs text-white/20 border border-white/10 rounded-lg px-2.5 py-1.5 hidden sm:flex items-center gap-1 cursor-not-allowed" title="Publish your DID to unlock Village Home">
+          {!hasInviteSession && (!hasPublishedWallet || !isUnlocked(CITIZENSHIP_FEATURE_PATH)) && !isAdmin && (
+            <span className="text-xs text-white/20 border border-white/10 rounded-lg px-2.5 py-1.5 hidden sm:flex items-center gap-1 cursor-not-allowed" title="Citizenship NFT required to access Village Home">
               <Home className="w-3.5 h-3.5" /> Home 🔒
             </span>
+          )}
+          {isAdmin && (
+            <Link to="/Home" className="text-xs text-white/50 hover:text-white border border-white/15 rounded-lg px-2.5 py-1.5 transition hidden sm:flex items-center gap-1">
+              <Home className="w-3.5 h-3.5" /> Home
+            </Link>
           )}
           <button onClick={handleDisconnect}
             className="text-xs text-red-400 border border-red-500/30 hover:border-red-400/60 rounded-lg px-2.5 py-1.5 transition flex items-center gap-1">
@@ -534,12 +539,12 @@ export default function Dashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   const isCitizen = isUnlocked(CITIZENSHIP_FEATURE_PATH);
 
-  // Not yet a citizen — show gated dashboard with DID + NFT acquisition CTA
+  // Not yet a citizen — show gated dashboard with marketplace so they can browse & buy
   if (!isCitizen) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
         <Header />
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
           <CitizenshipGate identityDid={identityDid} firstName={firstName} />
         </div>
       </div>

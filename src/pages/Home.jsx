@@ -13,6 +13,7 @@ import {
   Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, TrendingDown, Hammer
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
+import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
 import VillagePulseMini from '@/components/kinetic/VillagePulseMini';
 import ZoeProjectFeature from '@/components/ZoeProjectFeature';
 import AxiVisionSection from '@/components/AxiVisionSection';
@@ -46,6 +47,30 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const isAdmin = hasAdminAccess({ user, identityDid: identity?.did });
   const didSignal = useDIDSignal();
+  const { isUnlocked: isWidgetUnlocked, loading: widgetLoading } = useWidgetUnlock();
+
+  // Gate: require published DID + Citizenship NFT (or admin) to access Home
+  const isCitizen = isAdmin || isWidgetUnlocked('wallet.did_linking');
+
+  if (!widgetLoading && !isCitizen) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white flex items-center justify-center px-6">
+        <div className="max-w-md w-full rounded-2xl border border-white/10 bg-white/5 p-6 text-center space-y-4">
+          <Lock className="w-10 h-10 text-purple-300 mx-auto" />
+          <div>
+            <h2 className="text-xl font-semibold">Citizenship Required</h2>
+            <p className="text-sm text-white/50 mt-2">
+              The Village Home is available to citizens with the Citizenship Widget NFT.
+              Head to your dashboard to browse the marketplace and acquire it.
+            </p>
+          </div>
+          <button onClick={() => navigate('/dashboard')} className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3 text-sm font-semibold text-white">
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const { data: activeProjects = [] } = useQuery({
     queryKey: ['activeProjects'],
