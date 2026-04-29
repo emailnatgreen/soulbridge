@@ -27,6 +27,7 @@ import DIDAgentLinkOverview from '@/components/agents/DIDAgentLinkOverview';
 import ChromeSkillActivateCard from '@/components/dashboard/ChromeSkillActivateCard';
 import ShieldedOakPanel from '@/components/dashboard/ShieldedOakPanel';
 import NFTGatedFeatureGrid from '@/components/dashboard/NFTGatedFeatureGrid';
+import WalletCard from '@/components/dashboard/WalletCard';
 
 if (typeof window !== 'undefined') {
   window.__sb = window.__sb || { signals: [] };
@@ -506,6 +507,8 @@ export default function Dashboard() {
           <CoreDIDStatusModule wallets={wallets} identityDid={identityDid} />
           <DIDManagementPanel />
 
+          <WalletCard wallets={userWallets} transactions={myTransactions} />
+
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SendPanel wallets={userWallets} />
@@ -557,23 +560,8 @@ export default function Dashboard() {
             myTransactions={myTransactions}
           />
 
-          {/* Wallet — Send & Receive XRP */}
-          {userWallets.length > 0 && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-purple-400" /> My Wallet
-                </h3>
-                <Link to="/wallets" className="text-xs text-purple-300 hover:text-purple-200 flex items-center gap-1">
-                  Manage <ChevronRight className="w-3 h-3" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <SendPanel wallets={userWallets} />
-                <ReceivePanel wallets={userWallets} />
-              </div>
-            </div>
-          )}
+          {/* Wallet Card */}
+          <WalletCard wallets={userWallets} transactions={myTransactions} />
 
           {/* Widget NFT Inventory */}
           <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
@@ -634,19 +622,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Wallet quick access */}
-        {userWallets.length > 0 && (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-white font-semibold text-sm flex items-center gap-2"><Wallet className="w-4 h-4 text-purple-400" /> My Wallet</h3>
-              <Link to="/wallets" className="text-xs text-purple-300 hover:text-purple-200 flex items-center gap-1">Manage <ChevronRight className="w-3 h-3" /></Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <SendPanel wallets={userWallets} compact />
-              <ReceivePanel wallets={userWallets} compact />
-            </div>
-          </div>
-        )}
+        {/* Wallet Card */}
+        <WalletCard wallets={userWallets} transactions={myTransactions} />
 
         {/* Chrome Skill NFT Activation */}
         <ChromeSkillActivateCard isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
