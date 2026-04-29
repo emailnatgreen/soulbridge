@@ -539,15 +539,16 @@ export default function Dashboard() {
   // ══════════════════════════════════════════════════════════════════════════
   const isCitizen = isUnlocked(CITIZENSHIP_FEATURE_PATH);
 
-  // Not yet a citizen — show gated dashboard with marketplace so they can browse & buy
+  // Not yet a citizen — show gated dashboard with wallet, widgets, marketplace & transactions
   if (!isCitizen) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
         <Header />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+          {/* Welcome + Axi + Marketplace buttons */}
           <CitizenshipGate identityDid={identityDid} firstName={firstName} />
 
-          {/* Wallet — always visible so users can send/receive XRP */}
+          {/* Wallet — Send & Receive XRP */}
           {userWallets.length > 0 && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
@@ -564,6 +565,12 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+
+          {/* Widget NFT Inventory */}
+          <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
+
+          {/* Recent Transactions */}
+          <TransactionHistory transactions={myTransactions} wallets={wallets} />
         </div>
       </div>
     );
