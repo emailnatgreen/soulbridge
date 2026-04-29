@@ -36,6 +36,7 @@ export default function AgentNFTForm() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
+  const refreshPricingRef = React.useRef(null);
   const queryClient = useQueryClient();
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
@@ -131,8 +132,6 @@ export default function AgentNFTForm() {
     return errors.length === 0;
   };
 
-  const [refreshPricing, setRefreshPricing] = useState(null);
-
   const mutation = useMutation({
     mutationFn: async () => {
       // Get DID for linking
@@ -210,7 +209,7 @@ export default function AgentNFTForm() {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
       queryClient.invalidateQueries({ queryKey: ['agents-governance'] });
       queryClient.invalidateQueries({ queryKey: ['existingWidgetIds'] });
-      refreshPricing?.();
+      refreshPricingRef.current?.();
     },
   });
 
@@ -231,7 +230,7 @@ export default function AgentNFTForm() {
   return (
     <WorkshopBalanceGate nftType="agent">
       {({ canAfford, cost, refreshPricing: rp }) => {
-        if (!refreshPricing && rp) setRefreshPricing(() => rp);
+        refreshPricingRef.current = rp;
         return (
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>

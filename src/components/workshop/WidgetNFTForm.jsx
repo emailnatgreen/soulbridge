@@ -72,7 +72,7 @@ export default function WidgetNFTForm() {
   // Keep custom_data in sync when form fields change
   React.useEffect(() => { syncFormToCustomData(); }, [syncFormToCustomData]);
 
-  const [refreshPricing, setRefreshPricing] = useState(null);
+  const refreshPricingRef = React.useRef(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -108,14 +108,14 @@ export default function WidgetNFTForm() {
       setForm(INITIAL);
       setCustomData(getDefaultCustomData('widget'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
-      refreshPricing?.();
+      refreshPricingRef.current?.();
     },
   });
 
   return (
     <WorkshopBalanceGate nftType="widget">
       {({ canAfford, cost, refreshPricing: rp }) => {
-        if (!refreshPricing && rp) setRefreshPricing(() => rp);
+        refreshPricingRef.current = rp;
         return (
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>

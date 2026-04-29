@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 export default function WorkshopBalanceGate({ nftType, children }) {
   const [pricing, setPricing] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState(null);
 
   const loadPricing = async () => {

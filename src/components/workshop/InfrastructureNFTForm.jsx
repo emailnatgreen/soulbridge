@@ -76,7 +76,7 @@ export default function InfrastructureNFTForm() {
     }
   };
 
-  const [refreshPricing, setRefreshPricing] = useState(null);
+  const refreshPricingRef = React.useRef(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -115,7 +115,7 @@ export default function InfrastructureNFTForm() {
       setForm({ name: '', description: '', category: 'governance', nftId: '', nftCost: '', fixedPrice: '', streamCost: '', streamUnit: 'day', serviceFeePercent: '', imageUrl: '', taxon: '0', transferFee: '0', featurePath: '', uiBehavior: 'unlock_page', widgetType: 'unlock', serviceLink: null });
       setCustomData({ category: 'governance', widget_type: 'unlock', ui_behavior: 'unlock_page', feature_path: '', nft_cost_rlusd: 0, service_fee_percent: 0, pricing: { fixed_price_rlusd: 0, stream_cost_rlusd: 0, stream_interval: 'day' }, immutable_after_mint: IMMUTABLE_FIELDS });
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
-      refreshPricing?.();
+      refreshPricingRef.current?.();
     },
     onError: (error) => {
       const msg = error?.response?.data?.error || error?.message || 'Failed to create NFT';
@@ -127,7 +127,7 @@ export default function InfrastructureNFTForm() {
   return (
     <WorkshopBalanceGate nftType="infrastructure">
       {({ canAfford, cost, refreshPricing: rp }) => {
-        if (!refreshPricing && rp) setRefreshPricing(() => rp);
+        refreshPricingRef.current = rp;
         return (
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>

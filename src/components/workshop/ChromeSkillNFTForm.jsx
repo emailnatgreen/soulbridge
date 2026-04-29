@@ -101,7 +101,7 @@ export default function ChromeSkillNFTForm() {
     toast.success(`Template "${template.skill_name}" loaded`);
   };
 
-  const [refreshPricing, setRefreshPricing] = useState(null);
+  const refreshPricingRef = React.useRef(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -152,7 +152,7 @@ export default function ChromeSkillNFTForm() {
       setSkills([{ ...EMPTY_SKILL }]);
       setCustomData(getDefaultCustomData('chrome_skill'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
-      refreshPricing?.();
+      refreshPricingRef.current?.();
     },
   });
 
@@ -190,7 +190,7 @@ export default function ChromeSkillNFTForm() {
   return (
     <WorkshopBalanceGate nftType="chrome_skill">
       {({ canAfford, cost, refreshPricing: rp }) => {
-        if (!refreshPricing && rp) setRefreshPricing(() => rp);
+        refreshPricingRef.current = rp;
         return (
     <div className="space-y-4">
     <ChromeSkillExplainer />
