@@ -270,7 +270,7 @@ export default function InfrastructureNFTForm() {
           }}
         />
 
-        <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || mutation.isPending} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 w-full sm:w-auto">
+        <Button onClick={() => mutation.mutate()} disabled={!form.name || !form.description || mutation.isPending || !canAfford} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 w-full sm:w-auto">
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
           Create Infrastructure NFT — {cost} RLUSD
         </Button>

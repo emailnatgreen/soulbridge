@@ -110,6 +110,10 @@ export default function WidgetNFTForm() {
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       refreshPricingRef.current?.();
     },
+    onError: (error) => {
+      const msg = error?.response?.data?.error || error?.message || 'Failed to create Widget NFT';
+      toast.error(msg);
+    },
   });
 
   return (
