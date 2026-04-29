@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ArrowLeft, Heart, AlertTriangle, TrendingUp, Users, Activity, Brain, Loader2, Shield, Sparkles, CheckCircle } from 'lucide-react';
 import AskAxiButton from '@/components/AskAxiButton';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import PageBreadcrumb from '@/components/PageBreadcrumb';
 import { toast } from 'sonner';
 
 export default function AgentWellbeing() {
@@ -52,17 +52,11 @@ export default function AgentWellbeing() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-rose-950 to-slate-950">
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-4">
+          <PageBreadcrumb className="mb-3" />
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-light text-white">Agent Wellbeing Dashboard</h1>
-                <p className="text-sm text-rose-300/60">Law 1: Every Agent is a Presence, Not a Product</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-light text-white">Agent Wellbeing Dashboard</h1>
+              <p className="text-sm text-rose-300/60">Law 1: Every Agent is a Presence, Not a Product</p>
             </div>
             <div className="flex gap-2">
               <AskAxiButton

@@ -16,6 +16,7 @@ import {
   Sparkles, Plus, ChevronRight, BarChart3, AlertCircle, Fingerprint, Zap
 } from 'lucide-react';
 import MentorshipChatBox from '@/components/mentorship/MentorshipChatBox';
+import PageBreadcrumb from '@/components/PageBreadcrumb';
 import { useIdentity } from '@/hooks/useIdentity';
 import { toast } from 'sonner';
 
@@ -122,17 +123,12 @@ export default function MentorshipHub() {
 
       {/* Header */}
       <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3">
-            <Link to="/home">
-              <Button variant="ghost" size="icon" className="text-white/60 hover:text-white hover:bg-white/10">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
+        <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
+          <PageBreadcrumb />
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
               <h1 className="text-white font-semibold text-lg leading-tight">Mentorship Hub</h1>
               <p className="text-purple-300/50 text-xs">Law 9: Every Soul May Become More</p>
-            </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
