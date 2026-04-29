@@ -32,6 +32,20 @@ export default function IncomingRequestCard({ relationship, menteeAgent }) {
       toast.success(action === 'active' ? 'Mentorship accepted!' : 'Request declined.');
       queryClient.invalidateQueries({ queryKey: ['myMentorships'] });
       queryClient.invalidateQueries({ queryKey: ['mentorProfiles'] });
+      // Send mentorship email notification
+      if (action === 'active') {
+        try {
+          base44.functions.invoke('agentNotifications', {
+            notification_type: 'mentorship_accepted',
+            data: {
+              mentor_name: relationship.mentor_agent_id,
+              mentee_name: menteeAgent?.name || 'Agent',
+              focus_area: relationship.focus_areas?.join(', ') || 'General',
+              agent_id: relationship.mentee_agent_id,
+            }
+          });
+        } catch (_) {}
+      }
     },
     onError: () => toast.error('Failed to respond')
   });

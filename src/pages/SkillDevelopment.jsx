@@ -125,9 +125,22 @@ export default function SkillDevelopment() {
       });
       return training;
     },
-    onSuccess: () => {
+    onSuccess: (training) => {
       queryClient.invalidateQueries(['skill-progress']);
       toast.success('Training enrolled! Check Progress Tracking tab.');
+      // Send enrollment notification
+      try {
+        base44.functions.invoke('agentNotifications', {
+          notification_type: 'agent_skill_completed',
+          data: {
+            agent_name: selectedAgent?.name,
+            agent_id: selectedAgentId,
+            skill_name: training?.skill_focus || training?.title || 'New Training',
+            module_name: training?.title || 'Training Module',
+            level_reached: 'Enrolled',
+          }
+        });
+      } catch (_) {}
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to enroll');

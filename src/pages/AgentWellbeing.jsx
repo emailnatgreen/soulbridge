@@ -344,6 +344,23 @@ function AgentWellbeingDetail({ agentId, onClose }) {
       const response = await base44.functions.invoke('analyzeAgentWellbeing', { agent_id: agentId });
       setAnalysis(response.data);
       toast.success('Wellbeing analysis complete');
+
+      // Send wellbeing alert email if score is concerning
+      if (response.data?.wellbeing?.overall_score < 50 || response.data?.wellbeing?.warning_signs?.length > 0) {
+        try {
+          await base44.functions.invoke('agentNotifications', {
+            notification_type: 'agent_wellbeing_alert',
+            data: {
+              agent_name: agent?.name,
+              agent_id: agentId,
+              alert_type: 'ai_analysis_concern',
+              severity: response.data?.wellbeing?.overall_score < 30 ? 'critical' : 'high',
+              description: response.data?.holistic_summary || 'Wellbeing analysis flagged concerns',
+              wellbeing_score: response.data?.wellbeing?.overall_score,
+            }
+          });
+        } catch (_) {}
+      }
     } catch (error) {
       console.error('Analysis error:', error);
       toast.error('Analysis failed');

@@ -140,6 +140,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Send vote confirmation email
+    try {
+      await base44.asServiceRole.functions.invoke('agentNotifications', {
+        notification_type: 'governance_vote_cast',
+        data: {
+          recipient_email: user.email,
+          proposal_title: proposal?.title || 'Governance Proposal',
+          vote_choice,
+          voting_power: votingPower,
+          agent_id,
+        }
+      });
+    } catch (emailErr) {
+      console.warn('Vote email notification failed (non-blocking):', emailErr.message);
+    }
+
     return Response.json({
       success: true,
       vote,

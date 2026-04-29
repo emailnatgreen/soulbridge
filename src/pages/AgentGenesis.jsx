@@ -99,6 +99,29 @@ export default function AgentGenesis() {
         details: { agent_name: formData.name, role: formData.role, proposal_id: created.id },
       });
 
+      // Send email notifications
+      try {
+        await base44.functions.invoke('agentNotifications', {
+          notification_type: 'agent_genesis',
+          data: {
+            agent_name: formData.name,
+            agent_role: formData.role,
+            agent_purpose: formData.purpose,
+            agent_id: agent.id,
+          }
+        });
+        await base44.functions.invoke('agentNotifications', {
+          notification_type: 'governance_proposal_created',
+          data: {
+            proposal_title: proposalDraft.title,
+            proposal_type: proposalDraft.proposal_type,
+            description: proposalDraft.description,
+          }
+        });
+      } catch (emailErr) {
+        console.warn('Email notification failed:', emailErr);
+      }
+
       toast.success(`Agent "${formData.name}" created! Governance proposal submitted for voting.`);
       setTimeout(() => {
         navigate(`/agents/${agent.id}`);
