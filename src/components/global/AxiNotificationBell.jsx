@@ -20,7 +20,7 @@ const COLOR_MAP = {
   axi: 'text-purple-400 bg-purple-900/20 border-purple-500/30',
 };
 
-export default function AxiNotificationBell() {
+export default function AxiNotificationBell({ onOpenDrawer }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -48,7 +48,7 @@ export default function AxiNotificationBell() {
   const loadNotifications = async () => {
     try {
       const notifs = await base44.entities.AgentNotification.filter(
-        { agent_id: agentId, is_read: false },
+        { recipient_agent_id: agentId, is_read: false },
         '-created_date',
         20
       );
@@ -73,9 +73,9 @@ export default function AxiNotificationBell() {
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => onOpenDrawer ? onOpenDrawer() : setOpen(!open)}
         className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800/50 border border-slate-600/30 hover:bg-slate-700/50 transition-all"
-        title="Axi Notifications"
+        title="Notifications"
       >
         <Bell className="w-4 h-4 text-slate-300" />
         {unreadCount > 0 && (

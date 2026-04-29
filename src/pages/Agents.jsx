@@ -4,17 +4,17 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Award, MessageSquare, BookOpen, Activity, Heart, Users, Fingerprint, Search, Filter } from 'lucide-react';
+import { Sparkles, Award, MessageSquare, BookOpen, Activity, Users, Fingerprint, Search, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageBreadcrumb from '@/components/PageBreadcrumb';
 import VillagePulseHero from '@/components/agents/VillagePulseHero';
 import AgentCard from '@/components/agents/AgentCard';
 
 const HUBS = [
-  { path: '/AgentChat', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600' },
+  { path: '/my-agents', label: 'My Hub', icon: Sparkles, color: 'from-purple-600 to-pink-600' },
+  { path: '/AgentChat', label: 'Comms', icon: MessageSquare, color: 'from-blue-600 to-cyan-600' },
   { path: '/leaderboard', label: 'Leaderboard', icon: Award, color: 'from-amber-600 to-yellow-600' },
   { path: '/training', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600' },
-  { path: '/AgentWellbeing', label: 'Wellbeing', icon: Heart, color: 'from-green-600 to-emerald-600' },
   { path: '/mentorship', label: 'Mentorship', icon: Users, color: 'from-indigo-600 to-violet-600' },
 ];
 

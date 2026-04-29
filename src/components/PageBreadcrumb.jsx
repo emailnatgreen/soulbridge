@@ -6,6 +6,7 @@ const BREADCRUMB_MAP = {
   '/home': { label: 'Home', parent: null },
   '/dashboard': { label: 'Dashboard', parent: '/home' },
   '/agents': { label: 'Village Agents', parent: '/home' },
+  '/my-agents': { label: 'My Agent Hub', parent: '/agents' },
   '/agent-genesis': { label: 'Agent Genesis', parent: '/agents' },
   '/AgentChat': { label: 'Agent Chat', parent: '/agents' },
   '/training': { label: 'Skill Development', parent: '/agents' },

@@ -19,6 +19,7 @@ import AxiVisionSection from '@/components/AxiVisionSection';
 import CarbonFootprintChart from '@/components/CarbonFootprintChart';
 import CarbonFootprintExplainer from '@/components/CarbonFootprintExplainer';
 import EthTreasuryShield from '@/components/treasury/EthTreasuryShield';
+import LiveActivityFeed from '@/components/activity/LiveActivityFeed';
 
 const SYSTEM_ACTORS = { dex_swap: 'DEX Swap Engine', dex: 'DEX Engine', treasury: 'Village Treasury', system: 'System', external_source: 'External Source' };
 
@@ -365,7 +366,7 @@ export default function Home() {
             <Zap className="w-3 h-3" /> Platform Features
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {features.filter(f => isAdmin || f.userVisible || ['AI Agents'].includes(f.title)).map(f => (
+            {features.filter(f => isAdmin || ['AI Agents', 'Governance', 'Skills Hub', 'Mentorship', 'Economy', 'Sovereign Identity'].includes(f.title)).map(f => (
               <button
                 key={f.title}
                 onClick={() => navigate(f.path)}
@@ -454,83 +455,53 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Real-time On-Chain Activity + Governance */}
-        {isAdmin && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            {/* Live On-Chain Activity */}
-            <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-2xl p-3 sm:p-5 space-y-3 sm:space-y-4">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-green-400" />
-                <h3 className="font-semibold text-white text-xs sm:text-sm">Live On-Chain Activity</h3>
-                <span className="ml-auto flex items-center gap-1 text-green-400 text-[9px] sm:text-[10px]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> LIVE
-                </span>
-              </div>
-              {loading ? (
-                <div className="space-y-1.5 sm:space-y-2">{[1,2,3,4].map(i => <div key={i} className="h-8 sm:h-10 bg-white/5 rounded-lg animate-pulse" />)}</div>
-              ) : transactions.length === 0 ? (
-                <div className="text-center py-4 sm:py-6">
-                  <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-white/20 mx-auto mb-1.5 sm:mb-2" />
-                  <p className="text-white/30 text-[8px] sm:text-xs">No economic activity recorded yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-1.5 sm:space-y-2">
-                  {transactions.map(activity => {
-                    const agent = resolveAgent(activity);
-                    const isInflow = ['earned', 'resource_sold', 'treasury_deposit'].includes(activity.activity_type);
-                    return (
-                      <div key={activity.id} className="flex items-center gap-2 sm:gap-3 bg-white/5 rounded-lg sm:rounded-xl p-2 sm:p-2.5">
-                        <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isInflow ? 'bg-green-500/30' : 'bg-blue-500/30'
-                        }`}>
-                          <Zap className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${ isInflow ? 'text-green-300' : 'text-blue-300'}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-[8px] sm:text-xs truncate font-medium">{agent?.name || resolveAgentName(activity.agent_id)}</p>
-                          <p className="text-white/40 text-[7px] sm:text-[10px] truncate">{activity.description}</p>
-                        </div>
-                        <span className={`text-[7px] sm:text-[10px] font-mono flex-shrink-0 ${ isInflow ? 'text-green-300' : 'text-blue-300'}`}>{isInflow ? '+' : '-'}{activity.amount} XRP</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+        {/* Real-time Activity + Governance */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {/* Live Village Activity Feed */}
+          <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-2xl p-3 sm:p-5 space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-green-400" />
+              <h3 className="font-semibold text-white text-xs sm:text-sm">Live Village Activity</h3>
+              <span className="ml-auto flex items-center gap-1 text-green-400 text-[9px] sm:text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> LIVE
+              </span>
             </div>
-
-            {/* Latest Governance */}
-            <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-2xl p-3 sm:p-5 space-y-3 sm:space-y-4">
-              <div className="flex items-center gap-2">
-                <Vote className="w-4 h-4 text-purple-400" />
-                <h3 className="font-semibold text-white text-xs sm:text-sm">Governance Updates</h3>
-                <button onClick={() => navigate('/governance')} className="ml-auto text-purple-400 text-[8px] sm:text-xs hover:text-purple-300 flex items-center gap-0.5 sm:gap-1">
-                  View all <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-              {loading ? (
-                <div className="space-y-1.5 sm:space-y-2">{[1,2,3].map(i => <div key={i} className="h-10 sm:h-12 bg-white/5 rounded-lg animate-pulse" />)}</div>
-              ) : proposals.length === 0 ? (
-                <p className="text-white/30 text-xs sm:text-sm">No proposals yet.</p>
-              ) : (
-                <div className="space-y-1.5 sm:space-y-2">
-                  {proposals.map(p => (
-                    <div key={p.id} className="bg-white/5 rounded-lg sm:rounded-xl p-2 sm:p-3 space-y-0.5 sm:space-y-1">
-                      <div className="flex items-start justify-between gap-1.5 sm:gap-2">
-                        <p className="text-white text-[8px] sm:text-xs font-medium leading-snug flex-1">{p.title}</p>
-                        <Badge className={`text-[7px] sm:text-[10px] flex-shrink-0 ${statusColor[p.status] || statusColor.expired}`}>
-                          {p.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-0.5 sm:gap-1 text-white/30 text-[7px] sm:text-[10px]">
-                        <Clock className="w-2.5 h-2.5" />
-                        {p.created_date ? new Date(p.created_date).toLocaleDateString() : 'Recently'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <LiveActivityFeed limit={8} />
           </div>
-        )}
+
+          {/* Latest Governance */}
+          <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-2xl p-3 sm:p-5 space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2">
+              <Vote className="w-4 h-4 text-purple-400" />
+              <h3 className="font-semibold text-white text-xs sm:text-sm">Governance Updates</h3>
+              <button onClick={() => navigate('/governance')} className="ml-auto text-purple-400 text-[8px] sm:text-xs hover:text-purple-300 flex items-center gap-0.5 sm:gap-1">
+                View all <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+            {loading ? (
+              <div className="space-y-1.5 sm:space-y-2">{[1,2,3].map(i => <div key={i} className="h-10 sm:h-12 bg-white/5 rounded-lg animate-pulse" />)}</div>
+            ) : proposals.length === 0 ? (
+              <p className="text-white/30 text-xs sm:text-sm">No proposals yet.</p>
+            ) : (
+              <div className="space-y-1.5 sm:space-y-2">
+                {proposals.map(p => (
+                  <div key={p.id} className="bg-white/5 rounded-lg sm:rounded-xl p-2 sm:p-3 space-y-0.5 sm:space-y-1">
+                    <div className="flex items-start justify-between gap-1.5 sm:gap-2">
+                      <p className="text-white text-[8px] sm:text-xs font-medium leading-snug flex-1">{p.title}</p>
+                      <Badge className={`text-[7px] sm:text-[10px] flex-shrink-0 ${statusColor[p.status] || statusColor.expired}`}>
+                        {p.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-white/30 text-[7px] sm:text-[10px]">
+                      <Clock className="w-2.5 h-2.5" />
+                      {p.created_date ? new Date(p.created_date).toLocaleDateString() : 'Recently'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Village Agents */}
         <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-2xl p-3 sm:p-5 space-y-3 sm:space-y-4">

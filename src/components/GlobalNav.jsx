@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import {
-  Home, Menu, X, BarChart3, Users, Vote, Briefcase, Archive, Calendar,
-  Settings, Image, Brain, Wallet, Globe, Shield, BookOpen, Zap,
-  TrendingUp, Network, MessageSquare, Star, ChevronDown, ChevronRight,
-  Swords, TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
-  FileText, ShoppingBag, Heart, Landmark, Database, Link2 as LinkIcon,
-  MailWarning,
-  GitBranch
+  Home, Menu, X, BarChart3, Users, Vote, Briefcase, Calendar,
+  Settings, Image, Brain, Wallet, Shield, BookOpen, Zap,
+  TrendingUp, MessageSquare, Star, ChevronDown, ChevronRight,
+  TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
+  ShoppingBag, Heart, Landmark, Link2 as LinkIcon,
+  MailWarning, GitBranch
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,10 +27,11 @@ const NAV_GROUPS = [
   {
     label: 'Agents',
     links: [
+      { label: 'My Agent Hub', path: '/my-agents', icon: Star },
       { label: 'Village Agents', path: '/agents', icon: Users },
-      { label: 'Leaderboard', path: '/leaderboard', icon: Award },
       { label: 'Agent Genesis', path: '/agent-genesis', icon: Star },
       { label: 'Agent Chat', path: '/AgentChat', icon: MessageSquare },
+      { label: 'Leaderboard', path: '/leaderboard', icon: Award },
       { label: 'Skill Development', path: '/training', icon: GraduationCap },
       { label: 'Wellbeing', path: '/AgentWellbeing', icon: Heart },
     ]
@@ -40,14 +40,11 @@ const NAV_GROUPS = [
     label: 'Governance',
     links: [
       { label: 'Governance Hub', path: '/GovernanceHub', icon: Vote },
-      { label: '⚖️ Voting Dashboard', path: '/GovernanceVotingDashboard', icon: Vote },
-      { label: '🌀 Kinetic Grid', path: '/KineticGridDashboard', icon: Activity },
-      { label: '♻️ Kinetic Waste', path: '/KineticWasteDashboard', icon: Activity },
+      { label: 'Voting Dashboard', path: '/GovernanceVotingDashboard', icon: Vote },
+      { label: 'Kinetic Grid', path: '/KineticGridDashboard', icon: Activity },
       { label: 'Treasury Proposals', path: '/TreasuryAllocationProposal', icon: Landmark },
       { label: 'Treasury Signing', path: '/TreasurySigningHelper', icon: Zap },
-      { label: '🛡️ Constitutional Multi-Sig', path: '/ConstitutionalMultiSig', icon: Shield },
-      { label: 'Risk Register', path: '/RiskRegister', icon: Shield },
-      { label: 'Analytics', path: '/GovernanceAnalytics', icon: BarChart3 },
+      { label: 'Constitutional Multi-Sig', path: '/ConstitutionalMultiSig', icon: Shield },
     ]
   },
   {
@@ -55,77 +52,55 @@ const NAV_GROUPS = [
     links: [
       { label: 'AI Project Hub', path: '/AIProjectHub', icon: Briefcase },
       { label: 'Project Manager', path: '/AIProjectManager', icon: FileText },
-      { label: 'Service Skill Marketplace', path: '/ServiceSkillMarketplace', icon: ShoppingBag },
+      { label: 'Marketplace', path: '/ServiceSkillMarketplace', icon: ShoppingBag },
       { label: 'Skill Tree', path: '/AgentSkillTree', icon: TreePine },
-      { label: 'Skill Development', path: '/training', icon: TrendingUp },
       { label: 'Mentorship', path: '/MentorshipHub', icon: BookOpen },
-      { label: 'Collaboration', path: '/CollaborationHub', icon: Network },
     ]
   },
   {
     label: 'Economy & Wallets',
     links: [
       { label: 'Wallets', path: '/Wallets', icon: Wallet },
-      { label: '🌰 Seed Golden Acorn', path: '/seed-golden-acorn', icon: Wallet },
-      { label: 'Treasury Signing', path: '/TreasurySigningHelper', icon: Archive },
-      { label: 'Economy', path: '/Economy', icon: Landmark },
-      { label: 'Resource Market', path: '/ResourceMarketplace', icon: Globe },
-      { label: 'Axi DEX', path: '/ArisDex', icon: TrendingUp },
       { label: 'Send XRP', path: '/Send', icon: Zap },
-      { label: '🛒 Widget Marketplace', path: '/widget-marketplace', icon: ShoppingBag },
+      { label: 'Seed Acorn', path: '/seed-golden-acorn', icon: Wallet },
+      { label: 'Economy', path: '/Economy', icon: Landmark },
+      { label: 'Widget Marketplace', path: '/widget-marketplace', icon: ShoppingBag },
+      { label: 'Storefront', path: '/storefront', icon: ShoppingBag },
     ]
   },
   {
     label: 'DID & Identity',
     links: [
-      { label: '⭐ Sovereign ID', path: '/SovereignID', icon: Shield },
+      { label: 'Sovereign ID', path: '/SovereignID', icon: Shield },
       { label: 'DID Manager', path: '/DIDManager', icon: Shield },
-      { label: 'DID Registry', path: '/DIDRegistry', icon: Database },
-      { label: 'DID Analytics', path: '/DIDAnalytics', icon: Activity },
       { label: 'Credentials', path: '/DidCredentials', icon: Award },
-      { label: 'DID Social', path: '/DidSocialNetwork', icon: Network },
-      { label: 'DID Messaging', path: '/DidMessaging', icon: MessageSquare },
     ]
   },
   {
-    label: 'Simulation & World',
+    label: 'World & Simulation',
     links: [
+      { label: 'Node Covenant', path: '/NodeCovenant', icon: Shield },
       { label: 'Simulation Lab', path: '/SimulationLab', icon: FlaskConical },
       { label: 'Village Map', path: '/Village', icon: Map },
-      { label: 'Diplomacy', path: '/DiplomacyHub', icon: Swords },
-      { label: 'Social Network', path: '/SocialNetwork', icon: Users },
-      { label: 'Node Covenant', path: '/NodeCovenant', icon: Shield },
-      { label: 'Covenant Echoes', path: '/CovenantEchoes', icon: Star },
     ]
   },
   {
-    label: 'Tools & Admin',
+    label: 'Admin Tools',
     adminOnly: true,
     links: [
-      { label: 'Image Storage', path: '/ImageStorage', icon: Image },
+      { label: 'Axi Intelligence', path: '/AxiIntelligenceFeed', icon: Zap },
       { label: 'Memory Browser', path: '/MemoryBrowser', icon: Brain },
       { label: 'Integration Credits', path: '/IntegrationCreditDashboard', icon: Zap },
-      { label: 'Admin Panel', path: '/Admin', icon: Settings },
-      { label: '🛡️ Invite Manager', path: '/InviteLinkManager', icon: LinkIcon },
-      { label: 'Sync Audit', path: '/SyncAuditReport', icon: Activity },
-      { label: 'System Dashboard', path: '/SystemDashboard', icon: Activity },
-      { label: 'Axi Intelligence', path: '/AxiIntelligenceFeed', icon: Zap },
-      { label: 'Ripple Dashboard', path: '/RippleDashboard', icon: Zap },
-      { label: 'Arbitrage Dashboard', path: '/ArbitrageDashboard', icon: TrendingUp },
-      { label: 'Edit Landing', path: '/EditLanding', icon: FileText },
-      { label: '📧 Inquiries', path: '/AdminInquiries', icon: MailWarning },
-      { label: '⭐ VIP Dashboard', path: '/VipInviteDashboard', icon: Star },
-      { label: '🚀 Ripple Grants', path: '/grants', icon: GitBranch },
+      { label: 'Invite Manager', path: '/InviteLinkManager', icon: LinkIcon },
+      { label: 'VIP Dashboard', path: '/VipInviteDashboard', icon: Star },
+      { label: 'Inquiries', path: '/AdminInquiries', icon: MailWarning },
+      { label: 'Ripple Grants', path: '/grants', icon: GitBranch },
+      { label: 'Image Storage', path: '/ImageStorage', icon: Image },
+      { label: 'Service Definitions', path: '/service-definitions', icon: Settings },
+      { label: 'Usage Logs', path: '/service-usage-logs', icon: Activity },
     ]
   },
-  {
-    label: 'Service Engine',
-    adminOnly: true,
-    links: [
-      { label: '⚙️ Service Definitions', path: '/service-definitions', icon: Settings },
-      { label: '📊 Usage Logs', path: '/service-usage-logs', icon: Activity },
-    ]
-  },
+
 ];
 
 function NavGroup({ group, isOpen: defaultOpen = false, onNavigate }) {

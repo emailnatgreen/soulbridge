@@ -42,6 +42,7 @@ import DIDManager from './pages/DIDManager';
 import AgentChat from './pages/AgentChat';
 import SkillDevelopment from './pages/SkillDevelopment';
 import AgentProfile_EditProfile from './pages/EditAgentProfile';
+import MyAgentHub from './pages/MyAgentHub';
 
 // ADMIN PAGES
 import AxiCommandDashboard from './pages/AxiCommandDashboard';
@@ -236,6 +237,7 @@ const AuthenticatedApp = () => {
         <Route path="/SkillDevelopment" element={L("training", SkillDevelopment)} />
         <Route path="/agents/edit" element={L("edit-profile", AgentProfile_EditProfile)} />
         <Route path="/EditAgentProfile" element={L("edit-profile", AgentProfile_EditProfile)} />
+        <Route path="/my-agents" element={L("my-agents", MyAgentHub)} />
 
         {/* ADMIN/RESTRICTED PAGES */}
         <Route path="/admin/axi-command" element={L("axi-command", AxiCommandDashboard)} />

@@ -5,17 +5,21 @@ import AxiNotificationBell from '@/components/global/AxiNotificationBell';
 import { Toaster } from "@/components/ui/sonner";
 import GlobalNav from '@/components/GlobalNav';
 import MobileBottomNav from '@/components/MobileBottomNav';
+import GlobalSearchBar from '@/components/search/GlobalSearchBar';
 import ChatLoader from '@/components/axi/ChatLoader';
 import AxiFloatingButton from '@/components/AxiFloatingButtonNew';
 import { useAuth } from '@/lib/AuthContext';
 import { useIdentity } from '@/hooks/useIdentity';
 import AxiChat from '@/components/AxiChat';
+import NotificationDrawer from '@/components/notifications/NotificationDrawer';
+import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
 
 // Pages where floating button and chat should NOT appear
 const PUBLIC_PAGES = ['EditLanding', 'Terms', 'Support', 'Landing', 'ScrollOfResonance', 'KineticCompass', 'ContactSupport'];
 
 export default function Layout({ children, currentPageName }) {
   const [chatOpen, setChatOpen] = useState(false);
+  const [notifDrawerOpen, setNotifDrawerOpen] = useState(false);
   const { isRecognized, isAdmin, didSignal } = useIdentity();
   const { user } = useAuth();
 
@@ -49,8 +53,11 @@ export default function Layout({ children, currentPageName }) {
           {/* Spacer for mobile hamburger button */}
           <div className="w-10 lg:hidden" />
           <div className="ml-auto flex items-center gap-2">
+            <div className="hidden sm:block">
+              <GlobalSearchBar />
+            </div>
             <KineticPulseIndicator />
-            <AxiNotificationBell />
+            <AxiNotificationBell onOpenDrawer={() => setNotifDrawerOpen(true)} />
             <DIDPresenceBadge />
           </div>
         </div>
@@ -77,6 +84,14 @@ export default function Layout({ children, currentPageName }) {
       {isAdmin && !isPublic && <MobileBottomNav />}
 
       <Toaster />
+
+      {/* Notification Drawer */}
+      {isRecognized && !isPublic && (
+        <NotificationDrawer isOpen={notifDrawerOpen} onClose={() => setNotifDrawerOpen(false)} />
+      )}
+
+      {/* Onboarding Wizard — shown once for new users */}
+      {isRecognized && !isPublic && !isAdmin && <OnboardingWizard />}
 
       {/* Axi Chat — only for recognized users, not on public pages */}
       {isRecognized && !isPublic && (

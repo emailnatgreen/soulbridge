@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Wallet, Shield, Users, Vote, BarChart3 } from 'lucide-react';
+import { Home, Wallet, Users, Vote, Bot } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { hasAdminAccess } from '@/lib/adminAccess';
 
 const NAV_ITEMS = [
   { icon: Home, label: 'Home', path: '/home' },
-  { icon: BarChart3, label: 'Dash', path: '/dashboard' },
   { icon: Users, label: 'Agents', path: '/agents' },
+  { icon: Bot, label: 'My Hub', path: '/my-agents' },
   { icon: Vote, label: 'Govern', path: '/governance' },
   { icon: Wallet, label: 'Wallets', path: '/wallets' },
 ];

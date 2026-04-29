@@ -15,7 +15,7 @@ import { Search, X, Loader2, User, FolderKanban, Wallet, Shield, BookOpen, Zap }
  */
 
 const ENTITY_CONFIGS = [
-  { key: 'Agent', icon: User, color: 'text-blue-400', label: 'Agent', fields: ['name', 'purpose', 'role'], nav: (r) => `/AgentDetails?id=${r.id}` },
+  { key: 'Agent', icon: User, color: 'text-blue-400', label: 'Agent', fields: ['name', 'purpose', 'role'], nav: (r) => `/agents/${r.id}` },
   { key: 'AIProject', icon: FolderKanban, color: 'text-violet-400', label: 'Project', fields: ['title', 'description', 'status'], nav: (r) => `/AIProjectHub?project=${r.id}` },
   { key: 'Wallet', icon: Wallet, color: 'text-emerald-400', label: 'Wallet', fields: ['name', 'classic_address'], nav: () => '/Wallets' },
   { key: 'GovernanceProposal', icon: Shield, color: 'text-amber-400', label: 'Proposal', fields: ['title', 'description'], nav: (r) => `/GovernanceHub?id=${r.id}` },
