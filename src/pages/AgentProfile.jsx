@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Star, Award, Zap, Globe, ExternalLink, Pencil, MessageSquare, Send, Wallet, Shield, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Star, Award, Zap, Globe, ExternalLink, Pencil, MessageSquare, Send, Wallet, Shield, ShieldCheck, BarChart3 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import PageBreadcrumb from '@/components/PageBreadcrumb';
 import AdminAgentOverridePanel from '@/components/admin/AdminAgentOverridePanel';
@@ -137,6 +137,11 @@ export default function AgentProfile() {
             <Link to={`/AgentChat`}>
               <Button size="sm" variant="ghost" className="text-white/60 hover:text-white">
                 <MessageSquare className="w-4 h-4 mr-1" /> Chat
+              </Button>
+            </Link>
+            <Link to={`/agents/${agent.id}/analytics`}>
+              <Button size="sm" variant="ghost" className="text-white/60 hover:text-white">
+                <BarChart3 className="w-4 h-4 mr-1" /> Analytics
               </Button>
             </Link>
             {isAdmin && (

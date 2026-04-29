@@ -51,9 +51,15 @@ function buildChain(pathname) {
   const chain = [];
   let current = pathname;
 
-  // Handle dynamic agent profile routes like /agents/abc123
+  // Handle dynamic agent routes like /agents/abc123 and /agents/abc123/analytics
   if (current.startsWith('/agents/') && current !== '/agents/edit') {
-    chain.unshift({ label: 'Agent Profile', path: current });
+    if (current.endsWith('/analytics')) {
+      chain.unshift({ label: 'Analytics', path: current });
+      const profilePath = current.replace('/analytics', '');
+      chain.unshift({ label: 'Agent Profile', path: profilePath });
+    } else {
+      chain.unshift({ label: 'Agent Profile', path: current });
+    }
     current = '/agents';
   }
 
