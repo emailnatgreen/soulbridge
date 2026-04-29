@@ -507,7 +507,7 @@ export default function Dashboard() {
           <CoreDIDStatusModule wallets={wallets} identityDid={identityDid} />
           <DIDManagementPanel />
 
-          <WalletCard wallets={userWallets} transactions={myTransactions} />
+          <WalletCard wallets={wallets} transactions={myTransactions} />
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

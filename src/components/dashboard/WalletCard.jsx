@@ -1,14 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, RefreshCw, Copy, Check, ExternalLink, ArrowUpRight, ArrowDownLeft, ChevronRight } from 'lucide-react';
+import { Wallet, RefreshCw, Copy, Check, ExternalLink, ArrowUpRight, ArrowDownLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
-export default function WalletCard({ wallets = [], transactions = [] }) {
+export default function WalletCard({ wallets = [], transactions = [], isLoading: externalLoading = false }) {
   const [liveBalances, setLiveBalances] = useState({});
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [internalWallets, setInternalWallets] = useState(wallets);
 
-  const validWallets = wallets.filter(w => w.classic_address);
+  // Sync with prop changes
+  useEffect(() => { setInternalWallets(wallets); }, [wallets]);
+
+  // If no wallets from props, try fetching directly
+  useEffect(() => {
+    if (wallets.length > 0) return;
+    const fetchWallets = async () => {
+      const me = await base44.auth.me().catch(() => null);
+      if (!me?.id) return;
+      const fetched = await base44.entities.Wallet.filter({ owner_id: me.id }, '-created_date', 20).catch(() => []);
+      if (fetched.length > 0) setInternalWallets(fetched);
+    };
+    fetchWallets();
+  }, [wallets.length]);
+
+  const validWallets = internalWallets.filter(w => w.classic_address);
   const primaryWallet = validWallets.find(w => w.is_published) || validWallets[0];
 
   const allAddresses = [...new Set(validWallets.map(w => w.classic_address))];
@@ -23,7 +39,7 @@ export default function WalletCard({ wallets = [], transactions = [] }) {
     setLoading(false);
   };
 
-  useEffect(() => { fetchBalances(); }, [allAddresses.join(',')]);
+  useEffect(() => { if (allAddresses.length > 0) fetchBalances(); }, [allAddresses.join(',')]);
 
   const copyAddress = () => {
     if (!primaryWallet?.classic_address) return;
@@ -39,10 +55,19 @@ export default function WalletCard({ wallets = [], transactions = [] }) {
           <Wallet className="w-4 h-4 text-purple-400" />
           <h3 className="text-white font-semibold text-sm">My Wallet</h3>
         </div>
-        <p className="text-white/40 text-xs">No wallet found. Create one via Seed Golden Acorn or Sovereign ID.</p>
-        <Link to="/seed-golden-acorn" className="mt-3 inline-flex items-center gap-1 text-xs text-purple-300 hover:text-purple-200 transition">
-          Create wallet <ChevronRight className="w-3 h-3" />
-        </Link>
+        {externalLoading ? (
+          <div className="flex items-center gap-2 py-2">
+            <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+            <p className="text-white/40 text-xs">Loading wallets…</p>
+          </div>
+        ) : (
+          <>
+            <p className="text-white/40 text-xs">No wallet found. Create one via Seed Golden Acorn or Sovereign ID.</p>
+            <Link to="/seed-golden-acorn" className="mt-3 inline-flex items-center gap-1 text-xs text-purple-300 hover:text-purple-200 transition">
+              Create wallet <ChevronRight className="w-3 h-3" />
+            </Link>
+          </>
+        )}
       </div>
     );
   }
