@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Chrome, Loader2, Plus, Trash2, AlertCircle, Layers } from 'lucide-react';
+import { Chrome, Loader2, Plus, Trash2, AlertCircle, Layers, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
@@ -40,6 +40,7 @@ export default function ChromeSkillNFTForm() {
   const [widgetType, setWidgetType] = useState('unlock');
   const [serviceLink, setServiceLink] = useState(null);
   const [skills, setSkills] = useState([{ ...EMPTY_SKILL }]);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [customData, setCustomData] = useState(getDefaultCustomData('chrome_skill'));
   const queryClient = useQueryClient();
 
@@ -215,8 +216,35 @@ export default function ChromeSkillNFTForm() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-white/60 text-xs">Image URL</Label>
-            <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
+            <Label className="text-white/60 text-xs">Image</Label>
+            <div className="flex items-center gap-2">
+              <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="Paste URL or upload →" className="bg-white/5 border-white/10 text-white flex-1" />
+              <label className="flex-shrink-0 cursor-pointer">
+                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploadingImage(true);
+                  try {
+                    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                    setImageUrl(file_url);
+                    toast.success('Image uploaded');
+                  } catch (err) {
+                    toast.error('Upload failed: ' + (err.message || 'Unknown error'));
+                  } finally {
+                    setUploadingImage(false);
+                  }
+                }} />
+                <div className={`h-9 w-9 rounded-md border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 transition ${uploadingImage ? 'opacity-50' : ''}`}>
+                  {uploadingImage ? <Loader2 className="w-3.5 h-3.5 text-white/40 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-white/40" />}
+                </div>
+              </label>
+            </div>
+            {imageUrl && (
+              <div className="flex items-center gap-2 mt-1">
+                <img src={imageUrl} alt="Preview" className="w-8 h-8 rounded-lg object-cover border border-white/10" onError={e => { e.target.style.display = 'none'; }} />
+                <span className="text-white/30 text-[9px] truncate flex-1">{imageUrl.slice(0, 50)}…</span>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
