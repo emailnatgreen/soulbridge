@@ -367,10 +367,8 @@ export default function AgentProfile() {
               </Card>
             )}
 
-            {/* Agent JSON Editor — admin only */}
-            {isAdmin && (
-              <AgentJsonEditorSection agent={agent} onUpdated={handleRefresh} />
-            )}
+            {/* Agent JSON Editor — creative tool for all users */}
+            <AgentJsonEditorSection agent={agent} onUpdated={handleRefresh} />
 
             {/* Admin Override */}
             {isAdmin && (
