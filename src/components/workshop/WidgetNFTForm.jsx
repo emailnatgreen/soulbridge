@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, Upload, AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Settings2, Image, Info } from 'lucide-react';
+import { Sparkles, Loader2, Upload, AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Settings2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
@@ -136,27 +136,30 @@ export default function WidgetNFTForm() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const payload = {
-        ...form,
+      const widgetData = {
+        name: form.name,
+        description: form.description,
+        image_url: form.image_url || undefined,
+        category: form.category,
+        widget_type: form.widget_type,
         widget_class: form.widget_type,
+        ui_behavior: form.ui_behavior,
         nft_id: form.nft_id || undefined,
         version: form.version || '1.0.0',
+        feature_path: form.feature_path || undefined,
         taxon: parseInt(form.taxon) || 0,
         transfer_fee: parseInt(form.transferFee) || 0,
         transferable: form.transferable,
         burnable: form.burnable,
       };
-      delete payload.transferFee;
       if (form.widget_type === 'service') {
-        payload.cost_per_stream_interval = parseFloat(form.cost_per_stream_interval) || 0;
-      } else {
-        delete payload.cost_per_stream_interval;
-        delete payload.stream_interval_unit;
+        widgetData.cost_per_stream_interval = parseFloat(form.cost_per_stream_interval) || 0;
+        widgetData.stream_interval_unit = form.stream_interval_unit;
       }
       const res = await base44.functions.invoke('workshopNFTCreate', {
         action: 'create',
         nft_type: 'widget',
-        widget_data: payload,
+        widget_data: widgetData,
         custom_data: customData,
         metadata_standard_version: METADATA_STANDARD_VERSION,
         service_definition: form.service_definition_link || undefined,
