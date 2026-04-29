@@ -34,6 +34,7 @@ const FEATURE_ROUTE_MAP = {
   '/storefront': '/storefront',
   '/chrome-skills': '/dashboard',
   '/dex-swap': '/dashboard',
+  '/rlusd-gate': '/rlusd-gate',
 };
 
 Deno.serve(async (req) => {

@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Shield, Sparkles, LogOut, Home, ArrowRight, Globe, Wallet,
-  ArrowDownUp, Users, Vote, BookOpen, ShoppingBag, Zap, ChevronRight, Hammer, Lock, Store
+  ArrowDownUp, Users, Vote, BookOpen, ShoppingBag, Zap, ChevronRight, Lock
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { hasAdminAccess } from '@/lib/adminAccess';
@@ -26,6 +26,7 @@ import MyAgentsPanel from '@/components/dashboard/MyAgentsPanel';
 import DIDAgentLinkOverview from '@/components/agents/DIDAgentLinkOverview';
 import ChromeSkillActivateCard from '@/components/dashboard/ChromeSkillActivateCard';
 import ShieldedOakPanel from '@/components/dashboard/ShieldedOakPanel';
+import NFTGatedFeatureGrid from '@/components/dashboard/NFTGatedFeatureGrid';
 
 if (typeof window !== 'undefined') {
   window.__sb = window.__sb || { signals: [] };
@@ -512,28 +513,7 @@ export default function Dashboard() {
 
           <ShieldedOakPanel isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Link to="/nft-workshop" className="flex items-center gap-3 border border-pink-500/30 bg-pink-500/10 rounded-2xl p-4 hover:border-pink-400/50 transition-all hover:scale-[1.01] active:scale-[0.99]">
-              <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center flex-shrink-0">
-                <Hammer className="w-5 h-5 text-pink-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm">NFT Workshop</p>
-                <p className="text-white/40 text-xs">Mint Widgets & NFTs</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0" />
-            </Link>
-            <Link to="/storefront" className="flex items-center gap-3 border border-amber-500/30 bg-amber-500/10 rounded-2xl p-4 hover:border-amber-400/50 transition-all hover:scale-[1.01] active:scale-[0.99]">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                <Store className="w-5 h-5 text-amber-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm">Storefront</p>
-                <p className="text-white/40 text-xs">Manage your shop</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0" />
-            </Link>
-          </div>
+          <NFTGatedFeatureGrid isUnlocked={isUnlocked} isAdmin={isAdmin} />
 
           <MyAgentsPanel userEmail={user?.email} />
           <DIDAgentLinkOverview userEmail={user?.email} />
@@ -634,6 +614,9 @@ export default function Dashboard() {
 
         {/* Shielded Oak — Multi-Sig + Node Covenant */}
         <ShieldedOakPanel isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
+
+        {/* NFT-Gated Features */}
+        <NFTGatedFeatureGrid isUnlocked={isUnlocked} isAdmin={false} />
 
         {/* Agent Command Center — NFT gated */}
         <MyAgentsPanel userEmail={user?.email} />
