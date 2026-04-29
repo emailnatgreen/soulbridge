@@ -20,6 +20,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis
 import DIDAssertionPanel, { calcVotingPower, getDIDPermissionStatus } from '@/components/governance/DIDAssertionPanel';
 import CollectiveDIDInfluence from '@/components/governance/CollectiveDIDInfluence';
 import VoteCastingPanel from '@/components/governance/VoteCastingPanel';
+import QuorumProgressCard from '@/components/governance/QuorumProgressCard';
+import ConstitutionalBadges from '@/components/governance/ConstitutionalBadges';
 
 
 // ─── Proposal Detail Dialog ─────────────────────────────────────────────────
@@ -135,7 +137,7 @@ function ProposalDetailDialog({ open, onClose, proposal, proposalVotes, selected
 }
 
 // ─── Proposal Card ──────────────────────────────────────────────────────────
-function ProposalCard({ proposal, allVotes, selectedAgent, onVote, onExecute }) {
+function ProposalCard({ proposal, allVotes, selectedAgent, onVote, onExecute, totalAgents }) {
   const [showDetail, setShowDetail] = useState(false);
   const proposalVotes = allVotes.filter(v => v.proposal_id === proposal.id);
   const hasVoted = selectedAgent ? allVotes.some(v => v.proposal_id === proposal.id && v.voter_agent_id === selectedAgent.id) : false;
@@ -201,9 +203,13 @@ function ProposalCard({ proposal, allVotes, selectedAgent, onVote, onExecute }) 
             )}
           </div>
           <CardDescription className="text-white/50 text-sm line-clamp-2 mt-1">{proposal.description}</CardDescription>
+          <div className="mt-2">
+            <ConstitutionalBadges proposal={proposal} compact />
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-3">
+          <QuorumProgressCard proposal={proposal} totalAgents={totalAgents || 50} />
           <div className="space-y-1.5">
             {[
               { label: 'For', value: proposal.votes_for || 0, pct: forPct, color: 'bg-green-500' },
@@ -552,6 +558,7 @@ export default function GovernanceVotingDashboard() {
                         proposal={p}
                         allVotes={allVotes}
                         selectedAgent={selectedAgent}
+                        totalAgents={agents.length}
                         onVote={(data) => voteMutation.mutateAsync(data)}
                         onExecute={(id) => executeMutation.mutateAsync(id)}
                       />
@@ -573,6 +580,7 @@ export default function GovernanceVotingDashboard() {
                         proposal={p}
                         allVotes={allVotes}
                         selectedAgent={selectedAgent}
+                        totalAgents={agents.length}
                         onVote={(data) => voteMutation.mutateAsync(data)}
                         onExecute={(id) => executeMutation.mutateAsync(id)}
                       />

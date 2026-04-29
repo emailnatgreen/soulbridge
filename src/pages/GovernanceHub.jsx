@@ -20,6 +20,10 @@ import AskAxiButton from '@/components/AskAxiButton';
 import DidActivationProposalsPanel from '@/components/DidActivationProposalsPanel';
 import ProposalAISummaryPanel from '@/components/governance/ProposalAISummaryPanel';
 import AxiGovernanceGuide from '@/components/governance/AxiGovernanceGuide';
+import ProposalTimelineView from '@/components/governance/ProposalTimelineView';
+import QuorumProgressCard from '@/components/governance/QuorumProgressCard';
+import ConstitutionalBadges from '@/components/governance/ConstitutionalBadges';
+import VoteDelegationPanel from '@/components/governance/VoteDelegationPanel';
 
 const openAxi = (msg) => window.dispatchEvent(new CustomEvent('open-axi-with-message', { detail: { message: msg } }));
 
@@ -459,6 +463,12 @@ export default function GovernanceHub() {
               Completed
               <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-white/20 text-xs">{completedProposals.length}</span>
             </TabsTrigger>
+            <TabsTrigger value="timeline" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-white/50 hover:text-white/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="delegation" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-white/50 hover:text-white/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+              Delegation
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="active">
@@ -507,6 +517,8 @@ export default function GovernanceHub() {
                         <CardDescription className="text-purple-200/70">{proposal.description}</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        <ConstitutionalBadges proposal={proposal} compact />
+                        <QuorumProgressCard proposal={proposal} totalAgents={agents.length} />
                         <ProposalAISummaryPanel proposalId={proposal.id} />
 
                         <div>
@@ -622,6 +634,14 @@ export default function GovernanceHub() {
                 })}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="timeline">
+            <ProposalTimelineView proposals={normalisedProposals} />
+          </TabsContent>
+
+          <TabsContent value="delegation">
+            <VoteDelegationPanel myAgent={myAgent} agents={agents} />
           </TabsContent>
 
           <TabsContent value="completed">
