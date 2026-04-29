@@ -47,40 +47,32 @@ export default function MyAgentHub() {
     enabled: !!user?.email,
   });
 
+  // Single batch queries instead of per-agent N+1 queries to avoid rate limits
+  const agentIds = myAgents.map(a => a.id);
+  const agentIdsKey = agentIds.join(',');
+
   const { data: skills = [] } = useQuery({
-    queryKey: ['my-agent-skills', myAgents.map(a => a.id).join(',')],
-    queryFn: async () => {
-      if (myAgents.length === 0) return [];
-      const results = await Promise.all(
-        myAgents.map(a => base44.entities.AgentSkill.filter({ agent_id: a.id }, '-created_date', 50).catch(() => []))
-      );
-      return results.flat();
-    },
+    queryKey: ['my-agent-skills', agentIdsKey],
+    queryFn: () => base44.entities.AgentSkill.list('-created_date', 200),
     enabled: myAgents.length > 0,
+    staleTime: 60000,
+    select: (data) => data.filter(s => agentIds.includes(s.agent_id)),
   });
 
   const { data: wellbeing = [] } = useQuery({
-    queryKey: ['my-agent-wellbeing', myAgents.map(a => a.id).join(',')],
-    queryFn: async () => {
-      if (myAgents.length === 0) return [];
-      const results = await Promise.all(
-        myAgents.map(a => base44.entities.AgentWellbeing.filter({ agent_id: a.id }, '-created_date', 1).catch(() => []))
-      );
-      return results.flat();
-    },
+    queryKey: ['my-agent-wellbeing', agentIdsKey],
+    queryFn: () => base44.entities.AgentWellbeing.list('-created_date', 50),
     enabled: myAgents.length > 0,
+    staleTime: 60000,
+    select: (data) => data.filter(w => agentIds.includes(w.agent_id)),
   });
 
   const { data: votes = [] } = useQuery({
-    queryKey: ['my-agent-votes', myAgents.map(a => a.id).join(',')],
-    queryFn: async () => {
-      if (myAgents.length === 0) return [];
-      const results = await Promise.all(
-        myAgents.map(a => base44.entities.GovernanceVote.filter({ voter_agent_id: a.id }, '-created_date', 10).catch(() => []))
-      );
-      return results.flat();
-    },
+    queryKey: ['my-agent-votes', agentIdsKey],
+    queryFn: () => base44.entities.GovernanceVote.list('-created_date', 100),
     enabled: myAgents.length > 0,
+    staleTime: 60000,
+    select: (data) => data.filter(v => agentIds.includes(v.voter_agent_id)),
   });
 
   const primaryAgent = myAgents[0];
@@ -188,6 +180,9 @@ export default function MyAgentHub() {
                       </Link>
                       <Link to="/AgentChat" className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1.5 rounded-lg transition whitespace-nowrap">
                         <MessageSquare className="w-3 h-3" /> Chat
+                      </Link>
+                      <Link to={`/agents/${agent.id}/analytics`} className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1.5 rounded-lg transition whitespace-nowrap">
+                        <TrendingUp className="w-3 h-3" /> Analytics
                       </Link>
                       <Link to="/agents/edit" className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1.5 rounded-lg transition whitespace-nowrap">
                         <Edit className="w-3 h-3" /> Edit

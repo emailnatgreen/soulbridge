@@ -37,6 +37,7 @@ export default function Agents() {
   const { data: agents = [], isLoading } = useQuery({
     queryKey: ['agents'],
     queryFn: () => base44.entities.Agent.list('-created_date', 100),
+    staleTime: 30000,
   });
 
   const { data: walletsMap = {} } = useQuery({
@@ -49,7 +50,7 @@ export default function Agents() {
       });
       return map;
     },
-    staleTime: 30000,
+    staleTime: 60000,
   });
 
   // Filter agents

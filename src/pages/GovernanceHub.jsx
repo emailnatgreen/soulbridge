@@ -55,8 +55,6 @@ export default function GovernanceHub() {
         if (parsed?.connected) setIdentity(parsed);
       }
     } catch (e) {}
-
-    openAxi('I have just opened the Governance Hub. Please review the active proposals, flag any that need urgent attention, and tell me if there are any constitutional alignment issues or expired proposals that need executing.');
   }, []);
 
   const { data: agents = [], isLoading: agentsLoading } = useQuery({
