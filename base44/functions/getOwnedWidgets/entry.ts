@@ -21,13 +21,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // Maps feature_path to dashboard route
 const FEATURE_ROUTE_MAP = {
-  'wallet.multisig': '/ConstitutionalMultiSig',
+  'wallet.multisig': '/dashboard',
   'wallet.custom_signatures': '/wallets',
   'wallet.trustlines': '/wallets',
   'wallet.publish_mainnet': '/DIDManager',
   'wallet.create': '/wallets',
-  'wallet.node_setup': '/NodeCovenant',
+  'wallet.node_setup': '/dashboard',
   'wallet.did_linking': '/SovereignID',
+  '/ConstitutionalMultiSig': '/dashboard',
+  '/NodeCovenant': '/dashboard',
+  '/nft-workshop': '/nft-workshop',
+  '/storefront': '/storefront',
+  '/chrome-skills': '/dashboard',
+  '/dex-swap': '/dashboard',
 };
 
 Deno.serve(async (req) => {

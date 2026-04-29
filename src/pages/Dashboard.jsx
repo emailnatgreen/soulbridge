@@ -25,6 +25,7 @@ import CitizenshipGate from '@/components/dashboard/CitizenshipGate';
 import MyAgentsPanel from '@/components/dashboard/MyAgentsPanel';
 import DIDAgentLinkOverview from '@/components/agents/DIDAgentLinkOverview';
 import ChromeSkillActivateCard from '@/components/dashboard/ChromeSkillActivateCard';
+import ShieldedOakPanel from '@/components/dashboard/ShieldedOakPanel';
 
 if (typeof window !== 'undefined') {
   window.__sb = window.__sb || { signals: [] };
@@ -509,6 +510,8 @@ export default function Dashboard() {
 
           <ChromeSkillActivateCard isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
 
+          <ShieldedOakPanel isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Link to="/nft-workshop" className="flex items-center gap-3 border border-pink-500/30 bg-pink-500/10 rounded-2xl p-4 hover:border-pink-400/50 transition-all hover:scale-[1.01] active:scale-[0.99]">
               <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center flex-shrink-0">
@@ -628,6 +631,9 @@ export default function Dashboard() {
 
         {/* Chrome Skill NFT Activation */}
         <ChromeSkillActivateCard isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
+
+        {/* Shielded Oak — Multi-Sig + Node Covenant */}
+        <ShieldedOakPanel isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
 
         {/* Agent Command Center — NFT gated */}
         <MyAgentsPanel userEmail={user?.email} />
