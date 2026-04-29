@@ -80,22 +80,26 @@ Deno.serve(async (req) => {
       };
     }
 
-    // Audit log — record access check
-    await base44.asServiceRole.entities.AutomationLog.create({
-      automation_name: 'Widget Unlock Engine',
-      function_name: 'getOwnedWidgets',
-      status: 'success',
-      message: `Ownership check: ${ownedWidgets.length}/${allWidgets.length} owned`,
-      details: {
-        user_email: user.email,
-        user_did: userDid,
-        owned_count: ownedWidgets.length,
-        total_count: allWidgets.length,
-        unlocked_paths: unlockedPaths,
-      },
-      triggered_by: 'manual',
-      run_at: new Date().toISOString(),
-    });
+    // Audit log — record access check (non-blocking)
+    try {
+      await base44.asServiceRole.entities.AutomationLog.create({
+        automation_name: 'Widget Unlock Engine',
+        function_name: 'getOwnedWidgets',
+        status: 'success',
+        message: `Ownership check: ${ownedWidgets.length}/${allWidgets.length} owned`,
+        details: {
+          user_email: user.email,
+          user_did: userDid,
+          owned_count: ownedWidgets.length,
+          total_count: allWidgets.length,
+          unlocked_paths: unlockedPaths,
+        },
+        triggered_by: 'manual',
+        run_at: new Date().toISOString(),
+      });
+    } catch (_auditErr) {
+      // Audit logging is non-critical — don't block widget data
+    }
 
     return Response.json({
       owned_widgets: ownedWidgets.map(w => ({
