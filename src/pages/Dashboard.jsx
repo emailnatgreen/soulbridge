@@ -523,7 +523,6 @@ export default function Dashboard() {
               <SendPanel wallets={userWallets} />
               <ReceivePanel wallets={userWallets} />
             </div>
-            <DexSwapGate wallets={userWallets} isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
           </div>
 
           <ChromeSkillActivateCard isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
