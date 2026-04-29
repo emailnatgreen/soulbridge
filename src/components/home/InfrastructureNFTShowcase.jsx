@@ -91,8 +91,9 @@ export default function InfrastructureNFTShowcase() {
   const navigate = useNavigate();
   const { widgets, loading } = useWidgetUnlock();
 
-  // Show all widgets from the unlock engine (already filtered server-side)
-  const mintedWidgets = widgets;
+  // Filter out test/seed widgets that shouldn't appear on the home page
+  const HIDDEN_IDS = ['69e60cadaccafe13cef86af7', '69e4fe836df0fe16012698bd'];
+  const mintedWidgets = widgets.filter(w => !HIDDEN_IDS.includes(w.id));
 
   return (
     <div className="space-y-4">
