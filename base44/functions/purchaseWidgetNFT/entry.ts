@@ -21,21 +21,26 @@ Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
   try {
+    const body = await req.json();
+    const { action } = body;
+
+    // get_price and check_payment are read-only — allow without strict auth
+    if (action === 'get_price') {
+      return await handleGetPrice(base44, body);
+    }
+    if (action === 'check_payment') {
+      return await handleCheckPayment(body);
+    }
+
+    // All other actions require authentication
     const user = await base44.auth.me();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { action } = body;
-
     switch (action) {
-      case 'get_price':
-        return await handleGetPrice(base44, body);
       case 'initiate_payment':
         return await handleInitiatePayment(base44, user, body);
-      case 'check_payment':
-        return await handleCheckPayment(body);
       case 'confirm_purchase':
         return await handleConfirmPurchase(base44, user, body);
       default:
