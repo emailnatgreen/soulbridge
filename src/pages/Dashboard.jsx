@@ -544,8 +544,26 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
         <Header />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-5">
           <CitizenshipGate identityDid={identityDid} firstName={firstName} />
+
+          {/* Wallet — always visible so users can send/receive XRP */}
+          {userWallets.length > 0 && (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-purple-400" /> My Wallet
+                </h3>
+                <Link to="/wallets" className="text-xs text-purple-300 hover:text-purple-200 flex items-center gap-1">
+                  Manage <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <SendPanel wallets={userWallets} />
+                <ReceivePanel wallets={userWallets} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
