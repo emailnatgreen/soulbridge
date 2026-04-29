@@ -200,9 +200,10 @@ Deno.serve(async (req) => {
     const { event, data } = body;
 
     // Only fire for delivered transactions
-    if (!data || (data.status !== 'delivered' && data.status !== 'completed')) {
-      console.log('[notifyNFTSale] Skipped — status is not delivered/completed:', data?.status);
-      return Response.json({ skipped: true, reason: 'Not a delivery event' });
+    const validStatuses = ['delivered', 'completed', 'treasury_received', 'distributed'];
+    if (!data || !validStatuses.includes(data.status)) {
+      console.log('[notifyNFTSale] Skipped — status is not a sale event:', data?.status);
+      return Response.json({ skipped: true, reason: 'Not a sale event' });
     }
 
     const resourceName = data.resource_name || data.listing_title || 'NFT Item';
