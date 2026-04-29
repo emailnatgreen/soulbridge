@@ -149,16 +149,6 @@ export default function MentorshipHub() {
               </Link>
             )}
 
-            {/* Axi Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openAxi("Help me navigate the Mentorship Hub.")}
-              className="border-purple-400/40 text-purple-300 bg-purple-900/20 hover:bg-purple-500/20 text-xs gap-1.5"
-            >
-              <Sparkles className="w-3.5 h-3.5" /> Ask Axi
-            </Button>
-
             {!myMentorProfile && myAgent && (
               <Button
                 size="sm"
