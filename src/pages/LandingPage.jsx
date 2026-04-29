@@ -342,11 +342,11 @@ export default function LandingPage() {
               </a>
               <button
                 onClick={() => {
-                  window.location.href = '/home';
+                  navigate('/home');
                 }}
-                className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-[9px] sm:text-xs font-semibold px-2 py-1 rounded-md transition-all"
+                className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 border border-red-500/30 text-red-300 text-[9px] sm:text-xs font-semibold px-3 py-2 sm:px-2 sm:py-1 rounded-md transition-all min-h-[36px] sm:min-h-0"
               >
-                <Lock className="w-2.5 h-2.5" />
+                <Lock className="w-3 h-3 sm:w-2.5 sm:h-2.5" />
                 Admin
               </button>
             </div>
