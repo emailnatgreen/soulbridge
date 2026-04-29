@@ -13,6 +13,10 @@ const TREASURY_ADDRESS = 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h';
 const RLUSD_CURRENCY = '524C555344000000000000000000000000000000'; // RLUSD hex
 const RLUSD_ISSUER = 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De'; // Ripple's RLUSD issuer
 
+function toHex(str) {
+  return Array.from(new TextEncoder().encode(str)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
@@ -110,8 +114,8 @@ async function handleInitiatePayment(base44, user, body) {
     Memos: [
       {
         Memo: {
-          MemoType: Buffer.from('soulbridge/nft-purchase', 'utf8').toString('hex').toUpperCase(),
-          MemoData: Buffer.from(`${nft_id}|${name}|${user.email}`, 'utf8').toString('hex').toUpperCase(),
+          MemoType: toHex('soulbridge/nft-purchase'),
+          MemoData: toHex(`${nft_id}|${name}|${user.email}`),
         }
       }
     ],
@@ -135,8 +139,7 @@ async function handleInitiatePayment(base44, user, body) {
         return_url: { web: 'https://soulbridge.world/widget-marketplace' },
       },
       custom_meta: {
-        identifier: `nft-purchase-${nft_id}-${Date.now()}`,
-        blob: JSON.stringify({ widget_id, nft_id, buyer: user.email, price: price_rlusd }),
+        identifier: `nft-${nft_id}-${Date.now()}`,
       },
     }),
   });
