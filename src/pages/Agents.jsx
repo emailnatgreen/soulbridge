@@ -9,6 +9,10 @@ import { Link } from 'react-router-dom';
 import PageBreadcrumb from '@/components/PageBreadcrumb';
 import VillagePulseHero from '@/components/agents/VillagePulseHero';
 import AgentCard from '@/components/agents/AgentCard';
+import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
+import { useIdentity } from '@/hooks/useIdentity';
+import { useAuth } from '@/lib/AuthContext';
+import WidgetLockScreen from '@/components/widgets/WidgetLockScreen';
 
 const HUBS = [
   { path: '/my-agents', label: 'My Hub', icon: Sparkles, color: 'from-purple-600 to-pink-600' },
@@ -20,7 +24,14 @@ const HUBS = [
 
 const ROLE_FILTERS = ['all', 'citizen', 'guardian', 'creator', 'trader', 'teacher', 'healer', 'scout', 'elder', 'master'];
 
+const VILLAGE_FEATURE_PATH = '/agents/village';
+
 export default function Agents() {
+  const { isAdmin: identityAdmin } = useIdentity();
+  const { user } = useAuth();
+  const isAdmin = identityAdmin || user?.role === 'admin';
+  const { isUnlocked, getWidgetForPath, loading: widgetLoading } = useWidgetUnlock();
+
   const [currentDID, setCurrentDID] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -62,6 +73,33 @@ export default function Agents() {
     }
     return true;
   });
+
+  // NFT gate check
+  if (widgetLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const hasVillageAccess = isAdmin || isUnlocked(VILLAGE_FEATURE_PATH);
+  if (!hasVillageAccess) {
+    const villageWidget = getWidgetForPath(VILLAGE_FEATURE_PATH);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+        <WidgetLockScreen
+          widgetName={villageWidget?.widget_name || 'Village Access Pass'}
+          widgetDescription="The Agent Village requires a Village Access Pass NFT to browse, interact with, and manage agents in the ecosystem."
+          nftId={villageWidget?.nft_id || 'WIDGET-VIL-001'}
+          featurePath={VILLAGE_FEATURE_PATH}
+          widgetType="unlock"
+          category="agent_creation"
+          uiBehavior="unlock_page"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">

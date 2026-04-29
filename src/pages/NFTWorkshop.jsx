@@ -13,7 +13,11 @@ import AgentNFTForm from '@/components/workshop/AgentNFTForm';
 import InfrastructureNFTForm from '@/components/workshop/InfrastructureNFTForm';
 import MyMintedNFTs from '@/components/workshop/MyMintedNFTs';
 
-// Each tab has its own feature path gated by a separate NFT
+// NFT-Gated Feature Paths — each tab requires its own Widget NFT pass
+// Page-level:   /nft-workshop              → Workshop Pass (WIDGET-WS-001)
+// Chrome tab:   /nft-workshop/chrome-skill  → Chrome Skill Pass (WIDGET-CS-001)
+// Agent tab:    /nft-workshop/agent-nft     → Agent Creator Pass (WIDGET-AC-001)
+// Village page: /agents/village             → Village Access Pass (WIDGET-VIL-001)
 const PATHS = {
   widget: '/nft-workshop',
   chromeSkill: '/nft-workshop/chrome-skill',
