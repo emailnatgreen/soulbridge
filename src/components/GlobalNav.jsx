@@ -5,7 +5,7 @@ import {
   Settings, Image, Brain, Wallet, Shield, BookOpen, Zap,
   TrendingUp, MessageSquare, Star, ChevronDown, ChevronRight,
   TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
-  ShoppingBag, Heart, Landmark, Link2 as LinkIcon,
+  FileText, ShoppingBag, Heart, Landmark, Link2 as LinkIcon,
   MailWarning, GitBranch
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
