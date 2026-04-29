@@ -249,8 +249,9 @@ export function validateCustomData(customData, nftType) {
   for (const [key, def] of Object.entries(props)) {
     const val = customData[key];
 
-    // Required check
-    if (def.required && (val === undefined || val === null || val === '')) {
+    // Skip required checks during live editing — empty strings are "not yet filled"
+    // These are enforced at submit time by the form's own disabled logic
+    if (def.required && (val === undefined || val === null)) {
       errors.push({ field: key, error: `${def.label || key} is required` });
       continue;
     }
