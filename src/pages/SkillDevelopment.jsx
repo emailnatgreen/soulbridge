@@ -352,35 +352,47 @@ export default function SkillDevelopment() {
               </TabsContent>
 
               <TabsContent value="modules" className="space-y-6">
-                {['beginner', 'intermediate', 'advanced', 'expert'].map(level => {
-                  const levelModules = modulesByDifficulty[level] || [];
-                  if (levelModules.length === 0) return null;
-                  return (
-                    <div key={level}>
-                      <h3 className="text-white font-medium mb-4 capitalize flex items-center gap-2">
-                        <Star className="w-5 h-5 text-yellow-400" />
-                        {level} Level
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {levelModules.map(module => (
-                          <ModuleCard
-                            key={module.id}
-                            module={module}
-                            agent={selectedAgent}
-                            onEnroll={() => {
-                              enrollMutation.mutate({
-                                agent_id: selectedAgent.id,
-                                module_id: module.id,
-                                session_type: 'self_paced'
-                              });
-                            }}
-                            enrolling={enrollMutation.isPending}
-                          />
-                        ))}
+                {modules.length === 0 ? (
+                  <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                    <CardContent className="text-center py-16">
+                      <BookOpen className="w-14 h-14 text-purple-400/30 mx-auto mb-4" />
+                      <h3 className="text-xl text-white mb-2">No Training Modules Yet</h3>
+                      <p className="text-white/50 max-w-md mx-auto text-sm">
+                        Training modules haven't been created yet. Use the AI Growth Plan tab to generate a personalised development roadmap, or create skills directly from the Current Skills tab.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  ['beginner', 'intermediate', 'advanced', 'expert'].map(level => {
+                    const levelModules = modulesByDifficulty[level] || [];
+                    if (levelModules.length === 0) return null;
+                    return (
+                      <div key={level}>
+                        <h3 className="text-white font-medium mb-4 capitalize flex items-center gap-2">
+                          <Star className="w-5 h-5 text-yellow-400" />
+                          {level} Level
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {levelModules.map(module => (
+                            <ModuleCard
+                              key={module.id}
+                              module={module}
+                              agent={selectedAgent}
+                              onEnroll={() => {
+                                enrollMutation.mutate({
+                                  agent_id: selectedAgent.id,
+                                  module_id: module.id,
+                                  session_type: 'self_paced'
+                                });
+                              }}
+                              enrolling={enrollMutation.isPending}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </TabsContent>
 
               <TabsContent value="progress" className="space-y-4">

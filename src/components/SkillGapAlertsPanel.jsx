@@ -56,13 +56,18 @@ export default function SkillGapAlertsPanel({ agentId }) {
 
   const runScan = async () => {
     setScanning(true);
-    const payload = agentId ? { agent_id: agentId } : {};
-    const res = await base44.functions.invoke('automatedSkillGapAnalysis', payload);
-    setScanning(false);
-    queryClient.invalidateQueries(['skill-gap-wellbeing-alerts']);
-    queryClient.invalidateQueries(['skill-gap-notifications']);
-    const s = res.data?.summary || {};
-    toast.success(`Scan complete — ${res.data?.notifications_sent || (s.mentorship_stagnation + s.plan_deviation + s.project_gap) || 0} alert(s) fired`);
+    try {
+      const payload = agentId ? { agent_id: agentId } : {};
+      const res = await base44.functions.invoke('automatedSkillGapAnalysis', payload);
+      queryClient.invalidateQueries(['skill-gap-wellbeing-alerts']);
+      queryClient.invalidateQueries(['skill-gap-notifications']);
+      const s = res.data?.summary || {};
+      toast.success(`Scan complete — ${res.data?.notifications_sent || (s.mentorship_stagnation + s.plan_deviation + s.project_gap) || 0} alert(s) fired`);
+    } catch (e) {
+      toast.error('Scan failed: ' + (e.message || 'Unknown error'));
+    } finally {
+      setScanning(false);
+    }
   };
 
   const skillGapAlerts = alerts.filter(a =>

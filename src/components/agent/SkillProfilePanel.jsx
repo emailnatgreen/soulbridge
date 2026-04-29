@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { Zap, RefreshCw, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Zap, RefreshCw, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 const TRAJECTORY_CONFIG = {
   accelerating: { icon: TrendingUp, color: 'text-green-400', label: 'Accelerating', badge: 'bg-green-500/20 text-green-300' },
@@ -27,8 +27,9 @@ const CATEGORY_COLORS = {
   wellbeing:           'bg-green-500/20 text-green-300'
 };
 
-function SkillRow({ skill }) {
+function SkillRow({ skill, onDelete }) {
   const [expanded, setExpanded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const traj = TRAJECTORY_CONFIG[skill.skill_growth_trajectory] || TRAJECTORY_CONFIG.stable;
   const Icon = traj.icon;
   const proficiency = skill.proficiency_score > 0 ? skill.proficiency_score : Math.round((skill.level / (skill.max_level || 10)) * 100);
@@ -83,6 +84,38 @@ function SkillRow({ skill }) {
               <div className="text-sm text-white">{skill.experience_invested || 0}</div>
             </div>
           </div>
+          {onDelete && (
+            <div className="pt-2 border-t border-white/10">
+              {!confirmDelete ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-red-400/60 hover:text-red-400 hover:bg-red-500/10 text-xs w-full"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="w-3 h-3 mr-1" /> Remove Skill
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-xs flex-1"
+                    onClick={() => onDelete(skill.id)}
+                  >
+                    Confirm Delete
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-white/40 text-xs"
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -92,6 +125,12 @@ function SkillRow({ skill }) {
 export default function SkillProfilePanel({ agentId, skills, onRefresh }) {
   const [syncing, setSyncing] = useState(false);
   const [lastResult, setLastResult] = useState(null);
+
+  const handleDelete = async (skillId) => {
+    await base44.entities.AgentSkill.delete(skillId);
+    toast.success('Skill removed');
+    onRefresh?.();
+  };
 
   const syncProfile = async () => {
     setSyncing(true);
@@ -201,7 +240,7 @@ export default function SkillProfilePanel({ agentId, skills, onRefresh }) {
                 {catSkills
                   .sort((a, b) => (b.proficiency_score || 0) - (a.proficiency_score || 0))
                   .map(skill => (
-                    <SkillRow key={skill.id} skill={skill} />
+                    <SkillRow key={skill.id} skill={skill} onDelete={handleDelete} />
                   ))}
               </div>
             </div>
