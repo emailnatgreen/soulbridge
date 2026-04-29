@@ -20,6 +20,7 @@ import CarbonFootprintChart from '@/components/CarbonFootprintChart';
 import CarbonFootprintExplainer from '@/components/CarbonFootprintExplainer';
 import EthTreasuryShield from '@/components/treasury/EthTreasuryShield';
 import LiveActivityFeed from '@/components/activity/LiveActivityFeed';
+import InfrastructureNFTShowcase from '@/components/home/InfrastructureNFTShowcase';
 
 const SYSTEM_ACTORS = { dex_swap: 'DEX Swap Engine', dex: 'DEX Engine', treasury: 'Village Treasury', system: 'System', external_source: 'External Source' };
 
@@ -359,6 +360,9 @@ export default function Home() {
 
         {/* Axi's Vision */}
         <AxiVisionSection />
+
+        {/* Infrastructure NFT Showcase */}
+        <InfrastructureNFTShowcase />
 
         {/* Platform Features Grid */}
         <div>
