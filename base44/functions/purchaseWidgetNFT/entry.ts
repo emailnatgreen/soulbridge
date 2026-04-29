@@ -32,17 +32,18 @@ Deno.serve(async (req) => {
       return await handleCheckPayment(body);
     }
 
-    // All other actions require authentication
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Authenticate — gracefully handle DID-only users
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+
+    // For payment actions, we need at least a DID or email identifier
+    const userIdentifier = user?.email || body.did || body.user_email || null;
 
     switch (action) {
       case 'initiate_payment':
-        return await handleInitiatePayment(base44, user, body);
+        return await handleInitiatePayment(base44, userIdentifier, body);
       case 'confirm_purchase':
-        return await handleConfirmPurchase(base44, user, body);
+        return await handleConfirmPurchase(base44, userIdentifier, body);
       default:
         return Response.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }
@@ -96,7 +97,7 @@ async function handleGetPrice(base44, body) {
 }
 
 // Initiate Xaman payment
-async function handleInitiatePayment(base44, user, body) {
+async function handleInitiatePayment(base44, userIdentifier, body) {
   const { widget_id } = body;
   if (!widget_id) return Response.json({ error: 'widget_id required' }, { status: 400 });
 
@@ -106,6 +107,7 @@ async function handleInitiatePayment(base44, user, body) {
   if (priceRes.status !== 200) return Response.json(priceData, { status: priceRes.status });
 
   const { price_rlusd, nft_id, name } = priceData;
+  const buyerLabel = userIdentifier || 'anonymous';
 
   // Build XRPL Payment transaction for RLUSD
   const paymentTx = {
@@ -120,7 +122,7 @@ async function handleInitiatePayment(base44, user, body) {
       {
         Memo: {
           MemoType: toHex('soulbridge/nft-purchase'),
-          MemoData: toHex(`${nft_id}|${name}|${user.email}`),
+          MemoData: toHex(`${nft_id}|${name}|${buyerLabel}`),
         }
       }
     ],
@@ -198,9 +200,11 @@ async function handleCheckPayment(body) {
 }
 
 // Confirm purchase after successful XRPL payment
-async function handleConfirmPurchase(base44, user, body) {
+async function handleConfirmPurchase(base44, userIdentifier, body) {
   const { widget_id, tx_hash } = body;
   if (!widget_id || !tx_hash) return Response.json({ error: 'widget_id and tx_hash required' }, { status: 400 });
+
+  const buyerLabel = userIdentifier || body.did || 'anonymous';
 
   const widgets = await base44.asServiceRole.entities.Widget.filter({ id: widget_id });
   if (!widgets?.length) return Response.json({ error: 'Widget not found' }, { status: 404 });
@@ -208,7 +212,7 @@ async function handleConfirmPurchase(base44, user, body) {
 
   // Check for duplicate purchase
   const existingTxns = await base44.asServiceRole.entities.MarketplaceTransaction.filter(
-    { nft_id: widget.nft_id, buyer_agent_id: user.email, status: 'completed' }, '-created_date', 1
+    { nft_id: widget.nft_id, buyer_agent_id: buyerLabel, status: 'completed' }, '-created_date', 1
   );
   if (existingTxns?.length) {
     return Response.json({ error: 'You already own this NFT', code: 'ALREADY_OWNED' }, { status: 409 });
@@ -222,7 +226,7 @@ async function handleConfirmPurchase(base44, user, body) {
   // Record the transaction
   const villageFee = Math.round(price * 0.01 * 100) / 100;
   const txn = await base44.asServiceRole.entities.MarketplaceTransaction.create({
-    buyer_agent_id: user.email,
+    buyer_agent_id: buyerLabel,
     seller_agent_id: 'village_treasury',
     payment_method: 'RLUSD_ON_XRPL',
     unit_amount: price,
@@ -243,7 +247,7 @@ async function handleConfirmPurchase(base44, user, body) {
     metadata: {
       widget_id,
       nft_id: widget.nft_id,
-      buyer_email: user.email,
+      buyer_email: buyerLabel,
       payment_type: 'xaman_rlusd_direct',
       treasury_address: TREASURY_ADDRESS,
     },
@@ -251,8 +255,8 @@ async function handleConfirmPurchase(base44, user, body) {
 
   // Log payment
   await base44.asServiceRole.entities.PaymentUsageLog.create({
-    user_id: user.email,
-    user_email: user.email,
+    user_id: buyerLabel,
+    user_email: buyerLabel,
     service_id: `nft-purchase-${widget.nft_id}`,
     amount: price,
     currency: 'RLUSD',

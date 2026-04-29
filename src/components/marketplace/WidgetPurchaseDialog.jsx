@@ -41,13 +41,20 @@ export default function WidgetPurchaseDialog({ widget, open, onOpenChange, onPur
     setStep(STEPS.SIGNING);
     setError(null);
 
-    const res = await base44.functions.invoke('purchaseWidgetNFT', {
-      action: 'initiate_payment', widget_id: widget.id,
-    });
+    let data;
+    try {
+      const res = await base44.functions.invoke('purchaseWidgetNFT', {
+        action: 'initiate_payment', widget_id: widget.id,
+      });
+      data = res.data;
+    } catch (e) {
+      setError(e.response?.data?.error || e.message || 'Failed to initiate payment');
+      setStep(STEPS.ERROR);
+      return;
+    }
 
-    const data = res.data;
-    if (!data.success) {
-      setError(data.error || 'Failed to create payment');
+    if (!data?.success) {
+      setError(data?.error || 'Failed to create payment');
       setStep(STEPS.ERROR);
       return;
     }
@@ -61,23 +68,28 @@ export default function WidgetPurchaseDialog({ widget, open, onOpenChange, onPur
 
     // Poll for payment completion
     pollRef.current = setInterval(async () => {
-      const checkRes = await base44.functions.invoke('purchaseWidgetNFT', {
-        action: 'check_payment', payload_uuid: data.payload_uuid,
-      });
-
-      const check = checkRes.data;
-      if (check.signed && check.tx_hash) {
-        clearInterval(pollRef.current);
-        // Confirm purchase
-        const confirmRes = await base44.functions.invoke('purchaseWidgetNFT', {
-          action: 'confirm_purchase', widget_id: widget.id, tx_hash: check.tx_hash,
+      try {
+        const checkRes = await base44.functions.invoke('purchaseWidgetNFT', {
+          action: 'check_payment', payload_uuid: data.payload_uuid,
         });
-        setTxResult({ ...confirmRes.data, tx_hash: check.tx_hash });
-        setStep(STEPS.SUCCESS);
-        onPurchaseComplete?.();
-      } else if (check.cancelled || check.expired) {
+
+        const check = checkRes.data;
+        if (check.signed && check.tx_hash) {
+          clearInterval(pollRef.current);
+          const confirmRes = await base44.functions.invoke('purchaseWidgetNFT', {
+            action: 'confirm_purchase', widget_id: widget.id, tx_hash: check.tx_hash,
+          });
+          setTxResult({ ...confirmRes.data, tx_hash: check.tx_hash });
+          setStep(STEPS.SUCCESS);
+          onPurchaseComplete?.();
+        } else if (check.cancelled || check.expired) {
+          clearInterval(pollRef.current);
+          setError(check.cancelled ? 'Payment was cancelled' : 'Payment request expired');
+          setStep(STEPS.ERROR);
+        }
+      } catch (pollErr) {
         clearInterval(pollRef.current);
-        setError(check.cancelled ? 'Payment was cancelled' : 'Payment request expired');
+        setError(pollErr.response?.data?.error || 'Payment check failed');
         setStep(STEPS.ERROR);
       }
     }, 3000);
