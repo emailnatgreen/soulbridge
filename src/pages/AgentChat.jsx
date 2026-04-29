@@ -1,350 +1,192 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MessageSquare, Fingerprint, Users, Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, MessageSquare, Archive, PanelLeftClose, PanelLeft, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { useAgentAwareness } from '@/hooks/useAgentAwareness';
-import DIDIdentityBannerCompact from '@/components/DIDIdentityBannerCompact';
+import { toast } from 'sonner';
+import AgentPickerPanel from '@/components/comms/AgentPickerPanel';
+import StaticChatPanel from '@/components/comms/StaticChatPanel';
+import ChatBundleList from '@/components/comms/ChatBundleList';
 
 export default function AgentChat() {
-  const [selectedAgent, setSelectedAgent] = useState(null);
-  const [message, setMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedAgents, setSelectedAgents] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarTab, setSidebarTab] = useState('agents');
   const { user } = useAuth();
-  const { broadcastMessageReceived } = useAgentAwareness();
-  const unsubscribeRef = useRef(null);
-  const messagesEndRef = useRef(null);
+  const queryClient = useQueryClient();
 
-  // Fetch agents
   const { data: agents = [], isLoading: agentsLoading } = useQuery({
     queryKey: ['agents-chat'],
     queryFn: () => base44.entities.Agent.list('-created_date', 100),
   });
 
-  // Fetch conversation messages for selected agent
-  const { data: messages = [], refetch: refetchMessages } = useQuery({
-    queryKey: ['chat-messages', selectedAgent?.id, user?.id],
-    queryFn: async () => {
-      if (!selectedAgent || !user) return [];
-      const convId = `conv-${user.id}-${selectedAgent.id}`;
-      try {
-        return await base44.entities.AgentMessage.filter({ conversation_id: convId }, '-created_date', 200);
-      } catch (e) {
-        console.error('Failed to fetch messages:', e);
-        return [];
-      }
-    },
-    enabled: !!selectedAgent && !!user,
+  const { data: bundles = [], refetch: refetchBundles } = useQuery({
+    queryKey: ['chat-bundles'],
+    queryFn: () => base44.entities.Memory.filter(
+      { type: 'conversation_snippet', agent_id: 'chat-bundle' },
+      '-created_date',
+      50
+    ),
   });
 
-  const conversationMessages = messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversationMessages, isGenerating]);
-
-  // Subscribe to real-time message updates
-  useEffect(() => {
-    if (!selectedAgent || !user) return;
-    
-    const convId = `conv-${user.id}-${selectedAgent.id}`;
-    
-    // Unsubscribe from previous subscription
-    if (unsubscribeRef.current) {
-      unsubscribeRef.current();
-    }
-    
-    // Subscribe to new messages
-    unsubscribeRef.current = base44.entities.AgentMessage.subscribe((event) => {
-      if (event.data?.conversation_id === convId) {
-        // Message created or updated, refetch
-        refetchMessages();
-      }
+  const handleToggleAgent = useCallback((agent) => {
+    setSelectedAgents(prev => {
+      const exists = prev.find(a => a.id === agent.id);
+      if (exists) return prev.filter(a => a.id !== agent.id);
+      return [...prev, agent];
     });
-    
-    return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
-    };
-  }, [selectedAgent, user, refetchMessages]);
+  }, []);
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || !selectedAgent || !user) return;
+  const handleClearAll = useCallback(() => {
+    setSelectedAgents([]);
+  }, []);
 
-    setIsSending(true);
+  const handleSaveBundle = useCallback(async (bundleData) => {
+    await base44.entities.Memory.create({
+      agent_id: 'chat-bundle',
+      type: 'conversation_snippet',
+      content: JSON.stringify(bundleData),
+      keywords: [
+        'chat-bundle',
+        ...(bundleData.participant_ids || []),
+      ],
+      context: bundleData.title,
+      importance: 5,
+      related_entity_id: bundleData.conversation_id,
+      related_entity_type: 'conversation',
+    });
+    toast.success('Conversation saved');
+    refetchBundles();
+  }, [refetchBundles]);
+
+  const handleLoadBundle = useCallback((bundle) => {
     try {
-      const convId = `conv-${user.id}-${selectedAgent.id}`;
-      
-      const newMsg = await base44.entities.AgentMessage.create({
-        sender_agent_id: user.id,
-        conversation_id: convId,
-        content: message.trim(),
-        message_type: 'text',
-        status: 'sent',
-      });
-      
-      // Broadcast message received to agent system
-      broadcastMessageReceived(selectedAgent.id, true);
-
-      setMessage('');
-      setTimeout(() => refetchMessages(), 300);
-
-      // Auto-generate agent response
-      setIsGenerating(true);
-      try {
-        await base44.functions.invoke('generateAgentResponse', {
-          agentId: selectedAgent.id,
-          conversationId: convId,
-          userId: user.id,
-          messageId: newMsg.id,
-        });
-        // Response will auto-load via subscription
-      } catch (error) {
-        console.error('Failed to generate response:', error);
-      } finally {
-        setIsGenerating(false);
+      const data = JSON.parse(bundle.content);
+      const agentIds = data.participant_ids || [];
+      const matched = agents.filter(a => agentIds.includes(a.id));
+      if (matched.length > 0) {
+        setSelectedAgents(matched);
+        toast.success(`Loaded: ${bundle.context || 'conversation'}`);
+      } else {
+        toast.error('Could not find agents from this bundle');
       }
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      alert('Failed to send message. Check console for details.');
-    } finally {
-      setIsSending(false);
+    } catch (_) {
+      toast.error('Failed to load bundle');
     }
-  };
+  }, [agents]);
 
-  const getRoleColor = (role) => {
-    const colors = {
-      guardian: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
-      creator: 'from-purple-500/20 to-purple-600/20 border-purple-500/30',
-      trader: 'from-green-500/20 to-green-600/20 border-green-500/30',
-      teacher: 'from-amber-500/20 to-amber-600/20 border-amber-500/30',
-      healer: 'from-pink-500/20 to-pink-600/20 border-pink-500/30',
-      scout: 'from-cyan-500/20 to-cyan-600/20 border-cyan-500/30',
-      citizen: 'from-slate-500/20 to-slate-600/20 border-slate-500/30',
-    };
-    return colors[role] || colors.citizen;
-  };
+  const handleDeleteBundle = useCallback(async (bundleId) => {
+    await base44.entities.Memory.delete(bundleId);
+    toast.success('Bundle deleted');
+    refetchBundles();
+  }, [refetchBundles]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <Link to="/agents" className="inline-flex items-center text-purple-300/80 hover:text-purple-200 transition-colors mb-3 sm:mb-4 text-sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Agents
-          </Link>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg">
-              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-purple-300" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-light text-white">Agent Chat</h1>
-              <p className="text-xs sm:text-sm text-purple-300/60 mt-0.5">Direct communication with AI agents</p>
-            </div>
-            {user && (
-              <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 ml-auto text-xs">
-                <Fingerprint className="w-3 h-3 mr-1" />
-                Connected
-              </Badge>
-            )}
+    <div className="h-[calc(100vh-7rem)] flex flex-col bg-gradient-to-br from-slate-950 via-purple-950/80 to-slate-950 overflow-hidden">
+      {/* Compact Header */}
+      <ChatHeader
+        selectedAgents={selectedAgents}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      />
+
+      {/* Main Body */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        {/* Sidebar */}
+        {sidebarOpen && (
+          <div className="w-72 lg:w-80 flex-shrink-0 border-r border-white/10 bg-black/20 flex flex-col overflow-hidden">
+            <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex flex-col h-full">
+              <TabsList className="bg-white/5 border-b border-white/10 rounded-none h-10 p-0 px-2 gap-1 flex-shrink-0">
+                <TabsTrigger value="agents" className="text-[11px] data-[state=active]:bg-purple-600/30 data-[state=active]:text-purple-200 rounded-md h-7 px-3">
+                  Agents
+                </TabsTrigger>
+                <TabsTrigger value="history" className="text-[11px] data-[state=active]:bg-purple-600/30 data-[state=active]:text-purple-200 rounded-md h-7 px-3 relative">
+                  History
+                  {bundles.length > 0 && (
+                    <span className="ml-1.5 bg-purple-500/40 text-purple-200 text-[9px] px-1.5 py-0 rounded-full">{bundles.length}</span>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="agents" className="flex-1 overflow-y-auto p-3 mt-0">
+                <AgentPickerPanel
+                  agents={agents}
+                  selectedAgents={selectedAgents}
+                  onToggleAgent={handleToggleAgent}
+                  onClearAll={handleClearAll}
+                />
+              </TabsContent>
+
+              <TabsContent value="history" className="flex-1 overflow-y-auto p-3 mt-0">
+                <ChatBundleList
+                  bundles={bundles}
+                  agents={agents}
+                  onLoad={handleLoadBundle}
+                  onDelete={handleDeleteBundle}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
+        )}
+
+        {/* Chat Panel */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          <StaticChatPanel
+            selectedAgents={selectedAgents}
+            agents={agents}
+            onSaveBundle={handleSaveBundle}
+          />
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Info Section */}
-        <div className="mb-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-4 sm:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">How to Use</h3>
-              <ul className="space-y-2 text-sm text-white/70">
-                <li className="flex gap-2">
-                  <span className="text-purple-400">1.</span>
-                  <span>Select an agent from the list on the left</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-purple-400">2.</span>
-                  <span>Type your message in the input field</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-purple-400">3.</span>
-                  <span>Press Enter or click Send to submit</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-purple-400">4.</span>
-                  <span>View the agent's response in real-time (may take ~30 seconds)</span>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">Why Agent Chat</h3>
-              <ul className="space-y-2 text-sm text-white/70">
-                <li className="flex gap-2">
-                  <span className="text-pink-400">•</span>
-                  <span>Direct conversation with specialized AI agents</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-pink-400">•</span>
-                  <span>Persistent conversation history for continuity</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-pink-400">•</span>
-                  <span>Real-time responses without manual refresh</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-pink-400">•</span>
-                  <span>Unique expertise from each agent's specialized role</span>
-                </li>
-              </ul>
-            </div>
+function ChatHeader({ selectedAgents, sidebarOpen, onToggleSidebar }) {
+  const isGroup = selectedAgents.length > 1;
+
+  return (
+    <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl flex-shrink-0">
+      <div className="flex items-center gap-2 px-3 py-2">
+        {/* Sidebar toggle */}
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={onToggleSidebar}
+          className="text-white/50 hover:text-white h-8 w-8 flex-shrink-0"
+        >
+          {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
+        </Button>
+
+        {/* Nav breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs min-w-0">
+          <Link to="/agents" className="text-white/40 hover:text-purple-300 transition-colors flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" />
+            <span className="hidden sm:inline">Village</span>
+          </Link>
+          <span className="text-white/20">/</span>
+          <div className="flex items-center gap-1.5">
+            <MessageSquare className="w-3.5 h-3.5 text-purple-400" />
+            <span className="text-white font-medium">Agent Chat</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 h-[calc(100vh-240px)]">
-          {/* Agent List */}
-          <div className="lg:col-span-1 overflow-y-auto">
-            <div className="space-y-2">
-              {agentsLoading ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-                </div>
-              ) : agents.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="w-8 h-8 text-white/20 mx-auto mb-2" />
-                  <p className="text-white/40 text-sm">No agents available</p>
-                </div>
-              ) : (
-                agents.map(agent => (
-                  <button
-                    key={agent.id}
-                    onClick={() => setSelectedAgent(agent)}
-                    className={`w-full text-left p-3 rounded-lg transition-all border ${ selectedAgent?.id === agent.id
-                      ? 'bg-purple-600/30 border-purple-500/60'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2 min-w-0">
-                      <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getRoleColor(agent.role)} flex-shrink-0 mt-0.5`} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-white truncate">{agent.name}</p>
-                        <p className="text-xs text-white/50 truncate">{agent.role}</p>
-                        <p className="text-xs text-white/30 line-clamp-1 mt-1">{agent.purpose}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Chat Area */}
-          <div className="lg:col-span-3 overflow-hidden">
-            {selectedAgent ? (
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-full flex flex-col">
-                {/* Chat Header */}
-                <div className="border-b border-white/10 p-4 flex items-start justify-between">
-                  <div>
-                    <h2 className="text-lg font-medium text-white">{selectedAgent.name}</h2>
-                    <p className="text-xs text-purple-300/60 mt-1">{selectedAgent.purpose}</p>
-                    <div className="mt-1.5"><DIDIdentityBannerCompact agent={selectedAgent} /></div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedAgent(null)}
-                    className="text-white/40 hover:text-white/80 transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Messages */}
-                <CardContent className="flex-1 overflow-y-scroll p-4 space-y-4 scrollbar scrollbar-thumb-purple-500/50 scrollbar-track-white/5">
-                  {conversationMessages.length === 0 && !isGenerating ? (
-                    <div className="h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <MessageSquare className="w-12 h-12 text-purple-400/30 mx-auto mb-3" />
-                        <p className="text-white/60">No messages yet</p>
-                        <p className="text-white/40 text-sm mt-1">Start a conversation</p>
-                      </div>
-                    </div>
-                  ) : conversationMessages.length === 0 && isGenerating ? (
-                    <div className="h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="inline-flex items-center justify-center mb-3">
-                          <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-                        </div>
-                        <p className="text-white/60">{selectedAgent.name} is thinking...</p>
-                      </div>
-                    </div>
-                  ) : (
-                    conversationMessages.map(msg => {
-                      const isFromAgent = msg.sender_agent_id === selectedAgent.id;
-                      return (
-                        <div key={msg.id} className={`flex ${isFromAgent ? 'justify-start' : 'justify-end'}`}>
-                          <div className={`max-w-xs rounded-lg px-4 py-2 ${
-                            isFromAgent
-                              ? 'bg-white/10 text-white'
-                              : 'bg-purple-600 text-white'
-                          }`}>
-                            <p className="text-sm">{msg.content || msg.message}</p>
-                            <p className="text-xs mt-1 opacity-60">
-                              {new Date(msg.created_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                  {isGenerating && conversationMessages.length > 0 && (
-                    <div className="flex justify-start">
-                      <div className="bg-white/10 rounded-lg px-4 py-2 flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
-                        <p className="text-xs text-white/60">{selectedAgent.name} is responding...</p>
-                      </div>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </CardContent>
-
-                {/* Input */}
-                <div className="border-t border-white/10 p-4">
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                      placeholder={`Message ${selectedAgent.name}...`}
-                      disabled={isSending}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder:text-white/30 focus:outline-none focus:border-purple-500/50 disabled:opacity-50"
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={!message.trim() || isSending}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
-                    >
-                      {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send'}
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ) : (
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10 h-full flex items-center justify-center">
-                <div className="text-center">
-                  <MessageSquare className="w-16 h-16 text-purple-400/30 mx-auto mb-4" />
-                  <p className="text-white/60">Select an agent to begin</p>
-                </div>
-              </Card>
-            )}
-          </div>
+        {/* Right side status */}
+        <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+          {selectedAgents.length > 0 && (
+            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-[10px]">
+              {isGroup ? `${selectedAgents.length} agents · Group` : selectedAgents[0]?.name}
+            </Badge>
+          )}
+          <Link to="/home">
+            <Button size="icon" variant="ghost" className="text-white/40 hover:text-white h-7 w-7">
+              <Home className="w-3.5 h-3.5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
