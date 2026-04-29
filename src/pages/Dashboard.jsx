@@ -429,6 +429,9 @@ export default function Dashboard() {
           {/* Activation Code Entry */}
           <ActivationCodeEntry onRedeemed={() => window.location.reload()} />
 
+          {/* DEX Swap & PayPal */}
+          <DexSwapGate wallets={userWallets} isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
+
           {/* Talk to Axi */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0">
@@ -571,6 +574,9 @@ export default function Dashboard() {
 
           {/* Activation Code Entry */}
           <ActivationCodeEntry onRedeemed={() => window.location.reload()} />
+
+          {/* DEX Swap & PayPal */}
+          <DexSwapGate wallets={userWallets} isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
 
           {/* Widget NFT Inventory */}
           <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
