@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, Unlock, Layers, Tag, Zap, ArrowRight } from 'lucide-react';
+import { Shield, Lock, Unlock, Layers, Tag, Zap, ArrowRight, Wallet } from 'lucide-react';
+import WidgetPurchaseDialog from '@/components/marketplace/WidgetPurchaseDialog';
 
 const CATEGORY_COLORS = {
   wallet_management: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-300' },
@@ -16,6 +17,7 @@ const CATEGORY_COLORS = {
 export default function WidgetMarketplaceCard({ widget }) {
   const owned = widget.is_owned;
   const catColor = CATEGORY_COLORS[widget.category] || CATEGORY_COLORS.other;
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
 
   return (
     <Link
@@ -78,13 +80,29 @@ export default function WidgetMarketplaceCard({ widget }) {
         )}
       </div>
 
-      {/* Footer: unlocks */}
+      {/* Footer */}
       <div className="flex items-center justify-between">
-        <p className="text-white/30 text-[10px]">
-          Unlocks: <span className="text-white/50">{widget.feature_path || 'Feature access'}</span>
-        </p>
+        {!owned ? (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPurchaseOpen(true); }}
+            className="flex items-center gap-1 text-[9px] px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold transition-all"
+          >
+            <Wallet className="w-2.5 h-2.5" /> Buy with RLUSD
+          </button>
+        ) : (
+          <p className="text-white/30 text-[10px]">
+            Unlocks: <span className="text-white/50">{widget.feature_path || 'Feature access'}</span>
+          </p>
+        )}
         <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-purple-400 transition-colors" />
       </div>
+
+      {/* Purchase Dialog */}
+      <WidgetPurchaseDialog
+        widget={widget}
+        open={purchaseOpen}
+        onOpenChange={setPurchaseOpen}
+      />
     </Link>
   );
 }

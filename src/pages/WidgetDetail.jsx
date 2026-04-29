@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Shield, ArrowLeft, Home, Lock, Unlock, Layers, Tag, Zap, Globe,
-  ShoppingBag, Sparkles, ExternalLink, ChevronRight
+  ShoppingBag, Sparkles, ExternalLink, ChevronRight, Wallet
 } from 'lucide-react';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
+import WidgetPurchaseDialog from '@/components/marketplace/WidgetPurchaseDialog';
 
 const FEATURE_ROUTE_MAP = {
   'wallet.multisig': '/ConstitutionalMultiSig',
@@ -18,7 +19,8 @@ const FEATURE_ROUTE_MAP = {
 
 export default function WidgetDetail() {
   const { id } = useParams();
-  const { widgets, loading } = useWidgetUnlock();
+  const { widgets, loading, refresh } = useWidgetUnlock();
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
 
   const widget = widgets.find(w => w.id === id);
 
@@ -152,11 +154,17 @@ export default function WidgetDetail() {
               </Link>
             )}
 
-            {/* Locked CTA */}
+            {/* Purchase CTA */}
             {!owned && (
-              <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl px-3 py-2.5 mt-2">
-                <p className="text-purple-300/70 text-[10px] leading-relaxed">
-                  This widget can be earned through contributions, governance participation, or traded in the SoulBridge Marketplace when the Service Engine goes live.
+              <div className="space-y-2 mt-2">
+                <button
+                  onClick={() => setPurchaseOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold text-xs rounded-xl py-2.5 transition-all"
+                >
+                  <Wallet className="w-3.5 h-3.5" /> Purchase with RLUSD
+                </button>
+                <p className="text-purple-300/50 text-[9px] leading-relaxed text-center">
+                  Pay RLUSD directly to SoulBridge Treasury via Xaman
                 </p>
               </div>
             )}
@@ -212,6 +220,14 @@ export default function WidgetDetail() {
           Widget NFTs are sovereign access tokens on the XRP Ledger · Governed by the 11 Laws of Honour · Powered by XRPL
         </p>
       </div>
+
+      {/* Purchase Dialog */}
+      <WidgetPurchaseDialog
+        widget={widget}
+        open={purchaseOpen}
+        onOpenChange={setPurchaseOpen}
+        onPurchaseComplete={() => refresh?.()}
+      />
     </div>
   );
 }
