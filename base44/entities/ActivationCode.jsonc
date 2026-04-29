@@ -1,0 +1,81 @@
+{
+  "name": "ActivationCode",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Unique activation code (e.g. SB-XXXX-XXXX-XXXX)"
+    },
+    "widget_nft_id": {
+      "type": "string",
+      "description": "NFT ID of the widget this code unlocks (e.g. WIDGET-CIT-001)"
+    },
+    "widget_name": {
+      "type": "string",
+      "description": "Human-readable widget name for display"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "didit_paypal",
+        "didit_rlusd",
+        "manual",
+        "gift"
+      ],
+      "default": "didit_paypal",
+      "description": "How this code was generated"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "redeemed",
+        "expired",
+        "revoked"
+      ],
+      "default": "active",
+      "description": "Current state of this code"
+    },
+    "buyer_email": {
+      "type": "string",
+      "description": "Email of the buyer (from DIDit)"
+    },
+    "buyer_did": {
+      "type": "string",
+      "description": "DID of the buyer if known"
+    },
+    "redeemed_by_email": {
+      "type": "string",
+      "description": "Email of the user who redeemed this code"
+    },
+    "redeemed_by_did": {
+      "type": "string",
+      "description": "DID of the user who redeemed this code"
+    },
+    "redeemed_at": {
+      "type": "string",
+      "description": "ISO timestamp when redeemed"
+    },
+    "transaction_id": {
+      "type": "string",
+      "description": "MarketplaceTransaction ID created upon redemption"
+    },
+    "didit_payment_id": {
+      "type": "string",
+      "description": "External payment reference from DIDit"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "ISO timestamp when this code expires (optional)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context from the purchase"
+    }
+  },
+  "required": [
+    "code",
+    "widget_nft_id",
+    "status"
+  ]
+}

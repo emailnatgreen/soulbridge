@@ -28,6 +28,7 @@ import ChromeSkillActivateCard from '@/components/dashboard/ChromeSkillActivateC
 import ShieldedOakPanel from '@/components/dashboard/ShieldedOakPanel';
 import NFTGatedFeatureGrid from '@/components/dashboard/NFTGatedFeatureGrid';
 import WalletCard from '@/components/dashboard/WalletCard';
+import ActivationCodeEntry from '@/components/dashboard/ActivationCodeEntry';
 
 if (typeof window !== 'undefined') {
   window.__sb = window.__sb || { signals: [] };
@@ -509,6 +510,8 @@ export default function Dashboard() {
 
           <WalletCard wallets={wallets} transactions={myTransactions} />
 
+          <ActivationCodeEntry onRedeemed={() => window.location.reload()} />
+
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SendPanel wallets={userWallets} />
@@ -562,6 +565,9 @@ export default function Dashboard() {
 
           {/* Wallet Card */}
           <WalletCard wallets={userWallets} transactions={myTransactions} />
+
+          {/* Activation Code Entry */}
+          <ActivationCodeEntry onRedeemed={() => window.location.reload()} />
 
           {/* Widget NFT Inventory */}
           <WidgetInventoryPanel widgets={allWidgets} loading={widgetsLoading} routeMap={routeMap} />
@@ -624,6 +630,9 @@ export default function Dashboard() {
 
         {/* Wallet Card */}
         <WalletCard wallets={userWallets} transactions={myTransactions} />
+
+        {/* Activation Code Entry */}
+        <ActivationCodeEntry onRedeemed={() => window.location.reload()} />
 
         {/* Chrome Skill NFT Activation */}
         <ChromeSkillActivateCard isUnlocked={isUnlocked} getWidgetForPath={getWidgetForPath} />
