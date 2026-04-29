@@ -211,6 +211,10 @@ export default function AgentNFTForm() {
       queryClient.invalidateQueries({ queryKey: ['existingWidgetIds'] });
       refreshPricingRef.current?.();
     },
+    onError: (error) => {
+      const msg = error?.response?.data?.error || error?.message || 'Failed to create Agent NFT';
+      toast.error(msg);
+    },
   });
 
   const handleSubmitClick = (canAfford) => {
