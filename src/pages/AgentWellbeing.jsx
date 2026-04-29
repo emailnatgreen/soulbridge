@@ -90,6 +90,7 @@ export default function AgentWellbeing() {
               </CardContent>
             </Card>
           ))}
+        </div>
 
         {/* At-Risk Dashboard */}
         {showAtRisk && atRiskData && (
