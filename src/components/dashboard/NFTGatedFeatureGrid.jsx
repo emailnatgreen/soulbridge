@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import {
-  Lock, ChevronRight, Hammer, Store, Bot, Coins, Shield, Sparkles, ArrowDownUp, Fingerprint
+  Lock, ChevronRight, Hammer, Store, Bot, Coins, Shield, Sparkles, ArrowDownUp, Fingerprint, Sprout
 } from 'lucide-react';
 
 /**
@@ -11,6 +11,30 @@ import {
  */
 
 const NFT_FEATURES = [
+  {
+    featurePath: 'wallet.create',
+    label: 'Seed Golden Acorn',
+    desc: 'Create & publish XRPL wallets',
+    icon: Sprout,
+    color: 'text-green-400',
+    border: 'border-green-500/30',
+    bg: 'bg-green-500/10',
+    route: '/seed-golden-acorn',
+    nftId: 'WIDGET-WM-002',
+    price: '12 RLUSD',
+  },
+  {
+    featurePath: '/rlusd-gate',
+    label: 'RLUSD Trustline',
+    desc: 'Activate RLUSD on your wallet',
+    icon: Coins,
+    color: 'text-emerald-400',
+    border: 'border-emerald-500/30',
+    bg: 'bg-emerald-500/10',
+    route: '/rlusd-gate',
+    nftId: 'WIDGET-TLG-001',
+    price: '12 RLUSD',
+  },
   {
     featurePath: '/nft-workshop',
     label: 'NFT Workshop',
@@ -24,30 +48,6 @@ const NFT_FEATURES = [
     price: '90 RLUSD',
   },
   {
-    featurePath: '/storefront',
-    label: 'Storefront',
-    desc: 'Create & manage your shop',
-    icon: Store,
-    color: 'text-amber-400',
-    border: 'border-amber-500/30',
-    bg: 'bg-amber-500/10',
-    route: '/storefront',
-    nftId: 'WIDGET-SFU-001',
-    price: '60 RLUSD',
-  },
-  {
-    featurePath: '/rlusd-gate',
-    label: 'RLUSD Trustline',
-    desc: 'Activate RLUSD on your wallet',
-    icon: Coins,
-    color: 'text-green-400',
-    border: 'border-green-500/30',
-    bg: 'bg-green-500/10',
-    route: '/rlusd-gate',
-    nftId: 'WIDGET-TLG-001',
-    price: '12 RLUSD',
-  },
-  {
     featurePath: '/nft-workshop',
     label: 'AI Agent NFT',
     desc: 'Create unique AI Agent NFTs',
@@ -58,8 +58,19 @@ const NFT_FEATURES = [
     route: '/nft-workshop',
     nftId: 'WIDGET-AIN-001',
     price: '80 RLUSD',
-    // This shares the /nft-workshop path but is a separate NFT
     dedupKey: 'ain-001',
+  },
+  {
+    featurePath: '/storefront',
+    label: 'Storefront',
+    desc: 'Create & manage your shop',
+    icon: Store,
+    color: 'text-amber-400',
+    border: 'border-amber-500/30',
+    bg: 'bg-amber-500/10',
+    route: '/storefront',
+    nftId: 'WIDGET-SFU-001',
+    price: '60 RLUSD',
   },
 ];
 
