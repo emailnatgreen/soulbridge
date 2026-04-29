@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Award, MessageSquare, BookOpen, Briefcase, Fingerprint, Search, Filter } from 'lucide-react';
+import { Sparkles, Award, MessageSquare, BookOpen, Activity, Fingerprint, Search, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageBreadcrumb from '@/components/PageBreadcrumb';
 import VillagePulseHero from '@/components/agents/VillagePulseHero';
@@ -14,7 +14,7 @@ const HUBS = [
   { path: '/AgentChat', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600' },
   { path: '/leaderboard', label: 'Leaderboard', icon: Award, color: 'from-amber-600 to-yellow-600' },
   { path: '/training', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600' },
-  { path: '/AgentMarketplace', label: 'Marketplace', icon: Briefcase, color: 'from-green-600 to-emerald-600', comingSoon: true },
+  { path: '/AgentWellbeing', label: 'Monitoring', icon: Activity, color: 'from-green-600 to-emerald-600' },
 ];
 
 const ROLE_FILTERS = ['all', 'citizen', 'guardian', 'creator', 'trader', 'teacher', 'healer', 'scout', 'elder', 'master'];
