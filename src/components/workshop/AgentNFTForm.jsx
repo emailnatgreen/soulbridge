@@ -8,13 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Bot, Loader2, Heart, Shield } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Bot, Loader2, Heart, Shield, Upload, AlertTriangle, CheckCircle2, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
 import FeaturePathBuilder from './FeaturePathBuilder';
 import ServiceDefinitionLinker from './ServiceDefinitionLinker';
+import AgentNFTConfirmDialog from './AgentNFTConfirmDialog';
+import AgentNFTRoyaltiesEditor from './AgentNFTRoyaltiesEditor';
 import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetadataSchemas';
 
 const AGENT_ROLES = ['citizen', 'guardian', 'creator', 'trader', 'teacher', 'healer', 'scout', 'elder', 'master'];
@@ -27,8 +30,12 @@ export default function AgentNFTForm() {
     streamCost: '', streamUnit: 'day',
     bindToDID: true, soulBound: true,
     featurePath: '', widgetType: 'unlock', serviceLink: null,
+    royalties: { treasury_percent: 50, creator_percent: 40, referral_percent: 10 },
   });
   const [customData, setCustomData] = useState(getDefaultCustomData('agent'));
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
   const queryClient = useQueryClient();
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
@@ -81,10 +88,60 @@ export default function AgentNFTForm() {
     staleTime: 30000,
   });
 
+  // Check for duplicate NFT IDs
+  const { data: existingWidgets = [] } = useQuery({
+    queryKey: ['existingWidgetIds'],
+    queryFn: () => base44.entities.Widget.list('-created_date', 500),
+    staleTime: 30000,
+  });
+
+  const nftIdTaken = form.nftId && existingWidgets.some(w => w.nft_id === form.nftId);
+
+  // Avatar file upload handler
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      set('imageUrl', file_url);
+      toast.success('Avatar uploaded');
+    } catch (err) {
+      toast.error('Upload failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  // Validation
+  const validate = () => {
+    const errors = [];
+    if (!form.agentName.trim()) errors.push('Agent Name is required');
+    if (!form.purpose.trim()) errors.push('Purpose / Mission is required');
+    if (nftIdTaken) errors.push(`NFT ID "${form.nftId}" is already in use`);
+    if (form.nftId && !/^WIDGET-[A-Z]{2,4}-\d{3,6}$/.test(form.nftId)) {
+      errors.push('NFT ID must match pattern WIDGET-XX-NNN (e.g. WIDGET-AGT-001)');
+    }
+    if (form.widgetType === 'service') {
+      const r = form.royalties;
+      const total = (r.treasury_percent || 0) + (r.creator_percent || 0) + (r.referral_percent || 0);
+      if (total !== 100) errors.push(`Royalties must total 100% (currently ${total}%)`);
+    }
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
+
   const [refreshPricing, setRefreshPricing] = useState(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
+      // Get DID for linking
+      let did = null;
+      try {
+        const identity = JSON.parse(localStorage.getItem('soulbridge_identity') || 'null');
+        did = identity?.did || null;
+      } catch (_) {}
+
       const res = await base44.functions.invoke('workshopNFTCreate', {
         action: 'create',
         nft_type: 'agent',
@@ -109,6 +166,7 @@ export default function AgentNFTForm() {
           allowed_agent_permissions: ['can_vote', 'can_send_xrp'],
           cost_per_stream_interval: parseFloat(form.streamCost) || 0,
           stream_interval_unit: form.streamUnit,
+          royalties_config: form.widgetType === 'service' ? form.royalties : undefined,
         },
         agent_data: {
           name: form.agentName,
@@ -120,6 +178,8 @@ export default function AgentNFTForm() {
           avatar_url: form.imageUrl,
           status: 'active',
           honor_score: 100,
+          wallet_id: did || undefined,
+          classic_address: did ? did.split(':').pop() : undefined,
           permissions: {
             can_create_agents: false,
             can_send_xrp: true,
@@ -140,17 +200,33 @@ export default function AgentNFTForm() {
         streamCost: '', streamUnit: 'day',
         bindToDID: true, soulBound: true,
         featurePath: '', widgetType: 'unlock', serviceLink: null,
+        royalties: { treasury_percent: 50, creator_percent: 40, referral_percent: 10 },
       });
       setCustomData(getDefaultCustomData('agent'));
+      setValidationErrors([]);
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       queryClient.invalidateQueries({ queryKey: ['myAgentsWorkshop'] });
-      // Sync with agent village pages
       queryClient.invalidateQueries({ queryKey: ['my-agents'] });
       queryClient.invalidateQueries({ queryKey: ['agents'] });
       queryClient.invalidateQueries({ queryKey: ['agents-governance'] });
+      queryClient.invalidateQueries({ queryKey: ['existingWidgetIds'] });
       refreshPricing?.();
     },
   });
+
+  const handleSubmitClick = (canAfford) => {
+    if (!validate()) return;
+    if (!canAfford) {
+      toast.error('Insufficient RLUSD balance');
+      return;
+    }
+    setShowConfirm(true);
+  };
+
+  const handleConfirm = () => {
+    setShowConfirm(false);
+    mutation.mutate();
+  };
 
   return (
     <WorkshopBalanceGate nftType="agent">
@@ -173,6 +249,19 @@ export default function AgentNFTForm() {
           </p>
         </div>
 
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 space-y-1">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+              <p className="text-red-300 text-xs font-semibold">Validation Errors</p>
+            </div>
+            {validationErrors.map((err, i) => (
+              <p key={i} className="text-red-200/70 text-[10px] ml-5">• {err}</p>
+            ))}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Agent Name *</Label>
@@ -180,7 +269,13 @@ export default function AgentNFTForm() {
           </div>
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Widget NFT ID</Label>
-            <Input value={form.nftId} onChange={e => set('nftId', e.target.value)} placeholder="e.g. WIDGET-AGT-001" className="bg-white/5 border-white/10 text-white" />
+            <Input value={form.nftId} onChange={e => set('nftId', e.target.value)} placeholder="e.g. WIDGET-AGT-001" className={`bg-white/5 border-white/10 text-white ${nftIdTaken ? 'border-red-500/50' : ''}`} />
+            {nftIdTaken && (
+              <p className="text-red-400 text-[9px] flex items-center gap-1"><AlertTriangle className="w-2.5 h-2.5" /> This NFT ID is already in use</p>
+            )}
+            {form.nftId && !nftIdTaken && /^WIDGET-[A-Z]{2,4}-\d{3,6}$/.test(form.nftId) && (
+              <p className="text-green-400 text-[9px] flex items-center gap-1"><CheckCircle2 className="w-2.5 h-2.5" /> Valid & available</p>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -209,8 +304,22 @@ export default function AgentNFTForm() {
             <Input value={form.tagline} onChange={e => set('tagline', e.target.value)} placeholder="A short motto or subtitle" className="bg-white/5 border-white/10 text-white" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-white/60 text-xs">Avatar URL</Label>
-            <Input value={form.imageUrl} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
+            <Label className="text-white/60 text-xs">Avatar</Label>
+            <div className="flex items-center gap-2">
+              <Input value={form.imageUrl} onChange={e => set('imageUrl', e.target.value)} placeholder="URL or upload →" className="bg-white/5 border-white/10 text-white flex-1" />
+              <label className="flex-shrink-0 cursor-pointer">
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                <div className={`h-9 w-9 rounded-md border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 transition ${uploadingAvatar ? 'opacity-50' : ''}`}>
+                  {uploadingAvatar ? <Loader2 className="w-3.5 h-3.5 text-white/40 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-white/40" />}
+                </div>
+              </label>
+            </div>
+            {form.imageUrl && (
+              <div className="flex items-center gap-2 mt-1">
+                <img src={form.imageUrl} alt="Avatar" className="w-8 h-8 rounded-lg object-cover border border-white/10" onError={e => { e.target.style.display = 'none'; }} />
+                <span className="text-white/30 text-[9px] truncate flex-1">{form.imageUrl.slice(0, 50)}…</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -269,6 +378,14 @@ export default function AgentNFTForm() {
           </div>
         </div>
 
+        {/* Royalties Editor — only for service widgets */}
+        {form.widgetType === 'service' && (
+          <AgentNFTRoyaltiesEditor
+            royalties={form.royalties}
+            onChange={v => set('royalties', v)}
+          />
+        )}
+
         {/* Feature Path Builder */}
         <FeaturePathBuilder
           value={form.featurePath}
@@ -310,10 +427,24 @@ export default function AgentNFTForm() {
           }}
         />
 
-        <Button onClick={() => mutation.mutate()} disabled={!form.agentName || !form.purpose || mutation.isPending || !canAfford} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 w-full sm:w-auto">
+        <Button
+          onClick={() => handleSubmitClick(canAfford)}
+          disabled={!form.agentName || !form.purpose || mutation.isPending || nftIdTaken}
+          className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 w-full sm:w-auto"
+        >
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bot className="w-4 h-4" />}
           Create AI Agent NFT — {cost} RLUSD
         </Button>
+
+        {/* Confirmation Dialog */}
+        <AgentNFTConfirmDialog
+          open={showConfirm}
+          onClose={() => setShowConfirm(false)}
+          onConfirm={handleConfirm}
+          form={form}
+          cost={cost}
+          isPending={mutation.isPending}
+        />
 
         {/* Agent Village Links */}
         <div className="flex items-center gap-2 flex-wrap pt-1">
