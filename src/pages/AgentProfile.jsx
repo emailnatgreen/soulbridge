@@ -9,6 +9,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import AdminAgentOverridePanel from '@/components/admin/AdminAgentOverridePanel';
 import AgentWalletLinker from '@/components/agents/AgentWalletLinker';
 import AgentAvatarGenerator from '@/components/agents/AgentAvatarGenerator';
+import AgentJsonEditor from '@/components/agents/AgentJsonEditor';
 import { useIdentity } from '@/hooks/useIdentity';
 
 const ROLE_STYLES = {
@@ -366,6 +367,11 @@ export default function AgentProfile() {
               </Card>
             )}
 
+            {/* Agent JSON Editor — admin only */}
+            {isAdmin && (
+              <AgentJsonEditorSection agent={agent} onUpdated={handleRefresh} />
+            )}
+
             {/* Admin Override */}
             {isAdmin && (
               <AdminAgentOverridePanel agent={agent} onUpdated={handleRefresh} />
@@ -373,6 +379,47 @@ export default function AgentProfile() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function AgentJsonEditorSection({ agent, onUpdated }) {
+  const [localData, setLocalData] = React.useState(null);
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (agent) {
+      const { id, created_date, updated_date, created_by, ...editable } = agent;
+      setLocalData(editable);
+    }
+  }, [agent]);
+
+  const handleSave = async () => {
+    if (!localData) return;
+    setSaving(true);
+    await base44.entities.Agent.update(agent.id, localData);
+    setSaving(false);
+    onUpdated();
+    const { toast: toastFn } = await import('sonner');
+    toastFn.success('Agent metadata saved');
+  };
+
+  if (!localData) return null;
+
+  return (
+    <div className="space-y-2">
+      <AgentJsonEditor
+        agentData={localData}
+        onAgentDataChange={setLocalData}
+      />
+      <Button
+        size="sm"
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/20"
+      >
+        {saving ? 'Saving...' : 'Save JSON Changes'}
+      </Button>
     </div>
   );
 }
