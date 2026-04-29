@@ -1,22 +1,29 @@
 import React from 'react';
-import { Sparkles, ArrowLeft, Code2 } from 'lucide-react';
+import { Sparkles, ArrowLeft, Code2, Bot, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { METADATA_STANDARD_VERSION } from '@/lib/nftMetadataSchemas';
+import PageBreadcrumb from '@/components/PageBreadcrumb';
 
 export default function WorkshopHeader() {
   return (
     <div className="space-y-3">
+      <PageBreadcrumb />
       <div className="flex items-center gap-2">
         <Link to="/home">
           <Button variant="ghost" size="sm" className="text-white/40 hover:text-white gap-1 -ml-2">
             <ArrowLeft className="w-3.5 h-3.5" /> Home
           </Button>
         </Link>
-        <Link to="/dashboard">
+        <Link to="/my-agents">
           <Button variant="ghost" size="sm" className="text-white/40 hover:text-white gap-1">
-            Dashboard
+            <Bot className="w-3.5 h-3.5" /> My Agents
+          </Button>
+        </Link>
+        <Link to="/agents">
+          <Button variant="ghost" size="sm" className="text-white/40 hover:text-white gap-1">
+            <Users className="w-3.5 h-3.5" /> Village
           </Button>
         </Link>
       </div>

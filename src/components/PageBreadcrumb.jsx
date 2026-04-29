@@ -41,7 +41,7 @@ const BREADCRUMB_MAP = {
   '/MentorshipHub': { label: 'Mentorship', parent: '/agents' },
   '/mentorship': { label: 'Mentorship', parent: '/agents' },
   '/widget-marketplace': { label: 'Widget Marketplace', parent: '/home' },
-  '/nft-workshop': { label: 'NFT Workshop', parent: '/home' },
+  '/nft-workshop': { label: 'NFT Workshop', parent: '/my-agents' },
   '/storefront': { label: 'Storefront', parent: '/home' },
   '/send': { label: 'Send', parent: '/wallets' },
   '/Send': { label: 'Send', parent: '/wallets' },

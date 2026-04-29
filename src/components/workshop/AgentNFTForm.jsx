@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Bot, Loader2, Heart, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
 import FeaturePathBuilder from './FeaturePathBuilder';
@@ -143,6 +144,10 @@ export default function AgentNFTForm() {
       setCustomData(getDefaultCustomData('agent'));
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       queryClient.invalidateQueries({ queryKey: ['myAgentsWorkshop'] });
+      // Sync with agent village pages
+      queryClient.invalidateQueries({ queryKey: ['my-agents'] });
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+      queryClient.invalidateQueries({ queryKey: ['agents-governance'] });
       refreshPricing?.();
     },
   });
@@ -310,10 +315,18 @@ export default function AgentNFTForm() {
           Create AI Agent NFT — {cost} RLUSD
         </Button>
 
-        {/* Existing agents count */}
-        {myAgents.length > 0 && (
-          <p className="text-white/30 text-[10px]">You currently have {myAgents.length} agent{myAgents.length !== 1 ? 's' : ''} in the Village.</p>
-        )}
+        {/* Agent Village Links */}
+        <div className="flex items-center gap-2 flex-wrap pt-1">
+          {myAgents.length > 0 && (
+            <p className="text-white/30 text-[10px]">You have {myAgents.length} agent{myAgents.length !== 1 ? 's' : ''} in the Village.</p>
+          )}
+          <Link to="/my-agents" className="text-purple-400 hover:text-purple-300 text-[10px] flex items-center gap-1">
+            <Bot className="w-3 h-3" /> My Agent Hub →
+          </Link>
+          <Link to="/agents" className="text-blue-400 hover:text-blue-300 text-[10px] flex items-center gap-1">
+            <Shield className="w-3 h-3" /> Agent Directory →
+          </Link>
+        </div>
       </CardContent>
     </Card>
         );

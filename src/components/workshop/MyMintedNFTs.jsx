@@ -110,6 +110,15 @@ export default function MyMintedNFTs() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
+              {w.category === 'agent_creation' && (
+                <Link
+                  to="/my-agents"
+                  onClick={e => e.stopPropagation()}
+                  className="text-[9px] text-amber-300 hover:text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded px-1.5 py-0.5 transition-colors"
+                >
+                  <Bot className="w-2.5 h-2.5 inline mr-0.5" />Agent Hub
+                </Link>
+              )}
               <Badge className={`text-[9px] ${STATUS_COLORS[w.mint_status] || STATUS_COLORS.draft}`}>
                 {w.mint_status?.replace(/_/g, ' ') || 'draft'}
               </Badge>

@@ -199,9 +199,9 @@ export default function MyAgentHub() {
             {/* Quick Links */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
+                { label: 'NFT Workshop', desc: 'Mint agent NFTs', path: '/nft-workshop', icon: Sparkles, color: 'text-purple-400', bg: 'border-purple-500/20 bg-purple-500/5' },
                 { label: 'Leaderboard', desc: 'See rankings', path: '/leaderboard', icon: Award, color: 'text-amber-400', bg: 'border-amber-500/20 bg-amber-500/5' },
                 { label: 'Wellbeing', desc: 'Monitor health', path: '/AgentWellbeing', icon: Heart, color: 'text-pink-400', bg: 'border-pink-500/20 bg-pink-500/5' },
-                { label: 'Mentorship', desc: 'Find a mentor', path: '/mentorship', icon: Users, color: 'text-indigo-400', bg: 'border-indigo-500/20 bg-indigo-500/5' },
               ].map(item => (
                 <Link key={item.path} to={item.path}
                   className={`flex items-center gap-3 border rounded-xl p-3 transition-all hover:scale-[1.02] ${item.bg}`}>
