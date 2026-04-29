@@ -8,12 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Chrome, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Chrome, Loader2, Plus, Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
 import FeaturePathBuilder from './FeaturePathBuilder';
 import ServiceDefinitionLinker from './ServiceDefinitionLinker';
+import ChromeSkillExplainer from './ChromeSkillExplainer';
+import ChromeManifestExport from './ChromeManifestExport';
 import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetadataSchemas';
 
 const EMPTY_SKILL = { skill_name: '', instructions: '', trigger_command: '', requires_didit_verification: true };
@@ -98,6 +100,7 @@ export default function ChromeSkillNFTForm() {
           taxon: parseInt(taxon) || 0,
           transfer_fee: parseInt(transferFee) || 0,
           chrome_skill_instructions: skills.filter(s => s.skill_name && s.instructions),
+          webmcp_manifest: buildWebMCPManifest(),
           cost_per_stream_interval: parseFloat(streamCost) || 0,
           stream_interval_unit: streamUnit,
         },
@@ -118,16 +121,42 @@ export default function ChromeSkillNFTForm() {
     },
   });
 
+  // Build webmcp_manifest for the widget entity
+  const buildWebMCPManifest = () => {
+    const validSkills = skills.filter(s => s.skill_name && s.instructions);
+    if (!validSkills.length) return undefined;
+    return {
+      version: '2026.1',
+      capabilities: {
+        tools: validSkills.map(s => ({
+          name: s.skill_name.replace(/\s+/g, '_').toLowerCase(),
+          description: `${s.trigger_command || 'manual'} — ${s.instructions.slice(0, 200)}`,
+          parameters: { type: 'object', properties: { user_context: { type: 'string', description: 'Optional context' } } },
+        })),
+      },
+    };
+  };
+
+  // Trigger command validation
+  const getTriggerWarning = (cmd) => {
+    if (!cmd) return null;
+    if (!cmd.startsWith('/')) return 'Trigger commands should start with /';
+    if (cmd.includes(' ')) return 'Trigger commands should not contain spaces';
+    return null;
+  };
+
   return (
     <WorkshopBalanceGate nftType="chrome_skill">
       {({ canAfford, cost, refreshPricing: rp }) => {
         if (!refreshPricing && rp) setRefreshPricing(() => rp);
         return (
+    <div className="space-y-4">
+    <ChromeSkillExplainer />
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base"><Chrome className="w-4 h-4 text-emerald-400" /> Create Chrome Skill NFT</CardTitle>
         <CardDescription className="text-white/40 text-xs">
-          A Widget NFT that embeds Chrome Gemini Side Panel skill instructions. Owning this NFT activates the skill in your browser agent.
+          Define your browser-executable AI skills below. Each skill becomes a discoverable tool in Chrome's Gemini Side Panel, minted as a sovereign NFT on the XRP Ledger.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -248,16 +277,44 @@ export default function ChromeSkillNFTForm() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-white/50 text-[10px]">Skill Name *</Label>
-                  <Input value={skill.skill_name} onChange={e => updateSkill(idx, 'skill_name', e.target.value)} placeholder="Axi Pharmacy Unlock" className="bg-white/5 border-white/10 text-white text-xs h-8" />
+                  <Input value={skill.skill_name} onChange={e => updateSkill(idx, 'skill_name', e.target.value)} placeholder="e.g. Pharmacy Portal Unlock" className="bg-white/5 border-white/10 text-white text-xs h-8" />
+                  <p className="text-white/20 text-[8px]">Display name shown in the Gemini Side Panel</p>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-white/50 text-[10px]">Trigger Command</Label>
-                  <Input value={skill.trigger_command} onChange={e => updateSkill(idx, 'trigger_command', e.target.value)} placeholder="/Axi" className="bg-white/5 border-white/10 text-white text-xs h-8" />
+                  <Input
+                    value={skill.trigger_command}
+                    onChange={e => {
+                      let val = e.target.value;
+                      if (val && !val.startsWith('/')) val = '/' + val;
+                      updateSkill(idx, 'trigger_command', val);
+                    }}
+                    placeholder="/Axi"
+                    className="bg-white/5 border-white/10 text-white text-xs h-8 font-mono"
+                  />
+                  {getTriggerWarning(skill.trigger_command) && (
+                    <p className="text-amber-400 text-[8px] flex items-center gap-1">
+                      <AlertCircle className="w-2.5 h-2.5" /> {getTriggerWarning(skill.trigger_command)}
+                    </p>
+                  )}
+                  <p className="text-white/20 text-[8px]">Slash command users type to activate (e.g. /Axi)</p>
                 </div>
               </div>
               <div className="space-y-1">
-                <Label className="text-white/50 text-[10px]">Instructions *</Label>
-                <Textarea value={skill.instructions} onChange={e => updateSkill(idx, 'instructions', e.target.value)} placeholder="Natural language instructions for the browser agent…" className="bg-white/5 border-white/10 text-white text-xs min-h-[60px]" />
+                <div className="flex items-center justify-between">
+                  <Label className="text-white/50 text-[10px]">Instructions *</Label>
+                  <span className={`text-[8px] ${(skill.instructions?.length || 0) > 2000 ? 'text-red-400' : 'text-white/20'}`}>
+                    {skill.instructions?.length || 0} / 2000
+                  </span>
+                </div>
+                <Textarea
+                  value={skill.instructions}
+                  onChange={e => updateSkill(idx, 'instructions', e.target.value)}
+                  placeholder="Step 1: Navigate to example.com/portal&#10;Step 2: Click the 'Login' button&#10;Step 3: Enter the user's stored credentials&#10;Step 4: Navigate to 'View Dashboard'&#10;&#10;If a CAPTCHA appears, pause and ask the user to complete it.&#10;Do NOT enter payment information or modify any records."
+                  className="bg-white/5 border-white/10 text-white text-xs min-h-[100px]"
+                  maxLength={2000}
+                />
+                <p className="text-white/20 text-[8px]">Step-by-step natural language instructions for the browser agent. Be specific about URLs, buttons, and boundaries.</p>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={skill.requires_didit_verification} onCheckedChange={v => updateSkill(idx, 'requires_didit_verification', v)} />
@@ -266,6 +323,15 @@ export default function ChromeSkillNFTForm() {
             </div>
           ))}
         </div>
+
+        {/* WebMCP Manifest Export */}
+        <ChromeManifestExport
+          name={name}
+          nftId={nftId}
+          description={description}
+          skills={skills}
+          imageUrl={imageUrl}
+        />
 
         {/* Dynamic Metadata JSON Editor */}
         <MetadataJsonEditor
@@ -280,12 +346,17 @@ export default function ChromeSkillNFTForm() {
           }}
         />
 
-        <Button onClick={() => mutation.mutate()} disabled={!name || !description || skills.every(s => !s.skill_name) || mutation.isPending || !canAfford} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 w-full sm:w-auto">
+        <Button
+          onClick={() => mutation.mutate()}
+          disabled={!name || !description || skills.every(s => !s.skill_name || !s.instructions) || mutation.isPending || !canAfford}
+          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 w-full sm:w-auto"
+        >
           {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Chrome className="w-4 h-4" />}
           Create Chrome Skill NFT — {cost} RLUSD
         </Button>
       </CardContent>
     </Card>
+    </div>
         );
       }}
     </WorkshopBalanceGate>
