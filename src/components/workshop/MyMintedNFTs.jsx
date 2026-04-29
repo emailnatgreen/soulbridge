@@ -2,39 +2,29 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers, Sparkles, Chrome, Bot, Shield, ExternalLink, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import MintActionButton from './MintActionButton';
+import { Layers, Sparkles, Chrome, Bot, Shield } from 'lucide-react';
+import NFTCard from './NFTCard';
 
-const STATUS_COLORS = {
-  draft: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
-  prepared: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  simulated: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  minted_mainnet: 'bg-green-500/20 text-green-300 border-green-500/30',
-  failed: 'bg-red-500/20 text-red-300 border-red-500/30',
-};
+const FILTER_TABS = [
+  { key: 'all', label: 'All', icon: Layers },
+  { key: 'chrome_skill', label: 'Chrome', icon: Chrome },
+  { key: 'widget', label: 'Widget', icon: Sparkles },
+  { key: 'agent', label: 'Agent', icon: Bot },
+  { key: 'infrastructure', label: 'Infra', icon: Shield },
+];
 
-function getTypeIcon(widget) {
-  if (widget.chrome_skill_instructions?.length) return <Chrome className="w-3.5 h-3.5 text-emerald-400" />;
-  if (widget.category === 'agent_creation') return <Bot className="w-3.5 h-3.5 text-amber-400" />;
-  if (widget.immutable_after_mint?.length) return <Shield className="w-3.5 h-3.5 text-red-400" />;
-  return <Sparkles className="w-3.5 h-3.5 text-purple-400" />;
+function getType(w) {
+  if (w.chrome_skill_instructions?.length) return 'chrome_skill';
+  if (w.category === 'agent_creation') return 'agent';
+  if (w.immutable_after_mint?.length > 5) return 'infrastructure';
+  return 'widget';
 }
-
-function getTypeLabel(widget) {
-  if (widget.chrome_skill_instructions?.length) return 'Chrome Skill';
-  if (widget.category === 'agent_creation') return 'Agent NFT';
-  if (widget.immutable_after_mint?.length) return 'Infrastructure';
-  return 'Widget';
-}
-
-const DELETABLE_STATUSES = ['draft', 'prepared', 'simulated', 'failed'];
 
 export default function MyMintedNFTs() {
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState(null);
+  const [filter, setFilter] = useState('all');
 
   const handleDelete = async (e, widget) => {
     e.preventDefault();
@@ -51,12 +41,9 @@ export default function MyMintedNFTs() {
     queryFn: async () => {
       const user = await base44.auth.me();
       const isAdmin = user?.role === 'admin';
-
-      // Admins see all widgets; regular users see only their own
       if (isAdmin) {
         return base44.entities.Widget.list('-created_date', 100);
       }
-
       const [byMinter, byCreator] = await Promise.all([
         base44.entities.Widget.filter({ minted_by: user.email }, '-created_date', 50),
         base44.entities.Widget.filter({ creator_id: user.email }, '-created_date', 50),
@@ -75,7 +62,9 @@ export default function MyMintedNFTs() {
     return (
       <Card className="bg-white/5 border-white/10">
         <CardContent className="p-6">
-          <div className="space-y-2">{[1, 2, 3].map(i => <div key={i} className="h-12 bg-white/5 rounded-lg animate-pulse" />)}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-white/5 rounded-lg animate-pulse" />)}
+          </div>
         </CardContent>
       </Card>
     );
@@ -83,73 +72,64 @@ export default function MyMintedNFTs() {
 
   if (!widgets.length) return null;
 
+  // Count by type
+  const counts = { all: widgets.length };
+  widgets.forEach(w => {
+    const t = getType(w);
+    counts[t] = (counts[t] || 0) + 1;
+  });
+
+  const filtered = filter === 'all' ? widgets : widgets.filter(w => getType(w) === filter);
+
   return (
     <Card className="bg-white/5 border-white/10 text-white">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
           <Layers className="w-4 h-4 text-purple-400" /> My NFT Creations
           <Badge variant="outline" className="text-white/40 border-white/10 text-[10px] ml-auto">{widgets.length}</Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
-        {widgets.map(w => (
-          <Link key={w.id} to={`/widget-marketplace/${w.id}`} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-transparent hover:border-white/10">
-            {w.image_url ? (
-              <img src={w.image_url} alt={w.name} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
-            ) : (
-              <div className="w-9 h-9 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
-                {getTypeIcon(w)}
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-xs font-medium truncate">{w.name}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-white/30 text-[9px]">{getTypeLabel(w)}</span>
-                <span className="text-white/15">·</span>
-                <span className="text-white/30 text-[9px]">{w.category?.replace(/_/g, ' ')}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {w.category === 'agent_creation' && (
-                <Link
-                  to="/my-agents"
-                  onClick={e => e.stopPropagation()}
-                  className="text-[9px] text-amber-300 hover:text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded px-1.5 py-0.5 transition-colors"
-                >
-                  <Bot className="w-2.5 h-2.5 inline mr-0.5" />Agent Hub
-                </Link>
-              )}
-              <Badge className={`text-[9px] ${STATUS_COLORS[w.mint_status] || STATUS_COLORS.draft}`}>
-                {w.mint_status?.replace(/_/g, ' ') || 'draft'}
-              </Badge>
-              {w.xrpl_tx_hash && (
-                <a
-                  href={`https://xrpscan.com/tx/${w.xrpl_tx_hash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()}
-                  className="flex items-center gap-1 text-[9px] text-cyan-300 hover:text-cyan-200 bg-cyan-500/10 border border-cyan-500/30 rounded px-1.5 py-0.5 transition-colors"
-                  title="Verify on XRPScan"
-                >
-                  <ExternalLink className="w-2.5 h-2.5" /> XRPScan
-                </a>
-              )}
-              <MintActionButton widget={w} />
-              {DELETABLE_STATUSES.includes(w.mint_status || 'draft') && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-red-400/60 hover:text-red-300 hover:bg-red-500/20"
-                  onClick={(e) => handleDelete(e, w)}
-                  disabled={deleting === w.id}
-                  title="Delete draft"
-                >
-                  <Trash2 className={`w-3.5 h-3.5 ${deleting === w.id ? 'animate-spin' : ''}`} />
-                </Button>
-              )}
-            </div>
-          </Link>
-        ))}
+      <CardContent className="space-y-3">
+        {/* Filter tabs */}
+        <div className="flex gap-1.5 flex-wrap">
+          {FILTER_TABS.map(tab => {
+            const count = counts[tab.key] || 0;
+            if (tab.key !== 'all' && count === 0) return null;
+            const TabIcon = tab.icon;
+            const isActive = filter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setFilter(tab.key)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium transition-all ${
+                  isActive
+                    ? 'bg-white/10 text-white border border-white/20'
+                    : 'text-white/30 hover:text-white/50 hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <TabIcon className="w-3 h-3" />
+                {tab.label}
+                <span className={`ml-0.5 text-[8px] ${isActive ? 'text-white/60' : 'text-white/20'}`}>({count})</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Cards grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {filtered.map(w => (
+            <NFTCard
+              key={w.id}
+              widget={w}
+              onDelete={handleDelete}
+              deleting={deleting}
+            />
+          ))}
+        </div>
+
+        {filtered.length === 0 && (
+          <p className="text-center text-white/20 text-xs py-6">No {filter.replace(/_/g, ' ')} NFTs found</p>
+        )}
       </CardContent>
     </Card>
   );

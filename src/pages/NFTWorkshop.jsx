@@ -12,6 +12,7 @@ import ChromeSkillNFTForm from '@/components/workshop/ChromeSkillNFTForm';
 import AgentNFTForm from '@/components/workshop/AgentNFTForm';
 import InfrastructureNFTForm from '@/components/workshop/InfrastructureNFTForm';
 import MyMintedNFTs from '@/components/workshop/MyMintedNFTs';
+import SkillPerformancePanel from '@/components/workshop/SkillPerformancePanel';
 
 // NFT-Gated Feature Paths — each tab requires its own Widget NFT pass
 // Page-level:   /nft-workshop              → Workshop Pass (WIDGET-WS-001)
@@ -120,6 +121,7 @@ export default function NFTWorkshop() {
           )}
         </Tabs>
 
+        <SkillPerformancePanel />
         <MyMintedNFTs />
       </div>
     </div>
