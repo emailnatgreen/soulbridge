@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Activity, TrendingUp, Coins, Chrome, Zap, Clock, FileJson } from 'lucide-react';
+import { Activity, TrendingUp, Coins, Chrome, Zap, Clock, FileJson, Layers } from 'lucide-react';
 
 const COLORS = ['#10b981', '#8b5cf6', '#f59e0b', '#06b6d4', '#ec4899', '#6366f1'];
 
@@ -56,6 +56,7 @@ export default function SkillPerformancePanel() {
   const webmcpReady = chromeSkills.filter(w => w.webmcp_manifest);
   const totalSkillDefs = chromeSkills.reduce((sum, w) => sum + (w.chrome_skill_instructions?.length || 0), 0);
   const diditGated = chromeSkills.filter(w => w.chrome_skill_instructions?.some(s => s.requires_didit_verification));
+  const multiTabSkills = chromeSkills.filter(w => w.chrome_skill_instructions?.some(s => s.multi_tab));
 
   const chromePayments = paymentLogs.filter(p => p.service_id?.includes('chrome_skill'));
   const totalRevenue = chromePayments.reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -68,11 +69,13 @@ export default function SkillPerformancePanel() {
     { name: 'Failed', value: chromeSkills.filter(w => w.mint_status === 'failed').length, fill: '#ef4444' },
   ].filter(d => d.value > 0);
 
-  // Category breakdown for bar chart
+  // Category breakdown for bar chart — use Chrome Skill categories from skill_category field
   const categoryMap = {};
   chromeSkills.forEach(w => {
-    const cat = w.category || 'other';
-    categoryMap[cat] = (categoryMap[cat] || 0) + 1;
+    (w.chrome_skill_instructions || []).forEach(s => {
+      const cat = s.skill_category || w.category || 'other';
+      categoryMap[cat] = (categoryMap[cat] || 0) + 1;
+    });
   });
   const categoryData = Object.entries(categoryMap).map(([name, value]) => ({
     name: name.replace(/_/g, ' '),
@@ -178,14 +181,18 @@ export default function SkillPerformancePanel() {
 
         {/* Additional Stats */}
         {hasData && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-2 text-center">
               <p className="text-purple-300 text-lg font-bold">{diditGated.length}</p>
               <p className="text-white/30 text-[8px]">DIDit Verified</p>
             </div>
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2 text-center">
-              <p className="text-blue-300 text-lg font-bold">{chromeSkills.filter(w => w.feature_path).length}</p>
-              <p className="text-white/30 text-[8px]">Feature-Gated</p>
+              <p className="text-blue-300 text-lg font-bold">{multiTabSkills.length}</p>
+              <p className="text-white/30 text-[8px]">Multi-tab Skills</p>
+            </div>
+            <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-2 text-center">
+              <p className="text-indigo-300 text-lg font-bold">{Object.keys(categoryMap).length}</p>
+              <p className="text-white/30 text-[8px]">Skill Categories</p>
             </div>
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 text-center">
               <p className="text-amber-300 text-lg font-bold">{chromeSkills.filter(w => w.cost_per_stream_interval > 0).length}</p>

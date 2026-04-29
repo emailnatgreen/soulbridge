@@ -22,6 +22,9 @@ function buildWebMCPManifest({ name, nftId, description, skills, imageUrl }) {
         .map(s => ({
           name: s.skill_name.replace(/\s+/g, '_').toLowerCase(),
           display_name: s.skill_name,
+          emoji: s.emoji || '⚡',
+          category: s.skill_category || undefined,
+          multi_tab: s.multi_tab || false,
           description: `Trigger: ${s.trigger_command || 'manual'} — ${s.instructions.slice(0, 120)}${s.instructions.length > 120 ? '…' : ''}`,
           trigger_command: s.trigger_command || undefined,
           requires_verification: s.requires_didit_verification ?? true,

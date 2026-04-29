@@ -105,11 +105,17 @@ export default function NFTCard({ widget, onDelete, deleting }) {
                     <Shield className="w-2.5 h-2.5" /> DIDit
                   </Badge>
                 )}
+                {widget.chrome_skill_instructions?.some(s => s.multi_tab) && (
+                  <Badge variant="outline" className="text-[8px] border-blue-500/30 text-blue-300 gap-1">
+                    <Globe className="w-2.5 h-2.5" /> Multi-tab
+                  </Badge>
+                )}
               </div>
-              {/* Skill triggers */}
+              {/* Skill triggers with emojis */}
               <div className="flex gap-1.5 mt-1.5 flex-wrap">
                 {widget.chrome_skill_instructions.slice(0, 3).map((s, i) => (
-                  <span key={i} className="bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.5 text-[8px] text-emerald-300 font-mono">
+                  <span key={i} className="bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.5 text-[8px] text-emerald-300 font-mono flex items-center gap-0.5">
+                    {s.emoji && <span className="text-[9px]">{s.emoji}</span>}
                     {s.trigger_command || s.skill_name}
                   </span>
                 ))}
@@ -117,6 +123,16 @@ export default function NFTCard({ widget, onDelete, deleting }) {
                   <span className="text-white/20 text-[8px]">+{skillCount - 3} more</span>
                 )}
               </div>
+              {/* Category badges */}
+              {widget.chrome_skill_instructions.some(s => s.skill_category) && (
+                <div className="flex gap-1 mt-1 flex-wrap">
+                  {[...new Set(widget.chrome_skill_instructions.map(s => s.skill_category).filter(Boolean))].map(cat => (
+                    <span key={cat} className="bg-indigo-500/10 border border-indigo-500/20 rounded px-1.5 py-0.5 text-[7px] text-indigo-300 capitalize">
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

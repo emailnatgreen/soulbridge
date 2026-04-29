@@ -173,9 +173,37 @@
                     "type": "string",
                     "description": "Tool function name callable by the browser agent"
                   },
+                  "display_name": {
+                    "type": "string",
+                    "description": "Human-readable skill name shown in Chrome"
+                  },
+                  "emoji": {
+                    "type": "string",
+                    "description": "Emoji identifier for the skill in Chrome's UI"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "Chrome Skill Library category (research, shopping, health, productivity, learning, compliance, writing)"
+                  },
+                  "multi_tab": {
+                    "type": "boolean",
+                    "description": "Whether this skill runs across multiple selected tabs"
+                  },
                   "description": {
                     "type": "string",
                     "description": "What this tool does when invoked"
+                  },
+                  "trigger_command": {
+                    "type": "string",
+                    "description": "Slash command to invoke (e.g. /Macros)"
+                  },
+                  "requires_verification": {
+                    "type": "boolean",
+                    "description": "Whether DIDit verification is required"
+                  },
+                  "instructions": {
+                    "type": "string",
+                    "description": "Full skill prompt/instructions"
                   },
                   "parameters": {
                     "type": "object",
@@ -189,7 +217,7 @@
           "description": "Structured capabilities this NFT exposes to WebMCP-compatible browsers"
         }
       },
-      "description": "WebMCP manifest \u2014 makes this NFT 'Agent-Native' by declaring structured browser tools (e.g. Gemini Side Panel skills) that Chrome can discover and execute when the NFT is detected"
+      "description": "WebMCP manifest \u2014 makes this NFT 'Agent-Native' by declaring structured browser tools"
     },
     "chrome_skill_instructions": {
       "type": "array",
@@ -198,20 +226,33 @@
         "properties": {
           "skill_name": {
             "type": "string",
-            "description": "Display name for the Chrome custom skill (e.g. 'Axi Pharmacy Unlock')"
+            "description": "Display name for the Chrome custom skill"
           },
           "instructions": {
             "type": "string",
-            "description": "Natural language instructions for the browser agent to follow when this skill is triggered"
+            "description": "Natural language instructions/prompt for the browser agent"
           },
           "trigger_command": {
             "type": "string",
-            "description": "Slash command or trigger phrase (e.g. '/Axi')"
+            "description": "Slash command or trigger phrase (e.g. '/Macros')"
           },
           "requires_didit_verification": {
             "type": "boolean",
             "default": true,
-            "description": "Whether Didit human verification + RLUSD payment is required before execution"
+            "description": "Whether DIDit verification + RLUSD payment is required"
+          },
+          "emoji": {
+            "type": "string",
+            "description": "Emoji identifier for this skill (e.g. '\ud83e\udd57')"
+          },
+          "skill_category": {
+            "type": "string",
+            "description": "Chrome Skill Library category (research, shopping, health, productivity, learning, compliance, writing)"
+          },
+          "multi_tab": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this skill operates across multiple selected tabs"
           }
         }
       },
