@@ -52,26 +52,6 @@ export default function Home() {
   // Gate: require published DID + Citizenship NFT (or admin) to access Home
   const isCitizen = isAdmin || isWidgetUnlocked('wallet.did_linking');
 
-  if (!widgetLoading && !isCitizen) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white flex items-center justify-center px-6">
-        <div className="max-w-md w-full rounded-2xl border border-white/10 bg-white/5 p-6 text-center space-y-4">
-          <Lock className="w-10 h-10 text-purple-300 mx-auto" />
-          <div>
-            <h2 className="text-xl font-semibold">Citizenship Required</h2>
-            <p className="text-sm text-white/50 mt-2">
-              The Village Home is available to citizens with the Citizenship Widget NFT.
-              Head to your dashboard to browse the marketplace and acquire it.
-            </p>
-          </div>
-          <button onClick={() => navigate('/dashboard')} className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3 text-sm font-semibold text-white">
-            Go to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const { data: activeProjects = [] } = useQuery({
     queryKey: ['activeProjects'],
     queryFn: async () => {
@@ -220,6 +200,27 @@ export default function Home() {
     { icon: Fingerprint, title: 'Sovereign Identity', desc: 'Your personal DID hub — view published DIDs, manage wallets, privacy controls and verification certificates', path: '/sovereign-id', color: 'text-indigo-400', border: 'border-indigo-500/30', countLabel: 'published DIDs', count: liveCounts.dids },
     { icon: Globe, title: 'Seed Golden Acorn', desc: 'Create and manage multi-node XRPL wallets — the gateway to sovereign DID identity publishing', path: '/seed-golden-acorn', color: 'text-green-400', border: 'border-green-500/30', countLabel: '', count: null },
   ];
+
+  // Gate: non-citizens see a redirect prompt
+  if (!widgetLoading && !isCitizen) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white flex items-center justify-center px-6">
+        <div className="max-w-md w-full rounded-2xl border border-white/10 bg-white/5 p-6 text-center space-y-4">
+          <Lock className="w-10 h-10 text-purple-300 mx-auto" />
+          <div>
+            <h2 className="text-xl font-semibold">Citizenship Required</h2>
+            <p className="text-sm text-white/50 mt-2">
+              The Village Home is available to citizens with the Citizenship Widget NFT.
+              Head to your dashboard to browse the marketplace and acquire it.
+            </p>
+          </div>
+          <button onClick={() => navigate('/dashboard')} className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3 text-sm font-semibold text-white">
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white overflow-x-hidden">
