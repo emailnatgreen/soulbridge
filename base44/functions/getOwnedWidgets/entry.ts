@@ -40,10 +40,10 @@ const FEATURE_ROUTE_MAP = {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
+    // Resolve user — DID-based users may not have a traditional session
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
 
     // Resolve user DID from payload or local identity
     let body = {};
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
         status: 'success',
         message: `Ownership check: ${ownedWidgets.length}/${allWidgets.length} owned`,
         details: {
-          user_email: user.email,
+          user_email: user?.email || 'anonymous',
           user_did: userDid,
           owned_count: ownedWidgets.length,
           total_count: allWidgets.length,
