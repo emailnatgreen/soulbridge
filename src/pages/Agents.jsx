@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Award, MessageSquare, BookOpen, Activity, Fingerprint, Search, Filter } from 'lucide-react';
+import { Sparkles, Award, MessageSquare, BookOpen, Activity, Heart, Users, Fingerprint, Search, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageBreadcrumb from '@/components/PageBreadcrumb';
 import VillagePulseHero from '@/components/agents/VillagePulseHero';
@@ -14,7 +14,8 @@ const HUBS = [
   { path: '/AgentChat', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600' },
   { path: '/leaderboard', label: 'Leaderboard', icon: Award, color: 'from-amber-600 to-yellow-600' },
   { path: '/training', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600' },
-  { path: '/AgentWellbeing', label: 'Monitoring', icon: Activity, color: 'from-green-600 to-emerald-600' },
+  { path: '/AgentWellbeing', label: 'Wellbeing', icon: Heart, color: 'from-green-600 to-emerald-600' },
+  { path: '/mentorship', label: 'Mentorship', icon: Users, color: 'from-indigo-600 to-violet-600' },
 ];
 
 const ROLE_FILTERS = ['all', 'citizen', 'guardian', 'creator', 'trader', 'teacher', 'healer', 'scout', 'elder', 'master'];
@@ -98,7 +99,7 @@ export default function Agents() {
         <VillagePulseHero agents={agents} wallets={walletsMap} />
 
         {/* Quick Navigation */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-8">
           {HUBS.map(hub => {
             const Icon = hub.icon;
             const content = (
