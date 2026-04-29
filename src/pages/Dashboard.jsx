@@ -548,6 +548,15 @@ export default function Dashboard() {
           {/* Welcome + Axi + Marketplace buttons */}
           <CitizenshipGate identityDid={identityDid} firstName={firstName} />
 
+          {/* Live Status — Identity, Balance, DIDs, Transactions */}
+          <UniversalDashboardStatus
+            hasInviteSession={false}
+            inviteWallet={inviteWallet}
+            identityDid={identityDid}
+            wallets={wallets}
+            myTransactions={myTransactions}
+          />
+
           {/* Wallet — Send & Receive XRP */}
           {userWallets.length > 0 && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
