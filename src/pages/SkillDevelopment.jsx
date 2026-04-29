@@ -24,6 +24,7 @@ import { useMyAgent } from '@/hooks/useMyAgent';
 import { useIdentity } from '@/hooks/useIdentity';
 import DIDIdentityBanner from '@/components/skill/DIDIdentityBanner';
 import AdminSkillControls from '@/components/skill/AdminSkillControls';
+import SkillJsonEditor from '@/components/skill/SkillJsonEditor';
 
 export default function SkillDevelopment() {
   const { myAgent, allAgents, isLoading: identityLoading } = useMyAgent();
@@ -399,6 +400,10 @@ export default function SkillDevelopment() {
               </TabsContent>
 
               <TabsContent value="skills" className="space-y-4">
+                <SkillJsonEditor
+                  agentId={selectedAgentId}
+                  onSuccess={() => queryClient.invalidateQueries(['agent-skills', selectedAgentId])}
+                />
                 <SkillProfilePanel
                   agentId={selectedAgentId}
                   skills={agentSkills}
