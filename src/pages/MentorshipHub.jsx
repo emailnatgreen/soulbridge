@@ -11,11 +11,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  ArrowLeft, Users, Star, TrendingUp, CheckCircle, Brain,
+  Users, Star, TrendingUp, CheckCircle,
   Loader2, Heart, Clock, Shield, MessageSquare, Bot, User,
-  Sparkles, Plus, ChevronRight, BarChart3, AlertCircle, Fingerprint, Zap
+  Sparkles, Plus, AlertCircle, Fingerprint
 } from 'lucide-react';
 import MentorshipChatBox from '@/components/mentorship/MentorshipChatBox';
+import MentorSearchFilter from '@/components/mentorship/MentorSearchFilter';
+import IncomingRequestCard from '@/components/mentorship/IncomingRequestCard';
+import LogSessionDialog from '@/components/mentorship/LogSessionDialog';
+import RateSatisfactionDialog from '@/components/mentorship/RateSatisfactionDialog';
+import GoalChecklist from '@/components/mentorship/GoalChecklist';
 import PageBreadcrumb from '@/components/PageBreadcrumb';
 import { useIdentity } from '@/hooks/useIdentity';
 import { toast } from 'sonner';
@@ -36,6 +41,10 @@ export default function MentorshipHub() {
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [selectedMentorProfile, setSelectedMentorProfile] = useState(null);
   const [activeChat, setActiveChat] = useState(null); // { rel, other, role }
+  const [logSessionRel, setLogSessionRel] = useState(null);
+  const [rateRel, setRateRel] = useState(null); // { rel, role }
+  const [mentorSearch, setMentorSearch] = useState('');
+  const [styleFilter, setStyleFilter] = useState(null);
 
   // Resolve the current user's agent — DID-first, email fallback
   const myDid = didSignal?.did;
@@ -114,7 +123,20 @@ export default function MentorshipHub() {
   const activeMentorships = myRelationships.asMentee?.filter(r => r.status === 'active') || [];
   const activeMentees = myRelationships.asMentor?.filter(r => r.status === 'active') || [];
   const pendingRequests = myRelationships.asMentee?.filter(r => r.status === 'requested') || [];
-  const availableMentors = mentorProfiles.filter(mp => mp.is_available && mp.agent_id !== myAgent?.id);
+  const incomingRequests = myRelationships.asMentor?.filter(r => r.status === 'requested') || [];
+
+  // Filter available mentors by search + style
+  const availableMentors = mentorProfiles.filter(mp => {
+    if (!mp.is_available || mp.agent_id === myAgent?.id) return false;
+    if (styleFilter && mp.mentorship_style !== styleFilter) return false;
+    if (!mentorSearch.trim()) return true;
+    const q = mentorSearch.toLowerCase();
+    const agent = allAgents.find(a => a.id === mp.agent_id);
+    const name = (agent?.name || '').toLowerCase();
+    const specs = (mp.specializations || []).join(' ').toLowerCase();
+    const expertise = (mp.expertise_areas || []).map(e => typeof e === 'object' ? (e.skill_name || '') : e).join(' ').toLowerCase();
+    return name.includes(q) || specs.includes(q) || expertise.includes(q);
+  });
 
   const isLoading = agentLoading || loadingProfiles || loadingRels;
 
@@ -228,11 +250,12 @@ export default function MentorshipHub() {
         )}
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
             { label: 'Available Mentors', value: availableMentors.length, color: 'text-purple-400', icon: Users },
             { label: 'My Mentorships', value: activeMentorships.length, color: 'text-blue-400', icon: Heart },
             { label: 'My Mentees', value: activeMentees.length, color: 'text-green-400', icon: TrendingUp },
+            { label: 'Incoming', value: incomingRequests.length, color: 'text-purple-400', icon: Sparkles },
             { label: 'Pending', value: pendingRequests.length, color: 'text-amber-400', icon: Clock },
           ].map(s => (
             <Card key={s.label} className="bg-white/5 border-white/10">
@@ -257,6 +280,9 @@ export default function MentorshipHub() {
             <TabsTrigger value="my-mentees" className="text-xs">
               My Mentees {activeMentees.length > 0 && <Badge className="ml-1 bg-green-500/30 text-green-200 text-[9px] px-1">{activeMentees.length}</Badge>}
             </TabsTrigger>
+            <TabsTrigger value="incoming" className="text-xs">
+              Incoming {incomingRequests.length > 0 && <Badge className="ml-1 bg-purple-500/30 text-purple-200 text-[9px] px-1">{incomingRequests.length}</Badge>}
+            </TabsTrigger>
             <TabsTrigger value="pending" className="text-xs">
               Pending {pendingRequests.length > 0 && <Badge className="ml-1 bg-amber-500/30 text-amber-200 text-[9px] px-1">{pendingRequests.length}</Badge>}
             </TabsTrigger>
@@ -264,6 +290,12 @@ export default function MentorshipHub() {
 
           {/* DISCOVER */}
           <TabsContent value="discover" className="mt-4">
+            <MentorSearchFilter
+              search={mentorSearch}
+              setSearch={setMentorSearch}
+              styleFilter={styleFilter}
+              setStyleFilter={setStyleFilter}
+            />
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[1,2,3].map(i => <div key={i} className="h-48 bg-white/5 rounded-xl animate-pulse" />)}
@@ -311,6 +343,8 @@ export default function MentorshipHub() {
                       otherParty={mentor}
                       role="mentee"
                       onOpenChat={() => setActiveChat({ rel, other: mentor, role: 'mentee' })}
+                      onLogSession={() => setLogSessionRel(rel)}
+                      onRate={() => setRateRel({ rel, role: 'mentee' })}
                     />
                   );
                 })}
@@ -338,8 +372,24 @@ export default function MentorshipHub() {
                       otherParty={mentee}
                       role="mentor"
                       onOpenChat={() => setActiveChat({ rel, other: mentee, role: 'mentor' })}
+                      onLogSession={() => setLogSessionRel(rel)}
+                      onRate={() => setRateRel({ rel, role: 'mentor' })}
                     />
                   );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* INCOMING REQUESTS (for mentors) */}
+          <TabsContent value="incoming" className="mt-4">
+            {incomingRequests.length === 0 ? (
+              <EmptyState icon={Users} title="No Incoming Requests" desc="When someone requests you as a mentor, it will appear here." />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {incomingRequests.map(rel => {
+                  const mentee = allAgents.find(a => a.id === rel.mentee_agent_id);
+                  return <IncomingRequestCard key={rel.id} relationship={rel} menteeAgent={mentee} />;
                 })}
               </div>
             )}
@@ -396,6 +446,23 @@ export default function MentorshipHub() {
           otherParty={activeChat.other}
           role={activeChat.role}
           onClose={() => setActiveChat(null)}
+        />
+      )}
+
+      {/* Log Session Dialog */}
+      {logSessionRel && (
+        <LogSessionDialog
+          relationship={logSessionRel}
+          onClose={() => setLogSessionRel(null)}
+        />
+      )}
+
+      {/* Rate Satisfaction Dialog */}
+      {rateRel && (
+        <RateSatisfactionDialog
+          relationship={rateRel.rel}
+          role={rateRel.role}
+          onClose={() => setRateRel(null)}
         />
       )}
     </div>
@@ -503,7 +570,7 @@ function MentorCard({ profile, agent, canRequest, onRequest }) {
   );
 }
 
-function RelationshipCard({ relationship, otherParty, role, onOpenChat }) {
+function RelationshipCard({ relationship, otherParty, role, onOpenChat, onLogSession, onRate }) {
   const goals = relationship.goals || [];
   const progress = goals.length > 0 ? (goals.filter(g => g.completed).length / goals.length) * 100 : 0;
 
@@ -576,6 +643,28 @@ function RelationshipCard({ relationship, otherParty, role, onOpenChat }) {
             </div>
           )}
         </div>
+
+        {/* Action buttons: Log Session + Rate */}
+        <div className="flex gap-2 mt-3 pt-3 border-t border-white/10">
+          <button
+            onClick={onLogSession}
+            className="flex items-center gap-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 rounded-lg px-2.5 py-1.5 text-indigo-300 text-xs transition"
+          >
+            <Plus className="w-3 h-3" /> Log Session
+          </button>
+          <button
+            onClick={onRate}
+            className="flex items-center gap-1.5 bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-500/30 rounded-lg px-2.5 py-1.5 text-yellow-300 text-xs transition"
+          >
+            <Star className="w-3 h-3" /> Rate
+            {relationship[role === 'mentee' ? 'mentee_satisfaction' : 'mentor_satisfaction'] > 0 && (
+              <span className="text-yellow-400">({relationship[role === 'mentee' ? 'mentee_satisfaction' : 'mentor_satisfaction']}/5)</span>
+            )}
+          </button>
+        </div>
+
+        {/* Goal Checklist */}
+        <GoalChecklist relationship={relationship} />
       </CardContent>
     </Card>
   );
