@@ -91,8 +91,8 @@ export default function InfrastructureNFTShowcase() {
   const navigate = useNavigate();
   const { widgets, loading } = useWidgetUnlock();
 
-  // Only show minted mainnet widgets
-  const mintedWidgets = widgets.filter(w => w.mint_status === 'minted_mainnet');
+  // Show all widgets from the unlock engine (already filtered server-side)
+  const mintedWidgets = widgets;
 
   return (
     <div className="space-y-4">
