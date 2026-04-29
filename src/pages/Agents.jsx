@@ -12,7 +12,7 @@ import AgentCard from '@/components/agents/AgentCard';
 const HUBS = [
   { path: '/AgentChat', label: 'Comms Hub', icon: MessageSquare, color: 'from-blue-600 to-cyan-600' },
   { path: '/leaderboard', label: 'Leaderboard', icon: Award, color: 'from-amber-600 to-yellow-600' },
-  { path: '/AgentTrainingModule', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600' },
+  { path: '/training', label: 'Training', icon: BookOpen, color: 'from-rose-600 to-pink-600' },
   { path: '/AgentMarketplace', label: 'Marketplace', icon: Briefcase, color: 'from-green-600 to-emerald-600', comingSoon: true },
 ];
 

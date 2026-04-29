@@ -18,6 +18,8 @@ import AskAxiButton from '@/components/AskAxiButton';
 import SkillGapAlertsPanel from '@/components/SkillGapAlertsPanel';
 import SkillTrajectoryInsights from '@/components/agent/SkillTrajectoryInsights';
 import SkillProfilePanel from '@/components/agent/SkillProfilePanel';
+import AgentTrainingUpload from '@/components/AgentTrainingUpload';
+import TrainingProgressCard from '@/components/TrainingProgressCard';
 import { useMyAgent } from '@/hooks/useMyAgent';
 import { useIdentity } from '@/hooks/useIdentity';
 import DIDIdentityBanner from '@/components/skill/DIDIdentityBanner';
@@ -73,6 +75,12 @@ export default function SkillDevelopment() {
         status: 'active'
       });
     },
+    enabled: !!selectedAgentId
+  });
+
+  const { data: trainings = [] } = useQuery({
+    queryKey: ['agent-trainings', selectedAgentId],
+    queryFn: () => base44.entities.AgentTraining.filter({ agent_id: selectedAgentId }, '-created_date', 50),
     enabled: !!selectedAgentId
   });
 
@@ -200,56 +208,45 @@ export default function SkillDevelopment() {
         {selectedAgent && (
           <>
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-white/60">Active Skills</CardTitle>
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-xs text-white/60">Active Skills</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-purple-400">{agentSkills.length}</div>
+                <CardContent className="px-4 pb-4">
+                  <div className="text-2xl font-bold text-purple-400">{agentSkills.length}</div>
                 </CardContent>
               </Card>
 
               <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-white/60">Verified Skills</CardTitle>
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-xs text-white/60">Verified</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-400 flex items-center gap-2">
+                <CardContent className="px-4 pb-4">
+                  <div className="text-2xl font-bold text-green-400 flex items-center gap-1">
                     {agentCredentials.length}
-                    <ShieldCheck className="w-6 h-6" />
+                    <ShieldCheck className="w-5 h-5" />
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-white/60">In Progress</CardTitle>
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-xs text-white/60">In Progress</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-blue-400">
+                <CardContent className="px-4 pb-4">
+                  <div className="text-2xl font-bold text-blue-400">
                     {skillProgress.filter(sp => sp.status === 'active').length}
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-white/60">Completed</CardTitle>
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-xs text-white/60">Avg Progress</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-400">
-                    {skillProgress.filter(sp => sp.status === 'completed').length}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-white/60">Avg Progress</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-yellow-400">
+                <CardContent className="px-4 pb-4">
+                  <div className="text-2xl font-bold text-yellow-400">
                     {skillProgress.length > 0
                       ? Math.round(skillProgress.reduce((sum, sp) => sum + sp.progress_percentage, 0) / skillProgress.length)
                       : 0}%
@@ -275,6 +272,10 @@ export default function SkillDevelopment() {
                 <TabsTrigger value="skills" className="data-[state=active]:bg-purple-600">
                   <Award className="w-4 h-4 mr-2" />
                   Current Skills
+                </TabsTrigger>
+                <TabsTrigger value="upload" className="data-[state=active]:bg-purple-600">
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Training Logs
                 </TabsTrigger>
                 <TabsTrigger value="trajectory" className="data-[state=active]:bg-purple-600">
                   <TrendingUp className="w-4 h-4 mr-2" />
@@ -403,6 +404,22 @@ export default function SkillDevelopment() {
                   skills={agentSkills}
                   onRefresh={() => queryClient.invalidateQueries(['agent-skills', selectedAgentId])}
                 />
+              </TabsContent>
+
+              <TabsContent value="upload" className="space-y-6">
+                <AgentTrainingUpload
+                  agentId={selectedAgentId}
+                  agentName={selectedAgent?.name || 'Agent'}
+                  onSuccess={() => queryClient.invalidateQueries({ queryKey: ['agent-trainings', selectedAgentId] })}
+                />
+                {trainings.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-white font-medium text-sm">Training History</h3>
+                    {trainings.map(training => (
+                      <TrainingProgressCard key={training.id} training={training} />
+                    ))}
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="trajectory" className="space-y-4">
