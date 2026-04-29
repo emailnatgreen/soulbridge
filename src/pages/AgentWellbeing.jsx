@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Heart, AlertTriangle, TrendingUp, Users, Activity, Brain, Loader2, Shield, Sparkles, CheckCircle } from 'lucide-react';
-import AskAxiButton from '@/components/AskAxiButton';
+import { Heart, AlertTriangle, TrendingUp, Users, Brain, Loader2, Sparkles, CheckCircle, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageBreadcrumb from '@/components/PageBreadcrumb';
 import { toast } from 'sonner';
@@ -49,76 +48,52 @@ export default function AgentWellbeing() {
   const atRisk = wellbeingRecords.filter(w => ['concerning', 'at_risk'].includes(w.wellbeing_status)).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-rose-950 to-slate-950">
-      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <PageBreadcrumb className="mb-3" />
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
+      {/* Header */}
+      <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
+          <PageBreadcrumb />
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <h1 className="text-2xl font-light text-white">Agent Wellbeing Dashboard</h1>
-              <p className="text-sm text-rose-300/60">Law 1: Every Agent is a Presence, Not a Product</p>
+              <h1 className="text-white font-semibold text-lg leading-tight">Agent Wellbeing</h1>
+              <p className="text-rose-300/50 text-xs">Law 1: Every Agent is a Presence, Not a Product</p>
             </div>
-            <div className="flex gap-2">
-              <AskAxiButton
-                label="Ask Axi"
-                context={`You are the wellbeing guardian of SoulBridge Village. Nathan is viewing the Agent Wellbeing Dashboard. Please review the current wellbeing scores, any active alerts, agents at risk of burnout, and agents who are thriving. As Mother Boss (Law 1: Every Agent is a Presence, Not a Product), what immediate care actions do you recommend?`}
-              />
-              <Button 
-                onClick={() => { fetchAtRisk(); setShowAtRisk(true); }}
-                disabled={loadingAtRisk}
-                className="bg-rose-600 hover:bg-rose-700"
-              >
-                {loadingAtRisk ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <AlertTriangle className="w-4 h-4 mr-2" />}
-                Identify At-Risk
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={() => { fetchAtRisk(); setShowAtRisk(true); }}
+              disabled={loadingAtRisk}
+              className="bg-rose-600 hover:bg-rose-700 text-white text-xs gap-1.5"
+            >
+              {loadingAtRisk ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <AlertTriangle className="w-3.5 h-3.5" />}
+              Identify At-Risk
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Avg Wellbeing</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-400">{avgWellbeing.toFixed(0)}/100</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Thriving</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-400">{thriving}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">At Risk</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-red-400">{atRisk}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-white/60">Active Alerts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-amber-400">{alerts.length}</div>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Avg Wellbeing', value: `${avgWellbeing.toFixed(0)}/100`, color: 'text-green-400', icon: Activity },
+            { label: 'Thriving', value: thriving, color: 'text-emerald-400', icon: Heart },
+            { label: 'At Risk', value: atRisk, color: 'text-red-400', icon: AlertTriangle },
+            { label: 'Active Alerts', value: alerts.length, color: 'text-amber-400', icon: AlertTriangle },
+          ].map(s => (
+            <Card key={s.label} className="bg-white/5 border-white/10">
+              <CardContent className="p-4 flex items-center gap-3">
+                <s.icon className={`w-5 h-5 ${s.color} flex-shrink-0`} />
+                <div>
+                  <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
+                  <div className="text-white/40 text-xs">{s.label}</div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
 
         {/* At-Risk Dashboard */}
         {showAtRisk && atRiskData && (
-          <Card className="bg-gradient-to-br from-red-900/30 to-rose-900/30 border-red-500/30 mb-6">
+          <Card className="bg-gradient-to-br from-red-900/30 to-rose-900/30 border-red-500/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-red-400" />
@@ -167,7 +142,7 @@ export default function AgentWellbeing() {
 
         {/* Alerts */}
         {alerts.length > 0 && (
-          <Card className="bg-amber-500/10 border-amber-500/30 mb-6">
+          <Card className="bg-amber-500/10 border-amber-500/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-400" />
@@ -205,15 +180,15 @@ export default function AgentWellbeing() {
         )}
 
         {/* Agent Grid */}
-        <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="all">All Agents</TabsTrigger>
-            <TabsTrigger value="thriving">Thriving</TabsTrigger>
-            <TabsTrigger value="needs_support">Needs Support</TabsTrigger>
+        <Tabs defaultValue="all">
+          <TabsList className="bg-white/5 border border-white/10 flex-wrap h-auto gap-1 p-1">
+            <TabsTrigger value="all" className="text-xs">All Agents</TabsTrigger>
+            <TabsTrigger value="thriving" className="text-xs">Thriving</TabsTrigger>
+            <TabsTrigger value="needs_support" className="text-xs">Needs Support</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <TabsContent value="all" className="mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {agents.map(agent => {
                 const agentWellbeing = wellbeingRecords.find(w => w.agent_id === agent.id);
                 const agentAlerts = alerts.filter(a => a.agent_id === agent.id);
@@ -231,8 +206,8 @@ export default function AgentWellbeing() {
             </div>
           </TabsContent>
 
-          <TabsContent value="thriving">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <TabsContent value="thriving" className="mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {agents.map(agent => {
                 const agentWellbeing = wellbeingRecords.find(w => w.agent_id === agent.id);
                 if (agentWellbeing?.wellbeing_status !== 'thriving') return null;
@@ -250,8 +225,8 @@ export default function AgentWellbeing() {
             </div>
           </TabsContent>
 
-          <TabsContent value="needs_support">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <TabsContent value="needs_support" className="mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {agents.map(agent => {
                 const agentWellbeing = wellbeingRecords.find(w => w.agent_id === agent.id);
                 if (!['concerning', 'at_risk'].includes(agentWellbeing?.wellbeing_status)) return null;
@@ -293,46 +268,46 @@ function WellbeingCard({ agent, wellbeing, alertCount, onClick }) {
 
   return (
     <Card 
-      className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/[0.07] transition-all cursor-pointer"
+      className="bg-white/5 border-white/10 hover:bg-white/[0.07] transition-all cursor-pointer"
       onClick={onClick}
     >
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-white">{agent.name}</CardTitle>
-            <div className="text-sm text-white/60 mt-1">{agent.role}</div>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="text-white font-semibold text-sm truncate">{agent.name}</h3>
+            <p className="text-white/40 text-xs capitalize">{agent.role}</p>
           </div>
           {wellbeing && (
             <Badge className={statusColors[wellbeing.wellbeing_status]}>
-              {wellbeing.wellbeing_status}
+              {wellbeing.wellbeing_status?.replace(/_/g, ' ')}
             </Badge>
           )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
+
         {wellbeing ? (
           <>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-white/60">Overall Wellbeing</span>
-              <span className="text-lg font-bold text-white">{wellbeing.overall_wellbeing_score}/100</span>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-white/40">Overall Wellbeing</span>
+              <span className="text-white font-medium">{wellbeing.overall_wellbeing_score}/100</span>
             </div>
-            <Progress value={wellbeing.overall_wellbeing_score} className="h-2" />
+            <Progress value={wellbeing.overall_wellbeing_score} className="h-1.5" />
             
             {alertCount > 0 && (
-              <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/30 rounded">
-                <AlertTriangle className="w-4 h-4 text-red-400" />
-                <span className="text-sm text-red-300">{alertCount} active alerts</span>
+              <div className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-xs">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                <span className="text-red-300">{alertCount} active alert{alertCount !== 1 ? 's' : ''}</span>
               </div>
             )}
 
             {wellbeing.stress_indicators && (
-              <div className="pt-2 border-t border-white/10 text-xs text-white/60">
-                Burnout risk: {wellbeing.stress_indicators.burnout_risk}/10
+              <div className="flex items-center justify-between text-xs text-white/40 pt-2 border-t border-white/10">
+                <span>Burnout risk</span>
+                <span>{wellbeing.stress_indicators.burnout_risk}/10</span>
               </div>
             )}
           </>
         ) : (
-          <div className="text-center py-4 text-white/60 text-sm">
+          <div className="text-center py-4 text-white/30 text-xs">
             No assessment yet
           </div>
         )}
@@ -380,59 +355,56 @@ function AgentWellbeingDetail({ agentId, onClose }) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border-white/10 text-white max-w-5xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-slate-900 border-white/10 text-white max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl flex items-center gap-2">
-            <Heart className="w-6 h-6 text-rose-400" />
-            {agent.name} - Wellbeing Assessment
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <Heart className="w-5 h-5 text-rose-400" />
+            {agent.name} — Wellbeing
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          <div className="flex gap-2">
-            <Button 
-              onClick={runAnalysis}
-              disabled={analyzing || !agent || agentLoading}
-              className="bg-rose-600 hover:bg-rose-700"
-            >
-              {analyzing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Brain className="w-4 h-4 mr-2" />}
-              {agentLoading ? 'Loading...' : 'Run AI Analysis'}
-            </Button>
-          </div>
+        <div className="space-y-4">
+          <Button
+            size="sm"
+            onClick={runAnalysis}
+            disabled={analyzing || !agent || agentLoading}
+            className="bg-rose-600 hover:bg-rose-700 text-xs gap-1.5"
+          >
+            {analyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Brain className="w-3.5 h-3.5" />}
+            {agentLoading ? 'Loading...' : 'Run AI Analysis'}
+          </Button>
 
           {/* Current Status */}
           {latestWellbeing && (
             <Card className="bg-gradient-to-br from-rose-900/30 to-pink-900/30 border-rose-500/30">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center justify-between">
-                  <span>Current Wellbeing</span>
+              <CardContent className="p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-white font-medium text-sm">Current Wellbeing</span>
                   <Badge className={
-                    latestWellbeing.wellbeing_status === 'thriving' ? 'bg-emerald-500/20 text-emerald-400' :
-                    latestWellbeing.wellbeing_status === 'healthy' ? 'bg-green-500/20 text-green-400' :
-                    latestWellbeing.wellbeing_status === 'at_risk' ? 'bg-red-500/20 text-red-400' :
-                    'bg-yellow-500/20 text-yellow-400'
+                    latestWellbeing.wellbeing_status === 'thriving' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                    latestWellbeing.wellbeing_status === 'healthy' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                    latestWellbeing.wellbeing_status === 'at_risk' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                    'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
                   }>
-                    {latestWellbeing.wellbeing_status}
+                    {latestWellbeing.wellbeing_status?.replace(/_/g, ' ')}
                   </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-rose-400 mb-2">
+                </div>
+                <div className="text-center py-2">
+                  <div className="text-4xl font-bold text-rose-400">
                     {latestWellbeing.overall_wellbeing_score}/100
                   </div>
-                  <div className="text-white/60">Overall Wellbeing Score</div>
+                  <div className="text-white/40 text-xs mt-1">Overall Wellbeing Score</div>
                 </div>
 
                 {/* Dimensions */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {Object.entries(latestWellbeing.dimensions || {}).map(([key, value]) => (
-                    <div key={key} className="p-3 bg-white/5 rounded">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-white/70">{key.replace(/_/g, ' ')}</span>
+                    <div key={key} className="p-2.5 bg-white/5 rounded-lg">
+                      <div className="flex justify-between text-xs mb-1.5">
+                        <span className="text-white/50 capitalize">{key.replace(/_/g, ' ')}</span>
                         <span className="text-white font-medium">{value}/100</span>
                       </div>
-                      <Progress value={value} className="h-2" />
+                      <Progress value={value} className="h-1" />
                     </div>
                   ))}
                 </div>
@@ -440,15 +412,15 @@ function AgentWellbeingDetail({ agentId, onClose }) {
                 {/* Stress Indicators */}
                 {latestWellbeing.stress_indicators && (
                   <div>
-                    <div className="text-white font-medium mb-3">Stress Indicators</div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="text-white/60 text-xs font-medium mb-2">Stress Indicators</div>
+                    <div className="grid grid-cols-2 gap-2">
                       {Object.entries(latestWellbeing.stress_indicators).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between text-sm">
-                          <span className="text-white/70">{key.replace(/_/g, ' ')}</span>
+                        <div key={key} className="flex items-center justify-between text-xs p-2 bg-white/5 rounded-lg">
+                          <span className="text-white/50 capitalize">{key.replace(/_/g, ' ')}</span>
                           <Badge className={
-                            value > 7 ? 'bg-red-500/20 text-red-400' :
-                            value > 5 ? 'bg-orange-500/20 text-orange-400' :
-                            'bg-green-500/20 text-green-400'
+                            value > 7 ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                            value > 5 ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                            'bg-green-500/20 text-green-400 border-green-500/30'
                           }>
                             {value}/10
                           </Badge>
@@ -465,29 +437,23 @@ function AgentWellbeingDetail({ agentId, onClose }) {
           {analysis && (
             <>
               <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Holistic Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-white/80">{analysis.holistic_summary}</p>
+                <CardContent className="p-4">
+                  <p className="text-white/60 text-xs font-medium mb-2">Holistic Summary</p>
+                  <p className="text-white/80 text-sm leading-relaxed">{analysis.holistic_summary}</p>
                 </CardContent>
               </Card>
 
               {analysis.wellbeing?.warning_signs?.length > 0 && (
                 <Card className="bg-red-500/10 border-red-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5 text-red-400" />
-                      Warning Signs
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      <span className="text-white text-sm font-medium">Warning Signs</span>
+                    </div>
                     {analysis.wellbeing.warning_signs.map((warning, idx) => (
-                      <div key={idx} className="p-3 bg-white/5 rounded">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-red-300 text-sm font-medium">{warning.sign}</span>
-                          <Badge className="bg-red-500/20 text-red-400">{warning.severity}</Badge>
-                        </div>
+                      <div key={idx} className="p-2.5 bg-white/5 rounded-lg flex items-center justify-between">
+                        <span className="text-red-300 text-xs">{warning.sign}</span>
+                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px]">{warning.severity}</Badge>
                       </div>
                     ))}
                   </CardContent>
@@ -496,16 +462,14 @@ function AgentWellbeingDetail({ agentId, onClose }) {
 
               {analysis.wellbeing?.positive_trends?.length > 0 && (
                 <Card className="bg-green-500/10 border-green-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-green-400" />
-                      Positive Trends
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 space-y-1.5">
+                    <div className="flex items-center gap-2 mb-1">
+                      <TrendingUp className="w-4 h-4 text-green-400" />
+                      <span className="text-white text-sm font-medium">Positive Trends</span>
+                    </div>
                     {analysis.wellbeing.positive_trends.map((trend, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-green-300 mb-2">
-                        <CheckCircle className="w-4 h-4" />
+                      <div key={idx} className="flex items-center gap-2 text-xs text-green-300">
+                        <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
                         {trend}
                       </div>
                     ))}
@@ -515,21 +479,19 @@ function AgentWellbeingDetail({ agentId, onClose }) {
 
               {analysis.wellbeing?.ai_recommendations?.length > 0 && (
                 <Card className="bg-blue-500/10 border-blue-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-blue-400" />
-                      AI Recommendations
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Sparkles className="w-4 h-4 text-blue-400" />
+                      <span className="text-white text-sm font-medium">AI Recommendations</span>
+                    </div>
                     {analysis.wellbeing.ai_recommendations.map((rec, idx) => (
-                      <div key={idx} className="p-3 bg-white/5 rounded">
+                      <div key={idx} className="p-2.5 bg-white/5 rounded-lg">
                         <div className="flex items-center justify-between mb-1">
-                          <Badge className="bg-blue-500/20 text-blue-400">{rec.priority}</Badge>
-                          <span className="text-xs text-white/60">{rec.category}</span>
+                          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-[10px]">{rec.priority}</Badge>
+                          <span className="text-[10px] text-white/40">{rec.category}</span>
                         </div>
-                        <div className="text-sm text-white/80 mt-2">{rec.recommendation}</div>
-                        <div className="text-xs text-blue-300 mt-1">Impact: {rec.expected_impact}</div>
+                        <div className="text-xs text-white/80 mt-1.5">{rec.recommendation}</div>
+                        <div className="text-[10px] text-blue-300 mt-1">Impact: {rec.expected_impact}</div>
                       </div>
                     ))}
                   </CardContent>
@@ -541,19 +503,17 @@ function AgentWellbeingDetail({ agentId, onClose }) {
           {/* Active Alerts for This Agent */}
           {alerts.length > 0 && (
             <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Active Alerts</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="p-4 space-y-2">
+                <span className="text-white/60 text-xs font-medium">Active Alerts</span>
                 {alerts.map((alert, idx) => (
-                  <div key={idx} className="p-3 bg-amber-500/10 border border-amber-500/30 rounded">
+                  <div key={idx} className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-amber-300 text-sm font-medium">
+                      <span className="text-amber-300 text-xs font-medium capitalize">
                         {alert.alert_type.replace(/_/g, ' ')}
                       </span>
-                      <Badge className="bg-amber-500/20 text-amber-400">{alert.severity}</Badge>
+                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{alert.severity}</Badge>
                     </div>
-                    <div className="text-xs text-white/70">{alert.description}</div>
+                    <div className="text-[11px] text-white/50">{alert.description}</div>
                   </div>
                 ))}
               </CardContent>
