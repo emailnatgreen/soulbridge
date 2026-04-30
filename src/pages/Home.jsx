@@ -552,53 +552,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Village Agents */}
-        <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-2xl p-3 sm:p-5 space-y-3 sm:space-y-4">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-blue-400" />
-            <h3 className="font-semibold text-white text-xs sm:text-sm">Village Agents</h3>
-            <button onClick={() => navigate('/agents')} className="ml-auto text-blue-400 text-[8px] sm:text-xs hover:text-blue-300 flex items-center gap-0.5 sm:gap-1">
-              View all <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
-              {[1,2,3,4,5,6].map(i => <div key={i} className="h-20 sm:h-24 bg-white/5 rounded-lg animate-pulse" />)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
-              {agents.map(agent => {
-                const hasDID = agent.classic_address && agent.classic_address.startsWith('r');
-                return (
-                  <button
-                    key={agent.id}
-                    onClick={() => navigate(`/agents/${agent.id}`)}
-                    className="bg-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 hover:bg-white/10 hover:border-purple-500/30 transition-all text-left group border border-transparent"
-                  >
-                    {agent.avatar_url ? (
-                      <img src={agent.avatar_url} alt={agent.name} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover ring-1 ring-white/10 flex-shrink-0" />
-                    ) : (
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
-                        {agent.name?.[0] || '?'}
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-white text-[9px] sm:text-xs font-medium truncate group-hover:text-purple-300 transition-colors">{agent.name}</p>
-                      <p className="text-white/40 text-[7px] sm:text-[10px] truncate capitalize">{agent.role}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-amber-300 text-[7px] sm:text-[9px] font-bold">{agent.honor_score || 100}</span>
-                        {hasDID && (
-                          <span className="text-green-400 text-[7px]">● On-Chain</span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
       </div>
 
       <footer className="border-t border-white/10 bg-black/20 py-3 sm:py-5 mt-6 sm:mt-10">
