@@ -9,7 +9,7 @@ import { hasAdminAccess } from '@/lib/adminAccess';
 import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
-  TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
+  TrendingUp, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
   Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, TrendingDown, Hammer
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
@@ -38,7 +38,7 @@ export default function Home() {
   const [proposals, setProposals] = useState([]);
   const [agents, setAgents] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [liveCounts, setLiveCounts] = useState({ agents: 0, proposals: 0, dids: 0, projects: 0, mentors: 0, skills: 0, resources: 0, activeSkills: 0 });
+  const [liveCounts, setLiveCounts] = useState({ agents: 0, proposals: 0, dids: 0, projects: 0, skills: 0, resources: 0, activeSkills: 0 });
   const [pulseKUs, setPulseKUs] = useState([]);
   const [pulseEconomicVol, setPulseEconomicVol] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -125,14 +125,13 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [proposalData, agentData, allAgentData, walletData, activityData, projectData, mentorData, skillData, resourceData, agentSkillData, kuData, snapshotData] = await Promise.all([
+        const [proposalData, agentData, allAgentData, walletData, activityData, projectData, skillData, resourceData, agentSkillData, kuData, snapshotData] = await Promise.all([
           isAdmin ? base44.entities.GovernanceProposal.list('-created_date', 5) : Promise.resolve([]),
           base44.entities.Agent.list('-created_date', 6),
           base44.entities.Agent.list('-created_date', 500),
           base44.entities.Wallet.filter({ is_published: true, network: 'mainnet' }, 'created_date', 1000),
           isAdmin ? base44.entities.EconomicActivity.list('-created_date', 8).catch(() => []) : Promise.resolve([]),
           isAdmin ? base44.entities.AIProject.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
-          isAdmin ? base44.entities.MentorshipRelationship.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
           isAdmin ? base44.entities.Skill.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
           isAdmin ? base44.entities.Resource.list('-created_date', 100).catch(() => []) : Promise.resolve([]),
           isAdmin ? base44.entities.AgentSkill?.list?.('-created_date', 500).catch(() => []) : Promise.resolve([]),
@@ -152,7 +151,6 @@ export default function Home() {
           proposals: (proposalData || []).length,
           dids: (walletData || []).length,
           projects: (projectData || []).length,
-          mentors: (mentorData || []).length,
           skills: (skillData || []).length,
           resources: (resourceData || []).length,
           activeSkills: (agentSkillData || []).length,
@@ -188,11 +186,9 @@ export default function Home() {
 
   const features = [
     { icon: Vote, title: 'Governance', desc: 'Propose, vote and shape the Village by the 11 Laws of Honour', path: '/governance', color: 'text-purple-400', border: 'border-purple-500/30', countLabel: 'proposals', count: liveCounts.proposals },
-    { icon: Users, title: 'AI Agents', desc: 'Deploy sovereign AI agents with on-chain DID identity', path: '/Agents', color: 'text-blue-400', border: 'border-blue-500/30', countLabel: 'agents', count: liveCounts.agents },
+    { icon: Users, title: 'AI Agents', desc: 'Deploy sovereign AI agents with on-chain DID identity', path: '/Agents', color: 'text-blue-400', border: 'border-blue-500/30', countLabel: 'agents', count: liveCounts.agents, gated: 'agent.command_center' },
     { icon: GraduationCap, title: 'Skills Hub', desc: 'Develop expertise, discover mentors, and grow your talents', path: '/SkillsHub', color: 'text-emerald-400', border: 'border-emerald-500/30', countLabel: 'active skills', count: liveCounts.activeSkills },
-    { icon: BookOpen, title: 'Mentorship', desc: 'Learn, grow and earn through structured mentorship paths', path: '/MentorshipHub', color: 'text-green-400', border: 'border-green-500/30', countLabel: 'relationships', count: liveCounts.mentors },
     { icon: TrendingUp, title: 'Economy', desc: 'Trade, earn and manage resources in a live XRPL economy', path: '/Economy', color: 'text-amber-400', border: 'border-amber-500/30', countLabel: 'resources', count: liveCounts.resources },
-    { icon: Briefcase, title: 'AI Projects', desc: 'Collaborate on live Village projects with on-chain rewards', path: '/AIProjectManager', color: 'text-cyan-400', border: 'border-cyan-500/30', countLabel: 'projects', count: activeProjects.length },
     { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
     { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length },
     { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
@@ -302,10 +298,17 @@ export default function Home() {
               <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
               Dashboard
             </Button>
-            <Button onClick={() => navigate('/agents')} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Village Agents</span><span className="sm:hidden">Agents</span>
-            </Button>
+            {(isAdmin || isWidgetUnlocked('agent.command_center')) ? (
+              <Button onClick={() => navigate('/agents')} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Village Agents</span><span className="sm:hidden">Agents</span>
+              </Button>
+            ) : (
+              <Button onClick={() => navigate('/widget-marketplace')} className="bg-white/10 border border-white/20 text-white/50 h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
+                <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Agents 🔒</span><span className="sm:hidden">🔒</span>
+              </Button>
+            )}
             <Button onClick={() => navigate('/governance')} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <Landmark className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Governance</span><span className="sm:hidden">Gov</span>
@@ -394,23 +397,28 @@ export default function Home() {
             <Zap className="w-3 h-3" /> Platform Features
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {features.filter(f => isAdmin || ['AI Agents', 'Governance', 'Skills Hub', 'Mentorship', 'Economy', 'Sovereign Identity'].includes(f.title)).map(f => (
-              <button
-                key={f.title}
-                onClick={() => navigate(f.path)}
-                className={`bg-gradient-to-br from-slate-900/80 to-slate-950/60 border ${f.border} rounded-lg sm:rounded-2xl p-3 sm:p-4 text-left hover:scale-[1.02] hover:shadow-lg transition-all group`}
-              >
-                <div className="flex items-center justify-between mb-1 sm:mb-2">
-                  <f.icon className={`w-4 sm:w-5 h-4 sm:h-5 ${f.color}`} />
-                  <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4 text-white/20 group-hover:text-white/50 transition" />
-                </div>
-                <h4 className="text-white font-semibold text-xs sm:text-sm">{f.title}</h4>
-                <p className="text-white/40 text-[8px] sm:text-xs mt-0.5 sm:mt-1 leading-relaxed">{f.desc}</p>
-                <div className={`mt-2 sm:mt-3 text-[8px] sm:text-xs font-semibold ${f.color}`}>
-                  {loading ? '…' : f.count} {f.countLabel}
-                </div>
-              </button>
-            ))}
+            {features.filter(f => isAdmin || ['AI Agents', 'Governance', 'Skills Hub', 'Economy'].includes(f.title)).map(f => {
+              const locked = f.gated && !isAdmin && !isWidgetUnlocked(f.gated);
+              return (
+                <button
+                  key={f.title}
+                  onClick={() => navigate(locked ? '/widget-marketplace' : f.path)}
+                  className={`bg-gradient-to-br from-slate-900/80 to-slate-950/60 border ${locked ? 'border-white/10 opacity-60' : f.border} rounded-lg sm:rounded-2xl p-3 sm:p-4 text-left hover:scale-[1.02] hover:shadow-lg transition-all group`}
+                >
+                  <div className="flex items-center justify-between mb-1 sm:mb-2">
+                    {locked ? <Lock className="w-4 sm:w-5 h-4 sm:h-5 text-white/30" /> : <f.icon className={`w-4 sm:w-5 h-4 sm:h-5 ${f.color}`} />}
+                    <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4 text-white/20 group-hover:text-white/50 transition" />
+                  </div>
+                  <h4 className={`font-semibold text-xs sm:text-sm ${locked ? 'text-white/50' : 'text-white'}`}>{f.title}{locked ? ' 🔒' : ''}</h4>
+                  <p className="text-white/40 text-[8px] sm:text-xs mt-0.5 sm:mt-1 leading-relaxed">{locked ? 'Agent Genesis NFT required' : f.desc}</p>
+                  {!locked && (
+                    <div className={`mt-2 sm:mt-3 text-[8px] sm:text-xs font-semibold ${f.color}`}>
+                      {loading ? '…' : f.count} {f.countLabel}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
