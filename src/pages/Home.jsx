@@ -191,7 +191,7 @@ export default function Home() {
     { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
     { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length, gated: '/ConstitutionalMultiSig' },
     { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
-    { icon: Hammer, title: 'NFT Workshop', desc: 'Mint Widget NFTs, Chrome Skill NFTs and AI Agent NFTs — the sovereign creation environment', path: '/nft-workshop', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: '', count: null },
+    { icon: Hammer, title: 'NFT Workshop', desc: 'Mint Widget NFTs, Chrome Skill NFTs and AI Agent NFTs — the sovereign creation environment', path: '/nft-workshop', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: '', count: null, gated: '/nft-workshop' },
   ];
 
   // Gate: non-citizens see a redirect prompt
@@ -291,40 +291,38 @@ export default function Home() {
             <span className="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300">RLUSDT</span>
           </div>
 
-          {/* 6 Hero Buttons */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 max-w-2xl mx-auto">
-            <Button onClick={() => navigate('/dashboard')} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-              Dashboard
-            </Button>
-            {(isAdmin || isWidgetUnlocked('agent.command_center')) ? (
-              <Button onClick={() => navigate('/agents')} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-                <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Village Agents</span><span className="sm:hidden">Agents</span>
-              </Button>
-            ) : (
-              <Button onClick={() => navigate('/widget-marketplace')} className="bg-white/10 border border-white/20 text-white/50 h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-                <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Agents 🔒</span><span className="sm:hidden">🔒</span>
-              </Button>
-            )}
-            <Button onClick={() => navigate('/governance')} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <Landmark className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Governance</span><span className="sm:hidden">Gov</span>
-            </Button>
-            <Button onClick={() => navigate('/KineticGridDashboard')} className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Kinetic Grid</span><span className="sm:hidden">KU</span>
-            </Button>
-            <Button onClick={() => navigate('/Economy')} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Economy</span><span className="sm:hidden">Econ</span>
-            </Button>
-            <Button onClick={() => navigate('/nft-workshop')} className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <Hammer className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">NFT Workshop</span><span className="sm:hidden">NFT</span>
-            </Button>
-          </div>
+          {/* Hero Buttons */}
+          {(() => {
+            const heroButtons = [
+              { path: '/dashboard', label: 'Dashboard', shortLabel: 'Dashboard', icon: ArrowRight, gradient: 'from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' },
+              { path: '/agents', label: 'Village Agents', shortLabel: 'Agents', icon: Users, gradient: 'from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700', gated: 'agent.command_center' },
+              { path: '/governance', label: 'Governance', shortLabel: 'Gov', icon: Landmark, gradient: 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' },
+              { path: '/KineticGridDashboard', label: 'Kinetic Grid', shortLabel: 'KU', icon: Zap, gradient: 'from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700' },
+              { path: '/Economy', label: 'Economy', shortLabel: 'Econ', icon: TrendingUp, gradient: 'from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' },
+              { path: '/nft-workshop', label: 'NFT Workshop', shortLabel: 'Workshop', icon: Hammer, gradient: 'from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700', gated: '/nft-workshop' },
+              { path: '/nft-workshop', label: 'Chrome Skills', shortLabel: 'Chrome', icon: Sparkles, gradient: 'from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700', gated: '/chrome-skills' },
+              { path: '/nft-workshop', label: 'AI Agent NFT', shortLabel: 'Agent NFT', icon: Bot, gradient: 'from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700', gated: '/nft-workshop' },
+            ];
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-3xl mx-auto">
+                {heroButtons.map(btn => {
+                  const locked = btn.gated && !isAdmin && !isWidgetUnlocked(btn.gated);
+                  const Icon = btn.icon;
+                  return (
+                    <Button
+                      key={btn.label}
+                      onClick={() => navigate(locked ? '/widget-marketplace' : btn.path)}
+                      className={`${locked ? 'bg-white/10 border border-white/20 text-white/50' : `bg-gradient-to-r ${btn.gradient} text-white`} h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3`}
+                    >
+                      {locked ? <Lock className="w-3 h-3 sm:w-4 sm:h-4" /> : <Icon className="w-3 h-3 sm:w-4 sm:h-4" />}
+                      <span className="hidden sm:inline">{locked ? `${btn.label} 🔒` : btn.label}</span>
+                      <span className="sm:hidden">{locked ? '🔒' : btn.shortLabel}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Village Pulse — Live Kinetic Energy */}
