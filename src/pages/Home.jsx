@@ -10,7 +10,7 @@ import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
   TrendingUp, BookOpen, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
-  Fingerprint, Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, TrendingDown, Hammer
+  Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, TrendingDown, Hammer
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
@@ -197,8 +197,6 @@ export default function Home() {
     { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length },
     { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
     { icon: Hammer, title: 'NFT Workshop', desc: 'Mint Widget NFTs, Chrome Skill NFTs and AI Agent NFTs — the sovereign creation environment', path: '/nft-workshop', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: '', count: null },
-    { icon: Fingerprint, title: 'Sovereign Identity', desc: 'Your personal DID hub — view published DIDs, manage wallets, privacy controls and verification certificates', path: '/sovereign-id', color: 'text-indigo-400', border: 'border-indigo-500/30', countLabel: 'published DIDs', count: liveCounts.dids },
-    { icon: Globe, title: 'Seed Golden Acorn', desc: 'Create and manage multi-node XRPL wallets — the gateway to sovereign DID identity publishing', path: '/seed-golden-acorn', color: 'text-green-400', border: 'border-green-500/30', countLabel: '', count: null },
   ];
 
   // Gate: non-citizens see a redirect prompt
@@ -312,13 +310,13 @@ export default function Home() {
               <Landmark className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Governance</span><span className="sm:hidden">Gov</span>
             </Button>
-            <Button onClick={() => navigate('/wallets')} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
-              <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Wallets</span><span className="sm:hidden">Wallet</span>
-            </Button>
             <Button onClick={() => navigate('/KineticGridDashboard')} className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Kinetic</span><span className="sm:hidden">KU</span>
+              <span className="hidden sm:inline">Kinetic Grid</span><span className="sm:hidden">KU</span>
+            </Button>
+            <Button onClick={() => navigate('/Economy')} className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Economy</span><span className="sm:hidden">Econ</span>
             </Button>
             <Button onClick={() => navigate('/nft-workshop')} className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white h-8 sm:h-10 gap-0.5 text-[9px] sm:text-xs px-2 sm:px-3">
               <Hammer className="w-3 h-3 sm:w-4 sm:h-4" />
