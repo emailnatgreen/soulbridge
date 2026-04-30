@@ -10,7 +10,7 @@ import {
   Sparkles, ArrowRight, Shield, Vote, Users, Activity,
   CheckCircle, Clock, Zap, Search, Bell, Star, Lock,
   TrendingUp, Globe, ChevronRight, Landmark, Briefcase, GraduationCap,
-  Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, TrendingDown, Hammer
+  Radio, Bot, Award, FileCheck, Link2, CalendarDays, ScrollText, Settings, BarChart3, MessageSquare, Crown, Hammer
 } from 'lucide-react';
 import { useDIDSignal } from '@/hooks/useDIDSignal';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
@@ -190,7 +190,7 @@ export default function Home() {
     { icon: TrendingUp, title: 'Economy', desc: 'Trade, earn and manage resources in a live XRPL economy', path: '/Economy', color: 'text-amber-400', border: 'border-amber-500/30', countLabel: 'resources', count: liveCounts.resources },
     { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
     { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length, gated: '/ConstitutionalMultiSig' },
-    { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
+
     { icon: Hammer, title: 'NFT Workshop', desc: 'Mint Widget NFTs, Chrome Skill NFTs and AI Agent NFTs — the sovereign creation environment', path: '/nft-workshop', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: '', count: null, gated: '/nft-workshop' },
   ];
 

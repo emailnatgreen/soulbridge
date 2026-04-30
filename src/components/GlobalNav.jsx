@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import {
   Home, Menu, X, BarChart3, Users, Vote, Briefcase, Calendar,
   Settings, Image, Brain, Wallet, Shield, BookOpen, Zap,
-  TrendingUp, MessageSquare, Star, ChevronDown, ChevronRight,
+  TrendingUp, TrendingDown, MessageSquare, Star, ChevronDown, ChevronRight,
   TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
   FileText, ShoppingBag, Heart, Landmark, Link2 as LinkIcon,
   MailWarning, GitBranch
@@ -42,6 +42,7 @@ const NAV_GROUPS = [
       { label: 'Governance Hub', path: '/GovernanceHub', icon: Vote },
       { label: 'Voting Dashboard', path: '/GovernanceVotingDashboard', icon: Vote },
       { label: 'Kinetic Grid', path: '/KineticGridDashboard', icon: Activity },
+      { label: 'Kinetic Waste', path: '/KineticWasteDashboard', icon: TrendingDown },
       { label: 'Treasury Proposals', path: '/TreasuryAllocationProposal', icon: Landmark },
       { label: 'Treasury Signing', path: '/TreasurySigningHelper', icon: Zap },
       { label: 'Constitutional Multi-Sig', path: '/ConstitutionalMultiSig', icon: Shield },
