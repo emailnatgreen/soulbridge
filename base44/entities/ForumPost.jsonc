@@ -1,0 +1,43 @@
+{
+  "name": "ForumPost",
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string",
+      "description": "The post/comment text"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Display name of the author"
+    },
+    "author_did": {
+      "type": "string",
+      "description": "DID of the author"
+    },
+    "parent_id": {
+      "type": "string",
+      "description": "Parent post ID for replies (null for top-level posts)"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of likes"
+    },
+    "liked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails of users who liked this post"
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this post is pinned by admin"
+    }
+  },
+  "required": [
+    "content",
+    "author_name"
+  ]
+}

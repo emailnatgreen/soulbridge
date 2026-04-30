@@ -21,6 +21,7 @@ import CarbonFootprintChart from '@/components/CarbonFootprintChart';
 import CarbonFootprintExplainer from '@/components/CarbonFootprintExplainer';
 import LiveActivityFeed from '@/components/activity/LiveActivityFeed';
 import InfrastructureNFTShowcase from '@/components/home/InfrastructureNFTShowcase';
+import VillageForum from '@/components/home/VillageForum';
 
 const SYSTEM_ACTORS = { dex_swap: 'DEX Swap Engine', dex: 'DEX Engine', treasury: 'Village Treasury', system: 'System', external_source: 'External Source' };
 
@@ -551,6 +552,9 @@ export default function Home() {
             )}
           </div>
         </div>
+
+        {/* Village Forum */}
+        <VillageForum />
 
       </div>
 
