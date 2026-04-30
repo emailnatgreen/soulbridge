@@ -11,6 +11,7 @@ import CarbonFootprintExplainer from '@/components/CarbonFootprintExplainer';
 import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
+import BlockchainSovereigntySection from '@/components/landing/BlockchainSovereigntySection';
 
 if (!window.__soulbridge) window.__soulbridge = {};
 
@@ -442,6 +443,9 @@ export default function LandingPage() {
               <KineticPublicOverview kus={allKUs} />
             </div>
           </div>
+
+          {/* Blockchain Sovereignty — What We Offer */}
+          <BlockchainSovereigntySection />
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
