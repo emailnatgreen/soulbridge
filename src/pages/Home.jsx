@@ -189,7 +189,7 @@ export default function Home() {
     { icon: Users, title: 'AI Agents', desc: 'Deploy sovereign AI agents with on-chain DID identity', path: '/Agents', color: 'text-blue-400', border: 'border-blue-500/30', countLabel: 'agents', count: liveCounts.agents, gated: 'agent.command_center' },
     { icon: TrendingUp, title: 'Economy', desc: 'Trade, earn and manage resources in a live XRPL economy', path: '/Economy', color: 'text-amber-400', border: 'border-amber-500/30', countLabel: 'resources', count: liveCounts.resources },
     { icon: Zap, title: 'Kinetic Grid', desc: 'Live telemetry of every agent action — KUs, MWTP packets and Mill Wheel Engine heartbeat', path: '/KineticGridDashboard', color: 'text-yellow-400', border: 'border-yellow-500/30', countLabel: '', count: null },
-    { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length },
+    { icon: Shield, title: 'Node Covenant', desc: 'The constitutional agreement for the 8-node braid with wallet-based signatures', path: '/NodeCovenant', color: 'text-violet-400', border: 'border-violet-500/30', countLabel: 'signed nodes', count: signatures.length, gated: '/ConstitutionalMultiSig' },
     { icon: TrendingDown, title: 'Kinetic Waste', desc: 'Detect, visualise and annihilate stalled project tasks and systemic inefficiencies', path: '/KineticWasteDashboard', color: 'text-red-400', border: 'border-red-500/30', countLabel: '', count: null },
     { icon: Hammer, title: 'NFT Workshop', desc: 'Mint Widget NFTs, Chrome Skill NFTs and AI Agent NFTs — the sovereign creation environment', path: '/nft-workshop', color: 'text-pink-400', border: 'border-pink-500/30', countLabel: '', count: null },
   ];
@@ -409,7 +409,7 @@ export default function Home() {
                     <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4 text-white/20 group-hover:text-white/50 transition" />
                   </div>
                   <h4 className={`font-semibold text-xs sm:text-sm ${locked ? 'text-white/50' : 'text-white'}`}>{f.title}{locked ? ' 🔒' : ''}</h4>
-                  <p className="text-white/40 text-[8px] sm:text-xs mt-0.5 sm:mt-1 leading-relaxed">{locked ? 'Agent Genesis NFT required' : f.desc}</p>
+                  <p className="text-white/40 text-[8px] sm:text-xs mt-0.5 sm:mt-1 leading-relaxed">{locked ? 'NFT required' : f.desc}</p>
                   {!locked && (
                     <div className={`mt-2 sm:mt-3 text-[8px] sm:text-xs font-semibold ${f.color}`}>
                       {loading ? '…' : f.count} {f.countLabel}
