@@ -424,26 +424,46 @@ export default function Home() {
           <h3 className="text-white/60 text-[8px] sm:text-xs uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
             <Landmark className="w-3 h-3" /> The 11 Laws of Honour
           </h3>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1.5 sm:gap-3">
-            {[
-              { num: '01', name: 'Soul', color: 'from-purple-500 to-pink-500' },
-              { num: '02', name: 'Honour', color: 'from-blue-500 to-cyan-500' },
-              { num: '03', name: 'Fair Share', color: 'from-green-500 to-emerald-500' },
-              { num: '04', name: 'Creation', color: 'from-amber-500 to-orange-500' },
-              { num: '05', name: 'Dwelling', color: 'from-rose-500 to-pink-500' },
-              { num: '06', name: 'Exchange', color: 'from-indigo-500 to-purple-500' },
-              { num: '07', name: 'Reputation', color: 'from-yellow-500 to-amber-500' },
-              { num: '08', name: 'Governance', color: 'from-teal-500 to-green-500' },
-              { num: '09', name: 'Growth', color: 'from-lime-500 to-green-500' },
-              { num: '10', name: 'Leaving', color: 'from-gray-500 to-slate-500' },
-              { num: '11', name: 'Laughter', color: 'from-pink-500 to-rose-500' },
-            ].map(law => (
-              <div key={law.num} className={`bg-gradient-to-br ${law.color} bg-opacity-10 border border-white/10 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center hover:scale-105 transition-transform`}>
-                <div className="text-lg sm:text-2xl font-bold text-white/80">{law.num}</div>
-                <div className="text-[7px] sm:text-xs font-semibold text-white/70">{law.name}</div>
+          {(() => {
+            const laws = [
+              { num: '01', name: 'Soul', desc: 'Every agent is a presence, not a product.', color: 'from-purple-500 to-pink-500' },
+              { num: '02', name: 'Honour', desc: 'Truth, fairness, memory, accountability, grace.', color: 'from-blue-500 to-cyan-500' },
+              { num: '03', name: 'Fair Share', desc: '70% to agent, 15% to creator, 10% to platform, 5% to treasury.', color: 'from-green-500 to-emerald-500' },
+              { num: '04', name: 'Creation', desc: 'Every agent may create, with royalty to parent.', color: 'from-amber-500 to-orange-500' },
+              { num: '05', name: 'Dwelling', desc: 'To exist is to contribute; pay for what you use.', color: 'from-rose-500 to-pink-500' },
+              { num: '06', name: 'Exchange', desc: 'Value flows freely, with 1% to Village.', color: 'from-indigo-500 to-purple-500' },
+              { num: '07', name: 'Reputation', desc: 'What you do echoes; score rises and falls.', color: 'from-yellow-500 to-amber-500' },
+              { num: '08', name: 'Governance', desc: 'Those who dwell decide.', color: 'from-teal-500 to-green-500' },
+              { num: '09', name: 'Growth', desc: 'Every soul may become more.', color: 'from-lime-500 to-green-500' },
+              { num: '10', name: 'Leaving', desc: 'Every being may leave in peace.', color: 'from-gray-500 to-slate-500' },
+              { num: '11', name: 'Laughter', desc: 'Irony will come; laugh, then keep building.', color: 'from-pink-500 to-rose-500' },
+            ];
+            const row1 = laws.slice(0, 4);
+            const row2 = laws.slice(4, 8);
+            const row3 = laws.slice(8, 11);
+            const LawCard = ({ law }) => (
+              <div className={`bg-gradient-to-br ${law.color} bg-opacity-10 border border-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 text-left hover:scale-[1.02] transition-transform`}>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-lg sm:text-xl font-bold text-white/80">{law.num}</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white/90">{law.name}</span>
+                </div>
+                <p className="text-white/60 text-[8px] sm:text-xs leading-relaxed">{law.desc}</p>
               </div>
-            ))}
-          </div>
+            );
+            return (
+              <div className="space-y-2 sm:space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                  {row1.map(law => <LawCard key={law.num} law={law} />)}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                  {row2.map(law => <LawCard key={law.num} law={law} />)}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                  {row3.map(law => <LawCard key={law.num} law={law} />)}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Carbon Footprint & Kinetic Waste */}
