@@ -65,6 +65,7 @@ const NAV_GROUPS = [
       { label: 'Send XRP', path: '/Send', icon: Zap },
       { label: 'Seed Acorn', path: '/seed-golden-acorn', icon: Wallet },
       { label: 'Economy', path: '/Economy', icon: Landmark },
+      { label: 'ETH RLUSD Treasury', path: '/eth-treasury', icon: Shield },
       { label: 'Widget Marketplace', path: '/widget-marketplace', icon: ShoppingBag },
       { label: 'Storefront', path: '/storefront', icon: ShoppingBag },
     ]

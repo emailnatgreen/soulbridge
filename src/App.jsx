@@ -91,6 +91,7 @@ import NFTWorkshop from './pages/NFTWorkshop';
 import SeedGoldenAcorn from './pages/SeedGoldenAcorn';
 import RLUSDTrustlineGate from './pages/RLUSDTrustlineGate';
 import StorefrontHub from './pages/StorefrontHub';
+import EthTreasuryPage from './pages/EthTreasuryPage';
 
 
 const LoadingFallback = () => (
@@ -318,6 +319,9 @@ const AuthenticatedApp = () => {
 
         {/* STOREFRONT */}
         <Route path="/storefront" element={L("storefront", StorefrontHub)} />
+
+        {/* ETH TREASURY */}
+        <Route path="/eth-treasury" element={L("eth-treasury", EthTreasuryPage)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />
