@@ -75,6 +75,7 @@ import ProjectManager from './pages/ProjectManager';
 import AIProjectHub from './pages/AIProjectHub';
 import EditLanding from './pages/EditLanding';
 import ScrollOfResonance from './pages/ScrollOfResonance';
+import SecureInviteDashboard from './pages/SecureInviteDashboard';
 import NodeCovenant from './pages/NodeCovenant';
 import MentorshipHub from './pages/MentorshipHub';
 import ImageStorage from './pages/ImageStorage';
@@ -161,6 +162,7 @@ const PUBLIC_PATHS = [
   '/EditLanding',
   '/ScrollOfResonance',
   '/scroll-of-resonance',
+  '/secure-invite',
   '/whitepaper/governance',
   '/whitepaper/governance/constitutional-foundation',
   '/whitepaper/governance/on-chain-multisig',
@@ -224,6 +226,7 @@ const AuthenticatedApp = () => {
           <Route path="/EditLanding" element={<EditLanding />} />
           <Route path="/ScrollOfResonance" element={<ScrollOfResonance />} />
           <Route path="/scroll-of-resonance" element={<ScrollOfResonance />} />
+          <Route path="/secure-invite" element={<SecureInviteDashboard />} />
           <Route path="/whitepaper/governance" element={<GovernanceOverview />} />
           <Route path="/whitepaper/governance/constitutional-foundation" element={<GovConstitution />} />
           <Route path="/whitepaper/governance/on-chain-multisig" element={<GovMultiSig />} />

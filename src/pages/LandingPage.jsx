@@ -117,10 +117,12 @@ export default function LandingPage() {
     }
     try {
       const inviteSession = localStorage.getItem('sb_invite_session');
-      const inviteWallet = localStorage.getItem('sb_invite_wallet');
-      const parsedWallet = inviteWallet ? JSON.parse(inviteWallet) : null;
-      if (inviteSession && parsedWallet && Number(parsedWallet.balance || 0) > 0) {
-        navigate('/VipInviteDashboard');
+      if (inviteSession) {
+        const parsed = JSON.parse(inviteSession);
+        if (parsed.dashboard_data) {
+          navigate('/secure-invite');
+          return;
+        }
       }
     } catch (e) { /* ignore */ }
   }, []);
@@ -247,7 +249,7 @@ export default function LandingPage() {
     setInviteLoading(true);
     setInviteError('');
     try {
-      const res = await base44.functions.invoke('validateInviteToken', { token_id: inviteCode.trim().toUpperCase() });
+      const res = await base44.functions.invoke('validatePublicInvite', { token_id: inviteCode.trim().toUpperCase() });
       const data = res.data;
       if (!data.valid) {
         setInviteError(data.error || 'Invalid code');
@@ -257,11 +259,9 @@ export default function LandingPage() {
           recipient_nickname: data.recipient_nickname,
           kinetic_weight: data.kinetic_weight,
           notes: data.notes,
+          dashboard_data: data.dashboard_data || null,
         }));
-        if (data.wallet) {
-          localStorage.setItem('sb_invite_wallet', JSON.stringify(data.wallet));
-        }
-        navigate('/VipInviteDashboard');
+        navigate('/secure-invite');
       }
     } catch (e) {
       setInviteError(e?.response?.data?.error || 'Could not validate code');
