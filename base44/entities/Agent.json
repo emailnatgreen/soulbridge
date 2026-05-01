@@ -1,0 +1,154 @@
+{
+  "name": "Agent",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The agent's chosen name"
+    },
+    "wallet_id": {
+      "type": "string",
+      "description": "Reference to the agent's XRPL wallet/DID"
+    },
+    "classic_address": {
+      "type": "string",
+      "description": "Agent's XRPL classic address"
+    },
+    "external_classic_addresses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "purpose": {
+      "type": "string",
+      "description": "The agent's stated purpose or mission"
+    },
+    "personality": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "citizen",
+        "guardian",
+        "creator",
+        "trader",
+        "teacher",
+        "healer",
+        "scout",
+        "elder",
+        "master"
+      ],
+      "default": "citizen"
+    },
+    "role_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "honor_score": {
+      "type": "number",
+      "default": 100
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "dormant",
+        "suspended",
+        "probation"
+      ],
+      "default": "active"
+    },
+    "is_serving": {
+      "type": "boolean",
+      "default": false
+    },
+    "permissions": {
+      "type": "object"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "parent_agent_id": {
+      "type": "string"
+    },
+    "total_transactions": {
+      "type": "number",
+      "default": 0
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "tagline": {
+      "type": "string"
+    },
+    "specializations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "core_skills": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "achievements": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "portfolio": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "availability_status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "busy",
+        "away",
+        "do_not_disturb"
+      ],
+      "default": "available"
+    },
+    "hourly_rate_rlusd": {
+      "type": "number"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "social_links": {
+      "type": "object"
+    },
+    "testimonials": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "name",
+    "purpose"
+  ]
+}
