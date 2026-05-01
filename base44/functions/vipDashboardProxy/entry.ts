@@ -19,18 +19,34 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Action required' }, { status: 400 });
     }
 
-    // Validate the invite token
-    const tokens = await base44.asServiceRole.entities.InvitationToken.filter({
-      token_id: invite_token_id.trim().toUpperCase()
-    });
-
-    if (!tokens || tokens.length === 0) {
-      return Response.json({ error: 'Invalid invite token' }, { status: 403 });
+    // Allow authenticated admin users to bypass invite token validation
+    let isAdminCaller = false;
+    if (invite_token_id.trim().toUpperCase() === 'ADMIN') {
+      try {
+        const user = await base44.auth.me();
+        if (user?.role === 'admin') {
+          isAdminCaller = true;
+        }
+      } catch (_) {}
+      if (!isAdminCaller) {
+        return Response.json({ error: 'Admin auth required for ADMIN token' }, { status: 403 });
+      }
     }
 
-    const token = tokens[0];
-    if (token.status !== 'claimed' && token.status !== 'active') {
-      return Response.json({ error: 'Invite token is no longer valid' }, { status: 403 });
+    // Validate the invite token (skip for admin callers)
+    if (!isAdminCaller) {
+      const tokens = await base44.asServiceRole.entities.InvitationToken.filter({
+        token_id: invite_token_id.trim().toUpperCase()
+      });
+
+      if (!tokens || tokens.length === 0) {
+        return Response.json({ error: 'Invalid invite token' }, { status: 403 });
+      }
+
+      const token = tokens[0];
+      if (token.status !== 'claimed' && token.status !== 'active') {
+        return Response.json({ error: 'Invite token is no longer valid' }, { status: 403 });
+      }
     }
 
     // Helper: get wallet record (VIP only)
@@ -240,6 +256,20 @@ Deno.serve(async (req) => {
         } finally {
           await client2.disconnect();
         }
+      }
+
+      case 'listWidgets': {
+        const allWidgets = await base44.asServiceRole.entities.Widget.list('-created_date', 200);
+        const safeWidgets = (allWidgets || []).map(w => ({
+          id: w.id, name: w.name, description: w.description, nft_id: w.nft_id,
+          widget_type: w.widget_type, widget_class: w.widget_class, category: w.category,
+          image_url: w.image_url, ui_behavior: w.ui_behavior, version: w.version,
+          mint_status: w.mint_status, feature_path: w.feature_path,
+          cost_per_stream_interval: w.cost_per_stream_interval,
+          stream_interval_unit: w.stream_interval_unit,
+          is_active: w.is_active, transferable: w.transferable, burnable: w.burnable,
+        }));
+        return Response.json({ widgets: safeWidgets });
       }
 
       default:

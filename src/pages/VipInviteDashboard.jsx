@@ -11,6 +11,7 @@ import DexSwapPanel from '@/components/dex/DexSwapPanel';
 import SendPanel from '@/components/wallet/SendPanel';
 import ReceivePanel from '@/components/wallet/ReceivePanel';
 import AxiGuidanceModule from '@/components/vip/AxiGuidanceModule';
+import VipNFTShowcase from '@/components/vip/VipNFTShowcase';
 
 export default function VipInviteDashboard() {
   const { user } = useAuth();
@@ -353,6 +354,9 @@ export default function VipInviteDashboard() {
             </div>
           )}
         </div>
+
+        {/* NFT Showcase — Full Platform Capabilities */}
+        <VipNFTShowcase inviteTokenId={isInviteGuest ? inviteSession.token_id : 'ADMIN'} />
 
       </div>
     </div>
