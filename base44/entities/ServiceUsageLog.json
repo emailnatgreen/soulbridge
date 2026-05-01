@@ -1,0 +1,76 @@
+{
+  "name": "ServiceUsageLog",
+  "type": "object",
+  "properties": {
+    "service_id": {
+      "type": "string"
+    },
+    "service_definition_id": {
+      "type": "string"
+    },
+    "widget_id": {
+      "type": "string"
+    },
+    "widget_nft_id": {
+      "type": "string"
+    },
+    "user_did": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "invocation_type": {
+      "type": "string",
+      "enum": [
+        "execute",
+        "start_stream",
+        "stop_stream",
+        "toggle_on",
+        "toggle_off",
+        "scheduled_tick"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "denied_ownership",
+        "denied_rate_limit",
+        "denied_honor",
+        "denied_auth",
+        "timeout",
+        "error"
+      ]
+    },
+    "error_detail": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "input_params": {
+      "type": "object"
+    },
+    "output_summary": {
+      "type": "object"
+    },
+    "cost_drops": {
+      "type": "number",
+      "default": 0
+    },
+    "ip_hash": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "service_id",
+    "user_did",
+    "invocation_type",
+    "status"
+  ]
+}
