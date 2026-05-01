@@ -34,32 +34,59 @@ export default function VipInviteDashboard() {
   const [rlusdBalances, setRlusdBalances] = useState({});
   const [lastAxiEvent, setLastAxiEvent] = useState(null);
 
+  // Helper: invoke via proxy for invite guests, or directly for admin
+  const invokeAction = async (action, wallet_id, params) => {
+    if (isInviteGuest && !isAdmin) {
+      const res = await base44.functions.invoke('vipDashboardProxy', {
+        action,
+        wallet_id,
+        invite_token_id: inviteSession.token_id,
+        params,
+      });
+      return res;
+    }
+    // Admin path: direct invoke
+    if (action === 'getBalance') return base44.functions.invoke('getBalance', { wallet_id });
+    if (action === 'getWalletTrustlines') return base44.functions.invoke('getWalletTrustlines', { wallet_id });
+    if (action === 'publishDID') return base44.functions.invoke('publishDIDAuto', { wallet_id });
+    if (action === 'addRLUSDTrustline') return base44.functions.invoke('addRLUSDTrustlineManual', { wallet_id });
+    if (action === 'sendXRP') return base44.functions.invoke('sendXRP', { wallet_id, ...params });
+    if (action === 'prepareDexSwap') return base44.functions.invoke('prepareDexSwap', { wallet_id, ...params });
+    return null;
+  };
+
   const loadData = async () => {
     setLoading(true);
+    let vipOnly = [];
 
-    // Invite guests use pre-fetched data from their session
     if (isInviteGuest && !isAdmin) {
-      const dd = inviteSession.dashboard_data;
-      setWallets(dd.wallets || []);
+      // Invite guests: fetch live data via proxy
+      const res = await base44.functions.invoke('vipDashboardProxy', {
+        action: 'refreshWallets',
+        invite_token_id: inviteSession.token_id,
+      }).catch(() => ({ data: {} }));
+      const dd = res.data || {};
+      vipOnly = dd.wallets || [];
+      setWallets(vipOnly);
       setAgents(dd.agents || []);
       setTreasuryAddresses([]);
-      setLoading(false);
-      return;
+    } else {
+      // Admin path: direct entity calls
+      const [allWallets, allAgents, treasuries] = await Promise.all([
+        base44.entities.Wallet.list('-created_date', 100).catch(() => []),
+        base44.entities.Agent.list('-created_date', 100).catch(() => []),
+        base44.entities.Treasury.list('-created_date', 20).catch(() => [])
+      ]);
+      const tAddresses = (treasuries || []).map(t => t.classic_address).filter(a => a && a !== 'N/A - Legacy Record');
+      setTreasuryAddresses(tAddresses);
+      vipOnly = (allWallets || []).filter(w =>
+        (w.name && w.name.toLowerCase().includes('vip')) ||
+        (w.notes && w.notes.toLowerCase().includes('vip'))
+      );
+      setWallets(vipOnly);
+      setAgents(allAgents || []);
     }
 
-    const [allWallets, allAgents, treasuries] = await Promise.all([
-      base44.entities.Wallet.list('-created_date', 100).catch(() => []),
-      base44.entities.Agent.list('-created_date', 100).catch(() => []),
-      base44.entities.Treasury.list('-created_date', 20).catch(() => [])
-    ]);
-    const tAddresses = (treasuries || []).map(t => t.classic_address).filter(a => a && a !== 'N/A - Legacy Record');
-    setTreasuryAddresses(tAddresses);
-    const vipOnly = (allWallets || []).filter(w =>
-      (w.name && w.name.toLowerCase().includes('vip')) ||
-      (w.notes && w.notes.toLowerCase().includes('vip'))
-    );
-    setWallets(vipOnly);
-    setAgents(allAgents || []);
     setLoading(false);
 
     // Fetch live XRP + RLUSD balances for all VIP wallets in parallel
@@ -68,8 +95,8 @@ export default function VipInviteDashboard() {
     await Promise.all(vipOnly.map(async (w) => {
       if (!w.classic_address) return;
       const [balRes, tlRes] = await Promise.all([
-        base44.functions.invoke('getBalance', { wallet_id: w.id }).catch(() => null),
-        base44.functions.invoke('getWalletTrustlines', { wallet_id: w.id }).catch(() => null),
+        invokeAction('getBalance', w.id).catch(() => null),
+        invokeAction('getWalletTrustlines', w.id).catch(() => null),
       ]);
       if (balRes?.data?.balance !== undefined) {
         newLive[w.id] = balRes.data.balance;
@@ -320,6 +347,7 @@ export default function VipInviteDashboard() {
                   onRefresh={loadData}
                   liveXrpBalance={liveBalances[wallet.id]}
                   liveRlusdBalance={rlusdBalances[wallet.id]}
+                  invokeAction={isInviteGuest && !isAdmin ? invokeAction : undefined}
                 />
               ))}
             </div>

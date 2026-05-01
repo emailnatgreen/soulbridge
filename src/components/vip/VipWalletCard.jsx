@@ -28,7 +28,7 @@ const roleColors = {
   master: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
 };
 
-export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalance, liveRlusdBalance }) {
+export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalance, liveRlusdBalance, invokeAction }) {
   const [publishing, setPublishing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -53,10 +53,18 @@ export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
   const linkedNodeDid = parsed.linkedNodeDid;
   const linkedAgent = linkedAgentId ? (agents || []).find(a => a.id === linkedAgentId) : null;
 
+  // Use proxy invoker if provided (for invite guests), otherwise direct calls
+  const callAction = invokeAction || (async (action, wid) => {
+    if (action === 'publishDID') return base44.functions.invoke('publishDIDAuto', { wallet_id: wid });
+    if (action === 'getBalance') return base44.functions.invoke('getBalance', { wallet_id: wid });
+    if (action === 'getWalletTrustlines') return base44.functions.invoke('getWalletTrustlines', { wallet_id: wid });
+    return null;
+  });
+
   const handlePublishDID = async () => {
     setPublishing(true);
     try {
-      const res = await base44.functions.invoke('publishDIDAuto', { wallet_id: wallet.id });
+      const res = await callAction('publishDID', wallet.id);
       const data = res?.data;
       if (data?.success) {
         setPublishResult('published');
@@ -76,9 +84,9 @@ export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
   const handleRefreshBalance = async () => {
     setRefreshing(true);
     try {
-      const res = await base44.functions.invoke('getBalance', { wallet_id: wallet.id });
+      const res = await callAction('getBalance', wallet.id);
       setLiveBalance(res?.data?.balance ?? liveBalance);
-      const tlRes = await base44.functions.invoke('getWalletTrustlines', { wallet_id: wallet.id }).catch(() => null);
+      const tlRes = await callAction('getWalletTrustlines', wallet.id).catch(() => null);
       const rlusdLine = (tlRes?.data?.trustlines || tlRes?.data || []).find(
         tl => tl.currency === 'RLUSD' || tl.currency === '524C555344000000000000000000000000000000'
       );
@@ -182,7 +190,7 @@ export default function VipWalletCard({ wallet, agents, onRefresh, liveXrpBalanc
       </div>
 
       {/* RLUSD Trustline */}
-      <TrustlineActivateButton wallet={wallet} />
+      <TrustlineActivateButton wallet={wallet} invokeAction={invokeAction ? callAction : undefined} />
 
       {/* DID Status */}
       {/* Multi-Sig Panel */}

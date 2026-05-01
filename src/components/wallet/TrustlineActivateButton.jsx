@@ -3,16 +3,22 @@ import { base44 } from '@/api/base44Client';
 import { Link2, Loader2, CheckCircle, AlertTriangle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function TrustlineActivateButton({ wallet, compact = false }) {
+export default function TrustlineActivateButton({ wallet, compact = false, invokeAction }) {
   const [status, setStatus] = useState('unknown'); // unknown | checking | active | inactive | activating | error
   const [txHash, setTxHash] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+
+  const callFn = invokeAction || (async (action, wid) => {
+    if (action === 'getWalletTrustlines') return base44.functions.invoke('getWalletTrustlines', { wallet_id: wid });
+    if (action === 'addRLUSDTrustline') return base44.functions.invoke('addRLUSDTrustlineManual', { wallet_id: wid });
+    return null;
+  });
 
   const checkTrustline = async () => {
     if (!wallet?.id) return;
     setStatus('checking');
     try {
-      const res = await base44.functions.invoke('getWalletTrustlines', { wallet_id: wallet.id });
+      const res = await callFn('getWalletTrustlines', wallet.id);
       const lines = res?.data?.trustlines || res?.data || [];
       const hasRLUSD = lines.some(
         tl => tl.currency === 'RLUSD' || tl.currency === '524C555344000000000000000000000000000000'
@@ -34,7 +40,7 @@ export default function TrustlineActivateButton({ wallet, compact = false }) {
     setStatus('activating');
     setErrorMsg(null);
     try {
-      const res = await base44.functions.invoke('addRLUSDTrustlineManual', { wallet_id: wallet.id });
+      const res = await callFn('addRLUSDTrustline', wallet.id);
       const data = res?.data;
       if (data?.success) {
         if (data.already_exists) {
