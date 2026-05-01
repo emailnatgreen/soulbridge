@@ -44,21 +44,22 @@ Deno.serve(async (req) => {
     }
 
     // Fetch current XRP/RLUSD market rate from the XRPL DEX order book
-    let estimatedRate = 1.0; // fallback 1:1
+    // For xrp_to_rlusd: we need offers where someone is SELLING RLUSD for XRP
+    //   → book_offers where taker_gets=RLUSD, taker_pays=XRP (we consume these offers)
+    // For rlusd_to_xrp: we need offers where someone is SELLING XRP for RLUSD
+    //   → book_offers where taker_gets=XRP, taker_pays=RLUSD
+    let rlusdPerXrp = 1.0; // How many RLUSD per 1 XRP
     try {
+      // Always fetch the XRP→RLUSD book: offers selling RLUSD for XRP
       const bookRes = await fetch('https://xrplcluster.com', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           method: 'book_offers',
           params: [{
-            taker_pays: direction === 'xrp_to_rlusd'
-              ? { currency: RLUSD_CONFIG.currency, issuer: RLUSD_CONFIG.issuer }
-              : { currency: 'XRP' },
-            taker_gets: direction === 'xrp_to_rlusd'
-              ? { currency: 'XRP' }
-              : { currency: RLUSD_CONFIG.currency, issuer: RLUSD_CONFIG.issuer },
-            limit: 5,
+            taker_gets: { currency: RLUSD_CONFIG.currency, issuer: RLUSD_CONFIG.issuer },
+            taker_pays: { currency: 'XRP' },
+            limit: 10,
           }],
         }),
       });
@@ -66,29 +67,30 @@ Deno.serve(async (req) => {
       const offers = bookData?.result?.offers || [];
       if (offers.length > 0) {
         const bestOffer = offers[0];
-        // Calculate the effective rate from the best offer
-        const getXRP = (val) => typeof val === 'string' ? parseFloat(val) / 1000000 : parseFloat(val.value);
-        const payAmt = getXRP(bestOffer.TakerPays);
-        const getAmt = getXRP(bestOffer.TakerGets);
-        if (payAmt > 0 && getAmt > 0) {
-          estimatedRate = payAmt / getAmt;
+        // TakerPays = XRP (drops string), TakerGets = RLUSD (object with value)
+        const xrpDrops = typeof bestOffer.TakerPays === 'string' ? parseFloat(bestOffer.TakerPays) : parseFloat(bestOffer.TakerPays.value || 0) * 1000000;
+        const rlusdValue = typeof bestOffer.TakerGets === 'string' ? parseFloat(bestOffer.TakerGets) / 1000000 : parseFloat(bestOffer.TakerGets.value || 0);
+        const xrpValue = xrpDrops / 1000000;
+        if (xrpValue > 0 && rlusdValue > 0) {
+          rlusdPerXrp = rlusdValue / xrpValue;
         }
       }
-      console.log('DEX estimated rate:', estimatedRate, 'offers found:', offers.length);
+      console.log('DEX rate: 1 XRP =', rlusdPerXrp, 'RLUSD, offers found:', offers.length);
     } catch (e) {
       console.log('Could not fetch order book, using 1:1 fallback:', e.message);
     }
 
     // Build the OfferCreate transaction for the DEX swap
-    // Use tfSell flag (0x00020000) — ensures the full "TakerGets" amount is sold
-    // Add slippage tolerance to TakerPays (minimum acceptable return)
+    // Flags: tfSell (0x00020000) + tfImmediateOrCancel (0x00040000) = 0x00060000
+    // tfImmediateOrCancel ensures unfilled portions are cancelled — no resting offers
+    const SWAP_FLAGS = 0x00060000;
     let txjson;
 
     if (direction === 'xrp_to_rlusd') {
       // User sells XRP, wants RLUSD back
       const xrpToSellDrops = Math.floor(netAmount * 1000000).toString();
       // Minimum RLUSD to receive (with slippage)
-      const minRlusd = (netAmount * estimatedRate * (1 - SLIPPAGE_PERCENT / 100)).toFixed(6);
+      const minRlusd = (netAmount * rlusdPerXrp * (1 - SLIPPAGE_PERCENT / 100)).toFixed(6);
 
       txjson = {
         TransactionType: 'OfferCreate',
@@ -99,13 +101,13 @@ Deno.serve(async (req) => {
           value: minRlusd,
         },
         TakerGets: xrpToSellDrops,
-        Flags: 0x00020000, // tfSell — sell all of TakerGets
+        Flags: SWAP_FLAGS,
       };
     } else {
       // User sells RLUSD, wants XRP back
       const rlusdToSell = netAmount.toFixed(6);
       // Minimum XRP to receive (with slippage) in drops
-      const minXrpDrops = Math.floor(netAmount / estimatedRate * (1 - SLIPPAGE_PERCENT / 100) * 1000000).toString();
+      const minXrpDrops = Math.floor(netAmount / rlusdPerXrp * (1 - SLIPPAGE_PERCENT / 100) * 1000000).toString();
 
       txjson = {
         TransactionType: 'OfferCreate',
@@ -116,7 +118,7 @@ Deno.serve(async (req) => {
           issuer: RLUSD_CONFIG.issuer,
           value: rlusdToSell,
         },
-        Flags: 0x00020000, // tfSell
+        Flags: SWAP_FLAGS,
       };
     }
 
@@ -139,7 +141,7 @@ Deno.serve(async (req) => {
           fee_amount: feeAmount,
           fee_percent: VILLAGE_FEE_PERCENT,
           treasury: TREASURY_ADDRESS,
-          estimated_rate: estimatedRate,
+          estimated_rate: rlusdPerXrp,
         }),
       },
     };
@@ -168,7 +170,7 @@ Deno.serve(async (req) => {
       agent_id: 'dex_swap',
       activity_type: 'traded',
       amount: numAmount,
-      description: `DEX swap initiated: ${direction === 'xrp_to_rlusd' ? 'XRP → RLUSD' : 'RLUSD → XRP'} for ${numAmount} (fee: ${feeAmount.toFixed(6)}, rate: ~${estimatedRate.toFixed(4)})`,
+      description: `DEX swap initiated: ${direction === 'xrp_to_rlusd' ? 'XRP → RLUSD' : 'RLUSD → XRP'} for ${numAmount} (fee: ${feeAmount.toFixed(6)}, rate: ~${rlusdPerXrp.toFixed(4)} RLUSD/XRP)`,
       status: 'pending',
     });
 
@@ -177,7 +179,7 @@ Deno.serve(async (req) => {
       qr_png: data.refs?.qr_png,
       deeplink: data.next?.always,
       xumm_url: data.next?.always,
-      estimated_rate: estimatedRate,
+      estimated_rate: rlusdPerXrp,
       fee_info: {
         gross_amount: numAmount,
         net_amount: netAmount,
