@@ -1,0 +1,83 @@
+{
+  "name": "ServiceDefinition",
+  "type": "object",
+  "properties": {
+    "service_id": {
+      "type": "string"
+    },
+    "widget_id": {
+      "type": "string"
+    },
+    "widget_nft_id": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "one_shot",
+        "streaming",
+        "toggle",
+        "metered",
+        "scheduled"
+      ]
+    },
+    "runtime_behavior": {
+      "type": "object"
+    },
+    "usage_limits": {
+      "type": "object"
+    },
+    "pricing_model": {
+      "type": "object"
+    },
+    "metadata_uri": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "wallet_management",
+        "identity",
+        "governance",
+        "kinetic",
+        "agent",
+        "village",
+        "ai",
+        "other"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "paused",
+        "deprecated",
+        "disabled"
+      ],
+      "default": "draft"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "service_id",
+    "widget_id",
+    "service_type",
+    "name"
+  ]
+}
