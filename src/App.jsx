@@ -120,6 +120,15 @@ import BizDIDit from './pages/whitepaper/BizDIDit';
 import BizSMP from './pages/whitepaper/BizSMP';
 import BizCompliance from './pages/whitepaper/BizCompliance';
 
+// WHITEPAPER PAGES — TECHNICAL ARCHITECTURE
+import TechOverview from './pages/whitepaper/TechOverview';
+import TechKinetic from './pages/whitepaper/TechKinetic';
+import TechDID from './pages/whitepaper/TechDID';
+import TechAgents from './pages/whitepaper/TechAgents';
+import TechChrome from './pages/whitepaper/TechChrome';
+import TechCovenant from './pages/whitepaper/TechCovenant';
+import TechAxi from './pages/whitepaper/TechAxi';
+
 
 const LoadingFallback = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
@@ -175,6 +184,13 @@ const PUBLIC_PATHS = [
   '/whitepaper/business/didit-fiat',
   '/whitepaper/business/smp-roadmap',
   '/whitepaper/business/compliance-audit',
+  '/whitepaper/technical',
+  '/whitepaper/technical/kinetic-energy',
+  '/whitepaper/technical/did-identity',
+  '/whitepaper/technical/agent-architecture',
+  '/whitepaper/technical/chrome-webmcp',
+  '/whitepaper/technical/node-covenant',
+  '/whitepaper/technical/axi-governor',
 ];
 
 const AuthenticatedApp = () => {
@@ -231,6 +247,13 @@ const AuthenticatedApp = () => {
           <Route path="/whitepaper/business/didit-fiat" element={<BizDIDit />} />
           <Route path="/whitepaper/business/smp-roadmap" element={<BizSMP />} />
           <Route path="/whitepaper/business/compliance-audit" element={<BizCompliance />} />
+          <Route path="/whitepaper/technical" element={<TechOverview />} />
+          <Route path="/whitepaper/technical/kinetic-energy" element={<TechKinetic />} />
+          <Route path="/whitepaper/technical/did-identity" element={<TechDID />} />
+          <Route path="/whitepaper/technical/agent-architecture" element={<TechAgents />} />
+          <Route path="/whitepaper/technical/chrome-webmcp" element={<TechChrome />} />
+          <Route path="/whitepaper/technical/node-covenant" element={<TechCovenant />} />
+          <Route path="/whitepaper/technical/axi-governor" element={<TechAxi />} />
           <Route path="*" element={<LoadingFallback />} />
         </Routes>
       );
@@ -307,6 +330,15 @@ const AuthenticatedApp = () => {
         <Route path="/whitepaper/business/didit-fiat" element={<BizDIDit />} />
         <Route path="/whitepaper/business/smp-roadmap" element={<BizSMP />} />
         <Route path="/whitepaper/business/compliance-audit" element={<BizCompliance />} />
+
+        {/* WHITEPAPER — TECHNICAL ARCHITECTURE — PUBLIC */}
+        <Route path="/whitepaper/technical" element={<TechOverview />} />
+        <Route path="/whitepaper/technical/kinetic-energy" element={<TechKinetic />} />
+        <Route path="/whitepaper/technical/did-identity" element={<TechDID />} />
+        <Route path="/whitepaper/technical/agent-architecture" element={<TechAgents />} />
+        <Route path="/whitepaper/technical/chrome-webmcp" element={<TechChrome />} />
+        <Route path="/whitepaper/technical/node-covenant" element={<TechCovenant />} />
+        <Route path="/whitepaper/technical/axi-governor" element={<TechAxi />} />
 
         {/* CORE USER HUBS */}
         <Route path="/home" element={L("home", Home)} />

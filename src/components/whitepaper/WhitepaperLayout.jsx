@@ -47,7 +47,8 @@ export default function WhitepaperLayout({ children }) {
             </div>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
-            <Link to="/whitepaper/business" className="text-amber-400 hover:text-amber-300 text-xs flex items-center gap-1">Business Paper</Link>
+            <Link to="/whitepaper/business" className="text-amber-400 hover:text-amber-300 text-xs hidden sm:inline">Business</Link>
+            <Link to="/whitepaper/technical" className="text-cyan-400 hover:text-cyan-300 text-xs hidden sm:inline">Technical</Link>
             <Link to="/" className="text-white/40 hover:text-white text-xs flex items-center gap-1">
               <ExternalLink className="w-3 h-3" /> Home
             </Link>

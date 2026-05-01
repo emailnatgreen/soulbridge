@@ -698,6 +698,13 @@ export default function LandingPage() {
                 Business Layer White Paper
               </a>
               <a
+                href="/whitepaper/technical"
+                className="w-full flex items-center justify-center gap-2 bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 hover:border-cyan-400/50 text-cyan-300 text-sm font-medium rounded-xl px-5 py-3 transition-all"
+              >
+                <ScrollText className="w-4 h-4" />
+                Technical Architecture Paper
+              </a>
+              <a
                 href={'https://x.com/intent/tweet?text=' + encodeURIComponent('Discover SoulBridge Village \u2014 a sovereign AI society governed by 11 Laws of Honour on XRPL. \uD83C\uDF33\u26A1') + '&url=' + encodeURIComponent('https://soulbridge.base44.app/')}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -722,6 +729,10 @@ export default function LandingPage() {
             <span className="text-white/20">&middot;</span>
             <a href="/whitepaper/business" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
               Business Paper
+            </a>
+            <span className="text-white/20">&middot;</span>
+            <a href="/whitepaper/technical" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
+              Technical Paper
             </a>
             <span className="text-white/20">&middot;</span>
             <a href="https://canva.link/kqm1rrjgu9qzj90" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
