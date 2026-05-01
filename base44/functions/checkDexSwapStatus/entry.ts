@@ -39,29 +39,34 @@ Deno.serve(async (req) => {
     console.log('Swap status check:', { resolved, signed, expired, cancelled, txid, dispatched });
 
     // If signed with a txid but dispatched_result is empty/null, check XRPL directly
+    // Retry up to 3 times with a short delay to allow ledger validation
     if (signed && txid && (!dispatched || dispatched === '')) {
       console.log('Empty dispatched_result — checking XRPL ledger for tx:', txid);
-      try {
-        const txRes = await fetch('https://xrplcluster.com', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ method: 'tx', params: [{ transaction: txid }] }),
-        });
-        const txData = await txRes.json();
-        const meta = txData?.result?.meta || txData?.result?.meta_blob;
-        const txResult = typeof meta === 'object' ? meta.TransactionResult : null;
-        if (txResult) {
-          dispatched = txResult;
-          console.log('XRPL tx result resolved:', txResult);
-        } else if (txData?.result?.validated) {
-          dispatched = 'tesSUCCESS';
-          console.log('TX validated on ledger, assuming tesSUCCESS');
-        } else {
-          // TX submitted but not yet validated — treat as pending
-          console.log('TX not yet validated on ledger, will retry');
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 1500));
+        try {
+          const txRes = await fetch('https://xrplcluster.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ method: 'tx', params: [{ transaction: txid }] }),
+          });
+          const txData = await txRes.json();
+          const meta = txData?.result?.meta || txData?.result?.meta_blob;
+          const txResult = typeof meta === 'object' ? meta.TransactionResult : null;
+          if (txResult) {
+            dispatched = txResult;
+            console.log('XRPL tx result resolved:', txResult);
+            break;
+          } else if (txData?.result?.validated) {
+            dispatched = 'tesSUCCESS';
+            console.log('TX validated on ledger, assuming tesSUCCESS');
+            break;
+          } else {
+            console.log(`TX not yet validated (attempt ${attempt + 1}/3)`);
+          }
+        } catch (e) {
+          console.log('XRPL tx lookup failed:', e.message);
         }
-      } catch (e) {
-        console.log('XRPL tx lookup failed:', e.message);
       }
     }
 
@@ -83,15 +88,20 @@ Deno.serve(async (req) => {
       }
     }
 
+    // If signed with txid but no dispatched result yet, tell frontend to keep polling
+    const pendingValidation = signed && txid && (!dispatched || dispatched === '');
+    const isSuccess = signed && dispatched === 'tesSUCCESS';
+
     return Response.json({
-      resolved,
+      resolved: pendingValidation ? false : resolved,
       signed,
       expired,
       cancelled,
       txid,
       account,
       dispatched_result: dispatched,
-      success: signed && dispatched === 'tesSUCCESS',
+      success: isSuccess,
+      pending_validation: pendingValidation,
     });
   } catch (error) {
     console.error('checkDexSwapStatus error:', error);
