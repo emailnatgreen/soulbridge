@@ -1,0 +1,125 @@
+{
+  "name": "MarketplaceTransaction",
+  "type": "object",
+  "properties": {
+    "resource_id": {
+      "type": "string"
+    },
+    "listing_id": {
+      "type": "string"
+    },
+    "resource_name": {
+      "type": "string"
+    },
+    "buyer_agent_id": {
+      "type": "string"
+    },
+    "buyer_did": {
+      "type": "string"
+    },
+    "seller_agent_id": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT",
+        "LEGACY"
+      ],
+      "default": "RLUSD_ON_XRPL"
+    },
+    "unit_amount": {
+      "type": "number"
+    },
+    "purchase_price_drops": {
+      "type": "number"
+    },
+    "purchase_price_rlusd": {
+      "type": "number"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "XRP",
+        "RLUSD",
+        "PYUSD",
+        "USD"
+      ],
+      "default": "RLUSD"
+    },
+    "payment_reference": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "soulbridge",
+        "didit_bridge",
+        "direct"
+      ],
+      "default": "soulbridge"
+    },
+    "marketplace_type": {
+      "type": "string",
+      "enum": [
+        "widget",
+        "service",
+        "resource",
+        "advanced_resource",
+        "agent"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "delivered",
+        "treasury_received",
+        "distributed",
+        "failed",
+        "cancelled",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "treasury_transaction_hash": {
+      "type": "string"
+    },
+    "xrpl_transaction_hash": {
+      "type": "string"
+    },
+    "delivery_id": {
+      "type": "string"
+    },
+    "nft_id": {
+      "type": "string"
+    },
+    "distribution_details": {
+      "type": "object"
+    },
+    "audit_signature": {
+      "type": "string"
+    },
+    "completion_date": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "buyer_agent_id",
+    "seller_agent_id",
+    "payment_method",
+    "status"
+  ]
+}
