@@ -1,0 +1,36 @@
+{
+  "name": "ForumPost",
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_did": {
+      "type": "string"
+    },
+    "parent_id": {
+      "type": "string"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "liked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "content",
+    "author_name"
+  ]
+}
