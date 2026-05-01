@@ -81,9 +81,10 @@ Deno.serve(async (req) => {
     }
 
     // Build the OfferCreate transaction for the DEX swap
-    // Flags: tfSell (0x00020000) + tfImmediateOrCancel (0x00040000) = 0x00060000
-    // tfImmediateOrCancel ensures unfilled portions are cancelled — no resting offers
-    const SWAP_FLAGS = 0x00060000;
+    // Flags: tfImmediateOrCancel (131072 / 0x00020000) + tfSell (524288 / 0x00080000) = 655360 / 0x000A0000
+    // tfSell: ensure the full TakerGets is sold
+    // tfImmediateOrCancel: unfilled portions cancel immediately — no resting offers
+    const SWAP_FLAGS = 655360;
     let txjson;
 
     if (direction === 'xrp_to_rlusd') {
