@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Sparkles, Send, Loader2, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
+import { Sparkles, Send, Loader2, ChevronDown, ChevronUp, MessageCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import ReactMarkdown from 'react-markdown';
@@ -67,44 +67,35 @@ export default function AxiGuidanceModule({ wallets, liveBalances, rlusdBalances
     if (messages.length) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  // Initialize conversation with Axi agent SDK
+  // Start a fresh conversation each time the component mounts
+  const startNewConversation = useCallback(async () => {
+    try {
+      setReady(false);
+      setMessages([]);
+      hasGreeted.current = false;
+      if (unsubRef.current) unsubRef.current();
+
+      const conversation = await base44.agents.createConversation({
+        agent_name: 'axi',
+        metadata: { name: CONVERSATION_NAME, vip_guidance: true }
+      });
+
+      localStorage.setItem(CONVERSATION_KEY, conversation.id);
+      convoRef.current = conversation;
+      setMessages([]);
+      setReady(true);
+
+      unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
+        setMessages((data.messages || []).slice(-30));
+      });
+    } catch (err) {
+      console.error('[AIGM] New conversation error:', err);
+      setReady(true);
+    }
+  }, []);
+
   useEffect(() => {
-    const init = async () => {
-      try {
-        const conversations = await base44.agents.listConversations({ agent_name: 'axi' });
-        const savedId = localStorage.getItem(CONVERSATION_KEY);
-
-        let conversation = null;
-        if (savedId) {
-          conversation = conversations.find(c => c.id === savedId && c.metadata?.vip_guidance === true) || null;
-        }
-        if (!conversation) {
-          conversation = conversations
-            .filter(c => c.metadata?.vip_guidance === true)
-            .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date))[0] || null;
-        }
-        if (!conversation) {
-          conversation = await base44.agents.createConversation({
-            agent_name: 'axi',
-            metadata: { name: CONVERSATION_NAME, vip_guidance: true }
-          });
-        }
-
-        localStorage.setItem(CONVERSATION_KEY, conversation.id);
-        convoRef.current = conversation;
-        setMessages((conversation.messages || []).slice(-30));
-        setReady(true);
-
-        if (unsubRef.current) unsubRef.current();
-        unsubRef.current = base44.agents.subscribeToConversation(conversation.id, (data) => {
-          setMessages((data.messages || []).slice(-30));
-        });
-      } catch (err) {
-        console.error('[AIGM] Init error:', err);
-        setReady(true);
-      }
-    };
-    init();
+    startNewConversation();
     return () => { if (unsubRef.current) unsubRef.current(); };
   }, []);
 
@@ -183,6 +174,13 @@ export default function AxiGuidanceModule({ wallets, liveBalances, rlusdBalances
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); startNewConversation(); }}
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            title="New conversation"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-purple-400" />
+          </button>
           <MessageCircle className="w-4 h-4 text-purple-400" />
           {expanded ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
         </div>
