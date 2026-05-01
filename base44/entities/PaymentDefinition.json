@@ -1,0 +1,71 @@
+{
+  "name": "PaymentDefinition",
+  "type": "object",
+  "properties": {
+    "service_id": {
+      "type": "string"
+    },
+    "pricing_model": {
+      "type": "string",
+      "enum": [
+        "flat",
+        "per_use",
+        "per_minute",
+        "per_stream",
+        "free"
+      ],
+      "default": "free"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "RLUSD"
+      ],
+      "default": "RLUSD"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0
+    },
+    "billing_behavior": {
+      "type": "string",
+      "enum": [
+        "prepay",
+        "postpay",
+        "streaming"
+      ],
+      "default": "prepay"
+    },
+    "rate_limits": {
+      "type": "object"
+    },
+    "royalties_config": {
+      "type": "object"
+    },
+    "metadata_uri": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "deprecated"
+      ],
+      "default": "active"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0"
+    }
+  },
+  "required": [
+    "service_id",
+    "pricing_model",
+    "currency",
+    "amount"
+  ]
+}
