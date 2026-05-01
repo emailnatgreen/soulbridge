@@ -20,6 +20,12 @@ export default function VipInviteDashboard() {
   const identityDid = identity?.did;
   const isAdmin = hasAdminAccess({ user, identityDid });
 
+  // Check for VIP invite session (public access for Ripple reviewers)
+  const [inviteSession] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sb_invite_session') || 'null'); } catch(_) { return null; }
+  });
+  const isInviteGuest = !!(inviteSession?.dashboard_data);
+
   const [wallets, setWallets] = useState([]);
   const [agents, setAgents] = useState([]);
   const [treasuryAddresses, setTreasuryAddresses] = useState([]);
@@ -30,6 +36,17 @@ export default function VipInviteDashboard() {
 
   const loadData = async () => {
     setLoading(true);
+
+    // Invite guests use pre-fetched data from their session
+    if (isInviteGuest && !isAdmin) {
+      const dd = inviteSession.dashboard_data;
+      setWallets(dd.wallets || []);
+      setAgents(dd.agents || []);
+      setTreasuryAddresses([]);
+      setLoading(false);
+      return;
+    }
+
     const [allWallets, allAgents, treasuries] = await Promise.all([
       base44.entities.Wallet.list('-created_date', 100).catch(() => []),
       base44.entities.Agent.list('-created_date', 100).catch(() => []),
@@ -69,15 +86,13 @@ export default function VipInviteDashboard() {
 
   useEffect(() => { loadData(); }, []);
 
-
-
-  if (!isAdmin) {
+  if (!isAdmin && !isInviteGuest) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center text-white">
         <div className="text-center space-y-3">
           <Shield className="w-10 h-10 text-red-400 mx-auto" />
           <p className="text-white/60">Admin access required</p>
-          <Link to="/dashboard" className="text-purple-400 text-sm hover:underline">← Back to Dashboard</Link>
+          <Link to="/" className="text-purple-400 text-sm hover:underline">← Back to Landing Page</Link>
         </div>
       </div>
     );
@@ -94,13 +109,17 @@ export default function VipInviteDashboard() {
             </div>
             <div className="min-w-0">
               <h1 className="text-white font-semibold text-xs sm:text-base truncate">VIP Invite Dashboard</h1>
-              <p className="text-amber-400/60 text-[9px] sm:text-xs truncate">Admin · VIP wallets, DIDs & access</p>
+              <p className="text-amber-400/60 text-[9px] sm:text-xs truncate">
+                {isInviteGuest && !isAdmin
+                  ? `Welcome, ${inviteSession.recipient_nickname || 'Honoured Guest'}`
+                  : 'Admin · VIP wallets, DIDs & access'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Link to="/Home"
+            <Link to={isAdmin ? "/Home" : "/"}
               className="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs border border-white/20 bg-white/5 text-white hover:bg-white/10 h-7 sm:h-8 px-2 sm:px-3 rounded-md transition-colors">
-              <Home className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Home</span>
+              <Home className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">{isAdmin ? 'Home' : 'Landing'}</span>
             </Link>
             <Button size="sm" variant="outline" onClick={loadData}
               className="text-[10px] sm:text-xs border-white/20 bg-white/5 text-white hover:bg-white/10 gap-1 sm:gap-1.5 h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0">
@@ -253,8 +272,8 @@ export default function VipInviteDashboard() {
           ))}
         </div>
 
-        {/* Send / Receive / DEX Swap — VIP wallets only, exclude treasury */}
-        {(() => {
+        {/* Send / Receive / DEX Swap — Admin only */}
+        {isAdmin && (() => {
           const vipUserWallets = wallets.filter(w => !treasuryAddresses.includes(w.classic_address));
           return (
             <div className="space-y-4">
@@ -268,11 +287,13 @@ export default function VipInviteDashboard() {
         })()}
 
         {/* Admin: Add Wallet to VIP */}
-        <VipWalletAssigner
-          wallets={wallets}
-          agents={agents}
-          onComplete={loadData}
-        />
+        {isAdmin && (
+          <VipWalletAssigner
+            wallets={wallets}
+            agents={agents}
+            onComplete={loadData}
+          />
+        )}
 
         {/* Live VIP Wallets */}
         <div>

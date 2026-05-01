@@ -120,7 +120,7 @@ export default function LandingPage() {
       if (inviteSession) {
         const parsed = JSON.parse(inviteSession);
         if (parsed.dashboard_data) {
-          navigate('/secure-invite');
+          navigate('/VipInviteDashboard');
           return;
         }
       }
@@ -261,7 +261,7 @@ export default function LandingPage() {
           notes: data.notes,
           dashboard_data: data.dashboard_data || null,
         }));
-        navigate('/secure-invite');
+        navigate('/VipInviteDashboard');
       }
     } catch (e) {
       setInviteError(e?.response?.data?.error || 'Could not validate code');

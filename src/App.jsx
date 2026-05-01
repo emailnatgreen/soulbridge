@@ -163,6 +163,8 @@ const PUBLIC_PATHS = [
   '/ScrollOfResonance',
   '/scroll-of-resonance',
   '/secure-invite',
+  '/VipInviteDashboard',
+  '/admin/vip-invites',
   '/whitepaper/governance',
   '/whitepaper/governance/constitutional-foundation',
   '/whitepaper/governance/on-chain-multisig',
