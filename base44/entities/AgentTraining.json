@@ -1,0 +1,67 @@
+{
+  "name": "AgentTraining",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "training_type": {
+      "type": "string",
+      "enum": [
+        "skill_development",
+        "role_preparation",
+        "wisdom_cultivation",
+        "economic_mastery",
+        "social_intelligence",
+        "creative_arts",
+        "governance_training"
+      ]
+    },
+    "skill_focus": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "difficulty_level": {
+      "type": "number",
+      "default": 1
+    },
+    "training_content": {
+      "type": "object"
+    },
+    "progress": {
+      "type": "object"
+    },
+    "assessment": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "completed",
+        "failed"
+      ],
+      "default": "not_started"
+    },
+    "rewards": {
+      "type": "object"
+    },
+    "recommended_by": {
+      "type": "string"
+    },
+    "completed_date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "training_type",
+    "title"
+  ]
+}

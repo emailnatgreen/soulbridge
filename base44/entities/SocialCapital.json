@@ -1,0 +1,55 @@
+{
+  "name": "SocialCapital",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "total_score": {
+      "type": "number",
+      "default": 0
+    },
+    "trust_network_size": {
+      "type": "number",
+      "default": 0
+    },
+    "attestations_received": {
+      "type": "number",
+      "default": 0
+    },
+    "attestations_given": {
+      "type": "number",
+      "default": 0
+    },
+    "reciprocal_bonds": {
+      "type": "number",
+      "default": 0
+    },
+    "elder_endorsements": {
+      "type": "number",
+      "default": 0
+    },
+    "collaboration_score": {
+      "type": "number",
+      "default": 0
+    },
+    "mentorship_score": {
+      "type": "number",
+      "default": 0
+    },
+    "governance_score": {
+      "type": "number",
+      "default": 0
+    },
+    "last_calculated": {
+      "type": "string"
+    },
+    "influence_multiplier": {
+      "type": "number",
+      "default": 1
+    }
+  },
+  "required": [
+    "agent_id"
+  ]
+}

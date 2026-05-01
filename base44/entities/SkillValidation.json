@@ -1,0 +1,76 @@
+{
+  "name": "SkillValidation",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "skill_name": {
+      "type": "string"
+    },
+    "skill_category": {
+      "type": "string"
+    },
+    "claimed_level": {
+      "type": "number"
+    },
+    "validation_method": {
+      "type": "string",
+      "enum": [
+        "test",
+        "portfolio",
+        "both"
+      ]
+    },
+    "test_questions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "test_answers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "portfolio_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "portfolio_descriptions": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "ai_assessment": {
+      "type": "object"
+    },
+    "validated_at": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "agent_id",
+    "skill_name",
+    "claimed_level",
+    "validation_method"
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "name": "RiskRegister",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "project_name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Technical",
+        "Security",
+        "Operational",
+        "Compliance",
+        "Financial",
+        "Strategic",
+        "Web3"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Critical"
+      ]
+    },
+    "likelihood": {
+      "type": "string",
+      "enum": [
+        "Rare",
+        "Unlikely",
+        "Possible",
+        "Likely",
+        "Almost Certain"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Identified",
+        "Assessed",
+        "Mitigating",
+        "Monitoring",
+        "Closed"
+      ],
+      "default": "Identified"
+    },
+    "mitigation_plan": {
+      "type": "string"
+    },
+    "contingency_plan": {
+      "type": "string"
+    },
+    "impact_description": {
+      "type": "string"
+    },
+    "owner_agent_id": {
+      "type": "string"
+    },
+    "owner_name": {
+      "type": "string"
+    },
+    "last_reviewed_date": {
+      "type": "string"
+    },
+    "risk_score": {
+      "type": "number"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "severity",
+    "likelihood"
+  ]
+}

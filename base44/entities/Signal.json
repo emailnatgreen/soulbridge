@@ -1,0 +1,48 @@
+{
+  "name": "Signal",
+  "type": "object",
+  "properties": {
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "page_view",
+        "user_action",
+        "system_event",
+        "anomaly",
+        "alert"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "frontend",
+        "backend",
+        "automation",
+        "agent"
+      ]
+    },
+    "page_name": {
+      "type": "string"
+    },
+    "page_path": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "signal_type",
+    "source"
+  ]
+}

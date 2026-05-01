@@ -1,0 +1,84 @@
+{
+  "name": "TrustRelationship",
+  "type": "object",
+  "properties": {
+    "trustor_did": {
+      "type": "string"
+    },
+    "trustee_did": {
+      "type": "string"
+    },
+    "trustor_wallet_id": {
+      "type": "string"
+    },
+    "trustee_wallet_id": {
+      "type": "string"
+    },
+    "trust_level": {
+      "type": "number"
+    },
+    "calculated_trust_score": {
+      "type": "number"
+    },
+    "trust_type": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "derived",
+        "vouched"
+      ],
+      "default": "direct"
+    },
+    "trust_category": {
+      "type": "string",
+      "enum": [
+        "personal",
+        "professional",
+        "financial",
+        "technical",
+        "general"
+      ],
+      "default": "general"
+    },
+    "trust_path": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "path_length": {
+      "type": "number"
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "based_on": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired",
+        "under_review"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "last_calculated": {
+      "type": "string"
+    },
+    "auto_update": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "trustor_did",
+    "trustee_did",
+    "trust_level"
+  ]
+}

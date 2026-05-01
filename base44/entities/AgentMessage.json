@@ -1,0 +1,70 @@
+{
+  "name": "AgentMessage",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string"
+    },
+    "sender_agent_id": {
+      "type": "string"
+    },
+    "from_agent_id": {
+      "type": "string"
+    },
+    "to_agent_id": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "response": {
+      "type": "string"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "task_update",
+        "task_completion",
+        "finding",
+        "system"
+      ],
+      "default": "text"
+    },
+    "related_task_id": {
+      "type": "string"
+    },
+    "related_project_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "received",
+        "responded",
+        "read"
+      ],
+      "default": "sent"
+    },
+    "read_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "context": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "sender_agent_id",
+    "content"
+  ]
+}

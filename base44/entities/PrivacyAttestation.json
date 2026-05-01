@@ -1,0 +1,68 @@
+{
+  "name": "PrivacyAttestation",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "attestation_type": {
+      "type": "string",
+      "enum": [
+        "data_minimization",
+        "encryption_compliance",
+        "consent_verified",
+        "audit_compliant",
+        "regulatory_compliant"
+      ]
+    },
+    "issuing_authority": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "revoked",
+        "under_review"
+      ],
+      "default": "active"
+    },
+    "issued_at": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "verification_hash": {
+      "type": "string"
+    },
+    "xrpl_txid": {
+      "type": "string"
+    },
+    "privacy_guarantees": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "associated_zkproofs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "agent_id",
+    "attestation_type",
+    "issuing_authority",
+    "scope"
+  ]
+}

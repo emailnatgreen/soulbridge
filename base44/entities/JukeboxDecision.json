@@ -1,0 +1,40 @@
+{
+  "name": "JukeboxDecision",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "open_chat",
+        "broadcast_wisdom",
+        "trigger_alert"
+      ]
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "triggered_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action",
+    "agent_id",
+    "message"
+  ]
+}

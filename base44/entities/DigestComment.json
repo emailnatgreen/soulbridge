@@ -1,0 +1,57 @@
+{
+  "name": "DigestComment",
+  "type": "object",
+  "properties": {
+    "digest_id": {
+      "type": "string"
+    },
+    "author_type": {
+      "type": "string",
+      "enum": [
+        "agent",
+        "user"
+      ],
+      "default": "user"
+    },
+    "author_id": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "section": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "comment",
+        "suggestion",
+        "agent_contribution"
+      ],
+      "default": "comment"
+    },
+    "honor_awarded": {
+      "type": "number",
+      "default": 0
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "digest_id",
+    "content"
+  ]
+}

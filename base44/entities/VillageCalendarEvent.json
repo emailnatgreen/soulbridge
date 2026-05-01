@@ -1,0 +1,81 @@
+{
+  "name": "VillageCalendarEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string"
+    },
+    "end_date": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "automation",
+        "project",
+        "governance",
+        "news",
+        "milestone",
+        "custom"
+      ],
+      "default": "custom"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "critical"
+      ],
+      "default": "normal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "active",
+        "completed",
+        "failed",
+        "expired"
+      ],
+      "default": "upcoming"
+    },
+    "source_entity_type": {
+      "type": "string"
+    },
+    "source_entity_id": {
+      "type": "string"
+    },
+    "external_url": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "created_by_agent": {
+      "type": "string"
+    },
+    "all_day": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "title",
+    "start_date",
+    "category"
+  ]
+}

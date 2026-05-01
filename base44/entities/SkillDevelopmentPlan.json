@@ -1,0 +1,79 @@
+{
+  "name": "SkillDevelopmentPlan",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "plan_title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "paused",
+        "superseded"
+      ],
+      "default": "active"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium"
+      ],
+      "default": "high"
+    },
+    "immediate_actions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "skill_validation_targets": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "learning_phases": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "project_alignment": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "weekly_time_commitment": {
+      "type": "number"
+    },
+    "estimated_completion_weeks": {
+      "type": "number"
+    },
+    "generated_from_performance": {
+      "type": "boolean",
+      "default": false
+    },
+    "credential_count_at_generation": {
+      "type": "number",
+      "default": 0
+    },
+    "generated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "plan_title"
+  ]
+}

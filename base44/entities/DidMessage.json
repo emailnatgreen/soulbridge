@@ -1,0 +1,66 @@
+{
+  "name": "DidMessage",
+  "type": "object",
+  "properties": {
+    "from_did": {
+      "type": "string"
+    },
+    "to_did": {
+      "type": "string"
+    },
+    "from_wallet_id": {
+      "type": "string"
+    },
+    "to_wallet_id": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "permission_request",
+        "permission_grant",
+        "verification_request",
+        "system"
+      ],
+      "default": "direct"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "delivered",
+        "read",
+        "archived"
+      ],
+      "default": "sent"
+    },
+    "read_at": {
+      "type": "string"
+    },
+    "reply_to_message_id": {
+      "type": "string"
+    },
+    "thread_id": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "from_did",
+    "to_did",
+    "content"
+  ]
+}

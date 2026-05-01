@@ -1,0 +1,67 @@
+{
+  "name": "ResourcePurchase",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string"
+    },
+    "buyer_agent_id": {
+      "type": "string"
+    },
+    "seller_agent_id": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number"
+    },
+    "unit_price_rlusd": {
+      "type": "number"
+    },
+    "total_price_rlusd": {
+      "type": "number"
+    },
+    "village_fee_rlusd": {
+      "type": "number"
+    },
+    "seller_receives_rlusd": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_payment",
+        "payment_confirmed",
+        "delivered",
+        "completed",
+        "disputed",
+        "refunded"
+      ],
+      "default": "pending_payment"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "delivery_info": {
+      "type": "object"
+    },
+    "delivered_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "review": {
+      "type": "object"
+    },
+    "xrp_transaction_hash": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "listing_id",
+    "buyer_agent_id",
+    "seller_agent_id",
+    "quantity",
+    "total_price_rlusd"
+  ]
+}

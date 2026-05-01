@@ -1,0 +1,46 @@
+{
+  "name": "ImageAsset",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "mime_type": {
+      "type": "string"
+    },
+    "size_bytes": {
+      "type": "number"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "platform_upload",
+        "google_drive",
+        "one_drive"
+      ],
+      "default": "platform_upload"
+    },
+    "google_drive_id": {
+      "type": "string"
+    },
+    "google_drive_url": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "file_url"
+  ]
+}

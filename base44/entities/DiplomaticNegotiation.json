@@ -1,0 +1,78 @@
+{
+  "name": "DiplomaticNegotiation",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "negotiation_type": {
+      "type": "string",
+      "enum": [
+        "trade_agreement",
+        "alliance",
+        "resource_sharing",
+        "conflict_resolution",
+        "project_collaboration",
+        "governance_coalition",
+        "non_aggression_pact"
+      ]
+    },
+    "initiator_agent_id": {
+      "type": "string"
+    },
+    "recipient_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "terms_proposed": {
+      "type": "object"
+    },
+    "counter_proposals": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "negotiating",
+        "accepted",
+        "rejected",
+        "expired"
+      ],
+      "default": "proposed"
+    },
+    "negotiation_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "diplomatic_context": {
+      "type": "object"
+    },
+    "success_probability": {
+      "type": "number",
+      "default": 50
+    },
+    "final_terms": {
+      "type": "object"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "treaty_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "negotiation_type",
+    "initiator_agent_id",
+    "recipient_agent_ids"
+  ]
+}

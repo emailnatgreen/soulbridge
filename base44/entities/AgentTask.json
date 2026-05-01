@@ -1,0 +1,79 @@
+{
+  "name": "AgentTask",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "assignee_agent_id": {
+      "type": "string"
+    },
+    "delegator_agent_id": {
+      "type": "string"
+    },
+    "risk_register_id": {
+      "type": "string"
+    },
+    "related_project_id": {
+      "type": "string"
+    },
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "risk_mitigation",
+        "project",
+        "governance",
+        "custom"
+      ],
+      "default": "custom"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending",
+        "accepted",
+        "in_progress",
+        "completed",
+        "rejected",
+        "cancelled"
+      ],
+      "default": "draft"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "progress_percentage": {
+      "type": "number",
+      "default": 0
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "estimated_hours": {
+      "type": "number"
+    },
+    "completed_date": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "assignee_agent_id",
+    "status"
+  ]
+}

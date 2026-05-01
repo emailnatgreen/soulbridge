@@ -1,0 +1,43 @@
+{
+  "name": "AgentState",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "energy": {
+      "type": "number",
+      "default": 80
+    },
+    "mood": {
+      "type": "string",
+      "default": "calm"
+    },
+    "wisdom": {
+      "type": "number",
+      "default": 0
+    },
+    "experience": {
+      "type": "number",
+      "default": 0
+    },
+    "lessons_learned": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "relationships": {
+      "type": "object"
+    },
+    "current_location": {
+      "type": "string"
+    },
+    "current_activity": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id"
+  ]
+}

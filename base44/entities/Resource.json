@@ -1,0 +1,55 @@
+{
+  "name": "Resource",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "knowledge",
+        "service",
+        "artifact",
+        "token"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "xrp_value": {
+      "type": "number"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "default": "common"
+    },
+    "owner_agent_id": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "is_tradeable": {
+      "type": "boolean",
+      "default": true
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "xrp_value",
+    "owner_agent_id"
+  ]
+}

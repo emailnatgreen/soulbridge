@@ -1,0 +1,55 @@
+{
+  "name": "DailyDigest",
+  "type": "object",
+  "properties": {
+    "edition_date": {
+      "type": "string"
+    },
+    "edition_number": {
+      "type": "number"
+    },
+    "headline": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "editor_note": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "object"
+    },
+    "top_contributors": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "honor_awarded": {
+      "type": "boolean",
+      "default": false
+    },
+    "subscriber_count": {
+      "type": "number",
+      "default": 0
+    },
+    "email_sent_at": {
+      "type": "string"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "edition_date",
+    "headline"
+  ]
+}

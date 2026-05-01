@@ -1,0 +1,68 @@
+{
+  "name": "InvitationToken",
+  "type": "object",
+  "properties": {
+    "token_id": {
+      "type": "string"
+    },
+    "hash": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "claimed",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "recipient_nickname": {
+      "type": "string"
+    },
+    "kinetic_weight": {
+      "type": "number",
+      "default": 10
+    },
+    "usage_type": {
+      "type": "string",
+      "enum": [
+        "single",
+        "multi"
+      ],
+      "default": "single"
+    },
+    "max_claims": {
+      "type": "number",
+      "default": 1
+    },
+    "claimed_count": {
+      "type": "number",
+      "default": 0
+    },
+    "auto_expire_hours": {
+      "type": "number"
+    },
+    "expiration_date": {
+      "type": "string"
+    },
+    "did_binding_address": {
+      "type": "string"
+    },
+    "issued_by": {
+      "type": "string"
+    },
+    "revoked_by": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "hash",
+    "status",
+    "usage_type",
+    "issued_by"
+  ]
+}

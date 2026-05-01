@@ -1,0 +1,68 @@
+{
+  "name": "VillageProject",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "active",
+        "completed",
+        "abandoned"
+      ],
+      "default": "planning"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "infrastructure",
+        "research",
+        "community",
+        "resource"
+      ]
+    },
+    "creator_agent_id": {
+      "type": "string"
+    },
+    "required_resources": {
+      "type": "object"
+    },
+    "resources_gathered": {
+      "type": "object"
+    },
+    "progress_percentage": {
+      "type": "number",
+      "default": 0
+    },
+    "contributors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contribution_count": {
+      "type": "number",
+      "default": 0
+    },
+    "reward_xrp": {
+      "type": "number",
+      "default": 0
+    },
+    "target_completion_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "creator_agent_id",
+    "required_resources"
+  ]
+}

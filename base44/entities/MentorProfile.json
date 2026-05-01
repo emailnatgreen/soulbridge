@@ -1,0 +1,137 @@
+{
+  "name": "MentorProfile",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "expertise_areas": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "specializations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "availability_hours_weekly": {
+      "type": "number"
+    },
+    "availability_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "mentorship_style": {
+      "type": "string",
+      "enum": [
+        "hands_on",
+        "coaching",
+        "advisory",
+        "collaborative",
+        "socratic",
+        "directive"
+      ],
+      "default": "coaching"
+    },
+    "max_mentees": {
+      "type": "number",
+      "default": 3
+    },
+    "current_mentee_count": {
+      "type": "number",
+      "default": 0
+    },
+    "is_available": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_confirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "mentorship_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mentorship_values": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "communication_style": {
+      "type": "string",
+      "enum": [
+        "formal",
+        "casual",
+        "structured",
+        "flexible",
+        "mixed"
+      ],
+      "default": "mixed"
+    },
+    "success_stories": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "average_mentee_satisfaction": {
+      "type": "number",
+      "default": 0
+    },
+    "total_mentees_guided": {
+      "type": "number",
+      "default": 0
+    },
+    "total_mentoring_hours": {
+      "type": "number",
+      "default": 0
+    },
+    "skills_transfer_effectiveness": {
+      "type": "number",
+      "default": 0
+    },
+    "agent_honor_score": {
+      "type": "number"
+    },
+    "agent_reputation_score": {
+      "type": "number"
+    },
+    "is_signature_mentor": {
+      "type": "boolean",
+      "default": false
+    },
+    "preferred_mentee_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "learning_resources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "agent_id",
+    "expertise_areas",
+    "availability_hours_weekly",
+    "mentorship_style"
+  ]
+}

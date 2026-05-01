@@ -1,0 +1,61 @@
+{
+  "name": "TeamFormation",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "team_name": {
+      "type": "string"
+    },
+    "team_members": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "formation_method": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "ai_recommended",
+        "hybrid"
+      ],
+      "default": "manual"
+    },
+    "ai_team_score": {
+      "type": "number"
+    },
+    "skill_coverage": {
+      "type": "object"
+    },
+    "synergy_predictions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "diversity_score": {
+      "type": "number"
+    },
+    "workload_balance": {
+      "type": "number"
+    },
+    "formation_reasoning": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "active",
+        "completed",
+        "disbanded"
+      ],
+      "default": "proposed"
+    }
+  },
+  "required": [
+    "team_name"
+  ]
+}

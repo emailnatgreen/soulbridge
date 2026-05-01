@@ -1,0 +1,86 @@
+{
+  "name": "ResourceDynamicsAnalysis",
+  "type": "object",
+  "properties": {
+    "analysis_period_start": {
+      "type": "string"
+    },
+    "analysis_period_end": {
+      "type": "string"
+    },
+    "overall_health_score": {
+      "type": "number",
+      "default": 70
+    },
+    "market_velocity": {
+      "type": "number"
+    },
+    "liquidity_score": {
+      "type": "number"
+    },
+    "resource_metrics": {
+      "type": "object"
+    },
+    "supply_demand_analysis": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "bottlenecks_identified": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "efficiency_opportunities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "production_chain_analysis": {
+      "type": "object"
+    },
+    "price_trends": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "market_concentration": {
+      "type": "object"
+    },
+    "emerging_trends": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "strategic_forecasts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "governance_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "resilience_score": {
+      "type": "number"
+    },
+    "innovation_index": {
+      "type": "number"
+    },
+    "ai_insights": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "analysis_period_start",
+    "analysis_period_end"
+  ]
+}

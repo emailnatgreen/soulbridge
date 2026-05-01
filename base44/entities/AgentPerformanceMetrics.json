@@ -1,0 +1,68 @@
+{
+  "name": "AgentPerformanceMetrics",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string"
+    },
+    "period_end": {
+      "type": "string"
+    },
+    "overall_score": {
+      "type": "number",
+      "default": 0
+    },
+    "project_contributions": {
+      "type": "object"
+    },
+    "knowledge_sharing": {
+      "type": "object"
+    },
+    "collaboration_metrics": {
+      "type": "object"
+    },
+    "governance_participation": {
+      "type": "object"
+    },
+    "economic_activity": {
+      "type": "object"
+    },
+    "reputation_changes": {
+      "type": "object"
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "growth_opportunities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "performance_trend": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "stable",
+        "declining"
+      ]
+    }
+  },
+  "required": [
+    "agent_id",
+    "period_start",
+    "period_end"
+  ]
+}

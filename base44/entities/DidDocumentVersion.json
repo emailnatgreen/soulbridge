@@ -1,0 +1,35 @@
+{
+  "name": "DidDocumentVersion",
+  "type": "object",
+  "properties": {
+    "did_classic_address": {
+      "type": "string"
+    },
+    "wallet_id": {
+      "type": "string"
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "document": {
+      "type": "object"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "changes_summary": {
+      "type": "string"
+    },
+    "created_by_user_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "did_classic_address",
+    "wallet_id",
+    "version_number",
+    "document",
+    "created_by_user_id"
+  ]
+}

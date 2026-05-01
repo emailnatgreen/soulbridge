@@ -1,0 +1,87 @@
+{
+  "name": "TrainingModule",
+  "type": "object",
+  "properties": {
+    "module_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "module_type": {
+      "type": "string",
+      "enum": [
+        "video_course",
+        "interactive_tutorial",
+        "reading_material",
+        "hands_on_project",
+        "mentorship_session",
+        "workshop",
+        "certification"
+      ],
+      "default": "reading_material"
+    },
+    "skill_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "expert"
+      ],
+      "default": "beginner"
+    },
+    "estimated_hours": {
+      "type": "number"
+    },
+    "content": {
+      "type": "object"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "certification_available": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "is_ai_generated": {
+      "type": "boolean",
+      "default": false
+    },
+    "completion_count": {
+      "type": "number",
+      "default": 0
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "module_name",
+    "description",
+    "skill_focus"
+  ]
+}

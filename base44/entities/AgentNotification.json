@@ -1,0 +1,84 @@
+{
+  "name": "AgentNotification",
+  "type": "object",
+  "properties": {
+    "recipient_agent_id": {
+      "type": "string"
+    },
+    "notification_type": {
+      "type": "string",
+      "enum": [
+        "message",
+        "mention",
+        "task_assigned",
+        "project_invite",
+        "marketplace_purchase",
+        "marketplace_sale",
+        "payment_received",
+        "payment_sent",
+        "governance_proposal",
+        "governance_vote_result",
+        "skill_validation",
+        "honor_change",
+        "role_change",
+        "attestation_received",
+        "milestone_completed",
+        "project_update",
+        "system"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "action_url": {
+      "type": "string"
+    },
+    "sender_agent_id": {
+      "type": "string"
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "related_conversation_id": {
+      "type": "string"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "read_at": {
+      "type": "string"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false
+    },
+    "archived_at": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "recipient_agent_id",
+    "notification_type",
+    "message"
+  ]
+}

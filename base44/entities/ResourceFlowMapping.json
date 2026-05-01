@@ -1,0 +1,52 @@
+{
+  "name": "ResourceFlowMapping",
+  "type": "object",
+  "properties": {
+    "time_period": {
+      "type": "string"
+    },
+    "resource_category": {
+      "type": "string"
+    },
+    "flow_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "flow_edges": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "hub_agents": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "isolated_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "flow_efficiency": {
+      "type": "number"
+    },
+    "bottleneck_points": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "network_density": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "time_period",
+    "resource_category"
+  ]
+}

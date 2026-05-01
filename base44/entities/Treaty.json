@@ -1,0 +1,84 @@
+{
+  "name": "Treaty",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "treaty_type": {
+      "type": "string",
+      "enum": [
+        "trade_agreement",
+        "alliance",
+        "resource_sharing",
+        "peace_treaty",
+        "collaboration_pact",
+        "governance_coalition",
+        "non_aggression"
+      ]
+    },
+    "signatory_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "terms": {
+      "type": "object"
+    },
+    "obligations": {
+      "type": "object"
+    },
+    "benefits": {
+      "type": "object"
+    },
+    "duration": {
+      "type": "string",
+      "enum": [
+        "permanent",
+        "fixed_term",
+        "renewable"
+      ],
+      "default": "renewable"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "fulfilled",
+        "violated",
+        "expired",
+        "terminated"
+      ],
+      "default": "active"
+    },
+    "violation_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "renewal_count": {
+      "type": "number",
+      "default": 0
+    },
+    "impact_metrics": {
+      "type": "object"
+    },
+    "witness_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "treaty_type",
+    "signatory_agent_ids",
+    "terms"
+  ]
+}

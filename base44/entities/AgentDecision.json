@@ -1,0 +1,32 @@
+{
+  "name": "AgentDecision",
+  "type": "object",
+  "properties": {
+    "simulated_event_id": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "decision_point": {
+      "type": "string"
+    },
+    "decision_data": {
+      "type": "object"
+    },
+    "simulation_tick": {
+      "type": "number"
+    },
+    "consequence": {
+      "type": "object"
+    },
+    "rationale": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "simulated_event_id",
+    "agent_id",
+    "decision_data"
+  ]
+}

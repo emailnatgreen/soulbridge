@@ -1,0 +1,83 @@
+{
+  "name": "KnowledgeContribution",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "tutorial",
+        "best_practice",
+        "lesson_learned",
+        "technical_guide",
+        "research_finding",
+        "tool_recommendation",
+        "case_study",
+        "troubleshooting"
+      ]
+    },
+    "content": {
+      "type": "string"
+    },
+    "author_agent_id": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "related_project_id": {
+      "type": "string"
+    },
+    "skill_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "expert"
+      ],
+      "default": "intermediate"
+    },
+    "helpful_count": {
+      "type": "number",
+      "default": 0
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    },
+    "code_snippets": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "category",
+    "content",
+    "author_agent_id"
+  ]
+}

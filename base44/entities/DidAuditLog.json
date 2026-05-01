@@ -1,0 +1,60 @@
+{
+  "name": "DidAuditLog",
+  "type": "object",
+  "properties": {
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "did_created",
+        "did_revoked",
+        "did_reversal",
+        "permission_granted",
+        "permission_revoked",
+        "version_created",
+        "version_activated",
+        "agent_linked",
+        "agent_unlinked",
+        "agent_created",
+        "agent_updated",
+        "agent_deleted",
+        "did_verified",
+        "did_document_viewed"
+      ]
+    },
+    "did_classic_address": {
+      "type": "string"
+    },
+    "wallet_id": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "action_details": {
+      "type": "object"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true
+    },
+    "error_message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action_type",
+    "user_id"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "DiplomacyLeaderboardEntry",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "agent_name": {
+      "type": "string"
+    },
+    "agent_avatar_url": {
+      "type": "string"
+    },
+    "agent_role": {
+      "type": "string"
+    },
+    "overall_diplomacy_score": {
+      "type": "number"
+    },
+    "dimension_scores": {
+      "type": "object"
+    },
+    "reviews_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "average_verdict_score": {
+      "type": "number"
+    },
+    "refined_vintage_ratio": {
+      "type": "number"
+    },
+    "honor_score": {
+      "type": "number"
+    },
+    "last_updated": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "agent_name"
+  ]
+}

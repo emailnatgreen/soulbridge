@@ -1,0 +1,71 @@
+{
+  "name": "ReputationScore",
+  "type": "object",
+  "properties": {
+    "did_classic_address": {
+      "type": "string"
+    },
+    "wallet_id": {
+      "type": "string"
+    },
+    "overall_score": {
+      "type": "number",
+      "default": 50
+    },
+    "trust_level": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "new",
+        "established",
+        "trusted",
+        "verified"
+      ],
+      "default": "new"
+    },
+    "activity_score": {
+      "type": "number",
+      "default": 0
+    },
+    "reliability_score": {
+      "type": "number",
+      "default": 0
+    },
+    "engagement_score": {
+      "type": "number",
+      "default": 0
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_calculated": {
+      "type": "string"
+    },
+    "calculation_version": {
+      "type": "string",
+      "default": "1.0"
+    }
+  },
+  "required": [
+    "did_classic_address",
+    "wallet_id"
+  ]
+}

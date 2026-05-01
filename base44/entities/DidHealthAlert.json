@@ -1,0 +1,75 @@
+{
+  "name": "DidHealthAlert",
+  "type": "object",
+  "properties": {
+    "did_classic_address": {
+      "type": "string"
+    },
+    "wallet_id": {
+      "type": "string"
+    },
+    "alert_type": {
+      "type": "string",
+      "enum": [
+        "revocation_detected",
+        "permission_removed",
+        "agent_unlinked",
+        "version_anomaly",
+        "audit_gap",
+        "credentials_revoked"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium"
+      ],
+      "default": "high"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "triggered_by_event_id": {
+      "type": "string"
+    },
+    "notified_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "acknowledged",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "active"
+    },
+    "acknowledged_at": {
+      "type": "string"
+    },
+    "acknowledged_by_agent_id": {
+      "type": "string"
+    },
+    "resolution_notes": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "did_classic_address",
+    "alert_type",
+    "severity",
+    "title"
+  ]
+}

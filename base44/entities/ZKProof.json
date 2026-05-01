@@ -1,0 +1,76 @@
+{
+  "name": "ZKProof",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "proof_type": {
+      "type": "string",
+      "enum": [
+        "credential_verification",
+        "age_verification",
+        "income_verification",
+        "compliance_status",
+        "skill_level",
+        "custom"
+      ]
+    },
+    "claim_category": {
+      "type": "string"
+    },
+    "proof_data": {
+      "type": "string"
+    },
+    "verifier_addresses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proof_status": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "verified",
+        "expired",
+        "revoked"
+      ],
+      "default": "generated"
+    },
+    "created_timestamp": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "verification_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_verified_at": {
+      "type": "string"
+    },
+    "privacy_level": {
+      "type": "string",
+      "enum": [
+        "public",
+        "restricted",
+        "private"
+      ],
+      "default": "private"
+    },
+    "xls80_domain_id": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "agent_id",
+    "proof_type",
+    "claim_category",
+    "proof_data"
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "name": "WellbeingAlert",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "alert_type": {
+      "type": "string",
+      "enum": [
+        "burnout_risk",
+        "workload_overload",
+        "social_isolation",
+        "declining_performance",
+        "low_satisfaction",
+        "stress_spike",
+        "growth_stagnation",
+        "relationship_conflict"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "description": {
+      "type": "string"
+    },
+    "indicators": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_interventions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "acknowledged",
+        "intervention_in_progress",
+        "resolved",
+        "escalated"
+      ],
+      "default": "active"
+    },
+    "acknowledged_by": {
+      "type": "string"
+    },
+    "acknowledged_at": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string"
+    },
+    "resolution_notes": {
+      "type": "string"
+    },
+    "triggered_by": {
+      "type": "string"
+    },
+    "notified_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "agent_id",
+    "alert_type",
+    "severity"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "name": "MWTPPacket",
+  "type": "object",
+  "properties": {
+    "packet_version": {
+      "type": "string",
+      "default": "1.0"
+    },
+    "layer": {
+      "type": "string",
+      "enum": [
+        "micro",
+        "meso",
+        "macro"
+      ],
+      "default": "micro"
+    },
+    "hashed_agent_id": {
+      "type": "string"
+    },
+    "hashed_event_context": {
+      "type": "string"
+    },
+    "ku_count": {
+      "type": "number",
+      "default": 1
+    },
+    "ku_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "total_weighted_score": {
+      "type": "number",
+      "default": 0
+    },
+    "packet_timestamp": {
+      "type": "string"
+    },
+    "transmission_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "transmitted",
+        "received",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "received_by_engine": {
+      "type": "boolean",
+      "default": false
+    },
+    "engine_ingest_timestamp": {
+      "type": "string"
+    },
+    "integrity_checksum": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "layer",
+    "hashed_agent_id",
+    "hashed_event_context",
+    "packet_timestamp"
+  ]
+}

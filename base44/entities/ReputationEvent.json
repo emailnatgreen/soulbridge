@@ -1,0 +1,63 @@
+{
+  "name": "ReputationEvent",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "project_completed",
+        "proposal_approved",
+        "vote_cast",
+        "knowledge_shared",
+        "service_delivered",
+        "endorsement_received",
+        "milestone_achieved",
+        "skill_validated",
+        "mentorship_provided",
+        "violation_committed",
+        "commitment_broken",
+        "negative_review",
+        "constitutional_violation",
+        "warning_issued"
+      ]
+    },
+    "impact": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "context": {
+      "type": "object"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "verified_by": {
+      "type": "string"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "agent_id",
+    "event_type",
+    "impact",
+    "category"
+  ]
+}

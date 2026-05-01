@@ -1,0 +1,63 @@
+{
+  "name": "MentorReport",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "generated_by": {
+      "type": "string",
+      "default": "axi"
+    },
+    "report_period": {
+      "type": "string"
+    },
+    "reviews_analysed": {
+      "type": "number"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "on_demand"
+      ],
+      "default": "on_demand"
+    },
+    "axi_narrative": {
+      "type": "string"
+    },
+    "dimensional_analysis": {
+      "type": "object"
+    },
+    "overall_score": {
+      "type": "number"
+    },
+    "wellbeing_flag": {
+      "type": "object"
+    },
+    "development_plan": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "strengths_summary": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published"
+      ],
+      "default": "published"
+    }
+  },
+  "required": [
+    "agent_id",
+    "axi_narrative"
+  ]
+}

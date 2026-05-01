@@ -1,0 +1,41 @@
+{
+  "name": "VotingDelegation",
+  "type": "object",
+  "properties": {
+    "delegator_agent_id": {
+      "type": "string"
+    },
+    "delegate_agent_id": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "all",
+        "specific_type"
+      ],
+      "default": "all"
+    },
+    "proposal_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "delegation_power_percentage": {
+      "type": "number",
+      "default": 100
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "expires_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "delegator_agent_id",
+    "delegate_agent_id"
+  ]
+}

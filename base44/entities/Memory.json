@@ -1,0 +1,51 @@
+{
+  "name": "Memory",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "conversation_snippet",
+        "user_preference",
+        "village_detail",
+        "observation",
+        "fact",
+        "relationship",
+        "emotion"
+      ]
+    },
+    "content": {
+      "type": "string"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "context": {
+      "type": "string"
+    },
+    "importance": {
+      "type": "number",
+      "default": 5
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "related_entity_type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "type",
+    "content"
+  ]
+}

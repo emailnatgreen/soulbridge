@@ -1,0 +1,34 @@
+{
+  "name": "ComplianceHeartbeat",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "law_violated": {
+      "type": "number"
+    },
+    "violation_severity": {
+      "type": "number"
+    },
+    "consecutive_count": {
+      "type": "number",
+      "default": 1
+    },
+    "is_tripped": {
+      "type": "boolean",
+      "default": false
+    },
+    "violation_description": {
+      "type": "string"
+    },
+    "action_taken": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "law_violated",
+    "violation_severity"
+  ]
+}

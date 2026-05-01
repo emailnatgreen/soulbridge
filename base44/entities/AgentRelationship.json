@@ -1,0 +1,84 @@
+{
+  "name": "AgentRelationship",
+  "type": "object",
+  "properties": {
+    "agent_a_id": {
+      "type": "string"
+    },
+    "agent_b_id": {
+      "type": "string"
+    },
+    "relationship_strength": {
+      "type": "number",
+      "default": 0
+    },
+    "trust_level": {
+      "type": "number",
+      "default": 5
+    },
+    "respect_level": {
+      "type": "number",
+      "default": 5
+    },
+    "collaboration_score": {
+      "type": "number",
+      "default": 0
+    },
+    "affinity": {
+      "type": "number",
+      "default": 0
+    },
+    "relationship_type": {
+      "type": "string",
+      "enum": [
+        "stranger",
+        "acquaintance",
+        "friend",
+        "close_friend",
+        "mentor_mentee",
+        "rival",
+        "adversary",
+        "ally",
+        "neutral"
+      ],
+      "default": "stranger"
+    },
+    "interaction_count": {
+      "type": "number",
+      "default": 0
+    },
+    "positive_interactions": {
+      "type": "number",
+      "default": 0
+    },
+    "negative_interactions": {
+      "type": "number",
+      "default": 0
+    },
+    "last_interaction_date": {
+      "type": "string"
+    },
+    "shared_experiences": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "conflict_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "compatibility_factors": {
+      "type": "object"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_a_id",
+    "agent_b_id"
+  ]
+}

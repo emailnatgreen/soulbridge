@@ -1,0 +1,111 @@
+{
+  "name": "ProjectTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "development",
+        "research",
+        "community",
+        "infrastructure",
+        "creative",
+        "governance",
+        "education",
+        "other"
+      ],
+      "default": "other"
+    },
+    "creator_agent_id": {
+      "type": "string"
+    },
+    "is_ai_generated": {
+      "type": "boolean",
+      "default": false
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "expert"
+      ],
+      "default": "intermediate"
+    },
+    "estimated_duration_days": {
+      "type": "number"
+    },
+    "recommended_team_size": {
+      "type": "number"
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "milestone_templates": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "task_templates": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "budget_guidance": {
+      "type": "object"
+    },
+    "success_metrics": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "best_practices": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "common_pitfalls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "use_count": {
+      "type": "number",
+      "default": 0
+    },
+    "success_rate": {
+      "type": "number",
+      "default": 0
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "category"
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "name": "KnowledgeSynthesis",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "synthesis_type": {
+      "type": "string",
+      "enum": [
+        "trend_analysis",
+        "best_practices_summary",
+        "skill_gap_analysis",
+        "innovation_opportunities",
+        "cross_domain_insights",
+        "problem_pattern_recognition",
+        "success_factor_analysis"
+      ]
+    },
+    "source_knowledge_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "synthesis_content": {
+      "type": "string"
+    },
+    "key_insights": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "actionable_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "knowledge_connections": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "emerging_patterns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "skill_areas_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "relevance_score": {
+      "type": "number",
+      "default": 0
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    },
+    "useful_count": {
+      "type": "number",
+      "default": 0
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "auto_generated": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "title",
+    "synthesis_type",
+    "synthesis_content"
+  ]
+}

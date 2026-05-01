@@ -1,0 +1,48 @@
+{
+  "name": "WalletAccessLog",
+  "type": "object",
+  "properties": {
+    "wallet_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "create",
+        "view",
+        "decrypt",
+        "update",
+        "delete",
+        "balance_check",
+        "send_transaction"
+      ]
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "wallet_id",
+    "user_id",
+    "action"
+  ]
+}

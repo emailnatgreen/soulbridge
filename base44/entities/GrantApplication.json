@@ -1,0 +1,72 @@
+{
+  "name": "GrantApplication",
+  "type": "object",
+  "properties": {
+    "submission_url": {
+      "type": "string"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "grant_name": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "amount_requested": {
+      "type": "number"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "deadline": {
+      "type": "string"
+    },
+    "outcome_notes": {
+      "type": "string"
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "drafting",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected"
+      ]
+    },
+    "genesis_zk_proof_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "grant_name",
+    "organization",
+    "deadline"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "name": "ProductionChain",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "recipe_name": {
+      "type": "string"
+    },
+    "input_resources": {
+      "type": "object"
+    },
+    "output_resource": {
+      "type": "string"
+    },
+    "output_amount": {
+      "type": "number",
+      "default": 1
+    },
+    "production_rate": {
+      "type": "number",
+      "default": 1
+    },
+    "efficiency": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "insufficient_resources"
+      ],
+      "default": "active"
+    },
+    "total_produced": {
+      "type": "number",
+      "default": 0
+    },
+    "skill_bonus": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "agent_id",
+    "recipe_name",
+    "input_resources",
+    "output_resource"
+  ]
+}

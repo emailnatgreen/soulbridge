@@ -1,0 +1,55 @@
+{
+  "name": "XLS80Domain",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "domain_name": {
+      "type": "string"
+    },
+    "classic_address": {
+      "type": "string"
+    },
+    "domain_hash": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "suspended",
+        "revoked"
+      ],
+      "default": "pending"
+    },
+    "registered_on_xrpl": {
+      "type": "boolean",
+      "default": false
+    },
+    "xrpl_txid": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string"
+    },
+    "attributes": {
+      "type": "object"
+    },
+    "associated_services": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "agent_id",
+    "domain_name",
+    "classic_address"
+  ]
+}

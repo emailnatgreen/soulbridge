@@ -1,0 +1,41 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "from_wallet_id": {
+      "type": "string"
+    },
+    "recipient_name": {
+      "type": "string"
+    },
+    "recipient_address": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "note": {
+      "type": "string"
+    },
+    "destination_tag": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "hash": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "recipient_address",
+    "amount",
+    "status"
+  ]
+}

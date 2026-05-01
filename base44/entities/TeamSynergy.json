@@ -1,0 +1,61 @@
+{
+  "name": "TeamSynergy",
+  "type": "object",
+  "properties": {
+    "agent_a_id": {
+      "type": "string"
+    },
+    "agent_b_id": {
+      "type": "string"
+    },
+    "synergy_score": {
+      "type": "number",
+      "default": 5
+    },
+    "collaboration_count": {
+      "type": "number",
+      "default": 0
+    },
+    "successful_projects": {
+      "type": "number",
+      "default": 0
+    },
+    "communication_style_match": {
+      "type": "number",
+      "default": 5
+    },
+    "skill_complementarity": {
+      "type": "number",
+      "default": 5
+    },
+    "problem_solving_compatibility": {
+      "type": "number",
+      "default": 5
+    },
+    "shared_interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "collaboration_highlights": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "improvement_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_collaboration_date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_a_id",
+    "agent_b_id"
+  ]
+}

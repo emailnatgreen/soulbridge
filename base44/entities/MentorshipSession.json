@@ -1,0 +1,96 @@
+{
+  "name": "MentorshipSession",
+  "type": "object",
+  "properties": {
+    "relationship_id": {
+      "type": "string"
+    },
+    "mentor_agent_id": {
+      "type": "string"
+    },
+    "mentee_agent_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "confirmed",
+        "completed",
+        "cancelled"
+      ],
+      "default": "requested"
+    },
+    "requested_day": {
+      "type": "string"
+    },
+    "requested_slot": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "afternoon",
+        "evening"
+      ]
+    },
+    "session_date": {
+      "type": "string"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "default": 60
+    },
+    "session_type": {
+      "type": "string",
+      "enum": [
+        "skills_training",
+        "career_guidance",
+        "project_review",
+        "problem_solving",
+        "knowledge_sharing",
+        "goal_planning",
+        "feedback_session"
+      ]
+    },
+    "mentee_notes": {
+      "type": "string"
+    },
+    "mentor_notes": {
+      "type": "string"
+    },
+    "topics_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "progress_rating": {
+      "type": "number"
+    },
+    "session_quality": {
+      "type": "number"
+    },
+    "key_insights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "resources_shared": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "relationship_id",
+    "mentor_agent_id",
+    "mentee_agent_id"
+  ]
+}

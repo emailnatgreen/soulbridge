@@ -1,0 +1,75 @@
+{
+  "name": "ProductionRecipe",
+  "type": "object",
+  "properties": {
+    "recipe_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "crafting",
+        "refinement",
+        "synthesis",
+        "research",
+        "development"
+      ]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "cycle_duration_hours": {
+      "type": "number"
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "base_efficiency": {
+      "type": "number",
+      "default": 1
+    },
+    "complexity": {
+      "type": "string",
+      "enum": [
+        "simple",
+        "moderate",
+        "complex",
+        "advanced"
+      ],
+      "default": "simple"
+    },
+    "unlock_requirements": {
+      "type": "object"
+    },
+    "energy_cost": {
+      "type": "number",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "recipe_name",
+    "inputs",
+    "outputs",
+    "cycle_duration_hours"
+  ]
+}

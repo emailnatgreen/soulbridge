@@ -1,0 +1,61 @@
+{
+  "name": "SimulatedEvent",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "resource_challenge",
+        "discovery",
+        "social_dilemma",
+        "governance_test",
+        "crisis_response",
+        "collaboration_test"
+      ]
+    },
+    "parameters": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "concluded"
+      ],
+      "default": "pending"
+    },
+    "start_tick": {
+      "type": "number"
+    },
+    "end_tick": {
+      "type": "number"
+    },
+    "involved_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "outcomes": {
+      "type": "object"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "linked_training_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "event_type"
+  ]
+}

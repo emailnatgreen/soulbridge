@@ -1,0 +1,68 @@
+{
+  "name": "Synthesis",
+  "type": "object",
+  "properties": {
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "memory_bundle"
+      ],
+      "default": "memory_bundle"
+    },
+    "source_memory_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "bundle_signature": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "themes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "retrieval_hints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "source_type",
+    "source_memory_ids",
+    "agent_id",
+    "bundle_signature",
+    "status"
+  ]
+}

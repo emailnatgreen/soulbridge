@@ -1,0 +1,60 @@
+{
+  "name": "SimulationState",
+  "type": "object",
+  "properties": {
+    "tick": {
+      "type": "number",
+      "default": 0
+    },
+    "hour": {
+      "type": "number",
+      "default": 6
+    },
+    "day": {
+      "type": "number",
+      "default": 1
+    },
+    "season": {
+      "type": "string",
+      "enum": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "default": "spring"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "is_night": {
+      "type": "boolean",
+      "default": false
+    },
+    "energy": {
+      "type": "number",
+      "default": 80
+    },
+    "overall_mood": {
+      "type": "string",
+      "default": "peaceful"
+    },
+    "mood_factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mood_suggestion": {
+      "type": "string"
+    },
+    "is_running": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_tick_timestamp": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

@@ -1,0 +1,76 @@
+{
+  "name": "AgentNFT",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "nft_type": {
+      "type": "string",
+      "enum": [
+        "kinetic_apprentice",
+        "kinetic_trailblazer",
+        "merit_forged",
+        "task_sprinter",
+        "civic_luminary",
+        "founding_voice",
+        "synergy_steward",
+        "echoes_of_soulbridge",
+        "builders_badge",
+        "governance_contributor",
+        "soul_spark",
+        "custom"
+      ]
+    },
+    "badge_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "ku_milestone": {
+      "type": "number"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "xrpl_tx_hash": {
+      "type": "string"
+    },
+    "xrpl_nft_token_id": {
+      "type": "string"
+    },
+    "is_soul_bound": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_on_chain": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "minted",
+        "failed",
+        "revoked"
+      ],
+      "default": "pending"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "agent_id",
+    "nft_type",
+    "badge_name"
+  ]
+}

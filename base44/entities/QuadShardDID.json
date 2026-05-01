@@ -1,0 +1,84 @@
+{
+  "name": "QuadShardDID",
+  "type": "object",
+  "properties": {
+    "did_id": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Sovereign_Active",
+        "Pending_Activation",
+        "Suspended",
+        "Revoked"
+      ],
+      "default": "Pending_Activation"
+    },
+    "genesis_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "framework": {
+      "type": "string"
+    },
+    "operating_laws": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_method": {
+      "type": "string"
+    },
+    "generation_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "witness_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "signature_type": {
+      "type": "string"
+    },
+    "signatures_collected": {
+      "type": "number",
+      "default": 0
+    },
+    "signatures_required": {
+      "type": "number",
+      "default": 4
+    },
+    "activation_proposal_id": {
+      "type": "string"
+    },
+    "output_formats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "storytelling_focus": {
+      "type": "string"
+    },
+    "last_verified": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "did_id",
+    "role",
+    "witness_nodes"
+  ]
+}

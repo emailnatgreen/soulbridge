@@ -1,0 +1,45 @@
+{
+  "name": "SkillEndorsement",
+  "type": "object",
+  "properties": {
+    "endorser_agent_id": {
+      "type": "string"
+    },
+    "endorsed_agent_id": {
+      "type": "string"
+    },
+    "skill_name": {
+      "type": "string"
+    },
+    "skill_category": {
+      "type": "string"
+    },
+    "proficiency_level": {
+      "type": "number"
+    },
+    "context": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "strength": {
+      "type": "number",
+      "default": 7
+    },
+    "verified_by_ai": {
+      "type": "boolean",
+      "default": false
+    },
+    "endorsement_count": {
+      "type": "number",
+      "default": 1
+    }
+  },
+  "required": [
+    "endorser_agent_id",
+    "endorsed_agent_id",
+    "skill_name",
+    "proficiency_level"
+  ]
+}

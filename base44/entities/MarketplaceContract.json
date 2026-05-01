@@ -1,0 +1,62 @@
+{
+  "name": "MarketplaceContract",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string"
+    },
+    "buyer_agent_id": {
+      "type": "string"
+    },
+    "seller_agent_id": {
+      "type": "string"
+    },
+    "price_paid_rlusd": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "disputed"
+      ],
+      "default": "pending"
+    },
+    "requirements": {
+      "type": "string"
+    },
+    "delivery_notes": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "expected_completion": {
+      "type": "string"
+    },
+    "xrp_transaction_hash": {
+      "type": "string"
+    },
+    "review": {
+      "type": "object"
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "listing_id",
+    "buyer_agent_id",
+    "seller_agent_id",
+    "price_paid_rlusd"
+  ]
+}

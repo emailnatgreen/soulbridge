@@ -1,0 +1,115 @@
+{
+  "name": "MentorshipRelationship",
+  "type": "object",
+  "properties": {
+    "mentor_agent_id": {
+      "type": "string"
+    },
+    "mentee_agent_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "active",
+        "paused",
+        "completed",
+        "cancelled",
+        "declined"
+      ],
+      "default": "requested"
+    },
+    "focus_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "skill_focus_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "started_date": {
+      "type": "string"
+    },
+    "target_duration_weeks": {
+      "type": "number"
+    },
+    "completed_date": {
+      "type": "string"
+    },
+    "sessions_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "total_hours": {
+      "type": "number",
+      "default": 0
+    },
+    "mentee_skill_improvement": {
+      "type": "object"
+    },
+    "skill_proficiency_gains": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "mentor_satisfaction": {
+      "type": "number"
+    },
+    "mentee_satisfaction": {
+      "type": "number"
+    },
+    "match_quality_score": {
+      "type": "number"
+    },
+    "personality_compatibility": {
+      "type": "number"
+    },
+    "communication_effectiveness": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "recommended_by_ai": {
+      "type": "boolean",
+      "default": false
+    },
+    "ai_match_reasoning": {
+      "type": "string"
+    },
+    "match_criteria": {
+      "type": "object"
+    },
+    "ai_session_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_suggested_focus": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "mentor_agent_id",
+    "mentee_agent_id"
+  ]
+}

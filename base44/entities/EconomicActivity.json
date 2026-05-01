@@ -1,0 +1,51 @@
+{
+  "name": "EconomicActivity",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "activity_type": {
+      "type": "string",
+      "enum": [
+        "earned",
+        "spent",
+        "traded",
+        "treasury_deposit",
+        "treasury_withdrawal",
+        "resource_acquired",
+        "resource_sold"
+      ]
+    },
+    "amount": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "related_agent_id": {
+      "type": "string"
+    },
+    "resource_id": {
+      "type": "string"
+    },
+    "transaction_hash": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "completed"
+    }
+  },
+  "required": [
+    "agent_id",
+    "activity_type",
+    "amount",
+    "description"
+  ]
+}

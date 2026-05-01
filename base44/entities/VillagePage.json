@@ -1,0 +1,72 @@
+{
+  "name": "VillagePage",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "governance",
+        "agents",
+        "economy",
+        "did_identity",
+        "skills",
+        "simulation",
+        "admin",
+        "social",
+        "marketplace",
+        "public",
+        "tools"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "draft",
+        "archived",
+        "under_review",
+        "needs_update"
+      ],
+      "default": "active"
+    },
+    "description": {
+      "type": "string"
+    },
+    "last_reviewed_by_agent_id": {
+      "type": "string"
+    },
+    "last_reviewed_date": {
+      "type": "string"
+    },
+    "review_notes": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "name",
+    "path"
+  ]
+}

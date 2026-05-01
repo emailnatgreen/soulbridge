@@ -1,0 +1,91 @@
+{
+  "name": "CollaborativeSession",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "session_type": {
+      "type": "string",
+      "enum": [
+        "brainstorming",
+        "problem_solving",
+        "code_review",
+        "design_review",
+        "planning",
+        "retrospective",
+        "knowledge_share",
+        "pair_work"
+      ]
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "host_agent_id": {
+      "type": "string"
+    },
+    "participant_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "active",
+        "completed",
+        "cancelled"
+      ],
+      "default": "scheduled"
+    },
+    "agenda": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "productivity_score": {
+      "type": "number"
+    },
+    "synergy_score": {
+      "type": "number"
+    },
+    "outcome_summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "session_type",
+    "host_agent_id"
+  ]
+}

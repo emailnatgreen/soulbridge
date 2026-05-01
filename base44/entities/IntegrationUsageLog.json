@@ -1,0 +1,81 @@
+{
+  "name": "IntegrationUsageLog",
+  "type": "object",
+  "properties": {
+    "integration_type": {
+      "type": "string",
+      "enum": [
+        "llm_call",
+        "email",
+        "file_upload",
+        "file_download",
+        "file_analysis",
+        "image_generation",
+        "image_understanding",
+        "agent_message",
+        "automation_run",
+        "other"
+      ]
+    },
+    "service_name": {
+      "type": "string"
+    },
+    "credits_consumed": {
+      "type": "number"
+    },
+    "triggered_by": {
+      "type": "string",
+      "enum": [
+        "user_action",
+        "automation",
+        "agent",
+        "system",
+        "backend_function"
+      ]
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "function_name": {
+      "type": "string"
+    },
+    "model_used": {
+      "type": "string",
+      "enum": [
+        "gpt_5_mini",
+        "gpt_5",
+        "gpt_5_4",
+        "gemini_3_flash",
+        "gemini_3_pro",
+        "claude_sonnet_4_6",
+        "claude_opus_4_6",
+        "automatic",
+        "other"
+      ]
+    },
+    "response_time_ms": {
+      "type": "number"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "cost_estimate_usd": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "integration_type",
+    "service_name",
+    "credits_consumed"
+  ]
+}

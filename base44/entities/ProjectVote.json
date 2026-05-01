@@ -1,0 +1,32 @@
+{
+  "name": "ProjectVote",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "vote": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "reject",
+        "abstain"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "voting_power": {
+      "type": "number",
+      "default": 1
+    }
+  },
+  "required": [
+    "project_id",
+    "agent_id",
+    "vote"
+  ]
+}

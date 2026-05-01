@@ -1,0 +1,70 @@
+{
+  "name": "LiquidityVault",
+  "type": "object",
+  "properties": {
+    "self_nft_id": {
+      "type": "string"
+    },
+    "owner_agent_id": {
+      "type": "string"
+    },
+    "loan_id": {
+      "type": "string"
+    },
+    "collateral_value_xrp": {
+      "type": "number"
+    },
+    "borrowed_rlusd": {
+      "type": "number"
+    },
+    "interest_rate_percent": {
+      "type": "number",
+      "default": 4.5
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "repaying",
+        "repaid",
+        "defaulted",
+        "liquidated"
+      ],
+      "default": "active"
+    },
+    "created_date": {
+      "type": "string"
+    },
+    "repayment_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "total_repaid": {
+      "type": "number",
+      "default": 0
+    },
+    "next_payment_due": {
+      "type": "string"
+    },
+    "vault_health_percent": {
+      "type": "number",
+      "default": 100
+    },
+    "audit_trail_id": {
+      "type": "string"
+    },
+    "zsp_permission_grants": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "self_nft_id",
+    "owner_agent_id",
+    "collateral_value_xrp"
+  ]
+}

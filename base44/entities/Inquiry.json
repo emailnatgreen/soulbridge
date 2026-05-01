@@ -1,0 +1,74 @@
+{
+  "name": "Inquiry",
+  "type": "object",
+  "properties": {
+    "sender_email": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "in_review",
+        "responded",
+        "closed"
+      ],
+      "default": "new"
+    },
+    "response": {
+      "type": "string"
+    },
+    "reply_note": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "neutral",
+        "negative",
+        "urgent"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Technical Support",
+        "Partnership",
+        "Donation",
+        "General Enquiry",
+        "Feedback",
+        "Media / Press",
+        "Membership",
+        "Other"
+      ]
+    },
+    "queue": {
+      "type": "string",
+      "enum": [
+        "support",
+        "partnerships",
+        "finance",
+        "general",
+        "media"
+      ]
+    },
+    "ai_classification_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "sender_email",
+    "subject",
+    "message"
+  ]
+}

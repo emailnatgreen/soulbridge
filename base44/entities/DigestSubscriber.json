@@ -1,0 +1,42 @@
+{
+  "name": "DigestSubscriber",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "subscription_type": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "member",
+        "invited",
+        "public"
+      ],
+      "default": "public"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "subscribed_at": {
+      "type": "string"
+    },
+    "last_email_sent": {
+      "type": "string"
+    },
+    "editions_received": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "email"
+  ]
+}

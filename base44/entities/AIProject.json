@@ -1,0 +1,110 @@
+{
+  "name": "AIProject",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "vision": {
+      "type": "string"
+    },
+    "owner_agent_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "recruiting",
+        "active",
+        "on_hold",
+        "completed",
+        "cancelled"
+      ],
+      "default": "planning"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "budget_drops": {
+      "type": "number"
+    },
+    "spent_drops": {
+      "type": "number",
+      "default": 0
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "team_members": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "ai_recommended_team": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "start_date": {
+      "type": "string"
+    },
+    "target_completion_date": {
+      "type": "string"
+    },
+    "actual_completion_date": {
+      "type": "string"
+    },
+    "progress_percentage": {
+      "type": "number",
+      "default": 0
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "ai_insights": {
+      "type": "object"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "owner_agent_id"
+  ]
+}

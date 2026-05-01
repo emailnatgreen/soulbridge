@@ -1,0 +1,44 @@
+{
+  "name": "DidPermission",
+  "type": "object",
+  "properties": {
+    "did_classic_address": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "view_did_document",
+        "update_did_profile",
+        "revoke_did",
+        "initiate_wallet_transaction"
+      ]
+    },
+    "granted_by_user_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "revoked_at": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "did_classic_address",
+    "agent_id",
+    "action",
+    "granted_by_user_id"
+  ]
+}

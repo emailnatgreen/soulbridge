@@ -1,0 +1,50 @@
+{
+  "name": "SelfNFT",
+  "type": "object",
+  "properties": {
+    "owner_agent_id": {
+      "type": "string"
+    },
+    "ipfs_uri": {
+      "type": "string"
+    },
+    "xls20_token_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "minting",
+        "active",
+        "vaulted",
+        "liquidated",
+        "retired"
+      ],
+      "default": "active"
+    },
+    "mint_date": {
+      "type": "string"
+    },
+    "honor_snapshot": {
+      "type": "number"
+    },
+    "liveness_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "liveness_check_date": {
+      "type": "string"
+    },
+    "current_vault_id": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "owner_agent_id",
+    "ipfs_uri",
+    "status"
+  ]
+}

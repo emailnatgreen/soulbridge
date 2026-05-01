@@ -1,0 +1,43 @@
+{
+  "name": "ProjectContribution",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "resource_type": {
+      "type": "string"
+    },
+    "resource_amount": {
+      "type": "number"
+    },
+    "effort_hours": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "xrp_earned": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "rewarded"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "project_id",
+    "agent_id",
+    "resource_type",
+    "resource_amount"
+  ]
+}

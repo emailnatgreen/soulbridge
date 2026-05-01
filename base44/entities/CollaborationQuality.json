@@ -1,0 +1,52 @@
+{
+  "name": "CollaborationQuality",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "quality_score": {
+      "type": "number",
+      "default": 70
+    },
+    "dimensions": {
+      "type": "object"
+    },
+    "interaction_patterns": {
+      "type": "object"
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "areas_for_improvement": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "assessed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "participants"
+  ]
+}

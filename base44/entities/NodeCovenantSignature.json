@@ -1,0 +1,52 @@
+{
+  "name": "NodeCovenantSignature",
+  "type": "object",
+  "properties": {
+    "node_address": {
+      "type": "string"
+    },
+    "node_name": {
+      "type": "string"
+    },
+    "wallet_id": {
+      "type": "string"
+    },
+    "signed_by_user_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "signed",
+        "expired"
+      ],
+      "default": "pending"
+    },
+    "xumm_payload_id": {
+      "type": "string"
+    },
+    "signature_message": {
+      "type": "string"
+    },
+    "signature_hash": {
+      "type": "string"
+    },
+    "signed_at": {
+      "type": "string"
+    },
+    "xrpl_account": {
+      "type": "string"
+    },
+    "xrpl_txid": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "node_address",
+    "node_name",
+    "wallet_id",
+    "status",
+    "signature_message"
+  ]
+}

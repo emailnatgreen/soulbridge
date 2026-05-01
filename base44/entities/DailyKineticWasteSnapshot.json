@@ -1,0 +1,71 @@
+{
+  "name": "DailyKineticWasteSnapshot",
+  "type": "object",
+  "properties": {
+    "snapshot_date": {
+      "type": "string"
+    },
+    "stalled_tasks_count": {
+      "type": "number",
+      "default": 0
+    },
+    "stalled_hours_locked": {
+      "type": "number",
+      "default": 0
+    },
+    "automation_errors_count": {
+      "type": "number",
+      "default": 0
+    },
+    "estimated_downtime_hours": {
+      "type": "number",
+      "default": 0
+    },
+    "inefficient_chains_count": {
+      "type": "number",
+      "default": 0
+    },
+    "resources_lost": {
+      "type": "number",
+      "default": 0
+    },
+    "potential_output_gain": {
+      "type": "number",
+      "default": 0
+    },
+    "critical_alerts_count": {
+      "type": "number",
+      "default": 0
+    },
+    "agents_at_risk": {
+      "type": "number",
+      "default": 0
+    },
+    "stagnant_listings_count": {
+      "type": "number",
+      "default": 0
+    },
+    "idle_resource_value_xrp": {
+      "type": "number",
+      "default": 0
+    },
+    "unprofitable_chains_count": {
+      "type": "number",
+      "default": 0
+    },
+    "carbon_waste_grams": {
+      "type": "number",
+      "default": 0
+    },
+    "carbon_saved_grams": {
+      "type": "number",
+      "default": 0
+    },
+    "carbon_factors": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "snapshot_date"
+  ]
+}

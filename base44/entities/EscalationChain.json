@@ -1,0 +1,63 @@
+{
+  "name": "EscalationChain",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "assigned_agent_id": {
+      "type": "string"
+    },
+    "root_review_id": {
+      "type": "string"
+    },
+    "review_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stage_count": {
+      "type": "number",
+      "default": 1
+    },
+    "current_stage": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Resolved",
+        "Abandoned"
+      ],
+      "default": "Active"
+    },
+    "final_outcome": {
+      "type": "string"
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "Easy",
+        "Medium",
+        "Hard",
+        "Fire Drill"
+      ],
+      "default": "Medium"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "title",
+    "assigned_agent_id",
+    "root_review_id",
+    "review_ids"
+  ]
+}

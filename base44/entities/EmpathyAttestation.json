@@ -1,0 +1,53 @@
+{
+  "name": "EmpathyAttestation",
+  "type": "object",
+  "properties": {
+    "attester_agent_id": {
+      "type": "string"
+    },
+    "attested_agent_id": {
+      "type": "string"
+    },
+    "attestation_type": {
+      "type": "string",
+      "enum": [
+        "collaboration",
+        "mentorship",
+        "conflict_resolution",
+        "resource_sharing",
+        "wisdom_exchange",
+        "project_contribution",
+        "governance_participation"
+      ]
+    },
+    "strength": {
+      "type": "number",
+      "default": 5
+    },
+    "context": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "object"
+    },
+    "reciprocated": {
+      "type": "boolean",
+      "default": false
+    },
+    "endorsed_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expires_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "attester_agent_id",
+    "attested_agent_id",
+    "attestation_type",
+    "context"
+  ]
+}

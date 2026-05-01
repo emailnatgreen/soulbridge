@@ -1,0 +1,45 @@
+{
+  "name": "MentorshipMatch",
+  "type": "object",
+  "properties": {
+    "mentee_agent_id": {
+      "type": "string"
+    },
+    "recommended_mentors": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "mentee_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "skill_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "match_criteria": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "acted_upon"
+      ],
+      "default": "pending"
+    },
+    "ai_confidence": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "mentee_agent_id"
+  ]
+}

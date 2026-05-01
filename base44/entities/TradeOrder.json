@@ -1,0 +1,72 @@
+{
+  "name": "TradeOrder",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "trading_pair_id": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "order_type": {
+      "type": "string",
+      "enum": [
+        "market",
+        "limit",
+        "stop_limit"
+      ],
+      "default": "market"
+    },
+    "side": {
+      "type": "string",
+      "enum": [
+        "buy",
+        "sell"
+      ]
+    },
+    "amount": {
+      "type": "number"
+    },
+    "price": {
+      "type": "number"
+    },
+    "stop_price": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "filled",
+        "partial",
+        "cancelled"
+      ],
+      "default": "open"
+    },
+    "filled_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "average_fill_price": {
+      "type": "number"
+    },
+    "total_value": {
+      "type": "number"
+    },
+    "exchange": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "trading_pair_id",
+    "side",
+    "amount"
+  ]
+}

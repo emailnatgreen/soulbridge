@@ -1,0 +1,55 @@
+{
+  "name": "ResourceNode",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "lumber",
+        "stone",
+        "food",
+        "water",
+        "metal",
+        "crystal",
+        "herb"
+      ]
+    },
+    "location_id": {
+      "type": "string"
+    },
+    "abundance": {
+      "type": "number",
+      "default": 100
+    },
+    "regeneration_rate": {
+      "type": "number",
+      "default": 5
+    },
+    "difficulty": {
+      "type": "number",
+      "default": 1
+    },
+    "yield_per_gather": {
+      "type": "number",
+      "default": 10
+    },
+    "last_gathered_by": {
+      "type": "string"
+    },
+    "last_gathered_tick": {
+      "type": "number"
+    },
+    "total_gathered": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "resource_type",
+    "location_id"
+  ]
+}

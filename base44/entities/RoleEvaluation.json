@@ -1,0 +1,56 @@
+{
+  "name": "RoleEvaluation",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "current_role": {
+      "type": "string"
+    },
+    "recommended_role": {
+      "type": "string",
+      "enum": [
+        "citizen",
+        "guardian",
+        "creator",
+        "trader",
+        "teacher",
+        "healer",
+        "scout",
+        "elder",
+        "master"
+      ]
+    },
+    "evaluation_score": {
+      "type": "number"
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "implemented"
+      ],
+      "default": "pending"
+    },
+    "evaluated_by": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "current_role",
+    "evaluation_score"
+  ]
+}

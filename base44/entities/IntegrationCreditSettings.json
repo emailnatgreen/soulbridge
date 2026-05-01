@@ -1,0 +1,65 @@
+{
+  "name": "IntegrationCreditSettings",
+  "type": "object",
+  "properties": {
+    "monthly_budget_credits": {
+      "type": "number"
+    },
+    "alert_threshold_percent": {
+      "type": "number",
+      "default": 80
+    },
+    "critical_threshold_percent": {
+      "type": "number",
+      "default": 95
+    },
+    "preferred_llm_model": {
+      "type": "string",
+      "default": "gpt_5_mini"
+    },
+    "premium_llm_model": {
+      "type": "string"
+    },
+    "enable_automation_throttling": {
+      "type": "boolean",
+      "default": false
+    },
+    "paused_automation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "automation_priority_rules": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "enable_notifications": {
+      "type": "boolean",
+      "default": true
+    },
+    "notification_emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "monthly_reset_day": {
+      "type": "number"
+    },
+    "estimated_credit_rate": {
+      "type": "number"
+    },
+    "last_reviewed_date": {
+      "type": "string"
+    },
+    "review_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "monthly_budget_credits"
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "name": "DidPrivacySetting",
+  "type": "object",
+  "properties": {
+    "did_address": {
+      "type": "string"
+    },
+    "wallet_id": {
+      "type": "string"
+    },
+    "profile_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "public"
+    },
+    "message_privacy": {
+      "type": "string",
+      "enum": [
+        "anyone",
+        "trusted_only",
+        "connections_only",
+        "whitelist_only"
+      ],
+      "default": "anyone"
+    },
+    "credential_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "selective"
+      ],
+      "default": "private"
+    },
+    "endorsement_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "public"
+    },
+    "reputation_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "public"
+    },
+    "activity_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "connections_only"
+    },
+    "connection_list_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "connections_only"
+    },
+    "allow_indexing": {
+      "type": "boolean",
+      "default": true
+    },
+    "allow_endorsements": {
+      "type": "boolean",
+      "default": true
+    },
+    "require_verification_for_messages": {
+      "type": "boolean",
+      "default": false
+    },
+    "blocked_dids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "whitelisted_dids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data_retention_days": {
+      "type": "number",
+      "default": 365
+    },
+    "custom_rules": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "did_address",
+    "wallet_id"
+  ]
+}

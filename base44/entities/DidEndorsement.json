@@ -1,0 +1,62 @@
+{
+  "name": "DidEndorsement",
+  "type": "object",
+  "properties": {
+    "endorser_did": {
+      "type": "string"
+    },
+    "endorsed_did": {
+      "type": "string"
+    },
+    "endorser_wallet_id": {
+      "type": "string"
+    },
+    "endorsed_wallet_id": {
+      "type": "string"
+    },
+    "endorsement_type": {
+      "type": "string",
+      "enum": [
+        "trust",
+        "skill",
+        "reliability",
+        "communication",
+        "general"
+      ],
+      "default": "general"
+    },
+    "rating": {
+      "type": "number"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    },
+    "verified": {
+      "type": "boolean",
+      "default": true
+    },
+    "relationship_strength": {
+      "type": "string",
+      "enum": [
+        "weak",
+        "moderate",
+        "strong"
+      ]
+    }
+  },
+  "required": [
+    "endorser_did",
+    "endorsed_did",
+    "rating"
+  ]
+}
