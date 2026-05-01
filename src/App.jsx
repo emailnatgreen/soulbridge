@@ -93,7 +93,7 @@ import RLUSDTrustlineGate from './pages/RLUSDTrustlineGate';
 import StorefrontHub from './pages/StorefrontHub';
 import EthTreasuryPage from './pages/EthTreasuryPage';
 
-// WHITEPAPER PAGES
+// WHITEPAPER PAGES — GOVERNANCE
 import GovernanceOverview from './pages/whitepaper/GovernanceOverview';
 import GovConstitution from './pages/whitepaper/GovConstitution';
 import GovMultiSig from './pages/whitepaper/GovMultiSig';
@@ -106,6 +106,19 @@ import GovCompliance from './pages/whitepaper/GovCompliance';
 import GovAudit from './pages/whitepaper/GovAudit';
 import GovTreasury from './pages/whitepaper/GovTreasury';
 import GovWidgetNFT from './pages/whitepaper/GovWidgetNFT';
+
+// WHITEPAPER PAGES — BUSINESS LAYER
+import BusinessOverview from './pages/whitepaper/BusinessOverview';
+import BizArchitecture from './pages/whitepaper/BizArchitecture';
+import BizMultiWallet from './pages/whitepaper/BizMultiWallet';
+import BizServiceLifecycle from './pages/whitepaper/BizServiceLifecycle';
+import BizPricing from './pages/whitepaper/BizPricing';
+import BizAgentEconomy from './pages/whitepaper/BizAgentEconomy';
+import BizStorefronts from './pages/whitepaper/BizStorefronts';
+import BizWidgetEconomy from './pages/whitepaper/BizWidgetEconomy';
+import BizDIDit from './pages/whitepaper/BizDIDit';
+import BizSMP from './pages/whitepaper/BizSMP';
+import BizCompliance from './pages/whitepaper/BizCompliance';
 
 
 const LoadingFallback = () => (
@@ -151,6 +164,17 @@ const PUBLIC_PATHS = [
   '/whitepaper/governance/audit-trail',
   '/whitepaper/governance/treasury',
   '/whitepaper/governance/widget-nft',
+  '/whitepaper/business',
+  '/whitepaper/business/economic-architecture',
+  '/whitepaper/business/multi-wallet-companies',
+  '/whitepaper/business/service-lifecycle',
+  '/whitepaper/business/pricing-treasury',
+  '/whitepaper/business/agent-economy',
+  '/whitepaper/business/storefronts',
+  '/whitepaper/business/widget-economy',
+  '/whitepaper/business/didit-fiat',
+  '/whitepaper/business/smp-roadmap',
+  '/whitepaper/business/compliance-audit',
 ];
 
 const AuthenticatedApp = () => {
@@ -196,6 +220,17 @@ const AuthenticatedApp = () => {
           <Route path="/whitepaper/governance/audit-trail" element={<GovAudit />} />
           <Route path="/whitepaper/governance/treasury" element={<GovTreasury />} />
           <Route path="/whitepaper/governance/widget-nft" element={<GovWidgetNFT />} />
+          <Route path="/whitepaper/business" element={<BusinessOverview />} />
+          <Route path="/whitepaper/business/economic-architecture" element={<BizArchitecture />} />
+          <Route path="/whitepaper/business/multi-wallet-companies" element={<BizMultiWallet />} />
+          <Route path="/whitepaper/business/service-lifecycle" element={<BizServiceLifecycle />} />
+          <Route path="/whitepaper/business/pricing-treasury" element={<BizPricing />} />
+          <Route path="/whitepaper/business/agent-economy" element={<BizAgentEconomy />} />
+          <Route path="/whitepaper/business/storefronts" element={<BizStorefronts />} />
+          <Route path="/whitepaper/business/widget-economy" element={<BizWidgetEconomy />} />
+          <Route path="/whitepaper/business/didit-fiat" element={<BizDIDit />} />
+          <Route path="/whitepaper/business/smp-roadmap" element={<BizSMP />} />
+          <Route path="/whitepaper/business/compliance-audit" element={<BizCompliance />} />
           <Route path="*" element={<LoadingFallback />} />
         </Routes>
       );
@@ -259,6 +294,19 @@ const AuthenticatedApp = () => {
         <Route path="/whitepaper/governance/audit-trail" element={<GovAudit />} />
         <Route path="/whitepaper/governance/treasury" element={<GovTreasury />} />
         <Route path="/whitepaper/governance/widget-nft" element={<GovWidgetNFT />} />
+
+        {/* WHITEPAPER — BUSINESS LAYER — PUBLIC */}
+        <Route path="/whitepaper/business" element={<BusinessOverview />} />
+        <Route path="/whitepaper/business/economic-architecture" element={<BizArchitecture />} />
+        <Route path="/whitepaper/business/multi-wallet-companies" element={<BizMultiWallet />} />
+        <Route path="/whitepaper/business/service-lifecycle" element={<BizServiceLifecycle />} />
+        <Route path="/whitepaper/business/pricing-treasury" element={<BizPricing />} />
+        <Route path="/whitepaper/business/agent-economy" element={<BizAgentEconomy />} />
+        <Route path="/whitepaper/business/storefronts" element={<BizStorefronts />} />
+        <Route path="/whitepaper/business/widget-economy" element={<BizWidgetEconomy />} />
+        <Route path="/whitepaper/business/didit-fiat" element={<BizDIDit />} />
+        <Route path="/whitepaper/business/smp-roadmap" element={<BizSMP />} />
+        <Route path="/whitepaper/business/compliance-audit" element={<BizCompliance />} />
 
         {/* CORE USER HUBS */}
         <Route path="/home" element={L("home", Home)} />

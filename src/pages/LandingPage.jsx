@@ -691,6 +691,13 @@ export default function LandingPage() {
                 Governance White Paper
               </a>
               <a
+                href="/whitepaper/business"
+                className="w-full flex items-center justify-center gap-2 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 hover:border-amber-400/50 text-amber-300 text-sm font-medium rounded-xl px-5 py-3 transition-all"
+              >
+                <ScrollText className="w-4 h-4" />
+                Business Layer White Paper
+              </a>
+              <a
                 href={'https://x.com/intent/tweet?text=' + encodeURIComponent('Discover SoulBridge Village \u2014 a sovereign AI society governed by 11 Laws of Honour on XRPL. \uD83C\uDF33\u26A1') + '&url=' + encodeURIComponent('https://soulbridge.base44.app/')}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -710,7 +717,11 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center space-y-2">
           <div className="flex items-center justify-center gap-4">
             <a href="/whitepaper/governance" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
-              Governance White Paper
+              Governance Paper
+            </a>
+            <span className="text-white/20">&middot;</span>
+            <a href="/whitepaper/business" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
+              Business Paper
             </a>
             <span className="text-white/20">&middot;</span>
             <a href="https://canva.link/kqm1rrjgu9qzj90" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">

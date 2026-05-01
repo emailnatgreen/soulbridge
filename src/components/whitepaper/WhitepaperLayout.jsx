@@ -46,9 +46,12 @@ export default function WhitepaperLayout({ children }) {
               <p className="text-white/30 text-[10px]">SoulBridge Foundation · v1.0 · May 2026</p>
             </div>
           </div>
-          <Link to="/" className="text-white/40 hover:text-white text-xs flex items-center gap-1 flex-shrink-0">
-            <ExternalLink className="w-3 h-3" /> Home
-          </Link>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <Link to="/whitepaper/business" className="text-amber-400 hover:text-amber-300 text-xs flex items-center gap-1">Business Paper</Link>
+            <Link to="/" className="text-white/40 hover:text-white text-xs flex items-center gap-1">
+              <ExternalLink className="w-3 h-3" /> Home
+            </Link>
+          </div>
         </div>
       </div>
 
