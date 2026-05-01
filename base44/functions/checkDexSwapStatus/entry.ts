@@ -29,6 +29,13 @@ Deno.serve(async (req) => {
     const account = data?.response?.account ?? null;
     let dispatched = data?.response?.dispatched_result ?? null;
 
+    // Parse swap metadata from custom_meta blob (set during prepareDexSwap)
+    let swapMeta = {};
+    try {
+      const blobStr = data?.payload?.custom_meta?.blob;
+      if (blobStr) swapMeta = JSON.parse(blobStr);
+    } catch (_) { /* ignore parse errors */ }
+
     console.log('Swap status check:', { resolved, signed, expired, cancelled, txid, dispatched });
 
     // If signed with a txid but dispatched_result is empty/null, check XRPL directly
@@ -84,7 +91,7 @@ Deno.serve(async (req) => {
       txid,
       account,
       dispatched_result: dispatched,
-      success: signed && (dispatched === 'tesSUCCESS' || (txid && (!dispatched || dispatched === ''))),
+      success: signed && dispatched === 'tesSUCCESS',
     });
   } catch (error) {
     console.error('checkDexSwapStatus error:', error);
