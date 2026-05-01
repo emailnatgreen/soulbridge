@@ -1,0 +1,67 @@
+{
+  "name": "ActivationCode",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "widget_nft_id": {
+      "type": "string"
+    },
+    "widget_name": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "didit_paypal",
+        "didit_rlusd",
+        "manual",
+        "gift"
+      ],
+      "default": "didit_paypal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "redeemed",
+        "expired",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "buyer_email": {
+      "type": "string"
+    },
+    "buyer_did": {
+      "type": "string"
+    },
+    "redeemed_by_email": {
+      "type": "string"
+    },
+    "redeemed_by_did": {
+      "type": "string"
+    },
+    "redeemed_at": {
+      "type": "string"
+    },
+    "transaction_id": {
+      "type": "string"
+    },
+    "didit_payment_id": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "code",
+    "widget_nft_id",
+    "status"
+  ]
+}
