@@ -272,8 +272,8 @@ export default function VipInviteDashboard() {
           ))}
         </div>
 
-        {/* Send / Receive / DEX Swap — Admin only */}
-        {isAdmin && (() => {
+        {/* Send / Receive / DEX Swap — VIP wallets only, exclude treasury */}
+        {(() => {
           const vipUserWallets = wallets.filter(w => !treasuryAddresses.includes(w.classic_address));
           return (
             <div className="space-y-4">
