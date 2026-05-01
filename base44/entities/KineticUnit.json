@@ -1,0 +1,82 @@
+{
+  "name": "KineticUnit",
+  "type": "object",
+  "properties": {
+    "ku_type": {
+      "type": "string",
+      "enum": [
+        "governance_vote",
+        "task_completion",
+        "agent_message",
+        "skill_development",
+        "economic_exchange",
+        "mentorship_session",
+        "knowledge_contribution",
+        "did_publication",
+        "resource_trade",
+        "collaborative_action"
+      ]
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "trigger_event": {
+      "type": "string"
+    },
+    "trigger_entity_id": {
+      "type": "string"
+    },
+    "weight": {
+      "type": "number",
+      "default": 1
+    },
+    "raw_score": {
+      "type": "number",
+      "default": 1
+    },
+    "weighted_score": {
+      "type": "number",
+      "default": 1
+    },
+    "mwtp_packet_id": {
+      "type": "string"
+    },
+    "mwtp_layer": {
+      "type": "string",
+      "enum": [
+        "micro",
+        "meso",
+        "macro"
+      ],
+      "default": "micro"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "packaged",
+        "transmitted",
+        "ingested",
+        "processed"
+      ],
+      "default": "generated"
+    },
+    "constitutional_laws": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "ku_type",
+    "agent_id",
+    "trigger_event"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "name": "GovernanceLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string"
+    },
+    "actor_did": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "role",
+        "user",
+        "widget",
+        "service",
+        "rule",
+        "pricing",
+        "treasury",
+        "other"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "denied_permission",
+        "denied_rule",
+        "denied_honor",
+        "failed",
+        "advisory"
+      ],
+      "default": "success"
+    },
+    "permissions_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rules_evaluated": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "denial_reason": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "timestamp": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action",
+    "actor_did",
+    "status"
+  ]
+}

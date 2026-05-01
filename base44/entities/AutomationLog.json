@@ -1,0 +1,50 @@
+{
+  "name": "AutomationLog",
+  "type": "object",
+  "properties": {
+    "automation_name": {
+      "type": "string"
+    },
+    "function_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error",
+        "warning"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "error_detail": {
+      "type": "string"
+    },
+    "details": {
+      "type": "object"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "run_at": {
+      "type": "string"
+    },
+    "triggered_by": {
+      "type": "string",
+      "enum": [
+        "scheduler",
+        "manual",
+        "entity_event",
+        "agent"
+      ],
+      "default": "scheduler"
+    }
+  },
+  "required": [
+    "automation_name",
+    "function_name",
+    "status"
+  ]
+}

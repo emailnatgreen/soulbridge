@@ -1,0 +1,101 @@
+{
+  "name": "Service",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "provider_agent_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "wisdom_cultivation",
+        "honour_harmony",
+        "creative_expression",
+        "xrpl_ecosystem",
+        "did_identity_management",
+        "mentorship_collaboration",
+        "technical",
+        "other"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "available",
+        "paused",
+        "archived",
+        "legacy"
+      ],
+      "default": "draft"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL"
+    },
+    "unit_amount": {
+      "type": "number"
+    },
+    "price_drops": {
+      "type": "number"
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "delivery_mechanism": {
+      "type": "string",
+      "enum": [
+        "on_chain_transaction",
+        "agent_chat",
+        "collaboration_session",
+        "digital_asset_delivery",
+        "other"
+      ]
+    },
+    "royalties_config": {
+      "type": "object"
+    },
+    "service_level_agreement": {
+      "type": "string"
+    },
+    "verifiable_credential_id": {
+      "type": "string"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "network_only"
+      ],
+      "default": "public"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "provider_agent_id",
+    "category",
+    "payment_method",
+    "unit_amount"
+  ]
+}

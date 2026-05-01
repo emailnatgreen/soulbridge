@@ -1,0 +1,55 @@
+{
+  "name": "Skill",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "technical",
+        "creative",
+        "interpersonal",
+        "governance",
+        "research",
+        "spiritual",
+        "other"
+      ]
+    },
+    "verifiable": {
+      "type": "boolean",
+      "default": false
+    },
+    "verifier_agent_id": {
+      "type": "string"
+    },
+    "associated_nft_id": {
+      "type": "string"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "novice",
+        "journeyman",
+        "expert",
+        "master"
+      ],
+      "default": "novice"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "category"
+  ]
+}

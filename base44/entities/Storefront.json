@@ -1,0 +1,78 @@
+{
+  "name": "Storefront",
+  "type": "object",
+  "properties": {
+    "owner_did": {
+      "type": "string"
+    },
+    "owner_email": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "tagline": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "banner_url": {
+      "type": "string"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "payment_methods": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "honor_score_at_creation": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "suspended",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0
+    },
+    "total_revenue_rlusd": {
+      "type": "number",
+      "default": 0
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0
+    },
+    "social_links": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "owner_email",
+    "name"
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "name": "StorefrontListing",
+  "type": "object",
+  "properties": {
+    "storefront_id": {
+      "type": "string"
+    },
+    "seller_email": {
+      "type": "string"
+    },
+    "seller_did": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "listing_type": {
+      "type": "string",
+      "enum": [
+        "product",
+        "service",
+        "digital_asset",
+        "nft",
+        "subscription"
+      ],
+      "default": "product"
+    },
+    "category": {
+      "type": "string"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL"
+    },
+    "price_rlusd": {
+      "type": "number"
+    },
+    "quantity_available": {
+      "type": "number",
+      "default": -1
+    },
+    "quantity_sold": {
+      "type": "number",
+      "default": 0
+    },
+    "delivery_method": {
+      "type": "string",
+      "enum": [
+        "digital_download",
+        "api_key",
+        "manual_transfer",
+        "instant_access",
+        "physical_shipping"
+      ],
+      "default": "instant_access"
+    },
+    "delivery_time_hours": {
+      "type": "number"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "sold_out",
+        "archived",
+        "draft"
+      ],
+      "default": "draft"
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0
+    },
+    "village_fee_percent": {
+      "type": "number",
+      "default": 1
+    },
+    "custom_data": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "storefront_id",
+    "seller_email",
+    "title",
+    "price_rlusd"
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "name": "GhostReview",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "simulated_customer_name": {
+      "type": "string"
+    },
+    "product_service": {
+      "type": "string"
+    },
+    "service_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "sentiment_score": {
+      "type": "number"
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "Easy",
+        "Medium",
+        "Hard",
+        "Fire Drill"
+      ],
+      "default": "Medium"
+    },
+    "assigned_agent_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Pending Response",
+        "Response Submitted",
+        "Evaluated"
+      ],
+      "default": "Pending Response"
+    },
+    "context_pack": {
+      "type": "object"
+    },
+    "trainee_response": {
+      "type": "string"
+    },
+    "response_submitted_at": {
+      "type": "string"
+    },
+    "response_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "attempt_count": {
+      "type": "number",
+      "default": 0
+    },
+    "ai_score": {
+      "type": "number"
+    },
+    "ai_feedback": {
+      "type": "string"
+    },
+    "ai_strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_improvements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_verdict": {
+      "type": "string"
+    },
+    "admin_override_score": {
+      "type": "number"
+    },
+    "admin_feedback": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "title",
+    "content",
+    "assigned_agent_id",
+    "difficulty_level"
+  ]
+}

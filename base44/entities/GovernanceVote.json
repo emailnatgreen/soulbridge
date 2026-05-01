@@ -1,0 +1,46 @@
+{
+  "name": "GovernanceVote",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string"
+    },
+    "voter_agent_id": {
+      "type": "string"
+    },
+    "authenticated_user_id": {
+      "type": "string"
+    },
+    "vote_choice": {
+      "type": "string",
+      "enum": [
+        "for",
+        "against",
+        "abstain"
+      ]
+    },
+    "voting_power": {
+      "type": "number"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "delegated_from": {
+      "type": "string"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    },
+    "honor_processed": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "proposal_id",
+    "voter_agent_id",
+    "vote_choice",
+    "voting_power"
+  ]
+}

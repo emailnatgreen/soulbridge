@@ -1,0 +1,139 @@
+{
+  "name": "GrantProposal",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "grant_program": {
+      "type": "string",
+      "enum": [
+        "ripple_xrpl_grants",
+        "ripple_creator_fund",
+        "ripple_defi_fund",
+        "ripple_cbdc_fund",
+        "ripple_ai_fund",
+        "ripple_accelerator",
+        "other"
+      ],
+      "default": "ripple_xrpl_grants"
+    },
+    "use_case_category": {
+      "type": "string",
+      "enum": [
+        "defi",
+        "rwa_tokenization",
+        "payments",
+        "trade_finance",
+        "ai",
+        "infrastructure",
+        "developer_tooling",
+        "other"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "drafting",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+        "in_progress",
+        "milestone_review",
+        "completed",
+        "cancelled"
+      ],
+      "default": "drafting"
+    },
+    "ai_project_id": {
+      "type": "string"
+    },
+    "github_repo_url": {
+      "type": "string"
+    },
+    "github_repo_name": {
+      "type": "string"
+    },
+    "requested_amount_usd": {
+      "type": "number"
+    },
+    "approved_amount_usd": {
+      "type": "number"
+    },
+    "xrp_allocation": {
+      "type": "number"
+    },
+    "proposal_lead": {
+      "type": "string"
+    },
+    "team_members": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "xrpl_integration": {
+      "type": "object"
+    },
+    "market_opportunity": {
+      "type": "object"
+    },
+    "traction": {
+      "type": "object"
+    },
+    "sustainability_plan": {
+      "type": "string"
+    },
+    "technical_architecture": {
+      "type": "string"
+    },
+    "submission_date": {
+      "type": "string"
+    },
+    "approval_date": {
+      "type": "string"
+    },
+    "completion_date": {
+      "type": "string"
+    },
+    "proposal_document_url": {
+      "type": "string"
+    },
+    "budget_breakdown": {
+      "type": "object"
+    },
+    "ripple_contact": {
+      "type": "string"
+    },
+    "external_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "grant_program"
+  ]
+}

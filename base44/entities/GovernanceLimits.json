@@ -1,0 +1,42 @@
+{
+  "name": "GovernanceLimits",
+  "type": "object",
+  "properties": {
+    "limit_name": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "RLUSD"
+    },
+    "description": {
+      "type": "string"
+    },
+    "applies_to_nodes": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "requires_human_approval_above": {
+      "type": "number"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "set_by": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "limit_name",
+    "value"
+  ]
+}

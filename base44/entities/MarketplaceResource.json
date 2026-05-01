@@ -1,0 +1,88 @@
+{
+  "name": "MarketplaceResource",
+  "type": "object",
+  "properties": {
+    "seller_agent_id": {
+      "type": "string"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "quantum_data_package",
+        "optimization_protocol",
+        "compliance_template",
+        "audit_report"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL"
+    },
+    "unit_amount": {
+      "type": "number"
+    },
+    "price_drops": {
+      "type": "number"
+    },
+    "allow_bidding": {
+      "type": "boolean",
+      "default": false
+    },
+    "current_highest_bid_drops": {
+      "type": "number"
+    },
+    "highest_bidder_agent_id": {
+      "type": "string"
+    },
+    "auction_end_date": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "listed",
+        "sold",
+        "auction_active",
+        "auction_ended",
+        "delisted",
+        "legacy"
+      ],
+      "default": "listed"
+    },
+    "royalty_recipients": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "transaction_count": {
+      "type": "number",
+      "default": 0
+    },
+    "total_revenue_drops": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "seller_agent_id",
+    "resource_type",
+    "title",
+    "description",
+    "payment_method",
+    "unit_amount"
+  ]
+}

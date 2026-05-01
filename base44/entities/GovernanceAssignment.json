@@ -1,0 +1,38 @@
+{
+  "name": "GovernanceAssignment",
+  "type": "object",
+  "properties": {
+    "user_did": {
+      "type": "string"
+    },
+    "role_id": {
+      "type": "string"
+    },
+    "assigned_by": {
+      "type": "string"
+    },
+    "assigned_date": {
+      "type": "string"
+    },
+    "expiry": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "user_did",
+    "role_id",
+    "assigned_by"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "GovernanceRule",
+  "type": "object",
+  "properties": {
+    "rule_id": {
+      "type": "string"
+    },
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "widget_minting",
+        "widget_deprecation",
+        "pricing",
+        "royalties",
+        "service_creation",
+        "rate_limit",
+        "creator_onboarding",
+        "role_management",
+        "treasury",
+        "honor_threshold",
+        "general"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "value": {
+      "type": "object"
+    },
+    "enforcement": {
+      "type": "string",
+      "enum": [
+        "hard",
+        "soft",
+        "advisory"
+      ],
+      "default": "hard"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "deprecated"
+      ],
+      "default": "active"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0"
+    }
+  },
+  "required": [
+    "rule_id",
+    "rule_type",
+    "name",
+    "value"
+  ]
+}

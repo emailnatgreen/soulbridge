@@ -1,0 +1,38 @@
+{
+  "name": "GovernanceRole",
+  "type": "object",
+  "properties": {
+    "role_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "min_honor_score": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "deprecated"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "role_id",
+    "name",
+    "permissions"
+  ]
+}

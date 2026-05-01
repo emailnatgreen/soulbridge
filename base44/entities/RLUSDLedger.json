@@ -1,0 +1,40 @@
+{
+  "name": "RLUSDLedger",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "balance": {
+      "type": "number",
+      "default": 0
+    },
+    "total_credited": {
+      "type": "number",
+      "default": 0
+    },
+    "total_debited": {
+      "type": "number",
+      "default": 0
+    },
+    "last_faucet_claim": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "frozen",
+        "suspended"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "user_id",
+    "balance"
+  ]
+}

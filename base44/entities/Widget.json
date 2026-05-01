@@ -3,28 +3,24 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": "string",
-      "description": "Display name of the widget"
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "Detailed description of the widget's capabilities and purpose"
+      "type": "string"
     },
     "widget_type": {
       "type": "string",
       "enum": [
         "service",
         "unlock"
-      ],
-      "description": "Categorizes the widget as service (active, streaming) or unlock (passive feature access)"
+      ]
     },
     "widget_class": {
       "type": "string",
       "enum": [
         "service",
         "unlock"
-      ],
-      "description": "Explicit classification for UI sorting and system routing"
+      ]
     },
     "category": {
       "type": "string",
@@ -37,38 +33,30 @@
         "wallet_management",
         "did_management",
         "other"
-      ],
-      "description": "High-level category of the widget"
+      ]
     },
     "nft_id": {
-      "type": "string",
-      "description": "Unique identifier of the underlying NFT on the XRPL"
+      "type": "string"
     },
     "version": {
-      "type": "string",
-      "description": "Current version of the widget metadata (semver)"
+      "type": "string"
     },
     "metadata_version": {
       "type": "string",
-      "default": "1.0.0",
-      "description": "Version of the Widget Metadata Standard this record conforms to"
+      "default": "1.0.0"
     },
     "metadata_hash": {
-      "type": "string",
-      "description": "SHA-256 hash of the canonical metadata JSON at time of minting"
+      "type": "string"
     },
     "minted_by": {
-      "type": "string",
-      "description": "Agent ID or entity that minted this widget"
+      "type": "string"
     },
     "is_active": {
       "type": "boolean",
-      "default": false,
-      "description": "Current activation status of the widget in a user's dashboard"
+      "default": false
     },
     "cost_per_stream_interval": {
-      "type": "number",
-      "description": "Cost in RLUSD for each micro-streaming interval"
+      "type": "number"
     },
     "stream_interval_unit": {
       "type": "string",
@@ -77,19 +65,16 @@
         "minute",
         "hour",
         "day"
-      ],
-      "description": "Unit for the streaming interval"
+      ]
     },
     "required_agent_role": {
-      "type": "string",
-      "description": "Minimum agent role required to activate this widget"
+      "type": "string"
     },
     "dependencies": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "List of other Widget NFT IDs this widget depends on"
+      }
     },
     "deprecation_status": {
       "type": "string",
@@ -99,20 +84,16 @@
         "deprecated",
         "disabled"
       ],
-      "default": "none",
-      "description": "Status indicating if the widget is nearing deprecation or disabled by governance"
+      "default": "none"
     },
     "governance_notes": {
-      "type": "string",
-      "description": "Relevant governance decisions or alerts concerning this widget"
+      "type": "string"
     },
     "creator_id": {
-      "type": "string",
-      "description": "Agent ID or entity that created the widget's underlying service/feature"
+      "type": "string"
     },
     "image_url": {
-      "type": "string",
-      "description": "URL to a visual representation or icon for the widget"
+      "type": "string"
     },
     "ui_behavior": {
       "type": "string",
@@ -122,45 +103,28 @@
         "upgrade",
         "badge",
         "activate_feature"
-      ],
-      "description": "Defines how the widget behaves in the dashboard UI"
+      ]
     },
     "feature_path": {
-      "type": "string",
-      "description": "Internal path or identifier to the feature unlocked by this widget"
+      "type": "string"
     },
     "royalties_config": {
-      "type": "object",
-      "properties": {
-        "treasury_percent": {
-          "type": "number"
-        },
-        "creator_percent": {
-          "type": "number"
-        },
-        "referral_percent": {
-          "type": "number"
-        }
-      },
-      "description": "Revenue split for streaming service charges"
+      "type": "object"
     },
     "allowed_agent_permissions": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Specific permissions an agent gains when this widget is active"
+      }
     },
     "webmcp_manifest": {
-      "type": "object",
-      "description": "WebMCP manifest"
+      "type": "object"
     },
     "chrome_skill_instructions": {
       "type": "array",
       "items": {
         "type": "object"
-      },
-      "description": "Chrome Gemini Side Panel skill definitions"
+      }
     },
     "mint_status": {
       "type": "string",
@@ -171,16 +135,13 @@
         "minted_mainnet",
         "failed"
       ],
-      "default": "draft",
-      "description": "Lifecycle status of the XRPL minting process"
+      "default": "draft"
     },
     "xrpl_mint_payload": {
-      "type": "object",
-      "description": "Prepared NFTokenMint transaction payload for XRPL"
+      "type": "object"
     },
     "xrpl_tx_hash": {
-      "type": "string",
-      "description": "XRPL transaction hash once minted on mainnet"
+      "type": "string"
     },
     "xrpl_network": {
       "type": "string",
@@ -192,8 +153,7 @@
       "default": "mainnet"
     },
     "metadata_uri": {
-      "type": "string",
-      "description": "URI to the off-chain metadata"
+      "type": "string"
     },
     "transferable": {
       "type": "boolean",

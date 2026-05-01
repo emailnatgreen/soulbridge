@@ -1,0 +1,136 @@
+{
+  "name": "AgentSkill",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "skill_id": {
+      "type": "string"
+    },
+    "skill_category": {
+      "type": "string",
+      "enum": [
+        "governance",
+        "resource_management",
+        "diplomacy",
+        "technical",
+        "wisdom",
+        "combat",
+        "creative",
+        "research",
+        "leadership",
+        "wellbeing"
+      ]
+    },
+    "skill_name": {
+      "type": "string"
+    },
+    "skill_description": {
+      "type": "string"
+    },
+    "level": {
+      "type": "number",
+      "default": 1
+    },
+    "max_level": {
+      "type": "number",
+      "default": 10
+    },
+    "experience_invested": {
+      "type": "number",
+      "default": 0
+    },
+    "proficiency_score": {
+      "type": "number",
+      "default": 0
+    },
+    "skill_growth_trajectory": {
+      "type": "string",
+      "enum": [
+        "accelerating",
+        "growing",
+        "stable",
+        "declining"
+      ],
+      "default": "stable"
+    },
+    "times_used": {
+      "type": "number",
+      "default": 0
+    },
+    "success_rate": {
+      "type": "number",
+      "default": 100
+    },
+    "unlocked_at": {
+      "type": "string"
+    },
+    "last_upgraded": {
+      "type": "string"
+    },
+    "last_used": {
+      "type": "string"
+    },
+    "effects": {
+      "type": "object"
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "prerequisites_met": {
+      "type": "boolean",
+      "default": true
+    },
+    "synergies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unlock_cost_xp": {
+      "type": "number"
+    },
+    "upgrade_cost_base": {
+      "type": "number"
+    },
+    "skill_path": {
+      "type": "string"
+    },
+    "mastery_bonuses": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "training_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_signature_skill": {
+      "type": "boolean",
+      "default": false
+    },
+    "reputation_impact": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "agent_id",
+    "skill_id",
+    "skill_category",
+    "skill_name"
+  ]
+}

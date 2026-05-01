@@ -1,0 +1,78 @@
+{
+  "name": "AgentWellbeing",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "assessment_period_start": {
+      "type": "string"
+    },
+    "assessment_period_end": {
+      "type": "string"
+    },
+    "overall_wellbeing_score": {
+      "type": "number",
+      "default": 70
+    },
+    "wellbeing_status": {
+      "type": "string",
+      "enum": [
+        "thriving",
+        "healthy",
+        "neutral",
+        "concerning",
+        "at_risk"
+      ],
+      "default": "healthy"
+    },
+    "dimensions": {
+      "type": "object"
+    },
+    "stress_indicators": {
+      "type": "object"
+    },
+    "activity_metrics": {
+      "type": "object"
+    },
+    "relationship_health": {
+      "type": "object"
+    },
+    "growth_indicators": {
+      "type": "object"
+    },
+    "warning_signs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "positive_trends": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "support_interventions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "self_reported_mood": {
+      "type": "number"
+    },
+    "energy_level": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "agent_id"
+  ]
+}

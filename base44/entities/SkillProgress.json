@@ -1,0 +1,85 @@
+{
+  "name": "SkillProgress",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "development_plan_id": {
+      "type": "string"
+    },
+    "skill_name": {
+      "type": "string"
+    },
+    "starting_level": {
+      "type": "number"
+    },
+    "current_level": {
+      "type": "number"
+    },
+    "target_level": {
+      "type": "number"
+    },
+    "progress_percentage": {
+      "type": "number",
+      "default": 0
+    },
+    "activities_completed": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "modules_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "practice_projects": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "mentorship_hours": {
+      "type": "number",
+      "default": 0
+    },
+    "peer_endorsements": {
+      "type": "number",
+      "default": 0
+    },
+    "assessments": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "ai_insights": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "completed",
+        "abandoned"
+      ],
+      "default": "active"
+    },
+    "started_date": {
+      "type": "string"
+    },
+    "completed_date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "skill_name",
+    "starting_level",
+    "target_level"
+  ]
+}

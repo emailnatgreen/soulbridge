@@ -1,0 +1,83 @@
+{
+  "name": "StorefrontOrder",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string"
+    },
+    "storefront_id": {
+      "type": "string"
+    },
+    "buyer_email": {
+      "type": "string"
+    },
+    "buyer_did": {
+      "type": "string"
+    },
+    "seller_email": {
+      "type": "string"
+    },
+    "listing_title": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "unit_price_rlusd": {
+      "type": "number"
+    },
+    "total_price_rlusd": {
+      "type": "number"
+    },
+    "village_fee_rlusd": {
+      "type": "number"
+    },
+    "seller_receives_rlusd": {
+      "type": "number"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL"
+    },
+    "payment_reference": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "fulfilled",
+        "completed",
+        "cancelled",
+        "refunded",
+        "disputed"
+      ],
+      "default": "pending"
+    },
+    "fulfillment_data": {
+      "type": "object"
+    },
+    "buyer_rating": {
+      "type": "number"
+    },
+    "buyer_review": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "listing_id",
+    "storefront_id",
+    "buyer_email",
+    "seller_email",
+    "total_price_rlusd"
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "name": "GovernanceProposal",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "proposal_type": {
+      "type": "string",
+      "enum": [
+        "project_funding",
+        "role_adjustment",
+        "treasury_allocation",
+        "law_amendment",
+        "agent_discipline",
+        "resource_policy",
+        "general"
+      ]
+    },
+    "proposed_by": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "passed",
+        "rejected",
+        "executed",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "voting_period_end": {
+      "type": "string"
+    },
+    "quorum_required": {
+      "type": "number",
+      "default": 50
+    },
+    "pass_threshold": {
+      "type": "number",
+      "default": 60
+    },
+    "total_votes_cast": {
+      "type": "number",
+      "default": 0
+    },
+    "total_voting_power_cast": {
+      "type": "number",
+      "default": 0
+    },
+    "votes_for": {
+      "type": "number",
+      "default": 0
+    },
+    "votes_against": {
+      "type": "number",
+      "default": 0
+    },
+    "votes_abstain": {
+      "type": "number",
+      "default": 0
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "impact_assessment": {
+      "type": "string"
+    },
+    "constitutional_alignment": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "relevant_context": {
+      "type": "string"
+    },
+    "affected_entities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "action_data": {
+      "type": "object"
+    },
+    "execution_result": {
+      "type": "object"
+    },
+    "discussion_messages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_impact_assessment": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "proposal_type",
+    "proposed_by"
+  ]
+}

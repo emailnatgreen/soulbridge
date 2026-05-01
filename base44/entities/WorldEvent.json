@@ -1,0 +1,78 @@
+{
+  "name": "WorldEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "event_category": {
+      "type": "string",
+      "enum": [
+        "environmental",
+        "resource_discovery",
+        "natural_phenomenon",
+        "emergent_threat",
+        "opportunity",
+        "lore_revelation",
+        "seasonal_change"
+      ]
+    },
+    "trigger_conditions": {
+      "type": "object"
+    },
+    "world_changes": {
+      "type": "object"
+    },
+    "duration_ticks": {
+      "type": "number",
+      "default": 0
+    },
+    "impact_level": {
+      "type": "string",
+      "enum": [
+        "minor",
+        "moderate",
+        "major",
+        "critical"
+      ],
+      "default": "moderate"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "emerging",
+        "active",
+        "resolved",
+        "permanent"
+      ],
+      "default": "emerging"
+    },
+    "affected_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "resolution_narrative": {
+      "type": "string"
+    },
+    "lore_context": {
+      "type": "string"
+    },
+    "start_tick": {
+      "type": "number"
+    },
+    "end_tick": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "event_category",
+    "impact_level"
+  ]
+}

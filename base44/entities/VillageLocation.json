@@ -1,0 +1,56 @@
+{
+  "name": "VillageLocation",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "forest",
+        "mountain",
+        "river",
+        "garden",
+        "ruins",
+        "cave",
+        "marketplace"
+      ]
+    },
+    "base_resource_type": {
+      "type": "string",
+      "enum": [
+        "knowledge",
+        "service",
+        "artifact",
+        "token"
+      ]
+    },
+    "difficulty": {
+      "type": "number",
+      "default": 1
+    },
+    "times_explored": {
+      "type": "number",
+      "default": 0
+    },
+    "agents_visited": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "discovered": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "base_resource_type"
+  ]
+}

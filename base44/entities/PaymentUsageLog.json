@@ -1,0 +1,72 @@
+{
+  "name": "PaymentUsageLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "service_id": {
+      "type": "string"
+    },
+    "payment_definition_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "RLUSD"
+      ],
+      "default": "RLUSD"
+    },
+    "pricing_model": {
+      "type": "string"
+    },
+    "billing_behavior": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "insufficient_balance",
+        "refunded",
+        "pending"
+      ],
+      "default": "success"
+    },
+    "error_detail": {
+      "type": "string"
+    },
+    "balance_before": {
+      "type": "number"
+    },
+    "balance_after": {
+      "type": "number"
+    },
+    "royalties_split": {
+      "type": "object"
+    },
+    "service_usage_log_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "user_id",
+    "service_id",
+    "amount",
+    "status"
+  ]
+}

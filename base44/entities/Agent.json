@@ -3,16 +3,13 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": "string",
-      "description": "The agent's chosen name"
+      "type": "string"
     },
     "wallet_id": {
-      "type": "string",
-      "description": "Reference to the agent's XRPL wallet/DID"
+      "type": "string"
     },
     "classic_address": {
-      "type": "string",
-      "description": "Agent's XRPL classic address"
+      "type": "string"
     },
     "external_classic_addresses": {
       "type": "array",
@@ -21,8 +18,7 @@
       }
     },
     "purpose": {
-      "type": "string",
-      "description": "The agent's stated purpose or mission"
+      "type": "string"
     },
     "personality": {
       "type": "string"

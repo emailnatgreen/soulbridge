@@ -1,0 +1,31 @@
+{
+  "name": "CulturalAnchor",
+  "type": "object",
+  "properties": {
+    "community_name": {
+      "type": "string"
+    },
+    "representative_names": {
+      "type": "string"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "vetoed"
+      ],
+      "default": "pending"
+    },
+    "scope_of_authority": {
+      "type": "string"
+    },
+    "attestation_log": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "community_name",
+    "representative_names"
+  ]
+}

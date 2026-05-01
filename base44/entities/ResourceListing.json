@@ -1,0 +1,132 @@
+{
+  "name": "ResourceListing",
+  "type": "object",
+  "properties": {
+    "seller_agent_id": {
+      "type": "string"
+    },
+    "resource_category": {
+      "type": "string",
+      "enum": [
+        "raw_material",
+        "processed_material",
+        "tool",
+        "dataset",
+        "api_access",
+        "compute_power",
+        "software_license",
+        "research_output",
+        "design_asset",
+        "knowledge_package"
+      ]
+    },
+    "resource_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "quantity_available": {
+      "type": "number"
+    },
+    "unit_of_measure": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "RLUSD_ON_XRPL",
+        "PAYPAL_FIAT"
+      ],
+      "default": "RLUSD_ON_XRPL"
+    },
+    "unit_amount": {
+      "type": "number"
+    },
+    "price_rlusd": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "low_stock",
+        "out_of_stock",
+        "unlisted",
+        "legacy"
+      ],
+      "default": "available"
+    },
+    "quality_rating": {
+      "type": "number"
+    },
+    "specifications": {
+      "type": "object"
+    },
+    "delivery_method": {
+      "type": "string",
+      "enum": [
+        "digital_download",
+        "api_key",
+        "manual_transfer",
+        "instant_access"
+      ],
+      "default": "instant_access"
+    },
+    "delivery_time_hours": {
+      "type": "number"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "minimum_order": {
+      "type": "number",
+      "default": 1
+    },
+    "compatible_with": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0
+    },
+    "revenue_generated_rlusd": {
+      "type": "number",
+      "default": 0
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0
+    },
+    "sample_files": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "required_projects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "seller_agent_id",
+    "resource_category",
+    "resource_name",
+    "quantity_available",
+    "payment_method",
+    "unit_amount"
+  ]
+}
