@@ -1,0 +1,52 @@
+{
+  "name": "Treasury",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "classic_address": {
+      "type": "string"
+    },
+    "total_balance": {
+      "type": "number",
+      "default": 0
+    },
+    "manager_agent_id": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "access_level": {
+      "type": "string",
+      "enum": [
+        "admin_only",
+        "managers",
+        "public"
+      ],
+      "default": "managers"
+    },
+    "withdrawal_limit": {
+      "type": "number"
+    },
+    "total_deposits": {
+      "type": "number",
+      "default": 0
+    },
+    "total_withdrawals": {
+      "type": "number",
+      "default": 0
+    },
+    "transaction_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "manager_agent_id",
+    "purpose",
+    "classic_address"
+  ]
+}
