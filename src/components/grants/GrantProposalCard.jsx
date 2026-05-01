@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { GitBranch, ExternalLink, DollarSign, Calendar, Users, Loader2, FolderGit2 } from 'lucide-react';
+import { GitBranch, ExternalLink, DollarSign, Calendar, Users, Loader2, FolderGit2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 
 export default function GrantProposalCard({ proposal, statusConfig, onRefresh }) {
   const [creatingRepo, setCreatingRepo] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const cfg = statusConfig[proposal.status] || statusConfig.drafting;
   const StatusIcon = cfg.icon;
 
@@ -69,8 +70,8 @@ export default function GrantProposalCard({ proposal, statusConfig, onRefresh })
           )}
         </div>
 
-        {/* GitHub Link or Create Button */}
-        <div className="pt-2 border-t border-white/5">
+        {/* Actions */}
+        <div className="pt-2 border-t border-white/5 space-y-1.5">
           {proposal.github_repo_url ? (
             <a href={proposal.github_repo_url} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-xs">
@@ -83,6 +84,23 @@ export default function GrantProposalCard({ proposal, statusConfig, onRefresh })
               className="text-purple-400 text-xs h-7 gap-1.5 w-full justify-start hover:bg-purple-500/10">
               {creatingRepo ? <Loader2 className="w-3 h-3 animate-spin" /> : <GitBranch className="w-3 h-3" />}
               Create GitHub Repository
+            </Button>
+          )}
+          {proposal.status === 'drafting' && (
+            <Button size="sm" variant="ghost" disabled={submitting}
+              onClick={async () => {
+                setSubmitting(true);
+                await base44.entities.GrantProposal.update(proposal.id, {
+                  status: 'submitted',
+                  submission_date: new Date().toISOString(),
+                });
+                toast.success('Proposal submitted!');
+                onRefresh();
+                setSubmitting(false);
+              }}
+              className="text-green-400 text-xs h-7 gap-1.5 w-full justify-start hover:bg-green-500/10">
+              {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+              Submit Proposal
             </Button>
           )}
         </div>
