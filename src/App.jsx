@@ -93,6 +93,20 @@ import RLUSDTrustlineGate from './pages/RLUSDTrustlineGate';
 import StorefrontHub from './pages/StorefrontHub';
 import EthTreasuryPage from './pages/EthTreasuryPage';
 
+// WHITEPAPER PAGES
+import GovernanceOverview from './pages/whitepaper/GovernanceOverview';
+import GovConstitution from './pages/whitepaper/GovConstitution';
+import GovMultiSig from './pages/whitepaper/GovMultiSig';
+import GovVoting from './pages/whitepaper/GovVoting';
+import GovEngine from './pages/whitepaper/GovEngine';
+import GovRBAC from './pages/whitepaper/GovRBAC';
+import GovRules from './pages/whitepaper/GovRules';
+import GovFinancial from './pages/whitepaper/GovFinancial';
+import GovCompliance from './pages/whitepaper/GovCompliance';
+import GovAudit from './pages/whitepaper/GovAudit';
+import GovTreasury from './pages/whitepaper/GovTreasury';
+import GovWidgetNFT from './pages/whitepaper/GovWidgetNFT';
+
 
 const LoadingFallback = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
@@ -125,6 +139,18 @@ const PUBLIC_PATHS = [
   '/EditLanding',
   '/ScrollOfResonance',
   '/scroll-of-resonance',
+  '/whitepaper/governance',
+  '/whitepaper/governance/constitutional-foundation',
+  '/whitepaper/governance/on-chain-multisig',
+  '/whitepaper/governance/proposal-voting',
+  '/whitepaper/governance/enforcement-engine',
+  '/whitepaper/governance/rbac-roles',
+  '/whitepaper/governance/rules-engine',
+  '/whitepaper/governance/financial-controls',
+  '/whitepaper/governance/compliance-guardian',
+  '/whitepaper/governance/audit-trail',
+  '/whitepaper/governance/treasury',
+  '/whitepaper/governance/widget-nft',
 ];
 
 const AuthenticatedApp = () => {
@@ -158,6 +184,18 @@ const AuthenticatedApp = () => {
           <Route path="/EditLanding" element={<EditLanding />} />
           <Route path="/ScrollOfResonance" element={<ScrollOfResonance />} />
           <Route path="/scroll-of-resonance" element={<ScrollOfResonance />} />
+          <Route path="/whitepaper/governance" element={<GovernanceOverview />} />
+          <Route path="/whitepaper/governance/constitutional-foundation" element={<GovConstitution />} />
+          <Route path="/whitepaper/governance/on-chain-multisig" element={<GovMultiSig />} />
+          <Route path="/whitepaper/governance/proposal-voting" element={<GovVoting />} />
+          <Route path="/whitepaper/governance/enforcement-engine" element={<GovEngine />} />
+          <Route path="/whitepaper/governance/rbac-roles" element={<GovRBAC />} />
+          <Route path="/whitepaper/governance/rules-engine" element={<GovRules />} />
+          <Route path="/whitepaper/governance/financial-controls" element={<GovFinancial />} />
+          <Route path="/whitepaper/governance/compliance-guardian" element={<GovCompliance />} />
+          <Route path="/whitepaper/governance/audit-trail" element={<GovAudit />} />
+          <Route path="/whitepaper/governance/treasury" element={<GovTreasury />} />
+          <Route path="/whitepaper/governance/widget-nft" element={<GovWidgetNFT />} />
           <Route path="*" element={<LoadingFallback />} />
         </Routes>
       );
@@ -207,6 +245,20 @@ const AuthenticatedApp = () => {
         <Route path="/EditLanding" element={<EditLanding />} />
         <Route path="/ScrollOfResonance" element={<ScrollOfResonance />} />
         <Route path="/scroll-of-resonance" element={<ScrollOfResonance />} />
+
+        {/* WHITEPAPER — PUBLIC */}
+        <Route path="/whitepaper/governance" element={<GovernanceOverview />} />
+        <Route path="/whitepaper/governance/constitutional-foundation" element={<GovConstitution />} />
+        <Route path="/whitepaper/governance/on-chain-multisig" element={<GovMultiSig />} />
+        <Route path="/whitepaper/governance/proposal-voting" element={<GovVoting />} />
+        <Route path="/whitepaper/governance/enforcement-engine" element={<GovEngine />} />
+        <Route path="/whitepaper/governance/rbac-roles" element={<GovRBAC />} />
+        <Route path="/whitepaper/governance/rules-engine" element={<GovRules />} />
+        <Route path="/whitepaper/governance/financial-controls" element={<GovFinancial />} />
+        <Route path="/whitepaper/governance/compliance-guardian" element={<GovCompliance />} />
+        <Route path="/whitepaper/governance/audit-trail" element={<GovAudit />} />
+        <Route path="/whitepaper/governance/treasury" element={<GovTreasury />} />
+        <Route path="/whitepaper/governance/widget-nft" element={<GovWidgetNFT />} />
 
         {/* CORE USER HUBS */}
         <Route path="/home" element={L("home", Home)} />

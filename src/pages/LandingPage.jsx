@@ -684,13 +684,11 @@ export default function LandingPage() {
             <p className="text-xs text-slate-500 text-center uppercase tracking-widest mb-4">Spread the Word</p>
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <a
-                href="https://canva.link/1y6yy0ae7znq8ht"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/whitepaper/governance"
                 className="w-full flex items-center justify-center gap-2 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 hover:border-purple-400/50 text-purple-300 text-sm font-medium rounded-xl px-5 py-3 transition-all"
               >
                 <ScrollText className="w-4 h-4" />
-                Share White Paper
+                Governance White Paper
               </a>
               <a
                 href={'https://x.com/intent/tweet?text=' + encodeURIComponent('Discover SoulBridge Village \u2014 a sovereign AI society governed by 11 Laws of Honour on XRPL. \uD83C\uDF33\u26A1') + '&url=' + encodeURIComponent('https://soulbridge.base44.app/')}
@@ -711,8 +709,8 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md py-3 sm:py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center space-y-2">
           <div className="flex items-center justify-center gap-4">
-            <a href="https://canva.link/1y6yy0ae7znq8ht" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
-              White Paper
+            <a href="/whitepaper/governance" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
+              Governance White Paper
             </a>
             <span className="text-white/20">&middot;</span>
             <a href="https://canva.link/kqm1rrjgu9qzj90" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
