@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus, AlertCircle } from 'lucide-react';
+import { X, Sparkles, Send, Loader2, Maximize2, Minimize2, UserPlus, AlertCircle, ImagePlus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import MessageBubble from '@/components/MessageBubble';
 import AgentPicker from '@/components/axi/AgentPicker';
@@ -52,6 +52,9 @@ export default function AxiChat({ isOpen, setIsOpen }) {
   const [showAgentPicker, setShowAgentPicker] = useState(false);
   const [didAuthError, setDidAuthError] = useState(null);
   const [initError, setInitError] = useState(null);
+  const [attachedFiles, setAttachedFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const didSignal = useDIDSignal();
   const { allAgents, activeAgents, addAgent, removeAgent, findAgentByName, buildRoomContext } = useAgentRoom();
 
@@ -157,10 +160,30 @@ export default function AxiChat({ isOpen, setIsOpen }) {
     return () => { if (unsubRef.current) unsubRef.current(); };
   }, [isOpen]);
 
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setUploading(true);
+    const uploaded = [];
+    for (const file of files) {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      uploaded.push({ url: file_url, name: file.name, preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null });
+    }
+    setAttachedFiles(prev => [...prev, ...uploaded]);
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachedFile = (index) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSend = async () => {
     const msg = input.trim();
-    if (!msg || sending || !convoRef.current) return;
+    const fileUrls = attachedFiles.map(f => f.url);
+    if ((!msg && fileUrls.length === 0) || sending || !convoRef.current) return;
     setInput('');
+    setAttachedFiles([]);
     setSending(true);
 
     try {
@@ -170,7 +193,9 @@ export default function AxiChat({ isOpen, setIsOpen }) {
         const enrichedMessage = buildRoomContext(msg);
 
         // Send message to Axi — triggers her response via subscription
-        await base44.agents.addMessage(convoRef.current, { role: 'user', content: enrichedMessage });
+        const messagePayload = { role: 'user', content: enrichedMessage };
+        if (fileUrls.length > 0) messagePayload.file_urls = fileUrls;
+        await base44.agents.addMessage(convoRef.current, messagePayload);
 
         if (invitedAgents.length > 0) {
           // Brief wait for Axi's response to start streaming
@@ -556,7 +581,51 @@ export default function AxiChat({ isOpen, setIsOpen }) {
 
           {/* Input */}
           <div className="p-3 border-t border-slate-700/50 flex-shrink-0">
+            {attachedFiles.length > 0 && (
+              <div className="flex gap-2 mb-2 flex-wrap">
+                {attachedFiles.map((file, i) => (
+                  <div key={i} className="relative group">
+                    {file.preview ? (
+                      <img src={file.preview} alt={file.name} className="w-14 h-14 rounded-lg object-cover border border-white/20" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
+                        <span className="text-white/40 text-[9px] text-center px-1 truncate">{file.name}</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => removeAttachedFile(i)}
+                      className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+                {uploading && (
+                  <div className="w-14 h-14 rounded-lg bg-white/5 border border-white/20 flex items-center justify-center">
+                    <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                  </div>
+                )}
+              </div>
+            )}
             <div className="flex gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.pdf,.csv,.xlsx,.json"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={sending || uploading}
+                className="h-11 w-11 flex-shrink-0 text-white/40 hover:text-purple-300 hover:bg-white/10"
+                title="Attach image or file"
+              >
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+              </Button>
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -567,7 +636,7 @@ export default function AxiChat({ isOpen, setIsOpen }) {
               />
               <Button
                 onClick={handleSend}
-                disabled={!input.trim() || sending}
+                disabled={(!input.trim() && attachedFiles.length === 0) || sending}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-11 px-4 flex-shrink-0"
               >
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
