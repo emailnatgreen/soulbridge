@@ -78,9 +78,12 @@ ${truncatedBody}`,
 
       // Store in Memory as Lore
       await base44.asServiceRole.entities.Memory.create({
+        agent_id: '69bbb7ccb7270b66835634c0',
         type: 'observation',
         content: `[Email Summary — Code Node]\nFrom: ${from}\nSubject: ${subject}\nDate: ${date}\n\n${summary}`,
-        tags: ['email_summary', 'code_node', 'lore', 'async_communication']
+        keywords: ['email_summary', 'code_node', 'lore', 'async_communication'],
+        context: `Code Node email summarisation pipeline — ${subject}`,
+        importance: 7
       });
 
       // Award honour: +1 for successful email summary
