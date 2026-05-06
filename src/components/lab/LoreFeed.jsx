@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 
 const NODE_FILTER_OPTIONS = [
   { value: 'all', label: 'All Nodes' },
+  { value: 'entropy-probe', label: 'Entropy Probe' },
   { value: '69bbb7ccb7270b66835634c0', label: 'Code Node' },
   { value: '69bbb7ccb7270b66835634bf', label: 'Lore Node' },
   { value: 'axi', label: 'Axi' },
