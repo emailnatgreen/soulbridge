@@ -17,7 +17,6 @@ const FALLBACK_COLORS = ['bg-purple-600', 'bg-cyan-600', 'bg-amber-600', 'bg-lim
 
 function getAgentColor(name) {
   if (AGENT_COLORS[name]) return AGENT_COLORS[name];
-  // Deterministic color from name hash
   let hash = 0;
   for (let i = 0; i < (name || '').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return FALLBACK_COLORS[Math.abs(hash) % FALLBACK_COLORS.length];
@@ -26,13 +25,14 @@ function getAgentColor(name) {
 export default function StaticChatPanel({ selectedAgents = [], agents = [], onSaveBundle }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [conversation, setConversation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [respondingAgents, setRespondingAgents] = useState([]);
   const [showSaveBar, setShowSaveBar] = useState(false);
   const [bundleTitle, setBundleTitle] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const conversationRef = useRef(null);
   const unsubRef = useRef(null);
 
   const isGroup = selectedAgents.length > 1;
@@ -40,7 +40,7 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
   // Init conversation when agents change
   useEffect(() => {
     if (selectedAgents.length === 0) {
-      setConversation(null);
+      conversationRef.current = null;
       setMessages([]);
       return;
     }
@@ -51,7 +51,7 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, sending]);
+  }, [messages, sending, respondingAgents]);
 
   // Auto-focus input when agent selected
   useEffect(() => {
@@ -62,6 +62,8 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
 
   const initConversation = async () => {
     setLoading(true);
+    if (unsubRef.current) unsubRef.current();
+
     const primaryAgent = selectedAgents[0];
     const names = selectedAgents.map(a => a.name).join(', ');
     const title = isGroup ? `Group: ${names}` : `Chat with ${primaryAgent.name}`;
@@ -76,7 +78,7 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
       }
     });
 
-    setConversation(conv);
+    conversationRef.current = conv;
     setMessages(conv.messages || []);
 
     unsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
@@ -86,28 +88,69 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
     setLoading(false);
   };
 
+  // Build group context string so each agent knows who else is in the chat
+  const buildGroupContext = useCallback((userText) => {
+    if (!isGroup) return userText;
+    const participantList = selectedAgents.map(a => `${a.name} (${a.role || 'citizen'})`).join(', ');
+    const recentContext = messages.slice(-6).map(m => {
+      if (m.role === 'user') return `Nathan: ${m.content}`;
+      return `${m._agentName || 'Agent'}: ${(m.content || '').slice(0, 200)}`;
+    }).join('\n');
+
+    return `[GROUP CHAT — Participants: ${participantList}]\n[Recent messages]\n${recentContext}\n[New message from Nathan]\n${userText}`;
+  }, [isGroup, selectedAgents, messages]);
+
   const handleSend = useCallback(async () => {
-    if (!input.trim() || !conversation || sending) return;
+    if (!input.trim() || !conversationRef.current || sending) return;
     const text = input.trim();
     setInput('');
     setSending(true);
 
-    await base44.agents.addMessage(conversation, { role: 'user', content: text });
+    // Add user message (visible via subscription)
+    await base44.agents.addMessage(conversationRef.current, { role: 'user', content: text });
 
-    for (const agent of selectedAgents) {
-      await base44.functions.invoke('generateAgentResponse', {
-        conversation_id: conversation.id,
-        agent_name: agent.name,
-        agent_id: agent.id,
-        user_message: text,
-        is_group: isGroup,
-        group_participants: selectedAgents.map(a => a.name),
-      });
+    const groupText = buildGroupContext(text);
+
+    // Fire all agent requests in parallel, show typing per agent
+    setRespondingAgents(selectedAgents.map(a => a.name));
+
+    const results = await Promise.allSettled(
+      selectedAgents.map(agent =>
+        base44.functions.invoke('generateAgentResponse', {
+          conversation_id: conversationRef.current.id,
+          agent_name: agent.name,
+          agent_id: agent.id,
+          user_message: groupText,
+          is_group: isGroup,
+          group_participants: selectedAgents.map(a => a.name),
+        }).then(res => {
+          // Remove this agent from responding list as soon as done
+          setRespondingAgents(prev => prev.filter(n => n !== agent.name));
+          return { agent, reply: res?.data?.response };
+        }).catch(err => {
+          setRespondingAgents(prev => prev.filter(n => n !== agent.name));
+          throw err;
+        })
+      )
+    );
+
+    // Add each agent's reply as a visible message in the conversation
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value?.reply) {
+        const { agent, reply } = result.value;
+        // Store with agent name prefix so we can attribute it
+        const prefixedReply = `**${agent.name}:** ${reply}`;
+        await base44.agents.addMessage(conversationRef.current, {
+          role: 'assistant',
+          content: prefixedReply,
+        });
+      }
     }
 
+    setRespondingAgents([]);
     setSending(false);
     setTimeout(() => inputRef.current?.focus(), 100);
-  }, [input, conversation, sending, selectedAgents, isGroup]);
+  }, [input, sending, selectedAgents, isGroup, buildGroupContext]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -123,24 +166,43 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
       messages,
       participant_ids: selectedAgents.map(a => a.id),
       message_count: messages.length,
-      conversation_id: conversation?.id,
-      summary: messages.slice(-3).map(m => m.content?.slice(0, 60)).join(' | '),
+      conversation_id: conversationRef.current?.id,
+      summary: messages.slice(-3).map(m => (m.content || '').slice(0, 60)).join(' | '),
     });
     setBundleTitle('');
     setShowSaveBar(false);
   };
 
+  // Parse agent name from message content (we prefix with **AgentName:** )
   const getMessageAgent = (msg) => {
     if (msg.role === 'user') return null;
+    const content = msg.content || '';
+    // Match **AgentName:** prefix
+    const boldMatch = content.match(/^\*\*(.+?):\*\*/);
+    if (boldMatch) {
+      const name = boldMatch[1].trim();
+      const matched = selectedAgents.find(a => a.name === name) || agents.find(a => a.name === name);
+      if (matched) return matched;
+    }
+    // Fallback: check if content starts with agent name
     for (const agent of selectedAgents) {
-      if (msg.content?.startsWith(`**${agent.name}**`) || msg.content?.startsWith(agent.name + ':')) {
+      if (content.startsWith(agent.name + ':') || content.startsWith(`**${agent.name}**`)) {
         return agent;
       }
     }
     return selectedAgents[0];
   };
 
-  // Empty state — no agents selected
+  // Strip the agent name prefix from displayed content
+  const getDisplayContent = (msg) => {
+    if (msg.role === 'user') return msg.content;
+    const content = msg.content || '';
+    // Remove **AgentName:** prefix
+    const stripped = content.replace(/^\*\*(.+?):\*\*\s*/, '');
+    return stripped;
+  };
+
+  // Empty state
   if (selectedAgents.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -167,7 +229,6 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
       {/* Chat Header */}
       <div className="px-4 py-2.5 border-b border-white/10 bg-black/10 flex items-center justify-between gap-2 flex-shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
-          {/* Agent avatars stack */}
           <div className="flex -space-x-2">
             {selectedAgents.slice(0, 4).map(a => (
               <div key={a.id} className="relative">
@@ -218,7 +279,7 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
         </div>
       </div>
 
-      {/* Save Bar (slide down) */}
+      {/* Save Bar */}
       {showSaveBar && messages.length > 0 && (
         <div className="px-4 py-2 border-b border-white/5 bg-emerald-500/5 flex items-center gap-2 flex-shrink-0">
           <input
@@ -248,7 +309,7 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
                 <p className="text-white/30 text-xs">Connecting to {selectedAgents[0]?.name}...</p>
               </div>
             </div>
-          ) : messages.length === 0 ? (
+          ) : messages.length === 0 && respondingAgents.length === 0 ? (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
                 <Zap className="w-8 h-8 text-purple-400/30 mx-auto mb-3" />
@@ -265,9 +326,10 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
             messages.map((msg, i) => {
               const isUser = msg.role === 'user';
               const agent = getMessageAgent(msg);
+              const displayContent = getDisplayContent(msg);
 
               return (
-                <div key={i} className={`flex ${isUser ? 'justify-end' : 'justify-start'} gap-2`}>
+                <div key={msg.id || i} className={`flex ${isUser ? 'justify-end' : 'justify-start'} gap-2`}>
                   {!isUser && (
                     <div className="flex-shrink-0 mt-1">
                       {agent?.avatar_url ? (
@@ -284,16 +346,16 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
                       ? 'bg-purple-600/80 text-white rounded-br-md'
                       : 'bg-white/[0.07] border border-white/[0.06] text-white/90 rounded-bl-md'
                   }`}>
-                    {!isUser && isGroup && agent && (
+                    {!isUser && agent && (
                       <p className={`text-[10px] font-semibold mb-1 ${
                         getAgentColor(agent.name).replace('bg-', 'text-').replace('-600', '-300')
                       }`}>{agent.name}</p>
                     )}
                     {isUser ? (
-                      <p className="leading-relaxed">{msg.content}</p>
+                      <p className="leading-relaxed">{displayContent}</p>
                     ) : (
                       <ReactMarkdown className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:leading-relaxed [&_code]:text-purple-300 [&_code]:bg-white/10 [&_code]:px-1 [&_code]:rounded [&_pre]:bg-black/30 [&_pre]:rounded-lg [&_pre]:p-3">
-                        {msg.content}
+                        {displayContent}
                       </ReactMarkdown>
                     )}
                   </div>
@@ -306,20 +368,24 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
               );
             })
           )}
-          {sending && (
-            <div className="flex justify-start gap-2">
-              <div className={`w-7 h-7 rounded-full ${getAgentColor(selectedAgents[0]?.name)} flex items-center justify-center`}>
-                <Sparkles className="w-3 h-3 text-white animate-pulse" />
+          {/* Typing indicators for each responding agent */}
+          {respondingAgents.map(name => (
+            <div key={name} className="flex justify-start gap-2">
+              <div className={`w-7 h-7 rounded-full ${getAgentColor(name)} flex items-center justify-center`}>
+                <span className="text-white text-[10px] font-bold">{name[0]}</span>
               </div>
               <div className="bg-white/[0.07] border border-white/[0.06] rounded-2xl rounded-bl-md px-4 py-3">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="flex items-center gap-2">
+                  <span className="text-white/40 text-xs">{name}</span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
                 </div>
               </div>
             </div>
-          )}
+          ))}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
@@ -351,7 +417,7 @@ export default function StaticChatPanel({ selectedAgents = [], agents = [], onSa
           </Button>
         </div>
         <p className="text-[10px] text-white/15 mt-1.5 text-center">
-          {isGroup ? 'Each agent will respond in turn' : 'Press Enter to send · Shift+Enter for new line'}
+          {isGroup ? 'All agents respond in parallel' : 'Press Enter to send · Shift+Enter for new line'}
         </p>
       </div>
     </div>
