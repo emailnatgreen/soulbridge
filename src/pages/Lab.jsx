@@ -8,6 +8,7 @@ import HonourBoard from '@/components/lab/HonourBoard';
 import SkillTreeViewer from '@/components/lab/SkillTreeViewer';
 import LoreFeed from '@/components/lab/LoreFeed';
 import EntropyProbe from '@/components/lab/EntropyProbe';
+import TripwireDashboard from '@/components/lab/TripwireDashboard';
 
 export default function Lab() {
   const { data: nodes = [], isLoading: nodesLoading } = useQuery({
@@ -52,6 +53,9 @@ export default function Lab() {
 
         {/* Section 2: Entropy Probe — Quantum Mirror */}
         <EntropyProbe />
+
+        {/* Section 3: Tripwire Lockdown — Sprint 3 */}
+        <TripwireDashboard />
 
         {/* Section 7: Root Note (Governor's voice) */}
         <RootNote />

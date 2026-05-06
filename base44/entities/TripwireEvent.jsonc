@@ -1,0 +1,113 @@
+{
+  "name": "TripwireEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "anomaly_detected",
+        "threshold_breach",
+        "access_violation",
+        "pattern_deviation",
+        "multisig_alert",
+        "sentinel_flag",
+        "entropy_tampering",
+        "node_offline",
+        "rate_limit_exceeded"
+      ],
+      "description": "Classification of the tripwire event"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Severity level of the event"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "acknowledged",
+        "resolved",
+        "escalated",
+        "false_positive"
+      ],
+      "default": "active",
+      "description": "Current status of the event"
+    },
+    "source_node": {
+      "type": "string",
+      "description": "Which node or system component triggered this event"
+    },
+    "source_node_index": {
+      "type": "number",
+      "description": "Node index (0-7) if applicable"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what was detected"
+    },
+    "details": {
+      "type": "object",
+      "description": "Technical details \u2014 thresholds, values, context"
+    },
+    "affected_entity_type": {
+      "type": "string",
+      "description": "Entity type affected (e.g. Wallet, Agent, EntropyRound)"
+    },
+    "affected_entity_id": {
+      "type": "string",
+      "description": "ID of the affected record"
+    },
+    "actor_email": {
+      "type": "string",
+      "description": "Email of the user/service that triggered the event"
+    },
+    "actor_ip_hash": {
+      "type": "string",
+      "description": "Hashed IP for audit without PII"
+    },
+    "sentinel_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the Sentinel node has reviewed this event"
+    },
+    "sentinel_notes": {
+      "type": "string",
+      "description": "Sentinel's assessment of the event"
+    },
+    "notified_signers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of signer node names that were notified"
+    },
+    "resolved_by": {
+      "type": "string",
+      "description": "Who resolved this event"
+    },
+    "resolved_at": {
+      "type": "string",
+      "description": "ISO timestamp when resolved"
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "How the event was resolved"
+    },
+    "lore_memory_id": {
+      "type": "string",
+      "description": "Memory record ID for audit trail"
+    }
+  },
+  "required": [
+    "event_type",
+    "severity",
+    "description"
+  ]
+}
