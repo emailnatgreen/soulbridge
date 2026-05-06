@@ -82,6 +82,7 @@ const NAV_GROUPS = [
     label: 'World & Simulation',
     links: [
       { label: 'Node Covenant', path: '/NodeCovenant', icon: Shield },
+      { label: 'SoulBridge Lab', path: '/lab', icon: FlaskConical },
       { label: 'Simulation Lab', path: '/SimulationLab', icon: FlaskConical },
       { label: 'Village Map', path: '/Village', icon: Map },
     ]
