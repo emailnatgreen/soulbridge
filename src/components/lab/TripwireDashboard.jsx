@@ -8,6 +8,7 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Eye, Loader2,
   ChevronDown, ChevronUp
 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import TripwireEventCard from './TripwireEventCard';
 import TripwireSimulator from './TripwireSimulator';
 
@@ -28,7 +29,7 @@ export default function TripwireDashboard() {
       const res = await base44.functions.invoke('tripwireLockdown', { action: 'status' });
       return res.data;
     },
-    refetchInterval: 15000,
+    refetchInterval: 30000,
   });
 
   const scanMutation = useMutation({
@@ -97,13 +98,8 @@ export default function TripwireDashboard() {
         </Button>
       </div>
 
-      {/* Scan result feedback */}
-      {scanMutation.isSuccess && (
-        <div className="mb-3 p-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-xs text-emerald-300 flex items-center gap-2">
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          Scan complete — {scanMutation.data?.data?.alerts_generated || 0} alert(s) generated.
-        </div>
-      )}
+      {/* Scan result feedback — auto-clears after 5s */}
+      <ScanFeedback scanMutation={scanMutation} />
 
       {/* Simulator */}
       {showSimulator && <TripwireSimulator />}
@@ -125,6 +121,29 @@ export default function TripwireDashboard() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ScanFeedback({ scanMutation }) {
+  const [visible, setVisible] = React.useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (scanMutation.isSuccess) {
+      setVisible(true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setVisible(false), 5000);
+    }
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [scanMutation.isSuccess, scanMutation.data]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="mb-3 p-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-xs text-emerald-300 flex items-center gap-2">
+      <CheckCircle2 className="w-3.5 h-3.5" />
+      Scan complete — {scanMutation.data?.data?.alerts_generated || 0} alert(s) generated.
     </div>
   );
 }

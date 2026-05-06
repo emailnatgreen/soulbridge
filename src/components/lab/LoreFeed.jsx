@@ -8,8 +8,8 @@ const NODE_FILTER_OPTIONS = [
   { value: 'all', label: 'All Nodes' },
   { value: 'entropy-probe', label: 'Entropy Probe' },
   { value: 'tripwire-lockdown', label: 'Tripwire' },
-  { value: '69bbb7ccb7270b66835634c0', label: 'Code Node' },
-  { value: '69bbb7ccb7270b66835634bf', label: 'Lore Node' },
+  { value: 'code_node', label: 'Code Node', match: (e) => e.keywords?.includes('code_node') || e.agent_id?.includes('code') },
+  { value: 'lore_node', label: 'Lore Node', match: (e) => e.keywords?.includes('lore_node') || e.agent_id?.includes('lore') },
   { value: 'axi', label: 'Axi' },
 ];
 
@@ -19,6 +19,8 @@ export default function LoreFeed({ entries }) {
 
   const filtered = entries.filter(e => {
     if (nodeFilter === 'all') return true;
+    const opt = NODE_FILTER_OPTIONS.find(o => o.value === nodeFilter);
+    if (opt?.match) return opt.match(e);
     if (nodeFilter === 'axi') return e.agent_id?.includes('axi') || e.keywords?.includes('axi');
     return e.agent_id === nodeFilter;
   });

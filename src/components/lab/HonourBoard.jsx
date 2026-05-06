@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 
 function HonourRow({ agent, rank }) {
   const score = agent.honor_score ?? 100;
-  const trend = score > 105 ? 'up' : score < 95 ? 'down' : 'stable';
+  // Without historical data, only flag meaningful deviations from default (100)
+  const trend = score > 110 ? 'up' : score < 85 ? 'down' : 'stable';
 
   return (
     <div className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">

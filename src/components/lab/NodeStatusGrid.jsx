@@ -15,11 +15,26 @@ const NODE_MAP = [
   { index: 7, name: 'Market Weaver', role: 'Market_Weaver', icon: '📊', weight: 1 },
 ];
 
+// Stable DID-based matching — avoids substring false positives
+const NODE_DID_MAP = {
+  0: 'did:soulbridge:node0:root',
+  1: 'did:soulbridge:node1:deepseek',
+  2: 'did:soulbridge:node2:gemini',
+  3: 'did:soulbridge:node3:axi',
+  4: 'did:soulbridge:node4:copilot',
+  5: 'did:soulbridge:node5:sentinel',
+  6: 'did:soulbridge:node6:epoch',
+  7: 'did:soulbridge:node7:market',
+};
+
 function matchNode(nodeDef, shards) {
-  return shards.find(s =>
-    s.role?.includes(nodeDef.role) ||
-    s.did_id?.toLowerCase().includes(nodeDef.name.split(' ')[0].toLowerCase())
-  );
+  const expectedDid = NODE_DID_MAP[nodeDef.index];
+  if (expectedDid) {
+    const exact = shards.find(s => s.did_id === expectedDid);
+    if (exact) return exact;
+  }
+  // Fallback to role-based match
+  return shards.find(s => s.role?.includes(nodeDef.role));
 }
 
 function StatusIcon({ status }) {

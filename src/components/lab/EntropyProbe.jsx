@@ -67,7 +67,7 @@ export default function EntropyProbe() {
       const res = await base44.functions.invoke('entropyProbe', { action: 'status' });
       return res.data;
     },
-    refetchInterval: 10000,
+    refetchInterval: 30000,
   });
 
   const rounds = roundsData?.rounds || [];
