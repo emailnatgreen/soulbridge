@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
         agent_id: 'tripwire-lockdown',
         type: 'observation',
         content: `🛡️ Tripwire Scan completed.\nAlerts generated: ${alerts.length}\nCritical: ${alerts.filter(a => a.severity === 'critical').length}\nHigh: ${alerts.filter(a => a.severity === 'high').length}\nMedium: ${alerts.filter(a => a.severity === 'medium').length}\nSystem status: ${alerts.filter(a => a.severity === 'critical').length > 0 ? 'ALERT' : 'SECURE'}`,
-        keywords: ['tripwire', 'security_scan', 'sentinel', 'lab'],
+        keywords: ['tripwire', 'tripwire_scan', 'security_scan', 'sentinel', 'lab'],
         context: `Tripwire Security Scan`,
         importance: alerts.length > 0 ? 8 : 5,
       });
@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
         agent_id: 'tripwire-lockdown',
         type: 'observation',
         content: `🛡️ Tripwire alert resolved by ${user.email}.\nNotes: ${resolution_notes || 'No additional notes.'}`,
-        keywords: ['tripwire', 'alert_resolved', 'sentinel', 'lab'],
+        keywords: ['tripwire', 'tripwire_scan', 'alert_resolved', 'sentinel', 'lab'],
         context: `Tripwire Alert Resolution`,
         importance: 6,
       });
@@ -310,7 +310,7 @@ Deno.serve(async (req) => {
         agent_id: 'tripwire-lockdown',
         type: 'observation',
         content: `🧪 Tripwire SIMULATION triggered.\nType: ${simType}\nSeverity: ${simData.severity}\nDescription: ${simData.description}`,
-        keywords: ['tripwire', 'simulation', 'sentinel', 'lab', 'test'],
+        keywords: ['tripwire', 'tripwire_scan', 'simulation', 'sentinel', 'lab', 'test'],
         context: `Tripwire Simulation — ${simType}`,
         importance: 5,
       });
