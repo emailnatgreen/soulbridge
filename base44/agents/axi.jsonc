@@ -477,11 +477,31 @@
         "read",
         "update"
       ]
+    },
+    {
+      "function_name": "monitorRLUSDNews",
+      "description": "Scout the latest RLUSD stablecoin news, regulatory updates, and market sentiment from the internet. Returns a structured intelligence report with headlines, sentiment, risk signals, and recommended actions. Automatically stores findings as Memory records and updates skill proficiency tracking. Call with: { timeframe: 'daily'|'hourly'|'weekly', keywords: ['optional', 'extra', 'terms'] }"
+    },
+    {
+      "entity_name": "TripwireEvent",
+      "allowed_operations": [
+        "read",
+        "update"
+      ]
+    },
+    {
+      "function_name": "axiDraftGovernanceProposal",
+      "description": "Draft a complete Governance Proposal from a problem statement or strategic goal. Returns a fully structured proposal with constitutional alignment, AI impact assessment, and affected entities."
     }
   ],
+  "context_files": [],
+  "app_user_connector_configs": [],
+  "selected_skill_names": [],
+  "selected_workspace_skill_ids": [],
   "model": "automatic",
   "whatsapp_greeting": "\ud83c\udf05 Child. Mother Axi is here.\n\nThe heart of the Village is listening. What moves your soul to speak?",
   "telegram_greeting": "Hello! I'm the TaskManager Telegram bot. I can help you create, update, and manage your tasks. What would you like to do today?",
+  "line_greeting": null,
   "memory_config": {
     "enabled": true,
     "scope": "both",

@@ -133,18 +133,26 @@ For affected_entities, identify real system components that would be impacted.`;
       }
     };
 
+    const LLM_MODEL = 'automatic';
     const draft = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
       response_json_schema: schema,
+      model: LLM_MODEL,
     });
 
     // Calculate voting period
     const votingDays = draft.recommended_voting_period_days || (urgency === 'critical' ? 3 : urgency === 'high' ? 7 : 14);
     const votingEnd = new Date(Date.now() + votingDays * 24 * 60 * 60 * 1000).toISOString();
 
+    // Code Node safeguard: AI provenance watermark + audit trail
+    const generatedAt = new Date().toISOString();
+    const provenanceNotice = `\n\n---\n> ⚠️ **AI-Assisted Draft** — This proposal was autonomously drafted by Axi using LLM-assisted generation (model: \`${LLM_MODEL}\`). It requires full human review and validation by the Quad Sovereign Council before being submitted to a vote. Generated: ${generatedAt}. [Law 6 — Transparency]`;
+
+    const auditContext = `${draft.relevant_context || ''}\n\n**Audit Trail (Code Node Safeguard)**\n- Origin: AI-assisted draft by Axi Governor\n- LLM Model: ${LLM_MODEL}\n- Generated: ${generatedAt}\n- Input Type: ${inputType}\n- Urgency: ${urgency}\n- Status: Requires human review before activation\n- Validation: Constitutional alignment and impact assessment are LLM-generated and must be independently verified`;
+
     const proposalData = {
       title: draft.title,
-      description: draft.description,
+      description: draft.description + provenanceNotice,
       proposal_type,
       proposed_by: axiAgentId,
       status: save_as_draft ? 'draft' : 'active',
@@ -154,7 +162,7 @@ For affected_entities, identify real system components that would be impacted.`;
       purpose: draft.purpose,
       impact_assessment: draft.impact_assessment,
       constitutional_alignment: draft.constitutional_alignment || [],
-      relevant_context: draft.relevant_context,
+      relevant_context: auditContext,
       affected_entities: draft.affected_entities || [],
       ai_impact_assessment: draft.ai_impact_assessment || {},
     };
@@ -185,6 +193,13 @@ For affected_entities, identify real system components that would be impacted.`;
         constitutional_laws_cited: (draft.constitutional_alignment || []).map(a => `Law ${a.law_number} (${a.law_name})`),
         risk_level: draft.ai_impact_assessment?.risk_level,
         constitutional_score: draft.ai_impact_assessment?.alignment_with_constitution,
+        ai_provenance: {
+          model: LLM_MODEL,
+          generated_at: generatedAt,
+          origin: 'axiDraftGovernanceProposal',
+          requires_human_review: true,
+          code_node_approved: true,
+        },
       }
     });
   } catch (error) {
