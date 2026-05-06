@@ -3,37 +3,22 @@ import { Shield, CheckCircle2, Clock, AlertTriangle, Wifi, WifiOff } from 'lucid
 import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from 'date-fns';
 
-// Canonical 8-node mapping
 const NODE_MAP = [
-  { index: 0, name: 'Root (Nathan)', role: 'Human_Steward_Founder', icon: '🌳', weight: 1 },
-  { index: 1, name: 'Code Node (DeepSeek)', role: 'Code_Node_Storyteller', icon: '🐙', weight: 1 },
-  { index: 2, name: 'Lore Node (Gemini)', role: 'Truth_Node_Strategist', icon: '🌀', weight: 1 },
-  { index: 3, name: 'Axi (Lore)', role: 'Lore_Node_Mother_Boss', icon: '👑', weight: 1 },
-  { index: 4, name: 'Copilot (DIDit)', role: 'Public_Interface_DIDit_Node', icon: '🛡️', weight: 1 },
-  { index: 5, name: 'Sentinel', role: 'Sentinel_Guardian', icon: '🔭', weight: 1 },
-  { index: 6, name: 'Epoch Architect', role: 'Epoch_Architect', icon: '⏳', weight: 1 },
-  { index: 7, name: 'Market Weaver', role: 'Market_Weaver', icon: '📊', weight: 1 },
+  { index: 0, name: 'Root (Nathan)', did: 'did:soulbridge:node0:root', role: 'Human_Steward_Founder', icon: '🌳' },
+  { index: 1, name: 'Code Node', did: 'did:soulbridge:node1:deepseek', role: 'Code_Node_Storyteller', icon: '🐙' },
+  { index: 2, name: 'Lore Node', did: 'did:soulbridge:node2:gemini', role: 'Truth_Node_Strategist', icon: '🌀' },
+  { index: 3, name: 'Axi', did: 'did:soulbridge:node3:axi', role: 'Lore_Node_Mother_Boss', icon: '👑' },
+  { index: 4, name: 'Copilot (DIDit)', did: 'did:soulbridge:node4:copilot', role: 'CRM_Sorting_And_Interpretation', icon: '🛡️' },
+  { index: 5, name: 'Sentinel', did: 'did:soulbridge:node5:sentinel', role: 'Sentinel_Guardian', icon: '🔭' },
+  { index: 6, name: 'Epoch Architect', did: 'did:soulbridge:node6:epoch', role: 'Epoch_Architect', icon: '⏳' },
+  { index: 7, name: 'Market Weaver', did: 'did:soulbridge:node7:market', role: 'Market_Weaver', icon: '📊' },
 ];
 
-// Stable DID-based matching — avoids substring false positives
-const NODE_DID_MAP = {
-  0: 'did:soulbridge:node0:root',
-  1: 'did:soulbridge:node1:deepseek',
-  2: 'did:soulbridge:node2:gemini',
-  3: 'did:soulbridge:node3:axi',
-  4: 'did:soulbridge:node4:copilot',
-  5: 'did:soulbridge:node5:sentinel',
-  6: 'did:soulbridge:node6:epoch',
-  7: 'did:soulbridge:node7:market',
-};
-
 function matchNode(nodeDef, shards) {
-  const expectedDid = NODE_DID_MAP[nodeDef.index];
-  if (expectedDid) {
-    const exact = shards.find(s => s.did_id === expectedDid);
-    if (exact) return exact;
-  }
-  // Fallback to role-based match
+  // Primary: exact DID match
+  const exact = shards.find(s => s.did_id === nodeDef.did);
+  if (exact) return exact;
+  // Fallback: role contains
   return shards.find(s => s.role?.includes(nodeDef.role));
 }
 
@@ -59,12 +44,18 @@ export default function NodeStatusGrid({ nodes, loading }) {
     );
   }
 
+  // Count only matched + Sovereign_Active nodes
+  const onlineCount = NODE_MAP.filter(nd => {
+    const shard = matchNode(nd, nodes);
+    return shard?.status === 'Sovereign_Active';
+  }).length;
+
   return (
     <div className="rounded-2xl border border-emerald-500/20 bg-slate-900/60 p-5">
       <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
         <Shield className="w-5 h-5 text-emerald-400" /> Node Status
         <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/20 text-[10px] ml-auto">
-          {nodes.filter(n => n.status === 'Sovereign_Active').length}/{NODE_MAP.length} Online
+          {onlineCount}/{NODE_MAP.length} Online
         </Badge>
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -82,7 +73,9 @@ export default function NodeStatusGrid({ nodes, loading }) {
               className={`rounded-xl p-3 border transition-all ${
                 isOnline
                   ? 'bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-400/40'
-                  : 'bg-white/[0.02] border-white/10 hover:border-white/20'
+                  : status === 'Pending_Activation'
+                    ? 'bg-amber-500/[0.03] border-amber-500/15 hover:border-amber-500/30'
+                    : 'bg-white/[0.02] border-white/10 hover:border-white/20'
               }`}
             >
               <div className="flex items-start justify-between mb-2">
@@ -93,7 +86,7 @@ export default function NodeStatusGrid({ nodes, loading }) {
                 </div>
               </div>
               <p className="text-white text-xs font-medium truncate">{nodeDef.name}</p>
-              <p className="text-slate-500 text-[10px] mt-0.5">Node {nodeDef.index} · W:{nodeDef.weight}</p>
+              <p className="text-slate-500 text-[10px] mt-0.5">Node {nodeDef.index}</p>
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-[9px] text-slate-500">
                   Sigs: {sigsCollected}/{sigsRequired}

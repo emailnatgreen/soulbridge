@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -15,11 +15,22 @@ const SIM_TYPES = [
 export default function TripwireSimulator() {
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState('node_offline');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const timerRef = useRef(null);
 
   const simMutation = useMutation({
     mutationFn: (simType) => base44.functions.invoke('tripwireLockdown', { action: 'simulate', sim_type: simType }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tripwire-status'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tripwire-status'] });
+      setShowSuccess(true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setShowSuccess(false), 4000);
+    },
   });
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
 
   return (
     <div className="mb-4 p-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.03]">
@@ -58,7 +69,7 @@ export default function TripwireSimulator() {
         {simMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <FlaskConical className="w-3 h-3" />}
         Inject Simulated Anomaly
       </Button>
-      {simMutation.isSuccess && (
+      {showSuccess && (
         <div className="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-300">
           <CheckCircle2 className="w-3 h-3" />
           Simulation injected — check alerts above.

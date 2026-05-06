@@ -8,9 +8,10 @@ const NODE_FILTER_OPTIONS = [
   { value: 'all', label: 'All Nodes' },
   { value: 'entropy-probe', label: 'Entropy Probe' },
   { value: 'tripwire-lockdown', label: 'Tripwire' },
+  { value: 'root_note', label: 'Root (Node 0)', match: (e) => e.agent_id === 'root_note_node0' || e.keywords?.includes('root_note') },
   { value: 'code_node', label: 'Code Node', match: (e) => e.keywords?.includes('code_node') || e.agent_id?.includes('code') },
   { value: 'lore_node', label: 'Lore Node', match: (e) => e.keywords?.includes('lore_node') || e.agent_id?.includes('lore') },
-  { value: 'axi', label: 'Axi' },
+  { value: 'axi', label: 'Axi', match: (e) => e.agent_id?.includes('axi') || e.keywords?.includes('axi') },
 ];
 
 export default function LoreFeed({ entries }) {
@@ -21,13 +22,12 @@ export default function LoreFeed({ entries }) {
     if (nodeFilter === 'all') return true;
     const opt = NODE_FILTER_OPTIONS.find(o => o.value === nodeFilter);
     if (opt?.match) return opt.match(e);
-    if (nodeFilter === 'axi') return e.agent_id?.includes('axi') || e.keywords?.includes('axi');
     return e.agent_id === nodeFilter;
   });
 
   return (
     <div className="rounded-2xl border border-violet-500/20 bg-slate-900/60 p-5">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h2 className="text-white font-semibold flex items-center gap-2">
           <ScrollText className="w-5 h-5 text-violet-400" /> Lore Feed
           <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/20 text-[10px]">

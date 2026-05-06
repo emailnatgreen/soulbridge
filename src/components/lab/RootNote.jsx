@@ -32,7 +32,6 @@ export default function RootNote() {
 
   const saveMutation = useMutation({
     mutationFn: async (text) => {
-      // Save new version (old ones remain as history)
       await base44.entities.Memory.create({
         agent_id: ROOT_NOTE_KEY,
         type: 'user_preference',
@@ -61,14 +60,14 @@ export default function RootNote() {
 
   return (
     <div className="rounded-2xl border border-amber-500/20 bg-slate-900/60 p-5">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h2 className="text-white font-semibold flex items-center gap-2">
           <TreePine className="w-5 h-5 text-amber-400" /> Root Note — Node 0
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {rootMemory?.created_date && (
-            <span className="text-[10px] text-slate-500">
-              Last saved: {format(parseISO(rootMemory.created_date), 'MMM d, yyyy HH:mm')}
+            <span className="text-[10px] text-slate-500 hidden sm:inline">
+              Last: {format(parseISO(rootMemory.created_date), 'MMM d, HH:mm')}
             </span>
           )}
           {!editing ? (

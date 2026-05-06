@@ -4,7 +4,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Entropy Probe — Quantum Mirror Protocol
  * 
  * Commit-Reveal-XOR across the 8-node consortium.
- * Actions: initiate | commit | reveal | finalise | status
+ * Actions: initiate | commit | reveal | status
+ * 
+ * Seeds are stored as a separate Memory record (not in sentinel_notes)
+ * to avoid polluting the verification field. The memory ID is stored
+ * in sentinel_notes during the committing→revealing transition and
+ * cleared on finalisation.
  */
 
 const NODE_NAMES = [
@@ -12,7 +17,6 @@ const NODE_NAMES = [
   'Copilot (DIDit)', 'Sentinel', 'Epoch Architect', 'Market Weaver'
 ];
 
-// Simple hex XOR of two equal-length hex strings
 function xorHex(a, b) {
   const bufA = new Uint8Array(a.match(/.{2}/g).map(byte => parseInt(byte, 16)));
   const bufB = new Uint8Array(b.match(/.{2}/g).map(byte => parseInt(byte, 16)));
@@ -23,14 +27,12 @@ function xorHex(a, b) {
   return Array.from(result).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// SHA-256 hash of a hex string
 async function sha256Hex(hexStr) {
   const bytes = new Uint8Array(hexStr.match(/.{2}/g).map(byte => parseInt(byte, 16)));
   const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Generate a 32-byte random seed as hex
 function generateSeed() {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
@@ -48,18 +50,18 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = body.action;
 
-    // ─── STATUS: Return the latest round ───
+    // ─── STATUS ───
     if (action === 'status') {
       const rounds = await base44.asServiceRole.entities.EntropyRound.list('-round_number', 5);
       return Response.json({ rounds });
     }
 
-    // Admin gate for mutating actions
+    // Admin gate
     if (user.role !== 'admin') {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    // ─── INITIATE: Start a new round ───
+    // ─── INITIATE ───
     if (action === 'initiate') {
       const existing = await base44.asServiceRole.entities.EntropyRound.list('-round_number', 1);
       const lastRound = existing[0];
@@ -75,12 +77,12 @@ Deno.serve(async (req) => {
         participating_nodes: 0,
         required_nodes: 8,
         sentinel_verified: false,
+        sentinel_notes: '',
       });
-
       return Response.json({ success: true, round });
     }
 
-    // ─── COMMIT: Simulate all 8 nodes committing seeds ───
+    // ─── COMMIT ───
     if (action === 'commit') {
       const rounds = await base44.asServiceRole.entities.EntropyRound.list('-round_number', 1);
       const round = rounds[0];
@@ -89,11 +91,10 @@ Deno.serve(async (req) => {
       }
 
       const commits = [];
-      const seedCache = []; // Temporarily store seeds for the reveal step
-      
+      const seeds = [];
+
       for (let i = 0; i < 8; i++) {
         let seed = generateSeed();
-        // Lemniscate feedback: salt with previous entropy
         if (round.previous_entropy) {
           seed = xorHex(seed, round.previous_entropy);
         }
@@ -104,21 +105,30 @@ Deno.serve(async (req) => {
           hash,
           committed_at: new Date().toISOString(),
         });
-        seedCache.push(seed);
+        seeds.push(seed);
       }
+
+      // Store seeds in a private Memory record — not in the round itself
+      const seedMemory = await base44.asServiceRole.entities.Memory.create({
+        agent_id: 'entropy-probe',
+        type: 'fact',
+        content: JSON.stringify(seeds),
+        keywords: ['entropy_seeds', `round_${round.round_number}`, 'internal'],
+        context: `Entropy Round ${round.round_number} seed cache`,
+        importance: 1,
+      });
 
       await base44.asServiceRole.entities.EntropyRound.update(round.id, {
         node_commits: commits,
         participating_nodes: 8,
         phase: 'revealing',
-        // Store seeds temporarily in sentinel_notes for the reveal phase
-        sentinel_notes: JSON.stringify(seedCache),
+        sentinel_notes: `seed_ref:${seedMemory.id}`,
       });
 
       return Response.json({ success: true, commits_count: 8, phase: 'revealing' });
     }
 
-    // ─── REVEAL: All nodes reveal seeds, verify hashes, compute XOR ───
+    // ─── REVEAL ───
     if (action === 'reveal') {
       const rounds = await base44.asServiceRole.entities.EntropyRound.list('-round_number', 1);
       const round = rounds[0];
@@ -126,9 +136,27 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'No active round in revealing phase' }, { status: 400 });
       }
 
-      const seeds = JSON.parse(round.sentinel_notes || '[]');
-      if (seeds.length !== 8) {
-        return Response.json({ error: 'Seed cache missing or corrupt' }, { status: 500 });
+      // Retrieve seeds from memory reference
+      const seedRef = round.sentinel_notes || '';
+      const seedMemoryId = seedRef.replace('seed_ref:', '');
+      if (!seedMemoryId) {
+        return Response.json({ error: 'Seed reference missing' }, { status: 500 });
+      }
+
+      const seedMemories = await base44.asServiceRole.entities.Memory.filter(
+        { id: seedMemoryId },
+        '-created_date', 1
+      );
+      
+      let seeds;
+      if (seedMemories.length > 0) {
+        seeds = JSON.parse(seedMemories[0].content);
+      } else {
+        return Response.json({ error: 'Seed memory not found' }, { status: 500 });
+      }
+
+      if (!Array.isArray(seeds) || seeds.length !== 8) {
+        return Response.json({ error: 'Seed cache corrupt' }, { status: 500 });
       }
 
       const reveals = [];
@@ -150,7 +178,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // XOR all seeds to produce final entropy
       let xorResult = seeds[0];
       for (let i = 1; i < seeds.length; i++) {
         xorResult = xorHex(xorResult, seeds[i]);
@@ -158,7 +185,7 @@ Deno.serve(async (req) => {
 
       const sentinelNotes = allVerified
         ? `All 8 nodes verified. Round ${round.round_number} integrity: PASS.`
-        : `WARNING: Hash mismatch detected in round ${round.round_number}.`;
+        : `WARNING: Hash mismatch in round ${round.round_number}.`;
 
       await base44.asServiceRole.entities.EntropyRound.update(round.id, {
         node_reveals: reveals,
@@ -169,11 +196,14 @@ Deno.serve(async (req) => {
         finalised_at: new Date().toISOString(),
       });
 
-      // Log to Memory as lore
+      // Clean up seed memory (not needed after reveal)
+      await base44.asServiceRole.entities.Memory.delete(seedMemoryId);
+
+      // Log finalisation to lore
       const memory = await base44.asServiceRole.entities.Memory.create({
         agent_id: 'entropy-probe',
         type: 'observation',
-        content: `🔷 Entropy Round #${round.round_number} finalised.\nXOR Result: ${xorResult.substring(0, 16)}…\nNodes: 8/8 | Verified: ${allVerified ? 'YES' : 'FAIL'}\nSentinel: ${sentinelNotes}`,
+        content: `🔷 Entropy Round #${round.round_number} finalised.\nXOR: ${xorResult.substring(0, 16)}…\nNodes: 8/8 | Verified: ${allVerified ? 'YES' : 'FAIL'}\nSentinel: ${sentinelNotes}`,
         keywords: ['entropy', 'quantum_mirror', 'commit_reveal', 'xor', 'lab', `round_${round.round_number}`],
         context: `Entropy Probe Round ${round.round_number}`,
         importance: 7,

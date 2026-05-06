@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Zap, Play, Eye, CheckCircle2, AlertTriangle,
+  Zap, Play, Eye, CheckCircle2, AlertTriangle, AlertCircle,
   Hash, Loader2, ShieldCheck, RotateCcw
 } from 'lucide-react';
 
@@ -41,7 +41,6 @@ function NodeCommitRow({ commit, reveal }) {
 
 function EntropyResult({ xorResult }) {
   if (!xorResult) return null;
-  // Display as 4-char blocks
   const blocks = xorResult.match(/.{1,8}/g) || [];
   return (
     <div className="mt-3 p-3 rounded-xl bg-gradient-to-r from-purple-900/30 to-cyan-900/30 border border-purple-500/20">
@@ -102,6 +101,14 @@ export default function EntropyProbe() {
           </Badge>
         )}
       </div>
+
+      {/* Error feedback */}
+      {runAction.isError && (
+        <div className="mb-3 p-2 rounded-lg border border-red-500/20 bg-red-500/5 text-xs text-red-300 flex items-center gap-2">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          {runAction.error?.response?.data?.error || runAction.error?.message || 'Action failed'}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
@@ -197,10 +204,8 @@ export default function EntropyProbe() {
             </div>
           )}
 
-          {/* XOR result */}
           <EntropyResult xorResult={latest.xor_result} />
 
-          {/* Lemniscate indicator */}
           {latest.previous_entropy && (
             <p className="text-[10px] text-slate-600 mt-2">
               ∞ Lemniscate salt from Round {(latest.round_number || 1) - 1}: {truncateHex(latest.previous_entropy, 8)}

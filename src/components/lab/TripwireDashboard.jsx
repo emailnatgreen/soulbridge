@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Shield, ShieldAlert, ShieldCheck, Scan, FlaskConical,
-  CheckCircle2, AlertTriangle, XCircle, Eye, Loader2,
+  CheckCircle2, XCircle, Loader2,
   ChevronDown, ChevronUp
 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 import TripwireEventCard from './TripwireEventCard';
 import TripwireSimulator from './TripwireSimulator';
 
@@ -50,9 +49,6 @@ export default function TripwireDashboard() {
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <Shield className="w-5 h-5 text-red-400" />
         <h2 className="text-white font-semibold">Tripwire Lockdown</h2>
-        <Badge className="text-[10px] bg-red-500/15 text-red-300 border-red-500/20 ml-1">
-          Sprint 3
-        </Badge>
         <Badge className={`text-[10px] ml-auto ${STATUS_CONFIG[summary.system_status]?.color || ''}`}>
           <StatusIcon className="w-3 h-3 mr-1" />
           {STATUS_CONFIG[summary.system_status]?.label || 'Unknown'}
@@ -76,7 +72,7 @@ export default function TripwireDashboard() {
           className="bg-red-600 hover:bg-red-500 text-xs"
         >
           {scanMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Scan className="w-3 h-3" />}
-          Run Security Scan
+          Run Scan
         </Button>
         <Button
           size="sm"
@@ -98,13 +94,10 @@ export default function TripwireDashboard() {
         </Button>
       </div>
 
-      {/* Scan result feedback — auto-clears after 5s */}
-      <ScanFeedback scanMutation={scanMutation} />
+      <AutoClearFeedback mutation={scanMutation} label="Scan complete" field="alerts_generated" />
 
-      {/* Simulator */}
       {showSimulator && <TripwireSimulator />}
 
-      {/* Events List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-5 h-5 text-red-400 animate-spin" />
@@ -125,25 +118,26 @@ export default function TripwireDashboard() {
   );
 }
 
-function ScanFeedback({ scanMutation }) {
-  const [visible, setVisible] = React.useState(false);
+function AutoClearFeedback({ mutation, label, field }) {
+  const [visible, setVisible] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
-    if (scanMutation.isSuccess) {
+    if (mutation.isSuccess) {
       setVisible(true);
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => setVisible(false), 5000);
     }
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [scanMutation.isSuccess, scanMutation.data]);
+  }, [mutation.isSuccess, mutation.data]);
 
   if (!visible) return null;
+  const count = field ? (mutation.data?.data?.[field] ?? 0) : '';
 
   return (
     <div className="mb-3 p-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-xs text-emerald-300 flex items-center gap-2">
-      <CheckCircle2 className="w-3.5 h-3.5" />
-      Scan complete — {scanMutation.data?.data?.alerts_generated || 0} alert(s) generated.
+      <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+      {label} — {count} alert(s) generated.
     </div>
   );
 }
