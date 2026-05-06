@@ -93,6 +93,7 @@ import SeedGoldenAcorn from './pages/SeedGoldenAcorn';
 import RLUSDTrustlineGate from './pages/RLUSDTrustlineGate';
 import StorefrontHub from './pages/StorefrontHub';
 import EthTreasuryPage from './pages/EthTreasuryPage';
+import Lab from './pages/Lab';
 
 // WHITEPAPER PAGES — GOVERNANCE
 import GovernanceOverview from './pages/whitepaper/GovernanceOverview';
@@ -459,6 +460,9 @@ const AuthenticatedApp = () => {
 
         {/* ETH TREASURY */}
         <Route path="/eth-treasury" element={L("eth-treasury", EthTreasuryPage)} />
+
+        {/* LAB — 8-Node Security System */}
+        <Route path="/lab" element={L("lab", Lab)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />
