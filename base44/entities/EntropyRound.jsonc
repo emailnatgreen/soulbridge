@@ -1,0 +1,108 @@
+{
+  "name": "EntropyRound",
+  "type": "object",
+  "properties": {
+    "round_number": {
+      "type": "number",
+      "description": "Sequential round identifier"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "committing",
+        "revealing",
+        "finalised",
+        "failed"
+      ],
+      "default": "committing",
+      "description": "Current phase of the commit-reveal protocol"
+    },
+    "previous_entropy": {
+      "type": "string",
+      "description": "Lemniscate salt \u2014 final entropy from the previous round"
+    },
+    "node_commits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "node_index": {
+            "type": "number"
+          },
+          "node_name": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string",
+            "description": "SHA-256 hash of the seed"
+          },
+          "committed_at": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Phase 1: each node broadcasts its hash"
+    },
+    "node_reveals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "node_index": {
+            "type": "number"
+          },
+          "node_name": {
+            "type": "string"
+          },
+          "seed": {
+            "type": "string",
+            "description": "The revealed seed (hex)"
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Hash matches commitment"
+          },
+          "revealed_at": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Phase 2: each node reveals its seed"
+    },
+    "xor_result": {
+      "type": "string",
+      "description": "Final entropy = XOR of all revealed seeds"
+    },
+    "participating_nodes": {
+      "type": "number",
+      "default": 0,
+      "description": "How many nodes participated"
+    },
+    "required_nodes": {
+      "type": "number",
+      "default": 8,
+      "description": "Minimum nodes needed for valid entropy"
+    },
+    "sentinel_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the Sentinel node verified the round"
+    },
+    "sentinel_notes": {
+      "type": "string",
+      "description": "Sentinel's verification notes or anomaly flags"
+    },
+    "finalised_at": {
+      "type": "string",
+      "description": "ISO timestamp when the round was finalised"
+    },
+    "lore_memory_id": {
+      "type": "string",
+      "description": "Memory record ID for the audit trail entry"
+    }
+  },
+  "required": [
+    "round_number",
+    "phase"
+  ]
+}

@@ -7,6 +7,7 @@ import RootNote from '@/components/lab/RootNote';
 import HonourBoard from '@/components/lab/HonourBoard';
 import SkillTreeViewer from '@/components/lab/SkillTreeViewer';
 import LoreFeed from '@/components/lab/LoreFeed';
+import EntropyProbe from '@/components/lab/EntropyProbe';
 
 export default function Lab() {
   const { data: nodes = [], isLoading: nodesLoading } = useQuery({
@@ -48,6 +49,9 @@ export default function Lab() {
 
         {/* Section 1: Node Status */}
         <NodeStatusGrid nodes={nodes} loading={nodesLoading} />
+
+        {/* Section 2: Entropy Probe — Quantum Mirror */}
+        <EntropyProbe />
 
         {/* Section 7: Root Note (Governor's voice) */}
         <RootNote />
