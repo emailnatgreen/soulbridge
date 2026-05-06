@@ -10,6 +10,7 @@ import SkillTreeViewer from '@/components/lab/SkillTreeViewer';
 import LoreFeed from '@/components/lab/LoreFeed';
 import EntropyProbe from '@/components/lab/EntropyProbe';
 import TripwireDashboard from '@/components/lab/TripwireDashboard';
+import PilotReadinessDashboard from '@/components/lab/pilot/PilotReadinessDashboard';
 
 function LabContent() {
   const { data: nodes = [], isLoading: nodesLoading } = useQuery({
@@ -51,6 +52,7 @@ function LabContent() {
 
         <NodeStatusGrid nodes={nodes} loading={nodesLoading} />
         <EntropyProbe />
+        <PilotReadinessDashboard />
         <TripwireDashboard />
         <RootNote />
 

@@ -1,0 +1,129 @@
+{
+  "name": "PilotReadiness",
+  "type": "object",
+  "properties": {
+    "record_type": {
+      "type": "string",
+      "enum": [
+        "config",
+        "chrome_listing",
+        "participant",
+        "feedback",
+        "nft_status"
+      ],
+      "description": "Type of pilot readiness record"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status (context depends on record_type)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title or name (participant name, feedback title, etc.)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Details, notes, or review comments"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "bug",
+        "ux",
+        "feature_request",
+        "blocker",
+        "general"
+      ],
+      "description": "Category for feedback records"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Priority level for feedback"
+    },
+    "target_date": {
+      "type": "string",
+      "description": "Target launch date (for config record)"
+    },
+    "launch_status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "ready",
+        "launched"
+      ],
+      "default": "not_started",
+      "description": "Overall launch status (for config record)"
+    },
+    "participant_type": {
+      "type": "string",
+      "enum": [
+        "internal_agent",
+        "external_tester",
+        "governor"
+      ],
+      "description": "Type of pilot participant"
+    },
+    "participant_status": {
+      "type": "string",
+      "enum": [
+        "invited",
+        "accepted",
+        "active",
+        "inactive"
+      ],
+      "description": "Participant engagement status"
+    },
+    "verifications_completed": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of verifications completed by participant"
+    },
+    "feedback_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of feedback submissions by participant"
+    },
+    "action_url": {
+      "type": "string",
+      "description": "Link to Chrome Web Store listing, feedback channel, etc."
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Linked agent ID (for participants)"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email for external participants"
+    },
+    "nft_total_minted": {
+      "type": "number",
+      "default": 0,
+      "description": "Total NFTs minted (for nft_status record)"
+    },
+    "nft_available": {
+      "type": "number",
+      "default": 0,
+      "description": "NFTs available (for nft_status record)"
+    },
+    "nft_claimed": {
+      "type": "number",
+      "default": 0,
+      "description": "NFTs claimed (for nft_status record)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context data"
+    }
+  },
+  "required": [
+    "record_type"
+  ]
+}
