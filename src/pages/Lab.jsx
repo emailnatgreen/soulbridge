@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Shield, FlaskConical, Lock } from 'lucide-react';
+import { Shield, FlaskConical, Lock, TreePine } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useIdentity } from '@/hooks/useIdentity';
 import NodeStatusGrid from '@/components/lab/NodeStatusGrid';
 import RootNote from '@/components/lab/RootNote';
@@ -13,6 +14,7 @@ import TripwireDashboard from '@/components/lab/TripwireDashboard';
 import CompressedAttentionPanel from '@/components/lab/CompressedAttentionPanel';
 import SecurityGuardBridge from '@/components/lab/SecurityGuardBridge';
 import PilotReadinessDashboard from '@/components/lab/pilot/PilotReadinessDashboard';
+import MotherOakPanel from '@/components/lab/mother-oak/MotherOakPanel';
 
 function LabContent() {
   const { data: nodes = [], isLoading: nodesLoading } = useQuery({
@@ -35,6 +37,8 @@ function LabContent() {
     queryFn: () => base44.entities.Memory.filter({ type: 'observation' }, '-created_date', 30),
   });
 
+  const [activeTab, setActiveTab] = useState('security');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -52,22 +56,37 @@ function LabContent() {
           </div>
         </div>
 
-        <NodeStatusGrid nodes={nodes} loading={nodesLoading} />
-        <EntropyProbe />
-        <PilotReadinessDashboard />
-        <TripwireDashboard />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CompressedAttentionPanel />
-          <SecurityGuardBridge />
-        </div>
-        <RootNote />
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="bg-slate-800/60 border border-white/10">
+            <TabsTrigger value="security" className="data-[state=active]:bg-emerald-600/20 data-[state=active]:text-emerald-300 text-slate-400 text-xs">
+              <Shield className="w-3.5 h-3.5 mr-1.5" /> Security
+            </TabsTrigger>
+            <TabsTrigger value="mother-oak" className="data-[state=active]:bg-emerald-600/20 data-[state=active]:text-emerald-300 text-slate-400 text-xs">
+              <TreePine className="w-3.5 h-3.5 mr-1.5" /> Mother Oak
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <HonourBoard agents={agents} loading={agentsLoading} />
-          <SkillTreeViewer skills={skills} agents={agents} />
-        </div>
+          <TabsContent value="security" className="space-y-6 mt-4">
+            <NodeStatusGrid nodes={nodes} loading={nodesLoading} />
+            <EntropyProbe />
+            <PilotReadinessDashboard />
+            <TripwireDashboard />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CompressedAttentionPanel />
+              <SecurityGuardBridge />
+            </div>
+            <RootNote />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <HonourBoard agents={agents} loading={agentsLoading} />
+              <SkillTreeViewer skills={skills} agents={agents} />
+            </div>
+            <LoreFeed entries={lore} />
+          </TabsContent>
 
-        <LoreFeed entries={lore} />
+          <TabsContent value="mother-oak" className="mt-4">
+            <MotherOakPanel />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
