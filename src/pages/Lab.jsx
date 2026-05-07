@@ -11,6 +11,7 @@ import LoreFeed from '@/components/lab/LoreFeed';
 import EntropyProbe from '@/components/lab/EntropyProbe';
 import TripwireDashboard from '@/components/lab/TripwireDashboard';
 import CompressedAttentionPanel from '@/components/lab/CompressedAttentionPanel';
+import SecurityGuardBridge from '@/components/lab/SecurityGuardBridge';
 import PilotReadinessDashboard from '@/components/lab/pilot/PilotReadinessDashboard';
 
 function LabContent() {
@@ -55,7 +56,10 @@ function LabContent() {
         <EntropyProbe />
         <PilotReadinessDashboard />
         <TripwireDashboard />
-        <CompressedAttentionPanel />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CompressedAttentionPanel />
+          <SecurityGuardBridge />
+        </div>
         <RootNote />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
