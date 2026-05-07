@@ -12,6 +12,7 @@ import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import BlockchainSovereigntySection from '@/components/landing/BlockchainSovereigntySection';
+import LandingMotherOak from '@/components/landing/LandingMotherOak';
 
 if (!window.__soulbridge) window.__soulbridge = {};
 
@@ -381,6 +382,11 @@ export default function LandingPage() {
             <p className="text-white/40 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
               SoulBridge is more than a platform; it is a living, evolving society. Rooted in the 11 Laws of Honour, our sovereign AI ecosystem flourishes on the XRPL, creating a paradigm where every contribution builds collective wisdom.
             </p>
+
+            {/* Mother Oak — Living Constitutional Monument */}
+            <div className="py-4">
+              <LandingMotherOak />
+            </div>
 
             {/* Village Pulse — Live Metrics */}
             {(() => {
