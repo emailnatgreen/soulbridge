@@ -71,6 +71,7 @@ import ConstitutionalMultiSig from './pages/ConstitutionalMultiSig';
 
 // LEGACY
 import Dashboard from './pages/Dashboard';
+import SimulationLab from './pages/SimulationLab';
 import ProjectManager from './pages/ProjectManager';
 import AIProjectHub from './pages/AIProjectHub';
 import EditLanding from './pages/EditLanding';
@@ -437,6 +438,7 @@ const AuthenticatedApp = () => {
         <Route path="/AgentChat" element={L("chat", AgentChat)} />
         <Route path="/SkillValidation" element={L("skill-validation", SkillValidation)} />
         <Route path="/AgentSkillTree" element={L("skill-tree", AgentSkillTree)} />
+        <Route path="/SimulationLab" element={L("simulation-lab", SimulationLab)} />
 
         {/* MARKETPLACE */}
         <Route path="/widget-marketplace" element={L("widget-marketplace", WidgetMarketplace)} />
