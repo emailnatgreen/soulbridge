@@ -45,6 +45,7 @@ function AnomalyBadge({ anomaly }) {
 
 export default function CompressedAttentionPanel() {
   const [expanded, setExpanded] = useState(false);
+  const [includeResolved, setIncludeResolved] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: statusData, isLoading: statusLoading } = useQuery({
@@ -54,7 +55,7 @@ export default function CompressedAttentionPanel() {
   });
 
   const analyzeMutation = useMutation({
-    mutationFn: () => base44.functions.invoke('compressedAttention', { action: 'analyze' }),
+    mutationFn: () => base44.functions.invoke('compressedAttention', { action: 'analyze', include_resolved: includeResolved }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ca-status'] }),
   });
 
@@ -90,20 +91,34 @@ export default function CompressedAttentionPanel() {
         ))}
       </div>
 
-      {/* Run Analysis */}
-      <Button
-        onClick={() => analyzeMutation.mutate()}
-        disabled={isAnalyzing}
-        className="w-full mb-4 bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/30"
-        variant="outline"
-        size="sm"
-      >
-        {isAnalyzing ? (
-          <><RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" /> Analyzing…</>
-        ) : (
-          <><Activity className="w-3.5 h-3.5 mr-1.5" /> Run Compressed Attention</>
-        )}
-      </Button>
+      {/* Controls */}
+      <div className="flex items-center gap-3 mb-3">
+        <Button
+          onClick={() => analyzeMutation.mutate()}
+          disabled={isAnalyzing}
+          className="flex-1 bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/30"
+          variant="outline"
+          size="sm"
+        >
+          {isAnalyzing ? (
+            <><RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" /> Analyzing…</>
+          ) : (
+            <><Activity className="w-3.5 h-3.5 mr-1.5" /> Run Compressed Attention</>
+          )}
+        </Button>
+        <button
+          onClick={() => setIncludeResolved(!includeResolved)}
+          className={`flex items-center gap-1.5 text-[10px] px-2.5 py-1.5 rounded-lg border transition-colors ${
+            includeResolved
+              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+              : 'bg-white/[0.03] text-slate-400 border-white/10 hover:text-slate-300'
+          }`}
+          title={includeResolved ? 'Scoring ALL events (including resolved)' : 'Scoring active threats only'}
+        >
+          <Shield className="w-3 h-3" />
+          {includeResolved ? 'Full Audit' : 'Active Only'}
+        </button>
+      </div>
 
       {/* Results */}
       {result && (
@@ -122,10 +137,22 @@ export default function CompressedAttentionPanel() {
           {/* Stats Row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <StatBox label="Avg Score" value={`${result.summary.avg_threat_score}/100`} icon={BarChart3} />
-            <StatBox label="Signals" value={result.summary.signals_processed.tripwire + result.summary.signals_processed.entropy + result.summary.signals_processed.mwtp} icon={Activity} />
+            <StatBox
+              label="Signals"
+              value={`${result.summary.signals_processed.tripwire_scored}/${result.summary.signals_processed.tripwire_total}`}
+              subtitle={result.summary.signals_processed.tripwire_excluded > 0 ? `${result.summary.signals_processed.tripwire_excluded} excluded` : null}
+              icon={Activity}
+            />
             <StatBox label="Anomalies" value={result.summary.anomalies_detected} icon={AlertTriangle} />
             <StatBox label="Loops" value={`${result.summary.loop_computing.passes}${result.summary.loop_computing.converged ? ' ✓' : ''}`} icon={RefreshCw} />
           </div>
+
+          {/* Mode indicator */}
+          {result.include_resolved !== undefined && (
+            <p className="text-[9px] text-slate-500 text-center">
+              Mode: {result.include_resolved ? '🔍 Full audit (including resolved)' : '🛡️ Active threats only'}
+            </p>
+          )}
 
           {/* Top Threats */}
           {result.top_threats?.length > 0 && (
@@ -164,12 +191,13 @@ export default function CompressedAttentionPanel() {
   );
 }
 
-function StatBox({ label, value, icon: Icon }) {
+function StatBox({ label, value, subtitle, icon: Icon }) {
   return (
     <div className="rounded-lg bg-white/[0.03] border border-white/5 p-2 text-center">
       <Icon className="w-3 h-3 text-purple-400 mx-auto mb-1" />
       <p className="text-white text-sm font-semibold">{value}</p>
       <p className="text-[9px] text-slate-500">{label}</p>
+      {subtitle && <p className="text-[8px] text-amber-400/70 mt-0.5">{subtitle}</p>}
     </div>
   );
 }

@@ -5,6 +5,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *
  * Actions: analyze | status
  *
+ * Options (passed in body):
+ *   include_resolved: boolean (default false) — if true, score ALL events including resolved/false_positive
+ *                     When false, resolved events are excluded from threat scoring
+ *                     but still recorded in the full audit Memory record.
+ *
  * Implements:
  * - Compressed Attention: distil high-dimensional signals into compact threat vectors
  * - Loop Computing: iterative re-evaluation (up to 4 adaptive passes)
@@ -208,24 +213,32 @@ Deno.serve(async (req) => {
     // ─── ANALYZE ───
     if (action === 'analyze') {
       const startTime = Date.now();
+      const includeResolved = body.include_resolved === true;
+      const EXCLUDED_STATUSES = ['resolved', 'false_positive'];
 
       // 1. Gather signals (privacy-preserving: hash actor emails)
-      const [tripwireEvents, entropyRounds, mwtpPackets] = await Promise.all([
+      const [allTripwireEvents, entropyRounds, mwtpPackets] = await Promise.all([
         base44.asServiceRole.entities.TripwireEvent.list('-created_date', 30),
         base44.asServiceRole.entities.EntropyRound.list('-round_number', 10),
         base44.asServiceRole.entities.MWTPPacket.list('-created_date', 20),
       ]);
 
-      // 2. Cluster tripwire events by source node
+      // Separate active vs resolved for hybrid scoring
+      const activeEvents = includeResolved
+        ? allTripwireEvents
+        : allTripwireEvents.filter(e => !EXCLUDED_STATUSES.includes(e.status));
+      const resolvedCount = allTripwireEvents.length - activeEvents.length;
+
+      // 2. Cluster active tripwire events by source node
       const clusterMap = {};
-      for (const e of tripwireEvents) {
+      for (const e of activeEvents) {
         const key = e.source_node || 'unknown';
         clusterMap[key] = (clusterMap[key] || 0) + 1;
       }
 
-      // 3. Score each tripwire signal
+      // 3. Score active tripwire signals (resolved excluded from threat scoring)
       const scoredVectors = [];
-      for (const e of tripwireEvents) {
+      for (const e of activeEvents) {
         e._cluster_count = clusterMap[e.source_node] || 1;
         const { score, tags } = scoreSignal(e);
 
@@ -311,17 +324,18 @@ Deno.serve(async (req) => {
 
       const elapsedMs = Date.now() - startTime;
 
-      // 8. Compressed attention summary → Memory (tagged for Axi audit)
+      // 8. Compressed attention summary → Memory (full audit trail — ALL events)
       const summaryContent = [
         `🧠 Compressed Attention Analysis — Node 8`,
         `Threat Level: ${threatLevel} | Avg Score: ${avgScore}/100 | Max: ${maxScore}/100`,
-        `Signals Processed: ${tripwireEvents.length} tripwire, ${entropyRounds.length} entropy, ${mwtpPackets.length} MWTP`,
+        `Mode: ${includeResolved ? 'Full (including resolved)' : 'Active threats only'}`,
+        `Signals Processed: ${allTripwireEvents.length} tripwire (${activeEvents.length} active, ${resolvedCount} resolved/excluded), ${entropyRounds.length} entropy, ${mwtpPackets.length} MWTP`,
         `Anomalies Detected: ${allAnomalies.length} (${entropyAnomalies.length} entropy, ${mwtpAnomalies.length} MWTP)`,
         `Loop Computing: ${loops} passes, converged: ${converged}`,
         `New Alerts Generated: ${newAlerts.length}`,
         `Processing Time: ${elapsedMs}ms`,
         ``,
-        `Top Threats:`,
+        `Top Active Threats:`,
         ...topThreats.slice(0, 5).map((t, i) =>
           `  ${i + 1}. [${t.severity}] ${t.event_type} — score ${t.score}/100 (${t.tags.join(', ')})`
         ),
@@ -339,9 +353,12 @@ Deno.serve(async (req) => {
       return Response.json({
         success: true,
         threat_level: threatLevel,
+        include_resolved: includeResolved,
         summary: {
           signals_processed: {
-            tripwire: tripwireEvents.length,
+            tripwire_total: allTripwireEvents.length,
+            tripwire_scored: activeEvents.length,
+            tripwire_excluded: resolvedCount,
             entropy: entropyRounds.length,
             mwtp: mwtpPackets.length,
           },
