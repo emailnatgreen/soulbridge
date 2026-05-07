@@ -3,6 +3,15 @@ import { TreePine, RotateCcw, Info, Activity, Fingerprint, Recycle } from 'lucid
 import { Badge } from '@/components/ui/badge';
 import useOakData from './useOakData';
 
+function MiniSignal({ label, value, suffix = '', active }) {
+  return (
+    <div className={`rounded-md border px-2 py-1.5 ${active ? 'border-white/15 bg-white/[0.04]' : 'border-white/5 bg-white/[0.01]'}`}>
+      <p className="text-[8px] text-slate-500">{label}</p>
+      <p className={`text-xs font-bold ${active ? 'text-white' : 'text-slate-500'}`}>{value}{suffix}</p>
+    </div>
+  );
+}
+
 const OakTreeScene = lazy(() => import('./OakTreeScene'));
 
 const SIGNAL_STYLES = {
@@ -55,7 +64,7 @@ export default function MotherOakPanel() {
           </h2>
           <div className="flex items-center gap-2">
             <Badge className="bg-emerald-500/10 text-emerald-300 border-emerald-500/20 text-[10px]">
-              Phase 2: Root Kinetics
+              Phase 3: Trunk & Branch Kinetics
             </Badge>
             <button
               onClick={() => setKey(k => k + 1)}
@@ -68,11 +77,12 @@ export default function MotherOakPanel() {
         </div>
         <p className="text-slate-400 text-xs leading-relaxed">
           The Holy Node 0 Tree of Knowledge. Roots pulse with entropy, brighten with sovereign DID activations, and compost with kinetic waste.
+          Trunk vibrates with Axi approvals, leans under threat, thickens with age. Each branch expresses its node's heartbeat.
           Drag to orbit · Scroll to zoom.
         </p>
       </div>
 
-      {/* Live Data Signals */}
+      {/* Live Data Signals — Roots */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <SignalIndicator
           icon={Activity}
@@ -103,6 +113,29 @@ export default function MotherOakPanel() {
         />
       </div>
 
+      {/* Trunk & Branch Signals */}
+      {oakData.trunk && (
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3 space-y-3">
+          <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Trunk & Branch Kinetics</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <MiniSignal label="Axi Approval" value={Math.round(oakData.trunk.axiApprovalIntensity * 100)} suffix="%" active={oakData.trunk.axiApprovalIntensity > 0} />
+            <MiniSignal label="Threat Lean" value={Math.round(oakData.trunk.threatLean * 100)} suffix="%" active={oakData.trunk.threatLean > 0.1} />
+            <MiniSignal label="Growth" value={Math.round(oakData.trunk.trunkGrowth * 100)} suffix="%" active={oakData.trunk.trunkGrowth > 0} />
+            <MiniSignal label="Governance" value={Math.round(oakData.trunk.governanceResonance * 100)} suffix="%" active={oakData.trunk.governanceResonance > 0} />
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+            {(oakData.branches || []).map((b, i) => (
+              <div key={i} className={`rounded-md border p-1.5 text-center ${b.activity > 0.1 ? 'border-white/15 bg-white/[0.04]' : 'border-white/5 bg-white/[0.01]'}`}>
+                <p className="text-[8px] text-slate-500 truncate">{b.name}</p>
+                <p className={`text-[10px] font-bold ${b.activity > 0.3 ? 'text-white' : 'text-slate-500'}`}>
+                  {Math.round(b.activity * 100)}%
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 3D Canvas */}
       <div className="rounded-2xl border border-white/10 bg-slate-950/80 overflow-hidden" style={{ height: '560px' }}>
         <Suspense
@@ -128,9 +161,9 @@ export default function MotherOakPanel() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { phase: '1', label: 'Static Oak', status: 'done', desc: 'Form, trunk, branches, canopy' },
-            { phase: '2', label: 'Root Kinetics', status: 'active', desc: 'Entropy pulses, DID glow, MWTP decay' },
-            { phase: '3', label: 'Trunk & Branches', status: 'next', desc: 'Axi vibration, governance, nodes' },
-            { phase: '4', label: 'Memory Layer', status: 'future', desc: 'Rings, blooms, scars, moss, whispers' },
+            { phase: '2', label: 'Root Kinetics', status: 'done', desc: 'Entropy pulses, DID glow, MWTP decay' },
+            { phase: '3', label: 'Trunk & Branches', status: 'active', desc: 'Axi vibration, governance, node behaviours' },
+            { phase: '4', label: 'Memory Layer', status: 'next', desc: 'Rings, blooms, scars, moss, whispers' },
           ].map(p => (
             <div
               key={p.phase}
