@@ -1,0 +1,145 @@
+{
+  "name": "SecurityRecommendation",
+  "type": "object",
+  "properties": {
+    "recommendation_id": {
+      "type": "string",
+      "description": "Unique recommendation identifier (e.g. REC-xxxxx)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "denied",
+        "expired",
+        "auto_executed"
+      ],
+      "default": "pending",
+      "description": "Current status of the recommendation"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "flag",
+        "warn",
+        "challenge",
+        "isolate"
+      ],
+      "description": "Graduated action type: flag (low), warn (medium), challenge (high), isolate (critical)"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Severity level from Node 8 analysis"
+    },
+    "threat_score": {
+      "type": "number",
+      "description": "Numeric threat score (0-100) from Compressed Attention"
+    },
+    "threat_level": {
+      "type": "string",
+      "description": "Threat level classification (NOMINAL, GUARDED, ELEVATED, CRITICAL)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable summary of what Node 8 detected and recommends"
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Node 8's reasoning for this recommendation"
+    },
+    "affected_entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity_type": {
+            "type": "string"
+          },
+          "entity_id": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Entities affected by the detected threat"
+    },
+    "source_signals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "TripwireEvent IDs and anomaly IDs that contributed to this recommendation"
+    },
+    "node8_analysis_context": {
+      "type": "object",
+      "description": "Snapshot of Node 8 analysis state at recommendation time"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Agent ID or email of who approved this recommendation"
+    },
+    "approved_at": {
+      "type": "string",
+      "description": "ISO timestamp of approval"
+    },
+    "denied_by": {
+      "type": "string",
+      "description": "Agent ID or email of who denied this recommendation"
+    },
+    "denied_at": {
+      "type": "string",
+      "description": "ISO timestamp of denial"
+    },
+    "denial_rationale": {
+      "type": "string",
+      "description": "Mandatory rationale when denied \u2014 fed back to Node 8 as correction data"
+    },
+    "executed_at": {
+      "type": "string",
+      "description": "ISO timestamp when action was executed"
+    },
+    "execution_result": {
+      "type": "object",
+      "description": "Result of the executed action"
+    },
+    "escalated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this was escalated to the Governor"
+    },
+    "escalated_at": {
+      "type": "string",
+      "description": "ISO timestamp of escalation"
+    },
+    "auto_executed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this was auto-executed due to timeout"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "ISO timestamp when this recommendation expires if not acted upon"
+    },
+    "memory_id": {
+      "type": "string",
+      "description": "Cross-reference to Memory entity for audit trail"
+    }
+  },
+  "required": [
+    "recommendation_id",
+    "status",
+    "action_type",
+    "severity",
+    "threat_score",
+    "summary"
+  ]
+}

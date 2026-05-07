@@ -39,6 +39,9 @@ import EmergencyPauseButton from "@/components/axi/EmergencyPauseButton";
 
 // Tab 5 — Memory & Review
 import PageReviewPanel from "@/components/axi/PageReviewPanel";
+
+// Tab 6 — Node 8 Oversight
+import Node8OversightPanel from "@/components/axi/Node8OversightPanel";
 import PageReviewMemoryPanel from "@/components/axi/PageReviewMemoryPanel";
 import AxiReviewCoordinationPanel from "@/components/axi/AxiReviewCoordinationPanel";
 import JukeboxBrainInterface from "@/components/axi/JukeboxBrainInterface";
@@ -146,6 +149,9 @@ export default function AxiCommandDashboard() {
             </TabsTrigger>
             <TabsTrigger value="memory" className="flex-1 min-w-[120px] text-xs data-[state=active]:bg-purple-600 data-[state=active]:text-white text-slate-400">
               Memory & Review
+            </TabsTrigger>
+            <TabsTrigger value="node8" className="flex-1 min-w-[120px] text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-slate-400">
+              🧠 Node 8
             </TabsTrigger>
           </TabsList>
 
@@ -308,6 +314,11 @@ export default function AxiCommandDashboard() {
             </div>
           </TabsContent>
         </Tabs>
+
+          {/* TAB 6: Node 8 Oversight */}
+          <TabsContent value="node8">
+            <Node8OversightPanel />
+          </TabsContent>
 
         {/* Footer */}
         <div className="text-center text-xs text-slate-500 mt-6 p-3 bg-amber-900/20 border border-amber-700/30 rounded-lg">
