@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Brain, Shield, Activity, RefreshCw, AlertTriangle, Check, X, Clock, Filter } from 'lucide-react';
+import { Brain, Shield, Activity, RefreshCw, AlertTriangle, Check, X, Clock, Filter, Zap, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Node8RecommendationCard from './Node8RecommendationCard';
+import Phase3ConfigPanel from './Phase3ConfigPanel';
 
 const STAT_ICONS = {
   pending: Clock,
@@ -15,6 +16,7 @@ const STAT_ICONS = {
 
 export default function Node8OversightPanel() {
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showConfig, setShowConfig] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch recommendations
@@ -54,10 +56,18 @@ export default function Node8OversightPanel() {
   });
 
   const recs = recsData?.recommendations || [];
+  const config = recsData?.config || {};
   const pendingCount = recs.filter(r => r.status === 'pending').length;
   const approvedCount = recs.filter(r => r.status === 'approved').length;
   const deniedCount = recs.filter(r => r.status === 'denied').length;
+  const autoExecCount = recs.filter(r => r.status === 'auto_executed').length;
   const isActing = approveMutation.isPending || denyMutation.isPending;
+
+  // Override mutation (for auto-executed recs)
+  const overrideMutation = useMutation({
+    mutationFn: ({ id, override_reason }) => base44.functions.invoke('node8Injector', { action: 'override', id, override_reason }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['node8-recs'] }),
+  });
 
   return (
     <div className="space-y-4">
@@ -68,15 +78,27 @@ export default function Node8OversightPanel() {
             <Brain className="w-5 h-5 text-purple-400" />
             Node 8 Oversight — Constitutional Cockpit
           </h2>
-          <Badge className="bg-purple-500/10 text-purple-300 border-purple-500/20 text-[10px]">
-            Phase 2: Recommendations Only
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-cyan-500/10 text-cyan-300 border-cyan-500/20 text-[10px]">
+              <Zap className="w-3 h-3 mr-1" />
+              Phase 3: Graduated Autonomy
+            </Badge>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowConfig(!showConfig)}
+              className="text-slate-400 hover:text-white h-6 w-6 p-0"
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </Button>
+          </div>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-4 gap-3 mb-4">
           <StatBox label="Pending" count={pendingCount} icon={Clock} color="text-yellow-400" bg="bg-yellow-500/10 border-yellow-500/20" />
           <StatBox label="Approved" count={approvedCount} icon={Check} color="text-emerald-400" bg="bg-emerald-500/10 border-emerald-500/20" />
+          <StatBox label="Auto-Executed" count={autoExecCount} icon={Zap} color="text-cyan-400" bg="bg-cyan-500/10 border-cyan-500/20" />
           <StatBox label="Denied" count={deniedCount} icon={X} color="text-red-400" bg="bg-red-500/10 border-red-500/20" />
         </div>
 
@@ -129,6 +151,9 @@ export default function Node8OversightPanel() {
         )}
       </div>
 
+      {/* Phase 3 Config Panel */}
+      {showConfig && <Phase3ConfigPanel config={config} />}
+
       {/* Filter */}
       <div className="flex items-center gap-2">
         <Filter className="w-4 h-4 text-slate-500" />
@@ -167,7 +192,9 @@ export default function Node8OversightPanel() {
               rec={rec}
               onApprove={(id) => approveMutation.mutate(id)}
               onDeny={(id, rationale) => denyMutation.mutate({ id, denial_rationale: rationale })}
-              isActing={isActing}
+              onOverride={(id, reason) => overrideMutation.mutate({ id, override_reason: reason })}
+              isActing={isActing || overrideMutation.isPending}
+              config={config}
             />
           ))}
         </div>

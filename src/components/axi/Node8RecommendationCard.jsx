@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, AlertTriangle, Eye, Zap, Lock, Check, X, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Shield, AlertTriangle, Eye, Zap, Lock, Check, X, Clock, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,15 +27,26 @@ const STATUS_BADGES = {
   auto_executed: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
 };
 
-export default function Node8RecommendationCard({ rec, onApprove, onDeny, isActing }) {
+export default function Node8RecommendationCard({ rec, onApprove, onDeny, onOverride, isActing, config }) {
   const [expanded, setExpanded] = useState(false);
   const [showDenyForm, setShowDenyForm] = useState(false);
+  const [showOverrideForm, setShowOverrideForm] = useState(false);
   const [denialRationale, setDenialRationale] = useState('');
+  const [overrideReason, setOverrideReason] = useState('');
 
   const actionCfg = ACTION_CONFIG[rec.action_type] || ACTION_CONFIG.flag;
   const ActionIcon = actionCfg.icon;
   const isPending = rec.status === 'pending';
+  const isAutoExecuted = rec.status === 'auto_executed';
   const isExpired = rec.expires_at && new Date(rec.expires_at) < new Date() && isPending;
+  const isAutoEligible = config?.auto_execute_enabled && config?.auto_execute_actions?.includes(rec.action_type) && isPending;
+
+  const handleOverride = () => {
+    if (overrideReason.trim().length < 5) return;
+    onOverride(rec.id, overrideReason.trim());
+    setShowOverrideForm(false);
+    setOverrideReason('');
+  };
 
   const handleDeny = () => {
     if (denialRationale.trim().length < 5) return;
@@ -57,6 +68,12 @@ export default function Node8RecommendationCard({ rec, onApprove, onDeny, isActi
               <Badge className={`${STATUS_BADGES[rec.status]} text-[9px] px-1.5`}>
                 {isExpired ? 'expired' : rec.status}
               </Badge>
+              {isAutoEligible && (
+                <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 text-[9px] px-1.5">⚡ AUTO</Badge>
+              )}
+              {rec.auto_executed && (
+                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-[9px] px-1.5">AUTO-EXECUTED</Badge>
+              )}
               {rec.escalated && (
                 <Badge className="bg-red-600/20 text-red-300 border-red-600/30 text-[9px] px-1.5">ESCALATED</Badge>
               )}
@@ -125,9 +142,14 @@ export default function Node8RecommendationCard({ rec, onApprove, onDeny, isActi
         </div>
       )}
 
-      {/* Action Buttons — only for pending */}
+      {/* Action Buttons — pending or auto-executed */}
       {isPending && !isExpired && (
         <div className="mt-3 pt-3 border-t border-white/5">
+          {isAutoEligible && (
+            <p className="text-cyan-400/70 text-[9px] mb-2 flex items-center gap-1">
+              ⚡ Will auto-execute after {config?.override_window_minutes || 5}min if not overridden
+            </p>
+          )}
           {showDenyForm ? (
             <div className="space-y-2">
               <p className="text-[10px] text-red-300">Mandatory rationale (fed to Node 8 as correction data):</p>
@@ -178,6 +200,52 @@ export default function Node8RecommendationCard({ rec, onApprove, onDeny, isActi
                 <X className="w-3.5 h-3.5 mr-1" /> Deny
               </Button>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Override Button — for auto-executed recs */}
+      {isAutoExecuted && (
+        <div className="mt-3 pt-3 border-t border-white/5">
+          {showOverrideForm ? (
+            <div className="space-y-2">
+              <p className="text-[10px] text-orange-300">Override reason (correction data for Node 8):</p>
+              <Textarea
+                value={overrideReason}
+                onChange={(e) => setOverrideReason(e.target.value)}
+                placeholder="Why should this auto-action be reversed? This improves future accuracy..."
+                className="bg-slate-800/50 border-orange-500/30 text-white text-xs min-h-[60px]"
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleOverride}
+                  disabled={overrideReason.trim().length < 5 || isActing}
+                  className="bg-orange-600/20 hover:bg-orange-600/30 text-orange-200 border border-orange-500/30 text-xs"
+                  variant="outline"
+                >
+                  <RotateCcw className="w-3 h-3 mr-1" /> Confirm Override
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => { setShowOverrideForm(false); setOverrideReason(''); }}
+                  className="text-slate-400 text-xs"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => setShowOverrideForm(true)}
+              disabled={isActing}
+              className="bg-orange-600/20 hover:bg-orange-600/30 text-orange-200 border border-orange-500/30 text-xs w-full"
+              variant="outline"
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1" /> Override Auto-Action
+            </Button>
           )}
         </div>
       )}
