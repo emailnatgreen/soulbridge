@@ -5,7 +5,8 @@ import { base44 } from '@/api/base44Client';
  * Fetches live data sources for Mother Oak kinetics.
  * Phase 1: roots   — entropy, DID, MWTP
  * Phase 3: trunk   — Axi approvals, threat level, governance, system age
- *          branches — per-node metrics (entropy contribution, memory, tripwires, CA, etc.)
+ *          branches — per-node metrics
+ * Phase 4: leaves  — skills (instanced), memory layers (rings, blooms, scars, moss)
  */
 export default function useOakData() {
   // Entropy rounds — drives root pulses + Branch 1 (Code)
@@ -54,6 +55,27 @@ export default function useOakData() {
   const { data: govProposals = [] } = useQuery({
     queryKey: ['oak-governance'],
     queryFn: () => base44.entities.GovernanceProposal.list('-created_date', 5),
+    refetchInterval: 30000,
+  });
+
+  // Phase 4: Agent skills — leaves
+  const { data: agentSkills = [] } = useQuery({
+    queryKey: ['oak-skills'],
+    queryFn: () => base44.entities.AgentSkill.list('-created_date', 100),
+    refetchInterval: 30000,
+  });
+
+  // Phase 4: Agents — honour scores for moss + leaf modulation
+  const { data: agents = [] } = useQuery({
+    queryKey: ['oak-agents'],
+    queryFn: () => base44.entities.Agent.list('-honor_score', 20),
+    refetchInterval: 30000,
+  });
+
+  // Phase 4: Lore memories — whispers
+  const { data: loreMems = [] } = useQuery({
+    queryKey: ['oak-lore'],
+    queryFn: () => base44.entities.Memory.filter({ type: 'observation' }, '-created_date', 20),
     refetchInterval: 30000,
   });
 
@@ -124,6 +146,53 @@ export default function useOakData() {
   const autoExecuted = secRecs.filter(r => r.auto_executed).length;
   const caShimmer = Math.min(autoExecuted / 5, 1);
 
+  // ─── Phase 4: Leaf / Memory signals ───
+  // Skills grouped by category → branch mapping
+  const CATEGORY_TO_BRANCH = {
+    technical: 0, governance: 3, wisdom: 7, creative: 2,
+    resource_management: 5, diplomacy: 1, combat: 4, research: 6,
+    leadership: 3, wellbeing: 1,
+  };
+  const skillLeaves = agentSkills.map(sk => ({
+    id: sk.id,
+    name: sk.skill_name,
+    category: sk.skill_category,
+    level: sk.level || 1,
+    proficiency: sk.proficiency_score || 0,
+    isSignature: sk.is_signature_skill || false,
+    branchIndex: CATEGORY_TO_BRANCH[sk.skill_category] ?? Math.floor(Math.random() * 8),
+    agentId: sk.agent_id,
+    growth: sk.skill_growth_trajectory || 'stable',
+  }));
+
+  // Honour per branch (average agent honour for agents with skills on that branch)
+  const agentHonourMap = {};
+  agents.forEach(a => { agentHonourMap[a.id] = a.honor_score || 50; });
+  const branchHonour = Array(8).fill(0);
+  const branchHonourCount = Array(8).fill(0);
+  skillLeaves.forEach(l => {
+    const h = agentHonourMap[l.agentId] || 50;
+    branchHonour[l.branchIndex] += h;
+    branchHonourCount[l.branchIndex]++;
+  });
+  const branchMoss = branchHonour.map((total, i) =>
+    branchHonourCount[i] > 0 ? Math.min((total / branchHonourCount[i]) / 100, 1) : 0
+  );
+
+  // Entropy rings — count of finalised rounds (each represents a "ring")
+  const finalisedRounds = entropyRounds.filter(r => r.phase === 'finalised').length;
+
+  // DID blooms — count of sovereign DIDs (flowers on branch 6 / Response)
+  const didBloomCount = activeDids;
+
+  // Tripwire scars — critical resolved events become wisdom knots
+  const criticalResolved = tripwires.filter(t =>
+    (t.severity === 'critical' || t.severity === 'high') && t.status === 'resolved'
+  ).length;
+  const criticalActive = tripwires.filter(t =>
+    (t.severity === 'critical' || t.severity === 'high') && t.status === 'active'
+  ).length;
+
   return {
     // Phase 2 — Roots
     entropy: {
@@ -161,5 +230,18 @@ export default function useOakData() {
       { name: 'Response',    activity: responseIntensity },
       { name: 'Semantic',    activity: caShimmer },
     ],
+    // Phase 4 — Leaves & Memory
+    leaves: {
+      skills: skillLeaves,
+      totalCount: skillLeaves.length,
+    },
+    memory: {
+      entropyRings: finalisedRounds,
+      didBlooms: didBloomCount,
+      scarsActive: criticalActive,
+      scarsHealed: criticalResolved,
+      branchMoss,
+      loreCount: loreMems.length,
+    },
   };
 }

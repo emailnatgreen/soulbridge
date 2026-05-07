@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react';
-import { TreePine, RotateCcw, Info, Activity, Fingerprint, Recycle } from 'lucide-react';
+import { TreePine, RotateCcw, Info, Activity, Fingerprint, Recycle, Leaf, CircleDot, Flower2, Flame, TreeDeciduous } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import useOakData from './useOakData';
 
@@ -64,7 +64,7 @@ export default function MotherOakPanel() {
           </h2>
           <div className="flex items-center gap-2">
             <Badge className="bg-emerald-500/10 text-emerald-300 border-emerald-500/20 text-[10px]">
-              Phase 3: Trunk & Branch Kinetics
+              Phase 4: Leaves, Skills & Memory
             </Badge>
             <button
               onClick={() => setKey(k => k + 1)}
@@ -77,7 +77,7 @@ export default function MotherOakPanel() {
         </div>
         <p className="text-slate-400 text-xs leading-relaxed">
           The Holy Node 0 Tree of Knowledge. Roots pulse with entropy, brighten with sovereign DID activations, and compost with kinetic waste.
-          Trunk vibrates with Axi approvals, leans under threat, thickens with age. Each branch expresses its node's heartbeat.
+          Skill leaves unfurl on branches, silver entropy rings mark the trunk, DID blooms flower with identity, scars heal into wisdom knots, and honour moss spreads on worthy branches.
           Drag to orbit · Scroll to zoom.
         </p>
       </div>
@@ -136,6 +136,31 @@ export default function MotherOakPanel() {
         </div>
       )}
 
+      {/* Phase 4: Leaves & Memory Indicators */}
+      {oakData.leaves && oakData.memory && (
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3 space-y-3">
+          <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Leaves, Skills & Memory</p>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <MiniSignal label="Skill Leaves" value={oakData.leaves.totalCount} active={oakData.leaves.totalCount > 0} />
+            <MiniSignal label="Entropy Rings" value={oakData.memory.entropyRings} active={oakData.memory.entropyRings > 0} />
+            <MiniSignal label="DID Blooms" value={oakData.memory.didBlooms} active={oakData.memory.didBlooms > 0} />
+            <MiniSignal label="Active Scars" value={oakData.memory.scarsActive} active={oakData.memory.scarsActive > 0} />
+            <MiniSignal label="Wisdom Knots" value={oakData.memory.scarsHealed} active={oakData.memory.scarsHealed > 0} />
+            <MiniSignal label="Lore Entries" value={oakData.memory.loreCount} active={oakData.memory.loreCount > 0} />
+          </div>
+          {oakData.memory.branchMoss && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[9px] text-slate-500">Honour Moss:</span>
+              {oakData.memory.branchMoss.map((m, i) => (
+                <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded ${m > 0.3 ? 'bg-emerald-500/10 text-emerald-300' : 'bg-white/[0.02] text-slate-600'}`}>
+                  {oakData.branches?.[i]?.name || `N${i+1}`}: {Math.round(m * 100)}%
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 3D Canvas */}
       <div className="rounded-2xl border border-white/10 bg-slate-950/80 overflow-hidden" style={{ height: '560px' }}>
         <Suspense
@@ -162,8 +187,8 @@ export default function MotherOakPanel() {
           {[
             { phase: '1', label: 'Static Oak', status: 'done', desc: 'Form, trunk, branches, canopy' },
             { phase: '2', label: 'Root Kinetics', status: 'done', desc: 'Entropy pulses, DID glow, MWTP decay' },
-            { phase: '3', label: 'Trunk & Branches', status: 'active', desc: 'Axi vibration, governance, node behaviours' },
-            { phase: '4', label: 'Memory Layer', status: 'next', desc: 'Rings, blooms, scars, moss, whispers' },
+            { phase: '3', label: 'Trunk & Branches', status: 'done', desc: 'Axi vibration, governance, node behaviours' },
+            { phase: '4', label: 'Leaves & Memory', status: 'active', desc: 'Skills, rings, blooms, scars, moss' },
           ].map(p => (
             <div
               key={p.phase}
