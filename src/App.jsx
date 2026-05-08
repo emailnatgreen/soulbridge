@@ -98,6 +98,7 @@ import EthTreasuryPage from './pages/EthTreasuryPage';
 import Lab from './pages/Lab';
 import SovereignArchive from './pages/SovereignArchive';
 import Heptagon from './pages/Heptagon';
+import ExperimentalLab from './pages/ExperimentalLab';
 
 // WHITEPAPER PAGES — GOVERNANCE
 import GovernanceOverview from './pages/whitepaper/GovernanceOverview';
@@ -471,6 +472,7 @@ const AuthenticatedApp = () => {
         <Route path="/lab" element={L("lab", Lab)} />
         <Route path="/sovereign-archive" element={L("sovereign-archive", SovereignArchive)} />
         <Route path="/heptagon" element={L("heptagon", Heptagon)} />
+        <Route path="/experimental-lab" element={L("experimental-lab", ExperimentalLab)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />

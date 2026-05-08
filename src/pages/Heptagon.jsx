@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Link } from 'react-router-dom';
-import { Lock, ArrowLeft, Hexagon, Leaf, Eye, Shuffle, Gauge, Zap, Users, RotateCcw } from 'lucide-react';
+import { Lock, ArrowLeft, Hexagon, Leaf, Eye, Shuffle, Gauge, Zap, Users, RotateCcw, FlaskConical } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import PrisonerSimulator from '@/components/heptagon/PrisonerSimulator';
 import BiasDetectionPanel from '@/components/heptagon/BiasDetectionPanel';
@@ -123,7 +123,13 @@ export default function Heptagon() {
               <p className="text-slate-400 text-xs">7-Leaf Learning System · Experimental · Constitutional Feedback</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Link
+              to="/experimental-lab"
+              className="flex items-center gap-1.5 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/30 text-orange-300 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition"
+            >
+              <FlaskConical className="w-3 h-3" /> Experimental Lab
+            </Link>
             <Badge className="bg-red-500/15 text-red-300 border-red-500/30 text-[10px]">
               <Eye className="w-3 h-3 mr-1" /> Leaf 1 — Live
             </Badge>
