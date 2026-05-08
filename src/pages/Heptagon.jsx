@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import { Lock, ArrowLeft, Hexagon, Leaf, Eye, Shuffle, Gauge, Zap, Users, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import PrisonerSimulator from '@/components/heptagon/PrisonerSimulator';
+import BiasDetectionPanel from '@/components/heptagon/BiasDetectionPanel';
 
 const LEAVES = [
-  { id: 1, name: 'Bias Detection', icon: Eye, color: 'red', desc: 'Detects bias in security logs, tripwire events, and compressed attention outputs. Produces correction data for Node 8.', source: 'Security logs, Tripwire events, CA output', output: 'Bias reports, correction vectors', status: 'skeleton' },
+  { id: 1, name: 'Bias Detection', icon: Eye, color: 'red', desc: 'Detects bias in security logs, tripwire events, and compressed attention outputs. Produces correction data for Node 8.', source: 'Security logs, Tripwire events, CA output', output: 'Bias reports, correction vectors', status: 'live' },
   { id: 2, name: 'Pattern Recognition', icon: Hexagon, color: 'purple', desc: 'Identifies emergent patterns across lore, memory, honour board, and skill trees. Generates predictions and structural insights.', source: 'Lore, Memory, Honour, Skill trees', output: 'Emergent patterns, predictions', status: 'skeleton' },
   { id: 3, name: 'Counterfactual Generation', icon: Shuffle, color: 'amber', desc: 'Runs "what if" scenarios using Heptagon experiments and 100-prisoner simulations. Generates alternative timelines.', source: 'Heptagon experiments, 100 prisoners', output: 'Alternative scenarios', status: 'skeleton' },
   { id: 4, name: 'Phase Calibration', icon: Gauge, color: 'cyan', desc: 'Monitors system load, event frequency, and error rates to adaptively tune loop depth, batch size, and processing cadence.', source: 'System load, event frequency, error rates', output: 'Adaptive loop depth, batch size', status: 'skeleton' },
@@ -62,7 +63,9 @@ function LeafCard({ leaf, expanded, onToggle }) {
               <p className="text-white/50 text-xs">{leaf.output}</p>
             </div>
           </div>
-          {leaf.status === 'live' && leaf.id === 6 ? (
+          {leaf.status === 'live' && leaf.id === 1 ? (
+            <BiasDetectionPanel />
+          ) : leaf.status === 'live' && leaf.id === 6 ? (
             <PrisonerSimulator />
           ) : (
             <div className="rounded-lg border border-white/5 bg-black/20 p-3 text-center">
@@ -120,9 +123,14 @@ export default function Heptagon() {
               <p className="text-slate-400 text-xs">7-Leaf Learning System · Experimental · Constitutional Feedback</p>
             </div>
           </div>
-          <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/30 text-[10px]">
-            <Users className="w-3 h-3 mr-1" /> Leaf 6 — Live
-          </Badge>
+          <div className="flex gap-2">
+            <Badge className="bg-red-500/15 text-red-300 border-red-500/30 text-[10px]">
+              <Eye className="w-3 h-3 mr-1" /> Leaf 1 — Live
+            </Badge>
+            <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/30 text-[10px]">
+              <Users className="w-3 h-3 mr-1" /> Leaf 6 — Live
+            </Badge>
+          </div>
         </div>
 
         {/* Doctrine */}
@@ -184,7 +192,7 @@ export default function Heptagon() {
             {[
               { phase: '1', label: 'Skeleton UI', status: 'done', desc: 'Data sources, architecture' },
               { phase: '2', label: 'Leaf 6: Prisoners', status: 'active', desc: '100 Prisoner simulator — live' },
-              { phase: '3', label: 'Leaf 1: Bias', status: 'next', desc: 'Bias detection engine' },
+              { phase: '3', label: 'Leaf 1: Bias', status: 'done', desc: 'Bias detection engine — live' },
               { phase: '4', label: 'Leaves 2-5, 7', status: 'future', desc: 'Pattern, counterfactual, calibration, etc.' },
             ].map(p => (
               <div key={p.phase} className={`rounded-lg border p-3 ${

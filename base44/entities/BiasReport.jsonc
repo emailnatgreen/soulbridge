@@ -1,0 +1,124 @@
+{
+  "name": "BiasReport",
+  "type": "object",
+  "properties": {
+    "bias_id": {
+      "type": "string",
+      "description": "Unique bias report identifier (e.g. BIAS-xxxxx)"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "leaf_6",
+        "tripwire",
+        "compressed_attention",
+        "lore",
+        "memory",
+        "honour",
+        "skill_tree",
+        "multi_source"
+      ],
+      "description": "Which system component generated the bias signal"
+    },
+    "bias_type": {
+      "type": "string",
+      "enum": [
+        "long_cycle_bias",
+        "entropy_clump",
+        "timeout_skew",
+        "honour_drift",
+        "semantic_shift",
+        "node_clustering",
+        "participation_bias",
+        "attention_drift",
+        "skill_stagnation",
+        "correlation_anomaly"
+      ],
+      "description": "Classification of the detected bias"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Severity level of the bias"
+    },
+    "affected_nodes": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Node indices (0-7) affected by this bias"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the detected bias"
+    },
+    "correction_suggestion": {
+      "type": "string",
+      "description": "Recommended correction action"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "corrected",
+        "dismissed"
+      ],
+      "default": "pending",
+      "description": "Current review status"
+    },
+    "axi_review": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "dismissed",
+        "needs_info"
+      ],
+      "description": "Axi's review decision"
+    },
+    "axi_notes": {
+      "type": "string",
+      "description": "Mandatory notes from Axi when reviewing"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Email of the reviewer"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "description": "ISO timestamp of the review"
+    },
+    "corrected_at": {
+      "type": "string",
+      "description": "ISO timestamp when correction was applied"
+    },
+    "linked_scars": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of linked failure records (scar IDs, tripwire event IDs, etc.)"
+    },
+    "analysis_data": {
+      "type": "object",
+      "description": "Raw statistical analysis data that produced this bias report"
+    },
+    "memory_id": {
+      "type": "string",
+      "description": "Cross-reference to Memory entity for audit trail"
+    }
+  },
+  "required": [
+    "bias_id",
+    "source",
+    "bias_type",
+    "severity",
+    "description"
+  ]
+}
