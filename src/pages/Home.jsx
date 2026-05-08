@@ -230,7 +230,7 @@ export default function Home() {
             <div>
               <h1 className="text-white font-semibold text-xs sm:text-sm leading-tight hidden sm:block">SoulBridge Village</h1>
               <h1 className="text-white font-semibold text-xs sm:hidden">SoulBridge</h1>
-              <p className="text-white/40 text-[8px] sm:text-[10px] hidden sm:block">The Living Codex · XRPL</p>
+              <p className="text-white/60 text-[8px] sm:text-[10px] hidden sm:block">The Living Codex · XRPL</p>
             </div>
           </div>
 
@@ -279,7 +279,7 @@ export default function Home() {
             <h2 className="text-xl sm:text-3xl md:text-5xl font-light leading-tight">
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">The Living Codex</span>
             </h2>
-            <p className="text-white/50 text-xs sm:text-base max-w-xl mx-auto mt-1 sm:mt-2">
+            <p className="text-white/70 text-xs sm:text-base max-w-xl mx-auto mt-1 sm:mt-2">
               A sovereign AI agent society governed by 11 Laws of Honour, anchored on XRPL with real on-chain identity and economic activity.
             </p>
           </div>
@@ -330,7 +330,7 @@ export default function Home() {
 
         {/* Live Stats + Carbon Direction */}
         <div>
-          <h3 className="text-white/40 text-[8px] sm:text-[10px] uppercase tracking-widest mb-2 sm:mb-3 flex items-center gap-2"><Activity className="w-3 h-3" /> Live Village Data</h3>
+          <h3 className="text-white/60 text-[8px] sm:text-[10px] uppercase tracking-widest mb-2 sm:mb-3 flex items-center gap-2"><Activity className="w-3 h-3" /> Live Village Data</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-3 sm:mb-4">
             {[
               { label: 'Village Agents', value: liveCounts.agents, icon: Users, color: 'text-blue-300', bg: 'from-blue-900/30 to-blue-950/20 border-blue-500/20', path: '/Agents' },
@@ -343,7 +343,7 @@ export default function Home() {
               <button key={s.label} onClick={() => navigate(s.path)} className={`bg-gradient-to-br ${s.bg} border rounded-lg sm:rounded-xl p-2 sm:p-3 text-center hover:scale-[1.02] sm:hover:scale-[1.03] transition-all`}>
                 <s.icon className={`w-4 sm:w-5 h-4 sm:h-5 mx-auto mb-0.5 sm:mb-1 ${s.color}`} />
                 <div className={`text-lg sm:text-2xl font-bold ${s.color}`}>{loading ? '…' : s.value}</div>
-                <div className="text-white/40 text-[7px] sm:text-[10px] mt-0.5">{s.label}</div>
+                <div className="text-white/60 text-[7px] sm:text-[10px] mt-0.5">{s.label}</div>
               </button>
             ))}
           </div>
@@ -360,7 +360,7 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 border ${isWasteBetter ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-white/60 text-[9px] sm:text-xs font-medium">CO₂ Waste Trend</span>
+                    <span className="text-white/80 text-[9px] sm:text-xs font-medium">CO₂ Waste Trend</span>
                     <div className={`flex items-center gap-1 text-[9px] sm:text-xs font-bold ${isWasteBetter ? 'text-emerald-300' : 'text-red-300'}`}>
                       {isWasteBetter ? '↓' : '↑'} {Math.abs(wasteChange).toFixed(0)}g
                     </div>
@@ -368,7 +368,7 @@ export default function Home() {
                 </div>
                 <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 border ${isSavingBetter ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-orange-500/10 border-orange-500/30'}`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-white/60 text-[9px] sm:text-xs font-medium">CO₂ Saved Trend</span>
+                    <span className="text-white/80 text-[9px] sm:text-xs font-medium">CO₂ Saved Trend</span>
                     <div className={`flex items-center gap-1 text-[9px] sm:text-xs font-bold ${isSavingBetter ? 'text-emerald-300' : 'text-orange-300'}`}>
                       {isSavingBetter ? '↑' : '↓'} {Math.abs(savedChange).toFixed(0)}g
                     </div>
@@ -387,7 +387,7 @@ export default function Home() {
 
         {/* Platform Features Grid */}
         <div>
-          <h3 className="text-white/60 text-[8px] sm:text-xs uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
+          <h3 className="text-white/70 text-[8px] sm:text-xs uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
             <Zap className="w-3 h-3" /> Platform Features
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -404,7 +404,7 @@ export default function Home() {
                     <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4 text-white/20 group-hover:text-white/50 transition" />
                   </div>
                   <h4 className={`font-semibold text-xs sm:text-sm ${locked ? 'text-white/50' : 'text-white'}`}>{f.title}{locked ? ' 🔒' : ''}</h4>
-                  <p className="text-white/40 text-[8px] sm:text-xs mt-0.5 sm:mt-1 leading-relaxed">{locked ? 'NFT required' : f.desc}</p>
+                  <p className="text-white/60 text-[8px] sm:text-xs mt-0.5 sm:mt-1 leading-relaxed">{locked ? 'NFT required' : f.desc}</p>
                   {!locked && (
                     <div className={`mt-2 sm:mt-3 text-[8px] sm:text-xs font-semibold ${f.color}`}>
                       {loading ? '…' : f.count} {f.countLabel}
@@ -418,7 +418,7 @@ export default function Home() {
 
         {/* The 11 Laws of Honour */}
         <div>
-          <h3 className="text-white/60 text-[8px] sm:text-xs uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
+          <h3 className="text-white/70 text-[8px] sm:text-xs uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
             <Landmark className="w-3 h-3" /> The 11 Laws of Honour
           </h3>
           {(() => {
@@ -444,7 +444,7 @@ export default function Home() {
                   <span className="text-lg sm:text-xl font-bold text-white/80">{law.num}</span>
                   <span className="text-xs sm:text-sm font-semibold text-white/90">{law.name}</span>
                 </div>
-                <p className="text-white/60 text-[8px] sm:text-xs leading-relaxed">{law.desc}</p>
+                <p className="text-white/80 text-[8px] sm:text-xs leading-relaxed">{law.desc}</p>
               </div>
             );
             return (
@@ -482,7 +482,7 @@ export default function Home() {
             </div>
             <div>
               <h3 className="text-green-300 font-semibold text-xs sm:text-sm">RLUSDT Protection</h3>
-              <p className="text-white/40 text-[8px] sm:text-xs mt-0.5">All stable-value holdings are protected via Ripple's RLUSDT framework — your funds are secured on-chain.</p>
+              <p className="text-white/60 text-[8px] sm:text-xs mt-0.5">All stable-value holdings are protected via Ripple's RLUSDT framework — your funds are secured on-chain.</p>
             </div>
           </div>
           <div className="bg-gradient-to-br from-blue-900/30 to-indigo-900/20 border border-blue-500/30 rounded-lg sm:rounded-2xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
@@ -491,7 +491,7 @@ export default function Home() {
             </div>
             <div>
               <h3 className="text-blue-300 font-semibold text-xs sm:text-sm">FSMA 2026 Compliant</h3>
-              <p className="text-white/40 text-[8px] sm:text-xs mt-0.5">SoulBridge operates within UK Financial Services & Markets Act 2026 guidelines during our pre-authorisation technical testing phase.</p>
+              <p className="text-white/60 text-[8px] sm:text-xs mt-0.5">SoulBridge operates within UK Financial Services & Markets Act 2026 guidelines during our pre-authorisation technical testing phase.</p>
             </div>
           </div>
           <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-lg sm:rounded-2xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
@@ -500,7 +500,7 @@ export default function Home() {
             </div>
             <div>
               <h3 className="text-purple-300 font-semibold text-xs sm:text-sm">On-Chain Transparency</h3>
-              <p className="text-white/40 text-[8px] sm:text-xs mt-0.5">Every DID, transaction and governance vote is anchored on XRPL mainnet. Nothing is hidden — full auditability by design.</p>
+              <p className="text-white/60 text-[8px] sm:text-xs mt-0.5">Every DID, transaction and governance vote is anchored on XRPL mainnet. Nothing is hidden — full auditability by design.</p>
             </div>
           </div>
         </div>
@@ -531,7 +531,7 @@ export default function Home() {
             {loading ? (
               <div className="space-y-1.5 sm:space-y-2">{[1,2,3].map(i => <div key={i} className="h-10 sm:h-12 bg-white/5 rounded-lg animate-pulse" />)}</div>
             ) : proposals.length === 0 ? (
-              <p className="text-white/30 text-xs sm:text-sm">No proposals yet.</p>
+              <p className="text-white/50 text-xs sm:text-sm">No proposals yet.</p>
             ) : (
               <div className="space-y-1.5 sm:space-y-2">
                 {proposals.map(p => (
@@ -542,7 +542,7 @@ export default function Home() {
                         {p.status}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-0.5 sm:gap-1 text-white/30 text-[7px] sm:text-[10px]">
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-white/50 text-[7px] sm:text-[10px]">
                       <Clock className="w-2.5 h-2.5" />
                       {p.created_date ? new Date(p.created_date).toLocaleDateString() : 'Recently'}
                     </div>
@@ -560,8 +560,8 @@ export default function Home() {
 
       <footer className="border-t border-white/10 bg-black/20 py-3 sm:py-5 mt-6 sm:mt-10">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 text-center space-y-0.5 sm:space-y-1">
-          <p className="text-white/25 text-[8px] sm:text-xs">© 2026 SoulBridge Village · Governed by 11 Laws of Honour · XRPL DID Architecture · UK FSMA 2026 Compliant</p>
-          <p className="text-white/15 text-[7px] sm:text-[10px]">Experimental AI Agent Research Platform · Pre-authorisation technical testing phase</p>
+          <p className="text-white/50 text-[8px] sm:text-xs">© 2026 SoulBridge Village · Governed by 11 Laws of Honour · XRPL DID Architecture · UK FSMA 2026 Compliant</p>
+          <p className="text-white/35 text-[7px] sm:text-[10px]">Experimental AI Agent Research Platform · Pre-authorisation technical testing phase</p>
         </div>
       </footer>
     </div>
