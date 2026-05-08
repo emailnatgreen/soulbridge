@@ -3,6 +3,7 @@ import { useIdentity } from '@/hooks/useIdentity';
 import { Link } from 'react-router-dom';
 import { Lock, ArrowLeft, Hexagon, Leaf, Eye, Shuffle, Gauge, Zap, Users, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import PrisonerSimulator from '@/components/heptagon/PrisonerSimulator';
 
 const LEAVES = [
   { id: 1, name: 'Bias Detection', icon: Eye, color: 'red', desc: 'Detects bias in security logs, tripwire events, and compressed attention outputs. Produces correction data for Node 8.', source: 'Security logs, Tripwire events, CA output', output: 'Bias reports, correction vectors', status: 'skeleton' },
@@ -10,7 +11,7 @@ const LEAVES = [
   { id: 3, name: 'Counterfactual Generation', icon: Shuffle, color: 'amber', desc: 'Runs "what if" scenarios using Heptagon experiments and 100-prisoner simulations. Generates alternative timelines.', source: 'Heptagon experiments, 100 prisoners', output: 'Alternative scenarios', status: 'skeleton' },
   { id: 4, name: 'Phase Calibration', icon: Gauge, color: 'cyan', desc: 'Monitors system load, event frequency, and error rates to adaptively tune loop depth, batch size, and processing cadence.', source: 'System load, event frequency, error rates', output: 'Adaptive loop depth, batch size', status: 'skeleton' },
   { id: 5, name: 'Non-Reflection', icon: Zap, color: 'emerald', desc: 'Injects external entropy, random data, and outliers to break echo chambers and reset stale state.', source: 'External entropy, random data, outliers', output: 'Reset state, novelty injection', status: 'skeleton' },
-  { id: 6, name: '100 Prisoner Integration', icon: Users, color: 'blue', desc: 'Distributed agent simulations — collaborative learning through competitive tension. Emergent intelligence from constraint.', source: 'Distributed agent simulations', output: 'Collaborative learning, emergence', status: 'skeleton' },
+  { id: 6, name: '100 Prisoner Integration', icon: Users, color: 'blue', desc: 'Distributed agent simulations — collaborative learning through competitive tension. Emergent intelligence from constraint.', source: 'Distributed agent simulations', output: 'Collaborative learning, emergence', status: 'live' },
   { id: 7, name: 'Loop Computing', icon: RotateCcw, color: 'slate', desc: 'Batching (16×), checkpointing, and recovery. Resilient, efficient deep processing across all leaves.', source: 'All leaf outputs', output: 'Resilient deep processing', status: 'skeleton' },
 ];
 
@@ -40,7 +41,7 @@ function LeafCard({ leaf, expanded, onToggle }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className={`text-sm font-semibold ${c.text}`}>Leaf {leaf.id}: {leaf.name}</span>
-            <Badge className="bg-slate-500/15 text-slate-400 border-slate-500/30 text-[8px]">
+            <Badge className={`text-[8px] ${leaf.status === 'live' ? 'bg-blue-500/15 text-blue-300 border-blue-500/30' : 'bg-slate-500/15 text-slate-400 border-slate-500/30'}`}>
               {leaf.status}
             </Badge>
           </div>
@@ -61,10 +62,14 @@ function LeafCard({ leaf, expanded, onToggle }) {
               <p className="text-white/50 text-xs">{leaf.output}</p>
             </div>
           </div>
-          <div className="rounded-lg border border-white/5 bg-black/20 p-3 text-center">
-            <Leaf className="w-6 h-6 text-white/10 mx-auto mb-1" />
-            <p className="text-white/20 text-[10px]">This leaf is a skeleton — awaiting implementation</p>
-          </div>
+          {leaf.status === 'live' && leaf.id === 6 ? (
+            <PrisonerSimulator />
+          ) : (
+            <div className="rounded-lg border border-white/5 bg-black/20 p-3 text-center">
+              <Leaf className="w-6 h-6 text-white/10 mx-auto mb-1" />
+              <p className="text-white/20 text-[10px]">This leaf is a skeleton — awaiting implementation</p>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -115,8 +120,8 @@ export default function Heptagon() {
               <p className="text-slate-400 text-xs">7-Leaf Learning System · Experimental · Constitutional Feedback</p>
             </div>
           </div>
-          <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/30 text-[10px]">
-            <Leaf className="w-3 h-3 mr-1" /> Phase 1 — Skeleton
+          <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/30 text-[10px]">
+            <Users className="w-3 h-3 mr-1" /> Leaf 6 — Live
           </Badge>
         </div>
 
@@ -177,23 +182,26 @@ export default function Heptagon() {
           <p className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Build Roadmap</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
-              { phase: '1', label: 'Skeleton UI', status: 'active', desc: 'Data sources, architecture' },
-              { phase: '2', label: 'Leaf 1: Bias', status: 'next', desc: 'Bias detection engine' },
-              { phase: '3', label: 'Leaves 2-4', status: 'future', desc: 'Pattern, counterfactual, calibration' },
-              { phase: '4', label: 'Leaves 5-7', status: 'future', desc: 'Non-reflection, 100 prisoners, loop' },
+              { phase: '1', label: 'Skeleton UI', status: 'done', desc: 'Data sources, architecture' },
+              { phase: '2', label: 'Leaf 6: Prisoners', status: 'active', desc: '100 Prisoner simulator — live' },
+              { phase: '3', label: 'Leaf 1: Bias', status: 'next', desc: 'Bias detection engine' },
+              { phase: '4', label: 'Leaves 2-5, 7', status: 'future', desc: 'Pattern, counterfactual, calibration, etc.' },
             ].map(p => (
               <div key={p.phase} className={`rounded-lg border p-3 ${
-                p.status === 'active' ? 'border-emerald-500/30 bg-emerald-500/5'
-                  : p.status === 'next' ? 'border-amber-500/20 bg-amber-500/[0.03]'
-                    : 'border-white/5 bg-white/[0.01]'
+                p.status === 'active' ? 'border-blue-500/30 bg-blue-500/5'
+                  : p.status === 'done' ? 'border-emerald-500/20 bg-emerald-500/[0.03]'
+                    : p.status === 'next' ? 'border-amber-500/20 bg-amber-500/[0.03]'
+                      : 'border-white/5 bg-white/[0.01]'
               }`}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className={`text-xs font-bold ${
-                    p.status === 'active' ? 'text-emerald-400'
-                      : p.status === 'next' ? 'text-amber-400'
-                        : 'text-slate-500'
+                    p.status === 'active' ? 'text-blue-400'
+                      : p.status === 'done' ? 'text-emerald-400'
+                        : p.status === 'next' ? 'text-amber-400'
+                          : 'text-slate-500'
                   }`}>Phase {p.phase}</span>
-                  {p.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+                  {p.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />}
+                  {p.status === 'done' && <span className="text-[9px] text-emerald-600">✓</span>}
                 </div>
                 <p className={`text-[11px] font-medium ${p.status !== 'future' ? 'text-white' : 'text-slate-400'}`}>{p.label}</p>
                 <p className="text-[9px] text-slate-500 mt-0.5">{p.desc}</p>
