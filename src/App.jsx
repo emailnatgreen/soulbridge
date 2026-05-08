@@ -95,6 +95,8 @@ import RLUSDTrustlineGate from './pages/RLUSDTrustlineGate';
 import StorefrontHub from './pages/StorefrontHub';
 import EthTreasuryPage from './pages/EthTreasuryPage';
 import Lab from './pages/Lab';
+import SovereignArchive from './pages/SovereignArchive';
+import Heptagon from './pages/Heptagon';
 
 // WHITEPAPER PAGES — GOVERNANCE
 import GovernanceOverview from './pages/whitepaper/GovernanceOverview';
@@ -465,6 +467,8 @@ const AuthenticatedApp = () => {
 
         {/* LAB — 8-Node Security System */}
         <Route path="/lab" element={L("lab", Lab)} />
+        <Route path="/sovereign-archive" element={L("sovereign-archive", SovereignArchive)} />
+        <Route path="/heptagon" element={L("heptagon", Heptagon)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />

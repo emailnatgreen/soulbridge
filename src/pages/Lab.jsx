@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Shield, FlaskConical, Lock, TreePine } from 'lucide-react';
+import { Shield, FlaskConical, Lock, TreePine, Database, Leaf, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useIdentity } from '@/hooks/useIdentity';
 import NodeStatusGrid from '@/components/lab/NodeStatusGrid';
@@ -64,6 +65,12 @@ function LabContent() {
             <TabsTrigger value="mother-oak" className="data-[state=active]:bg-emerald-600/20 data-[state=active]:text-emerald-300 text-slate-400 text-xs">
               <TreePine className="w-3.5 h-3.5 mr-1.5" /> Mother Oak
             </TabsTrigger>
+            <TabsTrigger value="archive" className="data-[state=active]:bg-red-600/20 data-[state=active]:text-red-300 text-slate-400 text-xs">
+              <Database className="w-3.5 h-3.5 mr-1.5" /> Sovereign Vault
+            </TabsTrigger>
+            <TabsTrigger value="heptagon" className="data-[state=active]:bg-emerald-600/20 data-[state=active]:text-emerald-300 text-slate-400 text-xs">
+              <Leaf className="w-3.5 h-3.5 mr-1.5" /> Heptagon
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="security" className="space-y-6 mt-4">
@@ -85,6 +92,42 @@ function LabContent() {
 
           <TabsContent value="mother-oak" className="mt-4">
             <MotherOakPanel />
+          </TabsContent>
+
+          <TabsContent value="archive" className="mt-4">
+            <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 text-center space-y-4">
+              <Database className="w-12 h-12 text-red-400/60 mx-auto" />
+              <div>
+                <h3 className="text-white text-lg font-semibold mb-1">The Sovereign Archive</h3>
+                <p className="text-white/50 text-sm mb-1">Constitutional Vault — Immutable, Read-Only, Audited</p>
+                <p className="text-white/30 text-xs">Gold Master copy of the 8-node security system. No automated actions. Every access logged.</p>
+              </div>
+              <Link
+                to="/sovereign-archive"
+                className="inline-flex items-center gap-2 bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 hover:border-red-400/50 text-red-300 text-sm font-medium rounded-xl px-5 py-2.5 transition-all"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Enter the Vault
+              </Link>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="heptagon" className="mt-4">
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center space-y-4">
+              <Leaf className="w-12 h-12 text-emerald-400/60 mx-auto" />
+              <div>
+                <h3 className="text-white text-lg font-semibold mb-1">The Heptagon</h3>
+                <p className="text-white/50 text-sm mb-1">7-Leaf Learning System — Experimental Deep Meaning</p>
+                <p className="text-white/30 text-xs">A research engine that will teach the Mother Oak. Built one leaf at a time.</p>
+              </div>
+              <Link
+                to="/heptagon"
+                className="inline-flex items-center gap-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400/50 text-emerald-300 text-sm font-medium rounded-xl px-5 py-2.5 transition-all"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Enter the Heptagon
+              </Link>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
