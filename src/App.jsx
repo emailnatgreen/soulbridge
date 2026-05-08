@@ -82,6 +82,7 @@ import MentorshipHub from './pages/MentorshipHub';
 import ImageStorage from './pages/ImageStorage';
 import RippleGrantDashboard from './pages/RippleGrantDashboard';
 import UserDashboardPreview from './pages/UserDashboardPreview';
+import MySoulBridge from './pages/MySoulBridge';
 import InviteLinkManager from './pages/InviteLinkManager';
 import InvestorEmailTemplate from './pages/InvestorEmailTemplate';
 import WidgetMarketplace from './pages/WidgetMarketplace';
@@ -431,6 +432,7 @@ const AuthenticatedApp = () => {
         <Route path="/image-storage" element={L("image-storage", ImageStorage)} />
         <Route path="/grants" element={L("grants", RippleGrantDashboard)} />
         <Route path="/admin/user-dashboard-preview" element={L("user-dashboard-preview", UserDashboardPreview)} />
+        <Route path="/my-soulbridge" element={L("my-soulbridge", MySoulBridge)} />
         <Route path="/RippleGrantDashboard" element={L("grants", RippleGrantDashboard)} />
 
         {/* LEGACY/BACKWARD COMPAT */}
