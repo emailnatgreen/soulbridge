@@ -2,9 +2,10 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2 } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
+import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -57,6 +58,10 @@ export default function SovereignGuard() {
               <Shield className="w-3.5 h-3.5 mr-1.5" />
               Hydrogeo Gate
             </TabsTrigger>
+            <TabsTrigger value="soul" className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 text-white/40 text-xs">
+              <Fingerprint className="w-3.5 h-3.5 mr-1.5" />
+              Soul Signature
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -65,6 +70,10 @@ export default function SovereignGuard() {
 
           <TabsContent value="hydrogeo" className="mt-4">
             <HydrogeoContextMonitor />
+          </TabsContent>
+
+          <TabsContent value="soul" className="mt-4">
+            <SoulSignatureMonitor />
           </TabsContent>
         </Tabs>
 
