@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
  * Automated Skill Gap Analysis — runs on schedule (daily) or on-demand.
@@ -14,6 +14,26 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  * All alerts are persisted as AgentNotification records and, for severity=high/critical,
  * also as WellbeingAlert records.
  */
+
+const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
+// Retry wrapper for rate-limited operations
+async function withRetry(fn, maxRetries = 3) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err?.status === 429 && attempt < maxRetries) {
+        const waitMs = 2000 * (attempt + 1);
+        console.warn(`Rate limited, retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await delay(waitMs);
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -35,21 +55,18 @@ Deno.serve(async (req) => {
 
     const db = base44.asServiceRole;
 
-    // ── Bulk data load (batched to avoid rate limits) ─────────────────────────
-    const [rawAgents, rawSkills, rawPlans] = await Promise.all([
-      db.entities.Agent.filter({ status: 'active' }),
-      db.entities.AgentSkill.list(),
-      db.entities.SkillDevelopmentPlan.filter({ status: 'active' }),
-    ]);
-    const [rawRelationships, rawSessions, rawProjects] = await Promise.all([
-      db.entities.MentorshipRelationship.filter({ status: 'active' }),
-      db.entities.MentorshipSession.filter({ status: 'completed' }),
-      db.entities.AIProject.list(),
-    ]);
-    const [rawWellbeingAlerts, rawNotifications] = await Promise.all([
-      db.entities.WellbeingAlert.filter({ status: 'active' }),
-      db.entities.AgentNotification.list('-created_date', 200),
-    ]);
+    // ── Sequential data load to avoid rate limits ────────────────────────────
+    const rawAgents = await withRetry(() => db.entities.Agent.filter({ status: 'active' }));
+    const rawSkills = await withRetry(() => db.entities.AgentSkill.list());
+    await delay(500);
+    const rawPlans = await withRetry(() => db.entities.SkillDevelopmentPlan.filter({ status: 'active' }));
+    const rawRelationships = await withRetry(() => db.entities.MentorshipRelationship.filter({ status: 'active' }));
+    await delay(500);
+    const rawSessions = await withRetry(() => db.entities.MentorshipSession.filter({ status: 'completed' }));
+    const rawProjects = await withRetry(() => db.entities.AIProject.list());
+    await delay(500);
+    const rawWellbeingAlerts = await withRetry(() => db.entities.WellbeingAlert.filter({ status: 'active' }));
+    const rawNotifications = await withRetry(() => db.entities.AgentNotification.list('-created_date', 200));
 
     const allAgents = Array.isArray(rawAgents) ? rawAgents : [];
     const allSkills = Array.isArray(rawSkills) ? rawSkills : [];
@@ -78,7 +95,7 @@ Deno.serve(async (req) => {
     const createAlert = async (agentId, type, title, message, severity = 'medium', meta = {}) => {
       if (recentAlertExists(agentId, type)) return;
 
-      await db.entities.AgentNotification.create({
+      await withRetry(() => db.entities.AgentNotification.create({
         recipient_agent_id: agentId,
         notification_type: type,
         title,
@@ -86,8 +103,11 @@ Deno.serve(async (req) => {
         priority: severity === 'critical' ? 'urgent' : severity === 'high' ? 'high' : 'normal',
         is_read: false,
         metadata: { ...meta, generated_by: 'automatedSkillGapAnalysis', generated_at: now.toISOString() }
-      });
+      }));
       summary.notifications_sent++;
+
+      // Throttle between writes
+      await delay(300);
 
       // Escalate to WellbeingAlert for high/critical
       if (['high', 'critical'].includes(severity)) {
@@ -95,7 +115,7 @@ Deno.serve(async (req) => {
           a => a.agent_id === agentId && a.alert_type === type && a.status === 'active'
         );
         if (!existingWA) {
-          await db.entities.WellbeingAlert.create({
+          await withRetry(() => db.entities.WellbeingAlert.create({
             agent_id: agentId,
             alert_type: type,
             severity,
@@ -104,7 +124,8 @@ Deno.serve(async (req) => {
             description: message,
             recommended_action: meta.recommended_action || 'Review growth plan and take immediate action.',
             metadata: { ...meta, generated_at: now.toISOString() }
-          });
+          }));
+          await delay(300);
         }
       }
     };
@@ -170,13 +191,13 @@ Deno.serve(async (req) => {
 
         // Auto-update the relationship focus_areas
         const refreshedFocus = [...new Set([...stagnantSkills])];
-        await db.entities.MentorshipRelationship.update(rel.id, {
+        await withRetry(() => db.entities.MentorshipRelationship.update(rel.id, {
           skill_proficiency_gains: (rel.skill_proficiency_gains || []).map(g => ({
             ...g,
             current_proficiency: menteeSkills.find(s => s.skill_name?.toLowerCase() === g.skill_name?.toLowerCase())?.proficiency_score ?? g.current_proficiency
           })),
           focus_areas: refreshedFocus
-        });
+        }));
       }
     }
 
