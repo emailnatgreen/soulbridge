@@ -1,0 +1,145 @@
+{
+  "name": "EvolutionaryMemory",
+  "type": "object",
+  "properties": {
+    "lesson_id": {
+      "type": "string",
+      "description": "Unique lesson identifier (e.g. LESSON-xxxxx)"
+    },
+    "tripwire_event_id": {
+      "type": "string",
+      "description": "Link to the TripwireEvent that triggered this lesson"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent that learned from this event"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Human-readable agent name at time of lesson"
+    },
+    "source_gate": {
+      "type": "string",
+      "enum": [
+        "hydrogeo",
+        "soul_signature",
+        "ap2_payment",
+        "chrome_skill",
+        "compressed_attention",
+        "node_sync",
+        "manual"
+      ],
+      "description": "Which security gate generated the tripwire"
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": [
+        "injection_attempt",
+        "permission_violation",
+        "honour_breach",
+        "sincerity_failure",
+        "purpose_misalignment",
+        "scope_overreach",
+        "rate_abuse",
+        "protocol_violation"
+      ],
+      "description": "Classification of what went wrong"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Severity of the original tripwire"
+    },
+    "lesson_summary": {
+      "type": "string",
+      "description": "Human-readable summary: what failed, why, how to prevent"
+    },
+    "attack_pattern": {
+      "type": "string",
+      "description": "Extracted attack pattern signature for future matching"
+    },
+    "mutation_applied": {
+      "type": "object",
+      "properties": {
+        "honour_delta": {
+          "type": "number",
+          "description": "Change to agent honour score"
+        },
+        "permissions_narrowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Permissions reduced or revoked"
+        },
+        "vigilance_patterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "New patterns agent should watch for"
+        },
+        "cooldown_applied_hours": {
+          "type": "number",
+          "description": "Hours of restricted activity applied"
+        }
+      },
+      "description": "What changed on the agent as a result of this lesson"
+    },
+    "effectiveness_score": {
+      "type": "number",
+      "default": 0,
+      "description": "0-100: did this mutation prevent future similar failures?"
+    },
+    "times_pattern_seen": {
+      "type": "number",
+      "default": 1,
+      "description": "How many times this pattern has been seen across all agents"
+    },
+    "is_consensus": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether all 8 nodes validated this lesson"
+    },
+    "consensus_nodes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Node names that validated this lesson"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "applied",
+        "consensus",
+        "rejected",
+        "expired"
+      ],
+      "default": "pending",
+      "description": "Lifecycle status of this evolutionary memory"
+    },
+    "memory_id": {
+      "type": "string",
+      "description": "Cross-reference to Memory entity for audit trail"
+    },
+    "tripwire_details": {
+      "type": "object",
+      "description": "Snapshot of the original tripwire event details"
+    }
+  },
+  "required": [
+    "lesson_id",
+    "tripwire_event_id",
+    "failure_type",
+    "severity",
+    "lesson_summary"
+  ]
+}

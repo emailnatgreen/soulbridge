@@ -39,9 +39,17 @@ const PHASES = [
     id: 5,
     name: 'Agent Payments (AP2 / A2A)',
     description: 'RLUSD agent-to-agent payments with sincerity verification',
-    status: 'active',
+    status: 'complete',
     dependencies: [2, 4],
     components: ['ap2PaymentGate', 'AP2PaymentMonitor'],
+  },
+  {
+    id: 6,
+    name: 'Reality Skills Monkey',
+    description: 'Evolutionary feedback loop — tripwire → lesson → mutation → consensus → immune memory',
+    status: 'active',
+    dependencies: [1, 2, 3, 5],
+    components: ['tripwireLessonEngine', 'agentMutationEngine', 'lessonSyncProtocol', 'RealitySkillsMonitor'],
   },
 ];
 
