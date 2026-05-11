@@ -31,7 +31,7 @@ const PHASES = [
     id: 4,
     name: 'Chrome Skill Security Alignment',
     description: 'May 2026 security patches + AP2 protocol compliance',
-    status: 'active',
+    status: 'complete',
     dependencies: [3],
     components: ['chromeSkillSecurityGate', 'ChromeSkillSecurityMonitor'],
   },
@@ -39,9 +39,9 @@ const PHASES = [
     id: 5,
     name: 'Agent Payments (AP2 / A2A)',
     description: 'RLUSD agent-to-agent payments with sincerity verification',
-    status: 'awaiting',
+    status: 'active',
     dependencies: [2, 4],
-    components: ['ap2PaymentEngine', 'sincerityPaymentGate'],
+    components: ['ap2PaymentGate', 'AP2PaymentMonitor'],
   },
 ];
 

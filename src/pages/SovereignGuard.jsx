@@ -2,12 +2,13 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
 import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
 import NodeContextSyncMonitor from '@/components/sovereign-guard/NodeContextSyncMonitor';
 import ChromeSkillSecurityMonitor from '@/components/sovereign-guard/ChromeSkillSecurityMonitor';
+import AP2PaymentMonitor from '@/components/sovereign-guard/AP2PaymentMonitor';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -72,6 +73,10 @@ export default function SovereignGuard() {
               <Chrome className="w-3.5 h-3.5 mr-1.5" />
               Chrome Skills
             </TabsTrigger>
+            <TabsTrigger value="ap2" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 text-white/40 text-xs">
+              <Banknote className="w-3.5 h-3.5 mr-1.5" />
+              AP2 Payments
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -93,14 +98,19 @@ export default function SovereignGuard() {
           <TabsContent value="chrome" className="mt-4">
             <ChromeSkillSecurityMonitor />
           </TabsContent>
+
+          <TabsContent value="ap2" className="mt-4">
+            <AP2PaymentMonitor />
+          </TabsContent>
         </Tabs>
 
         {/* Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
             <span className="text-cyan-400/40 font-semibold">Sovereign Guard Doctrine:</span> Phase 1 gates sincerity (Hydrogeo). Phase 2 verifies soul alignment. 
-            Phase 3 syncs all 8 nodes into a unified context frame — so every system component operates from a single, verified, timestamped truth. 
-            No context ungated. No action unverified. No node unsynchronised.
+            Phase 3 syncs all 8 nodes. Phase 4 shields Chrome Skills. 
+            Phase 5 gates agent payments — every RLUSD transfer must prove sincerity before it moves.
+            No context ungated. No action unverified. No payment unsanctioned.
           </p>
         </div>
       </div>
