@@ -2,10 +2,11 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2, Fingerprint } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint, Globe } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
 import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
+import NodeContextSyncMonitor from '@/components/sovereign-guard/NodeContextSyncMonitor';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -62,6 +63,10 @@ export default function SovereignGuard() {
               <Fingerprint className="w-3.5 h-3.5 mr-1.5" />
               Soul Signature
             </TabsTrigger>
+            <TabsTrigger value="sync" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-300 text-white/40 text-xs">
+              <Globe className="w-3.5 h-3.5 mr-1.5" />
+              Node Sync
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -75,14 +80,18 @@ export default function SovereignGuard() {
           <TabsContent value="soul" className="mt-4">
             <SoulSignatureMonitor />
           </TabsContent>
+
+          <TabsContent value="sync" className="mt-4">
+            <NodeContextSyncMonitor />
+          </TabsContent>
         </Tabs>
 
         {/* Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-            <span className="text-cyan-400/40 font-semibold">Sovereign Guard Doctrine:</span> Every agent context access passes through the Hydrogeo Gate — 
-            Shadow Sieve (injection check) → 100-Prisoner Gate (coherence) → Honour Threshold → Temporal Anchor (audit). 
-            No context is retrieved without sincerity verification. No access goes unlogged. Build with honour.
+            <span className="text-cyan-400/40 font-semibold">Sovereign Guard Doctrine:</span> Phase 1 gates sincerity (Hydrogeo). Phase 2 verifies soul alignment. 
+            Phase 3 syncs all 8 nodes into a unified context frame — so every system component operates from a single, verified, timestamped truth. 
+            No context ungated. No action unverified. No node unsynchronised.
           </p>
         </div>
       </div>
