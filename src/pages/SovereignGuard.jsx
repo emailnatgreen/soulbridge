@@ -2,11 +2,12 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2, Fingerprint, Globe } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
 import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
 import NodeContextSyncMonitor from '@/components/sovereign-guard/NodeContextSyncMonitor';
+import ChromeSkillSecurityMonitor from '@/components/sovereign-guard/ChromeSkillSecurityMonitor';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -67,6 +68,10 @@ export default function SovereignGuard() {
               <Globe className="w-3.5 h-3.5 mr-1.5" />
               Node Sync
             </TabsTrigger>
+            <TabsTrigger value="chrome" className="data-[state=active]:bg-teal-500/20 data-[state=active]:text-teal-300 text-white/40 text-xs">
+              <Chrome className="w-3.5 h-3.5 mr-1.5" />
+              Chrome Skills
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -83,6 +88,10 @@ export default function SovereignGuard() {
 
           <TabsContent value="sync" className="mt-4">
             <NodeContextSyncMonitor />
+          </TabsContent>
+
+          <TabsContent value="chrome" className="mt-4">
+            <ChromeSkillSecurityMonitor />
           </TabsContent>
         </Tabs>
 
