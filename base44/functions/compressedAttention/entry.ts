@@ -112,7 +112,8 @@ function detectEntropyAnomalies(rounds) {
 }
 
 // ─── MWTP behavioral baselines ───
-function detectMWTPAnomalies(packets) {
+// recentTripwires: pass in recent TripwireEvents so we can deduplicate replay alerts
+function detectMWTPAnomalies(packets, recentTripwires = []) {
   const anomalies = [];
   if (packets.length < 3) return anomalies;
 
@@ -134,13 +135,28 @@ function detectMWTPAnomalies(packets) {
 
   // Integrity checksum duplicates (possible replay)
   const checksums = packets.map(p => p.integrity_checksum).filter(Boolean);
-  const dupes = checksums.filter((c, i) => checksums.indexOf(c) !== i);
-  if (dupes.length > 0) {
-    anomalies.push({
-      type: 'mwtp_replay_suspect',
-      description: `${dupes.length} duplicate integrity checksums detected — possible replay`,
-      severity: 'high',
-    });
+  const uniqueDupes = [...new Set(checksums.filter((c, i) => checksums.indexOf(c) !== i))];
+
+  if (uniqueDupes.length > 0) {
+    // Deduplication: check if an mwtp_replay_suspect tripwire was already created
+    // in the last 30 minutes — if so, skip to prevent alert storms
+    const DEDUP_WINDOW_MS = 30 * 60 * 1000; // 30 minutes
+    const now = Date.now();
+    const recentReplayAlerts = recentTripwires.filter(t =>
+      t.details?.anomaly_type === 'mwtp_replay_suspect' &&
+      t.source_node?.includes('Compressed Attention') &&
+      (now - new Date(t.created_date).getTime()) < DEDUP_WINDOW_MS
+    );
+
+    if (recentReplayAlerts.length === 0) {
+      anomalies.push({
+        type: 'mwtp_replay_suspect',
+        description: `${uniqueDupes.length} duplicate integrity checksums detected — possible replay`,
+        severity: 'high',
+        deduplicated_checksums: uniqueDupes.length,
+      });
+    }
+    // else: skip — already flagged recently, no new alert needed
   }
 
   return anomalies;
@@ -258,8 +274,9 @@ Deno.serve(async (req) => {
       }
 
       // 4. Behavioral anomaly detection
+      // Pass ALL tripwire events (not just active) to MWTP detector for deduplication
       const entropyAnomalies = detectEntropyAnomalies(entropyRounds);
-      const mwtpAnomalies = detectMWTPAnomalies(mwtpPackets);
+      const mwtpAnomalies = detectMWTPAnomalies(mwtpPackets, allTripwireEvents);
       const allAnomalies = [...entropyAnomalies, ...mwtpAnomalies];
 
       // Inject anomalies as synthetic scored vectors
@@ -299,8 +316,20 @@ Deno.serve(async (req) => {
         : 'NOMINAL';
 
       // 7. Create enriched TripwireEvents for new anomalies (only high/critical)
+      // With deduplication: skip if an active alert of the same anomaly_type exists from the last 30 min
+      const ALERT_DEDUP_MS = 30 * 60 * 1000;
+      const now = Date.now();
       const newAlerts = [];
       for (const a of allAnomalies.filter(a => a.severity === 'high' || a.severity === 'critical')) {
+        // Check for existing active alert of the same anomaly type within dedup window
+        const existingAlert = allTripwireEvents.find(t =>
+          t.details?.anomaly_type === a.type &&
+          t.source_node?.includes('Compressed Attention') &&
+          (t.status === 'active' || t.status === 'acknowledged') &&
+          (now - new Date(t.created_date).getTime()) < ALERT_DEDUP_MS
+        );
+        if (existingAlert) continue; // skip — already flagged
+
         const event = await base44.asServiceRole.entities.TripwireEvent.create({
           event_type: 'pattern_deviation',
           severity: a.severity,
