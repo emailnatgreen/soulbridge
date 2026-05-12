@@ -1,10 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Search, BarChart3, Brain, Shield, AlertTriangle, Sparkles } from 'lucide-react';
+import { FileText, Search, BarChart3, Brain, Shield, AlertTriangle, Sparkles, Hash } from 'lucide-react';
 import ClaimCard from './ClaimCard';
 import PolicyBanner from './PolicyBanner';
 import RiskList from './RiskList';
+import MintNFTPreview from './MintNFTPreview';
 
 const LEAF_CONFIG = [
   { key: 'claims', num: 1, icon: FileText, label: 'Claims', color: 'text-cyan-400' },
@@ -101,12 +102,39 @@ export default function LeafReport({ report }) {
         </CardContent>
       </Card>
 
+      {/* Cryptographic Anchor */}
+      {report.report_hash && (
+        <div className="rounded-lg border border-cyan-500/10 bg-cyan-500/5 p-3 space-y-1">
+          <div className="flex items-center gap-1.5">
+            <Hash className="w-3 h-3 text-cyan-400/60" />
+            <p className="text-cyan-400/60 text-[10px] uppercase tracking-wider font-semibold">Cryptographic Anchor</p>
+          </div>
+          <p className="text-cyan-300/80 font-mono text-[10px] break-all">{report.report_hash}</p>
+          <div className="flex flex-wrap gap-3 text-[9px] text-white/20 pt-1">
+            <span>Schema: {report.schema_version || 'v1'}</span>
+            {report.veracity_summary && (
+              <>
+                <span>Avg: {(report.veracity_summary.avg_score * 100).toFixed(0)}%</span>
+                <span>Min: {(report.veracity_summary.min_score * 100).toFixed(0)}%</span>
+                <span>Max: {(report.veracity_summary.max_score * 100).toFixed(0)}%</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* NFT Mint Affordance */}
+      <div className="flex items-center justify-between">
+        <MintNFTPreview report={report} />
+      </div>
+
       {/* Metadata Footer */}
       <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 flex flex-wrap gap-3 text-[10px] text-white/20">
         <span>Pipeline: {report.processing_ms ? `${(report.processing_ms / 1000).toFixed(1)}s` : '...'}</span>
         <span>Email: {report.email_sent ? '✓ sent' : '—'}</span>
         <span>Node 3: {report.node3_hook || 'stub'}</span>
         <span>Base44: {report.base44_hook || 'stub'}</span>
+        {report.node3_outbox?.status && <span>Outbox: {report.node3_outbox.status}</span>}
         <span className="ml-auto">Report: {report.id?.slice(-8)}</span>
       </div>
     </div>

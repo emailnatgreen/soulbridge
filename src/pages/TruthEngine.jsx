@@ -38,6 +38,7 @@ export default function TruthEngine() {
         id: liveReport.report_id,
         question: liveReport.question,
         raw_answer: liveReport.raw_answer,
+        schema_version: liveReport.schema_version,
         leaf1_claims: liveReport.leaf1_claims,
         leaf2_evidence: liveReport.leaf2_evidence,
         leaf3_scores: liveReport.leaf3_scores,
@@ -47,6 +48,11 @@ export default function TruthEngine() {
         leaf7_synthesis: liveReport.leaf7_synthesis,
         status: liveReport.status,
         processing_ms: liveReport.processing_ms,
+        report_hash: liveReport.report_hash,
+        veracity_summary: liveReport.veracity_summary,
+        nft_metadata: liveReport.nft_metadata,
+        node3_outbox: liveReport.node3_outbox,
+        mint_intent: liveReport.mint_intent,
         email_sent: liveReport.email_sent,
         node3_hook: liveReport.node3_hook,
         base44_hook: liveReport.base44_hook,
@@ -154,8 +160,8 @@ export default function TruthEngine() {
         {/* Pipeline Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-            <span className="text-cyan-400/40 font-semibold">Truth Engine Pipeline:</span> Question → LLM Draft (untrusted) → Claim Extraction → Evidence Retrieval (web-grounded) → Veracity Scoring → Policy Decision → Risk Flagging → Verified Synthesis → Email Report. 
-            Node 3 and Base44 on-chain hooks are stubbed for future integration. Each report is stored as a TruthReport entity with full audit trail.
+            <span className="text-cyan-400/40 font-semibold">Truth Engine v1 (TruthReportV1):</span> Question → LLM Draft (untrusted) → Claim Extraction → Evidence Retrieval (web-grounded) → Veracity Scoring → Policy Decision → Risk Flagging → Verified Synthesis → SHA-256 Hash → Node 3 Outbox → NFT Metadata Freeze → Email Report.
+            Every report is cryptographically anchored (SHA-256 of canonical payload). Node 3 outbox queues reports for future decentralised routing. Research NFT metadata schema is frozen and ready for minting.
           </p>
         </div>
       </div>

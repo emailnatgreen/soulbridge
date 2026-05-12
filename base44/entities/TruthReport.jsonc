@@ -10,6 +10,11 @@
       "type": "string",
       "description": "Draft answer from the untrusted LLM"
     },
+    "schema_version": {
+      "type": "string",
+      "default": "v1",
+      "description": "Canonical schema version (TruthReportV1)"
+    },
     "leaf1_claims": {
       "type": "array",
       "items": {
@@ -132,6 +137,116 @@
     "processing_ms": {
       "type": "number",
       "description": "Total pipeline processing time in milliseconds"
+    },
+    "report_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the canonical report payload \u2014 cryptographic anchor"
+    },
+    "veracity_summary": {
+      "type": "object",
+      "properties": {
+        "avg_score": {
+          "type": "number"
+        },
+        "min_score": {
+          "type": "number"
+        },
+        "max_score": {
+          "type": "number"
+        },
+        "claims_count": {
+          "type": "number"
+        },
+        "risks_count": {
+          "type": "number"
+        }
+      },
+      "description": "Pre-computed veracity statistics for Node 3 and NFT metadata"
+    },
+    "node3_outbox": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "sent",
+            "confirmed",
+            "failed"
+          ]
+        },
+        "payload_hash": {
+          "type": "string"
+        },
+        "queued_at": {
+          "type": "string"
+        },
+        "sent_at": {
+          "type": "string"
+        },
+        "confirmed_at": {
+          "type": "string"
+        }
+      },
+      "description": "Node 3 outbox \u2014 tracks report submission to the decentralised layer"
+    },
+    "nft_metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "report_hash": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "veracity": {
+          "type": "object",
+          "properties": {
+            "avg_score": {
+              "type": "number"
+            },
+            "min_score": {
+              "type": "number"
+            },
+            "max_score": {
+              "type": "number"
+            }
+          }
+        },
+        "leaves": {
+          "type": "object",
+          "properties": {
+            "claims_count": {
+              "type": "number"
+            },
+            "risks_count": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "description": "Frozen Research NFT metadata schema \u2014 ready for minting"
+    },
+    "mint_intent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has signalled intent to mint this report as an NFT"
+    },
+    "mint_intent_at": {
+      "type": "string",
+      "description": "ISO timestamp of mint intent signal"
     },
     "email_sent": {
       "type": "boolean",

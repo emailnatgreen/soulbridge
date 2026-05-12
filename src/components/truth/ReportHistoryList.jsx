@@ -46,6 +46,9 @@ export default function ReportHistoryList({ reports, selectedId, onSelect }) {
                   {r.processing_ms && (
                     <span className="text-white/20 text-[10px]">{(r.processing_ms/1000).toFixed(1)}s</span>
                   )}
+                  {r.report_hash && (
+                    <span className="text-cyan-400/30 text-[9px] font-mono">#{r.report_hash.slice(0, 8)}</span>
+                  )}
                 </div>
               </div>
             </div>

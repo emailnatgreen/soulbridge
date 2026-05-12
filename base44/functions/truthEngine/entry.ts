@@ -1,20 +1,92 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
- * Truth Engine — 7-Leaf Verification Pipeline
+ * Truth Engine — 7-Leaf Verification Pipeline (v1 — Canonical Entrypoint)
  *
  * Actions:
- *   ask     — Full pipeline: question → LLM → claims → verify → 7-leaf → email
- *   status  — Get report by ID
+ *   ask         — Full pipeline: question → LLM → claims → verify → 7-leaf → hash → node3 → email
+ *   status      — Get report by ID
+ *   mint_intent — Signal intent to mint a report as Research NFT
  *
- * Pipeline:
- *   1. LLM generates draft answer (untrusted)
- *   2. Claim Extractor pulls atomic claims
- *   3. Evidence Retriever + Verifier scores each claim
- *   4. 7-Leaf Report Builder assembles the full report
- *   5. Email Service sends to admin
- *   6. Node 3 + Base44 hooks (stubs for now)
+ * Contract:
+ *   This is the SINGLE entrypoint for all truth verification work.
+ *   All reports follow the TruthReportV1 canonical schema.
+ *   Every completed report receives a SHA-256 hash and Node 3 outbox entry.
  */
+
+// ── Hashing Utility ──
+async function sha256(payload) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(JSON.stringify(payload));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ── Canonical Report Payload (for hashing) ──
+function buildCanonicalPayload(reportId, question, rawAnswer, claims, leaf2, leaf3, leaf4, leaf5, leaf6, leaf7, createdAt) {
+  return {
+    version: 'v1',
+    report_id: reportId,
+    question,
+    raw_answer: rawAnswer,
+    leaf1_claims: claims,
+    leaf2_evidence: leaf2,
+    leaf3_scores: leaf3,
+    leaf4_reasoning: leaf4,
+    leaf5_policy: leaf5,
+    leaf6_risks: leaf6,
+    leaf7_synthesis: leaf7,
+    created_at: createdAt,
+  };
+}
+
+// ── Veracity Summary ──
+function buildVeracitySummary(leaf3, leaf6) {
+  const scores = (leaf3 || []).map(s => s.veracity_score).filter(v => typeof v === 'number');
+  return {
+    avg_score: scores.length > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 1000) / 1000 : 0,
+    min_score: scores.length > 0 ? Math.min(...scores) : 0,
+    max_score: scores.length > 0 ? Math.max(...scores) : 0,
+    claims_count: (leaf3 || []).length,
+    risks_count: (leaf6 || []).length,
+  };
+}
+
+// ── NFT Metadata Builder ──
+function buildNFTMetadata(reportId, reportHash, question, createdAt, veracitySummary) {
+  return {
+    name: `Truth Report #${reportId.slice(-6).toUpperCase()}`,
+    description: '7-Leaf epistemic verification report for a single question.',
+    question: question.substring(0, 200),
+    report_id: reportId,
+    report_hash: reportHash,
+    created_at: createdAt,
+    veracity: {
+      avg_score: veracitySummary.avg_score,
+      min_score: veracitySummary.min_score,
+      max_score: veracitySummary.max_score,
+    },
+    leaves: {
+      claims_count: veracitySummary.claims_count,
+      risks_count: veracitySummary.risks_count,
+    },
+  };
+}
+
+// ── Node 3 Outbox Writer (stub — queues for future routing) ──
+async function writeNode3Outbox(base44, reportId, reportHash, veracitySummary, createdAt) {
+  const outbox = {
+    status: 'pending',
+    payload_hash: reportHash,
+    queued_at: new Date().toISOString(),
+  };
+
+  console.log(`[truthEngine] Node 3 outbox: queued report ${reportId} | hash=${reportHash} | avg=${veracitySummary.avg_score} min=${veracitySummary.min_score} max=${veracitySummary.max_score}`);
+
+  // Future: POST to Node 3 endpoint, then update status to 'sent'/'confirmed'
+  return outbox;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -33,6 +105,30 @@ Deno.serve(async (req) => {
       return Response.json({ report });
     }
 
+    // ─── MINT INTENT ───
+    if (action === 'mint_intent') {
+      const { report_id } = body;
+      if (!report_id) return Response.json({ error: 'report_id required' }, { status: 400 });
+
+      const report = await base44.asServiceRole.entities.TruthReport.get(report_id);
+      if (!report || report.status !== 'complete') {
+        return Response.json({ error: 'Report must be complete before minting' }, { status: 400 });
+      }
+
+      await base44.asServiceRole.entities.TruthReport.update(report_id, {
+        mint_intent: true,
+        mint_intent_at: new Date().toISOString(),
+      });
+
+      console.log(`[truthEngine] Mint intent signalled for report ${report_id} by ${user.email}`);
+      return Response.json({
+        status: 'intent_recorded',
+        report_id,
+        nft_metadata: report.nft_metadata,
+        message: 'Mint intent recorded. NFT minting will be available when Node 3 integration is live.',
+      });
+    }
+
     // ─── ASK (full pipeline) ───
     if (action === 'ask') {
       const { question } = body;
@@ -41,11 +137,13 @@ Deno.serve(async (req) => {
       }
 
       const startTime = Date.now();
+      const createdAt = new Date().toISOString();
 
       // Create report record immediately (so UI can poll)
       const report = await base44.asServiceRole.entities.TruthReport.create({
         question: question.trim(),
         status: 'processing',
+        schema_version: 'v1',
       });
 
       // ── Step 1: LLM Answer Service (untrusted) ──
@@ -81,10 +179,9 @@ Deno.serve(async (req) => {
           required: ["claims"]
         }
       });
-      const claims = (claimResult.claims || []).slice(0, 10); // cap at 10
+      const claims = (claimResult.claims || []).slice(0, 10);
 
       // ── Step 3: Evidence Retriever + Verifier (per claim) ──
-      // Use web-grounded LLM to check each claim
       const verificationPrompt = claims.map(c => `- [${c.id}] "${c.text}"`).join('\n');
 
       const verifyResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
@@ -124,17 +221,13 @@ ${verificationPrompt}`,
 
       // ── Build Leaf 2: Evidence ──
       const leaf2 = claims.map(c => {
-        const v = verifications.find(v => v.claim_id === c.id) || {};
-        return {
-          claim_id: c.id,
-          sources: v.sources || [],
-          summary: v.evidence_summary || 'No evidence retrieved',
-        };
+        const v = verifications.find(x => x.claim_id === c.id) || {};
+        return { claim_id: c.id, sources: v.sources || [], summary: v.evidence_summary || 'No evidence retrieved' };
       });
 
       // ── Build Leaf 3: Scores ──
       const leaf3 = claims.map(c => {
-        const v = verifications.find(v => v.claim_id === c.id) || {};
+        const v = verifications.find(x => x.claim_id === c.id) || {};
         return {
           claim_id: c.id,
           veracity_score: typeof v.veracity_score === 'number' ? v.veracity_score : 0.5,
@@ -144,21 +237,19 @@ ${verificationPrompt}`,
       });
 
       // ── Build Leaf 4: Reasoning ──
-      const avgScore = leaf3.length > 0
-        ? leaf3.reduce((sum, s) => sum + s.veracity_score, 0) / leaf3.length
-        : 0;
+      const veracitySummary = buildVeracitySummary(leaf3, []);
       const lowClaims = leaf3.filter(s => s.veracity_score < 0.6);
       const highClaims = leaf3.filter(s => s.veracity_score >= 0.8);
 
-      const leaf4 = `Analyzed ${claims.length} claims. ${highClaims.length} scored high confidence (≥0.8). ${lowClaims.length} scored below threshold (<0.6). Average veracity: ${(avgScore * 100).toFixed(1)}%. ${lowClaims.length > 0 ? `Claims requiring attention: ${lowClaims.map(c => c.claim_id).join(', ')}.` : 'All claims within acceptable range.'}`;
+      const leaf4 = `Analyzed ${claims.length} claims. ${highClaims.length} scored high confidence (≥0.8). ${lowClaims.length} scored below threshold (<0.6). Average veracity: ${(veracitySummary.avg_score * 100).toFixed(1)}%. ${lowClaims.length > 0 ? `Claims requiring attention: ${lowClaims.map(c => c.claim_id).join(', ')}.` : 'All claims within acceptable range.'}`;
 
       // ── Build Leaf 5: Policy Decision ──
       let decision = 'allow';
       let policyReason = 'All claims meet confidence threshold';
-      if (avgScore < 0.4) {
+      if (veracitySummary.avg_score < 0.4) {
         decision = 'block';
-        policyReason = `Average veracity ${(avgScore * 100).toFixed(0)}% is below minimum threshold (40%)`;
-      } else if (avgScore < 0.7 || lowClaims.length > 0) {
+        policyReason = `Average veracity ${(veracitySummary.avg_score * 100).toFixed(0)}% is below minimum threshold (40%)`;
+      } else if (veracitySummary.avg_score < 0.7 || lowClaims.length > 0) {
         decision = 'flag';
         policyReason = `${lowClaims.length} claim(s) below confidence threshold — manual review recommended`;
       }
@@ -166,7 +257,7 @@ ${verificationPrompt}`,
       const leaf5 = {
         decision,
         reason: policyReason,
-        overall_veracity: Math.round(avgScore * 100) / 100,
+        overall_veracity: Math.round(veracitySummary.avg_score * 100) / 100,
       };
 
       // ── Build Leaf 6: Risks ──
@@ -186,7 +277,7 @@ ${verificationPrompt}`,
       if (lowClaims.length > 0) {
         leaf6.push({
           risk_type: 'low_veracity',
-          severity: avgScore < 0.4 ? 'high' : 'medium',
+          severity: veracitySummary.avg_score < 0.4 ? 'high' : 'medium',
           description: `${lowClaims.length} claim(s) scored below 0.6 veracity`,
           affected_claims: lowClaims.map(c => c.claim_id),
         });
@@ -214,9 +305,25 @@ Write the final verified answer:`,
 
       const processingMs = Date.now() - startTime;
 
-      // ── Update report ──
+      // ── Finalize veracity summary with risks ──
+      const finalVeracitySummary = buildVeracitySummary(leaf3, leaf6);
+
+      // ── SHA-256 Hash (canonical payload) ──
+      const canonicalPayload = buildCanonicalPayload(
+        report.id, question.trim(), rawAnswer, claims, leaf2, leaf3, leaf4, leaf5, leaf6, leaf7, createdAt
+      );
+      const reportHash = await sha256(canonicalPayload);
+
+      // ── NFT Metadata ──
+      const nftMetadata = buildNFTMetadata(report.id, reportHash, question.trim(), createdAt, finalVeracitySummary);
+
+      // ── Node 3 Outbox ──
+      const node3Outbox = await writeNode3Outbox(base44, report.id, reportHash, finalVeracitySummary, createdAt);
+
+      // ── Update report (single atomic write) ──
       await base44.asServiceRole.entities.TruthReport.update(report.id, {
         raw_answer: rawAnswer,
+        schema_version: 'v1',
         leaf1_claims: claims,
         leaf2_evidence: leaf2,
         leaf3_scores: leaf3,
@@ -226,11 +333,15 @@ Write the final verified answer:`,
         leaf7_synthesis: leaf7,
         status: 'complete',
         processing_ms: processingMs,
-        node3_hook: 'stub',
+        report_hash: reportHash,
+        veracity_summary: finalVeracitySummary,
+        node3_outbox: node3Outbox,
+        nft_metadata: nftMetadata,
+        node3_hook: 'outbox_queued',
         base44_hook: 'stub',
       });
 
-      // ── Step 5: Email Service ──
+      // ── Email Service ──
       let emailSent = false;
       try {
         const policyEmoji = decision === 'allow' ? '✅' : decision === 'flag' ? '⚠️' : '🚫';
@@ -252,7 +363,7 @@ Write the final verified answer:`,
         const emailBody = `
 <div style="font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;border-radius:12px;max-width:700px">
   <h1 style="color:#38bdf8;font-size:20px;margin:0 0 4px">🔬 7-Leaf Truth Report</h1>
-  <p style="color:#64748b;font-size:11px;margin:0 0 20px">Pipeline completed in ${(processingMs/1000).toFixed(1)}s • Report ID: ${report.id}</p>
+  <p style="color:#64748b;font-size:11px;margin:0 0 20px">Pipeline completed in ${(processingMs/1000).toFixed(1)}s • Report ID: ${report.id} • Hash: ${reportHash.substring(0, 12)}…</p>
   
   <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px">
     <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Question</p>
@@ -261,7 +372,7 @@ Write the final verified answer:`,
 
   <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px">
     <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Policy Decision</p>
-    <p style="font-size:16px;margin:0">${policyEmoji} <strong style="color:${decision === 'allow' ? '#4ade80' : decision === 'flag' ? '#fbbf24' : '#f87171'}">${decision.toUpperCase()}</strong> — Overall veracity: ${(avgScore*100).toFixed(0)}%</p>
+    <p style="font-size:16px;margin:0">${policyEmoji} <strong style="color:${decision === 'allow' ? '#4ade80' : decision === 'flag' ? '#fbbf24' : '#f87171'}">${decision.toUpperCase()}</strong> — Overall veracity: ${(finalVeracitySummary.avg_score*100).toFixed(0)}%</p>
     <p style="color:#94a3b8;font-size:12px;margin:4px 0 0">${policyReason}</p>
   </div>
 
@@ -288,8 +399,14 @@ Write the final verified answer:`,
     <p style="color:#e2e8f0;font-size:13px;line-height:1.6;margin:0">${leaf7}</p>
   </div>
 
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;margin:0 0 16px">
+    <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Cryptographic Anchor</p>
+    <p style="color:#38bdf8;font-family:monospace;font-size:11px;margin:0;word-break:break-all">SHA-256: ${reportHash}</p>
+    <p style="color:#64748b;font-size:10px;margin:4px 0 0">Schema: TruthReportV1 • Node 3: outbox_queued</p>
+  </div>
+
   <div style="border-top:1px solid #334155;padding-top:12px;margin-top:16px">
-    <p style="color:#475569;font-size:10px;margin:0">SoulBridge Truth Engine v1 • Node 3 hook: stub • Base44 hook: stub</p>
+    <p style="color:#475569;font-size:10px;margin:0">SoulBridge Truth Engine v1 • Node 3: outbox_queued • Base44: stub</p>
   </div>
 </div>`;
 
@@ -304,18 +421,11 @@ Write the final verified answer:`,
         console.error('[truthEngine] Email failed:', emailErr.message);
       }
 
-      // ── Step 6: Node 3 Hook (stub) ──
-      // Future: POST /node3/report with report hash
-      console.log(`[truthEngine] Node 3 hook: stub — report ${report.id} would be written to Node 3`);
-
-      // ── Step 7: Base44 Hook (stub) ──
-      // Future: Register report hash / DID with Base44 on-chain
-      console.log(`[truthEngine] Base44 hook: stub — report ${report.id} would be registered on-chain`);
-
       return Response.json({
         report_id: report.id,
         status: 'complete',
-        question,
+        schema_version: 'v1',
+        question: question.trim(),
         raw_answer: rawAnswer,
         leaf1_claims: claims,
         leaf2_evidence: leaf2,
@@ -325,8 +435,12 @@ Write the final verified answer:`,
         leaf6_risks: leaf6,
         leaf7_synthesis: leaf7,
         processing_ms: processingMs,
+        report_hash: reportHash,
+        veracity_summary: finalVeracitySummary,
+        nft_metadata: nftMetadata,
+        node3_outbox: node3Outbox,
         email_sent: emailSent,
-        node3_hook: 'stub',
+        node3_hook: 'outbox_queued',
         base44_hook: 'stub',
       });
     }
