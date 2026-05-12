@@ -21,7 +21,7 @@ function getType(w) {
   return 'widget';
 }
 
-export default function MyMintedNFTs() {
+export default function MyMintedNFTs({ onEditWidget }) {
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -123,6 +123,7 @@ export default function MyMintedNFTs() {
               widget={w}
               onDelete={handleDelete}
               deleting={deleting}
+              onEdit={onEditWidget}
             />
           ))}
         </div>

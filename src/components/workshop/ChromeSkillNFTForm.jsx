@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Chrome, Loader2, Plus, Trash2, AlertCircle, Layers, Upload } from 'lucide-react';
+import { Chrome, Loader2, Plus, Trash2, AlertCircle, Layers, Upload, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkshopBalanceGate from './WorkshopBalanceGate';
 import MetadataJsonEditor from './MetadataJsonEditor';
@@ -24,7 +24,7 @@ import { METADATA_STANDARD_VERSION, getDefaultCustomData } from '@/lib/nftMetada
 
 const EMPTY_SKILL = { skill_name: '', instructions: '', trigger_command: '', requires_didit_verification: true, emoji: '⚡', skill_category: '', multi_tab: false };
 
-export default function ChromeSkillNFTForm() {
+export default function ChromeSkillNFTForm({ editingWidget, onCancelEdit }) {
   const [name, setName] = useState('');
   const [nftId, setNftId] = useState('');
   const [description, setDescription] = useState('');
@@ -43,6 +43,74 @@ export default function ChromeSkillNFTForm() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [customData, setCustomData] = useState(getDefaultCustomData('chrome_skill'));
   const queryClient = useQueryClient();
+
+  // Track editing state
+  const isEditing = !!editingWidget;
+  const editId = editingWidget?.id;
+
+  // Load existing widget data when editingWidget changes
+  useEffect(() => {
+    if (!editingWidget) return;
+    const w = editingWidget;
+    setName(w.name || '');
+    setNftId(w.nft_id || '');
+    setDescription(w.description || '');
+    setImageUrl(w.image_url || '');
+    setStreamCost(String(w.cost_per_stream_interval || ''));
+    setStreamUnit(w.stream_interval_unit || 'day');
+    setTaxon(String(w.taxon || '0'));
+    setTransferFee(String(w.transfer_fee || '0'));
+    setFeaturePath(w.feature_path || '');
+    setWidgetType(w.widget_type || 'unlock');
+
+    // Load skills from chrome_skill_instructions
+    if (w.chrome_skill_instructions?.length) {
+      setSkills(w.chrome_skill_instructions.map(s => ({
+        skill_name: s.skill_name || '',
+        instructions: s.instructions || '',
+        trigger_command: s.trigger_command || '',
+        requires_didit_verification: s.requires_didit_verification ?? true,
+        emoji: s.emoji || '⚡',
+        skill_category: s.skill_category || '',
+        multi_tab: s.multi_tab || false,
+      })));
+    } else {
+      setSkills([{ ...EMPTY_SKILL }]);
+    }
+
+    // Load economics from governance_notes custom_data
+    let cd = null;
+    if (w.governance_notes) {
+      try {
+        const raw = w.governance_notes.includes('---')
+          ? w.governance_notes.split('---').pop().trim()
+          : w.governance_notes;
+        const parsed = JSON.parse(raw);
+        cd = parsed.custom_data || parsed;
+      } catch { /* ignore */ }
+    }
+    if (cd) {
+      setNftCost(String(cd.nft_cost_rlusd || ''));
+      setServiceFeePercent(String(cd.service_fee_percent || ''));
+      if (cd.pricing) {
+        setServicePrice(String(cd.pricing.service_price_rlusd || ''));
+        setStreamCost(String(cd.pricing.stream_cost_rlusd || ''));
+        if (cd.pricing.stream_interval) setStreamUnit(cd.pricing.stream_interval);
+      }
+      setCustomData(cd);
+    }
+  }, [editingWidget]);
+
+  // Reset form to blank state
+  const resetForm = useCallback(() => {
+    setName(''); setNftId(''); setDescription(''); setImageUrl('');
+    setNftCost(''); setServicePrice(''); setServiceFeePercent('');
+    setStreamCost(''); setStreamUnit('day');
+    setTaxon('0'); setTransferFee('0');
+    setFeaturePath(''); setWidgetType('unlock'); setServiceLink(null);
+    setSkills([{ ...EMPTY_SKILL }]);
+    setCustomData(getDefaultCustomData('chrome_skill'));
+  }, []);
 
   // Sync form → custom_data
   useEffect(() => {
@@ -90,7 +158,6 @@ export default function ChromeSkillNFTForm() {
       skill_category: template.category || '',
       multi_tab: template.multi_tab || false,
     };
-    // If only one empty skill exists, replace it; otherwise append
     setSkills(prev => {
       if (prev.length === 1 && !prev[0].skill_name && !prev[0].instructions) {
         return [newSkill];
@@ -104,7 +171,38 @@ export default function ChromeSkillNFTForm() {
 
   const refreshPricingRef = React.useRef(null);
 
-  const mutation = useMutation({
+  // Build widget_data payload (shared between create and update)
+  const buildWidgetPayload = () => ({
+    name,
+    nft_id: nftId || undefined,
+    description,
+    image_url: imageUrl,
+    widget_type: widgetType,
+    widget_class: widgetType,
+    category: 'skill',
+    ui_behavior: 'activate_feature',
+    feature_path: featurePath || undefined,
+    version: '1.0.0',
+    transferable: false,
+    burnable: false,
+    taxon: parseInt(taxon) || 0,
+    transfer_fee: parseInt(transferFee) || 0,
+    chrome_skill_instructions: skills.filter(s => s.skill_name && s.instructions).map(s => ({
+      skill_name: s.skill_name,
+      instructions: s.instructions,
+      trigger_command: s.trigger_command || undefined,
+      requires_didit_verification: s.requires_didit_verification ?? true,
+      emoji: s.emoji || '⚡',
+      skill_category: s.skill_category || undefined,
+      multi_tab: s.multi_tab || false,
+    })),
+    webmcp_manifest: buildWebMCPManifest(),
+    cost_per_stream_interval: parseFloat(streamCost) || 0,
+    stream_interval_unit: streamUnit,
+  });
+
+  // CREATE mutation
+  const createMutation = useMutation({
     mutationFn: async () => {
       const res = await base44.functions.invoke('workshopNFTCreate', {
         action: 'create',
@@ -112,53 +210,40 @@ export default function ChromeSkillNFTForm() {
         custom_data: customData,
         metadata_standard_version: METADATA_STANDARD_VERSION,
         service_definition: serviceLink || undefined,
-        widget_data: {
-          name,
-          nft_id: nftId || undefined,
-          description,
-          image_url: imageUrl,
-          widget_type: widgetType,
-          widget_class: widgetType,
-          category: 'skill',
-          ui_behavior: 'activate_feature',
-          feature_path: featurePath || undefined,
-          version: '1.0.0',
-          transferable: false,
-          burnable: false,
-          taxon: parseInt(taxon) || 0,
-          transfer_fee: parseInt(transferFee) || 0,
-          chrome_skill_instructions: skills.filter(s => s.skill_name && s.instructions).map(s => ({
-            skill_name: s.skill_name,
-            instructions: s.instructions,
-            trigger_command: s.trigger_command || undefined,
-            requires_didit_verification: s.requires_didit_verification ?? true,
-            emoji: s.emoji || '⚡',
-            skill_category: s.skill_category || undefined,
-            multi_tab: s.multi_tab || false,
-          })),
-          webmcp_manifest: buildWebMCPManifest(),
-          cost_per_stream_interval: parseFloat(streamCost) || 0,
-          stream_interval_unit: streamUnit,
-        },
+        widget_data: buildWidgetPayload(),
       });
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message || 'Chrome Skill NFT created as draft');
-      setName(''); setNftId(''); setDescription(''); setImageUrl('');
-      setNftCost(''); setServicePrice(''); setServiceFeePercent('');
-      setStreamCost(''); setStreamUnit('day');
-      setTaxon('0'); setTransferFee('0');
-      setFeaturePath(''); setWidgetType('unlock'); setServiceLink(null);
-      setSkills([{ ...EMPTY_SKILL }]);
-      setCustomData(getDefaultCustomData('chrome_skill'));
+      resetForm();
       queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
       queryClient.invalidateQueries({ queryKey: ['existingWidgetIds'] });
       refreshPricingRef.current?.();
     },
     onError: (error) => {
-      const msg = error?.response?.data?.error || error?.message || 'Failed to create Chrome Skill NFT';
-      toast.error(msg);
+      toast.error(error?.response?.data?.error || error?.message || 'Failed to create Chrome Skill NFT');
+    },
+  });
+
+  // UPDATE mutation — directly updates the Widget entity
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      const payload = buildWidgetPayload();
+      // Store custom_data in governance_notes for persistence
+      payload.governance_notes = JSON.stringify({ custom_data: customData, metadata_standard_version: METADATA_STANDARD_VERSION });
+      await base44.entities.Widget.update(editId, payload);
+      return { message: 'Chrome Skill NFT updated' };
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      resetForm();
+      onCancelEdit?.();
+      queryClient.invalidateQueries({ queryKey: ['myMintedNFTs'] });
+      queryClient.invalidateQueries({ queryKey: ['existingWidgetIds'] });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.error || error?.message || 'Failed to update Chrome Skill NFT');
     },
   });
 
@@ -193,19 +278,42 @@ export default function ChromeSkillNFTForm() {
     return null;
   };
 
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
   return (
     <WorkshopBalanceGate nftType="chrome_skill">
       {({ canAfford, cost, refreshPricing: rp }) => {
         refreshPricingRef.current = rp;
         return (
     <div className="space-y-4">
-    <ChromeSkillExplainer />
-    <SkillTemplatesLibrary onUseTemplate={handleUseTemplate} />
+
+    {/* Editing Banner */}
+    {isEditing && (
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+        <RefreshCw className="w-4 h-4 text-emerald-400" />
+        <div className="flex-1">
+          <p className="text-emerald-300 text-xs font-semibold">Editing: {editingWidget.name}</p>
+          <p className="text-white/40 text-[10px]">Modify your Chrome Skill NFT below. Changes update the existing record.</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => { resetForm(); onCancelEdit?.(); }} className="text-white/40 hover:text-white gap-1 text-xs h-7">
+          <X className="w-3 h-3" /> Cancel
+        </Button>
+      </div>
+    )}
+
+    {!isEditing && <ChromeSkillExplainer />}
+    {!isEditing && <SkillTemplatesLibrary onUseTemplate={handleUseTemplate} />}
+
     <Card className="bg-white/5 border-white/10 text-white">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base"><Chrome className="w-4 h-4 text-emerald-400" /> Create Chrome Skill NFT</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Chrome className="w-4 h-4 text-emerald-400" />
+          {isEditing ? 'Update Chrome Skill NFT' : 'Create Chrome Skill NFT'}
+        </CardTitle>
         <CardDescription className="text-white/40 text-xs">
-          Define your browser-executable AI skills below. Each skill becomes a discoverable tool in Chrome's Gemini Side Panel, minted as a sovereign NFT on the XRP Ledger.
+          {isEditing
+            ? 'Edit your skill definitions, economics, and metadata. Save to update the existing NFT record.'
+            : 'Define your browser-executable AI skills below. Each skill becomes a discoverable tool in Chrome\'s Gemini Side Panel, minted as a sovereign NFT on the XRP Ledger.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -216,7 +324,8 @@ export default function ChromeSkillNFTForm() {
           </div>
           <div className="space-y-1.5">
             <Label className="text-white/60 text-xs">Widget NFT ID</Label>
-            <Input value={nftId} onChange={e => setNftId(e.target.value)} placeholder="e.g. WIDGET-CS-001" className="bg-white/5 border-white/10 text-white" />
+            <Input value={nftId} onChange={e => setNftId(e.target.value)} placeholder="e.g. WIDGET-CS-001" className="bg-white/5 border-white/10 text-white" disabled={isEditing} />
+            {isEditing && <p className="text-white/20 text-[8px]">NFT ID cannot be changed after creation</p>}
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -455,14 +564,33 @@ export default function ChromeSkillNFTForm() {
           }}
         />
 
-        <Button
-          onClick={() => mutation.mutate()}
-          disabled={!name || !description || skills.every(s => !s.skill_name || !s.instructions) || mutation.isPending || !canAfford}
-          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 w-full sm:w-auto"
-        >
-          {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Chrome className="w-4 h-4" />}
-          Create Chrome Skill NFT — {cost} RLUSD
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {isEditing ? (
+            <>
+              <Button
+                onClick={() => updateMutation.mutate()}
+                disabled={!name || !description || skills.every(s => !s.skill_name || !s.instructions) || isPending}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
+              >
+                {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                Update Chrome Skill NFT
+              </Button>
+              <Button variant="outline" onClick={() => { resetForm(); onCancelEdit?.(); }} className="border-white/10 text-white/60 hover:text-white">
+                Cancel Edit
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => createMutation.mutate()}
+              disabled={!name || !description || skills.every(s => !s.skill_name || !s.instructions) || isPending || !canAfford}
+              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 w-full sm:w-auto"
+            >
+              {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Chrome className="w-4 h-4" />}
+              Create Chrome Skill NFT — {cost} RLUSD
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
     </div>

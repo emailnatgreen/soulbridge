@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Chrome, Bot, Sparkles, Shield, ExternalLink, Trash2,
-  FileJson, Zap, Globe, CreditCard, Clock, BadgeCheck
+  FileJson, Zap, Globe, CreditCard, Clock, BadgeCheck, Pencil
 } from 'lucide-react';
 import MintActionButton from './MintActionButton';
 
@@ -44,7 +44,7 @@ function parseCustomData(w) {
 
 const DELETABLE = ['draft', 'prepared', 'simulated', 'failed'];
 
-export default function NFTCard({ widget, onDelete, deleting }) {
+export default function NFTCard({ widget, onDelete, deleting, onEdit }) {
   const type = getType(widget);
   const config = TYPE_CONFIG[type];
   const Icon = config.icon;
@@ -191,6 +191,17 @@ export default function NFTCard({ widget, onDelete, deleting }) {
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-white/40 hover:text-white hover:bg-white/10"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(widget); }}
+                title="Edit NFT"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </Button>
+            )}
             <MintActionButton widget={widget} />
             {DELETABLE.includes(widget.mint_status || 'draft') && (
               <Button

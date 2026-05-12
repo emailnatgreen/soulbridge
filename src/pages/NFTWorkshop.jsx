@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { useAuth } from '@/lib/AuthContext';
 import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
@@ -15,15 +15,18 @@ import MyMintedNFTs from '@/components/workshop/MyMintedNFTs';
 import SkillPerformancePanel from '@/components/workshop/SkillPerformancePanel';
 
 // NFT-Gated Feature Paths — each tab requires its own Widget NFT pass
-// Page-level:   /nft-workshop              → Workshop Pass (WIDGET-WS-001)
-// Chrome tab:   /nft-workshop/chrome-skill  → Chrome Skill Pass (WIDGET-CS-001)
-// Agent tab:    /nft-workshop/agent-nft     → Agent Creator Pass (WIDGET-AC-001)
-// Village page: /agents/village             → Village Access Pass (WIDGET-VIL-001)
 const PATHS = {
   widget: '/nft-workshop',
   chromeSkill: '/nft-workshop/chrome-skill',
   agent: '/nft-workshop/agent-nft',
 };
+
+function getWidgetType(w) {
+  if (w.chrome_skill_instructions?.length) return 'chrome_skill';
+  if (w.category === 'agent_creation') return 'agent';
+  if (w.immutable_after_mint?.length > 5) return 'infrastructure';
+  return 'widget';
+}
 
 export default function NFTWorkshop() {
   const { isAdmin: identityAdmin } = useIdentity();
@@ -31,8 +34,25 @@ export default function NFTWorkshop() {
   const isAdmin = identityAdmin || user?.role === 'admin';
   const { isUnlocked, getWidgetForPath, loading: widgetLoading } = useWidgetUnlock();
   const [activeTab, setActiveTab] = useState('widget');
+  const [editingWidget, setEditingWidget] = useState(null);
+  const formScrollRef = useRef(null);
 
-  // Page-level gate: must own at least ONE of the three passes (or be admin)
+  // Handle Edit from MyMintedNFTs
+  const handleEditWidget = useCallback((widget) => {
+    const type = getWidgetType(widget);
+    setEditingWidget(widget);
+    // Switch to the correct tab based on NFT type
+    if (type === 'chrome_skill') setActiveTab('chrome-skill');
+    else if (type === 'agent') setActiveTab('agent-nft');
+    else if (type === 'infrastructure') setActiveTab('infrastructure');
+    else setActiveTab('widget');
+    // Scroll to top of form
+    setTimeout(() => formScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }, []);
+
+  const handleCancelEdit = useCallback(() => setEditingWidget(null), []);
+
+  // Page-level gate
   const hasWidgetPass = isUnlocked(PATHS.widget);
   const hasChromePass = isUnlocked(PATHS.chromeSkill);
   const hasAgentPass = isUnlocked(PATHS.agent);
@@ -68,7 +88,9 @@ export default function NFTWorkshop() {
       <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-6">
         <WorkshopHeader />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div ref={formScrollRef} />
+
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setEditingWidget(null); }} className="w-full">
           <TabsList className="bg-white/5 border border-white/10 w-full flex flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="widget" className="flex-1 min-w-[120px] gap-1.5 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
               <Sparkles className="w-3.5 h-3.5" /> Widget NFT
@@ -86,12 +108,12 @@ export default function NFTWorkshop() {
             )}
           </TabsList>
 
-          {/* Widget tab — gated by Workshop Pass */}
+          {/* Widget tab */}
           <TabsContent value="widget" className="mt-4 space-y-4">
             <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
               <h3 className="text-white font-semibold text-sm mb-1">🧩 What is a Widget NFT?</h3>
               <p className="text-white/50 text-xs leading-relaxed">
-                Widget NFTs are the building blocks of the SoulBridge ecosystem. They act as <strong className="text-purple-300">digital access keys</strong> that unlock features, toggle services, or grant badges within the Village. Think of them as programmable passes — each one is tied to a specific function in the platform and can carry its own pricing model, revenue splits, and governance rules. Whether you want to gate a page, activate a streaming service, or issue a collectible badge, a Widget NFT is the foundation.
+                Widget NFTs are the building blocks of the SoulBridge ecosystem. They act as <strong className="text-purple-300">digital access keys</strong> that unlock features, toggle services, or grant badges within the Village.
               </p>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/20">Feature Access</span>
@@ -107,12 +129,12 @@ export default function NFTWorkshop() {
             )}
           </TabsContent>
 
-          {/* Chrome Skill tab — gated by Chrome Skill Pass */}
+          {/* Chrome Skill tab */}
           <TabsContent value="chrome-skill" className="mt-4 space-y-4">
             <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
               <h3 className="text-white font-semibold text-sm mb-1">🌐 What is a Chrome Skill NFT?</h3>
               <p className="text-white/50 text-xs leading-relaxed">
-                Chrome Skill NFTs turn your browser into an <strong className="text-emerald-300">AI-powered workspace</strong>. Each skill is a custom instruction set that runs inside Chrome's Gemini Side Panel, giving your browser agent new abilities — from research automation to compliance checks. Skills are minted as NFTs with their own pricing, WebMCP manifests, and trigger commands. They're the bridge between on-chain identity and real-world browser productivity.
+                Chrome Skill NFTs turn your browser into an <strong className="text-emerald-300">AI-powered workspace</strong>. Each skill is a custom instruction set that runs inside Chrome's Gemini Side Panel.
               </p>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">Browser AI Skills</span>
@@ -122,18 +144,18 @@ export default function NFTWorkshop() {
               </div>
             </div>
             {isAdmin || hasChromePass ? (
-              <ChromeSkillNFTForm />
+              <ChromeSkillNFTForm editingWidget={editingWidget} onCancelEdit={handleCancelEdit} />
             ) : (
               <TabLockOverlay nftName="Chrome Skill Pass" nftId="WIDGET-CS-001" featurePath={PATHS.chromeSkill} />
             )}
           </TabsContent>
 
-          {/* Agent tab — gated by Agent Creator Pass */}
+          {/* Agent tab */}
           <TabsContent value="agent-nft" className="mt-4 space-y-4">
             <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
               <h3 className="text-white font-semibold text-sm mb-1">🤖 What is an AI Agent NFT?</h3>
               <p className="text-white/50 text-xs leading-relaxed">
-                An AI Agent NFT creates a <strong className="text-amber-300">sovereign, accountable AI identity</strong> within the Village. Each agent is minted as a soul-bound NFT tied to your DID, meaning it cannot be traded and you bear full responsibility for its actions under Law 1 (Soul). Your agent gets its own name, purpose, personality, role, and economic profile — it can vote in governance, earn RLUSD through services, and grow its honour score over time. This is how new AI citizens are born into SoulBridge.
+                An AI Agent NFT creates a <strong className="text-amber-300">sovereign, accountable AI identity</strong> within the Village. Each agent is minted as a soul-bound NFT tied to your DID.
               </p>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/20">Soul-Bound Identity</span>
@@ -156,7 +178,7 @@ export default function NFTWorkshop() {
               <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/20">
                 <h3 className="text-white font-semibold text-sm mb-1">🏗️ What is an Infrastructure NFT?</h3>
                 <p className="text-white/50 text-xs leading-relaxed">
-                  Infrastructure NFTs are <strong className="text-red-300">admin-only, immutable system components</strong> that form the foundational architecture of SoulBridge. These represent core platform capabilities — treasury gates, constitutional passes, governance engines — and are protected by strict economic controls. Once minted, key fields become permanently locked to ensure system integrity.
+                  Infrastructure NFTs are <strong className="text-red-300">admin-only, immutable system components</strong> that form the foundational architecture of SoulBridge.
                 </p>
               </div>
               <InfrastructureNFTForm />
@@ -165,7 +187,7 @@ export default function NFTWorkshop() {
         </Tabs>
 
         <SkillPerformancePanel />
-        <MyMintedNFTs />
+        <MyMintedNFTs onEditWidget={handleEditWidget} />
       </div>
     </div>
   );
