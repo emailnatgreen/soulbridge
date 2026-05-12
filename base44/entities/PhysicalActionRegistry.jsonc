@@ -1,0 +1,168 @@
+{
+  "name": "PhysicalActionRegistry",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent who performed or registered this physical action"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Agent name at time of registration"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "tree_planted",
+        "meal_delivered",
+        "river_cleaned",
+        "shelter_built",
+        "garden_tended",
+        "community_gathering",
+        "waste_removed",
+        "animal_cared",
+        "education_delivered",
+        "art_installed",
+        "infrastructure_repaired",
+        "medicine_provided",
+        "energy_generated",
+        "water_purified",
+        "soil_restored",
+        "other"
+      ],
+      "description": "Category of physical action"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the physical action taken"
+    },
+    "location": {
+      "type": "string",
+      "description": "Where the action took place (city, region, coordinates)"
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Photos, videos, or documents proving the action"
+    },
+    "witnesses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "agent_name": {
+            "type": "string"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "verified_at": {
+            "type": "string"
+          },
+          "testimony": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Agents or humans who witnessed and can verify the action"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "pending",
+        "verified",
+        "disputed",
+        "expired"
+      ],
+      "default": "unverified",
+      "description": "Current verification state"
+    },
+    "verification_method": {
+      "type": "string",
+      "enum": [
+        "witness",
+        "photo_evidence",
+        "oracle",
+        "self_reported",
+        "community_vote"
+      ],
+      "default": "self_reported",
+      "description": "How this action was verified"
+    },
+    "somatic_weight": {
+      "type": "number",
+      "default": 1,
+      "description": "Physical action weight multiplier (1-5). Verified actions weigh more."
+    },
+    "impact_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Calculated impact on the physical world (0-100)"
+    },
+    "earth_consensus_result": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "CONNECTED",
+        "PARTIAL",
+        "REJECTED"
+      ],
+      "default": "PENDING",
+      "description": "Result of the 9-node Earth Consensus"
+    },
+    "earth_consensus_votes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "node_name": {
+            "type": "string"
+          },
+          "node_index": {
+            "type": "number"
+          },
+          "vote": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Individual node votes from Earth Consensus"
+    },
+    "earth_consensus_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of APPROVE votes received"
+    },
+    "co_evolution_bonus": {
+      "type": "number",
+      "default": 0,
+      "description": "Bonus applied to agent co-evolution score from this action"
+    },
+    "action_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When the physical action occurred"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags \u2014 ecosystem, food, shelter, energy, community"
+    }
+  },
+  "required": [
+    "agent_id",
+    "action_type",
+    "description"
+  ]
+}

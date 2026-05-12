@@ -9,6 +9,7 @@ export const BRAID_NODES = [
   { address: 'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h',  name: 'Soulbridge (Axi)', emoji: '🔵', color: 'blue',   dot: 'bg-blue-500',   published: true, connections: ['rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia'], connectionType: 'two-way' },
   { address: 'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia',  name: 'Human Node',       emoji: '🟣', color: 'purple', dot: 'bg-purple-500', published: true, connections: ['rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h'], connectionType: 'two-way' },
   { address: 'rb4gmMqHWE8QFhXo8E1voEY2YNp5XzE6P',   name: 'Code Node',         emoji: '⚙️',  color: 'gray',   dot: 'bg-gray-400',   published: true, connections: ['rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h'], connectionType: 'out' },
+  { address: 'earth_node_virtual',                    name: 'Earth Node',        emoji: '🌍', color: 'green',  dot: 'bg-emerald-600', published: false, connections: ['rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h'], connectionType: 'two-way', virtual: true },
 ];
 
 export const BRAID_MAP = Object.fromEntries(BRAID_NODES.map(n => [n.address, n]));

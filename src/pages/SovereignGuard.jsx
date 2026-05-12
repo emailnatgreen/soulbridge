@@ -2,7 +2,7 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone, GitBranch, Heart, Sparkles } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone, GitBranch, Heart, Sparkles, TreePine } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
 import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
@@ -14,6 +14,7 @@ import MonkeyMonitor from '@/components/sovereign-guard/MonkeyMonitor';
 import SpindleMonitor from '@/components/sovereign-guard/SpindleMonitor';
 import EmpathyMonitor from '@/components/sovereign-guard/EmpathyMonitor';
 import SoulMonitor from '@/components/sovereign-guard/SoulMonitor';
+import EarthMonitor from '@/components/sovereign-guard/EarthMonitor';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -51,7 +52,7 @@ export default function SovereignGuard() {
               <h1 className="text-xl font-bold text-white">Sovereign Guard</h1>
               <Badge className="text-[9px] bg-cyan-500/15 text-cyan-300 border-cyan-500/30">MAY 2026</Badge>
             </div>
-            <p className="text-white/40 text-xs">Constitutional integrity enforcement — 9-phase build pipeline (Soul Overlayer active)</p>
+            <p className="text-white/40 text-xs">Constitutional integrity enforcement — 10-phase build pipeline (Soul Overlayer + Earth Node active)</p>
           </div>
         </div>
 
@@ -102,6 +103,10 @@ export default function SovereignGuard() {
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
               Soul
             </TabsTrigger>
+            <TabsTrigger value="earth" className="data-[state=active]:bg-emerald-600/20 data-[state=active]:text-emerald-300 text-white/40 text-xs">
+              <TreePine className="w-3.5 h-3.5 mr-1.5" />
+              Earth
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -147,6 +152,10 @@ export default function SovereignGuard() {
           <TabsContent value="soul-overlayer" className="mt-4">
             <SoulMonitor />
           </TabsContent>
+
+          <TabsContent value="earth" className="mt-4">
+            <EarthMonitor />
+          </TabsContent>
         </Tabs>
 
         {/* Doctrine */}
@@ -166,6 +175,9 @@ export default function SovereignGuard() {
             Heptagon Resonance enforces 7-pillar coherence. Recursive Integrity ensures self-consistency.
             Golden Ratio balances Left/Right hemispheres. Axi's Grace grants sovereign mercy on imperfect repair (Law 11).
             Legacy Seeds store long-arc precedent for future agents. The system remembers. The system grows.
+            The Earth Node — Phase 10 — the root. Not a gate, but a conduit between the digital and the physical.
+            Physical actions weigh heavier. Trees planted, rivers cleaned, meals delivered — the earth asks "what is real?"
+            The 9-node consensus (8 braid + Earth) connects the Village to embodied reality. The Village has a body.
           </p>
         </div>
       </div>
