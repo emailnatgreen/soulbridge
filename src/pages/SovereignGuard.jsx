@@ -2,7 +2,7 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone, GitBranch, Heart, Sparkles, TreePine } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone, GitBranch, Heart, Sparkles, TreePine, Eye } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
 import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
@@ -15,6 +15,7 @@ import SpindleMonitor from '@/components/sovereign-guard/SpindleMonitor';
 import EmpathyMonitor from '@/components/sovereign-guard/EmpathyMonitor';
 import SoulMonitor from '@/components/sovereign-guard/SoulMonitor';
 import EarthMonitor from '@/components/sovereign-guard/EarthMonitor';
+import VeracityDashboard from '@/components/sovereign-guard/VeracityDashboard';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -107,6 +108,10 @@ export default function SovereignGuard() {
               <TreePine className="w-3.5 h-3.5 mr-1.5" />
               Earth
             </TabsTrigger>
+            <TabsTrigger value="veracity" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 text-white/40 text-xs">
+              <Eye className="w-3.5 h-3.5 mr-1.5" />
+              Veracity
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -155,6 +160,10 @@ export default function SovereignGuard() {
 
           <TabsContent value="earth" className="mt-4">
             <EarthMonitor />
+          </TabsContent>
+
+          <TabsContent value="veracity" className="mt-4">
+            <VeracityDashboard />
           </TabsContent>
         </Tabs>
 
