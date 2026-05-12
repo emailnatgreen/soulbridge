@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Loader2 } from 'lucide-react';
-import SpindleTrendsPanel from './spindle/SpindleTrendsPanel';
-import SpindleDecisionFeed from './spindle/SpindleDecisionFeed';
+import SpindleTopBar from './spindle/SpindleTopBar';
+import LiveSpindleStream from './spindle/LiveSpindleStream';
+import RegressiveTracePanel from './spindle/RegressiveTracePanel';
+import NodeConsensusMap from './spindle/NodeConsensusMap';
+import BlockReasonsTrends from './spindle/BlockReasonsTrends';
+import EventDetailDrawer from './spindle/EventDetailDrawer';
 
 export default function SpindleMonitor() {
   const [trends, setTrends] = useState(null);
   const [decisions, setDecisions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedDecision, setSelectedDecision] = useState(null);
 
   const fetchData = async () => {
     const [trendsRes, decisionsRes] = await Promise.all([
@@ -33,20 +37,29 @@ export default function SpindleMonitor() {
     setRefreshing(false);
   };
 
+  const lastDecision = decisions.length > 0 ? decisions[0] : null;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-white">Spindle Gate Monitor</h2>
-          <Badge className="text-[9px] bg-purple-500/15 text-purple-300 border-purple-500/30">Phase 7</Badge>
+      {/* Top Bar */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <SpindleTopBar lastDecision={lastDecision} />
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleRefresh}
           disabled={refreshing}
-          className="text-white/40 hover:text-white hover:bg-white/10 h-7 text-xs"
+          className="text-white/40 hover:text-white hover:bg-white/10 h-7 text-xs shrink-0"
         >
           {refreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <RefreshCw className="w-3.5 h-3.5 mr-1" />}
           Refresh
@@ -62,11 +75,29 @@ export default function SpindleMonitor() {
         </p>
       </div>
 
-      {/* Trends */}
-      <SpindleTrendsPanel trends={trends} loading={loading} />
+      {/* Panel 1: Live Stream */}
+      <LiveSpindleStream
+        decisions={decisions}
+        loading={false}
+        onSelectDecision={setSelectedDecision}
+      />
 
-      {/* Decision Feed */}
-      <SpindleDecisionFeed decisions={decisions} loading={loading} />
+      {/* Panel 2: Regressive Trace */}
+      <RegressiveTracePanel decisions={decisions} />
+
+      {/* Panel 3: Node Consensus Map */}
+      <NodeConsensusMap lastDecision={lastDecision} />
+
+      {/* Panel 4: Block Reasons & Trends */}
+      <BlockReasonsTrends trends={trends} loading={false} />
+
+      {/* Panel 5: Event Detail Drawer */}
+      {selectedDecision && (
+        <EventDetailDrawer
+          decision={selectedDecision}
+          onClose={() => setSelectedDecision(null)}
+        />
+      )}
     </div>
   );
 }
