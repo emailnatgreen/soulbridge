@@ -101,6 +101,7 @@ import Heptagon from './pages/Heptagon';
 import ExperimentalLab from './pages/ExperimentalLab';
 import SovereignGuard from './pages/SovereignGuard';
 import TruthEngine from './pages/TruthEngine';
+import PublicReports from './pages/PublicReports';
 
 // WHITEPAPER PAGES — GOVERNANCE
 import GovernanceOverview from './pages/whitepaper/GovernanceOverview';
@@ -203,6 +204,7 @@ const PUBLIC_PATHS = [
   '/whitepaper/technical/chrome-webmcp',
   '/whitepaper/technical/node-covenant',
   '/whitepaper/technical/axi-governor',
+  '/truth-reports',
 ];
 
 const AuthenticatedApp = () => {
@@ -267,6 +269,7 @@ const AuthenticatedApp = () => {
           <Route path="/whitepaper/technical/chrome-webmcp" element={<TechChrome />} />
           <Route path="/whitepaper/technical/node-covenant" element={<TechCovenant />} />
           <Route path="/whitepaper/technical/axi-governor" element={<TechAxi />} />
+          <Route path="/truth-reports" element={<PublicReports />} />
           <Route path="*" element={<LoadingFallback />} />
         </Routes>
       );
@@ -352,6 +355,9 @@ const AuthenticatedApp = () => {
         <Route path="/whitepaper/technical/chrome-webmcp" element={<TechChrome />} />
         <Route path="/whitepaper/technical/node-covenant" element={<TechCovenant />} />
         <Route path="/whitepaper/technical/axi-governor" element={<TechAxi />} />
+
+        {/* PUBLIC TRUTH REPORTS */}
+        <Route path="/truth-reports" element={<PublicReports />} />
 
         {/* CORE USER HUBS */}
         <Route path="/home" element={L("home", Home)} />

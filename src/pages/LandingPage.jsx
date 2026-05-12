@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock, Info } from 'lucide-react';
+import { Mail, Sparkles, CheckCircle, Link2, Shield, LogIn, ScrollText, Zap, Key, Globe, Lock, Info, Search } from 'lucide-react';
 import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
 import CarbonFootprintChart from '@/components/CarbonFootprintChart';
@@ -650,7 +650,32 @@ export default function LandingPage() {
           </div>
 
           {/* Explore Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
+            {/* Truth Reports Card */}
+            <Link
+              to="/truth-reports"
+              className="group relative overflow-hidden bg-gradient-to-br from-cyan-900/50 to-blue-900/40 border border-cyan-500/40 rounded-2xl p-5 sm:p-7 shadow-2xl hover:border-cyan-400/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/30 border border-cyan-400/40 flex items-center justify-center">
+                  <Search className="w-5 h-5 text-cyan-300" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-base">Truth Reports</h3>
+                  <p className="text-cyan-400 text-xs">Verified research &middot; Open to all</p>
+                </div>
+              </div>
+              <p className="text-white/60 text-sm leading-relaxed">
+                The Transparency Layer: Every claim verified through our 7-Leaf pipeline. Cryptographically anchored, publicly auditable.
+              </p>
+              <p className="text-cyan-400/50 text-[10px] mt-2">TruthReportV1 &middot; TruthPolicyV1</p>
+              <div className="mt-3 flex items-center gap-2 text-cyan-300 text-sm font-medium">
+                <span>View Reports</span>
+                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+              </div>
+            </Link>
+
             <Link
               to="/ScrollOfResonance"
               className="group relative overflow-hidden bg-gradient-to-br from-purple-900/50 to-pink-900/40 border border-purple-500/40 rounded-2xl p-5 sm:p-7 shadow-2xl hover:border-purple-400/70 hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
@@ -806,6 +831,10 @@ export default function LandingPage() {
             <span className="text-white/20">&middot;</span>
             <a href="/whitepaper/technical" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
               Technical Paper
+            </a>
+            <span className="text-white/20">&middot;</span>
+            <a href="/truth-reports" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
+              Truth Reports
             </a>
             <span className="text-white/20">&middot;</span>
             <a href="https://canva.link/kqm1rrjgu9qzj90" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white text-xs underline underline-offset-2 transition-colors">
