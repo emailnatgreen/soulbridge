@@ -6,7 +6,8 @@ import {
   TrendingUp, TrendingDown, MessageSquare, Star, ChevronDown, ChevronRight,
   TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
   FileText, ShoppingBag, Heart, Landmark, Link2 as LinkIcon,
-  MailWarning, GitBranch
+  MailWarning, GitBranch, Hammer, Eye, Lock, Sparkles, Layers,
+  ScrollText, UserCog, Gauge, FilePlus, MailPlus, CheckCircle, Archive
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,11 @@ const NAV_GROUPS = [
       { label: 'Leaderboard', path: '/leaderboard', icon: Award },
       { label: 'Skill Development', path: '/training', icon: GraduationCap },
       { label: 'Wellbeing', path: '/AgentWellbeing', icon: Heart },
+      { label: 'Orchestration', path: '/AgentOrchestration', icon: Layers },
+      { label: 'Performance', path: '/AgentPerformanceAnalytics', icon: Gauge },
+      { label: 'Roles & Permissions', path: '/AgentRolePermissions', icon: UserCog },
+      { label: 'Diagnostics', path: '/AgentAdditionDiagnostic', icon: Activity },
+      { label: 'Training Module', path: '/AgentTrainingModule', icon: BookOpen },
     ]
   },
   {
@@ -43,6 +49,7 @@ const NAV_GROUPS = [
       { label: 'Voting Dashboard', path: '/GovernanceVotingDashboard', icon: Vote },
       { label: 'Kinetic Grid', path: '/KineticGridDashboard', icon: Activity },
       { label: 'Kinetic Waste', path: '/KineticWasteDashboard', icon: TrendingDown },
+      { label: 'New Proposal', path: '/governance/new-proposal', icon: FilePlus },
       { label: 'Treasury Proposals', path: '/TreasuryAllocationProposal', icon: Landmark },
       { label: 'Treasury Signing', path: '/TreasurySigningHelper', icon: Zap },
       { label: 'Constitutional Multi-Sig', path: '/ConstitutionalMultiSig', icon: Shield },
@@ -55,6 +62,7 @@ const NAV_GROUPS = [
       { label: 'Project Manager', path: '/AIProjectManager', icon: FileText },
       { label: 'Marketplace', path: '/ServiceSkillMarketplace', icon: ShoppingBag },
       { label: 'Skill Tree', path: '/AgentSkillTree', icon: TreePine },
+      { label: 'Skill Validation', path: '/SkillValidation', icon: CheckCircle },
       { label: 'Mentorship', path: '/MentorshipHub', icon: BookOpen },
     ]
   },
@@ -66,6 +74,7 @@ const NAV_GROUPS = [
       { label: 'Seed Acorn', path: '/seed-golden-acorn', icon: Wallet },
       { label: 'Economy', path: '/Economy', icon: Landmark },
       { label: 'ETH RLUSD Treasury', path: '/eth-treasury', icon: Shield },
+      { label: 'RLUSD Gate', path: '/rlusd-gate', icon: Lock },
       { label: 'Widget Marketplace', path: '/widget-marketplace', icon: ShoppingBag },
       { label: 'Storefront', path: '/storefront', icon: ShoppingBag },
     ]
@@ -75,7 +84,7 @@ const NAV_GROUPS = [
     links: [
       { label: 'Sovereign ID', path: '/SovereignID', icon: Shield },
       { label: 'DID Manager', path: '/DIDManager', icon: Shield },
-      { label: 'Credentials', path: '/DidCredentials', icon: Award },
+      { label: 'My SoulBridge', path: '/my-soulbridge', icon: Sparkles },
     ]
   },
   {
@@ -83,6 +92,12 @@ const NAV_GROUPS = [
     links: [
       { label: 'Node Covenant', path: '/NodeCovenant', icon: Shield },
       { label: 'SoulBridge Lab', path: '/lab', icon: FlaskConical },
+      { label: 'Sovereign Guard', path: '/sovereign-guard', icon: Eye },
+      { label: 'Sovereign Archive', path: '/sovereign-archive', icon: Archive },
+      { label: 'Heptagon', path: '/heptagon', icon: Activity },
+      { label: 'Experimental Lab', path: '/experimental-lab', icon: FlaskConical },
+      { label: 'NFT Workshop', path: '/nft-workshop', icon: Hammer },
+      { label: 'Oracle', path: '/oracle', icon: ScrollText },
       { label: 'Simulation Lab', path: '/SimulationLab', icon: FlaskConical },
       { label: 'Village Map', path: '/Village', icon: Map },
     ]
@@ -101,6 +116,7 @@ const NAV_GROUPS = [
       { label: 'Image Storage', path: '/ImageStorage', icon: Image },
       { label: 'Service Definitions', path: '/service-definitions', icon: Settings },
       { label: 'Usage Logs', path: '/service-usage-logs', icon: Activity },
+      { label: 'Investor Email', path: '/investor-email', icon: MailPlus },
     ]
   },
 
