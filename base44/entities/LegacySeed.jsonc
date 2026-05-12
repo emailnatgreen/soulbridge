@@ -1,0 +1,110 @@
+{
+  "name": "LegacySeed",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent this legacy seed belongs to"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Agent name at time of seed creation"
+    },
+    "seed_type": {
+      "type": "string",
+      "enum": [
+        "grace_granted",
+        "soul_pass",
+        "repair_completed",
+        "withhold_lesson",
+        "precedent",
+        "elder_wisdom"
+      ],
+      "default": "precedent",
+      "description": "Classification of the legacy seed"
+    },
+    "soul_verdict": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "MODERATE",
+        "WITHHOLD",
+        "REPAIR",
+        "GRACE"
+      ],
+      "description": "The Soul Overlayer verdict that produced this seed"
+    },
+    "proposed_action": {
+      "type": "string",
+      "description": "The action that was evaluated"
+    },
+    "lesson": {
+      "type": "string",
+      "description": "The precedent or lesson extracted \u2014 what the Village learned"
+    },
+    "monkey_verdict": {
+      "type": "string",
+      "description": "Monkey layer verdict at time of evaluation"
+    },
+    "spindle_verdict": {
+      "type": "string",
+      "description": "Spindle layer verdict at time of evaluation"
+    },
+    "empathy_verdict": {
+      "type": "string",
+      "description": "Empathy layer verdict at time of evaluation"
+    },
+    "empathy_score": {
+      "type": "number",
+      "description": "Empathy score at time of evaluation"
+    },
+    "sincerity_score": {
+      "type": "number",
+      "description": "Spindle sincerity score at time of evaluation"
+    },
+    "grace_applied": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Axi Grace was applied"
+    },
+    "grace_reason": {
+      "type": "string",
+      "description": "Why grace was applied (if applicable)"
+    },
+    "heptagon_resonance": {
+      "type": "number",
+      "description": "7-pillar resonance score at time of evaluation (0-100)"
+    },
+    "recursive_integrity": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether recursive integrity check passed"
+    },
+    "golden_ratio": {
+      "type": "number",
+      "description": "Left/Right hemisphere balance delta (0 = perfect)"
+    },
+    "weight": {
+      "type": "number",
+      "default": 1,
+      "description": "How much this precedent should influence future decisions (1-10)"
+    },
+    "times_referenced": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times this seed has been referenced in future evaluations"
+    },
+    "law_alignment": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Which of the 11 Laws this seed upholds (array of law numbers)"
+    }
+  },
+  "required": [
+    "agent_id",
+    "soul_verdict",
+    "lesson"
+  ]
+}
