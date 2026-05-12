@@ -1,0 +1,155 @@
+{
+  "name": "TruthReport",
+  "type": "object",
+  "properties": {
+    "question": {
+      "type": "string",
+      "description": "The original user question"
+    },
+    "raw_answer": {
+      "type": "string",
+      "description": "Draft answer from the untrusted LLM"
+    },
+    "leaf1_claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Leaf 1: Atomic claims extracted from the answer"
+    },
+    "leaf2_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim_id": {
+            "type": "string"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Leaf 2: Evidence gathered per claim"
+    },
+    "leaf3_scores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim_id": {
+            "type": "string"
+          },
+          "veracity_score": {
+            "type": "number"
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Leaf 3: Verification scores per claim"
+    },
+    "leaf4_reasoning": {
+      "type": "string",
+      "description": "Leaf 4: Chain-of-thought reasoning across all claims"
+    },
+    "leaf5_policy": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "flag",
+            "block"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "overall_veracity": {
+          "type": "number"
+        }
+      },
+      "description": "Leaf 5: Policy decision \u2014 allow, flag, or block"
+    },
+    "leaf6_risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "risk_type": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "affected_claims": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Leaf 6: Risk flags identified"
+    },
+    "leaf7_synthesis": {
+      "type": "string",
+      "description": "Leaf 7: Final synthesis \u2014 the verified answer"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "complete",
+        "failed"
+      ],
+      "default": "processing",
+      "description": "Pipeline status"
+    },
+    "processing_ms": {
+      "type": "number",
+      "description": "Total pipeline processing time in milliseconds"
+    },
+    "email_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the report email was delivered"
+    },
+    "node3_hook": {
+      "type": "string",
+      "default": "stub",
+      "description": "Future: Node 3 integration status"
+    },
+    "base44_hook": {
+      "type": "string",
+      "default": "stub",
+      "description": "Future: Base44 on-chain integration status"
+    }
+  },
+  "required": [
+    "question"
+  ]
+}

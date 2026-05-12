@@ -100,6 +100,7 @@ import SovereignArchive from './pages/SovereignArchive';
 import Heptagon from './pages/Heptagon';
 import ExperimentalLab from './pages/ExperimentalLab';
 import SovereignGuard from './pages/SovereignGuard';
+import TruthEngine from './pages/TruthEngine';
 
 // WHITEPAPER PAGES — GOVERNANCE
 import GovernanceOverview from './pages/whitepaper/GovernanceOverview';
@@ -475,6 +476,7 @@ const AuthenticatedApp = () => {
         <Route path="/heptagon" element={L("heptagon", Heptagon)} />
         <Route path="/experimental-lab" element={L("experimental-lab", ExperimentalLab)} />
         <Route path="/sovereign-guard" element={L("sovereign-guard", SovereignGuard)} />
+        <Route path="/truth-engine" element={L("truth-engine", TruthEngine)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />
