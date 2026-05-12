@@ -20,6 +20,8 @@ module.exports = {
       'bg-emerald-500/20', 'text-emerald-400',
       'data-[state=active]:from-blue-500',
       'data-[state=active]:to-indigo-500',
+      'data-[state=active]:bg-pink-500/20',
+      'data-[state=active]:text-pink-300',
     ],
   theme: {
   	extend: {

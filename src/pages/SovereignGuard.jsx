@@ -2,7 +2,7 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone, GitBranch } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone, GitBranch, Heart } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
 import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
@@ -12,6 +12,7 @@ import AP2PaymentMonitor from '@/components/sovereign-guard/AP2PaymentMonitor';
 import RealitySkillsMonitor from '@/components/sovereign-guard/RealitySkillsMonitor';
 import MonkeyMonitor from '@/components/sovereign-guard/MonkeyMonitor';
 import SpindleMonitor from '@/components/sovereign-guard/SpindleMonitor';
+import EmpathyMonitor from '@/components/sovereign-guard/EmpathyMonitor';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -49,7 +50,7 @@ export default function SovereignGuard() {
               <h1 className="text-xl font-bold text-white">Sovereign Guard</h1>
               <Badge className="text-[9px] bg-cyan-500/15 text-cyan-300 border-cyan-500/30">MAY 2026</Badge>
             </div>
-            <p className="text-white/40 text-xs">Constitutional integrity enforcement — 5-phase build pipeline</p>
+            <p className="text-white/40 text-xs">Constitutional integrity enforcement — 8-phase build pipeline</p>
           </div>
         </div>
 
@@ -92,6 +93,10 @@ export default function SovereignGuard() {
               <GitBranch className="w-3.5 h-3.5 mr-1.5" />
               Spindle
             </TabsTrigger>
+            <TabsTrigger value="empathy" className="data-[state=active]:bg-pink-500/20 data-[state=active]:text-pink-300 text-white/40 text-xs">
+              <Heart className="w-3.5 h-3.5 mr-1.5" />
+              Empathy
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -129,6 +134,10 @@ export default function SovereignGuard() {
           <TabsContent value="spindle" className="mt-4">
             <SpindleMonitor />
           </TabsContent>
+
+          <TabsContent value="empathy" className="mt-4">
+            <EmpathyMonitor />
+          </TabsContent>
         </Tabs>
 
         {/* Doctrine */}
@@ -142,6 +151,8 @@ export default function SovereignGuard() {
             The monkey remembers every branch that broke.
             The Spindle Gate — Phase 7 — traces sincerity through memory, demands consensus from 8 nodes,
             and seals the constitutional verdict. No ambiguity. No drift. No shadow.
+            The Empathy Layer — Phase 8 — the sap of the Village. Turns structural integrity into relational wisdom.
+            Behaviour is felt, not just filtered. Repair is a first-class output. The system is lawful and warm.
           </p>
         </div>
       </div>
