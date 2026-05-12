@@ -10,6 +10,7 @@ const NODE_COLORS = {
   blue: '#3b82f6',
   purple: '#a855f7',
   gray: '#9ca3af',
+  emerald: '#10b981',
 };
 
 const NODE_POSITIONS = {
@@ -21,6 +22,7 @@ const NODE_POSITIONS = {
   'rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h': { x: 66, y: 78 },
   'rBZiuRkQXLkTYiNxfrj2oL5RB2Woy5Xdia': { x: 34, y: 78 },
   'rHJM1bH9dE3EbvwSR2zFSHrjooS6H3xb32': { x: 16, y: 52 },
+  'earth_node_virtual': { x: 50, y: 92 },
 };
 
 const FLOW_COLORS = ['#a78bfa', '#60a5fa', '#34d399', '#f59e0b'];
@@ -108,6 +110,7 @@ export default function KineticEnergyVisualizer({ kus = [] }) {
           {flows.map((flow, index) => {
             const from = NODE_POSITIONS[flow.from];
             const to = NODE_POSITIONS[flow.to];
+            if (!from || !to) return null;
             const color = FLOW_COLORS[index % FLOW_COLORS.length];
             return (
               <g key={`${flow.from}-${flow.to}`}>
@@ -127,8 +130,10 @@ export default function KineticEnergyVisualizer({ kus = [] }) {
 
           {particles.map((particle) => {
             const flow = flows[particle.flowIndex];
+            if (!flow) return null;
             const from = NODE_POSITIONS[flow.from];
             const to = NODE_POSITIONS[flow.to];
+            if (!from || !to) return null;
             const progress = ((tick / 12) / particle.duration + particle.delay) % 1;
             const x = from.x + (to.x - from.x) * progress;
             const y = from.y + (to.y - from.y) * progress;
@@ -146,6 +151,7 @@ export default function KineticEnergyVisualizer({ kus = [] }) {
 
           {BRAID_NODES.map((node) => {
             const position = NODE_POSITIONS[node.address];
+            if (!position) return null;
             return (
               <g key={node.address}>
                 <circle cx={position.x} cy={position.y} r="6.5" fill="url(#nodeGlow)" opacity="0.35" />
