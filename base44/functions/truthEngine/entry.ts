@@ -1,33 +1,73 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
- * Truth Engine — 7-Leaf Verification Pipeline (v1 — Canonical Entrypoint)
+ * Truth Engine — 7-Leaf Verification Pipeline
+ * ═══════════════════════════════════════════════
+ * SINGLE ENTRYPOINT for all truth verification work.
+ *
+ * Contracts:
+ *   Schema:  TruthReportV1 (1.0.0)
+ *   Policy:  TruthPolicyV1 (1.0.0)
+ *   NFT:     ResearchNFTMetadataV1 (1.0.0)
+ *   Hash:    SHA-256, sorted keys, canonical JSON
  *
  * Actions:
- *   ask         — Full pipeline: question → LLM → claims → verify → 7-leaf → hash → node3 → email
+ *   ask         — Full pipeline
  *   status      — Get report by ID
- *   mint_intent — Signal intent to mint a report as Research NFT
- *
- * Contract:
- *   This is the SINGLE entrypoint for all truth verification work.
- *   All reports follow the TruthReportV1 canonical schema.
- *   Every completed report receives a SHA-256 hash and Node 3 outbox entry.
+ *   health      — Engine health metrics (last N reports)
+ *   mint_intent — Signal mint intent for a report
  */
 
-// ── Hashing Utility ──
-async function sha256(payload) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(JSON.stringify(payload));
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+// ═══════════════════════════════════════════════
+//  FROZEN CONTRACTS (inline — mirrored in lib/truthContracts.js)
+// ═══════════════════════════════════════════════
+
+const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '1.0.0' };
+
+// TruthPolicyV1 — frozen thresholds
+const POLICY = {
+  name: 'TruthPolicyV1',
+  version: '1.0.0',
+  block_avg: 0.4,
+  flag_avg: 0.7,
+  flag_min_claim: 0.6,
+};
+
+// ═══════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════
+
+// Deterministic JSON for hashing — sorted keys, no UI fluff
+function canonicalStringify(obj) {
+  return JSON.stringify(obj, Object.keys(obj).sort());
 }
 
-// ── Canonical Report Payload (for hashing) ──
+function deepSortKeys(obj) {
+  if (Array.isArray(obj)) return obj.map(deepSortKeys);
+  if (obj !== null && typeof obj === 'object') {
+    const sorted = {};
+    for (const key of Object.keys(obj).sort()) {
+      sorted[key] = deepSortKeys(obj[key]);
+    }
+    return sorted;
+  }
+  return obj;
+}
+
+async function sha256(payload) {
+  const sorted = deepSortKeys(payload);
+  const data = new TextEncoder().encode(JSON.stringify(sorted));
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 function buildCanonicalPayload(reportId, question, rawAnswer, claims, leaf2, leaf3, leaf4, leaf5, leaf6, leaf7, createdAt) {
   return {
-    version: 'v1',
+    schema: SCHEMA.name,
+    version: SCHEMA.version,
     report_id: reportId,
+    created_at: createdAt,
     question,
     raw_answer: rawAnswer,
     leaf1_claims: claims,
@@ -37,23 +77,46 @@ function buildCanonicalPayload(reportId, question, rawAnswer, claims, leaf2, lea
     leaf5_policy: leaf5,
     leaf6_risks: leaf6,
     leaf7_synthesis: leaf7,
-    created_at: createdAt,
   };
 }
 
-// ── Veracity Summary ──
 function buildVeracitySummary(leaf3, leaf6) {
   const scores = (leaf3 || []).map(s => s.veracity_score).filter(v => typeof v === 'number');
   return {
     avg_score: scores.length > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 1000) / 1000 : 0,
-    min_score: scores.length > 0 ? Math.min(...scores) : 0,
-    max_score: scores.length > 0 ? Math.max(...scores) : 0,
+    min_score: scores.length > 0 ? Math.round(Math.min(...scores) * 1000) / 1000 : 0,
+    max_score: scores.length > 0 ? Math.round(Math.max(...scores) * 1000) / 1000 : 0,
     claims_count: (leaf3 || []).length,
     risks_count: (leaf6 || []).length,
   };
 }
 
-// ── NFT Metadata Builder ──
+function applyPolicy(veracitySummary, lowClaimsCount) {
+  const avg = veracitySummary.avg_score;
+  if (avg < POLICY.block_avg) {
+    return {
+      decision: 'block',
+      reason: `avg_score ${(avg * 100).toFixed(0)}% < ${POLICY.block_avg * 100}% block threshold`,
+      overall_veracity: Math.round(avg * 100) / 100,
+      ruleset: POLICY.name,
+    };
+  }
+  if (avg < POLICY.flag_avg || lowClaimsCount > 0) {
+    return {
+      decision: 'flag',
+      reason: `${lowClaimsCount} claim(s) below ${POLICY.flag_min_claim * 100}% threshold — manual review recommended`,
+      overall_veracity: Math.round(avg * 100) / 100,
+      ruleset: POLICY.name,
+    };
+  }
+  return {
+    decision: 'allow',
+    reason: `all claims >= ${POLICY.flag_min_claim * 100}% and avg_score >= ${POLICY.flag_avg * 100}%`,
+    overall_veracity: Math.round(avg * 100) / 100,
+    ruleset: POLICY.name,
+  };
+}
+
 function buildNFTMetadata(reportId, reportHash, question, createdAt, veracitySummary) {
   return {
     name: `Truth Report #${reportId.slice(-6).toUpperCase()}`,
@@ -61,32 +124,33 @@ function buildNFTMetadata(reportId, reportHash, question, createdAt, veracitySum
     question: question.substring(0, 200),
     report_id: reportId,
     report_hash: reportHash,
+    schema: SCHEMA.name,
     created_at: createdAt,
     veracity: {
       avg_score: veracitySummary.avg_score,
       min_score: veracitySummary.min_score,
       max_score: veracitySummary.max_score,
-    },
-    leaves: {
       claims_count: veracitySummary.claims_count,
-      risks_count: veracitySummary.risks_count,
     },
+    engine: { ...ENGINE },
   };
 }
 
-// ── Node 3 Outbox Writer (stub — queues for future routing) ──
-async function writeNode3Outbox(base44, reportId, reportHash, veracitySummary, createdAt) {
+function buildNode3Outbox(reportId, reportHash, veracitySummary, createdAt) {
   const outbox = {
     status: 'pending',
+    schema: SCHEMA.name,
+    hash_algo: SCHEMA.hash_algo,
     payload_hash: reportHash,
     queued_at: new Date().toISOString(),
   };
-
-  console.log(`[truthEngine] Node 3 outbox: queued report ${reportId} | hash=${reportHash} | avg=${veracitySummary.avg_score} min=${veracitySummary.min_score} max=${veracitySummary.max_score}`);
-
-  // Future: POST to Node 3 endpoint, then update status to 'sent'/'confirmed'
+  console.log(`[truthEngine] Node 3 outbox: queued ${reportId} | hash=${reportHash.substring(0, 16)}… | avg=${veracitySummary.avg_score}`);
   return outbox;
 }
+
+// ═══════════════════════════════════════════════
+//  HTTP HANDLER
+// ═══════════════════════════════════════════════
 
 Deno.serve(async (req) => {
   try {
@@ -105,6 +169,45 @@ Deno.serve(async (req) => {
       return Response.json({ report });
     }
 
+    // ─── HEALTH ───
+    if (action === 'health') {
+      const limit = body.limit || 10;
+      const reports = await base44.asServiceRole.entities.TruthReport.list('-created_date', limit);
+      const completed = reports.filter(r => r.status === 'complete');
+      const failed = reports.filter(r => r.status === 'failed');
+
+      const durations = completed.map(r => r.processing_ms).filter(Boolean);
+      const avgDuration = durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
+
+      // Per-step averages from latency field
+      const latencyFields = ['llm_draft_ms', 'claim_extraction_ms', 'verification_ms', 'synthesis_ms', 'hash_ms'];
+      const stepAvgs = {};
+      for (const field of latencyFields) {
+        const vals = completed.map(r => r.latency?.[field]).filter(Boolean);
+        stepAvgs[field] = vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+      }
+
+      const lastReport = reports[0];
+      const lastStatus = lastReport?.status === 'complete' ? 'ok' : lastReport?.status === 'processing' ? 'running' : lastReport?.status === 'failed' ? 'degraded' : 'idle';
+
+      return Response.json({
+        engine: ENGINE,
+        schema: SCHEMA,
+        policy: { name: POLICY.name, version: POLICY.version },
+        health: {
+          last_status: lastStatus,
+          last_report_id: lastReport?.id || null,
+          last_report_at: lastReport?.created_date || null,
+          total_sampled: reports.length,
+          completed: completed.length,
+          failed: failed.length,
+          success_rate: reports.length > 0 ? `${completed.length}/${reports.length}` : '0/0',
+          avg_duration_ms: avgDuration,
+          step_averages: stepAvgs,
+        },
+      });
+    }
+
     // ─── MINT INTENT ───
     if (action === 'mint_intent') {
       const { report_id } = body;
@@ -120,12 +223,13 @@ Deno.serve(async (req) => {
         mint_intent_at: new Date().toISOString(),
       });
 
-      console.log(`[truthEngine] Mint intent signalled for report ${report_id} by ${user.email}`);
+      console.log(`[truthEngine] Mint intent: ${report_id} by ${user.email} | hash=${report.report_hash?.substring(0, 16)}…`);
       return Response.json({
         status: 'intent_recorded',
         report_id,
+        report_hash: report.report_hash,
         nft_metadata: report.nft_metadata,
-        message: 'Mint intent recorded. NFT minting will be available when Node 3 integration is live.',
+        veracity_summary: report.veracity_summary,
       });
     }
 
@@ -136,32 +240,33 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Question is required (min 3 chars)' }, { status: 400 });
       }
 
-      const startTime = Date.now();
+      const pipelineStart = Date.now();
       const createdAt = new Date().toISOString();
 
-      // Create report record immediately (so UI can poll)
       const report = await base44.asServiceRole.entities.TruthReport.create({
         question: question.trim(),
         status: 'processing',
         schema_version: 'v1',
+        hash_algo: 'sha256',
       });
 
-      // ── Step 1: LLM Answer Service (untrusted) ──
+      // ── Step 1: LLM Draft ──
+      const t1 = Date.now();
       const answerResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `Answer the following question thoroughly but concisely. Be factual and specific.\n\nQuestion: ${question}`,
         response_json_schema: {
           type: "object",
-          properties: {
-            answer_text: { type: "string", description: "The complete answer" }
-          },
+          properties: { answer_text: { type: "string" } },
           required: ["answer_text"]
         }
       });
       const rawAnswer = answerResult.answer_text || '';
+      const llmDraftMs = Date.now() - t1;
 
-      // ── Step 2: Claim Extractor ──
+      // ── Step 2: Claim Extraction ──
+      const t2 = Date.now();
       const claimResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `Extract every distinct factual claim from this text as atomic statements. Each claim should be independently verifiable. Return them as a JSON array.\n\nText: "${rawAnswer}"`,
+        prompt: `Extract every distinct factual claim from this text as atomic statements. Each claim should be independently verifiable.\n\nText: "${rawAnswer}"`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -171,7 +276,7 @@ Deno.serve(async (req) => {
                 type: "object",
                 properties: {
                   id: { type: "string", description: "Claim ID like c1, c2, c3" },
-                  text: { type: "string", description: "The atomic factual claim" }
+                  text: { type: "string" }
                 }
               }
             }
@@ -180,17 +285,18 @@ Deno.serve(async (req) => {
         }
       });
       const claims = (claimResult.claims || []).slice(0, 10);
+      const claimExtractionMs = Date.now() - t2;
 
-      // ── Step 3: Evidence Retriever + Verifier (per claim) ──
+      // ── Step 3: Verification ──
+      const t3 = Date.now();
       const verificationPrompt = claims.map(c => `- [${c.id}] "${c.text}"`).join('\n');
-
       const verifyResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are a fact-checker. For each claim below, assess its veracity using your knowledge. For each claim provide:
-- veracity_score: 0.0 to 1.0 (1.0 = certainly true)
+        prompt: `You are a fact-checker. For each claim below, assess its veracity. Provide:
+- veracity_score: 0.0 to 1.0
 - confidence: "high", "medium", or "low"
-- evidence_summary: brief description of supporting or contradicting evidence
-- sources: list of 1-3 known source types (e.g. "biology textbook", "NASA.gov", "peer-reviewed research")
-- risk_flags: any concerns (misinformation risk, outdated info, missing context, etc.) — empty array if none
+- evidence_summary: brief supporting/contradicting evidence
+- sources: 1-3 source types
+- risk_flags: concerns (empty array if none)
 
 Claims:
 ${verificationPrompt}`,
@@ -218,14 +324,14 @@ ${verificationPrompt}`,
         }
       });
       const verifications = verifyResult.verifications || [];
+      const verificationMs = Date.now() - t3;
 
-      // ── Build Leaf 2: Evidence ──
+      // ── Build Leaves 2-6 ──
       const leaf2 = claims.map(c => {
         const v = verifications.find(x => x.claim_id === c.id) || {};
         return { claim_id: c.id, sources: v.sources || [], summary: v.evidence_summary || 'No evidence retrieved' };
       });
 
-      // ── Build Leaf 3: Scores ──
       const leaf3 = claims.map(c => {
         const v = verifications.find(x => x.claim_id === c.id) || {};
         return {
@@ -236,34 +342,17 @@ ${verificationPrompt}`,
         };
       });
 
-      // ── Build Leaf 4: Reasoning ──
       const veracitySummary = buildVeracitySummary(leaf3, []);
-      const lowClaims = leaf3.filter(s => s.veracity_score < 0.6);
+      const lowClaims = leaf3.filter(s => s.veracity_score < POLICY.flag_min_claim);
       const highClaims = leaf3.filter(s => s.veracity_score >= 0.8);
 
-      const leaf4 = `Analyzed ${claims.length} claims. ${highClaims.length} scored high confidence (≥0.8). ${lowClaims.length} scored below threshold (<0.6). Average veracity: ${(veracitySummary.avg_score * 100).toFixed(1)}%. ${lowClaims.length > 0 ? `Claims requiring attention: ${lowClaims.map(c => c.claim_id).join(', ')}.` : 'All claims within acceptable range.'}`;
+      const leaf4 = `Analyzed ${claims.length} claims. ${highClaims.length} scored high confidence (≥0.8). ${lowClaims.length} scored below threshold (<${POLICY.flag_min_claim}). Average veracity: ${(veracitySummary.avg_score * 100).toFixed(1)}%. ${lowClaims.length > 0 ? `Claims requiring attention: ${lowClaims.map(c => c.claim_id).join(', ')}.` : 'All claims within acceptable range.'}`;
 
-      // ── Build Leaf 5: Policy Decision ──
-      let decision = 'allow';
-      let policyReason = 'All claims meet confidence threshold';
-      if (veracitySummary.avg_score < 0.4) {
-        decision = 'block';
-        policyReason = `Average veracity ${(veracitySummary.avg_score * 100).toFixed(0)}% is below minimum threshold (40%)`;
-      } else if (veracitySummary.avg_score < 0.7 || lowClaims.length > 0) {
-        decision = 'flag';
-        policyReason = `${lowClaims.length} claim(s) below confidence threshold — manual review recommended`;
-      }
+      const leaf5 = applyPolicy(veracitySummary, lowClaims.length);
 
-      const leaf5 = {
-        decision,
-        reason: policyReason,
-        overall_veracity: Math.round(veracitySummary.avg_score * 100) / 100,
-      };
-
-      // ── Build Leaf 6: Risks ──
       const leaf6 = [];
       for (const v of verifications) {
-        if (v.risk_flags && v.risk_flags.length > 0) {
+        if (v.risk_flags?.length > 0) {
           for (const flag of v.risk_flags) {
             leaf6.push({
               risk_type: 'content_risk',
@@ -277,15 +366,16 @@ ${verificationPrompt}`,
       if (lowClaims.length > 0) {
         leaf6.push({
           risk_type: 'low_veracity',
-          severity: veracitySummary.avg_score < 0.4 ? 'high' : 'medium',
-          description: `${lowClaims.length} claim(s) scored below 0.6 veracity`,
+          severity: veracitySummary.avg_score < POLICY.block_avg ? 'high' : 'medium',
+          description: `${lowClaims.length} claim(s) scored below ${POLICY.flag_min_claim} veracity`,
           affected_claims: lowClaims.map(c => c.claim_id),
         });
       }
 
-      // ── Build Leaf 7: Synthesis ──
+      // ── Step 4: Synthesis ──
+      const t4 = Date.now();
       const synthResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are a truth synthesizer. Given the original question, the draft answer, and the verification results, write a final verified answer. Incorporate corrections where claims scored low. Be direct and factual.
+        prompt: `You are a truth synthesizer. Given the original question, draft answer, and verification results, write a final verified answer. Incorporate corrections where claims scored low. Be direct and factual.
 
 Question: ${question}
 Draft Answer: ${rawAnswer}
@@ -295,35 +385,42 @@ Low-scoring claims: ${lowClaims.map(c => `[${c.claim_id}] ${c.notes}`).join('; '
 Write the final verified answer:`,
         response_json_schema: {
           type: "object",
-          properties: {
-            synthesis: { type: "string", description: "The final verified answer incorporating corrections" }
-          },
+          properties: { synthesis: { type: "string" } },
           required: ["synthesis"]
         }
       });
       const leaf7 = synthResult.synthesis || rawAnswer;
+      const synthesisMs = Date.now() - t4;
 
-      const processingMs = Date.now() - startTime;
-
-      // ── Finalize veracity summary with risks ──
+      // ── Finalize ──
       const finalVeracitySummary = buildVeracitySummary(leaf3, leaf6);
 
-      // ── SHA-256 Hash (canonical payload) ──
+      const t5 = Date.now();
       const canonicalPayload = buildCanonicalPayload(
         report.id, question.trim(), rawAnswer, claims, leaf2, leaf3, leaf4, leaf5, leaf6, leaf7, createdAt
       );
       const reportHash = await sha256(canonicalPayload);
+      const hashMs = Date.now() - t5;
 
-      // ── NFT Metadata ──
+      const pipelineMs = Date.now() - pipelineStart;
+
+      const latency = {
+        pipeline_ms: pipelineMs,
+        llm_draft_ms: llmDraftMs,
+        claim_extraction_ms: claimExtractionMs,
+        verification_ms: verificationMs,
+        synthesis_ms: synthesisMs,
+        hash_ms: hashMs,
+      };
+
       const nftMetadata = buildNFTMetadata(report.id, reportHash, question.trim(), createdAt, finalVeracitySummary);
+      const node3Outbox = buildNode3Outbox(report.id, reportHash, finalVeracitySummary, createdAt);
 
-      // ── Node 3 Outbox ──
-      const node3Outbox = await writeNode3Outbox(base44, report.id, reportHash, finalVeracitySummary, createdAt);
-
-      // ── Update report (single atomic write) ──
+      // ── Atomic write ──
       await base44.asServiceRole.entities.TruthReport.update(report.id, {
         raw_answer: rawAnswer,
         schema_version: 'v1',
+        hash_algo: 'sha256',
         leaf1_claims: claims,
         leaf2_evidence: leaf2,
         leaf3_scores: leaf3,
@@ -332,7 +429,8 @@ Write the final verified answer:`,
         leaf6_risks: leaf6,
         leaf7_synthesis: leaf7,
         status: 'complete',
-        processing_ms: processingMs,
+        processing_ms: pipelineMs,
+        latency,
         report_hash: reportHash,
         veracity_summary: finalVeracitySummary,
         node3_outbox: node3Outbox,
@@ -341,73 +439,35 @@ Write the final verified answer:`,
         base44_hook: 'stub',
       });
 
-      // ── Email Service ──
+      // ── Email ──
       let emailSent = false;
       try {
+        const decision = leaf5.decision;
         const policyEmoji = decision === 'allow' ? '✅' : decision === 'flag' ? '⚠️' : '🚫';
+        const decColor = decision === 'allow' ? '#4ade80' : decision === 'flag' ? '#fbbf24' : '#f87171';
+
         const claimRows = claims.map(c => {
           const s = leaf3.find(x => x.claim_id === c.id) || {};
-          const scoreBar = '█'.repeat(Math.round((s.veracity_score || 0) * 10)) + '░'.repeat(10 - Math.round((s.veracity_score || 0) * 10));
-          return `<tr>
-            <td style="padding:6px 10px;border-bottom:1px solid #333;color:#ccc;font-size:12px">${c.id}</td>
-            <td style="padding:6px 10px;border-bottom:1px solid #333;color:#e0e0e0;font-size:12px">${c.text}</td>
-            <td style="padding:6px 10px;border-bottom:1px solid #333;color:${(s.veracity_score||0) >= 0.8 ? '#4ade80' : (s.veracity_score||0) >= 0.6 ? '#fbbf24' : '#f87171'};font-family:monospace;font-size:12px">${scoreBar} ${((s.veracity_score||0)*100).toFixed(0)}%</td>
-            <td style="padding:6px 10px;border-bottom:1px solid #333;color:#999;font-size:11px">${s.confidence || '-'}</td>
-          </tr>`;
+          const sc = s.veracity_score || 0;
+          const bar = '█'.repeat(Math.round(sc * 10)) + '░'.repeat(10 - Math.round(sc * 10));
+          const clr = sc >= 0.8 ? '#4ade80' : sc >= 0.6 ? '#fbbf24' : '#f87171';
+          return `<tr><td style="padding:6px 10px;border-bottom:1px solid #333;color:#ccc;font-size:12px">${c.id}</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:#e0e0e0;font-size:12px">${c.text}</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:${clr};font-family:monospace;font-size:12px">${bar} ${(sc*100).toFixed(0)}%</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:#999;font-size:11px">${s.confidence || '-'}</td></tr>`;
         }).join('');
 
         const riskRows = leaf6.length > 0
           ? leaf6.map(r => `<li style="color:#f59e0b;font-size:12px;margin:4px 0">⚠️ [${r.severity}] ${r.description} (${r.affected_claims.join(', ')})</li>`).join('')
           : '<li style="color:#4ade80;font-size:12px">No risks identified</li>';
 
-        const emailBody = `
-<div style="font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;border-radius:12px;max-width:700px">
+        const emailBody = `<div style="font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;border-radius:12px;max-width:700px">
   <h1 style="color:#38bdf8;font-size:20px;margin:0 0 4px">🔬 7-Leaf Truth Report</h1>
-  <p style="color:#64748b;font-size:11px;margin:0 0 20px">Pipeline completed in ${(processingMs/1000).toFixed(1)}s • Report ID: ${report.id} • Hash: ${reportHash.substring(0, 12)}…</p>
-  
-  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px">
-    <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Question</p>
-    <p style="color:#f1f5f9;font-size:14px;margin:0">${question}</p>
-  </div>
-
-  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px">
-    <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Policy Decision</p>
-    <p style="font-size:16px;margin:0">${policyEmoji} <strong style="color:${decision === 'allow' ? '#4ade80' : decision === 'flag' ? '#fbbf24' : '#f87171'}">${decision.toUpperCase()}</strong> — Overall veracity: ${(finalVeracitySummary.avg_score*100).toFixed(0)}%</p>
-    <p style="color:#94a3b8;font-size:12px;margin:4px 0 0">${policyReason}</p>
-  </div>
-
-  <div style="margin:0 0 16px">
-    <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px">Claim Verification (${claims.length} claims)</p>
-    <table style="width:100%;border-collapse:collapse;background:#1e293b;border:1px solid #334155;border-radius:8px">
-      <thead><tr>
-        <th style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;border-bottom:1px solid #475569">ID</th>
-        <th style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;border-bottom:1px solid #475569">Claim</th>
-        <th style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;border-bottom:1px solid #475569">Veracity</th>
-        <th style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;border-bottom:1px solid #475569">Conf</th>
-      </tr></thead>
-      <tbody>${claimRows}</tbody>
-    </table>
-  </div>
-
-  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px">
-    <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Risks</p>
-    <ul style="margin:0;padding:0 0 0 16px">${riskRows}</ul>
-  </div>
-
-  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px">
-    <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Verified Synthesis (Leaf 7)</p>
-    <p style="color:#e2e8f0;font-size:13px;line-height:1.6;margin:0">${leaf7}</p>
-  </div>
-
-  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;margin:0 0 16px">
-    <p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Cryptographic Anchor</p>
-    <p style="color:#38bdf8;font-family:monospace;font-size:11px;margin:0;word-break:break-all">SHA-256: ${reportHash}</p>
-    <p style="color:#64748b;font-size:10px;margin:4px 0 0">Schema: TruthReportV1 • Node 3: outbox_queued</p>
-  </div>
-
-  <div style="border-top:1px solid #334155;padding-top:12px;margin-top:16px">
-    <p style="color:#475569;font-size:10px;margin:0">SoulBridge Truth Engine v1 • Node 3: outbox_queued • Base44: stub</p>
-  </div>
+  <p style="color:#64748b;font-size:11px;margin:0 0 20px">Pipeline: ${(pipelineMs/1000).toFixed(1)}s • ID: ${report.id} • Hash: ${reportHash.substring(0, 12)}… • Schema: ${SCHEMA.name} • Policy: ${POLICY.name}</p>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px"><p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Question</p><p style="color:#f1f5f9;font-size:14px;margin:0">${question}</p></div>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px"><p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Policy Decision (${POLICY.name})</p><p style="font-size:16px;margin:0">${policyEmoji} <strong style="color:${decColor}">${decision.toUpperCase()}</strong> — Avg: ${(finalVeracitySummary.avg_score*100).toFixed(0)}% | Min: ${(finalVeracitySummary.min_score*100).toFixed(0)}% | Max: ${(finalVeracitySummary.max_score*100).toFixed(0)}%</p><p style="color:#94a3b8;font-size:12px;margin:4px 0 0">${leaf5.reason}</p></div>
+  <div style="margin:0 0 16px"><p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px">Claims (${claims.length})</p><table style="width:100%;border-collapse:collapse;background:#1e293b;border:1px solid #334155;border-radius:8px"><thead><tr><th style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;border-bottom:1px solid #475569">ID</th><th style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;border-bottom:1px solid #475569">Claim</th><th style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;border-bottom:1px solid #475569">Veracity</th><th style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;border-bottom:1px solid #475569">Conf</th></tr></thead><tbody>${claimRows}</tbody></table></div>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px"><p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Risks</p><ul style="margin:0;padding:0 0 0 16px">${riskRows}</ul></div>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px"><p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Verified Synthesis</p><p style="color:#e2e8f0;font-size:13px;line-height:1.6;margin:0">${leaf7}</p></div>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;margin:0 0 16px"><p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Cryptographic Anchor</p><p style="color:#38bdf8;font-family:monospace;font-size:11px;margin:0;word-break:break-all">SHA-256: ${reportHash}</p><p style="color:#64748b;font-size:10px;margin:4px 0 0">Schema: ${SCHEMA.name} • Hash: ${SCHEMA.hash_algo} • Node 3: outbox_queued • Latency: LLM ${(llmDraftMs/1000).toFixed(1)}s / Verify ${(verificationMs/1000).toFixed(1)}s / Synth ${(synthesisMs/1000).toFixed(1)}s</p></div>
+  <div style="border-top:1px solid #334155;padding-top:12px"><p style="color:#475569;font-size:10px;margin:0">${ENGINE.name} v${ENGINE.version}</p></div>
 </div>`;
 
         await base44.asServiceRole.integrations.Core.SendEmail({
@@ -424,7 +484,8 @@ Write the final verified answer:`,
       return Response.json({
         report_id: report.id,
         status: 'complete',
-        schema_version: 'v1',
+        schema: SCHEMA.name,
+        schema_version: SCHEMA.version,
         question: question.trim(),
         raw_answer: rawAnswer,
         leaf1_claims: claims,
@@ -434,8 +495,10 @@ Write the final verified answer:`,
         leaf5_policy: leaf5,
         leaf6_risks: leaf6,
         leaf7_synthesis: leaf7,
-        processing_ms: processingMs,
+        processing_ms: pipelineMs,
+        latency,
         report_hash: reportHash,
+        hash_algo: SCHEMA.hash_algo,
         veracity_summary: finalVeracitySummary,
         nft_metadata: nftMetadata,
         node3_outbox: node3Outbox,

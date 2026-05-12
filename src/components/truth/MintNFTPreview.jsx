@@ -65,12 +65,17 @@ export default function MintNFTPreview({ report }) {
           <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3">
             <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Cryptographic Anchor</p>
             <p className="text-cyan-300 font-mono text-[11px] break-all">{hash}</p>
+            <div className="flex gap-3 mt-1.5 text-[9px] text-white/20">
+              <span>Schema: TruthReportV1</span>
+              <span>Hash: sha256</span>
+              <span>NFT: ResearchNFTMetadataV1</span>
+            </div>
           </div>
 
           {/* Metadata JSON */}
           <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-white/40 text-[10px] uppercase tracking-wider">NFT Metadata (Frozen Schema)</p>
+              <p className="text-white/40 text-[10px] uppercase tracking-wider">ResearchNFTMetadataV1 (Read-Only)</p>
               <Button
                 variant="ghost"
                 size="sm"
@@ -125,8 +130,8 @@ export default function MintNFTPreview({ report }) {
             )}
           </Button>
 
-          <p className="text-white/20 text-[10px] text-center">
-            NFT minting will be enabled when Node 3 integration is live. Your intent is logged on the TruthReport record.
+          <p className="text-white/20 text-[10px] text-center leading-relaxed">
+            ResearchNFTMetadataV1 is frozen. Mint intent is logged with report_id, report_hash, and veracity_summary. Actual minting will be enabled when Node 3 integration is live.
           </p>
         </div>
       </DialogContent>

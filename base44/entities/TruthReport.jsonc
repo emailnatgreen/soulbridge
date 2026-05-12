@@ -92,9 +92,12 @@
         },
         "overall_veracity": {
           "type": "number"
+        },
+        "ruleset": {
+          "type": "string"
         }
       },
-      "description": "Leaf 5: Policy decision \u2014 allow, flag, or block"
+      "description": "Leaf 5: Policy decision \u2014 allow, flag, or block (TruthPolicyV1)"
     },
     "leaf6_risks": {
       "type": "array",
@@ -138,9 +141,38 @@
       "type": "number",
       "description": "Total pipeline processing time in milliseconds"
     },
+    "latency": {
+      "type": "object",
+      "properties": {
+        "pipeline_ms": {
+          "type": "number"
+        },
+        "llm_draft_ms": {
+          "type": "number"
+        },
+        "claim_extraction_ms": {
+          "type": "number"
+        },
+        "verification_ms": {
+          "type": "number"
+        },
+        "synthesis_ms": {
+          "type": "number"
+        },
+        "hash_ms": {
+          "type": "number"
+        }
+      },
+      "description": "Per-step latency breakdown for engine health monitoring"
+    },
     "report_hash": {
       "type": "string",
-      "description": "SHA-256 hash of the canonical report payload \u2014 cryptographic anchor"
+      "description": "SHA-256 hash of the canonical report payload (sorted keys)"
+    },
+    "hash_algo": {
+      "type": "string",
+      "default": "sha256",
+      "description": "Hash algorithm used for report_hash"
     },
     "veracity_summary": {
       "type": "object",
@@ -161,7 +193,7 @@
           "type": "number"
         }
       },
-      "description": "Pre-computed veracity statistics for Node 3 and NFT metadata"
+      "description": "Pre-computed veracity statistics \u2014 one computation, many surfaces"
     },
     "node3_outbox": {
       "type": "object",
@@ -176,6 +208,12 @@
           ]
         },
         "payload_hash": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "hash_algo": {
           "type": "string"
         },
         "queued_at": {
@@ -208,6 +246,9 @@
         "report_hash": {
           "type": "string"
         },
+        "schema": {
+          "type": "string"
+        },
         "created_at": {
           "type": "string"
         },
@@ -222,22 +263,25 @@
             },
             "max_score": {
               "type": "number"
+            },
+            "claims_count": {
+              "type": "number"
             }
           }
         },
-        "leaves": {
+        "engine": {
           "type": "object",
           "properties": {
-            "claims_count": {
-              "type": "number"
+            "name": {
+              "type": "string"
             },
-            "risks_count": {
-              "type": "number"
+            "version": {
+              "type": "string"
             }
           }
         }
       },
-      "description": "Frozen Research NFT metadata schema \u2014 ready for minting"
+      "description": "ResearchNFTMetadataV1 \u2014 frozen shape for minting"
     },
     "mint_intent": {
       "type": "boolean",
@@ -256,12 +300,12 @@
     "node3_hook": {
       "type": "string",
       "default": "stub",
-      "description": "Future: Node 3 integration status"
+      "description": "Node 3 integration status"
     },
     "base44_hook": {
       "type": "string",
       "default": "stub",
-      "description": "Future: Base44 on-chain integration status"
+      "description": "Base44 on-chain integration status"
     }
   },
   "required": [

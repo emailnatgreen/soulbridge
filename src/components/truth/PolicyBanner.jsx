@@ -18,7 +18,12 @@ export default function PolicyBanner({ policy }) {
       <div className="flex items-center gap-2">
         <Icon className={`w-5 h-5 ${c.color}`} />
         <div>
-          <p className={`text-xs font-bold ${c.color}`}>{c.label}</p>
+          <div className="flex items-center gap-1.5">
+            <p className={`text-xs font-bold ${c.color}`}>{c.label}</p>
+            {policy.ruleset && (
+              <span className="text-[8px] text-white/20 font-mono">{policy.ruleset}</span>
+            )}
+          </div>
           <p className="text-white/40 text-[10px]">{policy.reason}</p>
         </div>
       </div>

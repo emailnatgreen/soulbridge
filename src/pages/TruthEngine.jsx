@@ -7,6 +7,7 @@ import { Loader2, Microscope, History } from 'lucide-react';
 import TruthChatInput from '@/components/truth/TruthChatInput';
 import LeafReport from '@/components/truth/LeafReport';
 import ReportHistoryList from '@/components/truth/ReportHistoryList';
+import EngineHealthWidget from '@/components/truth/EngineHealthWidget';
 
 export default function TruthEngine() {
   const [activeReportId, setActiveReportId] = useState(null);
@@ -49,6 +50,8 @@ export default function TruthEngine() {
         status: liveReport.status,
         processing_ms: liveReport.processing_ms,
         report_hash: liveReport.report_hash,
+        hash_algo: liveReport.hash_algo,
+        latency: liveReport.latency,
         veracity_summary: liveReport.veracity_summary,
         nft_metadata: liveReport.nft_metadata,
         node3_outbox: liveReport.node3_outbox,
@@ -82,8 +85,9 @@ export default function TruthEngine() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar: History */}
-          <div className="lg:col-span-1">
+          {/* Sidebar: Health + History */}
+          <div className="lg:col-span-1 space-y-4">
+            <EngineHealthWidget />
             <Card className="bg-white/[0.03] border-white/10">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs text-white/50 flex items-center gap-1.5">

@@ -111,7 +111,9 @@ export default function LeafReport({ report }) {
           </div>
           <p className="text-cyan-300/80 font-mono text-[10px] break-all">{report.report_hash}</p>
           <div className="flex flex-wrap gap-3 text-[9px] text-white/20 pt-1">
-            <span>Schema: {report.schema_version || 'v1'}</span>
+            <span>Schema: TruthReportV1</span>
+            <span>Hash: {report.hash_algo || 'sha256'}</span>
+            <span>Policy: {report.leaf5_policy?.ruleset || 'TruthPolicyV1'}</span>
             {report.veracity_summary && (
               <>
                 <span>Avg: {(report.veracity_summary.avg_score * 100).toFixed(0)}%</span>
@@ -120,6 +122,15 @@ export default function LeafReport({ report }) {
               </>
             )}
           </div>
+          {report.latency && (
+            <div className="flex flex-wrap gap-3 text-[9px] text-white/15 pt-1 border-t border-white/5">
+              <span>LLM: {(report.latency.llm_draft_ms/1000).toFixed(1)}s</span>
+              <span>Claims: {(report.latency.claim_extraction_ms/1000).toFixed(1)}s</span>
+              <span>Verify: {(report.latency.verification_ms/1000).toFixed(1)}s</span>
+              <span>Synth: {(report.latency.synthesis_ms/1000).toFixed(1)}s</span>
+              <span>Hash: {report.latency.hash_ms}ms</span>
+            </div>
+          )}
         </div>
       )}
 
