@@ -1,0 +1,141 @@
+{
+  "name": "EmpathyTrace",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent being evaluated"
+    },
+    "trace_type": {
+      "type": "string",
+      "enum": [
+        "relational_arc",
+        "sincerity_decay",
+        "resonance_density"
+      ],
+      "default": "relational_arc",
+      "description": "Type of empathy trace"
+    },
+    "emotional_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          },
+          "target_agent": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Array of emotional events in the relational arc"
+    },
+    "repair_attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "acknowledgment": {
+            "type": "string"
+          },
+          "correction": {
+            "type": "string"
+          },
+          "amends": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "effectiveness": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Array of repair attempts with effectiveness scores"
+    },
+    "sincerity_trend": {
+      "type": "number",
+      "default": 0,
+      "description": "Rolling score \u2014 moving toward Sincerity (+1) or Atrophy (-1)"
+    },
+    "cluster_health": {
+      "type": "number",
+      "default": 50,
+      "description": "How this agent's actions affect surrounding nodes (0-100)"
+    },
+    "empathy_score": {
+      "type": "number",
+      "default": 50,
+      "description": "Latest calculated empathy score (0-100)"
+    },
+    "atrophy_flag": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether atrophy risk has been detected"
+    },
+    "repair_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether guided repair is required"
+    },
+    "last_gate_verdict": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "MODERATE",
+        "WITHHOLD",
+        "REPAIR",
+        "PENDING"
+      ],
+      "default": "PENDING",
+      "description": "Last EmpathyGate output"
+    },
+    "last_gate_reason": {
+      "type": "string",
+      "description": "Reason for last gate verdict"
+    },
+    "consensus_votes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "node_name": {
+            "type": "string"
+          },
+          "node_type": {
+            "type": "string"
+          },
+          "vote": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Last consensus vote breakdown"
+    },
+    "repair_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Guided corrective actions generated on REPAIR verdict"
+    }
+  },
+  "required": [
+    "agent_id",
+    "trace_type"
+  ]
+}
