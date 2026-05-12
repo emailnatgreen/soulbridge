@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Database, Sparkles, ShieldCheck, AlertTriangle, TrendingDown, TrendingUp, Minus, Eye } from 'lucide-react';
 import RealitySignalCard from './veracity/RealitySignalCard';
 import VeracityAgentRow from './veracity/VeracityAgentRow';
+import MonkeySignalsPanel from './veracity/MonkeySignalsPanel';
 
 export default function VeracityDashboard() {
   const [selectedAgentId, setSelectedAgentId] = useState(null);
@@ -203,16 +204,21 @@ export default function VeracityDashboard() {
                 />
               </div>
 
-              {/* Methodology Note */}
+              {/* Spindle Methodology Note */}
               <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
                 <p className="text-white/20 text-[10px] leading-relaxed">
-                  <span className="text-amber-400/50 font-semibold">Scoring Method:</span> deterministic_v8 — 
+                  <span className="text-amber-400/50 font-semibold">Spindle Method:</span> deterministic_v8 — 
                   Reality Score = Honor({signals.honor_score}) + Status({signals.status_penalty}) + 
                   Tripwires({signals.tripwire_penalty}) + Severity({signals.severity_penalty}) + 
                   Blocks({signals.block_ratio_penalty}) + Warnings({signals.warning_penalty}) + 
                   Age(+{signals.age_bonus}) + Activity(+{signals.activity_bonus}) = {realityData.reality_score}. 
-                  No LLM. No prompts. Pure entity math. Combined with behavioral trace at 60/40 weighting for final Spindle verdict.
+                  No LLM. No prompts. Pure entity math.
                 </p>
+              </div>
+
+              {/* Monkey Layer Signals */}
+              <div className="border-t border-white/5 pt-4">
+                <MonkeySignalsPanel agentId={selectedAgentId} showLore={showLore} />
               </div>
             </div>
           ) : null}

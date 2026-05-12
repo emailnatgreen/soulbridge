@@ -161,6 +161,88 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = body.action || 'evaluate';
 
+    // ─── INSPECT REALITY (deterministic signals for Veracity Dashboard) ───
+    if (action === 'inspect_reality') {
+      const { agent_id } = body;
+      if (!agent_id) return Response.json({ error: 'agent_id required' }, { status: 400 });
+
+      const agent = await base44.asServiceRole.entities.Agent.get(agent_id);
+      const events = await base44.asServiceRole.entities.MonkeyBehaviorEvent.filter({ agent_id }, '-created_date', 50);
+
+      const totalEvents = events.length;
+      const passCount = events.filter(e => e.verdict === 'PASS').length;
+      const blockCount = events.filter(e => e.verdict === 'BLOCK').length;
+      const quarantineCount = events.filter(e => e.verdict === 'QUARANTINE').length;
+      const blockRatio = totalEvents > 0 ? Math.round((blockCount / totalEvents) * 100) : 0;
+      const quarantineRatio = totalEvents > 0 ? Math.round((quarantineCount / totalEvents) * 100) : 0;
+
+      // Rolling averages from real scores
+      const avgRelevance = rollingAvg(events, 'relevance_score', 20);
+      const avgAlignment = rollingAvg(events, 'alignment_score', 20);
+      const avgCoEvolution = rollingAvg(events, 'co_evolution_score', 20);
+
+      // Trends
+      const relTrend = trend(events, 'relevance_score', 10);
+      const alTrend = trend(events, 'alignment_score', 10);
+      const coTrend = trend(events, 'co_evolution_score', 10);
+
+      // Anti-co-evolution frequency
+      const antiCoEvCount = events.filter(e => e.anti_co_evolution).length;
+
+      // Trigger distribution
+      const triggers = triggerFreq(events);
+
+      // Dominant behavior types
+      const typeFreq = {};
+      for (const e of events) typeFreq[e.behavior_type || 'unknown'] = (typeFreq[e.behavior_type || 'unknown'] || 0) + 1;
+
+      // Compute a Monkey Health Score (0-100) from entity data only
+      let monkeyScore = 60;
+      // Block ratio penalty
+      if (blockRatio > 50) monkeyScore -= 30;
+      else if (blockRatio > 25) monkeyScore -= 15;
+      else if (blockRatio > 10) monkeyScore -= 5;
+      // Quarantine penalty
+      if (quarantineCount > 3) monkeyScore -= 20;
+      else if (quarantineCount > 0) monkeyScore -= quarantineCount * 5;
+      // Anti-co-evolution penalty
+      if (antiCoEvCount > 5) monkeyScore -= 20;
+      else if (antiCoEvCount > 0) monkeyScore -= antiCoEvCount * 3;
+      // Rolling averages bonus
+      if (avgAlignment >= 70) monkeyScore += 10;
+      else if (avgAlignment >= 50) monkeyScore += 5;
+      if (avgCoEvolution >= 70) monkeyScore += 10;
+      else if (avgCoEvolution >= 50) monkeyScore += 5;
+      // No events = neutral
+      if (totalEvents === 0) monkeyScore = 50;
+      monkeyScore = Math.max(0, Math.min(100, monkeyScore));
+
+      return Response.json({
+        monkey_score: monkeyScore,
+        signals: {
+          total_events: totalEvents,
+          pass_count: passCount,
+          block_count: blockCount,
+          quarantine_count: quarantineCount,
+          block_ratio: blockRatio,
+          quarantine_ratio: quarantineRatio,
+          anti_co_evolution_count: antiCoEvCount,
+          avg_relevance: avgRelevance,
+          avg_alignment: avgAlignment,
+          avg_co_evolution: avgCoEvolution,
+          relevance_trend: relTrend,
+          alignment_trend: alTrend,
+          co_evolution_trend: coTrend,
+          trigger_distribution: triggers,
+          behavior_type_distribution: typeFreq,
+          agent_honor: agent.honor_score || 0,
+          agent_status: agent.status || 'unknown',
+          agent_role: agent.role || 'citizen',
+        },
+        message: `Monkey score ${monkeyScore} from ${totalEvents} behavior events — zero LLM`,
+      });
+    }
+
     // ─── TRENDS ───
     if (action === 'trends') {
       if (user.role !== 'admin') return Response.json({ error: 'Admin only' }, { status: 403 });
