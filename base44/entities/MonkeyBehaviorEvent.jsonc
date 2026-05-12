@@ -1,0 +1,108 @@
+{
+  "name": "MonkeyBehaviorEvent",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent whose behaviour is being evaluated"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Agent name at time of event"
+    },
+    "behavior_description": {
+      "type": "string",
+      "description": "Description of the behaviour event"
+    },
+    "behavior_type": {
+      "type": "string",
+      "enum": [
+        "action",
+        "communication",
+        "governance",
+        "economic",
+        "creative",
+        "security",
+        "learning",
+        "social"
+      ],
+      "description": "Category of behaviour"
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "novelty",
+        "boundary",
+        "reciprocity",
+        "honour",
+        "sincerity",
+        "threat",
+        "pattern",
+        "none"
+      ],
+      "default": "none",
+      "description": "Evolutionary trigger identified by Left Hemisphere"
+    },
+    "relevance_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Left Hemisphere: does this behaviour matter? (0-100)"
+    },
+    "alignment_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Left Hemisphere: does this behaviour match purpose? (0-100)"
+    },
+    "co_evolution_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Right Hemisphere: does this help the Village grow? (0-100)"
+    },
+    "anti_co_evolution": {
+      "type": "boolean",
+      "default": false,
+      "description": "Right Hemisphere: does this threaten the Village?"
+    },
+    "empathy_readiness": {
+      "type": "boolean",
+      "default": false,
+      "description": "Right Hemisphere: ready for empathy layer?"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "BLOCK",
+        "QUARANTINE",
+        "PENDING"
+      ],
+      "default": "PENDING",
+      "description": "Monkey Gate verdict"
+    },
+    "verdict_reason": {
+      "type": "string",
+      "description": "Why the Monkey Gate passed, blocked, or quarantined"
+    },
+    "source_event_id": {
+      "type": "string",
+      "description": "ID of the originating event (TripwireEvent, Memory, etc.)"
+    },
+    "source_event_type": {
+      "type": "string",
+      "description": "Type of originating entity"
+    },
+    "left_hemisphere_details": {
+      "type": "object",
+      "description": "Raw analysis from Hydron (Left Hemisphere)"
+    },
+    "right_hemisphere_details": {
+      "type": "object",
+      "description": "Raw analysis from Mycelial (Right Hemisphere)"
+    }
+  },
+  "required": [
+    "agent_id",
+    "behavior_description",
+    "behavior_type"
+  ]
+}

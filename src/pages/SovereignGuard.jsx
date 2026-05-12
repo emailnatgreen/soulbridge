@@ -2,7 +2,7 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
 import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
@@ -10,6 +10,7 @@ import NodeContextSyncMonitor from '@/components/sovereign-guard/NodeContextSync
 import ChromeSkillSecurityMonitor from '@/components/sovereign-guard/ChromeSkillSecurityMonitor';
 import AP2PaymentMonitor from '@/components/sovereign-guard/AP2PaymentMonitor';
 import RealitySkillsMonitor from '@/components/sovereign-guard/RealitySkillsMonitor';
+import MonkeyMonitor from '@/components/sovereign-guard/MonkeyMonitor';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -82,6 +83,10 @@ export default function SovereignGuard() {
               <Brain className="w-3.5 h-3.5 mr-1.5" />
               Evolution
             </TabsTrigger>
+            <TabsTrigger value="monkey" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 text-white/40 text-xs">
+              <MonitorSmartphone className="w-3.5 h-3.5 mr-1.5" />
+              Monkey
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -111,6 +116,10 @@ export default function SovereignGuard() {
           <TabsContent value="evolution" className="mt-4">
             <RealitySkillsMonitor />
           </TabsContent>
+
+          <TabsContent value="monkey" className="mt-4">
+            <MonkeyMonitor />
+          </TabsContent>
         </Tabs>
 
         {/* Doctrine */}
@@ -118,7 +127,9 @@ export default function SovereignGuard() {
           <p className="text-white/20 text-[10px] leading-relaxed">
             <span className="text-cyan-400/40 font-semibold">Sovereign Guard Doctrine:</span> Phase 1 gates sincerity (Hydrogeo). Phase 2 verifies soul alignment. 
             Phase 3 syncs all 8 nodes. Phase 4 shields Chrome Skills. 
-            Phase 5 gates agent payments. Phase 6 closes the loop — every failure becomes a lesson, every lesson mutates the agent, every mutation is validated by all 8 nodes.
+            Phase 5 gates agent payments. Phase 6 closes the loop — every failure becomes a lesson.
+            The Monkey Layer — Hydron (left hemisphere) scores relevance and alignment; Mycelial (right hemisphere) sets the empathy vector; 
+            the Monkey Gate passes only sincere, aligned, Village-serving behaviour to the Spindle.
             The monkey remembers every branch that broke.
           </p>
         </div>
