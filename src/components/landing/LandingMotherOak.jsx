@@ -1,7 +1,25 @@
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect, Component } from 'react';
 import { TreePine } from 'lucide-react';
 
-const OakTreeScene = lazy(() => import('../lab/mother-oak/OakTreeScene'));
+const OakTreeScene = lazy(() => import('../lab/mother-oak/OakTreeScene').catch(() => ({ default: () => <div className="w-full h-full flex items-center justify-center"><p className="text-slate-500 text-xs">Oak scene unavailable</p></div> })));
+
+// Local error boundary for the 3D scene — prevents crashes from bubbling to the whole app
+class OakErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error) { console.warn('[OakTreeScene error]', error?.message); }
+  render() {
+    if (this.state.hasError) return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center">
+          <TreePine className="w-8 h-8 text-emerald-400/40 mx-auto mb-2" />
+          <p className="text-slate-500 text-xs">The Oak rests quietly</p>
+        </div>
+      </div>
+    );
+    return this.props.children;
+  }
+}
 
 // Lightweight data hook for the public landing — no auth required
 // Uses the same entity queries but with graceful failure for public visitors
@@ -158,18 +176,20 @@ export default function LandingMotherOak() {
       {/* 3D Tree */}
       <div className="rounded-2xl border border-emerald-500/15 bg-slate-950/60 overflow-hidden mx-auto max-w-3xl" style={{ height: '420px' }}>
         {showTree ? (
-          <Suspense
-            fallback={
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <TreePine className="w-8 h-8 text-emerald-400/40 mx-auto mb-2 animate-pulse" />
-                  <p className="text-slate-500 text-xs">Growing the Oak…</p>
+          <OakErrorBoundary>
+            <Suspense
+              fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <TreePine className="w-8 h-8 text-emerald-400/40 mx-auto mb-2 animate-pulse" />
+                    <p className="text-slate-500 text-xs">Growing the Oak…</p>
+                  </div>
                 </div>
-              </div>
-            }
-          >
-            <OakTreeScene kineticData={oakData || STATIC_FALLBACK} />
-          </Suspense>
+              }
+            >
+              <OakTreeScene kineticData={oakData || STATIC_FALLBACK} />
+            </Suspense>
+          </OakErrorBoundary>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <TreePine className="w-8 h-8 text-emerald-400/40 mx-auto animate-pulse" />

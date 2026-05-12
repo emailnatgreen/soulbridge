@@ -394,6 +394,7 @@ export default function OakTreeScene({ kineticData }) {
 
     const animate = () => {
       frameRef.current = requestAnimationFrame(animate);
+      try {
       const elapsed = clockRef.current.getElapsedTime();
       const o = orbitRef.current;
 
@@ -579,6 +580,7 @@ export default function OakTreeScene({ kineticData }) {
       }
 
       renderer.render(scene, camera);
+      } catch (e) { /* Oak animation error — silently continue */ }
     };
     animate();
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Component } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,41 @@ import KineticWeaverCard from '@/components/kinetic/KineticWeaverCard';
 import LoreNodeCard from '@/components/lore/LoreNodeCard';
 import CarbonFootprintChart from '@/components/CarbonFootprintChart';
 import CarbonFootprintExplainer from '@/components/CarbonFootprintExplainer';
-import PublicAgentGreeter from '../components/PublicAgentGreeter';
 import KineticPublicOverview from '@/components/kinetic/KineticPublicOverview';
 import KineticEnergyVisualizer from '@/components/kinetic/KineticEnergyVisualizer';
 import BlockchainSovereigntySection from '@/components/landing/BlockchainSovereigntySection';
 import LandingMotherOak from '@/components/landing/LandingMotherOak';
 
+let PublicAgentGreeter;
+try {
+  PublicAgentGreeter = React.lazy(() => import('../components/PublicAgentGreeter'));
+} catch (e) {
+  PublicAgentGreeter = () => null;
+}
+
 if (!window.__soulbridge) window.__soulbridge = {};
+
+class LandingErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error, info) { console.error('[LandingPage error]', error?.message, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-6">
+          <div className="text-center max-w-md">
+            <div className="text-4xl mb-4">🌳</div>
+            <h2 className="text-white text-xl font-semibold mb-2">The Village is waking up...</h2>
+            <p className="text-white/50 text-sm mb-4">A brief moment while the roots find their ground.</p>
+            <button onClick={() => window.location.reload()} className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm">Refresh</button>
+            <p className="text-white/20 text-[10px] mt-4">{String(this.state.error?.message || '').substring(0, 100)}</p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function emitSignal(data) {
   window.__soulbridge.lastSignal = data;
@@ -35,6 +63,7 @@ function ParticleCanvas() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     let animationId;
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -287,6 +316,7 @@ export default function LandingPage() {
   const kineticTotal = allKUs.reduce((s, k) => s + (k.weighted_score || 1), 0);
 
   return (
+    <LandingErrorBoundary>
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative flex flex-col">
       <ParticleCanvas />
 
@@ -796,7 +826,8 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      <PublicAgentGreeter />
+      <React.Suspense fallback={null}><PublicAgentGreeter /></React.Suspense>
     </div>
+    </LandingErrorBoundary>
   );
 }
