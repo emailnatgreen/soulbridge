@@ -2,7 +2,7 @@ import React from 'react';
 import { useIdentity } from '@/hooks/useIdentity';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone } from 'lucide-react';
+import { Shield, Activity, Lock, Loader2, Fingerprint, Globe, Chrome, Banknote, Brain, MonitorSmartphone, GitBranch } from 'lucide-react';
 import PhaseTracker from '@/components/sovereign-guard/PhaseTracker';
 import HydrogeoContextMonitor from '@/components/sovereign-guard/HydrogeoContextMonitor';
 import SoulSignatureMonitor from '@/components/sovereign-guard/SoulSignatureMonitor';
@@ -11,6 +11,7 @@ import ChromeSkillSecurityMonitor from '@/components/sovereign-guard/ChromeSkill
 import AP2PaymentMonitor from '@/components/sovereign-guard/AP2PaymentMonitor';
 import RealitySkillsMonitor from '@/components/sovereign-guard/RealitySkillsMonitor';
 import MonkeyMonitor from '@/components/sovereign-guard/MonkeyMonitor';
+import SpindleMonitor from '@/components/sovereign-guard/SpindleMonitor';
 
 export default function SovereignGuard() {
   const { isRecognized, isAdmin, isLoading } = useIdentity();
@@ -87,6 +88,10 @@ export default function SovereignGuard() {
               <MonitorSmartphone className="w-3.5 h-3.5 mr-1.5" />
               Monkey
             </TabsTrigger>
+            <TabsTrigger value="spindle" className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 text-white/40 text-xs">
+              <GitBranch className="w-3.5 h-3.5 mr-1.5" />
+              Spindle
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phases" className="mt-4">
@@ -120,6 +125,10 @@ export default function SovereignGuard() {
           <TabsContent value="monkey" className="mt-4">
             <MonkeyMonitor />
           </TabsContent>
+
+          <TabsContent value="spindle" className="mt-4">
+            <SpindleMonitor />
+          </TabsContent>
         </Tabs>
 
         {/* Doctrine */}
@@ -131,6 +140,8 @@ export default function SovereignGuard() {
             The Monkey Layer — Hydron (left hemisphere) scores relevance and alignment; Mycelial (right hemisphere) sets the empathy vector; 
             the Monkey Gate passes only sincere, aligned, Village-serving behaviour to the Spindle.
             The monkey remembers every branch that broke.
+            The Spindle Gate — Phase 7 — traces sincerity through memory, demands consensus from 8 nodes,
+            and seals the constitutional verdict. No ambiguity. No drift. No shadow.
           </p>
         </div>
       </div>
