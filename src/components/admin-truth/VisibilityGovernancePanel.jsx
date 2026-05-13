@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Eye, EyeOff, Lock, Shield, FileText, Sparkles, Info, Clock } from 'lucide-react';
-import { VISIBILITY_DEFAULTS, NFT_LEVELS, TRUTH_LEVELS, SKILL_LEVELS, evaluatePhaseGate, requiresPhaseGate } from '@/lib/visibilityGovernance';
+import { VISIBILITY_DEFAULTS, NFT_LEVELS, TRUTH_LEVELS, SKILL_LEVELS, requiresPhaseGate } from '@/lib/visibilityGovernance';
 import { getReadinessBadgeState } from '@/lib/exposureReadinessEngine';
+import { getGateBadgeState } from '@/lib/phase1CompletionGate';
 import VisibilityConfirmDialog from './VisibilityConfirmDialog';
 import VisibilityWaiverDialog from './VisibilityWaiverDialog';
 
@@ -21,7 +22,7 @@ const LEVEL_STYLES = {
   hidden: 'text-white/40', unlisted: 'text-amber-400', listed: 'text-emerald-400',
 };
 
-export default function VisibilityGovernancePanel({ investigation, buildOrder, exposureReadiness, onVisibilityChange, onWaiversChange, auditLog = [] }) {
+export default function VisibilityGovernancePanel({ investigation, buildOrder, phase1Gate, exposureReadiness, onVisibilityChange, onWaiversChange, auditLog = [] }) {
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [waiverDialog, setWaiverDialog] = useState(false);
   const [localWaivers, setLocalWaivers] = useState([]);
@@ -32,19 +33,25 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, e
     skill_visibility: investigation?.skill_visibility || VISIBILITY_DEFAULTS.skill_visibility,
   }), [investigation]);
 
-  const phaseGate = useMemo(
-    () => evaluatePhaseGate(buildOrder, localWaivers),
-    [buildOrder, localWaivers]
-  );
+  // Phase-1 Gate is the hard lock — it must be open (or overridden) for public
+  const gateState = getGateBadgeState(phase1Gate);
+  const gateClosed = gateState === 'closed';
 
   // ERE-aware: public is blocked if ERE says not ready (unless only waiver-required)
   const ereState = getReadinessBadgeState(exposureReadiness);
   const ereBlocked = ereState === 'blocked';
 
+  // Combined blocker reason for tooltips
+  const combinedBlockReason = gateClosed
+    ? `Phase-1 Gate locked — ${phase1Gate?.blocking_items?.length || 0} blockers`
+    : ereBlocked
+      ? 'ERE: not ready for exposure'
+      : null;
+
   const handleChange = (field, newValue) => {
     const needsGate = requiresPhaseGate(field, newValue);
-    if (needsGate && (!phaseGate.allowed || ereBlocked)) {
-      // Block — phase gate or ERE says no
+    if (needsGate && (gateClosed || ereBlocked)) {
+      // Block — hard gate or ERE says no
       return;
     }
     if (needsGate) {
@@ -86,15 +93,21 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, e
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {/* Gate status — combined phase gate + ERE */}
-          <div className={`rounded-lg border p-2.5 text-[10px] flex items-center gap-2 ${(phaseGate.allowed && !ereBlocked) ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400' : 'border-red-500/20 bg-red-500/5 text-red-400'}`}>
-            {(phaseGate.allowed && !ereBlocked) ? <Eye className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-            <span>{ereBlocked && phaseGate.allowed ? 'ERE: not ready for exposure' : phaseGate.reason}</span>
-            {phaseGate.waivedCount > 0 && (
-              <Badge className="text-[7px] bg-amber-500/15 text-amber-300 border-amber-500/25 ml-auto">{phaseGate.waivedCount} waived</Badge>
+          {/* Gate status — Phase-1 Gate + ERE combined */}
+          <div className={`rounded-lg border p-2.5 text-[10px] flex items-center gap-2 ${(!gateClosed && !ereBlocked) ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400' : 'border-red-500/20 bg-red-500/5 text-red-400'}`}>
+            {(!gateClosed && !ereBlocked) ? <Eye className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+            <span>
+              {gateClosed
+                ? `Phase-1 Gate locked — ${phase1Gate?.blocking_items?.length || 0} blockers`
+                : ereBlocked
+                  ? 'ERE: not ready for exposure'
+                  : 'Gate open · ERE clear — public exposure permitted'}
+            </span>
+            {gateState === 'overridden' && (
+              <Badge className="text-[7px] bg-amber-500/15 text-amber-300 border-amber-500/25 ml-auto">{phase1Gate?.waiver_log?.length || 0} waived</Badge>
             )}
-            {!phaseGate.allowed && phaseGate.blockers.length > 0 && (
-              <Button onClick={() => setWaiverDialog(true)} variant="ghost" size="sm" className="text-red-400 text-[9px] h-5 px-2 ml-auto hover:text-red-300">
+            {gateClosed && (phase1Gate?.blocking_items?.length || 0) > 0 && (
+              <Button data-waiver-trigger onClick={() => setWaiverDialog(true)} variant="ghost" size="sm" className="text-red-400 text-[9px] h-5 px-2 ml-auto hover:text-red-300">
                 Waive Blockers
               </Button>
             )}
@@ -105,7 +118,7 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, e
             {SWITCH_CONFIG.map(cfg => {
               const Icon = cfg.icon;
               const currentValue = visibility[cfg.field];
-              const publicBlocked = !phaseGate.allowed || ereBlocked;
+              const publicBlocked = gateClosed || ereBlocked;
 
               return (
                 <div key={cfg.field} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-2.5">
@@ -140,7 +153,7 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, e
                             </TooltipTrigger>
                             {disabled && (
                               <TooltipContent side="left" className="bg-slate-900 border-white/10 text-[10px] text-red-300 max-w-48">
-                                {phaseGate.reason}
+                                {combinedBlockReason || 'Public exposure blocked'}
                               </TooltipContent>
                             )}
                           </Tooltip>
@@ -188,7 +201,7 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, e
         open={waiverDialog}
         onClose={() => setWaiverDialog(false)}
         onWaive={handleWaivers}
-        blockers={phaseGate.blockers}
+        blockers={phase1Gate?.blocking_items || []}
       />
     </TooltipProvider>
   );

@@ -9,10 +9,13 @@ import AdminLeafEngine from '@/components/admin-truth/AdminLeafEngine';
 import InvestigationHistory from '@/components/admin-truth/InvestigationHistory';
 import InvestigationFilters from '@/components/admin-truth/InvestigationFilters';
 import BuildOrderEngine from '@/components/admin-truth/BuildOrderEngine';
+import Phase1GatePanel from '@/components/admin-truth/Phase1GatePanel';
+import Phase1GateBadge from '@/components/admin-truth/Phase1GateBadge';
 import ExposureReadinessPanel from '@/components/admin-truth/ExposureReadinessPanel';
 import ExposureReadinessBadge from '@/components/admin-truth/ExposureReadinessBadge';
 import VisibilityGovernancePanel from '@/components/admin-truth/VisibilityGovernancePanel';
 import { computeBuildOrder } from '@/lib/buildOrderEngine';
+import { evaluatePhase1Gate } from '@/lib/phase1CompletionGate';
 import { evaluateExposureReadiness } from '@/lib/exposureReadinessEngine';
 
 function parseInvestigation(memory) {
@@ -106,7 +109,13 @@ export default function AdminTruthEngine() {
     ? liveResult
     : filteredInvestigations.find(inv => inv.id === activeId) || null;
 
-  // ERE — recomputed automatically whenever inputs change
+  // Phase-1 Gate — hard lock, recomputed whenever build order or waivers change
+  const phase1Gate = useMemo(() => {
+    if (!currentInvestigation || !currentBuildOrder) return null;
+    return evaluatePhase1Gate(currentInvestigation.leaves, currentBuildOrder, localWaivers);
+  }, [currentInvestigation, currentBuildOrder, localWaivers]);
+
+  // ERE — recomputed automatically whenever inputs change (consumes gate result)
   const exposureReadiness = useMemo(() => {
     if (!currentInvestigation) return null;
     return evaluateExposureReadiness(
@@ -225,6 +234,7 @@ export default function AdminTruthEngine() {
                           {currentInvestigation.metrics?.critical_risks > 0 && (
                             <Badge className="text-[9px] bg-red-500/15 text-red-300 border-red-500/30">{currentInvestigation.metrics.critical_risks} critical</Badge>
                           )}
+                          <Phase1GateBadge result={phase1Gate} />
                           <ExposureReadinessBadge result={exposureReadiness} />
                         </div>
                       </div>
@@ -249,13 +259,24 @@ export default function AdminTruthEngine() {
                 {/* Build Order Engine */}
                 <BuildOrderEngine investigation={currentInvestigation} onBuildOrderComputed={setCurrentBuildOrder} />
 
+                {/* Phase-1 Completion Gate — hard lock (severity pillar) */}
+                <Phase1GatePanel
+                  result={phase1Gate}
+                  onRequestWaiver={() => {
+                    // Handled by the VisibilityGovernancePanel waiver dialog below
+                    const waiverBtn = document.querySelector('[data-waiver-trigger]');
+                    if (waiverBtn) waiverBtn.click();
+                  }}
+                />
+
                 {/* Exposure Readiness Engine — deterministic governance intelligence */}
                 <ExposureReadinessPanel result={exposureReadiness} />
 
-                {/* Visibility Governance — Phase-gated 3-switch model, informed by ERE */}
+                {/* Visibility Governance — gated by Phase-1 Gate + ERE */}
                 <VisibilityGovernancePanel
                   investigation={currentInvestigation}
                   buildOrder={currentBuildOrder}
+                  phase1Gate={phase1Gate}
                   exposureReadiness={exposureReadiness}
                   auditLog={currentInvestigation.visibility_audit_log || []}
                   onVisibilityChange={(field, newValue, reason) => {
@@ -298,7 +319,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.3.0:</span> Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine (4-phase) → Exposure Readiness Engine (5 criteria: Phase 1 complete, no critical risks, no integrity flags, weight stability, Leaf 7 recommendation) → Visibility Governance (3-switch, ERE-gated). Four-layer governance stack: 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. ERE (is it safe to expose). SHA-256 → Sovereign Memory. Deterministic. Auditable. Governance-safe.
+          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.4.0:</span> Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine (4-phase) → Phase‑1 Completion Gate (hard lock: 5 criteria — steps, blockers, risks, contradictions, weight) → Exposure Readiness Engine (gate + Leaf 7 recommendation) → Visibility Governance (3-switch, gate-gated). Five-layer governance spine: 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. Phase‑1 Gate (is it structurally sound) · 5. ERE (is it safe to expose). SHA-256 → Sovereign Memory. Deterministic. Auditable. Governance-safe.
           </p>
         </div>
       </div>

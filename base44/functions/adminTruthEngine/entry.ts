@@ -15,7 +15,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Actions: investigate | list | get | toggle_visibility
  */
 
-const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.3.0' };
+const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.4.0' };
 
 // ═══ STEP 2A — Deterministic Suggested Weight Formula ═══
 // weight = (risk × impact) + contradictions + dependencies
