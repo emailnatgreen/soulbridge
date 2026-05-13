@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Microscope, History, Shield, Hash } from 'lucide-react';
+import { Loader2, Microscope, History, Shield, Hash, Fingerprint } from 'lucide-react';
 import InvestigationInput from '@/components/admin-truth/InvestigationInput';
 import AdminLeafEngine from '@/components/admin-truth/AdminLeafEngine';
 import InvestigationHistory from '@/components/admin-truth/InvestigationHistory';
@@ -17,6 +17,8 @@ import VisibilityGovernancePanel from '@/components/admin-truth/VisibilityGovern
 import { computeBuildOrder } from '@/lib/buildOrderEngine';
 import { evaluatePhase1Gate } from '@/lib/phase1CompletionGate';
 import { evaluateExposureReadiness } from '@/lib/exposureReadinessEngine';
+import SovereignIdentityPanel from '@/components/admin-truth/SovereignIdentityPanel';
+import { computeSovereignIdentity } from '@/lib/sovereignIdentity';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -37,6 +39,7 @@ function parseInvestigation(memory) {
     truth_visibility: meta.truth_visibility || 'private',
     skill_visibility: meta.skill_visibility || 'hidden',
     visibility_audit_log: meta.visibility_audit_log || [],
+    sovereign_signature: meta.sovereign_signature || null,
     frozen_at: meta.frozen_at,
     created_date: memory.created_date,
   };
@@ -48,7 +51,13 @@ export default function AdminTruthEngine() {
   const [filters, setFilters] = useState({ target_type: 'all', risk_level: 'all', status: 'all', visibility: 'all' });
   const [currentBuildOrder, setCurrentBuildOrder] = useState(null);
   const [localWaivers, setLocalWaivers] = useState([]);
+  const [sovereignId, setSovereignId] = useState(null);
   const queryClient = useQueryClient();
+
+  // Compute sovereign identity once on mount
+  React.useEffect(() => {
+    computeSovereignIdentity().then(setSovereignId);
+  }, []);
 
   // Load investigation history
   const { data: rawInvestigations = [] } = useQuery({
@@ -154,14 +163,8 @@ export default function AdminTruthEngine() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-4">
-            {/* Sovereign Agent Badge */}
-            <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-violet-400" />
-                <span className="text-violet-300 text-[10px] font-semibold uppercase tracking-wider">Sovereign Investigator</span>
-              </div>
-              <p className="text-white/30 text-[9px]">Private agent • Non-discoverable • Admin-locked • Investigation memory only</p>
-            </div>
+            {/* Sovereign Identity */}
+            <SovereignIdentityPanel />
 
             {/* Filters */}
             <Card className="bg-white/[0.03] border-white/10">
@@ -285,12 +288,18 @@ export default function AdminTruthEngine() {
                   onWaiversChange={setLocalWaivers}
                 />
 
-                {/* Hash Footer */}
+                {/* Hash Footer — enriched with sovereign identity anchor */}
                 {currentInvestigation.report_hash && (
-                  <div className="rounded-lg border border-violet-500/10 bg-violet-500/5 p-3 space-y-1">
+                  <div className="rounded-lg border border-violet-500/10 bg-violet-500/5 p-3 space-y-1.5">
                     <div className="flex items-center gap-1.5">
                       <Hash className="w-3 h-3 text-violet-400/60" />
                       <p className="text-violet-400/60 text-[10px] uppercase tracking-wider font-semibold">Investigation Anchor</p>
+                      {sovereignId && (
+                        <div className="ml-auto flex items-center gap-1">
+                          <Fingerprint className="w-3 h-3 text-violet-400/40" />
+                          <span className="text-violet-400/40 font-mono text-[8px]">{sovereignId.public_surface.public_fingerprint}</span>
+                        </div>
+                      )}
                     </div>
                     <p className="text-violet-300/80 font-mono text-[10px] break-all">{currentInvestigation.report_hash}</p>
                     <div className="flex flex-wrap gap-3 text-[9px] text-white/20 pt-1">
@@ -299,6 +308,7 @@ export default function AdminTruthEngine() {
                       <span>Type: {currentInvestigation.target_type}</span>
                       <span>NFT: {currentInvestigation.nft_visibility} · Truth: {currentInvestigation.truth_visibility} · Skill: {currentInvestigation.skill_visibility}</span>
                       {currentInvestigation.frozen_at && <span>Frozen: {new Date(currentInvestigation.frozen_at).toLocaleString()}</span>}
+                      {sovereignId && <span>Signed by: {sovereignId.public_surface.public_fingerprint}</span>}
                     </div>
                   </div>
                 )}
@@ -319,7 +329,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.4.0:</span> Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine (4-phase) → Phase‑1 Completion Gate (hard lock: 5 criteria — steps, blockers, risks, contradictions, weight) → Exposure Readiness Engine (gate + Leaf 7 recommendation) → Visibility Governance (3-switch, gate-gated). Five-layer governance spine: 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. Phase‑1 Gate (is it structurally sound) · 5. ERE (is it safe to expose). SHA-256 → Sovereign Memory. Deterministic. Auditable. Governance-safe.
+          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.5.0:</span> Sovereign Identity (SHA-256 anchor, fingerprint, boundary rules, immutable) → Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine (4-phase) → Phase‑1 Gate (hard lock) → ERE (readiness) → Visibility Governance (3-switch, gate-gated). Six-layer governance spine: 0. Sovereign Identity (who signs) · 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. Phase‑1 Gate (is it structurally sound) · 5. ERE (is it safe to expose). Every artefact signed by sovereign fingerprint. Deterministic. Auditable. Tamper-proof.
           </p>
         </div>
       </div>

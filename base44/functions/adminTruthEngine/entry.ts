@@ -15,7 +15,26 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Actions: investigate | list | get | toggle_visibility
  */
 
-const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.4.0' };
+const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.5.0' };
+
+// ═══ Sovereign Identity — computed once, embedded in every artefact ═══
+const SOVEREIGN_CONFIG = {
+  agent_id: 'sovereign_investigator',
+  name: 'Sovereign Investigator',
+  version: '1.0.0',
+  genesis_date: '2025-01-01T00:00:00.000Z',
+  purpose: 'Private, admin-only agent that conducts structured 7-Leaf investigations of nodes, agents, features, and system integrity.',
+  classification: 'sovereign_private',
+  discoverable: false, editable: false, movable: false, duplicable: false, overridable: false, impersonable: false,
+};
+let _sovereignHash = null;
+async function getSovereignIdentity() {
+  if (!_sovereignHash) {
+    _sovereignHash = await sha256(SOVEREIGN_CONFIG);
+  }
+  const fp = _sovereignHash.slice(0, 16).toUpperCase().match(/.{1,4}/g).join('-');
+  return { identity_hash: _sovereignHash, fingerprint: fp };
+}
 
 // ═══ STEP 2A — Deterministic Suggested Weight Formula ═══
 // weight = (risk × impact) + contradictions + dependencies
@@ -117,7 +136,10 @@ Deno.serve(async (req) => {
         meta.is_public = new_value === 'public';
       }
 
-      // Append immutable audit log entry
+      // Sovereign identity — sign the audit entry
+      const sovereign = await getSovereignIdentity();
+
+      // Append immutable audit log entry (signed)
       if (!meta.visibility_audit_log) meta.visibility_audit_log = [];
       meta.visibility_audit_log.push({
         timestamp: new Date().toISOString(),
@@ -126,6 +148,7 @@ Deno.serve(async (req) => {
         from_state: oldValue,
         to_state: new_value,
         reason: reason || '',
+        signed_by: sovereign.fingerprint,
       });
 
       await base44.asServiceRole.entities.Memory.update(id, { context: JSON.stringify(meta) });
@@ -389,6 +412,9 @@ LEAF 7 — SYNTHESIS: Produce:
         },
       };
 
+      // ═══ Sovereign Identity Signature ═══
+      const sovereign = await getSovereignIdentity();
+
       // ═══ SHA-256 immutable snapshot ═══
       const reportHash = await sha256({ question, target_type, leaves, metrics, timestamp });
 
@@ -402,6 +428,14 @@ LEAF 7 — SYNTHESIS: Produce:
         hash_algo: 'sha256',
         engine: ENGINE,
         status: 'complete',
+        // Sovereign identity signature — every investigation is signed
+        sovereign_signature: {
+          signer: SOVEREIGN_CONFIG.agent_id,
+          fingerprint: sovereign.fingerprint,
+          identity_hash: sovereign.identity_hash,
+          signed_at: timestamp,
+          payload_hash: reportHash,
+        },
         // Three independent visibility switches — all default private/hidden
         nft_visibility: 'private',
         truth_visibility: 'private',
@@ -431,6 +465,7 @@ LEAF 7 — SYNTHESIS: Produce:
         report_hash: reportHash,
         hash_algo: 'sha256',
         engine: ENGINE,
+        sovereign_signature: metadata.sovereign_signature,
         nft_visibility: 'private',
         truth_visibility: 'private',
         skill_visibility: 'hidden',
