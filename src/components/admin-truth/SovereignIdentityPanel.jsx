@@ -13,9 +13,9 @@ function CopyableHash({ hash, label }) {
   };
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-white/25 text-[9px] w-20 flex-shrink-0">{label}:</span>
-      <span className="text-violet-300/70 font-mono text-[9px] break-all flex-1">{hash}</span>
-      <button onClick={handleCopy} className="text-white/20 hover:text-white/50 flex-shrink-0">
+      <span className="text-slate-400 text-[9px] w-20 flex-shrink-0">{label}:</span>
+      <span className="text-violet-300 font-mono text-[9px] break-all flex-1">{hash}</span>
+      <button onClick={handleCopy} className="text-slate-400 hover:text-slate-200 flex-shrink-0">
         {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
       </button>
     </div>
@@ -31,8 +31,8 @@ function BoundaryRule({ label, items, type }) {
         : <ShieldOff className="w-3 h-3 text-red-400/60 mt-0.5 flex-shrink-0" />
       }
       <div>
-        <span className="text-white/40">{label}: </span>
-        <span className={type === 'allow' ? 'text-emerald-400/60' : 'text-red-400/60'}>
+        <span className="text-slate-400">{label}: </span>
+        <span className={type === 'allow' ? 'text-emerald-300' : 'text-red-300'}>
           {items.join(', ')}
         </span>
       </div>
@@ -66,7 +66,7 @@ export default function SovereignIdentityPanel() {
   const br = identity.boundary_rules;
 
   return (
-    <Card className="bg-violet-500/5 border-violet-500/20">
+    <Card className="bg-violet-950/30 border-violet-500/30">
       <CardHeader className="pb-1.5 pt-3 px-3">
         <CardTitle className="text-[10px] flex items-center gap-1.5">
           <Fingerprint className="w-3.5 h-3.5 text-violet-400" />
@@ -74,7 +74,7 @@ export default function SovereignIdentityPanel() {
           <Badge className={`text-[7px] ml-auto ${verified ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-red-500/15 text-red-300 border-red-500/30'}`}>
             {verified ? 'VERIFIED' : 'TAMPERED'}
           </Badge>
-          <button onClick={() => setExpanded(!expanded)} className="text-white/30 hover:text-white/60 ml-1">
+          <button onClick={() => setExpanded(!expanded)} className="text-slate-400 hover:text-slate-200 ml-1">
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
         </CardTitle>
@@ -86,8 +86,8 @@ export default function SovereignIdentityPanel() {
             <span className="text-violet-300 font-mono text-[11px] font-bold tracking-wider">{ps.public_fingerprint}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white/60 text-[10px] font-medium">{ps.name}</p>
-            <p className="text-white/25 text-[8px]">{ps.classification} · v{ps.version} · {new Date(ps.genesis_date).toLocaleDateString()}</p>
+            <p className="text-slate-200 text-[10px] font-medium">{ps.name}</p>
+            <p className="text-slate-500 text-[8px]">{ps.classification} · v{ps.version} · {new Date(ps.genesis_date).toLocaleDateString()}</p>
           </div>
         </div>
 
@@ -106,40 +106,40 @@ export default function SovereignIdentityPanel() {
 
         {/* Expanded: full identity details */}
         {expanded && (
-          <div className="border-t border-violet-500/10 pt-2 space-y-2.5">
+          <div className="border-t border-violet-500/20 pt-2 space-y-2.5">
             {/* Hashes */}
             <div className="space-y-1">
-              <p className="text-white/20 text-[8px] uppercase tracking-wider font-semibold">Cryptographic Anchors</p>
+              <p className="text-slate-400 text-[8px] uppercase tracking-wider font-semibold">Cryptographic Anchors</p>
               <CopyableHash hash={identity.identity_hash} label="Identity" />
               <CopyableHash hash={ps.public_fingerprint} label="Fingerprint" />
             </div>
 
             {/* Purpose */}
             <div className="space-y-1">
-              <p className="text-white/20 text-[8px] uppercase tracking-wider font-semibold">Purpose</p>
-              <p className="text-white/40 text-[9px] leading-relaxed">{ps.purpose}</p>
+              <p className="text-slate-400 text-[8px] uppercase tracking-wider font-semibold">Purpose</p>
+              <p className="text-slate-300 text-[9px] leading-relaxed">{ps.purpose}</p>
             </div>
 
             {/* Boundary rules */}
             <div className="space-y-1">
-              <p className="text-white/20 text-[8px] uppercase tracking-wider font-semibold">Trust Boundary</p>
+              <p className="text-slate-400 text-[8px] uppercase tracking-wider font-semibold">Trust Boundary</p>
               <BoundaryRule label="Can read" items={br.can_read} type="allow" />
               <BoundaryRule label="Can write" items={br.can_write} type="allow" />
               <BoundaryRule label="Can invoke" items={br.can_invoke} type="allow" />
               <BoundaryRule label="Cannot access" items={br.cannot_access} type="deny" />
               <BoundaryRule label="Cannot expose" items={br.cannot_expose} type="deny" />
-              <div className="flex items-center gap-2 text-[9px] text-white/30">
-                <Eye className="w-3 h-3 text-white/20" />
+              <div className="flex items-center gap-2 text-[9px] text-slate-400">
+                <Eye className="w-3 h-3 text-slate-500" />
                 <span>Scope: {br.scope} · Visibility: {br.visibility}</span>
               </div>
             </div>
 
             {/* Behaviour rules */}
             <div className="space-y-1">
-              <p className="text-white/20 text-[8px] uppercase tracking-wider font-semibold">Enforcement</p>
+              <p className="text-slate-400 text-[8px] uppercase tracking-wider font-semibold">Enforcement</p>
               <div className="grid grid-cols-2 gap-1 text-[8px]">
                 {['editable', 'movable', 'duplicable', 'discoverable', 'overridable', 'impersonable'].map(rule => (
-                  <div key={rule} className="flex items-center gap-1 text-red-400/50">
+                  <div key={rule} className="flex items-center gap-1 text-red-300">
                     <ShieldOff className="w-2.5 h-2.5" />
                     <span>cannot be {rule.replace('able', 'ed').replace('ible', 'ed')}</span>
                   </div>

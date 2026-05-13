@@ -8,11 +8,11 @@ import { queryInvestigations, computeMemoryStats } from '@/lib/investigationMemo
 
 function StatCard({ icon: Icon, label, value, color }) {
   return (
-    <div className="flex items-center gap-2 bg-white/[0.03] rounded-lg border border-white/5 px-2.5 py-1.5">
+    <div className="flex items-center gap-2 bg-slate-800/60 rounded-lg border border-slate-700/50 px-2.5 py-1.5">
       <Icon className={`w-3 h-3 ${color}`} />
       <div>
-        <p className="text-white/60 text-[11px] font-semibold">{value}</p>
-        <p className="text-white/20 text-[8px]">{label}</p>
+        <p className="text-slate-200 text-[11px] font-semibold">{value}</p>
+        <p className="text-slate-500 text-[8px]">{label}</p>
       </div>
     </div>
   );
@@ -36,9 +36,9 @@ export default function MemoryQueryPanel({ investigations, onSelectInvestigation
   const isFiltered = query.text || query.risk_level !== 'all' || query.target_type !== 'all' || query.has_contradictions || query.has_waivers;
 
   return (
-    <Card className="bg-white/[0.03] border-white/10">
+    <Card className="bg-slate-900/80 border-slate-700/60">
       <CardHeader className="pb-2 pt-3 px-4">
-        <CardTitle className="text-[11px] flex items-center gap-1.5 text-white/50">
+        <CardTitle className="text-[11px] flex items-center gap-1.5 text-slate-300">
           <Database className="w-3.5 h-3.5 text-emerald-400" />
           <span className="uppercase tracking-wider">Memory Intelligence</span>
           <Badge className="text-[7px] bg-emerald-500/10 text-emerald-300 border-emerald-500/20 ml-auto">
@@ -64,11 +64,11 @@ export default function MemoryQueryPanel({ investigations, onSelectInvestigation
               placeholder="Search investigations..."
               value={query.text}
               onChange={e => setQuery(q => ({ ...q, text: e.target.value }))}
-              className="h-7 text-[10px] bg-white/[0.03] border-white/10 text-white placeholder:text-white/20"
+              className="h-7 text-[10px] bg-slate-800 border-slate-600 text-slate-200 placeholder:text-slate-500"
             />
           </div>
           <Select value={query.risk_level} onValueChange={v => setQuery(q => ({ ...q, risk_level: v }))}>
-            <SelectTrigger className="w-24 h-7 text-[10px] bg-white/[0.03] border-white/10 text-white/50">
+            <SelectTrigger className="w-24 h-7 text-[10px] bg-slate-800 border-slate-600 text-slate-300">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -80,7 +80,7 @@ export default function MemoryQueryPanel({ investigations, onSelectInvestigation
             </SelectContent>
           </Select>
           <Select value={query.target_type} onValueChange={v => setQuery(q => ({ ...q, target_type: v }))}>
-            <SelectTrigger className="w-24 h-7 text-[10px] bg-white/[0.03] border-white/10 text-white/50">
+            <SelectTrigger className="w-24 h-7 text-[10px] bg-slate-800 border-slate-600 text-slate-300">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -93,13 +93,13 @@ export default function MemoryQueryPanel({ investigations, onSelectInvestigation
           </Select>
           <button
             onClick={() => setQuery(q => ({ ...q, has_contradictions: !q.has_contradictions }))}
-            className={`px-2 h-7 rounded text-[9px] border ${query.has_contradictions ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-white/[0.03] text-white/30 border-white/10'}`}
+            className={`px-2 h-7 rounded text-[9px] border ${query.has_contradictions ? 'bg-amber-600/20 text-amber-200 border-amber-500/30' : 'bg-slate-800 text-slate-400 border-slate-600'}`}
           >
             Contradictions
           </button>
           <button
             onClick={() => setQuery(q => ({ ...q, has_waivers: !q.has_waivers }))}
-            className={`px-2 h-7 rounded text-[9px] border ${query.has_waivers ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' : 'bg-white/[0.03] text-white/30 border-white/10'}`}
+            className={`px-2 h-7 rounded text-[9px] border ${query.has_waivers ? 'bg-cyan-600/20 text-cyan-200 border-cyan-500/30' : 'bg-slate-800 text-slate-400 border-slate-600'}`}
           >
             Waivers
           </button>
@@ -108,17 +108,17 @@ export default function MemoryQueryPanel({ investigations, onSelectInvestigation
         {/* Results */}
         {isFiltered && (
           <div className="space-y-1">
-            <p className="text-white/20 text-[9px]">{results.length} result{results.length !== 1 ? 's' : ''}</p>
+            <p className="text-slate-400 text-[9px]">{results.length} result{results.length !== 1 ? 's' : ''}</p>
             <div className="max-h-40 overflow-y-auto space-y-1">
               {results.map(inv => (
                 <button
                   key={inv.id}
                   onClick={() => onSelectInvestigation?.(inv.id)}
-                  className="w-full text-left px-2.5 py-1.5 rounded bg-white/[0.02] border border-white/5 hover:border-violet-500/20 hover:bg-violet-500/5 transition-colors"
+                  className="w-full text-left px-2.5 py-1.5 rounded bg-slate-800/50 border border-slate-700/50 hover:border-violet-500/30 hover:bg-violet-950/30 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <Badge className="text-[7px] bg-violet-500/10 text-violet-300 border-violet-500/20">{inv.target_type}</Badge>
-                    <p className="text-white/50 text-[10px] truncate flex-1">{inv.question}</p>
+                    <p className="text-slate-300 text-[10px] truncate flex-1">{inv.question}</p>
                     {inv.metrics?.critical_risks > 0 && (
                       <Badge className="text-[7px] bg-red-500/10 text-red-300 border-red-500/20">{inv.metrics.critical_risks} crit</Badge>
                     )}

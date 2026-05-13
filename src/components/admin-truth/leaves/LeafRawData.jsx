@@ -16,14 +16,14 @@ export default function LeafRawData({ leaf, data }) {
     <LeafShell leaf={leaf}>
       <div className="space-y-1.5">
         {data.map((item, i) => (
-          <div key={i} className="rounded bg-white/[0.03] border border-white/5 p-2.5 text-xs">
+          <div key={i} className="rounded bg-slate-800/60 border border-slate-700/50 p-2.5 text-xs">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-white/80 font-medium">{item.title}</p>
+              <p className="text-slate-200 font-medium">{item.title}</p>
               <Badge className={`text-[8px] flex-shrink-0 ${SOURCE_COLORS[item.source_type] || SOURCE_COLORS.system}`}>
                 {item.source_type || 'system'}
               </Badge>
             </div>
-            {item.description && <p className="text-white/50 mt-1">{item.description}</p>}
+            {item.description && <p className="text-slate-400 mt-1">{item.description}</p>}
           </div>
         ))}
       </div>

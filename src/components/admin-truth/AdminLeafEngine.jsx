@@ -44,10 +44,10 @@ export default function AdminLeafEngine({ investigation }) {
 
   if (!investigation) {
     return (
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-12 text-center">
-        <Database className="w-8 h-8 text-white/10 mx-auto mb-2" />
-        <p className="text-white/20 text-sm">No investigation loaded</p>
-        <p className="text-white/10 text-xs mt-1">Run the engine or select from history</p>
+      <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-12 text-center">
+        <Database className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+        <p className="text-slate-400 text-sm">No investigation loaded</p>
+        <p className="text-slate-600 text-xs mt-1">Run the engine or select from history</p>
       </div>
     );
   }
@@ -63,7 +63,7 @@ export default function AdminLeafEngine({ investigation }) {
           const has = hasLeafData(leaves[leaf.key]);
           const count = Array.isArray(leaves[leaf.key]) ? leaves[leaf.key].length : null;
           return (
-            <Badge key={leaf.num} className={`text-[10px] gap-1 ${has ? `bg-white/5 border-white/10 ${leaf.color}` : 'bg-white/[0.02] border-white/5 text-white/20'}`}>
+            <Badge key={leaf.num} className={`text-[10px] gap-1 ${has ? `bg-slate-800 border-slate-600 ${leaf.color}` : 'bg-slate-800/50 border-slate-700/50 text-slate-600'}`}>
               <Icon className="w-3 h-3" />
               L{leaf.num}
               {count !== null && count > 0 && <span className="opacity-60">({count})</span>}
@@ -76,26 +76,26 @@ export default function AdminLeafEngine({ investigation }) {
       {investigation.metrics && (
         <div className="space-y-2 px-1">
           <div className="flex flex-wrap gap-3 text-[10px]">
-            <span className="text-cyan-400/70">{investigation.metrics.total_data_points} data points</span>
-            <span className="text-blue-400/70">{investigation.metrics.classified_items} classified</span>
-            <span className="text-amber-400/70">{investigation.metrics.contradictions_found} contradictions</span>
-            {investigation.metrics.integrity_flags > 0 && <span className="text-red-400 font-semibold">{investigation.metrics.integrity_flags} integrity flags</span>}
-            <span className="text-purple-400/70">{investigation.metrics.cross_links_mapped} cross-links</span>
-            <span className="text-red-400/70">{investigation.metrics.risks_identified} risks (avg {investigation.metrics.avg_risk_score}/10)</span>
-            <span className="text-emerald-400/70">{investigation.metrics.actions_proposed} actions</span>
-            <span className="text-pink-400/70">confidence: {investigation.metrics.confidence_score}%</span>
+            <span className="text-cyan-300">{investigation.metrics.total_data_points} data points</span>
+            <span className="text-blue-300">{investigation.metrics.classified_items} classified</span>
+            <span className="text-amber-300">{investigation.metrics.contradictions_found} contradictions</span>
+            {investigation.metrics.integrity_flags > 0 && <span className="text-red-300 font-semibold">{investigation.metrics.integrity_flags} integrity flags</span>}
+            <span className="text-purple-300">{investigation.metrics.cross_links_mapped} cross-links</span>
+            <span className="text-red-300">{investigation.metrics.risks_identified} risks (avg {investigation.metrics.avg_risk_score}/10)</span>
+            <span className="text-emerald-300">{investigation.metrics.actions_proposed} actions</span>
+            <span className="text-pink-300">confidence: {investigation.metrics.confidence_score}%</span>
           </div>
           <WeightDistribution distribution={investigation.metrics.weight_distribution} avgWeight={investigation.metrics.avg_suggested_weight} />
         </div>
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-white/5 border border-white/10 flex-wrap h-auto gap-0.5 p-1">
-          <TabsTrigger value="all" className="text-[10px] data-[state=active]:bg-white/10 data-[state=active]:text-white">All Leaves</TabsTrigger>
-          <TabsTrigger value="risks" className="text-[10px] data-[state=active]:bg-red-500/20 data-[state=active]:text-red-300">Risks</TabsTrigger>
-          <TabsTrigger value="gaps" className="text-[10px] data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300">Gaps</TabsTrigger>
-          <TabsTrigger value="actions" className="text-[10px] data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-300">Actions</TabsTrigger>
-          <TabsTrigger value="links" className="text-[10px] data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">Links</TabsTrigger>
+        <TabsList className="bg-slate-800/80 border border-slate-700/60 flex-wrap h-auto gap-0.5 p-1">
+          <TabsTrigger value="all" className="text-[10px] text-slate-400 data-[state=active]:bg-slate-700 data-[state=active]:text-slate-100">All Leaves</TabsTrigger>
+          <TabsTrigger value="risks" className="text-[10px] text-slate-400 data-[state=active]:bg-red-600/25 data-[state=active]:text-red-200">Risks</TabsTrigger>
+          <TabsTrigger value="gaps" className="text-[10px] text-slate-400 data-[state=active]:bg-amber-600/25 data-[state=active]:text-amber-200">Gaps</TabsTrigger>
+          <TabsTrigger value="actions" className="text-[10px] text-slate-400 data-[state=active]:bg-emerald-600/25 data-[state=active]:text-emerald-200">Actions</TabsTrigger>
+          <TabsTrigger value="links" className="text-[10px] text-slate-400 data-[state=active]:bg-purple-600/25 data-[state=active]:text-purple-200">Links</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-3 mt-3">

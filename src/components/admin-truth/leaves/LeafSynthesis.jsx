@@ -18,13 +18,13 @@ export default function LeafSynthesis({ leaf, data }) {
     <LeafShell leaf={leaf}>
       <div className="space-y-3">
         {/* Summary */}
-        <p className="text-white/70 text-xs leading-relaxed whitespace-pre-wrap">{summary}</p>
+        <p className="text-slate-300 text-xs leading-relaxed whitespace-pre-wrap">{summary}</p>
 
         {/* Confidence */}
         {confidence !== null && confidence !== undefined && (
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-white/30">Confidence:</span>
-            <div className="w-24 h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <span className="text-[10px] text-slate-400">Confidence:</span>
+            <div className="w-24 h-1.5 rounded-full bg-slate-700 overflow-hidden">
               <div
                 className={`h-full rounded-full ${confidence >= 70 ? 'bg-emerald-500' : confidence >= 40 ? 'bg-amber-500' : 'bg-red-500'}`}
                 style={{ width: `${Math.min(confidence, 100)}%` }}
@@ -36,18 +36,18 @@ export default function LeafSynthesis({ leaf, data }) {
 
         {/* Phase Mapping */}
         {phaseMapping.length > 0 && (
-          <div className="space-y-2 pt-2 border-t border-white/5">
-            <p className="text-white/30 text-[10px] uppercase tracking-wider font-semibold">Phase Mapping</p>
+          <div className="space-y-2 pt-2 border-t border-slate-700/50">
+            <p className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Phase Mapping</p>
             {phaseMapping.map((phase, i) => (
               <div key={i} className="space-y-1">
                 <div className="flex items-center gap-2">
                   <Badge className="text-[9px] bg-pink-500/15 text-pink-300 border-pink-500/25">Phase {phase.phase}</Badge>
-                  <span className="text-white/60 text-xs font-medium">{phase.phase_name}</span>
+                  <span className="text-slate-300 text-xs font-medium">{phase.phase_name}</span>
                 </div>
                 {phase.actions?.map((action, j) => (
                   <div key={j} className="flex items-center gap-1.5 pl-4 text-[10px]">
-                    <ArrowRight className="w-2.5 h-2.5 text-white/15" />
-                    <span className="text-white/45">{action}</span>
+                    <ArrowRight className="w-2.5 h-2.5 text-slate-600" />
+                    <span className="text-slate-400">{action}</span>
                   </div>
                 ))}
               </div>
@@ -57,14 +57,14 @@ export default function LeafSynthesis({ leaf, data }) {
 
         {/* Visibility Recommendation */}
         {visRec && (
-          <div className="flex items-center gap-2 pt-2 border-t border-white/5 text-[10px]">
+          <div className="flex items-center gap-2 pt-2 border-t border-slate-700/50 text-[10px]">
             {visRec.toLowerCase() === 'private' ? (
-              <EyeOff className="w-3.5 h-3.5 text-white/30" />
+              <EyeOff className="w-3.5 h-3.5 text-slate-500" />
             ) : (
               <Eye className="w-3.5 h-3.5 text-emerald-400" />
             )}
-            <span className="text-white/40">Visibility rec: <span className="font-semibold text-white/60">{visRec}</span></span>
-            {visReason && <span className="text-white/25">— {visReason}</span>}
+            <span className="text-slate-400">Visibility rec: <span className="font-semibold text-slate-200">{visRec}</span></span>
+            {visReason && <span className="text-slate-500">— {visReason}</span>}
           </div>
         )}
       </div>

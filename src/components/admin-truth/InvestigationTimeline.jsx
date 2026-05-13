@@ -32,19 +32,19 @@ function TimelineEvent({ event }) {
         <div className={`w-6 h-6 rounded-full ${config.bg} border ${config.border} flex items-center justify-center flex-shrink-0`}>
           <Icon className={`w-3 h-3 ${config.color}`} />
         </div>
-        <div className="w-px flex-1 bg-white/5 group-last:hidden" />
+        <div className="w-px flex-1 bg-slate-700 group-last:hidden" />
       </div>
       {/* Content */}
       <div className="pb-4 flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-white/70 text-[11px] font-medium">{event.label}</p>
+          <p className="text-slate-200 text-[11px] font-medium">{event.label}</p>
           <Badge className={`text-[7px] ${SEVERITY_BADGE[event.severity] || SEVERITY_BADGE.info}`}>{event.severity}</Badge>
-          <span className="text-white/15 text-[9px] ml-auto flex-shrink-0">
+          <span className="text-slate-500 text-[9px] ml-auto flex-shrink-0">
             {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
         {event.detail && (
-          <p className="text-white/30 text-[10px] mt-0.5 line-clamp-2">{event.detail}</p>
+          <p className="text-slate-400 text-[10px] mt-0.5 line-clamp-2">{event.detail}</p>
         )}
       </div>
     </div>
@@ -62,12 +62,12 @@ export default function InvestigationTimeline({ investigation }) {
   const shown = expanded ? timeline : preview;
 
   return (
-    <Card className="bg-white/[0.03] border-white/10">
+    <Card className="bg-slate-900/80 border-slate-700/60">
       <CardHeader className="pb-2 pt-3 px-4">
-        <CardTitle className="text-[11px] flex items-center gap-1.5 text-white/50">
+        <CardTitle className="text-[11px] flex items-center gap-1.5 text-slate-300">
           <Clock className="w-3.5 h-3.5 text-violet-400" />
           <span className="uppercase tracking-wider">Investigation Timeline</span>
-          <Badge className="text-[7px] bg-white/5 text-white/30 border-white/10 ml-auto">{timeline.length} events</Badge>
+          <Badge className="text-[7px] bg-slate-800 text-slate-400 border-slate-600 ml-auto">{timeline.length} events</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-3">
@@ -79,7 +79,7 @@ export default function InvestigationTimeline({ investigation }) {
         {rest.length > 0 && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 text-violet-400/60 text-[10px] hover:text-violet-400 mt-1"
+            className="flex items-center gap-1 text-violet-300 text-[10px] hover:text-violet-200 mt-1"
           >
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             {expanded ? 'Show less' : `Show ${rest.length} more events`}

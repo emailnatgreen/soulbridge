@@ -18,8 +18,8 @@ function CriterionRow({ passed, label, detail }) {
         : <AlertTriangle className="w-3 h-3 text-red-400 mt-0.5 flex-shrink-0" />
       }
       <div>
-        <span className={passed ? 'text-white/50' : 'text-white/70'}>{label}</span>
-        {detail && <p className="text-white/30 text-[9px] mt-0.5">{detail}</p>}
+        <span className={passed ? 'text-slate-400' : 'text-slate-200'}>{label}</span>
+        {detail && <p className="text-slate-500 text-[9px] mt-0.5">{detail}</p>}
       </div>
     </div>
   );
@@ -27,12 +27,12 @@ function CriterionRow({ passed, label, detail }) {
 
 function WeightBar({ distribution }) {
   const total = (distribution.critical || 0) + (distribution.high || 0) + (distribution.medium || 0) + (distribution.low || 0);
-  if (total === 0) return <span className="text-white/20 text-[9px]">No weighted items</span>;
+  if (total === 0) return <span className="text-slate-500 text-[9px]">No weighted items</span>;
 
   const pct = (n) => Math.round((n / total) * 100);
   return (
     <div className="space-y-1">
-      <div className="flex h-1.5 rounded-full overflow-hidden bg-white/5">
+      <div className="flex h-1.5 rounded-full overflow-hidden bg-slate-700">
         {distribution.critical > 0 && <div className="bg-red-500" style={{ width: `${pct(distribution.critical)}%` }} />}
         {distribution.high > 0 && <div className="bg-amber-500" style={{ width: `${pct(distribution.high)}%` }} />}
         {distribution.medium > 0 && <div className="bg-blue-500" style={{ width: `${pct(distribution.medium)}%` }} />}
@@ -73,7 +73,7 @@ export default function ExposureReadinessPanel({ result }) {
               <Icon className="w-3.5 h-3.5" />
               <span className="text-[10px] font-semibold">{style.label}</span>
             </div>
-            <button onClick={() => setExpanded(!expanded)} className="text-white/30 hover:text-white/60">
+            <button onClick={() => setExpanded(!expanded)} className="text-slate-400 hover:text-slate-200">
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
           </div>
@@ -114,18 +114,18 @@ export default function ExposureReadinessPanel({ result }) {
 
         {/* Recommended visibility */}
         <div className="flex items-center gap-2 text-[10px]">
-          <span className="text-white/30">Leaf 7 recommends:</span>
-          <Badge className={`text-[8px] ${result.recommended_visibility === 'public' ? 'bg-emerald-500/15 text-emerald-300' : result.recommended_visibility === 'internal' ? 'bg-amber-500/15 text-amber-300' : 'bg-white/5 text-white/40'}`}>
+          <span className="text-slate-400">Leaf 7 recommends:</span>
+          <Badge className={`text-[8px] ${result.recommended_visibility === 'public' ? 'bg-emerald-600/25 text-emerald-200' : result.recommended_visibility === 'internal' ? 'bg-amber-600/25 text-amber-200' : 'bg-slate-700 text-slate-300'}`}>
             {result.recommended_visibility}
           </Badge>
         </div>
 
         {/* Expandable breakdown */}
         {expanded && (
-          <div className="border-t border-white/5 pt-3 space-y-3">
+          <div className="border-t border-slate-700/50 pt-3 space-y-3">
             {/* Criterion 1: Phase 1 */}
             <div className="space-y-1.5">
-              <p className="text-white/25 text-[9px] uppercase tracking-wider font-semibold">1. Phase 1 Completion</p>
+              <p className="text-slate-400 text-[9px] uppercase tracking-wider font-semibold">1. Phase 1 Completion</p>
               <CriterionRow
                 passed={ps.state === 'complete' || ps.state === 'waived' || ps.state === 'no_phase_1'}
                 label={ps.state === 'no_phase_1' ? 'No Phase 1 steps' : ps.state === 'complete' ? 'All Phase 1 steps done' : ps.state === 'waived' ? `Phase 1 complete (${ps.waived} waived)` : `${ps.pending} of ${ps.total} steps still pending`}
@@ -135,7 +135,7 @@ export default function ExposureReadinessPanel({ result }) {
 
             {/* Criterion 2: Critical risks */}
             <div className="space-y-1.5">
-              <p className="text-white/25 text-[9px] uppercase tracking-wider font-semibold">2. Critical Risks</p>
+              <p className="text-slate-400 text-[9px] uppercase tracking-wider font-semibold">2. Critical Risks</p>
               <CriterionRow
                 passed={rs.critical === 0}
                 label={rs.critical === 0 ? 'No unaddressed critical risks' : `${rs.critical} critical risk${rs.critical !== 1 ? 's' : ''} unaddressed`}
@@ -145,7 +145,7 @@ export default function ExposureReadinessPanel({ result }) {
 
             {/* Criterion 3: Contradictions */}
             <div className="space-y-1.5">
-              <p className="text-white/25 text-[9px] uppercase tracking-wider font-semibold">3. Contradictions</p>
+              <p className="text-slate-400 text-[9px] uppercase tracking-wider font-semibold">3. Contradictions</p>
               <CriterionRow
                 passed={cs.integrity_flags === 0}
                 label={cs.integrity_flags === 0 ? 'No integrity flags' : `${cs.integrity_flags} integrity flag${cs.integrity_flags !== 1 ? 's' : ''} present`}
@@ -155,7 +155,7 @@ export default function ExposureReadinessPanel({ result }) {
 
             {/* Criterion 4: Weight distribution */}
             <div className="space-y-1.5">
-              <p className="text-white/25 text-[9px] uppercase tracking-wider font-semibold">4. Weight Stability</p>
+              <p className="text-slate-400 text-[9px] uppercase tracking-wider font-semibold">4. Weight Stability</p>
               <CriterionRow
                 passed={result.weight_distribution.critical === 0}
                 label={result.weight_distribution.critical === 0 ? 'Weight distribution stable' : `${result.weight_distribution.critical} critical-weight items remain`}
@@ -165,7 +165,7 @@ export default function ExposureReadinessPanel({ result }) {
 
             {/* Criterion 5: Visibility rec */}
             <div className="space-y-1.5">
-              <p className="text-white/25 text-[9px] uppercase tracking-wider font-semibold">5. Leaf 7 Recommendation</p>
+              <p className="text-slate-400 text-[9px] uppercase tracking-wider font-semibold">5. Leaf 7 Recommendation</p>
               <CriterionRow
                 passed={result.recommended_visibility !== 'private'}
                 label={result.recommended_visibility === 'private' ? 'Leaf 7 recommends private — waiver required to expose' : `Leaf 7 recommends "${result.recommended_visibility}"`}
@@ -173,7 +173,7 @@ export default function ExposureReadinessPanel({ result }) {
             </div>
 
             {/* Audit count */}
-            <p className="text-white/15 text-[9px]">{result.audit_entries} visibility audit entries recorded</p>
+            <p className="text-slate-500 text-[9px]">{result.audit_entries} visibility audit entries recorded</p>
           </div>
         )}
       </CardContent>

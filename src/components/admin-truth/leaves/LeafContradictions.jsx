@@ -25,16 +25,16 @@ export default function LeafContradictions({ leaf, data }) {
       )}
       <div className="space-y-1.5">
         {data.map((item, i) => (
-          <div key={i} className={`rounded border p-2.5 text-xs ${item.integrity_flag ? 'bg-red-500/5 border-red-500/20' : 'bg-white/[0.03] border-white/5'}`}>
+          <div key={i} className={`rounded border p-2.5 text-xs ${item.integrity_flag ? 'bg-red-950/40 border-red-500/30' : 'bg-slate-800/60 border-slate-700/50'}`}>
             <div className="flex items-start justify-between gap-2">
-              <p className="text-white/80 font-medium">{item.title}</p>
+              <p className="text-slate-200 font-medium">{item.title}</p>
               <div className="flex gap-1 flex-shrink-0">
                 <Badge className={`text-[8px] ${SEVERITY_COLORS[item.severity] || SEVERITY_COLORS.medium}`}>{item.severity}</Badge>
                 {item.integrity_flag && <Badge className="text-[8px] bg-red-500/30 text-red-200 border-red-400/40">INTEGRITY</Badge>}
               </div>
             </div>
-            {item.description && <p className="text-white/50 mt-1">{item.description}</p>}
-            {item.category && <Badge className="text-[8px] mt-1 bg-white/5 text-white/40 border-white/10">{item.category}</Badge>}
+            {item.description && <p className="text-slate-400 mt-1">{item.description}</p>}
+            {item.category && <Badge className="text-[8px] mt-1 bg-slate-700/50 text-slate-300 border-slate-600">{item.category}</Badge>}
           </div>
         ))}
       </div>

@@ -146,20 +146,20 @@ export default function AdminTruthEngine() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950/10 to-slate-950 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950 text-slate-200 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20">
-            <Microscope className="w-6 h-6 text-violet-400" />
+          <div className="p-2.5 rounded-xl bg-violet-600/20 border border-violet-500/30">
+            <Microscope className="w-6 h-6 text-violet-300" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-white">Admin Truth Engine</h1>
-              <Badge className="text-[9px] bg-violet-500/15 text-violet-300 border-violet-500/30">7-LEAF</Badge>
-              <Badge className="text-[9px] bg-red-500/15 text-red-300 border-red-500/30">ADMIN ONLY</Badge>
+              <h1 className="text-xl font-bold text-amber-300">Admin Truth Engine</h1>
+              <Badge className="text-[9px] bg-violet-600/25 text-violet-200 border-violet-500/40">7-LEAF</Badge>
+              <Badge className="text-[9px] bg-red-600/25 text-red-200 border-red-500/40">ADMIN ONLY</Badge>
             </div>
-            <p className="text-white/40 text-xs">Sovereign investigation engine — nodes, agents, features, system integrity</p>
+            <p className="text-slate-400 text-xs">Sovereign investigation engine — nodes, agents, features, system integrity</p>
           </div>
         </div>
 
@@ -170,9 +170,9 @@ export default function AdminTruthEngine() {
             <SovereignIdentityPanel />
 
             {/* Filters */}
-            <Card className="bg-white/[0.03] border-white/10">
+            <Card className="bg-slate-900/80 border-slate-700/60">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs text-white/50">Filters</CardTitle>
+                <CardTitle className="text-xs text-slate-300">Filters</CardTitle>
               </CardHeader>
               <CardContent>
                 <InvestigationFilters filters={filters} onFilterChange={setFilters} />
@@ -180,12 +180,12 @@ export default function AdminTruthEngine() {
             </Card>
 
             {/* History */}
-            <Card className="bg-white/[0.03] border-white/10">
+            <Card className="bg-slate-900/80 border-slate-700/60">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs text-white/50 flex items-center gap-1.5">
+                <CardTitle className="text-xs text-slate-300 flex items-center gap-1.5">
                   <History className="w-3.5 h-3.5" />
                   Investigation History
-                  <Badge className="text-[8px] bg-white/5 text-white/30 border-white/10 ml-auto">{filteredInvestigations.length}</Badge>
+                  <Badge className="text-[8px] bg-slate-800 text-slate-400 border-slate-600 ml-auto">{filteredInvestigations.length}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -201,19 +201,19 @@ export default function AdminTruthEngine() {
 
             {/* Processing */}
             {investigateMutation.isPending && (
-              <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-6 text-center space-y-3">
-                <Loader2 className="w-8 h-8 animate-spin text-violet-400 mx-auto" />
+              <div className="rounded-xl border border-violet-500/30 bg-violet-950/40 p-6 text-center space-y-3">
+                <Loader2 className="w-8 h-8 animate-spin text-violet-300 mx-auto" />
                 <div>
-                  <p className="text-violet-300 text-sm font-medium">Investigation Running...</p>
-                  <p className="text-white/30 text-xs mt-1">7-Leaf Pipeline: Raw → Classify → Contradictions → Cross-link → Risk → Actions → Synthesis</p>
+                  <p className="text-violet-200 text-sm font-medium">Investigation Running...</p>
+                  <p className="text-slate-400 text-xs mt-1">7-Leaf Pipeline: Raw → Classify → Contradictions → Cross-link → Risk → Actions → Synthesis</p>
                 </div>
               </div>
             )}
 
             {/* Error */}
             {investigateMutation.isError && (
-              <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
-                <p className="text-red-400 text-xs">{investigateMutation.error?.message || 'Investigation failed'}</p>
+              <div className="rounded-xl border border-red-500/30 bg-red-950/30 p-4">
+                <p className="text-red-300 text-xs">{investigateMutation.error?.message || 'Investigation failed'}</p>
               </div>
             )}
 
@@ -221,37 +221,37 @@ export default function AdminTruthEngine() {
             {currentInvestigation && !investigateMutation.isPending && (
               <div className="space-y-4">
                 {/* Header */}
-                <Card className="bg-white/[0.03] border-white/10">
+                <Card className="bg-slate-900/80 border-slate-700/60">
                   <CardContent className="py-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Investigation</p>
-                        <p className="text-white text-sm">{currentInvestigation.question}</p>
+                        <p className="text-slate-500 text-[10px] uppercase tracking-wider mb-1">Investigation</p>
+                        <p className="text-slate-100 text-sm">{currentInvestigation.question}</p>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <Badge className="text-[9px] bg-violet-500/15 text-violet-300 border-violet-500/30">{currentInvestigation.target_type}</Badge>
+                          <Badge className="text-[9px] bg-violet-600/25 text-violet-200 border-violet-500/40">{currentInvestigation.target_type}</Badge>
                           {currentInvestigation.processing_ms && (
-                            <span className="text-white/20 text-[9px]">{(currentInvestigation.processing_ms / 1000).toFixed(1)}s</span>
+                            <span className="text-slate-500 text-[9px]">{(currentInvestigation.processing_ms / 1000).toFixed(1)}s</span>
                           )}
                           {currentInvestigation.metrics?.confidence_score > 0 && (
-                            <Badge className={`text-[9px] ${currentInvestigation.metrics.confidence_score >= 70 ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : currentInvestigation.metrics.confidence_score >= 40 ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-red-500/15 text-red-300 border-red-500/30'}`}>
+                            <Badge className={`text-[9px] ${currentInvestigation.metrics.confidence_score >= 70 ? 'bg-emerald-600/25 text-emerald-200 border-emerald-500/40' : currentInvestigation.metrics.confidence_score >= 40 ? 'bg-amber-600/25 text-amber-200 border-amber-500/40' : 'bg-red-600/25 text-red-200 border-red-500/40'}`}>
                               {currentInvestigation.metrics.confidence_score}% confidence
                             </Badge>
                           )}
                           {currentInvestigation.metrics?.critical_risks > 0 && (
-                            <Badge className="text-[9px] bg-red-500/15 text-red-300 border-red-500/30">{currentInvestigation.metrics.critical_risks} critical</Badge>
+                            <Badge className="text-[9px] bg-red-600/25 text-red-200 border-red-500/40">{currentInvestigation.metrics.critical_risks} critical</Badge>
                           )}
                           <Phase1GateBadge result={phase1Gate} />
                           <ExposureReadinessBadge result={exposureReadiness} />
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-[10px]">
-                        <span className={currentInvestigation.nft_visibility === 'public' ? 'text-emerald-400' : currentInvestigation.nft_visibility === 'internal' ? 'text-amber-400' : 'text-white/30'}>
+                        <span className={currentInvestigation.nft_visibility === 'public' ? 'text-emerald-300' : currentInvestigation.nft_visibility === 'internal' ? 'text-amber-300' : 'text-slate-500'}>
                           NFT: {currentInvestigation.nft_visibility}
                         </span>
-                        <span className={currentInvestigation.truth_visibility === 'public' ? 'text-emerald-400' : currentInvestigation.truth_visibility === 'internal' ? 'text-amber-400' : 'text-white/30'}>
+                        <span className={currentInvestigation.truth_visibility === 'public' ? 'text-emerald-300' : currentInvestigation.truth_visibility === 'internal' ? 'text-amber-300' : 'text-slate-500'}>
                           Truth: {currentInvestigation.truth_visibility}
                         </span>
-                        <span className={currentInvestigation.skill_visibility === 'listed' ? 'text-emerald-400' : currentInvestigation.skill_visibility === 'unlisted' ? 'text-amber-400' : 'text-white/30'}>
+                        <span className={currentInvestigation.skill_visibility === 'listed' ? 'text-emerald-300' : currentInvestigation.skill_visibility === 'unlisted' ? 'text-amber-300' : 'text-slate-500'}>
                           Skill: {currentInvestigation.skill_visibility}
                         </span>
                       </div>
@@ -296,19 +296,19 @@ export default function AdminTruthEngine() {
 
                 {/* Hash Footer — enriched with sovereign identity anchor */}
                 {currentInvestigation.report_hash && (
-                  <div className="rounded-lg border border-violet-500/10 bg-violet-500/5 p-3 space-y-1.5">
+                  <div className="rounded-lg border border-violet-500/30 bg-violet-950/30 p-3 space-y-1.5">
                     <div className="flex items-center gap-1.5">
-                      <Hash className="w-3 h-3 text-violet-400/60" />
-                      <p className="text-violet-400/60 text-[10px] uppercase tracking-wider font-semibold">Investigation Anchor</p>
+                      <Hash className="w-3 h-3 text-violet-300" />
+                      <p className="text-violet-300 text-[10px] uppercase tracking-wider font-semibold">Investigation Anchor</p>
                       {sovereignId && (
                         <div className="ml-auto flex items-center gap-1">
-                          <Fingerprint className="w-3 h-3 text-violet-400/40" />
-                          <span className="text-violet-400/40 font-mono text-[8px]">{sovereignId.public_surface.public_fingerprint}</span>
+                          <Fingerprint className="w-3 h-3 text-violet-400" />
+                          <span className="text-violet-400 font-mono text-[8px]">{sovereignId.public_surface.public_fingerprint}</span>
                         </div>
                       )}
                     </div>
-                    <p className="text-violet-300/80 font-mono text-[10px] break-all">{currentInvestigation.report_hash}</p>
-                    <div className="flex flex-wrap gap-3 text-[9px] text-white/20 pt-1">
+                    <p className="text-violet-200 font-mono text-[10px] break-all">{currentInvestigation.report_hash}</p>
+                    <div className="flex flex-wrap gap-3 text-[9px] text-slate-500 pt-1">
                       <span>Engine: {currentInvestigation.engine?.name || 'Admin Truth Engine'} v{currentInvestigation.engine?.version || '2.0.0'}</span>
                       <span>Hash: {currentInvestigation.hash_algo || 'sha256'}</span>
                       <span>Type: {currentInvestigation.target_type}</span>
@@ -331,19 +331,19 @@ export default function AdminTruthEngine() {
 
             {/* Empty State */}
             {!currentInvestigation && !investigateMutation.isPending && (
-              <div className="rounded-xl border border-white/5 bg-white/[0.02] p-12 text-center">
-                <Microscope className="w-10 h-10 text-white/10 mx-auto mb-3" />
-                <p className="text-white/20 text-sm">No investigation loaded</p>
-                <p className="text-white/10 text-xs mt-1">Select a target type and describe what to investigate</p>
+              <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-12 text-center">
+                <Microscope className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+                <p className="text-slate-400 text-sm">No investigation loaded</p>
+                <p className="text-slate-600 text-xs mt-1">Select a target type and describe what to investigate</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Engine Doctrine */}
-        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-          <p className="text-white/20 text-[10px] leading-relaxed">
-          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.6.0:</span> Sovereign Identity → Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine → Phase‑1 Gate → ERE → Visibility Governance → Memory Intelligence (timeline replay, cross-link patterns, forensic query). Seven-layer governance spine: 0. Sovereign Identity (who signs) · 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. Phase‑1 Gate (is it structurally sound) · 5. ERE (is it safe to expose) · 6. Memory Intelligence (forensic record, queryable, replayable). Every artefact signed. Deterministic. Auditable. Tamper-proof. Testable.
+        <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-4">
+          <p className="text-slate-500 text-[10px] leading-relaxed">
+          <span className="text-violet-400 font-semibold">Admin Truth Engine v2.6.0:</span> Sovereign Identity → Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine → Phase‑1 Gate → ERE → Visibility Governance → Memory Intelligence (timeline replay, cross-link patterns, forensic query). Seven-layer governance spine: 0. Sovereign Identity (who signs) · 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. Phase‑1 Gate (is it structurally sound) · 5. ERE (is it safe to expose) · 6. Memory Intelligence (forensic record, queryable, replayable). Every artefact signed. Deterministic. Auditable. Tamper-proof. Testable.
           </p>
         </div>
       </div>

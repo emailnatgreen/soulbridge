@@ -84,17 +84,17 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, p
 
   return (
     <TooltipProvider>
-      <Card className="bg-white/[0.03] border-white/10">
+      <Card className="bg-slate-900/80 border-slate-700/60">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xs text-violet-400 flex items-center gap-1.5">
+          <CardTitle className="text-xs text-violet-300 flex items-center gap-1.5">
             <Eye className="w-3.5 h-3.5" />
             Visibility Governance
-            <Badge className="text-[7px] bg-violet-500/10 text-violet-300/60 border-violet-500/20 ml-1">PHASE-GATED</Badge>
+            <Badge className="text-[7px] bg-violet-600/20 text-violet-300 border-violet-500/30 ml-1">PHASE-GATED</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {/* Gate status — Phase-1 Gate + ERE combined */}
-          <div className={`rounded-lg border p-2.5 text-[10px] flex items-center gap-2 ${(!gateClosed && !ereBlocked) ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400' : 'border-red-500/20 bg-red-500/5 text-red-400'}`}>
+          <div className={`rounded-lg border p-2.5 text-[10px] flex items-center gap-2 ${(!gateClosed && !ereBlocked) ? 'border-emerald-500/30 bg-emerald-950/30 text-emerald-300' : 'border-red-500/30 bg-red-950/30 text-red-300'}`}>
             {(!gateClosed && !ereBlocked) ? <Eye className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
             <span>
               {gateClosed
@@ -121,19 +121,19 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, p
               const publicBlocked = gateClosed || ereBlocked;
 
               return (
-                <div key={cfg.field} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-2.5">
+                <div key={cfg.field} className="flex items-center gap-3 rounded-lg border border-slate-700/60 bg-slate-800/50 p-2.5">
                   <Icon className={`w-3.5 h-3.5 ${LEVEL_STYLES[currentValue]}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white/60 text-[10px] font-medium">{cfg.label}</p>
+                    <p className="text-slate-300 text-[10px] font-medium">{cfg.label}</p>
                   </div>
                   <Select
                     value={currentValue}
                     onValueChange={(val) => handleChange(cfg.field, val)}
                   >
-                    <SelectTrigger className="w-28 h-7 bg-white/[0.03] border-white/10 text-xs">
+                    <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-600 text-slate-300 text-xs">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-950 border-white/10">
+                    <SelectContent className="bg-slate-900 border-slate-700">
                       {cfg.levels.map(level => {
                         const isPublic = level === cfg.publicValue;
                         const disabled = isPublic && publicBlocked;
@@ -152,7 +152,7 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, p
                               </div>
                             </TooltipTrigger>
                             {disabled && (
-                              <TooltipContent side="left" className="bg-slate-900 border-white/10 text-[10px] text-red-300 max-w-48">
+                              <TooltipContent side="left" className="bg-slate-800 border-slate-600 text-[10px] text-red-300 max-w-48">
                                 {combinedBlockReason || 'Public exposure blocked'}
                               </TooltipContent>
                             )}
@@ -168,16 +168,16 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, p
 
           {/* Audit trail (last 5) */}
           {auditLog.length > 0 && (
-            <div className="border-t border-white/5 pt-2 space-y-1">
-              <p className="text-white/25 text-[9px] uppercase tracking-wider font-semibold flex items-center gap-1">
+            <div className="border-t border-slate-700/50 pt-2 space-y-1">
+              <p className="text-slate-400 text-[9px] uppercase tracking-wider font-semibold flex items-center gap-1">
                 <Clock className="w-2.5 h-2.5" /> Audit Trail
               </p>
               {auditLog.slice(0, 5).map((entry, i) => (
-                <div key={i} className="flex items-center gap-2 text-[9px] text-white/30">
-                  <span className="text-white/15 font-mono">{new Date(entry.timestamp).toLocaleString()}</span>
-                  <span className="text-white/50">{entry.who}</span>
+                <div key={i} className="flex items-center gap-2 text-[9px] text-slate-400">
+                  <span className="text-slate-500 font-mono">{new Date(entry.timestamp).toLocaleString()}</span>
+                  <span className="text-slate-300">{entry.who}</span>
                   <span>{entry.field}: <span className={LEVEL_STYLES[entry.from_state]}>{entry.from_state}</span> → <span className={LEVEL_STYLES[entry.to_state]}>{entry.to_state}</span></span>
-                  {entry.reason && <span className="text-white/20 truncate max-w-32" title={entry.reason}>"{entry.reason}"</span>}
+                  {entry.reason && <span className="text-slate-500 truncate max-w-32" title={entry.reason}>"{entry.reason}"</span>}
                 </div>
               ))}
             </div>

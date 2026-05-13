@@ -26,7 +26,7 @@ export default function InvestigationInput({ onSubmit, isProcessing }) {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="flex gap-2">
         <Select value={targetType} onValueChange={setTargetType}>
-          <SelectTrigger className="w-44 bg-slate-800/50 border-slate-700 text-white text-xs">
+          <SelectTrigger className="w-44 bg-slate-800 border-slate-600 text-slate-200 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -49,7 +49,7 @@ export default function InvestigationInput({ onSubmit, isProcessing }) {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder={targetType === 'node' ? 'Which node to investigate? (e.g. Node 3 integrity, Node 8 behaviour)' : targetType === 'agent' ? 'Which agent to investigate? (e.g. Axi drift analysis, Maya safety check)' : targetType === 'feature' ? 'Which feature to test? (e.g. Governance voting UX, Wallet security logic)' : 'Describe the investigation...'}
-          className="min-h-[56px] max-h-32 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 resize-none text-sm"
+          className="min-h-[56px] max-h-32 bg-slate-800 border-slate-600 text-slate-200 placeholder:text-slate-500 resize-none text-sm"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();

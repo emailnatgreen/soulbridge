@@ -5,9 +5,9 @@ import { Filter } from 'lucide-react';
 export default function InvestigationFilters({ filters, onFilterChange }) {
   return (
     <div className="flex flex-wrap gap-2 items-center">
-      <Filter className="w-3.5 h-3.5 text-white/30" />
+      <Filter className="w-3.5 h-3.5 text-slate-400" />
       <Select value={filters.target_type || 'all'} onValueChange={(v) => onFilterChange({ ...filters, target_type: v })}>
-        <SelectTrigger className="w-28 h-7 bg-white/5 border-white/10 text-white/60 text-[10px]">
+        <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-600 text-slate-300 text-[10px]">
           <SelectValue placeholder="Type" />
         </SelectTrigger>
         <SelectContent>
@@ -19,7 +19,7 @@ export default function InvestigationFilters({ filters, onFilterChange }) {
         </SelectContent>
       </Select>
       <Select value={filters.risk_level || 'all'} onValueChange={(v) => onFilterChange({ ...filters, risk_level: v })}>
-        <SelectTrigger className="w-28 h-7 bg-white/5 border-white/10 text-white/60 text-[10px]">
+        <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-600 text-slate-300 text-[10px]">
           <SelectValue placeholder="Risk" />
         </SelectTrigger>
         <SelectContent>
@@ -30,7 +30,7 @@ export default function InvestigationFilters({ filters, onFilterChange }) {
         </SelectContent>
       </Select>
       <Select value={filters.status || 'all'} onValueChange={(v) => onFilterChange({ ...filters, status: v })}>
-        <SelectTrigger className="w-28 h-7 bg-white/5 border-white/10 text-white/60 text-[10px]">
+        <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-600 text-slate-300 text-[10px]">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
@@ -41,7 +41,7 @@ export default function InvestigationFilters({ filters, onFilterChange }) {
         </SelectContent>
       </Select>
       <Select value={filters.visibility || 'all'} onValueChange={(v) => onFilterChange({ ...filters, visibility: v })}>
-        <SelectTrigger className="w-28 h-7 bg-white/5 border-white/10 text-white/60 text-[10px]">
+        <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-600 text-slate-300 text-[10px]">
           <SelectValue placeholder="Visibility" />
         </SelectTrigger>
         <SelectContent>

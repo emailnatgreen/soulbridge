@@ -16,17 +16,17 @@ export default function LeafCrossLinks({ leaf, data }) {
     <LeafShell leaf={leaf}>
       <div className="space-y-1.5">
         {data.map((item, i) => (
-          <div key={i} className="rounded bg-white/[0.03] border border-white/5 p-2.5 text-xs">
+          <div key={i} className="rounded bg-slate-800/60 border border-slate-700/50 p-2.5 text-xs">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-white/80 font-medium">{item.title}</p>
-              <Badge className={`text-[8px] flex-shrink-0 ${LINK_TYPE_COLORS[item.link_type] || 'bg-white/5 text-white/40 border-white/10'}`}>
+              <p className="text-slate-200 font-medium">{item.title}</p>
+              <Badge className={`text-[8px] flex-shrink-0 ${LINK_TYPE_COLORS[item.link_type] || 'bg-slate-700/50 text-slate-300 border-slate-600'}`}>
                 {item.link_type || 'related'}
               </Badge>
             </div>
-            {item.description && <p className="text-white/50 mt-1">{item.description}</p>}
+            {item.description && <p className="text-slate-400 mt-1">{item.description}</p>}
             <div className="flex flex-wrap gap-1 mt-1.5">
-              {item.linked_to && <Badge className="text-[8px] bg-purple-500/10 text-purple-300 border-purple-500/20">→ {item.linked_to}</Badge>}
-              {item.relationship && <Badge className="text-[8px] bg-white/5 text-white/40 border-white/10">{item.relationship}</Badge>}
+              {item.linked_to && <Badge className="text-[8px] bg-purple-600/20 text-purple-300 border-purple-500/30">→ {item.linked_to}</Badge>}
+              {item.relationship && <Badge className="text-[8px] bg-slate-700/50 text-slate-300 border-slate-600">{item.relationship}</Badge>}
             </div>
           </div>
         ))}

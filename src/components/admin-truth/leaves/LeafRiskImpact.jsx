@@ -22,10 +22,10 @@ function RiskBar({ score }) {
   const color = score >= 8 ? 'bg-red-500' : score >= 5 ? 'bg-amber-500' : 'bg-emerald-500';
   return (
     <div className="flex items-center gap-1.5">
-      <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
+      <div className="w-16 h-1.5 rounded-full bg-slate-700 overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${width}%` }} />
       </div>
-      <span className="text-[9px] text-white/40">{score}/10</span>
+      <span className="text-[9px] text-slate-400">{score}/10</span>
     </div>
   );
 }
@@ -39,19 +39,19 @@ export default function LeafRiskImpact({ leaf, data }) {
     <LeafShell leaf={leaf}>
       <div className="space-y-1.5">
         {sorted.map((item, i) => (
-          <div key={i} className={`rounded border p-2.5 text-xs ${item.severity === 'critical' ? 'bg-red-500/5 border-red-500/20' : 'bg-white/[0.03] border-white/5'}`}>
+          <div key={i} className={`rounded border p-2.5 text-xs ${item.severity === 'critical' ? 'bg-red-950/40 border-red-500/30' : 'bg-slate-800/60 border-slate-700/50'}`}>
             <div className="flex items-start justify-between gap-2">
-              <p className="text-white/80 font-medium">{item.title}</p>
+              <p className="text-slate-200 font-medium">{item.title}</p>
               <Badge className={`text-[8px] flex-shrink-0 ${SEVERITY_COLORS[item.severity] || SEVERITY_COLORS.medium}`}>{item.severity}</Badge>
             </div>
-            {item.description && <p className="text-white/50 mt-1">{item.description}</p>}
+            {item.description && <p className="text-slate-400 mt-1">{item.description}</p>}
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <RiskBar score={item.risk_score} />
-              {item.risk_domain && <Badge className={`text-[8px] ${DOMAIN_COLORS[item.risk_domain] || 'bg-white/5 text-white/40 border-white/10'}`}>{item.risk_domain}</Badge>}
+              {item.risk_domain && <Badge className={`text-[8px] ${DOMAIN_COLORS[item.risk_domain] || 'bg-slate-700/50 text-slate-300 border-slate-600'}`}>{item.risk_domain}</Badge>}
               <SuggestedWeightBadge weight={item.suggested_weight} category={item.weight_category} />
             </div>
             {item.impact_description && (
-              <p className="text-white/30 text-[10px] mt-1.5 italic">Impact: {item.impact_description}</p>
+              <p className="text-slate-500 text-[10px] mt-1.5 italic">Impact: {item.impact_description}</p>
             )}
           </div>
         ))}

@@ -15,10 +15,10 @@ export default function WeightDistribution({ distribution, avgWeight }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-2">
-        <span className="text-white/30 text-[10px]">Weight Distribution</span>
-        {avgWeight > 0 && <span className="text-white/50 text-[10px] font-mono">avg: {avgWeight}</span>}
+        <span className="text-slate-400 text-[10px]">Weight Distribution</span>
+        {avgWeight > 0 && <span className="text-slate-300 text-[10px] font-mono">avg: {avgWeight}</span>}
       </div>
-      <div className="flex h-2 rounded-full overflow-hidden bg-white/5">
+      <div className="flex h-2 rounded-full overflow-hidden bg-slate-700">
         {SEGMENTS.map(seg => {
           const count = distribution[seg.key] || 0;
           if (count === 0) return null;
