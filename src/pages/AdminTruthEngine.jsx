@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Microscope, History, Shield, Hash, Fingerprint } from 'lucide-react';
+import { Loader2, Microscope, History, Shield, Hash, Fingerprint, FileCheck } from 'lucide-react';
 import InvestigationInput from '@/components/admin-truth/InvestigationInput';
 import AdminLeafEngine from '@/components/admin-truth/AdminLeafEngine';
 import InvestigationHistory from '@/components/admin-truth/InvestigationHistory';
@@ -22,6 +22,7 @@ import InvestigationTimeline from '@/components/admin-truth/InvestigationTimelin
 import CrossLinkPanel from '@/components/admin-truth/CrossLinkPanel';
 import MemoryQueryPanel from '@/components/admin-truth/MemoryQueryPanel';
 import { computeSovereignIdentity } from '@/lib/sovereignIdentity';
+import FinalReadinessReport from '@/components/admin-truth/FinalReadinessReport';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -55,6 +56,7 @@ export default function AdminTruthEngine() {
   const [currentBuildOrder, setCurrentBuildOrder] = useState(null);
   const [localWaivers, setLocalWaivers] = useState([]);
   const [sovereignId, setSovereignId] = useState(null);
+  const [showReadinessReport, setShowReadinessReport] = useState(false);
   const queryClient = useQueryClient();
 
   // Compute sovereign identity once on mount
@@ -161,7 +163,17 @@ export default function AdminTruthEngine() {
             </div>
             <p className="text-slate-400 text-xs">Sovereign investigation engine — nodes, agents, features, system integrity</p>
           </div>
+          <button
+            onClick={() => setShowReadinessReport(r => !r)}
+            className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium hover:bg-emerald-600/30 transition"
+          >
+            <FileCheck className="w-4 h-4" />
+            {showReadinessReport ? 'Hide' : 'Final'} Readiness Report
+          </button>
         </div>
+
+        {/* Final Readiness Report */}
+        {showReadinessReport && <FinalReadinessReport />}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
