@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Eye, EyeOff, Lock, Shield, FileText, Sparkles, Info, Clock } from 'lucide-react';
 import { VISIBILITY_DEFAULTS, NFT_LEVELS, TRUTH_LEVELS, SKILL_LEVELS, evaluatePhaseGate, requiresPhaseGate } from '@/lib/visibilityGovernance';
+import { getReadinessBadgeState } from '@/lib/exposureReadinessEngine';
 import VisibilityConfirmDialog from './VisibilityConfirmDialog';
 import VisibilityWaiverDialog from './VisibilityWaiverDialog';
 
@@ -20,7 +21,7 @@ const LEVEL_STYLES = {
   hidden: 'text-white/40', unlisted: 'text-amber-400', listed: 'text-emerald-400',
 };
 
-export default function VisibilityGovernancePanel({ investigation, buildOrder, onVisibilityChange, auditLog = [] }) {
+export default function VisibilityGovernancePanel({ investigation, buildOrder, exposureReadiness, onVisibilityChange, onWaiversChange, auditLog = [] }) {
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [waiverDialog, setWaiverDialog] = useState(false);
   const [localWaivers, setLocalWaivers] = useState([]);
@@ -36,12 +37,17 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, o
     [buildOrder, localWaivers]
   );
 
+  // ERE-aware: public is blocked if ERE says not ready (unless only waiver-required)
+  const ereState = getReadinessBadgeState(exposureReadiness);
+  const ereBlocked = ereState === 'blocked';
+
   const handleChange = (field, newValue) => {
-    if (requiresPhaseGate(field, newValue) && !phaseGate.allowed) {
-      // Block — show tooltip. If they want to override, they use the waiver.
+    const needsGate = requiresPhaseGate(field, newValue);
+    if (needsGate && (!phaseGate.allowed || ereBlocked)) {
+      // Block — phase gate or ERE says no
       return;
     }
-    if (requiresPhaseGate(field, newValue)) {
+    if (needsGate) {
       // Requires confirm dialog
       setConfirmDialog({ field, newValue });
     } else {
@@ -58,7 +64,9 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, o
   };
 
   const handleWaivers = (waivers) => {
-    setLocalWaivers(prev => [...prev, ...waivers]);
+    const updated = [...localWaivers, ...waivers];
+    setLocalWaivers(updated);
+    if (onWaiversChange) onWaiversChange(updated);
     setWaiverDialog(false);
   };
 
@@ -78,10 +86,10 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, o
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {/* Phase gate status */}
-          <div className={`rounded-lg border p-2.5 text-[10px] flex items-center gap-2 ${phaseGate.allowed ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400' : 'border-red-500/20 bg-red-500/5 text-red-400'}`}>
-            {phaseGate.allowed ? <Eye className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-            <span>{phaseGate.reason}</span>
+          {/* Gate status — combined phase gate + ERE */}
+          <div className={`rounded-lg border p-2.5 text-[10px] flex items-center gap-2 ${(phaseGate.allowed && !ereBlocked) ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400' : 'border-red-500/20 bg-red-500/5 text-red-400'}`}>
+            {(phaseGate.allowed && !ereBlocked) ? <Eye className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+            <span>{ereBlocked && phaseGate.allowed ? 'ERE: not ready for exposure' : phaseGate.reason}</span>
             {phaseGate.waivedCount > 0 && (
               <Badge className="text-[7px] bg-amber-500/15 text-amber-300 border-amber-500/25 ml-auto">{phaseGate.waivedCount} waived</Badge>
             )}
@@ -97,7 +105,7 @@ export default function VisibilityGovernancePanel({ investigation, buildOrder, o
             {SWITCH_CONFIG.map(cfg => {
               const Icon = cfg.icon;
               const currentValue = visibility[cfg.field];
-              const publicBlocked = !phaseGate.allowed;
+              const publicBlocked = !phaseGate.allowed || ereBlocked;
 
               return (
                 <div key={cfg.field} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-2.5">

@@ -9,8 +9,11 @@ import AdminLeafEngine from '@/components/admin-truth/AdminLeafEngine';
 import InvestigationHistory from '@/components/admin-truth/InvestigationHistory';
 import InvestigationFilters from '@/components/admin-truth/InvestigationFilters';
 import BuildOrderEngine from '@/components/admin-truth/BuildOrderEngine';
+import ExposureReadinessPanel from '@/components/admin-truth/ExposureReadinessPanel';
+import ExposureReadinessBadge from '@/components/admin-truth/ExposureReadinessBadge';
 import VisibilityGovernancePanel from '@/components/admin-truth/VisibilityGovernancePanel';
 import { computeBuildOrder } from '@/lib/buildOrderEngine';
+import { evaluateExposureReadiness } from '@/lib/exposureReadinessEngine';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -41,6 +44,7 @@ export default function AdminTruthEngine() {
   const [liveResult, setLiveResult] = useState(null);
   const [filters, setFilters] = useState({ target_type: 'all', risk_level: 'all', status: 'all', visibility: 'all' });
   const [currentBuildOrder, setCurrentBuildOrder] = useState(null);
+  const [localWaivers, setLocalWaivers] = useState([]);
   const queryClient = useQueryClient();
 
   // Load investigation history
@@ -102,10 +106,22 @@ export default function AdminTruthEngine() {
     ? liveResult
     : filteredInvestigations.find(inv => inv.id === activeId) || null;
 
+  // ERE — recomputed automatically whenever inputs change
+  const exposureReadiness = useMemo(() => {
+    if (!currentInvestigation) return null;
+    return evaluateExposureReadiness(
+      currentInvestigation.leaves,
+      currentBuildOrder,
+      localWaivers,
+      currentInvestigation.visibility_audit_log || []
+    );
+  }, [currentInvestigation, currentBuildOrder, localWaivers]);
+
   const handleSelect = (id) => {
     setActiveId(id);
     setLiveResult(null);
     setCurrentBuildOrder(null);
+    setLocalWaivers([]);
   };
 
   return (
@@ -209,6 +225,7 @@ export default function AdminTruthEngine() {
                           {currentInvestigation.metrics?.critical_risks > 0 && (
                             <Badge className="text-[9px] bg-red-500/15 text-red-300 border-red-500/30">{currentInvestigation.metrics.critical_risks} critical</Badge>
                           )}
+                          <ExposureReadinessBadge result={exposureReadiness} />
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-[10px]">
@@ -232,14 +249,19 @@ export default function AdminTruthEngine() {
                 {/* Build Order Engine */}
                 <BuildOrderEngine investigation={currentInvestigation} onBuildOrderComputed={setCurrentBuildOrder} />
 
-                {/* Visibility Governance — Phase-gated 3-switch model */}
+                {/* Exposure Readiness Engine — deterministic governance intelligence */}
+                <ExposureReadinessPanel result={exposureReadiness} />
+
+                {/* Visibility Governance — Phase-gated 3-switch model, informed by ERE */}
                 <VisibilityGovernancePanel
                   investigation={currentInvestigation}
                   buildOrder={currentBuildOrder}
+                  exposureReadiness={exposureReadiness}
                   auditLog={currentInvestigation.visibility_audit_log || []}
                   onVisibilityChange={(field, newValue, reason) => {
                     updateVisibility.mutate({ id: currentInvestigation.id, field, new_value: newValue, reason });
                   }}
+                  onWaiversChange={setLocalWaivers}
                 />
 
                 {/* Hash Footer */}
@@ -276,7 +298,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.2.0:</span> Investigation → LLM Analysis (web-grounded) → 7-Leaf Deterministic Pipeline → Suggested Weight → Build Order Engine (4-phase) → Visibility Governance (3-switch, phase-gated). Switches: nft_visibility (private|internal|public) · truth_visibility (private|internal|public) · skill_visibility (hidden|unlisted|listed). Default: all private/hidden. Public requires Phase 1 complete or explicit waiver (who/why/when). Every change → immutable audit log. SHA-256 Hash → Sovereign Memory. Deterministic. Auditable. Governance-safe.
+          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.3.0:</span> Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine (4-phase) → Exposure Readiness Engine (5 criteria: Phase 1 complete, no critical risks, no integrity flags, weight stability, Leaf 7 recommendation) → Visibility Governance (3-switch, ERE-gated). Four-layer governance stack: 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. ERE (is it safe to expose). SHA-256 → Sovereign Memory. Deterministic. Auditable. Governance-safe.
           </p>
         </div>
       </div>
