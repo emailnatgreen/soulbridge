@@ -7,7 +7,7 @@ import {
   TreePine, FlaskConical, GraduationCap, Award, Map, Activity,
   FileText, ShoppingBag, Heart, Landmark, Link2 as LinkIcon,
   MailWarning, GitBranch, Hammer, Eye, Lock, Sparkles, Layers,
-  ScrollText, UserCog, Gauge, FilePlus, MailPlus, CheckCircle, Archive
+  ScrollText, UserCog, Gauge, FilePlus, MailPlus, CheckCircle, Archive, Microscope, Search
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -117,6 +117,9 @@ const NAV_GROUPS = [
       { label: 'Service Definitions', path: '/service-definitions', icon: Settings },
       { label: 'Usage Logs', path: '/service-usage-logs', icon: Activity },
       { label: 'Investor Email', path: '/investor-email', icon: MailPlus },
+      { label: 'Admin Truth Engine', path: '/admin-truth-engine', icon: Microscope },
+      { label: 'Truth Engine', path: '/truth-engine', icon: Search },
+      { label: 'Public Reports', path: '/truth-reports', icon: Eye },
     ]
   },
 
