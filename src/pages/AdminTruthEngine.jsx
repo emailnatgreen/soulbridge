@@ -8,7 +8,7 @@ import InvestigationInput from '@/components/admin-truth/InvestigationInput';
 import AdminLeafEngine from '@/components/admin-truth/AdminLeafEngine';
 import InvestigationHistory from '@/components/admin-truth/InvestigationHistory';
 import InvestigationFilters from '@/components/admin-truth/InvestigationFilters';
-import WorkflowGenerator from '@/components/admin-truth/WorkflowGenerator';
+import BuildOrderEngine from '@/components/admin-truth/BuildOrderEngine';
 import VisibilityToggle from '@/components/admin-truth/VisibilityToggle';
 
 function parseInvestigation(memory) {
@@ -211,8 +211,8 @@ export default function AdminTruthEngine() {
                 {/* 7-Leaf Display */}
                 <AdminLeafEngine investigation={currentInvestigation} />
 
-                {/* Workflow Generator */}
-                <WorkflowGenerator investigation={currentInvestigation} />
+                {/* Build Order Engine */}
+                <BuildOrderEngine investigation={currentInvestigation} />
 
                 {/* Hash Footer */}
                 {currentInvestigation.report_hash && (
