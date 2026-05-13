@@ -248,7 +248,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.0.0:</span> Investigation → LLM Analysis (web-grounded) → 7-Leaf Deterministic Pipeline: L1 Raw Data (source-tagged, immutable snapshot) · L2 Classification (type/domain/priority buckets) · L3 Contradictions & Gaps (integrity flags) · L4 Cross-Links (node/agent/feature/historical) · L5 Risk & Impact (scored 1-10, severity assigned) · L6 Proposed Actions (grouped, dependency-ordered) · L7 Synthesis (phase-mapped, visibility rec, confidence score) → SHA-256 Hash → Sovereign Memory. Default: Private. Governance-ready output.
+          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.1.0:</span> Investigation → LLM Analysis (web-grounded) → 7-Leaf Deterministic Pipeline: L1 Raw Data (source-tagged, immutable snapshot) · L2 Classification (type/domain/priority buckets) · L3 Contradictions & Gaps (integrity flags) · L4 Cross-Links (node/agent/feature/historical) · L5 Risk & Impact (scored 1-10, suggested weight) · L6 Proposed Actions (grouped, dependency-ordered, weighted) · L7 Synthesis (phase-mapped, confidence score) → Suggested Weight: (risk × impact) + contradictions + dependencies → SHA-256 Hash → Sovereign Memory. Deterministic. Auditable. Governance-safe.
           </p>
         </div>
       </div>

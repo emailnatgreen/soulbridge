@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight } from 'lucide-react';
 import LeafShell from './LeafShell';
+import SuggestedWeightBadge from '../SuggestedWeightBadge';
 
 const PRIORITY_COLORS = {
   critical: 'bg-red-500/20 text-red-300 border-red-500/30',
@@ -38,6 +39,7 @@ export default function LeafProposedActions({ leaf, data }) {
                     <p className="text-white/80 font-medium">{item.title}</p>
                   </div>
                   <Badge className={`text-[8px] flex-shrink-0 ${PRIORITY_COLORS[item.priority] || PRIORITY_COLORS.medium}`}>{item.priority}</Badge>
+                  <SuggestedWeightBadge weight={item.suggested_weight} category={item.weight_category} />
                 </div>
                 {item.description && <p className="text-white/50 mt-1 ml-4">{item.description}</p>}
                 {item.dependencies && item.dependencies !== 'none' && (

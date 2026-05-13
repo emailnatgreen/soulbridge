@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import LeafShell from './LeafShell';
+import SuggestedWeightBadge from '../SuggestedWeightBadge';
 
 const SEVERITY_COLORS = {
   critical: 'bg-red-500/20 text-red-300 border-red-500/30',
@@ -44,9 +45,10 @@ export default function LeafRiskImpact({ leaf, data }) {
               <Badge className={`text-[8px] flex-shrink-0 ${SEVERITY_COLORS[item.severity] || SEVERITY_COLORS.medium}`}>{item.severity}</Badge>
             </div>
             {item.description && <p className="text-white/50 mt-1">{item.description}</p>}
-            <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
               <RiskBar score={item.risk_score} />
               {item.risk_domain && <Badge className={`text-[8px] ${DOMAIN_COLORS[item.risk_domain] || 'bg-white/5 text-white/40 border-white/10'}`}>{item.risk_domain}</Badge>}
+              <SuggestedWeightBadge weight={item.suggested_weight} category={item.weight_category} />
             </div>
             {item.impact_description && (
               <p className="text-white/30 text-[10px] mt-1.5 italic">Impact: {item.impact_description}</p>

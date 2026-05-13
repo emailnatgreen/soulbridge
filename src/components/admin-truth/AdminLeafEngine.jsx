@@ -9,6 +9,7 @@ import LeafCrossLinks from './leaves/LeafCrossLinks';
 import LeafRiskImpact from './leaves/LeafRiskImpact';
 import LeafProposedActions from './leaves/LeafProposedActions';
 import LeafSynthesis from './leaves/LeafSynthesis';
+import WeightDistribution from './WeightDistribution';
 
 export const ADMIN_LEAF_CONFIG = [
   { key: 'raw_data', num: 1, icon: Database, label: 'Raw Data', color: 'text-cyan-400', desc: 'Freeze the input before analysis', purpose: 'Immutable snapshot with source tagging and SHA-256 hash' },
@@ -73,15 +74,18 @@ export default function AdminLeafEngine({ investigation }) {
 
       {/* Metrics bar */}
       {investigation.metrics && (
-        <div className="flex flex-wrap gap-3 text-[10px] px-1">
-          <span className="text-cyan-400/70">{investigation.metrics.total_data_points} data points</span>
-          <span className="text-blue-400/70">{investigation.metrics.classified_items} classified</span>
-          <span className="text-amber-400/70">{investigation.metrics.contradictions_found} contradictions</span>
-          {investigation.metrics.integrity_flags > 0 && <span className="text-red-400 font-semibold">{investigation.metrics.integrity_flags} integrity flags</span>}
-          <span className="text-purple-400/70">{investigation.metrics.cross_links_mapped} cross-links</span>
-          <span className="text-red-400/70">{investigation.metrics.risks_identified} risks (avg {investigation.metrics.avg_risk_score}/10)</span>
-          <span className="text-emerald-400/70">{investigation.metrics.actions_proposed} actions</span>
-          <span className="text-pink-400/70">confidence: {investigation.metrics.confidence_score}%</span>
+        <div className="space-y-2 px-1">
+          <div className="flex flex-wrap gap-3 text-[10px]">
+            <span className="text-cyan-400/70">{investigation.metrics.total_data_points} data points</span>
+            <span className="text-blue-400/70">{investigation.metrics.classified_items} classified</span>
+            <span className="text-amber-400/70">{investigation.metrics.contradictions_found} contradictions</span>
+            {investigation.metrics.integrity_flags > 0 && <span className="text-red-400 font-semibold">{investigation.metrics.integrity_flags} integrity flags</span>}
+            <span className="text-purple-400/70">{investigation.metrics.cross_links_mapped} cross-links</span>
+            <span className="text-red-400/70">{investigation.metrics.risks_identified} risks (avg {investigation.metrics.avg_risk_score}/10)</span>
+            <span className="text-emerald-400/70">{investigation.metrics.actions_proposed} actions</span>
+            <span className="text-pink-400/70">confidence: {investigation.metrics.confidence_score}%</span>
+          </div>
+          <WeightDistribution distribution={investigation.metrics.weight_distribution} avgWeight={investigation.metrics.avg_suggested_weight} />
         </div>
       )}
 

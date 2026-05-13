@@ -24,11 +24,11 @@ export default function WorkflowGenerator({ investigation, onGenerateWorkflow })
     const criticalTasks = [];
     if (selectedLeaves.includes('risk_impact') && leaves.risk_impact?.length > 0) {
       leaves.risk_impact.filter(r => r.severity === 'critical' || r.severity === 'high')
-        .forEach(r => criticalTasks.push({ title: r.title || r.description, priority: r.severity === 'critical' ? 'critical' : 'high', source_leaf: 5, domain: r.risk_domain }));
+        .forEach(r => criticalTasks.push({ title: r.title || r.description, priority: r.severity === 'critical' ? 'critical' : 'high', source_leaf: 5, domain: r.risk_domain, suggested_weight: r.suggested_weight }));
     }
     if (selectedLeaves.includes('contradictions') && leaves.contradictions?.length > 0) {
       leaves.contradictions.filter(c => c.integrity_flag)
-        .forEach(c => criticalTasks.push({ title: `[INTEGRITY] ${c.title || c.description}`, priority: 'critical', source_leaf: 3 }));
+        .forEach(c => criticalTasks.push({ title: `[INTEGRITY] ${c.title || c.description}`, priority: 'critical', source_leaf: 3, suggested_weight: 16 }));
     }
     if (criticalTasks.length > 0) phases.push({ phase: 1, name: 'Critical Fixes', tasks: criticalTasks });
 
@@ -58,6 +58,7 @@ export default function WorkflowGenerator({ investigation, onGenerateWorkflow })
           source_leaf: 6,
           group: a.action_group,
           deps: a.dependencies !== 'none' ? a.dependencies : null,
+          suggested_weight: a.suggested_weight,
         })),
       });
     }
@@ -121,11 +122,14 @@ export default function WorkflowGenerator({ investigation, onGenerateWorkflow })
                 </div>
                 {phase.tasks.map((task, i) => (
                   <div key={i} className="flex items-center gap-2 pl-4 text-[10px]">
-                    <ArrowRight className="w-2.5 h-2.5 text-white/20" />
-                    <span className="text-white/50">{task.title}</span>
-                    <Badge className={`text-[8px] ml-auto ${task.priority === 'critical' ? 'bg-red-500/20 text-red-300 border-red-500/30' : task.priority === 'high' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-white/5 text-white/30 border-white/10'}`}>
-                      {task.priority}
-                    </Badge>
+                   <ArrowRight className="w-2.5 h-2.5 text-white/20" />
+                   <span className="text-white/50">{task.title}</span>
+                   {task.suggested_weight !== undefined && (
+                     <span className="text-white/25 text-[8px] font-mono">W:{task.suggested_weight}</span>
+                   )}
+                   <Badge className={`text-[8px] ml-auto ${task.priority === 'critical' ? 'bg-red-500/20 text-red-300 border-red-500/30' : task.priority === 'high' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-white/5 text-white/30 border-white/10'}`}>
+                     {task.priority}
+                   </Badge>
                   </div>
                 ))}
               </div>

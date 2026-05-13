@@ -15,7 +15,35 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Actions: investigate | list | get | toggle_visibility
  */
 
-const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.0.0' };
+const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.1.0' };
+
+// ═══ STEP 2A — Deterministic Suggested Weight Formula ═══
+// weight = (risk × impact) + contradictions + dependencies
+// risk = 1–4 (from severity), impact = 1–4 (from risk_score mapped)
+// Non-LLM, auditable, governance-safe
+const SEVERITY_TO_RISK = { critical: 4, high: 3, medium: 2, low: 1 };
+const PRIORITY_TO_DEPS = { critical: 3, high: 2, medium: 1, low: 0 };
+
+function calcSuggestedWeight(riskItem, contradictionCount, depCount) {
+  const risk = SEVERITY_TO_RISK[riskItem?.severity] || 2;
+  const impact = Math.min(Math.ceil((riskItem?.risk_score || 5) / 2.5), 4);
+  const raw = (risk * impact) + contradictionCount + depCount;
+  return Math.min(raw, 20); // cap at 20
+}
+
+function weightCategory(weight) {
+  if (weight >= 12) return 'critical';
+  if (weight >= 8) return 'high';
+  if (weight >= 4) return 'medium';
+  return 'low';
+}
+
+function calcActionWeight(action, contradictionCount) {
+  const priority = PRIORITY_TO_DEPS[action?.priority] || 1;
+  const deps = (action?.dependencies && action.dependencies !== 'none') ? action.dependencies.split(',').length : 0;
+  const raw = (priority * 2) + contradictionCount + deps;
+  return Math.min(raw, 20);
+}
 
 async function sha256(payload) {
   const data = new TextEncoder().encode(JSON.stringify(payload, Object.keys(payload).sort()));
@@ -231,6 +259,9 @@ LEAF 7 — SYNTHESIS: Produce:
 
       const pipelineMs = Date.now() - pipelineStart;
 
+      // ═══ Pre-compute contradiction count for weight formula ═══
+      const contradictionCount = (rawResult.leaf3_contradictions || []).length;
+
       // ═══ Build deterministic leaf structure ═══
       const leaves = {
         raw_data: (rawResult.leaf1_raw_data || []).map(item => ({
@@ -254,19 +285,31 @@ LEAF 7 — SYNTHESIS: Produce:
           link_type: item.link_type || 'node',
           relationship: item.relationship || 'related'
         })),
-        risk_impact: (rawResult.leaf5_risk_impact || []).map(item => ({
-          ...item,
-          risk_domain: item.risk_domain || 'general',
-          impact_description: item.impact_description || '',
-          risk_score: item.risk_score || 5,
-          severity: item.severity || 'medium'
-        })),
-        proposed_actions: (rawResult.leaf6_proposed_actions || []).map(item => ({
-          ...item,
-          action_group: item.action_group || 'general',
-          dependencies: item.dependencies || 'none',
-          priority: item.priority || 'medium'
-        })),
+        risk_impact: (rawResult.leaf5_risk_impact || []).map(item => {
+          const ri = {
+            ...item,
+            risk_domain: item.risk_domain || 'general',
+            impact_description: item.impact_description || '',
+            risk_score: item.risk_score || 5,
+            severity: item.severity || 'medium',
+          };
+          const sw = calcSuggestedWeight(ri, contradictionCount, 0);
+          ri.suggested_weight = sw;
+          ri.weight_category = weightCategory(sw);
+          return ri;
+        }),
+        proposed_actions: (rawResult.leaf6_proposed_actions || []).map(item => {
+          const pa = {
+            ...item,
+            action_group: item.action_group || 'general',
+            dependencies: item.dependencies || 'none',
+            priority: item.priority || 'medium',
+          };
+          const sw = calcActionWeight(pa, contradictionCount);
+          pa.suggested_weight = sw;
+          pa.weight_category = weightCategory(sw);
+          return pa;
+        }),
         synthesis: rawResult.leaf7_synthesis || { summary: '', phase_mapping: [], visibility_recommendation: 'private', visibility_reason: '', confidence_score: 0 },
       };
 
@@ -285,6 +328,16 @@ LEAF 7 — SYNTHESIS: Produce:
           ? Math.round((leaves.risk_impact.reduce((sum, r) => sum + (r.risk_score || 0), 0) / leaves.risk_impact.length) * 10) / 10
           : 0,
         confidence_score: leaves.synthesis?.confidence_score || 0,
+        // Suggested weight aggregates
+        avg_suggested_weight: leaves.risk_impact.length > 0
+          ? Math.round((leaves.risk_impact.reduce((sum, r) => sum + (r.suggested_weight || 0), 0) / leaves.risk_impact.length) * 10) / 10
+          : 0,
+        weight_distribution: {
+          critical: leaves.risk_impact.filter(r => r.weight_category === 'critical').length + leaves.proposed_actions.filter(a => a.weight_category === 'critical').length,
+          high: leaves.risk_impact.filter(r => r.weight_category === 'high').length + leaves.proposed_actions.filter(a => a.weight_category === 'high').length,
+          medium: leaves.risk_impact.filter(r => r.weight_category === 'medium').length + leaves.proposed_actions.filter(a => a.weight_category === 'medium').length,
+          low: leaves.risk_impact.filter(r => r.weight_category === 'low').length + leaves.proposed_actions.filter(a => a.weight_category === 'low').length,
+        },
       };
 
       // ═══ SHA-256 immutable snapshot ═══
