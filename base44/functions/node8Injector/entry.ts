@@ -500,17 +500,27 @@ Deno.serve(async (req) => {
           escalated_at: new Date().toISOString(),
         });
 
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: 'nathangreen760@gmail.com',
-          subject: `🚨 ESCALATION: Node 8 ${rec.severity.toUpperCase()} recommendation awaiting action`,
-          body: `<h2>⚠️ Node 8 Security Escalation</h2>
+        // Send escalation email — wrapped in try/catch so escalation continues even if email fails
+        try {
+          // Get admin users to find a valid registered email
+          const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' }, '-created_date', 1);
+          const adminEmail = admins.length > 0 ? admins[0].email : null;
+          if (adminEmail) {
+            await base44.asServiceRole.integrations.Core.SendEmail({
+              to: adminEmail,
+              subject: `🚨 ESCALATION: Node 8 ${rec.severity.toUpperCase()} recommendation awaiting action`,
+              body: `<h2>⚠️ Node 8 Security Escalation</h2>
 <p>A <strong>${rec.severity}</strong> security recommendation has been pending for ${Math.round(ageMinutes)} minutes without action.</p>
 <p><strong>ID:</strong> ${rec.recommendation_id}</p>
 <p><strong>Action:</strong> ${rec.action_type}</p>
 <p><strong>Score:</strong> ${rec.threat_score}/100</p>
 <p><strong>Summary:</strong> ${rec.summary}</p>
 <p>Please review in the Axi Command Dashboard → Node 8 Oversight tab.</p>`,
-        });
+            });
+          }
+        } catch (emailErr) {
+          console.error('[node8Injector] Escalation email failed (non-blocking):', emailErr.message);
+        }
 
         await base44.asServiceRole.entities.AgentNotification.create({
           recipient_agent_id: 'axi',
