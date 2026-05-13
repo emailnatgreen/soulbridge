@@ -15,7 +15,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Actions: investigate | list | get | toggle_visibility
  */
 
-const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.5.0' };
+const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.6.0' };
 
 // ═══ Sovereign Identity — computed once, embedded in every artefact ═══
 const SOVEREIGN_CONFIG = {

@@ -18,6 +18,9 @@ import { computeBuildOrder } from '@/lib/buildOrderEngine';
 import { evaluatePhase1Gate } from '@/lib/phase1CompletionGate';
 import { evaluateExposureReadiness } from '@/lib/exposureReadinessEngine';
 import SovereignIdentityPanel from '@/components/admin-truth/SovereignIdentityPanel';
+import InvestigationTimeline from '@/components/admin-truth/InvestigationTimeline';
+import CrossLinkPanel from '@/components/admin-truth/CrossLinkPanel';
+import MemoryQueryPanel from '@/components/admin-truth/MemoryQueryPanel';
 import { computeSovereignIdentity } from '@/lib/sovereignIdentity';
 
 function parseInvestigation(memory) {
@@ -288,6 +291,9 @@ export default function AdminTruthEngine() {
                   onWaiversChange={setLocalWaivers}
                 />
 
+                {/* Investigation Timeline — forensic replay */}
+                <InvestigationTimeline investigation={currentInvestigation} />
+
                 {/* Hash Footer — enriched with sovereign identity anchor */}
                 {currentInvestigation.report_hash && (
                   <div className="rounded-lg border border-violet-500/10 bg-violet-500/5 p-3 space-y-1.5">
@@ -315,6 +321,14 @@ export default function AdminTruthEngine() {
               </div>
             )}
 
+            {/* Memory Intelligence — query engine + cross-link patterns */}
+            {investigations.length > 0 && (
+              <div className="space-y-4">
+                <MemoryQueryPanel investigations={investigations} onSelectInvestigation={handleSelect} />
+                <CrossLinkPanel investigations={investigations} />
+              </div>
+            )}
+
             {/* Empty State */}
             {!currentInvestigation && !investigateMutation.isPending && (
               <div className="rounded-xl border border-white/5 bg-white/[0.02] p-12 text-center">
@@ -329,7 +343,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.5.0:</span> Sovereign Identity (SHA-256 anchor, fingerprint, boundary rules, immutable) → Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine (4-phase) → Phase‑1 Gate (hard lock) → ERE (readiness) → Visibility Governance (3-switch, gate-gated). Six-layer governance spine: 0. Sovereign Identity (who signs) · 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. Phase‑1 Gate (is it structurally sound) · 5. ERE (is it safe to expose). Every artefact signed by sovereign fingerprint. Deterministic. Auditable. Tamper-proof.
+          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.6.0:</span> Sovereign Identity → Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine → Phase‑1 Gate → ERE → Visibility Governance → Memory Intelligence (timeline replay, cross-link patterns, forensic query). Seven-layer governance spine: 0. Sovereign Identity (who signs) · 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. Phase‑1 Gate (is it structurally sound) · 5. ERE (is it safe to expose) · 6. Memory Intelligence (forensic record, queryable, replayable). Every artefact signed. Deterministic. Auditable. Tamper-proof. Testable.
           </p>
         </div>
       </div>
