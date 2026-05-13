@@ -15,7 +15,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Actions: investigate | list | get | toggle_visibility
  */
 
-const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.1.0' };
+const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.2.0' };
 
 // ═══ STEP 2A — Deterministic Suggested Weight Formula ═══
 // weight = (risk × impact) + contradictions + dependencies
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
       return Response.json({ investigation: inv });
     }
 
-    // ─── TOGGLE VISIBILITY ───
+    // ─── TOGGLE VISIBILITY (legacy compat) ───
     if (action === 'toggle_visibility') {
       const { id, is_public } = body;
       if (!id) return Response.json({ error: 'id required' }, { status: 400 });
@@ -88,6 +88,55 @@ Deno.serve(async (req) => {
       meta.is_public = !!is_public;
       await base44.asServiceRole.entities.Memory.update(id, { context: JSON.stringify(meta) });
       return Response.json({ status: 'updated', is_public: !!is_public });
+    }
+
+    // ─── UPDATE VISIBILITY (governance-gated, 3-switch model) ───
+    if (action === 'update_visibility') {
+      const { id, field, new_value, reason } = body;
+      if (!id || !field || !new_value) return Response.json({ error: 'id, field, new_value required' }, { status: 400 });
+
+      const VALID_FIELDS = {
+        nft_visibility: ['private', 'internal', 'public'],
+        truth_visibility: ['private', 'internal', 'public'],
+        skill_visibility: ['hidden', 'unlisted', 'listed'],
+      };
+      if (!VALID_FIELDS[field] || !VALID_FIELDS[field].includes(new_value)) {
+        return Response.json({ error: `Invalid field/value: ${field}=${new_value}` }, { status: 400 });
+      }
+
+      const inv = await base44.asServiceRole.entities.Memory.get(id);
+      const meta = typeof inv.context === 'string' ? JSON.parse(inv.context) : (inv.context || {});
+
+      const oldValue = meta[field] || (field === 'skill_visibility' ? 'hidden' : 'private');
+
+      // Update the field
+      meta[field] = new_value;
+
+      // Derive legacy is_public from truth_visibility for backward compat
+      if (field === 'truth_visibility') {
+        meta.is_public = new_value === 'public';
+      }
+
+      // Append immutable audit log entry
+      if (!meta.visibility_audit_log) meta.visibility_audit_log = [];
+      meta.visibility_audit_log.push({
+        timestamp: new Date().toISOString(),
+        who: user.email,
+        field,
+        from_state: oldValue,
+        to_state: new_value,
+        reason: reason || '',
+      });
+
+      await base44.asServiceRole.entities.Memory.update(id, { context: JSON.stringify(meta) });
+
+      return Response.json({
+        status: 'updated',
+        field,
+        from_state: oldValue,
+        to_state: new_value,
+        audit_log: meta.visibility_audit_log,
+      });
     }
 
     // ─── INVESTIGATE (Enhanced 7-Leaf Pipeline v2) ───
@@ -343,11 +392,7 @@ LEAF 7 — SYNTHESIS: Produce:
       // ═══ SHA-256 immutable snapshot ═══
       const reportHash = await sha256({ question, target_type, leaves, metrics, timestamp });
 
-      // ═══ Determine auto-visibility from synthesis ═══
-      const visRec = (leaves.synthesis?.visibility_recommendation || 'private').toLowerCase();
-      const defaultPublic = visRec === 'public';
-
-      // ═══ Store as sovereign investigation memory ═══
+      // ═══ Default visibility — everything starts private/hidden ═══
       const metadata = {
         target_type,
         leaves,
@@ -357,7 +402,12 @@ LEAF 7 — SYNTHESIS: Produce:
         hash_algo: 'sha256',
         engine: ENGINE,
         status: 'complete',
-        is_public: defaultPublic,
+        // Three independent visibility switches — all default private/hidden
+        nft_visibility: 'private',
+        truth_visibility: 'private',
+        skill_visibility: 'hidden',
+        is_public: false,  // legacy compat
+        visibility_audit_log: [],
         frozen_at: timestamp,
       };
 
@@ -381,7 +431,10 @@ LEAF 7 — SYNTHESIS: Produce:
         report_hash: reportHash,
         hash_algo: 'sha256',
         engine: ENGINE,
-        is_public: defaultPublic,
+        nft_visibility: 'private',
+        truth_visibility: 'private',
+        skill_visibility: 'hidden',
+        is_public: false,
         frozen_at: timestamp,
       });
     }

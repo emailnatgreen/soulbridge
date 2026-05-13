@@ -9,7 +9,8 @@ import AdminLeafEngine from '@/components/admin-truth/AdminLeafEngine';
 import InvestigationHistory from '@/components/admin-truth/InvestigationHistory';
 import InvestigationFilters from '@/components/admin-truth/InvestigationFilters';
 import BuildOrderEngine from '@/components/admin-truth/BuildOrderEngine';
-import VisibilityToggle from '@/components/admin-truth/VisibilityToggle';
+import VisibilityGovernancePanel from '@/components/admin-truth/VisibilityGovernancePanel';
+import { computeBuildOrder } from '@/lib/buildOrderEngine';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -26,6 +27,10 @@ function parseInvestigation(memory) {
     hash_algo: meta.hash_algo || 'sha256',
     engine: meta.engine,
     is_public: meta.is_public || false,
+    nft_visibility: meta.nft_visibility || 'private',
+    truth_visibility: meta.truth_visibility || 'private',
+    skill_visibility: meta.skill_visibility || 'hidden',
+    visibility_audit_log: meta.visibility_audit_log || [],
     frozen_at: meta.frozen_at,
     created_date: memory.created_date,
   };
@@ -35,6 +40,7 @@ export default function AdminTruthEngine() {
   const [activeId, setActiveId] = useState(null);
   const [liveResult, setLiveResult] = useState(null);
   const [filters, setFilters] = useState({ target_type: 'all', risk_level: 'all', status: 'all', visibility: 'all' });
+  const [currentBuildOrder, setCurrentBuildOrder] = useState(null);
   const queryClient = useQueryClient();
 
   // Load investigation history
@@ -76,14 +82,18 @@ export default function AdminTruthEngine() {
     },
   });
 
-  // Visibility toggle
-  const toggleVisibility = useMutation({
-    mutationFn: async ({ id, is_public }) => {
-      const res = await base44.functions.invoke('adminTruthEngine', { action: 'toggle_visibility', id, is_public });
+  // Visibility governance mutation (3-switch model)
+  const updateVisibility = useMutation({
+    mutationFn: async ({ id, field, new_value, reason }) => {
+      const res = await base44.functions.invoke('adminTruthEngine', { action: 'update_visibility', id, field, new_value, reason });
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-investigations'] });
+      // Update live result audit log if we have one
+      if (liveResult && data.audit_log) {
+        setLiveResult(prev => prev ? { ...prev, visibility_audit_log: data.audit_log, [data.field]: data.to_state } : prev);
+      }
     },
   });
 
@@ -95,6 +105,7 @@ export default function AdminTruthEngine() {
   const handleSelect = (id) => {
     setActiveId(id);
     setLiveResult(null);
+    setCurrentBuildOrder(null);
   };
 
   return (
@@ -200,10 +211,17 @@ export default function AdminTruthEngine() {
                           )}
                         </div>
                       </div>
-                      <VisibilityToggle
-                        isPublic={currentInvestigation.is_public}
-                        onToggle={(val) => toggleVisibility.mutate({ id: currentInvestigation.id, is_public: val })}
-                      />
+                      <div className="flex items-center gap-2 text-[10px]">
+                        <span className={currentInvestigation.nft_visibility === 'public' ? 'text-emerald-400' : currentInvestigation.nft_visibility === 'internal' ? 'text-amber-400' : 'text-white/30'}>
+                          NFT: {currentInvestigation.nft_visibility}
+                        </span>
+                        <span className={currentInvestigation.truth_visibility === 'public' ? 'text-emerald-400' : currentInvestigation.truth_visibility === 'internal' ? 'text-amber-400' : 'text-white/30'}>
+                          Truth: {currentInvestigation.truth_visibility}
+                        </span>
+                        <span className={currentInvestigation.skill_visibility === 'listed' ? 'text-emerald-400' : currentInvestigation.skill_visibility === 'unlisted' ? 'text-amber-400' : 'text-white/30'}>
+                          Skill: {currentInvestigation.skill_visibility}
+                        </span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -212,7 +230,17 @@ export default function AdminTruthEngine() {
                 <AdminLeafEngine investigation={currentInvestigation} />
 
                 {/* Build Order Engine */}
-                <BuildOrderEngine investigation={currentInvestigation} />
+                <BuildOrderEngine investigation={currentInvestigation} onBuildOrderComputed={setCurrentBuildOrder} />
+
+                {/* Visibility Governance — Phase-gated 3-switch model */}
+                <VisibilityGovernancePanel
+                  investigation={currentInvestigation}
+                  buildOrder={currentBuildOrder}
+                  auditLog={currentInvestigation.visibility_audit_log || []}
+                  onVisibilityChange={(field, newValue, reason) => {
+                    updateVisibility.mutate({ id: currentInvestigation.id, field, new_value: newValue, reason });
+                  }}
+                />
 
                 {/* Hash Footer */}
                 {currentInvestigation.report_hash && (
@@ -226,7 +254,7 @@ export default function AdminTruthEngine() {
                       <span>Engine: {currentInvestigation.engine?.name || 'Admin Truth Engine'} v{currentInvestigation.engine?.version || '2.0.0'}</span>
                       <span>Hash: {currentInvestigation.hash_algo || 'sha256'}</span>
                       <span>Type: {currentInvestigation.target_type}</span>
-                      <span>Visibility: {currentInvestigation.is_public ? 'Public' : 'Private'}</span>
+                      <span>NFT: {currentInvestigation.nft_visibility} · Truth: {currentInvestigation.truth_visibility} · Skill: {currentInvestigation.skill_visibility}</span>
                       {currentInvestigation.frozen_at && <span>Frozen: {new Date(currentInvestigation.frozen_at).toLocaleString()}</span>}
                     </div>
                   </div>
@@ -248,7 +276,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.1.0:</span> Investigation → LLM Analysis (web-grounded) → 7-Leaf Deterministic Pipeline: L1 Raw Data (source-tagged, immutable snapshot) · L2 Classification (type/domain/priority buckets) · L3 Contradictions & Gaps (integrity flags) · L4 Cross-Links (node/agent/feature/historical) · L5 Risk & Impact (scored 1-10, suggested weight) · L6 Proposed Actions (grouped, dependency-ordered, weighted) · L7 Synthesis (phase-mapped, confidence score) → Suggested Weight: (risk × impact) + contradictions + dependencies → SHA-256 Hash → Sovereign Memory. Deterministic. Auditable. Governance-safe.
+          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.2.0:</span> Investigation → LLM Analysis (web-grounded) → 7-Leaf Deterministic Pipeline → Suggested Weight → Build Order Engine (4-phase) → Visibility Governance (3-switch, phase-gated). Switches: nft_visibility (private|internal|public) · truth_visibility (private|internal|public) · skill_visibility (hidden|unlisted|listed). Default: all private/hidden. Public requires Phase 1 complete or explicit waiver (who/why/when). Every change → immutable audit log. SHA-256 Hash → Sovereign Memory. Deterministic. Auditable. Governance-safe.
           </p>
         </div>
       </div>

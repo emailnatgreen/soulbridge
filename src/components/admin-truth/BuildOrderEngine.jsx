@@ -68,7 +68,7 @@ function PhaseBlock({ phaseData }) {
   );
 }
 
-export default function BuildOrderEngine({ investigation }) {
+export default function BuildOrderEngine({ investigation, onBuildOrderComputed }) {
   const [buildOrder, setBuildOrder] = useState(null);
 
   if (!investigation || !investigation.leaves) return null;
@@ -76,6 +76,7 @@ export default function BuildOrderEngine({ investigation }) {
   const handleCompute = () => {
     const result = computeBuildOrder(investigation.leaves);
     setBuildOrder(result);
+    if (onBuildOrderComputed) onBuildOrderComputed(result);
   };
 
   // Allow recomputation
@@ -84,6 +85,7 @@ export default function BuildOrderEngine({ investigation }) {
     setTimeout(() => {
       const result = computeBuildOrder(investigation.leaves);
       setBuildOrder(result);
+      if (onBuildOrderComputed) onBuildOrderComputed(result);
     }, 0);
   };
 
