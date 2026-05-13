@@ -20,10 +20,13 @@ function parseInvestigation(memory) {
     target_type: meta.target_type || 'general',
     status: meta.status || 'complete',
     leaves: meta.leaves || {},
+    metrics: meta.metrics || null,
     processing_ms: meta.processing_ms,
     report_hash: meta.report_hash,
+    hash_algo: meta.hash_algo || 'sha256',
     engine: meta.engine,
     is_public: meta.is_public || false,
+    frozen_at: meta.frozen_at,
     created_date: memory.created_date,
   };
 }
@@ -182,10 +185,18 @@ export default function AdminTruthEngine() {
                       <div className="flex-1">
                         <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Investigation</p>
                         <p className="text-white text-sm">{currentInvestigation.question}</p>
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
                           <Badge className="text-[9px] bg-violet-500/15 text-violet-300 border-violet-500/30">{currentInvestigation.target_type}</Badge>
                           {currentInvestigation.processing_ms && (
                             <span className="text-white/20 text-[9px]">{(currentInvestigation.processing_ms / 1000).toFixed(1)}s</span>
+                          )}
+                          {currentInvestigation.metrics?.confidence_score > 0 && (
+                            <Badge className={`text-[9px] ${currentInvestigation.metrics.confidence_score >= 70 ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : currentInvestigation.metrics.confidence_score >= 40 ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-red-500/15 text-red-300 border-red-500/30'}`}>
+                              {currentInvestigation.metrics.confidence_score}% confidence
+                            </Badge>
+                          )}
+                          {currentInvestigation.metrics?.critical_risks > 0 && (
+                            <Badge className="text-[9px] bg-red-500/15 text-red-300 border-red-500/30">{currentInvestigation.metrics.critical_risks} critical</Badge>
                           )}
                         </div>
                       </div>
@@ -212,9 +223,11 @@ export default function AdminTruthEngine() {
                     </div>
                     <p className="text-violet-300/80 font-mono text-[10px] break-all">{currentInvestigation.report_hash}</p>
                     <div className="flex flex-wrap gap-3 text-[9px] text-white/20 pt-1">
-                      <span>Engine: {currentInvestigation.engine?.name || 'Admin Truth Engine'} v{currentInvestigation.engine?.version || '1.0.0'}</span>
+                      <span>Engine: {currentInvestigation.engine?.name || 'Admin Truth Engine'} v{currentInvestigation.engine?.version || '2.0.0'}</span>
+                      <span>Hash: {currentInvestigation.hash_algo || 'sha256'}</span>
                       <span>Type: {currentInvestigation.target_type}</span>
                       <span>Visibility: {currentInvestigation.is_public ? 'Public' : 'Private'}</span>
+                      {currentInvestigation.frozen_at && <span>Frozen: {new Date(currentInvestigation.frozen_at).toLocaleString()}</span>}
                     </div>
                   </div>
                 )}
@@ -235,7 +248,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
           <p className="text-white/20 text-[10px] leading-relaxed">
-            <span className="text-violet-400/40 font-semibold">Admin Truth Engine v1.0.0:</span> Investigation → LLM Analysis (web-grounded) → 7-Leaf Decomposition: L1 Raw Data · L2 Classification · L3 Contradictions/Gaps · L4 Cross-Links · L5 Risk/Impact · L6 Proposed Actions · L7 Synthesis → SHA-256 Hash → Investigation Memory (encrypted, sovereign, non-browser). Default: Private. Admin flip to Public. Workflow generation from selected leaves.
+          <span className="text-violet-400/40 font-semibold">Admin Truth Engine v2.0.0:</span> Investigation → LLM Analysis (web-grounded) → 7-Leaf Deterministic Pipeline: L1 Raw Data (source-tagged, immutable snapshot) · L2 Classification (type/domain/priority buckets) · L3 Contradictions & Gaps (integrity flags) · L4 Cross-Links (node/agent/feature/historical) · L5 Risk & Impact (scored 1-10, severity assigned) · L6 Proposed Actions (grouped, dependency-ordered) · L7 Synthesis (phase-mapped, visibility rec, confidence score) → SHA-256 Hash → Sovereign Memory. Default: Private. Governance-ready output.
           </p>
         </div>
       </div>

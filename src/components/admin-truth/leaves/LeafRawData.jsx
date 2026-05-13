@@ -1,0 +1,32 @@
+import React from 'react';
+import { Badge } from '@/components/ui/badge';
+import LeafShell from './LeafShell';
+
+const SOURCE_COLORS = {
+  human: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  system: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+  agent: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+  external: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+};
+
+export default function LeafRawData({ leaf, data }) {
+  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} />;
+
+  return (
+    <LeafShell leaf={leaf}>
+      <div className="space-y-1.5">
+        {data.map((item, i) => (
+          <div key={i} className="rounded bg-white/[0.03] border border-white/5 p-2.5 text-xs">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-white/80 font-medium">{item.title}</p>
+              <Badge className={`text-[8px] flex-shrink-0 ${SOURCE_COLORS[item.source_type] || SOURCE_COLORS.system}`}>
+                {item.source_type || 'system'}
+              </Badge>
+            </div>
+            {item.description && <p className="text-white/50 mt-1">{item.description}</p>}
+          </div>
+        ))}
+      </div>
+    </LeafShell>
+  );
+}

@@ -20,45 +20,62 @@ export default function WorkflowGenerator({ investigation, onGenerateWorkflow })
     const leaves = investigation.leaves;
     const phases = [];
 
-    // Phase 1: Critical fixes from risks
+    // Phase 1: Critical fixes from risks + integrity flags
+    const criticalTasks = [];
     if (selectedLeaves.includes('risk_impact') && leaves.risk_impact?.length > 0) {
-      const highRisks = leaves.risk_impact.filter(r => r.severity === 'high' || r.severity === 'critical');
-      if (highRisks.length > 0) {
-        phases.push({
-          phase: 1,
-          name: 'Critical Fixes',
-          tasks: highRisks.map(r => ({ title: r.title || r.description, priority: 'critical', source_leaf: 5 })),
-        });
-      }
+      leaves.risk_impact.filter(r => r.severity === 'critical' || r.severity === 'high')
+        .forEach(r => criticalTasks.push({ title: r.title || r.description, priority: r.severity === 'critical' ? 'critical' : 'high', source_leaf: 5, domain: r.risk_domain }));
     }
+    if (selectedLeaves.includes('contradictions') && leaves.contradictions?.length > 0) {
+      leaves.contradictions.filter(c => c.integrity_flag)
+        .forEach(c => criticalTasks.push({ title: `[INTEGRITY] ${c.title || c.description}`, priority: 'critical', source_leaf: 3 }));
+    }
+    if (criticalTasks.length > 0) phases.push({ phase: 1, name: 'Critical Fixes', tasks: criticalTasks });
 
     // Phase 2: Hardening from contradictions + medium risks
     const hardeningTasks = [];
     if (selectedLeaves.includes('contradictions') && leaves.contradictions?.length > 0) {
-      leaves.contradictions.forEach(c => hardeningTasks.push({ title: c.title || c.description || c, priority: 'high', source_leaf: 3 }));
+      leaves.contradictions.filter(c => !c.integrity_flag)
+        .forEach(c => hardeningTasks.push({ title: c.title || c.description, priority: c.severity === 'high' ? 'high' : 'medium', source_leaf: 3 }));
     }
     if (selectedLeaves.includes('risk_impact') && leaves.risk_impact?.length > 0) {
-      leaves.risk_impact.filter(r => r.severity === 'medium').forEach(r => hardeningTasks.push({ title: r.title || r.description, priority: 'medium', source_leaf: 5 }));
+      leaves.risk_impact.filter(r => r.severity === 'medium')
+        .forEach(r => hardeningTasks.push({ title: r.title || r.description, priority: 'medium', source_leaf: 5 }));
     }
     if (hardeningTasks.length > 0) phases.push({ phase: phases.length + 1, name: 'Hardening', tasks: hardeningTasks });
 
-    // Phase 3: Actions
+    // Phase 3: Implementation from proposed actions (respecting dependency order)
     if (selectedLeaves.includes('proposed_actions') && leaves.proposed_actions?.length > 0) {
+      const noDeps = leaves.proposed_actions.filter(a => !a.dependencies || a.dependencies === 'none');
+      const withDeps = leaves.proposed_actions.filter(a => a.dependencies && a.dependencies !== 'none');
+      const orderedActions = [...noDeps, ...withDeps];
       phases.push({
         phase: phases.length + 1,
         name: 'Implementation',
-        tasks: leaves.proposed_actions.map(a => ({ title: a.title || a.description || a, priority: 'normal', source_leaf: 6 })),
+        tasks: orderedActions.map(a => ({
+          title: a.title || a.description,
+          priority: a.priority || 'medium',
+          source_leaf: 6,
+          group: a.action_group,
+          deps: a.dependencies !== 'none' ? a.dependencies : null,
+        })),
       });
     }
 
-    // Phase 4: Pre-publish checks from synthesis
-    if (selectedLeaves.includes('synthesis') && leaves.synthesis) {
-      phases.push({
-        phase: phases.length + 1,
-        name: 'Pre-Publish Review',
-        tasks: [{ title: 'Review synthesised findings before publishing', priority: 'normal', source_leaf: 7 }],
+    // Phase 4: Validation from synthesis phase mapping + low risks
+    const validationTasks = [];
+    if (selectedLeaves.includes('synthesis') && leaves.synthesis?.phase_mapping?.length > 0) {
+      leaves.synthesis.phase_mapping.forEach(pm => {
+        pm.actions?.forEach(a => validationTasks.push({ title: a, priority: 'normal', source_leaf: 7 }));
       });
+    } else if (selectedLeaves.includes('synthesis') && leaves.synthesis) {
+      validationTasks.push({ title: 'Review synthesised findings before publishing', priority: 'normal', source_leaf: 7 });
     }
+    if (selectedLeaves.includes('risk_impact') && leaves.risk_impact?.length > 0) {
+      leaves.risk_impact.filter(r => r.severity === 'low')
+        .forEach(r => validationTasks.push({ title: r.title || r.description, priority: 'low', source_leaf: 5 }));
+    }
+    if (validationTasks.length > 0) phases.push({ phase: phases.length + 1, name: 'Validation', tasks: validationTasks });
 
     setGenerated(phases.length > 0 ? phases : [{ phase: 1, name: 'Review', tasks: [{ title: 'No actionable items found in selected leaves', priority: 'low', source_leaf: 0 }] }]);
     if (onGenerateWorkflow) onGenerateWorkflow(phases);

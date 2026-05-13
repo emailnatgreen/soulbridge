@@ -1,62 +1,41 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Database, Tag, GitCompare, Link2, Shield, Zap, Sparkles } from 'lucide-react';
+import LeafRawData from './leaves/LeafRawData';
+import LeafClassification from './leaves/LeafClassification';
+import LeafContradictions from './leaves/LeafContradictions';
+import LeafCrossLinks from './leaves/LeafCrossLinks';
+import LeafRiskImpact from './leaves/LeafRiskImpact';
+import LeafProposedActions from './leaves/LeafProposedActions';
+import LeafSynthesis from './leaves/LeafSynthesis';
 
-const ADMIN_LEAF_CONFIG = [
-  { key: 'raw_data', num: 1, icon: Database, label: 'Raw Data', color: 'text-cyan-400', desc: 'Unprocessed input and source material' },
-  { key: 'classification', num: 2, icon: Tag, label: 'Classification', color: 'text-blue-400', desc: 'Categorisation and tagging' },
-  { key: 'contradictions', num: 3, icon: GitCompare, label: 'Contradictions', color: 'text-amber-400', desc: 'Gaps and conflicting signals' },
-  { key: 'cross_links', num: 4, icon: Link2, label: 'Cross-Links', color: 'text-purple-400', desc: 'Connected entities and dependencies' },
-  { key: 'risk_impact', num: 5, icon: Shield, label: 'Risk/Impact', color: 'text-red-400', desc: 'Severity and blast radius' },
-  { key: 'proposed_actions', num: 6, icon: Zap, label: 'Actions', color: 'text-emerald-400', desc: 'Recommended next steps' },
-  { key: 'synthesis', num: 7, icon: Sparkles, label: 'Synthesis', color: 'text-pink-400', desc: 'Final consolidated assessment' },
+export const ADMIN_LEAF_CONFIG = [
+  { key: 'raw_data', num: 1, icon: Database, label: 'Raw Data', color: 'text-cyan-400', desc: 'Freeze the input before analysis', purpose: 'Immutable snapshot with source tagging and SHA-256 hash' },
+  { key: 'classification', num: 2, icon: Tag, label: 'Classification', color: 'text-blue-400', desc: 'Sort into deterministic buckets', purpose: 'Type, domain, and priority classification' },
+  { key: 'contradictions', num: 3, icon: GitCompare, label: 'Contradictions & Gaps', color: 'text-amber-400', desc: 'What is wrong, missing, or inconsistent', purpose: 'Gap detection, contradiction mapping, integrity flags' },
+  { key: 'cross_links', num: 4, icon: Link2, label: 'Cross-Links', color: 'text-purple-400', desc: 'Map the relational structure', purpose: 'Node, agent, feature, and historical relationships' },
+  { key: 'risk_impact', num: 5, icon: Shield, label: 'Risk & Impact', color: 'text-red-400', desc: 'Quantify the seriousness', purpose: 'Risk scoring, impact assessment, severity assignment' },
+  { key: 'proposed_actions', num: 6, icon: Zap, label: 'Proposed Actions', color: 'text-emerald-400', desc: 'Define what must be done', purpose: 'Deterministic actions grouped by target with dependencies' },
+  { key: 'synthesis', num: 7, icon: Sparkles, label: 'Synthesis', color: 'text-pink-400', desc: 'Final governance-ready output', purpose: 'Phase mapping, workflow export, visibility recommendation' },
 ];
 
-function LeafSection({ leaf, data }) {
-  const Icon = leaf.icon;
-  if (!data || (Array.isArray(data) && data.length === 0)) {
-    return (
-      <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Icon className={`w-4 h-4 ${leaf.color}`} />
-          <span className={`text-xs font-semibold ${leaf.color}`}>Leaf {leaf.num}: {leaf.label}</span>
-        </div>
-        <p className="text-white/20 text-xs italic">No data collected for this leaf yet</p>
-      </div>
-    );
-  }
+const LEAF_COMPONENTS = {
+  raw_data: LeafRawData,
+  classification: LeafClassification,
+  contradictions: LeafContradictions,
+  cross_links: LeafCrossLinks,
+  risk_impact: LeafRiskImpact,
+  proposed_actions: LeafProposedActions,
+  synthesis: LeafSynthesis,
+};
 
-  return (
-    <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4 space-y-2">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className={`w-4 h-4 ${leaf.color}`} />
-        <span className={`text-xs font-semibold ${leaf.color}`}>Leaf {leaf.num}: {leaf.label}</span>
-        <span className="text-white/20 text-[9px]">{leaf.desc}</span>
-      </div>
-      {typeof data === 'string' ? (
-        <p className="text-white/70 text-xs leading-relaxed whitespace-pre-wrap">{data}</p>
-      ) : Array.isArray(data) ? (
-        <div className="space-y-1.5">
-          {data.map((item, i) => (
-            <div key={i} className="rounded bg-white/[0.03] border border-white/5 p-2.5 text-xs text-white/60">
-              {typeof item === 'string' ? item : (
-                <div>
-                  {item.title && <p className="text-white/80 font-medium mb-0.5">{item.title}</p>}
-                  {item.description && <p className="text-white/50">{item.description}</p>}
-                  {item.severity && <Badge className={`text-[8px] mt-1 ${item.severity === 'high' ? 'bg-red-500/20 text-red-300 border-red-500/30' : item.severity === 'medium' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'}`}>{item.severity}</Badge>}
-                  {item.status && <Badge className="text-[8px] mt-1 ml-1 bg-white/5 text-white/40 border-white/10">{item.status}</Badge>}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <pre className="text-white/50 text-[10px] overflow-auto">{JSON.stringify(data, null, 2)}</pre>
-      )}
-    </div>
-  );
+function hasLeafData(data) {
+  if (!data) return false;
+  if (typeof data === 'string') return data.length > 0;
+  if (typeof data === 'object' && !Array.isArray(data)) return Object.keys(data).length > 0 && (data.summary || data.phase_mapping);
+  if (Array.isArray(data)) return data.length > 0;
+  return true;
 }
 
 export default function AdminLeafEngine({ investigation }) {
@@ -76,44 +55,68 @@ export default function AdminLeafEngine({ investigation }) {
 
   return (
     <div className="space-y-4">
-      {/* Summary bar */}
+      {/* Leaf summary badges */}
       <div className="flex flex-wrap gap-1.5">
         {ADMIN_LEAF_CONFIG.map(leaf => {
           const Icon = leaf.icon;
-          const hasData = !!leaves[leaf.key] && (typeof leaves[leaf.key] === 'string' ? leaves[leaf.key].length > 0 : Array.isArray(leaves[leaf.key]) ? leaves[leaf.key].length > 0 : true);
+          const has = hasLeafData(leaves[leaf.key]);
+          const count = Array.isArray(leaves[leaf.key]) ? leaves[leaf.key].length : null;
           return (
-            <Badge key={leaf.num} className={`text-[10px] ${hasData ? `bg-white/5 border-white/10 ${leaf.color}` : 'bg-white/[0.02] border-white/5 text-white/20'}`}>
-              <Icon className="w-3 h-3 mr-1" />
+            <Badge key={leaf.num} className={`text-[10px] gap-1 ${has ? `bg-white/5 border-white/10 ${leaf.color}` : 'bg-white/[0.02] border-white/5 text-white/20'}`}>
+              <Icon className="w-3 h-3" />
               L{leaf.num}
+              {count !== null && count > 0 && <span className="opacity-60">({count})</span>}
             </Badge>
           );
         })}
       </div>
 
+      {/* Metrics bar */}
+      {investigation.metrics && (
+        <div className="flex flex-wrap gap-3 text-[10px] px-1">
+          <span className="text-cyan-400/70">{investigation.metrics.total_data_points} data points</span>
+          <span className="text-blue-400/70">{investigation.metrics.classified_items} classified</span>
+          <span className="text-amber-400/70">{investigation.metrics.contradictions_found} contradictions</span>
+          {investigation.metrics.integrity_flags > 0 && <span className="text-red-400 font-semibold">{investigation.metrics.integrity_flags} integrity flags</span>}
+          <span className="text-purple-400/70">{investigation.metrics.cross_links_mapped} cross-links</span>
+          <span className="text-red-400/70">{investigation.metrics.risks_identified} risks (avg {investigation.metrics.avg_risk_score}/10)</span>
+          <span className="text-emerald-400/70">{investigation.metrics.actions_proposed} actions</span>
+          <span className="text-pink-400/70">confidence: {investigation.metrics.confidence_score}%</span>
+        </div>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-white/5 border border-white/10">
-          <TabsTrigger value="all" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white">All Leaves</TabsTrigger>
-          <TabsTrigger value="risks" className="text-xs data-[state=active]:bg-red-500/20 data-[state=active]:text-red-300">Risks Only</TabsTrigger>
-          <TabsTrigger value="actions" className="text-xs data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-300">Actions Only</TabsTrigger>
+        <TabsList className="bg-white/5 border border-white/10 flex-wrap h-auto gap-0.5 p-1">
+          <TabsTrigger value="all" className="text-[10px] data-[state=active]:bg-white/10 data-[state=active]:text-white">All Leaves</TabsTrigger>
+          <TabsTrigger value="risks" className="text-[10px] data-[state=active]:bg-red-500/20 data-[state=active]:text-red-300">Risks</TabsTrigger>
+          <TabsTrigger value="gaps" className="text-[10px] data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300">Gaps</TabsTrigger>
+          <TabsTrigger value="actions" className="text-[10px] data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-300">Actions</TabsTrigger>
+          <TabsTrigger value="links" className="text-[10px] data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">Links</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-3 mt-3">
-          {ADMIN_LEAF_CONFIG.map(leaf => (
-            <LeafSection key={leaf.num} leaf={leaf} data={leaves[leaf.key]} />
-          ))}
+          {ADMIN_LEAF_CONFIG.map(leaf => {
+            const Component = LEAF_COMPONENTS[leaf.key];
+            return <Component key={leaf.num} leaf={leaf} data={leaves[leaf.key]} />;
+          })}
         </TabsContent>
-        <TabsContent value="risks" className="mt-3">
-          <LeafSection leaf={ADMIN_LEAF_CONFIG[4]} data={leaves.risk_impact} />
-          <div className="mt-3">
-            <LeafSection leaf={ADMIN_LEAF_CONFIG[2]} data={leaves.contradictions} />
-          </div>
+
+        <TabsContent value="risks" className="space-y-3 mt-3">
+          <LeafRiskImpact leaf={ADMIN_LEAF_CONFIG[4]} data={leaves.risk_impact} />
         </TabsContent>
-        <TabsContent value="actions" className="mt-3">
-          <LeafSection leaf={ADMIN_LEAF_CONFIG[5]} data={leaves.proposed_actions} />
+
+        <TabsContent value="gaps" className="space-y-3 mt-3">
+          <LeafContradictions leaf={ADMIN_LEAF_CONFIG[2]} data={leaves.contradictions} />
+        </TabsContent>
+
+        <TabsContent value="actions" className="space-y-3 mt-3">
+          <LeafProposedActions leaf={ADMIN_LEAF_CONFIG[5]} data={leaves.proposed_actions} />
+        </TabsContent>
+
+        <TabsContent value="links" className="space-y-3 mt-3">
+          <LeafCrossLinks leaf={ADMIN_LEAF_CONFIG[3]} data={leaves.cross_links} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-
-export { ADMIN_LEAF_CONFIG };

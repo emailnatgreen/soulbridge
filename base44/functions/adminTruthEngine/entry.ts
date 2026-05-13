@@ -1,25 +1,21 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
- * Admin 7-Leaf Truth Engine — Private Investigation Pipeline
- * ═══════════════════════════════════════════════════════════
- * Admin-only. Uses the enhanced 7-Leaf framework:
- *   L1: Raw Data
- *   L2: Classification
- *   L3: Contradictions / Gaps
- *   L4: Cross-Links
- *   L5: Risk / Impact
- *   L6: Proposed Actions
- *   L7: Synthesis
+ * Admin 7-Leaf Truth Engine v2.0.0 — Enhanced, Deterministic, Sovereign
+ * ══════════════════════════════════════════════════════════════════════
+ * Full layered investigation pipeline:
+ *   L1: Raw Data Intake — freeze input with source tagging + SHA-256 snapshot
+ *   L2: Classification — type/domain/priority buckets
+ *   L3: Contradictions & Gaps — missing data, conflicts, integrity flags
+ *   L4: Cross-Links — node/agent/feature/historical relationships
+ *   L5: Risk & Impact — quantified scoring with severity assignment
+ *   L6: Proposed Actions — deterministic, grouped, dependency-ordered
+ *   L7: Synthesis — layered summary, phase mapping, workflow export, visibility rec
  *
- * Actions:
- *   investigate — Full 7-leaf pipeline for node/agent/feature/general
- *   list        — List investigations with filters
- *   get         — Get single investigation
- *   toggle_visibility — Toggle public/private
+ * Actions: investigate | list | get | toggle_visibility
  */
 
-const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '1.0.0' };
+const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.0.0' };
 
 async function sha256(payload) {
   const data = new TextEncoder().encode(JSON.stringify(payload, Object.keys(payload).sort()));
@@ -66,7 +62,7 @@ Deno.serve(async (req) => {
       return Response.json({ status: 'updated', is_public: !!is_public });
     }
 
-    // ─── INVESTIGATE ───
+    // ─── INVESTIGATE (Enhanced 7-Leaf Pipeline v2) ───
     if (action === 'investigate') {
       const { question, target_type = 'general' } = body;
       if (!question || question.trim().length < 3) {
@@ -74,21 +70,58 @@ Deno.serve(async (req) => {
       }
 
       const pipelineStart = Date.now();
+      const timestamp = new Date().toISOString();
 
       const targetPrompts = {
-        node: `You are investigating a SYSTEM NODE. Analyze its integrity, behaviour patterns, and failure modes.`,
-        agent: `You are investigating an AI AGENT. Analyze its behaviour, safety boundaries, drift potential, and alignment.`,
-        feature: `You are investigating a PLATFORM FEATURE. Analyze its UX, security, logic correctness, and edge cases.`,
-        general: `You are conducting a general investigation. Be thorough and structural.`,
+        node: `You are investigating a SYSTEM NODE within an 8-node sovereign security braid. Analyze its integrity, behaviour patterns, failure modes, consensus participation, and entropy contribution.`,
+        agent: `You are investigating an AI AGENT within a sovereign village ecosystem. Analyze its behaviour, safety boundaries, drift potential, honour alignment, empathy health, and co-evolution impact.`,
+        feature: `You are investigating a PLATFORM FEATURE. Analyze its UX, security, logic correctness, edge cases, governance compliance, and user impact.`,
+        general: `You are conducting a general system investigation. Be thorough, structural, and cover all angles.`,
       };
 
-      // Step 1: Raw data collection via LLM
+      // ═══ Full 7-Leaf LLM Analysis ═══
       const rawResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `${targetPrompts[target_type] || targetPrompts.general}
 
 Investigate: "${question}"
 
-Provide your analysis using this exact 7-leaf structure. For each leaf, provide detailed findings.`,
+You MUST respond using the exact 7-leaf structure below. Be exhaustive and specific. Each leaf serves a distinct analytical purpose.
+
+LEAF 1 — RAW DATA INTAKE: Capture all raw data points — text, claims, logs, node metadata, agent behaviour. Tag each item with its source type (human, system, agent, external). This is the immutable snapshot.
+
+LEAF 2 — CLASSIFICATION: Classify every item from Leaf 1 into:
+- type: claim, behaviour, event, risk, feature
+- domain: security, UX, logic, governance
+- priority: low, medium, high, critical
+
+LEAF 3 — CONTRADICTIONS & GAPS: Identify:
+- gap_type: missing_data, missing_test, missing_logic
+- contradiction_type: conflicting_behaviour, mismatched_state, broken_assumption
+- integrity_flags: anything that breaks trust assumptions
+
+LEAF 4 — CROSS-LINKS: Map relationships:
+- node_links: how this relates to other system nodes
+- agent_links: behavioural relationships to agents
+- feature_links: feature dependencies and impact chains
+- historical_links: past investigations or known patterns
+
+LEAF 5 — RISK & IMPACT: Score each risk:
+- risk_domain: security, UX, governance, logic
+- impact_description: what happens if ignored
+- risk_score: 1-10
+- severity: low, medium, high, critical
+
+LEAF 6 — PROPOSED ACTIONS: Generate deterministic actions (not LLM speculation):
+- action_group: which node/agent/feature the action targets
+- action_description: exactly what must be done
+- dependencies: what must happen first (if any)
+- priority: critical, high, medium, low
+
+LEAF 7 — SYNTHESIS: Produce:
+- summary: final structured assessment
+- phase_mapping: which phase each action belongs to (Phase 1: Critical Fixes, Phase 2: Hardening, Phase 3: Implementation, Phase 4: Validation)
+- visibility_recommendation: should this remain private? (private/public with reason)
+- confidence_score: 0-100, your confidence in the overall findings`,
         add_context_from_internet: true,
         model: 'gemini_3_flash',
         response_json_schema: {
@@ -96,58 +129,183 @@ Provide your analysis using this exact 7-leaf structure. For each leaf, provide 
           properties: {
             leaf1_raw_data: {
               type: "array",
-              items: { type: "object", properties: { title: { type: "string" }, description: { type: "string" } } }
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  source_type: { type: "string" }
+                }
+              }
             },
             leaf2_classification: {
               type: "array",
-              items: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, category: { type: "string" } } }
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  item_type: { type: "string" },
+                  domain: { type: "string" },
+                  priority: { type: "string" }
+                }
+              }
             },
             leaf3_contradictions: {
               type: "array",
-              items: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, severity: { type: "string" } } }
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  category: { type: "string" },
+                  severity: { type: "string" },
+                  integrity_flag: { type: "boolean" }
+                }
+              }
             },
             leaf4_cross_links: {
               type: "array",
-              items: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, linked_to: { type: "string" } } }
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  link_type: { type: "string" },
+                  linked_to: { type: "string" },
+                  relationship: { type: "string" }
+                }
+              }
             },
             leaf5_risk_impact: {
               type: "array",
-              items: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, severity: { type: "string" }, blast_radius: { type: "string" } } }
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  risk_domain: { type: "string" },
+                  impact_description: { type: "string" },
+                  risk_score: { type: "number" },
+                  severity: { type: "string" }
+                }
+              }
             },
             leaf6_proposed_actions: {
               type: "array",
-              items: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, priority: { type: "string" } } }
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  action_group: { type: "string" },
+                  dependencies: { type: "string" },
+                  priority: { type: "string" }
+                }
+              }
             },
-            leaf7_synthesis: { type: "string" }
+            leaf7_synthesis: {
+              type: "object",
+              properties: {
+                summary: { type: "string" },
+                phase_mapping: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      phase: { type: "number" },
+                      phase_name: { type: "string" },
+                      actions: { type: "array", items: { type: "string" } }
+                    }
+                  }
+                },
+                visibility_recommendation: { type: "string" },
+                visibility_reason: { type: "string" },
+                confidence_score: { type: "number" }
+              }
+            }
           },
-          required: ["leaf1_raw_data", "leaf7_synthesis"]
+          required: ["leaf1_raw_data", "leaf2_classification", "leaf3_contradictions", "leaf4_cross_links", "leaf5_risk_impact", "leaf6_proposed_actions", "leaf7_synthesis"]
         }
       });
 
       const pipelineMs = Date.now() - pipelineStart;
 
+      // ═══ Build deterministic leaf structure ═══
       const leaves = {
-        raw_data: rawResult.leaf1_raw_data || [],
-        classification: rawResult.leaf2_classification || [],
-        contradictions: rawResult.leaf3_contradictions || [],
-        cross_links: rawResult.leaf4_cross_links || [],
-        risk_impact: rawResult.leaf5_risk_impact || [],
-        proposed_actions: rawResult.leaf6_proposed_actions || [],
-        synthesis: rawResult.leaf7_synthesis || '',
+        raw_data: (rawResult.leaf1_raw_data || []).map(item => ({
+          ...item,
+          source_type: item.source_type || 'system'
+        })),
+        classification: (rawResult.leaf2_classification || []).map(item => ({
+          ...item,
+          item_type: item.item_type || 'claim',
+          domain: item.domain || 'general',
+          priority: item.priority || 'medium'
+        })),
+        contradictions: (rawResult.leaf3_contradictions || []).map(item => ({
+          ...item,
+          category: item.category || 'gap',
+          severity: item.severity || 'medium',
+          integrity_flag: item.integrity_flag || false
+        })),
+        cross_links: (rawResult.leaf4_cross_links || []).map(item => ({
+          ...item,
+          link_type: item.link_type || 'node',
+          relationship: item.relationship || 'related'
+        })),
+        risk_impact: (rawResult.leaf5_risk_impact || []).map(item => ({
+          ...item,
+          risk_domain: item.risk_domain || 'general',
+          impact_description: item.impact_description || '',
+          risk_score: item.risk_score || 5,
+          severity: item.severity || 'medium'
+        })),
+        proposed_actions: (rawResult.leaf6_proposed_actions || []).map(item => ({
+          ...item,
+          action_group: item.action_group || 'general',
+          dependencies: item.dependencies || 'none',
+          priority: item.priority || 'medium'
+        })),
+        synthesis: rawResult.leaf7_synthesis || { summary: '', phase_mapping: [], visibility_recommendation: 'private', visibility_reason: '', confidence_score: 0 },
       };
 
-      // Hash the investigation
-      const reportHash = await sha256({ question, target_type, leaves, timestamp: new Date().toISOString() });
+      // ═══ Compute aggregate metrics ═══
+      const metrics = {
+        total_data_points: leaves.raw_data.length,
+        classified_items: leaves.classification.length,
+        contradictions_found: leaves.contradictions.length,
+        integrity_flags: leaves.contradictions.filter(c => c.integrity_flag).length,
+        cross_links_mapped: leaves.cross_links.length,
+        risks_identified: leaves.risk_impact.length,
+        critical_risks: leaves.risk_impact.filter(r => r.severity === 'critical').length,
+        high_risks: leaves.risk_impact.filter(r => r.severity === 'high').length,
+        actions_proposed: leaves.proposed_actions.length,
+        avg_risk_score: leaves.risk_impact.length > 0
+          ? Math.round((leaves.risk_impact.reduce((sum, r) => sum + (r.risk_score || 0), 0) / leaves.risk_impact.length) * 10) / 10
+          : 0,
+        confidence_score: leaves.synthesis?.confidence_score || 0,
+      };
 
-      // Store as Memory entity (investigation-scoped)
+      // ═══ SHA-256 immutable snapshot ═══
+      const reportHash = await sha256({ question, target_type, leaves, metrics, timestamp });
+
+      // ═══ Determine auto-visibility from synthesis ═══
+      const visRec = (leaves.synthesis?.visibility_recommendation || 'private').toLowerCase();
+      const defaultPublic = visRec === 'public';
+
+      // ═══ Store as sovereign investigation memory ═══
       const metadata = {
         target_type,
         leaves,
+        metrics,
         processing_ms: pipelineMs,
         report_hash: reportHash,
+        hash_algo: 'sha256',
         engine: ENGINE,
         status: 'complete',
-        is_public: false,
+        is_public: defaultPublic,
+        frozen_at: timestamp,
       };
 
       const memory = await base44.asServiceRole.entities.Memory.create({
@@ -165,16 +323,19 @@ Provide your analysis using this exact 7-leaf structure. For each leaf, provide 
         target_type,
         status: 'complete',
         leaves,
+        metrics,
         processing_ms: pipelineMs,
         report_hash: reportHash,
+        hash_algo: 'sha256',
         engine: ENGINE,
-        is_public: false,
+        is_public: defaultPublic,
+        frozen_at: timestamp,
       });
     }
 
     return Response.json({ error: `Unknown action: ${action}` }, { status: 400 });
   } catch (error) {
-    console.error('[adminTruthEngine]', error);
+    console.error('[adminTruthEngine v2]', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
