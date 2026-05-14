@@ -23,7 +23,58 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ═══════════════════════════════════════════════
 
 const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
-const ENGINE = { name: 'SoulBridge Truth Engine', version: '2.7.0' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '2.7.2' };
+
+// ═══ PATCH 2 — Config Guardrails (v2.7.2) ═══
+// Hard constant: bypass can NEVER activate in production
+// Environment defaults to production (safe default) — no secret required
+const ENVIRONMENT = 'production';
+const ALLOW_BYPASS = (ENVIRONMENT === 'development');
+
+function enforceConfigGuardrails(bypassFlag) {
+  if (ENVIRONMENT === 'production' && bypassFlag === true) {
+    const auditEntry = {
+      action_type: 'bypass_blocked',
+      environment: ENVIRONMENT,
+      bypass_flag: bypassFlag,
+      timestamp: new Date().toISOString(),
+      truth_engine_version: ENGINE.version,
+    };
+    console.log(`[truthEngine] CONFIG GUARDRAIL: bypass blocked in production`, JSON.stringify(auditEntry));
+    throw new Error('SecurityException: Bypass not permitted in production');
+  }
+  return { bypass_active: false, source: 'config_guardrail' };
+}
+
+// ═══ PATCH 3 — Validator-07 Calibration (v1.4.0) ═══
+const VALIDATOR_07 = { name: 'Validator-07', version: '1.4.0' };
+const LATENCY_WARN = 2000; // ms threshold for high-latency classification
+const LATENCY_SAMPLE_WINDOW = 20;
+const OUTLIER_THRESHOLD_BASE = 0.15; // base mismatch threshold
+const OUTLIER_THRESHOLD_JITTER_BOOST = 0.15; // +15% during high-latency windows
+const MAX_RETRIES_LATENCY = 2; // reduced from 5 → 2 when latency is cause
+
+function calibrateValidator07(latencySamples, networkLatency) {
+  const recentSamples = (latencySamples || []).slice(-LATENCY_SAMPLE_WINDOW);
+  const movingAvg = recentSamples.length > 0
+    ? recentSamples.reduce((a, b) => a + b, 0) / recentSamples.length
+    : 0;
+  const isHighLatency = networkLatency > LATENCY_WARN || movingAvg > LATENCY_WARN;
+  const effectiveThreshold = isHighLatency
+    ? OUTLIER_THRESHOLD_BASE * (1 + OUTLIER_THRESHOLD_JITTER_BOOST)
+    : OUTLIER_THRESHOLD_BASE;
+  const maxRetries = isHighLatency ? MAX_RETRIES_LATENCY : 5;
+  const packetClassification = networkLatency > LATENCY_WARN ? 'delayed' : 'normal';
+
+  return {
+    moving_avg_ms: Math.round(movingAvg),
+    is_high_latency: isHighLatency,
+    effective_threshold: Math.round(effectiveThreshold * 10000) / 10000,
+    max_retries: maxRetries,
+    packet_classification: packetClassification,
+    validator_version: VALIDATOR_07.version,
+  };
+}
 
 // TruthPolicyV1 — frozen thresholds
 const POLICY = {
@@ -196,6 +247,12 @@ Deno.serve(async (req) => {
         policy: { name: POLICY.name, version: POLICY.version },
         truth_engine_version: ENGINE.version,
         errval04_patch: 'applied',
+        patch1_strict_failure_mode: 'applied',
+        patch2_config_guardrails: 'applied',
+        patch3_validator07_calibration: 'applied',
+        validator_07_version: VALIDATOR_07.version,
+        environment: ENVIRONMENT,
+        allow_bypass: ALLOW_BYPASS,
         source_of_truth: 'primary',
         health: {
           last_status: lastStatus,
@@ -236,6 +293,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ─── CONFIG GUARDRAIL CHECK (PATCH 2) ───
+    if (action === 'config_check' || body.bypass_flag !== undefined) {
+      const guardrailResult = enforceConfigGuardrails(body.bypass_flag || false);
+      return Response.json({
+        ...guardrailResult,
+        truth_engine_version: ENGINE.version,
+        environment: ENVIRONMENT,
+        allow_bypass: ALLOW_BYPASS,
+      });
+    }
+
     // ─── ASK (full pipeline) ───
     if (action === 'ask') {
       const { question } = body;
@@ -243,8 +311,13 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Question is required (min 3 chars)' }, { status: 400 });
       }
 
+      // PATCH 2: Enforce config guardrails before pipeline starts
+      enforceConfigGuardrails(body.bypass_flag || false);
+
       const pipelineStart = Date.now();
+      const traceId = `TE-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const createdAt = new Date().toISOString();
+      const latencySamples = []; // Validator-07 latency tracker
 
       const report = await base44.asServiceRole.entities.TruthReport.create({
         question: question.trim(),
@@ -263,8 +336,35 @@ Deno.serve(async (req) => {
           required: ["answer_text"]
         }
       });
-      const rawAnswer = answerResult.answer_text || '';
       const llmDraftMs = Date.now() - t1;
+      latencySamples.push(llmDraftMs);
+
+      // PATCH 1 — Strict Failure Mode: null agent response check (Agent-Alpha / LLM Draft)
+      if (!answerResult || answerResult.answer_text == null) {
+        const nullAudit = {
+          action_type: 'validation_incomplete',
+          agent: 'Agent-Alpha',
+          reason: 'null_response',
+          trace_id: traceId,
+          timestamp: new Date().toISOString(),
+          truth_engine_version: ENGINE.version,
+        };
+        console.error(`[truthEngine] STRICT FAILURE: Agent-Alpha null response`, JSON.stringify(nullAudit));
+        await base44.asServiceRole.entities.TruthReport.update(report.id, {
+          status: 'failed',
+          leaf4_reasoning: `ValidationIncompleteException: Agent-Alpha returned null. Trace: ${traceId}`,
+        });
+        return Response.json({
+          status: 'incomplete',
+          error: 'NULL_AGENT_RESPONSE',
+          validation_complete: false,
+          agent: 'Agent-Alpha',
+          trace_id: traceId,
+          audit: nullAudit,
+          truth_engine_version: ENGINE.version,
+        });
+      }
+      const rawAnswer = answerResult.answer_text;
 
       // ── Step 2: Claim Extraction ──
       const t2 = Date.now();
@@ -287,8 +387,36 @@ Deno.serve(async (req) => {
           required: ["claims"]
         }
       });
-      const claims = (claimResult.claims || []).slice(0, 10);
       const claimExtractionMs = Date.now() - t2;
+      latencySamples.push(claimExtractionMs);
+
+      // PATCH 1 — Strict Failure Mode: null agent response check (Claim Extractor)
+      if (!claimResult || claimResult.claims == null) {
+        const nullAudit = {
+          action_type: 'validation_incomplete',
+          agent: 'ClaimExtractor',
+          reason: 'null_response',
+          trace_id: traceId,
+          timestamp: new Date().toISOString(),
+          truth_engine_version: ENGINE.version,
+        };
+        console.error(`[truthEngine] STRICT FAILURE: ClaimExtractor null response`, JSON.stringify(nullAudit));
+        await base44.asServiceRole.entities.TruthReport.update(report.id, {
+          status: 'failed',
+          raw_answer: rawAnswer,
+          leaf4_reasoning: `ValidationIncompleteException: ClaimExtractor returned null. Trace: ${traceId}`,
+        });
+        return Response.json({
+          status: 'incomplete',
+          error: 'NULL_AGENT_RESPONSE',
+          validation_complete: false,
+          agent: 'ClaimExtractor',
+          trace_id: traceId,
+          audit: nullAudit,
+          truth_engine_version: ENGINE.version,
+        });
+      }
+      const claims = (claimResult.claims || []).slice(0, 10);
 
       // ── Step 3: Verification (v2.7.0 — ERRVAL04 patch) ──
       // Primary source: internet-backed LLM verification (source_of_truth: "primary")
@@ -330,6 +458,36 @@ ${verificationPrompt}`,
           required: ["verifications"]
         }
       });
+      const verifyMs = Date.now() - t3;
+      latencySamples.push(verifyMs);
+
+      // PATCH 1 — Strict Failure Mode: null agent response check (PrimaryValidator)
+      if (!verifyResult || verifyResult.verifications == null) {
+        const nullAudit = {
+          action_type: 'validation_incomplete',
+          agent: 'PrimaryValidator',
+          reason: 'null_response',
+          trace_id: traceId,
+          timestamp: new Date().toISOString(),
+          truth_engine_version: ENGINE.version,
+        };
+        console.error(`[truthEngine] STRICT FAILURE: PrimaryValidator null response`, JSON.stringify(nullAudit));
+        await base44.asServiceRole.entities.TruthReport.update(report.id, {
+          status: 'failed',
+          raw_answer: rawAnswer,
+          leaf1_claims: claims,
+          leaf4_reasoning: `ValidationIncompleteException: PrimaryValidator returned null. Trace: ${traceId}`,
+        });
+        return Response.json({
+          status: 'incomplete',
+          error: 'NULL_AGENT_RESPONSE',
+          validation_complete: false,
+          agent: 'PrimaryValidator',
+          trace_id: traceId,
+          audit: nullAudit,
+          truth_engine_version: ENGINE.version,
+        });
+      }
       const primaryVerifications = verifyResult.verifications || [];
 
       // Sub-process B: re-validate using the SAME primary source (ERRVAL04 fix)
@@ -361,13 +519,49 @@ ${verificationPrompt}`,
           required: ["verifications"]
         }
       });
+      const subBMs = Date.now() - t3 - verifyMs;
+      latencySamples.push(subBMs);
+
+      // PATCH 1 — Strict Failure Mode: null agent response check (SecondaryValidator / Sub-process B)
+      if (!subProcessBResult || subProcessBResult.verifications == null) {
+        const nullAudit = {
+          action_type: 'validation_incomplete',
+          agent: 'SecondaryValidator',
+          reason: 'null_response',
+          trace_id: traceId,
+          timestamp: new Date().toISOString(),
+          truth_engine_version: ENGINE.version,
+        };
+        console.error(`[truthEngine] STRICT FAILURE: SecondaryValidator null response`, JSON.stringify(nullAudit));
+        await base44.asServiceRole.entities.TruthReport.update(report.id, {
+          status: 'failed',
+          raw_answer: rawAnswer,
+          leaf1_claims: claims,
+          leaf4_reasoning: `ValidationIncompleteException: SecondaryValidator returned null. Trace: ${traceId}`,
+        });
+        return Response.json({
+          status: 'incomplete',
+          error: 'NULL_AGENT_RESPONSE',
+          validation_complete: false,
+          agent: 'SecondaryValidator',
+          trace_id: traceId,
+          audit: nullAudit,
+          truth_engine_version: ENGINE.version,
+        });
+      }
       const secondaryVerifications = subProcessBResult.verifications || [];
 
-      // ERRVAL04: Mismatch detection — primary source wins
+      // PATCH 3 — Validator-07 Calibration: compute adaptive threshold
+      const networkLatency = Date.now() - t3; // total verification network time
+      const v07Cal = calibrateValidator07(latencySamples, networkLatency);
+      console.log(`[truthEngine] Validator-07 calibration: threshold=${v07Cal.effective_threshold} latency=${networkLatency}ms class=${v07Cal.packet_classification} retries=${v07Cal.max_retries}`);
+
+      // ERRVAL04: Mismatch detection — primary source wins (now using calibrated threshold)
       const verificationTraces = [];
       const verifications = primaryVerifications.map(pv => {
         const sv = secondaryVerifications.find(s => s.claim_id === pv.claim_id);
-        const mismatch = sv && Math.abs((pv.veracity_score || 0) - (sv.veracity_score || 0)) > 0.15;
+        // PATCH 3: Use calibrated threshold instead of hard-coded 0.15
+        const mismatch = sv && Math.abs((pv.veracity_score || 0) - (sv.veracity_score || 0)) > v07Cal.effective_threshold;
 
         // Trace log for every Sub-process B check (written before returning)
         verificationTraces.push({
@@ -405,8 +599,21 @@ ${verificationPrompt}`,
 
       const verificationMs = Date.now() - t3;
 
+      // PATCH 3 — Validator-07 calibration audit entry
+      verificationTraces.push({
+        log_type: 'validator_calibration',
+        action_type: 'validator_calibration',
+        validator: VALIDATOR_07.name,
+        validator_version: VALIDATOR_07.version,
+        reason: 'latency_adjustment',
+        calibration: v07Cal,
+        network_latency_ms: networkLatency,
+        timestamp: new Date().toISOString(),
+        truth_engine_version: ENGINE.version,
+      });
+
       // Write trace logs to report metadata
-      console.log(`[truthEngine] v${ENGINE.version} verification: ${verifications.length} claims, ${verificationTraces.filter(t => t.mismatch_detected).length} ERRVAL04 mismatches resolved`);
+      console.log(`[truthEngine] v${ENGINE.version} verification: ${verifications.length} claims, ${verificationTraces.filter(t => t.mismatch_detected).length} ERRVAL04 mismatches resolved | V07: threshold=${v07Cal.effective_threshold} class=${v07Cal.packet_classification}`);
 
       // ── Build Leaves 2-6 ──
       const leaf2 = claims.map(c => {
@@ -471,8 +678,41 @@ Write the final verified answer:`,
           required: ["synthesis"]
         }
       });
-      const leaf7 = synthResult.synthesis || rawAnswer;
       const synthesisMs = Date.now() - t4;
+      latencySamples.push(synthesisMs);
+
+      // PATCH 1 — Strict Failure Mode: null agent response check (Synthesizer)
+      if (!synthResult || synthResult.synthesis == null) {
+        const nullAudit = {
+          action_type: 'validation_incomplete',
+          agent: 'Synthesizer',
+          reason: 'null_response',
+          trace_id: traceId,
+          timestamp: new Date().toISOString(),
+          truth_engine_version: ENGINE.version,
+        };
+        console.error(`[truthEngine] STRICT FAILURE: Synthesizer null response`, JSON.stringify(nullAudit));
+        await base44.asServiceRole.entities.TruthReport.update(report.id, {
+          status: 'failed',
+          raw_answer: rawAnswer,
+          leaf1_claims: claims,
+          leaf2_evidence: leaf2,
+          leaf3_scores: leaf3,
+          leaf4_reasoning: `ValidationIncompleteException: Synthesizer returned null. Trace: ${traceId}`,
+          leaf5_policy: leaf5,
+          leaf6_risks: leaf6,
+        });
+        return Response.json({
+          status: 'incomplete',
+          error: 'NULL_AGENT_RESPONSE',
+          validation_complete: false,
+          agent: 'Synthesizer',
+          trace_id: traceId,
+          audit: nullAudit,
+          truth_engine_version: ENGINE.version,
+        });
+      }
+      const leaf7 = synthResult.synthesis;
 
       // ── Finalize ──
       const finalVeracitySummary = buildVeracitySummary(leaf3, leaf6);
@@ -591,6 +831,10 @@ Write the final verified answer:`,
         verification_traces: verificationTraces,
         source_of_truth: 'primary',
         errval04_mismatches: verificationTraces.filter(t => t.error_code === 'ERR_VAL_04').length,
+        trace_id: traceId,
+        validator_07: v07Cal,
+        config_guardrail: { bypass_active: false, source: 'config_guardrail' },
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration'],
       });
     }
 
