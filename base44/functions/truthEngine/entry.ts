@@ -23,7 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ═══════════════════════════════════════════════
 
 const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
-const ENGINE = { name: 'SoulBridge Truth Engine', version: '2.7.2' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '2.8.0' };
 
 // ═══ PATCH 2 — Config Guardrails (v2.7.2) ═══
 // Hard constant: bypass can NEVER activate in production
@@ -44,6 +44,58 @@ function enforceConfigGuardrails(bypassFlag) {
     throw new Error('SecurityException: Bypass not permitted in production');
   }
   return { bypass_active: false, source: 'config_guardrail' };
+}
+
+// ═══ PATCH 4 — Timeout Thresholds (v2.8.0) ═══
+// Per-step timeout limits in ms. If any sub-agent exceeds its limit,
+// the pipeline aborts immediately with AGENT_TIMEOUT and logs the exact packet.
+const TIMEOUT_THRESHOLDS = {
+  llm_draft:          30_000,   // Agent-Alpha: 30s
+  claim_extraction:   30_000,   // ClaimExtractor: 30s
+  primary_validator:  60_000,   // PrimaryValidator: 60s (internet-backed)
+  secondary_validator:60_000,   // SecondaryValidator: 60s (internet-backed)
+  synthesizer:        30_000,   // Synthesizer: 30s
+};
+
+class AgentTimeoutError extends Error {
+  constructor(agent, thresholdMs, packet) {
+    super(`AgentTimeout: ${agent} exceeded ${thresholdMs}ms limit`);
+    this.name = 'AgentTimeoutError';
+    this.agent = agent;
+    this.thresholdMs = thresholdMs;
+    this.packet = packet;
+  }
+}
+
+/**
+ * PATCH 5 — Enhanced Timeout Logging (Agent-01)
+ * Wraps a promise with a timeout. On timeout, logs the exact packet
+ * (prompt length, model, step name) that caused the failure.
+ */
+function withTimeout(promise, agent, thresholdMs, packet) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => {
+      // PATCH 5: Agent-01 logs the exact packet causing the timeout
+      const timeoutLog = {
+        log_type: 'agent_timeout',
+        agent,
+        threshold_ms: thresholdMs,
+        packet_digest: {
+          step: packet.step,
+          model: packet.model || 'automatic',
+          prompt_length: packet.prompt?.length || 0,
+          prompt_preview: (packet.prompt || '').substring(0, 200),
+          internet_context: !!packet.add_context_from_internet,
+          has_json_schema: !!packet.response_json_schema,
+        },
+        timestamp: new Date().toISOString(),
+        truth_engine_version: ENGINE.version,
+      };
+      console.error(`[truthEngine] AGENT-01 TIMEOUT LOG: ${agent} exceeded ${thresholdMs}ms`, JSON.stringify(timeoutLog));
+      reject(new AgentTimeoutError(agent, thresholdMs, timeoutLog));
+    }, thresholdMs)),
+  ]);
 }
 
 // ═══ PATCH 3 — Validator-07 Calibration (v1.4.0) ═══
@@ -250,6 +302,9 @@ Deno.serve(async (req) => {
         patch1_strict_failure_mode: 'applied',
         patch2_config_guardrails: 'applied',
         patch3_validator07_calibration: 'applied',
+        patch4_timeout_thresholds: 'applied',
+        patch5_enhanced_timeout_logging: 'applied',
+        timeout_thresholds_ms: TIMEOUT_THRESHOLDS,
         validator_07_version: VALIDATOR_07.version,
         environment: ENVIRONMENT,
         allow_bypass: ALLOW_BYPASS,
@@ -326,16 +381,21 @@ Deno.serve(async (req) => {
         hash_algo: 'sha256',
       });
 
-      // ── Step 1: LLM Draft ──
+      // ── Step 1: LLM Draft (PATCH 4: timeout-guarded) ──
       const t1 = Date.now();
-      const answerResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `Answer the following question thoroughly but concisely. Be factual and specific.\n\nQuestion: ${question}`,
-        response_json_schema: {
-          type: "object",
-          properties: { answer_text: { type: "string" } },
-          required: ["answer_text"]
-        }
-      });
+      const step1Prompt = `Answer the following question thoroughly but concisely. Be factual and specific.\n\nQuestion: ${question}`;
+      const step1Packet = { step: 'llm_draft', prompt: step1Prompt, model: 'automatic', response_json_schema: true };
+      const answerResult = await withTimeout(
+        base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: step1Prompt,
+          response_json_schema: {
+            type: "object",
+            properties: { answer_text: { type: "string" } },
+            required: ["answer_text"]
+          }
+        }),
+        'Agent-Alpha', TIMEOUT_THRESHOLDS.llm_draft, step1Packet
+      );
       const llmDraftMs = Date.now() - t1;
       latencySamples.push(llmDraftMs);
 
@@ -366,27 +426,32 @@ Deno.serve(async (req) => {
       }
       const rawAnswer = answerResult.answer_text;
 
-      // ── Step 2: Claim Extraction ──
+      // ── Step 2: Claim Extraction (PATCH 4: timeout-guarded) ──
       const t2 = Date.now();
-      const claimResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `Extract every distinct factual claim from this text as atomic statements. Each claim should be independently verifiable.\n\nText: "${rawAnswer}"`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            claims: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  id: { type: "string", description: "Claim ID like c1, c2, c3" },
-                  text: { type: "string" }
+      const step2Prompt = `Extract every distinct factual claim from this text as atomic statements. Each claim should be independently verifiable.\n\nText: "${rawAnswer}"`;
+      const step2Packet = { step: 'claim_extraction', prompt: step2Prompt, model: 'automatic', response_json_schema: true };
+      const claimResult = await withTimeout(
+        base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: step2Prompt,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              claims: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string", description: "Claim ID like c1, c2, c3" },
+                    text: { type: "string" }
+                  }
                 }
               }
-            }
-          },
-          required: ["claims"]
-        }
-      });
+            },
+            required: ["claims"]
+          }
+        }),
+        'ClaimExtractor', TIMEOUT_THRESHOLDS.claim_extraction, step2Packet
+      );
       const claimExtractionMs = Date.now() - t2;
       latencySamples.push(claimExtractionMs);
 
@@ -424,9 +489,8 @@ Deno.serve(async (req) => {
       const t3 = Date.now();
       const verificationPrompt = claims.map(c => `- [${c.id}] "${c.text}"`).join('\n');
 
-      // Primary validator (Sub-process A)
-      const verifyResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are a fact-checker. For each claim below, assess its veracity. Provide:
+      // Primary validator (Sub-process A) (PATCH 4: timeout-guarded)
+      const step3Prompt = `You are a fact-checker. For each claim below, assess its veracity. Provide:
 - veracity_score: 0.0 to 1.0
 - confidence: "high", "medium", or "low"
 - evidence_summary: brief supporting/contradicting evidence
@@ -434,30 +498,36 @@ Deno.serve(async (req) => {
 - risk_flags: concerns (empty array if none)
 
 Claims:
-${verificationPrompt}`,
-        add_context_from_internet: true,
-        model: 'gemini_3_flash',
-        response_json_schema: {
-          type: "object",
-          properties: {
-            verifications: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  claim_id: { type: "string" },
-                  veracity_score: { type: "number" },
-                  confidence: { type: "string" },
-                  evidence_summary: { type: "string" },
-                  sources: { type: "array", items: { type: "string" } },
-                  risk_flags: { type: "array", items: { type: "string" } }
+${verificationPrompt}`;
+      const step3Packet = { step: 'primary_validator', prompt: step3Prompt, model: 'gemini_3_flash', add_context_from_internet: true, response_json_schema: true };
+      const verifyResult = await withTimeout(
+        base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: step3Prompt,
+          add_context_from_internet: true,
+          model: 'gemini_3_flash',
+          response_json_schema: {
+            type: "object",
+            properties: {
+              verifications: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    claim_id: { type: "string" },
+                    veracity_score: { type: "number" },
+                    confidence: { type: "string" },
+                    evidence_summary: { type: "string" },
+                    sources: { type: "array", items: { type: "string" } },
+                    risk_flags: { type: "array", items: { type: "string" } }
+                  }
                 }
               }
-            }
-          },
-          required: ["verifications"]
-        }
-      });
+            },
+            required: ["verifications"]
+          }
+        }),
+        'PrimaryValidator', TIMEOUT_THRESHOLDS.primary_validator, step3Packet
+      );
       const verifyMs = Date.now() - t3;
       latencySamples.push(verifyMs);
 
@@ -492,33 +562,39 @@ ${verificationPrompt}`,
 
       // Sub-process B: re-validate using the SAME primary source (ERRVAL04 fix)
       // Replaces any internal/cached verification flags with direct primary call
-      const subProcessBResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are a secondary fact-checker performing validation consistency checks.
+      // PATCH 4: timeout-guarded
+      const step3bPrompt = `You are a secondary fact-checker performing validation consistency checks.
 For each claim below, re-assess its veracity independently. Use the same evidence standards as primary verification.
 Provide veracity_score (0.0-1.0) and confidence ("high"/"medium"/"low") for each claim.
 
 Claims:
-${verificationPrompt}`,
-        add_context_from_internet: true,
-        model: 'gemini_3_flash',
-        response_json_schema: {
-          type: "object",
-          properties: {
-            verifications: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  claim_id: { type: "string" },
-                  veracity_score: { type: "number" },
-                  confidence: { type: "string" }
+${verificationPrompt}`;
+      const step3bPacket = { step: 'secondary_validator', prompt: step3bPrompt, model: 'gemini_3_flash', add_context_from_internet: true, response_json_schema: true };
+      const subProcessBResult = await withTimeout(
+        base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: step3bPrompt,
+          add_context_from_internet: true,
+          model: 'gemini_3_flash',
+          response_json_schema: {
+            type: "object",
+            properties: {
+              verifications: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    claim_id: { type: "string" },
+                    veracity_score: { type: "number" },
+                    confidence: { type: "string" }
+                  }
                 }
               }
-            }
-          },
-          required: ["verifications"]
-        }
-      });
+            },
+            required: ["verifications"]
+          }
+        }),
+        'SecondaryValidator', TIMEOUT_THRESHOLDS.secondary_validator, step3bPacket
+      );
       const subBMs = Date.now() - t3 - verifyMs;
       latencySamples.push(subBMs);
 
@@ -661,23 +737,28 @@ ${verificationPrompt}`,
         });
       }
 
-      // ── Step 4: Synthesis ──
+      // ── Step 4: Synthesis (PATCH 4: timeout-guarded) ──
       const t4 = Date.now();
-      const synthResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are a truth synthesizer. Given the original question, draft answer, and verification results, write a final verified answer. Incorporate corrections where claims scored low. Be direct and factual.
+      const step4Prompt = `You are a truth synthesizer. Given the original question, draft answer, and verification results, write a final verified answer. Incorporate corrections where claims scored low. Be direct and factual.
 
 Question: ${question}
 Draft Answer: ${rawAnswer}
 Verification Summary: ${leaf3.map(s => `[${s.claim_id}] score=${s.veracity_score} confidence=${s.confidence}`).join(', ')}
 Low-scoring claims: ${lowClaims.map(c => `[${c.claim_id}] ${c.notes}`).join('; ') || 'None'}
 
-Write the final verified answer:`,
-        response_json_schema: {
-          type: "object",
-          properties: { synthesis: { type: "string" } },
-          required: ["synthesis"]
-        }
-      });
+Write the final verified answer:`;
+      const step4Packet = { step: 'synthesizer', prompt: step4Prompt, model: 'automatic', response_json_schema: true };
+      const synthResult = await withTimeout(
+        base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: step4Prompt,
+          response_json_schema: {
+            type: "object",
+            properties: { synthesis: { type: "string" } },
+            required: ["synthesis"]
+          }
+        }),
+        'Synthesizer', TIMEOUT_THRESHOLDS.synthesizer, step4Packet
+      );
       const synthesisMs = Date.now() - t4;
       latencySamples.push(synthesisMs);
 
@@ -834,12 +915,26 @@ Write the final verified answer:`,
         trace_id: traceId,
         validator_07: v07Cal,
         config_guardrail: { bypass_active: false, source: 'config_guardrail' },
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging'],
       });
     }
 
     return Response.json({ error: `Unknown action: ${action}` }, { status: 400 });
   } catch (error) {
+    // PATCH 4 — AgentTimeoutError: record explicit timeout failure
+    if (error.name === 'AgentTimeoutError') {
+      console.error(`[truthEngine] PIPELINE ABORT: ${error.agent} timeout after ${error.thresholdMs}ms`, JSON.stringify(error.packet));
+      return Response.json({
+        status: 'incomplete',
+        error: 'AGENT_TIMEOUT',
+        validation_complete: false,
+        agent: error.agent,
+        threshold_ms: error.thresholdMs,
+        packet_digest: error.packet?.packet_digest || null,
+        truth_engine_version: ENGINE.version,
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging'],
+      }, { status: 504 });
+    }
     console.error('[truthEngine]', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
