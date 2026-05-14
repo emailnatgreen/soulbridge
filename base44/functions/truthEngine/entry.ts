@@ -23,7 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ═══════════════════════════════════════════════
 
 const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
-const ENGINE = { name: 'SoulBridge Truth Engine', version: '3.3.0' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '3.4.0' };
 
 // ═══ PATCH 2 — Config Guardrails (v2.7.2) ═══
 // Hard constant: bypass can NEVER activate in production
@@ -714,6 +714,7 @@ Deno.serve(async (req) => {
         patch10_tristate_return_logic: 'applied',
         patch11_agent_state_sync_gate: 'applied',
         patch12_oracle_telemetry_layer: 'applied',
+        patch13_async_validation_refactor: 'applied',
         settlement_timeout_ms: SETTLEMENT_TIMEOUT_MS,
         global_http_timeout_ms: GLOBAL_HTTP_TIMEOUT_MS,
         timeout_thresholds_ms: TIMEOUT_THRESHOLDS,
@@ -931,13 +932,14 @@ Deno.serve(async (req) => {
       }
       const claims = (claimResult.claims || []).slice(0, 10);
 
-      // ── Step 3: Verification (v2.7.0 — ERRVAL04 patch) ──
-      // Primary source: internet-backed LLM verification (source_of_truth: "primary")
-      // Sub-process B now uses the SAME primary source — no cached/internal flags
+      // ── Step 3: Verification (v2.7.0 — ERRVAL04 patch, v3.4.0 — PATCH 13 Async Refactor) ──
+      // PATCH 13: PrimaryValidator and SecondaryValidator fire CONCURRENTLY.
+      // Previously sequential (~120s worst case), now parallel (~60s worst case).
+      // Both are individually timeout-guarded. Promise.allSettled ensures neither
+      // failure crashes the other. Primary still wins on ERRVAL04 mismatch.
       const t3 = Date.now();
       const verificationPrompt = claims.map(c => `- [${c.id}] "${c.text}"`).join('\n');
 
-      // Primary validator (Sub-process A) (PATCH 4: timeout-guarded)
       const step3Prompt = `You are a fact-checker. For each claim below, assess its veracity. Provide:
 - veracity_score: 0.0 to 1.0
 - confidence: "high", "medium", or "low"
@@ -948,90 +950,7 @@ Deno.serve(async (req) => {
 Claims:
 ${verificationPrompt}`;
       const step3Packet = { step: 'primary_validator', prompt: step3Prompt, model: 'gemini_3_flash', add_context_from_internet: true, response_json_schema: true };
-      const verifyResult = await withTimeout(
-        base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: step3Prompt,
-          add_context_from_internet: true,
-          model: 'gemini_3_flash',
-          response_json_schema: {
-            type: "object",
-            properties: {
-              verifications: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    claim_id: { type: "string" },
-                    veracity_score: { type: "number" },
-                    confidence: { type: "string" },
-                    evidence_summary: { type: "string" },
-                    sources: { type: "array", items: { type: "string" } },
-                    risk_flags: { type: "array", items: { type: "string" } }
-                  }
-                }
-              }
-            },
-            required: ["verifications"]
-          }
-        }),
-        'PrimaryValidator', TIMEOUT_THRESHOLDS.primary_validator, step3Packet
-      );
-      const verifyMs = Date.now() - t3;
-      latencySamples.push(verifyMs);
 
-      // PATCH 1 — Strict Failure Mode: null agent response check (PrimaryValidator)
-      if (!verifyResult || verifyResult.verifications == null) {
-        // PATCH 12: Oracle telemetry — PrimaryValidator failed (Unmonitored Logic Branch fix)
-        oracleTracer.logCall('PrimaryValidator', 'error', {
-          reason: 'null_response',
-          latency_ms: verifyMs,
-          model: 'gemini_3_flash',
-          internet_backed: true,
-          fallback_available: false,
-        });
-        telemetry.recordOracleCall('error');
-        telemetry.recordFail();
-        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'PrimaryValidator', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE, oracle_trace: oracleTracer.getEvents() } });
-        const nullAudit = {
-          action_type: 'validation_incomplete',
-          agent: 'PrimaryValidator',
-          reason: 'null_response',
-          trace_id: traceId,
-          timestamp: new Date().toISOString(),
-          truth_engine_version: ENGINE.version,
-        };
-        console.error(`[truthEngine] STRICT FAILURE: PrimaryValidator null response`, JSON.stringify(nullAudit));
-        await base44.asServiceRole.entities.TruthReport.update(report.id, {
-          status: 'failed',
-          raw_answer: rawAnswer,
-          leaf1_claims: claims,
-          leaf4_reasoning: `ValidationIncompleteException: PrimaryValidator returned null. Trace: ${traceId}`,
-        });
-        return Response.json({
-          pipeline_result: PIPELINE_RESULT.FAILURE,
-          status: 'failed',
-          error: 'NULL_AGENT_RESPONSE',
-          validation_complete: false,
-          failed_agent: 'PrimaryValidator',
-          trace_id: traceId,
-          audit: nullAudit,
-          truth_engine_version: ENGINE.version,
-        });
-      }
-      const primaryVerifications = verifyResult.verifications || [];
-
-      // PATCH 12: Oracle telemetry — PrimaryValidator success
-      oracleTracer.logCall('PrimaryValidator', 'success', {
-        claims_verified: primaryVerifications.length,
-        latency_ms: verifyMs,
-        model: 'gemini_3_flash',
-        internet_backed: true,
-      });
-      telemetry.recordOracleCall('success');
-
-      // Sub-process B: re-validate using the SAME primary source (ERRVAL04 fix)
-      // Replaces any internal/cached verification flags with direct primary call
-      // PATCH 4: timeout-guarded
       const step3bPrompt = `You are a secondary fact-checker performing validation consistency checks.
 For each claim below, re-assess its veracity independently. Use the same evidence standards as primary verification.
 Provide veracity_score (0.0-1.0) and confidence ("high"/"medium"/"low") for each claim.
@@ -1039,84 +958,161 @@ Provide veracity_score (0.0-1.0) and confidence ("high"/"medium"/"low") for each
 Claims:
 ${verificationPrompt}`;
       const step3bPacket = { step: 'secondary_validator', prompt: step3bPrompt, model: 'gemini_3_flash', add_context_from_internet: true, response_json_schema: true };
-      const subProcessBResult = await withTimeout(
-        base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: step3bPrompt,
-          add_context_from_internet: true,
-          model: 'gemini_3_flash',
-          response_json_schema: {
-            type: "object",
-            properties: {
-              verifications: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    claim_id: { type: "string" },
-                    veracity_score: { type: "number" },
-                    confidence: { type: "string" }
-                  }
-                }
-              }
-            },
-            required: ["verifications"]
-          }
-        }),
-        'SecondaryValidator', TIMEOUT_THRESHOLDS.secondary_validator, step3bPacket
-      );
-      const subBMs = Date.now() - t3 - verifyMs;
-      latencySamples.push(subBMs);
 
-      // PATCH 1 — Strict Failure Mode: null agent response check (SecondaryValidator / Sub-process B)
-      if (!subProcessBResult || subProcessBResult.verifications == null) {
-        // PATCH 12: Oracle telemetry — SecondaryValidator failed (Unmonitored Logic Branch fix)
-        oracleTracer.logCall('SecondaryValidator', 'error', {
-          reason: 'null_response',
-          latency_ms: subBMs,
+      // PATCH 13: Fire both validators concurrently
+      const primarySchema = {
+        type: "object",
+        properties: {
+          verifications: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                claim_id: { type: "string" },
+                veracity_score: { type: "number" },
+                confidence: { type: "string" },
+                evidence_summary: { type: "string" },
+                sources: { type: "array", items: { type: "string" } },
+                risk_flags: { type: "array", items: { type: "string" } }
+              }
+            }
+          }
+        },
+        required: ["verifications"]
+      };
+      const secondarySchema = {
+        type: "object",
+        properties: {
+          verifications: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                claim_id: { type: "string" },
+                veracity_score: { type: "number" },
+                confidence: { type: "string" }
+              }
+            }
+          }
+        },
+        required: ["verifications"]
+      };
+
+      const [primarySettled, secondarySettled] = await Promise.allSettled([
+        withTimeout(
+          base44.asServiceRole.integrations.Core.InvokeLLM({
+            prompt: step3Prompt,
+            add_context_from_internet: true,
+            model: 'gemini_3_flash',
+            response_json_schema: primarySchema,
+          }),
+          'PrimaryValidator', TIMEOUT_THRESHOLDS.primary_validator, step3Packet
+        ),
+        withTimeout(
+          base44.asServiceRole.integrations.Core.InvokeLLM({
+            prompt: step3bPrompt,
+            add_context_from_internet: true,
+            model: 'gemini_3_flash',
+            response_json_schema: secondarySchema,
+          }),
+          'SecondaryValidator', TIMEOUT_THRESHOLDS.secondary_validator, step3bPacket
+        ),
+      ]);
+
+      const verifyMs = Date.now() - t3;
+      latencySamples.push(verifyMs);
+
+      // ── Primary result handling ──
+      const primaryFailed = primarySettled.status === 'rejected';
+      const verifyResult = primaryFailed ? null : primarySettled.value;
+      const primaryLatencyMs = verifyMs; // wall-clock for the parallel batch
+
+      if (primaryFailed || !verifyResult || verifyResult.verifications == null) {
+        oracleTracer.logCall('PrimaryValidator', primaryFailed ? 'timeout' : 'error', {
+          reason: primaryFailed ? primarySettled.reason?.message || 'rejected' : 'null_response',
+          latency_ms: primaryLatencyMs,
           model: 'gemini_3_flash',
           internet_backed: true,
-          primary_oracle_succeeded: true,
           fallback_available: false,
+          async_mode: true,
         });
-        telemetry.recordOracleCall('error');
+        telemetry.recordOracleCall(primaryFailed ? 'timeout' : 'error');
         telemetry.recordFail();
-        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'SecondaryValidator', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE, oracle_trace: oracleTracer.getEvents() } });
-        const nullAudit = {
-          action_type: 'validation_incomplete',
-          agent: 'SecondaryValidator',
-          reason: 'null_response',
-          trace_id: traceId,
-          timestamp: new Date().toISOString(),
-          truth_engine_version: ENGINE.version,
-        };
-        console.error(`[truthEngine] STRICT FAILURE: SecondaryValidator null response`, JSON.stringify(nullAudit));
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'PrimaryValidator', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE, async_mode: true, oracle_trace: oracleTracer.getEvents() } });
+        console.error(`[truthEngine] STRICT FAILURE: PrimaryValidator ${primaryFailed ? 'rejected' : 'null response'} (async mode)`);
         await base44.asServiceRole.entities.TruthReport.update(report.id, {
           status: 'failed',
           raw_answer: rawAnswer,
           leaf1_claims: claims,
-          leaf4_reasoning: `ValidationIncompleteException: SecondaryValidator returned null. Trace: ${traceId}`,
+          leaf4_reasoning: `ValidationIncompleteException: PrimaryValidator ${primaryFailed ? 'timeout/reject' : 'returned null'}. Trace: ${traceId}`,
         });
         return Response.json({
           pipeline_result: PIPELINE_RESULT.FAILURE,
           status: 'failed',
-          error: 'NULL_AGENT_RESPONSE',
+          error: primaryFailed ? 'AGENT_TIMEOUT' : 'NULL_AGENT_RESPONSE',
+          validation_complete: false,
+          failed_agent: 'PrimaryValidator',
+          trace_id: traceId,
+          truth_engine_version: ENGINE.version,
+        });
+      }
+      const primaryVerifications = verifyResult.verifications || [];
+
+      oracleTracer.logCall('PrimaryValidator', 'success', {
+        claims_verified: primaryVerifications.length,
+        latency_ms: primaryLatencyMs,
+        model: 'gemini_3_flash',
+        internet_backed: true,
+        async_mode: true,
+      });
+      telemetry.recordOracleCall('success');
+
+      // ── Secondary result handling ──
+      const secondaryFailed = secondarySettled.status === 'rejected';
+      const subProcessBResult = secondaryFailed ? null : secondarySettled.value;
+
+      if (secondaryFailed || !subProcessBResult || subProcessBResult.verifications == null) {
+        oracleTracer.logCall('SecondaryValidator', secondaryFailed ? 'timeout' : 'error', {
+          reason: secondaryFailed ? secondarySettled.reason?.message || 'rejected' : 'null_response',
+          latency_ms: verifyMs,
+          model: 'gemini_3_flash',
+          internet_backed: true,
+          primary_oracle_succeeded: true,
+          fallback_available: false,
+          async_mode: true,
+        });
+        telemetry.recordOracleCall(secondaryFailed ? 'timeout' : 'error');
+        telemetry.recordFail();
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'SecondaryValidator', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE, async_mode: true, oracle_trace: oracleTracer.getEvents() } });
+        console.error(`[truthEngine] STRICT FAILURE: SecondaryValidator ${secondaryFailed ? 'rejected' : 'null response'} (async mode)`);
+        await base44.asServiceRole.entities.TruthReport.update(report.id, {
+          status: 'failed',
+          raw_answer: rawAnswer,
+          leaf1_claims: claims,
+          leaf4_reasoning: `ValidationIncompleteException: SecondaryValidator ${secondaryFailed ? 'timeout/reject' : 'returned null'}. Trace: ${traceId}`,
+        });
+        return Response.json({
+          pipeline_result: PIPELINE_RESULT.FAILURE,
+          status: 'failed',
+          error: secondaryFailed ? 'AGENT_TIMEOUT' : 'NULL_AGENT_RESPONSE',
           validation_complete: false,
           failed_agent: 'SecondaryValidator',
           trace_id: traceId,
-          audit: nullAudit,
           truth_engine_version: ENGINE.version,
         });
       }
       const secondaryVerifications = subProcessBResult.verifications || [];
 
-      // PATCH 12: Oracle telemetry — SecondaryValidator success + fallback delta
       oracleTracer.logCall('SecondaryValidator', 'success', {
         claims_verified: secondaryVerifications.length,
-        latency_ms: subBMs,
+        latency_ms: verifyMs,
         model: 'gemini_3_flash',
         internet_backed: true,
+        async_mode: true,
       });
       telemetry.recordOracleCall('success');
+
+      console.log(`[truthEngine] PATCH 13: Async validation complete in ${verifyMs}ms (both validators concurrent)`);
 
       // PATCH 12: Compare primary vs secondary oracle responses (Fallback Discrepancy telemetry)
       const fallbackDelta = oracleTracer.logFallbackDelta(
@@ -1129,7 +1125,7 @@ ${verificationPrompt}`;
       }
 
       // PATCH 3 — Validator-07 Calibration: compute adaptive threshold
-      const networkLatency = Date.now() - t3; // total verification network time
+      const networkLatency = verifyMs; // total verification wall-clock time (now parallel)
       const v07Cal = calibrateValidator07(latencySamples, networkLatency);
       console.log(`[truthEngine] Validator-07 calibration: threshold=${v07Cal.effective_threshold} latency=${networkLatency}ms class=${v07Cal.packet_classification} retries=${v07Cal.max_retries}`);
 
@@ -1478,7 +1474,7 @@ Write the final verified answer:`;
         config_guardrail: { bypass_active: false, source: 'config_guardrail' },
         circuit_breaker: circuitBreaker.getStatus(),
         settlement: { ...settlementResult, pool_size: settlement.size },
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic', 'PATCH11_agent_state_sync_gate', 'PATCH12_oracle_telemetry_layer'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic', 'PATCH11_agent_state_sync_gate', 'PATCH12_oracle_telemetry_layer', 'PATCH13_async_validation_refactor'],
       });
     }
 
@@ -1511,7 +1507,7 @@ Write the final verified answer:`;
         packet_digest: error.packet?.packet_digest || null,
         circuit_breaker: circuitBreaker.getStatus(),
         truth_engine_version: ENGINE.version,
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic', 'PATCH11_agent_state_sync_gate', 'PATCH12_oracle_telemetry_layer'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic', 'PATCH11_agent_state_sync_gate', 'PATCH12_oracle_telemetry_layer', 'PATCH13_async_validation_refactor'],
       }, { status: 504 });
     }
     console.error('[truthEngine]', error);
