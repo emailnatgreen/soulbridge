@@ -313,12 +313,12 @@ export default function AxiCommandDashboard() {
               </div>
             </div>
           </TabsContent>
-        </Tabs>
 
           {/* TAB 6: Node 8 Oversight */}
           <TabsContent value="node8">
             <Node8OversightPanel />
           </TabsContent>
+        </Tabs>
 
         {/* Footer */}
         <div className="text-center text-xs text-slate-500 mt-6 p-3 bg-amber-900/20 border border-amber-700/30 rounded-lg">
