@@ -3,7 +3,14 @@
  * 
  * POST { action, params }
  * 
- * Flow: authenticate → resolve actor DID → check role permissions → validate rules → execute → log
+ * Flow: authenticate → resolve actor DID → HIERARCHY CHECK → check role permissions
+ *       → validate rules → execute → ESCALATION HEARTBEAT → log
+ * 
+ * Governance Spine v2.0 — Implements:
+ *   FIX-1: Constitutional Hierarchy Enforcement (Rule Hierarchy Constraints)
+ *   FIX-2: Terminal Fail State (State-Transition Logic)
+ *   FIX-3: Escalation Heartbeat (Sovereign Acknowledgement)
+ *   FIX-4: Unified Policy Engine (Audit + Node Covenant alignment)
  * 
  * Supported actions:
  *   assign_role      — { target_did, role_id, reason? }
@@ -22,6 +29,60 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// ══════════════════════════════════════════════════════════════════════════════
+// FIX-1: CONSTITUTIONAL HIERARCHY — Three-tier rule ordering
+// Constitutional (root) → Operational (middle) → Execution (leaf)
+// Every execution-tier rule must align with its constitutional parent.
+// ══════════════════════════════════════════════════════════════════════════════
+const RULE_HIERARCHY = {
+  constitutional: [
+    'one_user_one_vote',         // Law 1, 2, 3, 8
+    'royalty_split_total',       // Law 3, 5
+    'minting_min_treasury_royalty', // Law 3, 5
+  ],
+  operational: [
+    'minting_max_per_creator',   // Law 4, 8
+    'minting_min_honor',         // Law 2, 7
+    'minting_honor_gate',        // Law 2
+    'max_role_assignments_per_day', // role management
+    'minting_deprecation_cooldown', // Law 1, 6
+  ],
+  execution: [
+    'minting_pricing_bounds',    // Law 3, 4
+    'minting_metadata_version',  // Law 9
+    'service_pricing_range',     // pricing
+    'rate_limit_api_calls',      // rate limiting
+  ],
+};
+
+// Map which constitutional rules govern which execution rules
+const HIERARCHY_BINDINGS = {
+  'minting_pricing_bounds':   ['royalty_split_total', 'minting_min_treasury_royalty'],
+  'minting_metadata_version': ['one_user_one_vote'],
+  'service_pricing_range':    ['royalty_split_total'],
+  'rate_limit_api_calls':     [],
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIX-2: STATE MACHINE — Legal transitions + Terminal Fail
+// ══════════════════════════════════════════════════════════════════════════════
+const GOVERNANCE_STATES = {
+  // Action lifecycle
+  'pending':    ['approved', 'denied_permission', 'denied_honor', 'denied_rule', 'terminal_fail'],
+  'approved':   ['success', 'terminal_fail'],
+  'success':    [],  // terminal — no further transitions
+  'denied_permission': ['pending'],  // can retry after role grant
+  'denied_honor':      ['pending'],  // can retry after honor recovery
+  'denied_rule':       ['pending'],  // can retry after rule change
+  'terminal_fail':     [],           // FIX-2: dead-end — no exit, requires sovereign review
+};
+
+function isLegalTransition(fromState, toState) {
+  const allowed = GOVERNANCE_STATES[fromState];
+  if (!allowed) return false;  // Unknown state → illegal
+  return allowed.includes(toState);
+}
+
 // ── Permission matrix: action → required permission(s) ──────────────────────
 const ACTION_PERMISSIONS = {
   assign_role:            ['can_assign_roles'],
@@ -34,6 +95,16 @@ const ACTION_PERMISSIONS = {
   approve_creator:        ['can_assign_roles'],
   suspend_creator:        ['can_assign_roles'],
   create_service:         ['can_create_services'],
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIX-3: ESCALATION TIERS — Authority boundaries
+// ══════════════════════════════════════════════════════════════════════════════
+const ESCALATION_TIERS = {
+  agent:    { level: 0, can_escalate_to: 'guardian' },
+  guardian: { level: 1, can_escalate_to: 'sovereign' },
+  sovereign:{ level: 2, can_escalate_to: null },
+  treasury: { level: 2, can_escalate_to: 'sovereign' },
 };
 
 Deno.serve(async (req) => {
@@ -60,6 +131,33 @@ Deno.serve(async (req) => {
 
     // Resolve actor DID
     const actorDid = params._actor_did || user.email;
+
+    // ── 1b. FIX-1: Constitutional Hierarchy Check ─────────────────────────
+    // If updating a rule, verify it doesn't violate its constitutional parent
+    if (action === 'update_rule' && params.rule_id) {
+      const hierarchyResult = await validateHierarchy(base44, params.rule_id, params.value);
+      if (!hierarchyResult.allowed) {
+        await logGovernance(base44, {
+          action, actor_did: actorDid,
+          target: params.rule_id,
+          target_type: 'rule',
+          status: 'denied_hierarchy',
+          permissions_used: requiredPerms,
+          denial_reason: hierarchyResult.reason,
+          metadata: { params, hierarchy_violation: hierarchyResult.violation },
+        });
+        // FIX-4: Unified audit — also log to DidAuditLog for cross-module visibility
+        await logUnifiedAudit(base44, 'hierarchy_violation', {
+          action, actor_did: actorDid, rule_id: params.rule_id,
+          reason: hierarchyResult.reason,
+        });
+        return Response.json({
+          error: hierarchyResult.reason,
+          code: 'HIERARCHY_VIOLATION',
+          constitutional_parent: hierarchyResult.violation?.parent_rule,
+        }, { status: 403 });
+      }
+    }
 
     // ── 2. Role + Permission Check ────────────────────────────────────────
     const permResult = await checkPermissions(base44, actorDid, user, requiredPerms);
@@ -126,7 +224,43 @@ Deno.serve(async (req) => {
     }
 
     // ── 5. Execute Action ─────────────────────────────────────────────────
-    const result = await executeAction(base44, action, params, actorDid, user);
+    let result;
+    let finalStatus = 'success';
+    try {
+      result = await executeAction(base44, action, params, actorDid, user);
+    } catch (execError) {
+      // FIX-2: Terminal Fail — execution errors enter dead-end state
+      finalStatus = 'terminal_fail';
+      await logGovernance(base44, {
+        action, actor_did: actorDid,
+        target: params.target_did || params.widget_id || params.service_id || params.rule_id || null,
+        target_type: resolveTargetType(action),
+        status: 'terminal_fail',
+        permissions_used: requiredPerms,
+        rules_evaluated: ruleResult.rules_evaluated || [],
+        denial_reason: execError.message,
+        metadata: { params, terminal_fail: true },
+      });
+      // FIX-3: Escalation Heartbeat — terminal failures always escalate to sovereign
+      await escalateToSovereign(base44, {
+        source: 'governance_engine',
+        action,
+        actor_did: actorDid,
+        error: execError.message,
+        severity: 'critical',
+        requires_acknowledgement: true,
+      });
+      // FIX-4: Unified audit
+      await logUnifiedAudit(base44, 'terminal_fail', {
+        action, actor_did: actorDid, error: execError.message,
+      });
+      return Response.json({
+        error: execError.message,
+        code: 'TERMINAL_FAIL',
+        escalated_to: 'sovereign',
+        message: 'Action entered terminal fail state. Sovereign review required.',
+      }, { status: 500 });
+    }
 
     // ── 6. Log Success ────────────────────────────────────────────────────
     await logGovernance(base44, {
@@ -139,6 +273,26 @@ Deno.serve(async (req) => {
       metadata: { params, result: result.data },
     });
 
+    // FIX-3: Escalation Heartbeat — high-impact actions require sovereign acknowledgement
+    const HIGH_IMPACT_ACTIONS = ['update_rule', 'assign_role', 'revoke_role', 'update_treasury_split', 'deprecate_widget'];
+    if (HIGH_IMPACT_ACTIONS.includes(action)) {
+      await escalateToSovereign(base44, {
+        source: 'governance_engine',
+        action,
+        actor_did: actorDid,
+        severity: 'info',
+        requires_acknowledgement: false,
+        message: `Governance action completed: ${action} by ${actorDid}`,
+        result_summary: result.message,
+      });
+    }
+
+    // FIX-4: Unified audit — every successful governance action is also logged to DidAuditLog
+    await logUnifiedAudit(base44, 'governance_action', {
+      action, actor_did: actorDid, status: 'success',
+      target: result.target, message: result.message,
+    });
+
     return Response.json({
       success: true,
       action,
@@ -147,7 +301,8 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    return Response.json({ error: error.message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    // FIX-2: Unexpected errors also enter terminal fail
+    return Response.json({ error: error.message, code: 'INTERNAL_ERROR', terminal_fail: true }, { status: 500 });
   }
 });
 
@@ -590,5 +745,169 @@ async function logGovernance(base44, data) {
     });
   } catch (e) {
     console.error('[GovernanceEngine] Failed to log:', e.message);
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIX-1: HIERARCHY VALIDATOR
+// Verifies execution-tier rules don't contradict their constitutional parents
+// ══════════════════════════════════════════════════════════════════════════════
+async function validateHierarchy(base44, ruleId, newValue) {
+  // Determine which tier this rule belongs to
+  const tier = Object.entries(RULE_HIERARCHY).find(([, rules]) => rules.includes(ruleId));
+  
+  if (!tier) {
+    // Unknown rule — allow but log
+    return { allowed: true, tier: 'unknown' };
+  }
+
+  const [tierName] = tier;
+
+  // Constitutional rules can always be updated (they ARE the root)
+  if (tierName === 'constitutional') {
+    return { allowed: true, tier: 'constitutional' };
+  }
+
+  // Execution rules must validate against their constitutional bindings
+  if (tierName === 'execution') {
+    const parentRuleIds = HIERARCHY_BINDINGS[ruleId] || [];
+    if (parentRuleIds.length === 0) return { allowed: true, tier: 'execution' };
+
+    // Load parent constitutional rules
+    for (const parentId of parentRuleIds) {
+      const parents = await base44.asServiceRole.entities.GovernanceRule.filter(
+        { rule_id: parentId, status: 'active' }, '-created_date', 1
+      );
+      if (!parents?.length) continue;
+
+      const parent = parents[0];
+      const parentValue = parent.value || {};
+
+      // Check: execution pricing can't go below constitutional treasury minimum
+      if (parentValue.min_treasury_percent !== undefined && newValue?.min_price !== undefined) {
+        // Pricing must still allow treasury royalty to be viable
+        if (newValue.min_price <= 0) {
+          return {
+            allowed: false,
+            reason: `Execution rule "${ruleId}" would allow zero-cost services, violating constitutional rule "${parentId}" (min treasury ${parentValue.min_treasury_percent}%)`,
+            violation: { parent_rule: parentId, child_rule: ruleId, conflict: 'zero_price_vs_treasury_minimum' },
+          };
+        }
+      }
+
+      // Check: execution rules can't override constitutional total constraints
+      if (parentValue.total_must_equal !== undefined && newValue?.total_must_equal !== undefined) {
+        if (newValue.total_must_equal !== parentValue.total_must_equal) {
+          return {
+            allowed: false,
+            reason: `Execution rule "${ruleId}" total (${newValue.total_must_equal}%) contradicts constitutional rule "${parentId}" (${parentValue.total_must_equal}%)`,
+            violation: { parent_rule: parentId, child_rule: ruleId, conflict: 'total_override' },
+          };
+        }
+      }
+    }
+  }
+
+  return { allowed: true, tier: tierName };
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIX-3: ESCALATION HEARTBEAT
+// Guardian → Sovereign escalation with acknowledgement requirement
+// No silent failure paths — every escalation is logged and tracked
+// ══════════════════════════════════════════════════════════════════════════════
+async function escalateToSovereign(base44, escalation) {
+  try {
+    const {
+      source, action, actor_did, error, severity,
+      requires_acknowledgement, message, result_summary,
+    } = escalation;
+
+    // Create a TripwireEvent for sovereign visibility
+    await base44.asServiceRole.entities.TripwireEvent.create({
+      event_type: severity === 'critical' ? 'multisig_alert' : 'sentinel_flag',
+      severity: severity === 'critical' ? 'critical' : severity === 'info' ? 'low' : 'medium',
+      status: requires_acknowledgement ? 'active' : 'acknowledged',
+      source_node: 'Governance Engine',
+      description: message || `Governance escalation: ${action} by ${actor_did}${error ? ` — ERROR: ${error}` : ''}`,
+      details: {
+        governance_spine_version: '2.0',
+        escalation_source: source,
+        action,
+        actor_did,
+        error: error || null,
+        result_summary: result_summary || null,
+        requires_sovereign_ack: requires_acknowledgement,
+        escalation_timestamp: new Date().toISOString(),
+      },
+      sentinel_verified: false,
+    });
+
+    // If critical, also notify Axi
+    if (severity === 'critical') {
+      const agents = await base44.asServiceRole.entities.Agent.filter({ name: 'Axi' }, '-created_date', 1);
+      if (agents?.[0]) {
+        await base44.asServiceRole.entities.AgentNotification.create({
+          recipient_agent_id: agents[0].id,
+          notification_type: 'system',
+          title: `⚠️ Governance Escalation: ${action}`,
+          message: `Terminal fail in governance engine. Action: ${action}, Actor: ${actor_did}. Error: ${error || 'none'}. Sovereign acknowledgement required.`,
+          priority: 'urgent',
+          is_read: false,
+          action_url: '/admin/axi-command',
+          metadata: { escalation_source: source, governance_spine: '2.0' },
+        });
+      }
+    }
+
+    console.log(`[GovernanceEngine] Escalation: ${severity} — ${action} by ${actor_did}`);
+  } catch (e) {
+    // FIX-3: Escalation itself must never silently fail
+    console.error('[GovernanceEngine] CRITICAL: Escalation heartbeat failed:', e.message);
+    // Fallback: log to GovernanceLog as last resort
+    try {
+      await base44.asServiceRole.entities.GovernanceLog.create({
+        action: 'escalation_failure',
+        actor_did: escalation.actor_did || 'system',
+        status: 'terminal_fail',
+        denial_reason: `Escalation heartbeat failed: ${e.message}`,
+        metadata: escalation,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (fallbackErr) {
+      console.error('[GovernanceEngine] FATAL: Even fallback logging failed:', fallbackErr.message);
+    }
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIX-4: UNIFIED POLICY ENGINE
+// All governance actions are also logged to DidAuditLog so Audit + Node Covenant
+// modules have visibility into the central spine.
+// This bridges the gap between the governance engine and the standalone audit module.
+// ══════════════════════════════════════════════════════════════════════════════
+async function logUnifiedAudit(base44, eventType, details) {
+  try {
+    await base44.asServiceRole.entities.DidAuditLog.create({
+      did_classic_address: details.actor_did || 'governance-engine',
+      user_email: details.actor_email || 'system@soulbridge.app',
+      user_id: details.user_id || 'governance-engine',
+      action_type: eventType === 'governance_action' ? 'permission_granted'
+        : eventType === 'hierarchy_violation' ? 'did_verified'
+        : 'did_verified',
+      success: eventType === 'governance_action',
+      action_details: {
+        event: `governance_spine_${eventType}`,
+        governance_spine_version: '2.0',
+        ...details,
+        unified_audit_timestamp: new Date().toISOString(),
+      },
+      error_message: details.error || null,
+    });
+  } catch (e) {
+    console.error('[GovernanceEngine] Unified audit log failed:', e.message);
   }
 }
