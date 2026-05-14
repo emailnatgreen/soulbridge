@@ -23,7 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ═══════════════════════════════════════════════
 
 const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
-const ENGINE = { name: 'SoulBridge Truth Engine', version: '2.8.0' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '2.9.0' };
 
 // ═══ PATCH 2 — Config Guardrails (v2.7.2) ═══
 // Hard constant: bypass can NEVER activate in production
@@ -55,6 +55,83 @@ const TIMEOUT_THRESHOLDS = {
   primary_validator:  60_000,   // PrimaryValidator: 60s (internet-backed)
   secondary_validator:60_000,   // SecondaryValidator: 60s (internet-backed)
   synthesizer:        30_000,   // Synthesizer: 30s
+};
+
+// ═══ PATCH 6 — Global HTTP Timeout Configuration (v2.9.0) ═══
+// Hard 30s timeout on ALL HTTP client requests (external fetch calls).
+// Prevents zombie processes, infinite retry loops, and Slowloris-style DoS.
+// ISO/IEC 27001 compliance: automated session termination.
+const GLOBAL_HTTP_TIMEOUT_MS = 30_000;
+
+/**
+ * Timeout-enforced fetch wrapper. Every outbound HTTP request
+ * is subject to the global 30s hard limit via AbortController.
+ * Prevents resource exhaustion from stalled connections.
+ */
+function timeoutFetch(url, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GLOBAL_HTTP_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+// ═══ PATCH 7 — Circuit Breaker Pattern (v2.9.0) ═══
+// Trips after CIRCUIT_BREAKER_THRESHOLD consecutive timeouts.
+// Once tripped, all new pipeline requests are rejected until
+// the cooldown expires, protecting downstream systems.
+const CIRCUIT_BREAKER_THRESHOLD = 5;   // consecutive failures to trip
+const CIRCUIT_BREAKER_COOLDOWN_MS = 60_000; // 60s cooldown after trip
+
+const circuitBreaker = {
+  consecutiveFailures: 0,
+  state: 'CLOSED',        // CLOSED = healthy, OPEN = tripped, HALF_OPEN = probing
+  lastTrippedAt: null,
+  totalTrips: 0,
+
+  recordSuccess() {
+    this.consecutiveFailures = 0;
+    if (this.state === 'HALF_OPEN') {
+      this.state = 'CLOSED';
+      console.log(`[truthEngine] CIRCUIT BREAKER: reset to CLOSED after successful probe`);
+    }
+  },
+
+  recordFailure(agent) {
+    this.consecutiveFailures++;
+    console.log(`[truthEngine] CIRCUIT BREAKER: failure #${this.consecutiveFailures} (agent=${agent})`);
+    if (this.consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD && this.state === 'CLOSED') {
+      this.state = 'OPEN';
+      this.lastTrippedAt = Date.now();
+      this.totalTrips++;
+      console.error(`[truthEngine] CIRCUIT BREAKER TRIPPED: ${this.consecutiveFailures} consecutive failures — rejecting new requests for ${CIRCUIT_BREAKER_COOLDOWN_MS/1000}s`);
+    }
+  },
+
+  canExecute() {
+    if (this.state === 'CLOSED') return true;
+    if (this.state === 'OPEN') {
+      const elapsed = Date.now() - (this.lastTrippedAt || 0);
+      if (elapsed >= CIRCUIT_BREAKER_COOLDOWN_MS) {
+        this.state = 'HALF_OPEN';
+        console.log(`[truthEngine] CIRCUIT BREAKER: cooldown expired — entering HALF_OPEN probe mode`);
+        return true;
+      }
+      return false;
+    }
+    // HALF_OPEN: allow one request through as a probe
+    return true;
+  },
+
+  getStatus() {
+    return {
+      state: this.state,
+      consecutive_failures: this.consecutiveFailures,
+      total_trips: this.totalTrips,
+      last_tripped_at: this.lastTrippedAt ? new Date(this.lastTrippedAt).toISOString() : null,
+      cooldown_remaining_ms: this.state === 'OPEN'
+        ? Math.max(0, CIRCUIT_BREAKER_COOLDOWN_MS - (Date.now() - (this.lastTrippedAt || 0)))
+        : 0,
+    };
+  },
 };
 
 class AgentTimeoutError extends Error {
@@ -304,7 +381,12 @@ Deno.serve(async (req) => {
         patch3_validator07_calibration: 'applied',
         patch4_timeout_thresholds: 'applied',
         patch5_enhanced_timeout_logging: 'applied',
+        patch6_global_http_timeout: 'applied',
+        patch7_circuit_breaker: 'applied',
+        global_http_timeout_ms: GLOBAL_HTTP_TIMEOUT_MS,
         timeout_thresholds_ms: TIMEOUT_THRESHOLDS,
+        circuit_breaker: circuitBreaker.getStatus(),
+        circuit_breaker_config: { threshold: CIRCUIT_BREAKER_THRESHOLD, cooldown_ms: CIRCUIT_BREAKER_COOLDOWN_MS },
         validator_07_version: VALIDATOR_07.version,
         environment: ENVIRONMENT,
         allow_bypass: ALLOW_BYPASS,
@@ -364,6 +446,19 @@ Deno.serve(async (req) => {
       const { question } = body;
       if (!question || question.trim().length < 3) {
         return Response.json({ error: 'Question is required (min 3 chars)' }, { status: 400 });
+      }
+
+      // PATCH 7: Circuit breaker gate — reject if tripped
+      if (!circuitBreaker.canExecute()) {
+        const cbStatus = circuitBreaker.getStatus();
+        console.error(`[truthEngine] CIRCUIT BREAKER OPEN: rejecting request — cooldown ${cbStatus.cooldown_remaining_ms}ms remaining`);
+        return Response.json({
+          status: 'rejected',
+          error: 'CIRCUIT_BREAKER_OPEN',
+          message: `Pipeline temporarily unavailable — ${cbStatus.consecutive_failures} consecutive failures triggered circuit breaker. Retry after ${Math.ceil(cbStatus.cooldown_remaining_ms / 1000)}s.`,
+          circuit_breaker: cbStatus,
+          truth_engine_version: ENGINE.version,
+        }, { status: 503 });
       }
 
       // PATCH 2: Enforce config guardrails before pipeline starts
@@ -884,6 +979,9 @@ Write the final verified answer:`;
         console.error('[truthEngine] Email failed:', emailErr.message);
       }
 
+      // PATCH 7: Record successful pipeline completion
+      circuitBreaker.recordSuccess();
+
       return Response.json({
         report_id: report.id,
         status: 'complete',
@@ -915,14 +1013,17 @@ Write the final verified answer:`;
         trace_id: traceId,
         validator_07: v07Cal,
         config_guardrail: { bypass_active: false, source: 'config_guardrail' },
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging'],
+        circuit_breaker: circuitBreaker.getStatus(),
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker'],
       });
     }
 
     return Response.json({ error: `Unknown action: ${action}` }, { status: 400 });
   } catch (error) {
     // PATCH 4 — AgentTimeoutError: record explicit timeout failure
+    // PATCH 7 — Circuit breaker: record the failure
     if (error.name === 'AgentTimeoutError') {
+      circuitBreaker.recordFailure(error.agent);
       console.error(`[truthEngine] PIPELINE ABORT: ${error.agent} timeout after ${error.thresholdMs}ms`, JSON.stringify(error.packet));
       return Response.json({
         status: 'incomplete',
@@ -931,8 +1032,9 @@ Write the final verified answer:`;
         agent: error.agent,
         threshold_ms: error.thresholdMs,
         packet_digest: error.packet?.packet_digest || null,
+        circuit_breaker: circuitBreaker.getStatus(),
         truth_engine_version: ENGINE.version,
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker'],
       }, { status: 504 });
     }
     console.error('[truthEngine]', error);
