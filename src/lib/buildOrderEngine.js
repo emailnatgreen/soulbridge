@@ -1,23 +1,25 @@
 /**
  * Build Order Engine — Pure Deterministic Orchestration
  * ═════════════════════════════════════════════════════
- * Takes: actions + risk + suggested weight + dependencies
- * Outputs: phased plan in strict order
- * Never invents tasks, only orders what exists
+ * Consumes: L3 contradictions, L4 cross-links, L5 risk + weight, L6 actions, L7 synthesis
+ * Outputs:  phased plan in strict order
  *
- * Rules:
- *   - Deterministic: same inputs → same ordering
- *   - Non-LLM: pure logic, no generation
- *   - Non-destructive: never edits leaves, only reads them
- *   - Re-runnable: recompute after changes/tests
+ * Contract:
+ *   - DETERMINISTIC: same inputs → same ordering
+ *   - NON-LLM: pure logic, no generation
+ *   - NON-DESTRUCTIVE: never edits leaves, only reads them
+ *   - RE-RUNNABLE: recompute after changes/tests
+ *
+ * Target:
+ *   8 steps | 2 publish blockers | 3 tests required
+ *   P1: 2 | P2: 3 | P3: 1 | P4: 2
  */
 
 // ─── Type priority for ordering within a phase ───
-// Node integrity → agent behaviour → UX polish
 const TYPE_ORDER = { node: 0, security: 1, governance: 2, agent: 3, logic: 4, ux: 5, general: 6 };
 
 function typeRank(item) {
-  const domain = (item.risk_domain || item.action_group || item.domain || 'general').toLowerCase();
+  const domain = (item.risk_domain || item.action_group || item.domain || item.target || 'general').toLowerCase();
   if (domain.includes('node') || domain.includes('integrity')) return TYPE_ORDER.node;
   if (domain.includes('secur')) return TYPE_ORDER.security;
   if (domain.includes('govern')) return TYPE_ORDER.governance;
@@ -28,30 +30,23 @@ function typeRank(item) {
 }
 
 // ─── Sort steps within a phase ───
-// 1. Dependencies (items depended-on go first)
-// 2. Suggested weight (higher → earlier)
-// 3. Type rank (node → agent → UX)
 function sortSteps(steps) {
-  // Build dependency graph: which step_ids are depended on?
   const depended = new Set();
   steps.forEach(s => {
     if (s.dependencies && s.dependencies !== 'none') {
-      s.dependencies.split(',').map(d => d.trim()).forEach(d => depended.add(d));
+      String(s.dependencies).split(',').map(d => d.trim()).forEach(d => depended.add(d));
     }
   });
 
   return [...steps].sort((a, b) => {
-    // Items that others depend on go first
     const aIsDepended = depended.has(a.step_id) ? 0 : 1;
     const bIsDepended = depended.has(b.step_id) ? 0 : 1;
     if (aIsDepended !== bIsDepended) return aIsDepended - bIsDepended;
 
-    // Higher weight → earlier
     const wA = a.suggested_weight || 0;
     const wB = b.suggested_weight || 0;
     if (wB !== wA) return wB - wA;
 
-    // Type ordering
     return typeRank(a) - typeRank(b);
   });
 }
@@ -61,14 +56,14 @@ let stepCounter = 0;
 function makeStep(source, overrides = {}) {
   stepCounter++;
   return {
-    step_id: `S${String(stepCounter).padStart(3, '0')}`,
+    step_id: overrides.step_id || `S${String(stepCounter).padStart(3, '0')}`,
     title: source.title || source.description || '',
     description: source.description || source.impact_description || '',
     phase: overrides.phase || 1,
     suggested_weight: source.suggested_weight || 0,
     weight_category: source.weight_category || 'medium',
     dependencies: source.dependencies || 'none',
-    target: source.action_group || source.risk_domain || 'general',
+    target: source.action_group || source.risk_domain || source.target || 'general',
     publish_blocker: overrides.publish_blocker || false,
     test_required: overrides.test_required || false,
     status: 'pending',
@@ -82,18 +77,19 @@ function makeStep(source, overrides = {}) {
  * Pure function. No side effects. Re-runnable.
  */
 export function computeBuildOrder(leaves) {
-  if (!leaves) return { phases: [], summary: { total: 0, by_phase: {} } };
+  if (!leaves) return { phases: [], summary: { total: 0, blockers: 0, tests_required: 0, by_phase: {} } };
 
   stepCounter = 0;
 
   const risks = leaves.risk_impact || [];
   const contradictions = leaves.contradictions || [];
   const actions = leaves.proposed_actions || [];
+  const crossLinks = leaves.cross_links || [];
   const synthesis = leaves.synthesis || {};
   const visRec = (synthesis.visibility_recommendation || 'private').toLowerCase();
 
-  // ═══ Phase 1 — Critical Fixes ═══
-  // security risks high/critical, integrity flags, critical weight, publish blockers
+  // ═══ Phase 1 — Critical Fixes (target: 2 steps) ═══
+  // Critical/high severity risks, integrity flags, critical weight actions
   const phase1 = [];
 
   risks.filter(r => r.severity === 'critical' || r.severity === 'high').forEach(r => {
@@ -120,7 +116,6 @@ export function computeBuildOrder(leaves) {
   });
 
   actions.filter(a => a.weight_category === 'critical').forEach(a => {
-    // Avoid duplicates if already covered by a risk
     const alreadyCovered = phase1.some(s => s.title === a.title);
     if (!alreadyCovered) {
       phase1.push(makeStep(a, {
@@ -132,10 +127,23 @@ export function computeBuildOrder(leaves) {
     }
   });
 
-  // ═══ Phase 2 — Hardening ═══
-  // stability, UX confusion, high weight, non-blocking improvements
+  // ═══ Phase 2 — Hardening (target: 3 steps) ═══
+  // Non-integrity contradictions, medium risks, high-weight actions, cross-link issues
   const phase2 = [];
 
+  // L6 actions with high weight first (e.g. Patch ERR_VAL_04)
+  actions.filter(a => a.weight_category === 'high').forEach(a => {
+    const alreadyCovered = phase1.some(s => s.title === a.title);
+    if (!alreadyCovered) {
+      phase2.push(makeStep(a, {
+        phase: 2,
+        source_leaf: 6,
+        test_required: a.test_required || false,
+      }));
+    }
+  });
+
+  // L3 contradictions (non-integrity)
   contradictions.filter(c => !c.integrity_flag).forEach(c => {
     phase2.push(makeStep({
       ...c,
@@ -148,26 +156,31 @@ export function computeBuildOrder(leaves) {
     }));
   });
 
+  // L5 medium risks
   risks.filter(r => r.severity === 'medium').forEach(r => {
     phase2.push(makeStep(r, {
       phase: 2,
       source_leaf: 5,
-      test_required: true,
+      test_required: r.test_required || true,
     }));
   });
 
-  actions.filter(a => a.weight_category === 'high').forEach(a => {
-    const alreadyCovered = phase1.some(s => s.title === a.title);
-    if (!alreadyCovered) {
-      phase2.push(makeStep(a, {
-        phase: 2,
-        source_leaf: 6,
-      }));
-    }
+  // L4 cross-links that indicate gaps
+  crossLinks.filter(cl => cl.severity === 'high' || cl.severity === 'medium').forEach(cl => {
+    phase2.push(makeStep({
+      ...cl,
+      title: cl.title || `Cross-link: ${cl.description || ''}`,
+      suggested_weight: cl.suggested_weight || 6,
+      weight_category: cl.severity === 'high' ? 'high' : 'medium',
+    }, {
+      phase: 2,
+      source_leaf: 4,
+      test_required: cl.severity === 'high',
+    }));
   });
 
-  // ═══ Phase 3 — Optimisation / Clarity ═══
-  // performance, polish, documentation, medium weight
+  // ═══ Phase 3 — Optimisation / Clarity (target: 1 step) ═══
+  // Medium-weight actions, low-severity risks, performance/polish
   const phase3 = [];
 
   actions.filter(a => a.weight_category === 'medium').forEach(a => {
@@ -184,8 +197,19 @@ export function computeBuildOrder(leaves) {
     }));
   });
 
-  // ═══ Phase 4 — Pre-publish Checks ═══
-  // governance checks, visibility review, low-weight exposure items
+  crossLinks.filter(cl => cl.severity === 'low').forEach(cl => {
+    phase3.push(makeStep({
+      ...cl,
+      title: cl.title || `Cross-link: ${cl.description || ''}`,
+      suggested_weight: cl.suggested_weight || 3,
+      weight_category: 'medium',
+    }, {
+      phase: 3,
+      source_leaf: 4,
+    }));
+  });
+
+  // ═══ Phase 4 — Pre-publish Checks (target: 2 steps) ═══
   const phase4 = [];
 
   actions.filter(a => a.weight_category === 'low').forEach(a => {
@@ -195,7 +219,7 @@ export function computeBuildOrder(leaves) {
     }));
   });
 
-  // Visibility check from synthesis
+  // Visibility check from L7 synthesis
   if (visRec === 'private' || synthesis.visibility_reason) {
     phase4.push(makeStep({
       title: 'Visibility review — confirm public/private before publish',

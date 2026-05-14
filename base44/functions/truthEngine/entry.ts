@@ -23,7 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ═══════════════════════════════════════════════
 
 const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
-const ENGINE = { name: 'SoulBridge Truth Engine', version: '1.0.0' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '2.7.0' };
 
 // TruthPolicyV1 — frozen thresholds
 const POLICY = {
@@ -194,6 +194,9 @@ Deno.serve(async (req) => {
         engine: ENGINE,
         schema: SCHEMA,
         policy: { name: POLICY.name, version: POLICY.version },
+        truth_engine_version: ENGINE.version,
+        errval04_patch: 'applied',
+        source_of_truth: 'primary',
         health: {
           last_status: lastStatus,
           last_report_id: lastReport?.id || null,
@@ -287,9 +290,13 @@ Deno.serve(async (req) => {
       const claims = (claimResult.claims || []).slice(0, 10);
       const claimExtractionMs = Date.now() - t2;
 
-      // ── Step 3: Verification ──
+      // ── Step 3: Verification (v2.7.0 — ERRVAL04 patch) ──
+      // Primary source: internet-backed LLM verification (source_of_truth: "primary")
+      // Sub-process B now uses the SAME primary source — no cached/internal flags
       const t3 = Date.now();
       const verificationPrompt = claims.map(c => `- [${c.id}] "${c.text}"`).join('\n');
+
+      // Primary validator (Sub-process A)
       const verifyResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are a fact-checker. For each claim below, assess its veracity. Provide:
 - veracity_score: 0.0 to 1.0
@@ -323,8 +330,83 @@ ${verificationPrompt}`,
           required: ["verifications"]
         }
       });
-      const verifications = verifyResult.verifications || [];
+      const primaryVerifications = verifyResult.verifications || [];
+
+      // Sub-process B: re-validate using the SAME primary source (ERRVAL04 fix)
+      // Replaces any internal/cached verification flags with direct primary call
+      const subProcessBResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `You are a secondary fact-checker performing validation consistency checks.
+For each claim below, re-assess its veracity independently. Use the same evidence standards as primary verification.
+Provide veracity_score (0.0-1.0) and confidence ("high"/"medium"/"low") for each claim.
+
+Claims:
+${verificationPrompt}`,
+        add_context_from_internet: true,
+        model: 'gemini_3_flash',
+        response_json_schema: {
+          type: "object",
+          properties: {
+            verifications: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  claim_id: { type: "string" },
+                  veracity_score: { type: "number" },
+                  confidence: { type: "string" }
+                }
+              }
+            }
+          },
+          required: ["verifications"]
+        }
+      });
+      const secondaryVerifications = subProcessBResult.verifications || [];
+
+      // ERRVAL04: Mismatch detection — primary source wins
+      const verificationTraces = [];
+      const verifications = primaryVerifications.map(pv => {
+        const sv = secondaryVerifications.find(s => s.claim_id === pv.claim_id);
+        const mismatch = sv && Math.abs((pv.veracity_score || 0) - (sv.veracity_score || 0)) > 0.15;
+
+        // Trace log for every Sub-process B check (written before returning)
+        verificationTraces.push({
+          log_type: 'verification_trace',
+          sub_process: 'B',
+          claim_id: pv.claim_id,
+          timestamp: new Date().toISOString(),
+          source_used: 'primary',
+          primary_value: pv.veracity_score,
+          secondary_value: sv?.veracity_score ?? null,
+          mismatch_detected: !!mismatch,
+          truth_engine_version: ENGINE.version,
+        });
+
+        if (mismatch) {
+          // Primary source wins — rollback Sub-process B result
+          console.log(`[truthEngine] ERRVAL04 mismatch: claim=${pv.claim_id} primary=${pv.veracity_score} secondary=${sv.veracity_score} — primary wins`);
+          verificationTraces.push({
+            log_type: 'validation_mismatch',
+            action_type: 'validation_mismatch',
+            error_code: 'ERR_VAL_04',
+            claim_id: pv.claim_id,
+            primary_value: pv.veracity_score,
+            secondary_value: sv.veracity_score,
+            resolution: 'primary_source_wins',
+            rollback: 'sub_process_b_result_discarded',
+            timestamp: new Date().toISOString(),
+            truth_engine_version: ENGINE.version,
+          });
+        }
+
+        // Always return primary — source_of_truth: primary
+        return { ...pv, source_of_truth: 'primary' };
+      });
+
       const verificationMs = Date.now() - t3;
+
+      // Write trace logs to report metadata
+      console.log(`[truthEngine] v${ENGINE.version} verification: ${verifications.length} claims, ${verificationTraces.filter(t => t.mismatch_detected).length} ERRVAL04 mismatches resolved`);
 
       // ── Build Leaves 2-6 ──
       const leaf2 = claims.map(c => {
@@ -416,7 +498,7 @@ Write the final verified answer:`,
       const nftMetadata = buildNFTMetadata(report.id, reportHash, question.trim(), createdAt, finalVeracitySummary);
       const node3Outbox = buildNode3Outbox(report.id, reportHash, finalVeracitySummary, createdAt);
 
-      // ── Atomic write ──
+      // ── Atomic write (v2.7.0: includes verification traces) ──
       await base44.asServiceRole.entities.TruthReport.update(report.id, {
         raw_answer: rawAnswer,
         schema_version: 'v1',
@@ -486,6 +568,7 @@ Write the final verified answer:`,
         status: 'complete',
         schema: SCHEMA.name,
         schema_version: SCHEMA.version,
+        truth_engine_version: ENGINE.version,
         question: question.trim(),
         raw_answer: rawAnswer,
         leaf1_claims: claims,
@@ -505,6 +588,9 @@ Write the final verified answer:`,
         email_sent: emailSent,
         node3_hook: 'outbox_queued',
         base44_hook: 'stub',
+        verification_traces: verificationTraces,
+        source_of_truth: 'primary',
+        errval04_mismatches: verificationTraces.filter(t => t.error_code === 'ERR_VAL_04').length,
       });
     }
 
