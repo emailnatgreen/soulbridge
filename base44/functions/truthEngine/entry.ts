@@ -23,7 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ═══════════════════════════════════════════════
 
 const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
-const ENGINE = { name: 'SoulBridge Truth Engine', version: '3.0.0' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '3.1.0' };
 
 // ═══ PATCH 2 — Config Guardrails (v2.7.2) ═══
 // Hard constant: bypass can NEVER activate in production
@@ -314,6 +314,69 @@ const POLICY = {
   flag_min_claim: 0.6,
 };
 
+// ═══ PATCH 10 — Tri-State Return Logic (v3.1.0) ═══
+// Replaces binary complete/failed with SUCCESS / PARTIAL_SUCCESS / FAILURE.
+// SUCCESS:         All agents responded, all quality gates pass.
+// PARTIAL_SUCCESS: All agents responded, but one or more quality degradations detected.
+// FAILURE:         Any agent returned null, timed out, or threw an error.
+//
+// Quality gates for PARTIAL_SUCCESS downgrade:
+//   1. Policy decision is "block"
+//   2. Average veracity < flag threshold (0.7)
+//   3. >50% of claims scored below flag_min_claim (0.6)
+//   4. Risk count exceeds claim count (anomalous risk density)
+//   5. Any ERRVAL04 mismatch detected (validator disagreement)
+//   6. Synthesis is suspiciously short (<50 chars)
+
+const PIPELINE_RESULT = Object.freeze({
+  SUCCESS: 'SUCCESS',
+  PARTIAL_SUCCESS: 'PARTIAL_SUCCESS',
+  FAILURE: 'FAILURE',
+});
+
+function classifyPipelineResult(leaf3, leaf5, leaf6, leaf7, errval04Count, claims) {
+  const degradations = [];
+
+  // Gate 1: Policy blocked
+  if (leaf5.decision === 'block') {
+    degradations.push({ gate: 'policy_block', detail: `Policy decision: block (avg ${(leaf5.overall_veracity * 100).toFixed(0)}%)` });
+  }
+
+  // Gate 2: Average veracity below flag threshold
+  const scores = (leaf3 || []).map(s => s.veracity_score).filter(v => typeof v === 'number');
+  const avg = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+  if (avg < POLICY.flag_avg) {
+    degradations.push({ gate: 'low_avg_veracity', detail: `Avg veracity ${(avg * 100).toFixed(1)}% < ${(POLICY.flag_avg * 100)}% threshold` });
+  }
+
+  // Gate 3: >50% claims below min threshold
+  const lowCount = (leaf3 || []).filter(s => s.veracity_score < POLICY.flag_min_claim).length;
+  const totalClaims = (claims || []).length;
+  if (totalClaims > 0 && lowCount / totalClaims > 0.5) {
+    degradations.push({ gate: 'majority_low_claims', detail: `${lowCount}/${totalClaims} claims below ${(POLICY.flag_min_claim * 100)}%` });
+  }
+
+  // Gate 4: Risk density anomaly
+  if ((leaf6 || []).length > totalClaims && totalClaims > 0) {
+    degradations.push({ gate: 'risk_density_anomaly', detail: `${leaf6.length} risks > ${totalClaims} claims` });
+  }
+
+  // Gate 5: ERRVAL04 mismatches
+  if (errval04Count > 0) {
+    degradations.push({ gate: 'validator_mismatch', detail: `${errval04Count} ERRVAL04 mismatch(es) resolved` });
+  }
+
+  // Gate 6: Synthesis too short
+  if (typeof leaf7 === 'string' && leaf7.length < 50) {
+    degradations.push({ gate: 'thin_synthesis', detail: `Synthesis only ${leaf7.length} chars — possible truncation` });
+  }
+
+  if (degradations.length === 0) {
+    return { pipeline_result: PIPELINE_RESULT.SUCCESS, degradations: [], validation_complete: true };
+  }
+  return { pipeline_result: PIPELINE_RESULT.PARTIAL_SUCCESS, degradations, validation_complete: true };
+}
+
 // ═══════════════════════════════════════════════
 //  UTILITIES
 // ═══════════════════════════════════════════════
@@ -485,6 +548,7 @@ Deno.serve(async (req) => {
         patch7_circuit_breaker: 'applied',
         patch8_mandatory_audit: 'applied',
         patch9_telemetry_expansion: 'applied',
+        patch10_tristate_return_logic: 'applied',
         global_http_timeout_ms: GLOBAL_HTTP_TIMEOUT_MS,
         timeout_thresholds_ms: TIMEOUT_THRESHOLDS,
         circuit_breaker: circuitBreaker.getStatus(),
@@ -564,7 +628,8 @@ Deno.serve(async (req) => {
           metadata: { circuit_breaker: cbStatus, question: question.substring(0, 100) },
         });
         return Response.json({
-          status: 'rejected',
+          pipeline_result: PIPELINE_RESULT.FAILURE,
+          status: 'failed',
           error: 'CIRCUIT_BREAKER_OPEN',
           message: `Pipeline temporarily unavailable — ${cbStatus.consecutive_failures} consecutive failures triggered circuit breaker. Retry after ${Math.ceil(cbStatus.cooldown_remaining_ms / 1000)}s.`,
           circuit_breaker: cbStatus,
@@ -620,16 +685,17 @@ Deno.serve(async (req) => {
           truth_engine_version: ENGINE.version,
         };
         console.error(`[truthEngine] STRICT FAILURE: Agent-Alpha null response`, JSON.stringify(nullAudit));
-        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'Agent-Alpha', trace_id: traceId } });
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'Agent-Alpha', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE } });
         await base44.asServiceRole.entities.TruthReport.update(report.id, {
           status: 'failed',
           leaf4_reasoning: `ValidationIncompleteException: Agent-Alpha returned null. Trace: ${traceId}`,
         });
         return Response.json({
-          status: 'incomplete',
+          pipeline_result: PIPELINE_RESULT.FAILURE,
+          status: 'failed',
           error: 'NULL_AGENT_RESPONSE',
           validation_complete: false,
-          agent: 'Agent-Alpha',
+          failed_agent: 'Agent-Alpha',
           trace_id: traceId,
           audit: nullAudit,
           truth_engine_version: ENGINE.version,
@@ -669,7 +735,7 @@ Deno.serve(async (req) => {
       // PATCH 1 — Strict Failure Mode: null agent response check (Claim Extractor)
       if (!claimResult || claimResult.claims == null) {
         telemetry.recordFail();
-        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'ClaimExtractor', trace_id: traceId } });
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'ClaimExtractor', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE } });
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'ClaimExtractor',
@@ -685,10 +751,11 @@ Deno.serve(async (req) => {
           leaf4_reasoning: `ValidationIncompleteException: ClaimExtractor returned null. Trace: ${traceId}`,
         });
         return Response.json({
-          status: 'incomplete',
+          pipeline_result: PIPELINE_RESULT.FAILURE,
+          status: 'failed',
           error: 'NULL_AGENT_RESPONSE',
           validation_complete: false,
-          agent: 'ClaimExtractor',
+          failed_agent: 'ClaimExtractor',
           trace_id: traceId,
           audit: nullAudit,
           truth_engine_version: ENGINE.version,
@@ -747,7 +814,7 @@ ${verificationPrompt}`;
       // PATCH 1 — Strict Failure Mode: null agent response check (PrimaryValidator)
       if (!verifyResult || verifyResult.verifications == null) {
         telemetry.recordFail();
-        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'PrimaryValidator', trace_id: traceId } });
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'PrimaryValidator', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE } });
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'PrimaryValidator',
@@ -764,10 +831,11 @@ ${verificationPrompt}`;
           leaf4_reasoning: `ValidationIncompleteException: PrimaryValidator returned null. Trace: ${traceId}`,
         });
         return Response.json({
-          status: 'incomplete',
+          pipeline_result: PIPELINE_RESULT.FAILURE,
+          status: 'failed',
           error: 'NULL_AGENT_RESPONSE',
           validation_complete: false,
-          agent: 'PrimaryValidator',
+          failed_agent: 'PrimaryValidator',
           trace_id: traceId,
           audit: nullAudit,
           truth_engine_version: ENGINE.version,
@@ -816,7 +884,7 @@ ${verificationPrompt}`;
       // PATCH 1 — Strict Failure Mode: null agent response check (SecondaryValidator / Sub-process B)
       if (!subProcessBResult || subProcessBResult.verifications == null) {
         telemetry.recordFail();
-        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'SecondaryValidator', trace_id: traceId } });
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'SecondaryValidator', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE } });
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'SecondaryValidator',
@@ -833,10 +901,11 @@ ${verificationPrompt}`;
           leaf4_reasoning: `ValidationIncompleteException: SecondaryValidator returned null. Trace: ${traceId}`,
         });
         return Response.json({
-          status: 'incomplete',
+          pipeline_result: PIPELINE_RESULT.FAILURE,
+          status: 'failed',
           error: 'NULL_AGENT_RESPONSE',
           validation_complete: false,
-          agent: 'SecondaryValidator',
+          failed_agent: 'SecondaryValidator',
           trace_id: traceId,
           audit: nullAudit,
           truth_engine_version: ENGINE.version,
@@ -982,7 +1051,7 @@ Write the final verified answer:`;
       // PATCH 1 — Strict Failure Mode: null agent response check (Synthesizer)
       if (!synthResult || synthResult.synthesis == null) {
         telemetry.recordFail();
-        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'Synthesizer', trace_id: traceId } });
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'Synthesizer', trace_id: traceId, pipeline_result: PIPELINE_RESULT.FAILURE } });
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'Synthesizer',
@@ -1003,10 +1072,11 @@ Write the final verified answer:`;
           leaf6_risks: leaf6,
         });
         return Response.json({
-          status: 'incomplete',
+          pipeline_result: PIPELINE_RESULT.FAILURE,
+          status: 'failed',
           error: 'NULL_AGENT_RESPONSE',
           validation_complete: false,
-          agent: 'Synthesizer',
+          failed_agent: 'Synthesizer',
           trace_id: traceId,
           audit: nullAudit,
           truth_engine_version: ENGINE.version,
@@ -1103,22 +1173,43 @@ Write the final verified answer:`;
         console.error('[truthEngine] Email failed:', emailErr.message);
       }
 
+      // PATCH 10: Tri-state classification — SUCCESS vs PARTIAL_SUCCESS
+      const errval04MismatchCount = verificationTraces.filter(t => t.error_code === 'ERR_VAL_04').length;
+      const triState = classifyPipelineResult(leaf3, leaf5, leaf6, leaf7, errval04MismatchCount, claims);
+
+      console.log(`[truthEngine] PATCH 10 classification: ${triState.pipeline_result} | degradations=${triState.degradations.length} | ${triState.degradations.map(d => d.gate).join(', ') || 'none'}`);
+
+      // Map tri-state to entity status: SUCCESS → complete, PARTIAL_SUCCESS → complete (data is valid, but flagged)
+      const entityStatus = triState.pipeline_result === PIPELINE_RESULT.SUCCESS ? 'complete' : 'complete';
+
       // PATCH 7: Record successful pipeline completion
       circuitBreaker.recordSuccess();
       // PATCH 9: Telemetry — record completion with latency data
       telemetry.recordComplete(latency);
-      // PATCH 8: Mandatory audit — persist pipeline success
+      // PATCH 8: Mandatory audit — persist pipeline result with tri-state
       await persistAuditEntry(base44, {
         action: 'truth_pipeline_complete',
         actor: user.email,
         target: report.id,
-        status: 'success',
-        metadata: { report_id: report.id, pipeline_ms: pipelineMs, claims_count: claims.length, policy_decision: leaf5.decision, veracity_avg: finalVeracitySummary.avg_score, report_hash: reportHash.substring(0, 16) },
+        status: triState.pipeline_result === PIPELINE_RESULT.SUCCESS ? 'success' : 'advisory',
+        metadata: {
+          report_id: report.id,
+          pipeline_result: triState.pipeline_result,
+          degradations: triState.degradations,
+          pipeline_ms: pipelineMs,
+          claims_count: claims.length,
+          policy_decision: leaf5.decision,
+          veracity_avg: finalVeracitySummary.avg_score,
+          report_hash: reportHash.substring(0, 16),
+        },
       });
 
       return Response.json({
         report_id: report.id,
-        status: 'complete',
+        pipeline_result: triState.pipeline_result,
+        degradations: triState.degradations,
+        validation_complete: triState.validation_complete,
+        status: entityStatus,
         schema: SCHEMA.name,
         schema_version: SCHEMA.version,
         truth_engine_version: ENGINE.version,
@@ -1143,12 +1234,12 @@ Write the final verified answer:`;
         base44_hook: 'stub',
         verification_traces: verificationTraces,
         source_of_truth: 'primary',
-        errval04_mismatches: verificationTraces.filter(t => t.error_code === 'ERR_VAL_04').length,
+        errval04_mismatches: errval04MismatchCount,
         trace_id: traceId,
         validator_07: v07Cal,
         config_guardrail: { bypass_active: false, source: 'config_guardrail' },
         circuit_breaker: circuitBreaker.getStatus(),
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic'],
       });
     }
 
@@ -1172,15 +1263,16 @@ Write the final verified answer:`;
         });
       } catch (_) { /* audit best-effort in error handler */ }
       return Response.json({
-        status: 'incomplete',
+        pipeline_result: PIPELINE_RESULT.FAILURE,
+        status: 'failed',
         error: 'AGENT_TIMEOUT',
         validation_complete: false,
-        agent: error.agent,
+        failed_agent: error.agent,
         threshold_ms: error.thresholdMs,
         packet_digest: error.packet?.packet_digest || null,
         circuit_breaker: circuitBreaker.getStatus(),
         truth_engine_version: ENGINE.version,
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic'],
       }, { status: 504 });
     }
     console.error('[truthEngine]', error);
