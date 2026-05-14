@@ -23,7 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ═══════════════════════════════════════════════
 
 const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
-const ENGINE = { name: 'SoulBridge Truth Engine', version: '2.9.0' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '3.0.0' };
 
 // ═══ PATCH 2 — Config Guardrails (v2.7.2) ═══
 // Hard constant: bypass can NEVER activate in production
@@ -130,6 +130,106 @@ const circuitBreaker = {
       cooldown_remaining_ms: this.state === 'OPEN'
         ? Math.max(0, CIRCUIT_BREAKER_COOLDOWN_MS - (Date.now() - (this.lastTrippedAt || 0)))
         : 0,
+    };
+  },
+};
+
+// ═══ PATCH 8 — Mandatory Audit Enforcement (v3.0.0) ═══
+// Every pipeline event (success, failure, timeout, circuit-breaker trip)
+// is persisted to GovernanceLog for immutable audit trail.
+// Prevents silent failures from escaping the audit record.
+async function persistAuditEntry(base44, entry) {
+  try {
+    await base44.asServiceRole.entities.GovernanceLog.create({
+      action: entry.action,
+      actor_did: entry.actor || 'system:truth_engine',
+      target: entry.target || '',
+      target_type: 'other',
+      status: entry.status,
+      metadata: {
+        ...entry.metadata,
+        truth_engine_version: ENGINE.version,
+        timestamp: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (auditErr) {
+    // Audit write failure must never crash the pipeline — log and continue
+    console.error(`[truthEngine] AUDIT WRITE FAILED: ${auditErr.message}`, JSON.stringify(entry));
+  }
+}
+
+// ═══ PATCH 9 — Telemetry Expansion (v3.0.0) ═══
+// In-memory telemetry counters for pipeline health monitoring.
+// Tracks per-step latency distributions (p50/p95), success/fail rates,
+// and agent-level failure breakdowns.
+const telemetry = {
+  pipelines_started: 0,
+  pipelines_completed: 0,
+  pipelines_failed: 0,
+  pipelines_timeout: 0,
+  pipelines_circuit_rejected: 0,
+  agent_timeouts: {},      // { agent_name: count }
+  step_latencies: {},      // { step_name: [ms, ms, ...] }  (capped at 100 samples)
+
+  recordStart() {
+    this.pipelines_started++;
+  },
+
+  recordComplete(latencyObj) {
+    this.pipelines_completed++;
+    // Record per-step latency samples
+    const steps = { llm_draft: latencyObj.llm_draft_ms, claim_extraction: latencyObj.claim_extraction_ms, verification: latencyObj.verification_ms, synthesis: latencyObj.synthesis_ms };
+    for (const [step, ms] of Object.entries(steps)) {
+      if (typeof ms !== 'number') continue;
+      if (!this.step_latencies[step]) this.step_latencies[step] = [];
+      this.step_latencies[step].push(ms);
+      if (this.step_latencies[step].length > 100) this.step_latencies[step].shift();
+    }
+  },
+
+  recordFail() {
+    this.pipelines_failed++;
+  },
+
+  recordTimeout(agent) {
+    this.pipelines_timeout++;
+    this.agent_timeouts[agent] = (this.agent_timeouts[agent] || 0) + 1;
+  },
+
+  recordCircuitReject() {
+    this.pipelines_circuit_rejected++;
+  },
+
+  getSnapshot() {
+    const percentile = (arr, p) => {
+      if (!arr || arr.length === 0) return 0;
+      const sorted = [...arr].sort((a, b) => a - b);
+      const idx = Math.ceil(sorted.length * p) - 1;
+      return sorted[Math.max(0, idx)];
+    };
+
+    const stepStats = {};
+    for (const [step, samples] of Object.entries(this.step_latencies)) {
+      stepStats[step] = {
+        samples: samples.length,
+        p50_ms: percentile(samples, 0.5),
+        p95_ms: percentile(samples, 0.95),
+        max_ms: samples.length > 0 ? Math.max(...samples) : 0,
+      };
+    }
+
+    return {
+      pipelines_started: this.pipelines_started,
+      pipelines_completed: this.pipelines_completed,
+      pipelines_failed: this.pipelines_failed,
+      pipelines_timeout: this.pipelines_timeout,
+      pipelines_circuit_rejected: this.pipelines_circuit_rejected,
+      success_rate: this.pipelines_started > 0
+        ? Math.round((this.pipelines_completed / this.pipelines_started) * 10000) / 100
+        : 0,
+      agent_timeouts: { ...this.agent_timeouts },
+      step_latency_stats: stepStats,
     };
   },
 };
@@ -383,6 +483,8 @@ Deno.serve(async (req) => {
         patch5_enhanced_timeout_logging: 'applied',
         patch6_global_http_timeout: 'applied',
         patch7_circuit_breaker: 'applied',
+        patch8_mandatory_audit: 'applied',
+        patch9_telemetry_expansion: 'applied',
         global_http_timeout_ms: GLOBAL_HTTP_TIMEOUT_MS,
         timeout_thresholds_ms: TIMEOUT_THRESHOLDS,
         circuit_breaker: circuitBreaker.getStatus(),
@@ -402,6 +504,7 @@ Deno.serve(async (req) => {
           avg_duration_ms: avgDuration,
           step_averages: stepAvgs,
         },
+        telemetry: telemetry.getSnapshot(),
       });
     }
 
@@ -451,7 +554,15 @@ Deno.serve(async (req) => {
       // PATCH 7: Circuit breaker gate — reject if tripped
       if (!circuitBreaker.canExecute()) {
         const cbStatus = circuitBreaker.getStatus();
+        telemetry.recordCircuitReject();
         console.error(`[truthEngine] CIRCUIT BREAKER OPEN: rejecting request — cooldown ${cbStatus.cooldown_remaining_ms}ms remaining`);
+        await persistAuditEntry(base44, {
+          action: 'truth_pipeline_circuit_breaker_reject',
+          actor: user.email,
+          target: '',
+          status: 'denied_rule',
+          metadata: { circuit_breaker: cbStatus, question: question.substring(0, 100) },
+        });
         return Response.json({
           status: 'rejected',
           error: 'CIRCUIT_BREAKER_OPEN',
@@ -463,6 +574,9 @@ Deno.serve(async (req) => {
 
       // PATCH 2: Enforce config guardrails before pipeline starts
       enforceConfigGuardrails(body.bypass_flag || false);
+
+      // PATCH 9: Telemetry — record pipeline start
+      telemetry.recordStart();
 
       const pipelineStart = Date.now();
       const traceId = `TE-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -496,6 +610,7 @@ Deno.serve(async (req) => {
 
       // PATCH 1 — Strict Failure Mode: null agent response check (Agent-Alpha / LLM Draft)
       if (!answerResult || answerResult.answer_text == null) {
+        telemetry.recordFail();
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'Agent-Alpha',
@@ -505,6 +620,7 @@ Deno.serve(async (req) => {
           truth_engine_version: ENGINE.version,
         };
         console.error(`[truthEngine] STRICT FAILURE: Agent-Alpha null response`, JSON.stringify(nullAudit));
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'Agent-Alpha', trace_id: traceId } });
         await base44.asServiceRole.entities.TruthReport.update(report.id, {
           status: 'failed',
           leaf4_reasoning: `ValidationIncompleteException: Agent-Alpha returned null. Trace: ${traceId}`,
@@ -552,6 +668,8 @@ Deno.serve(async (req) => {
 
       // PATCH 1 — Strict Failure Mode: null agent response check (Claim Extractor)
       if (!claimResult || claimResult.claims == null) {
+        telemetry.recordFail();
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'ClaimExtractor', trace_id: traceId } });
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'ClaimExtractor',
@@ -628,6 +746,8 @@ ${verificationPrompt}`;
 
       // PATCH 1 — Strict Failure Mode: null agent response check (PrimaryValidator)
       if (!verifyResult || verifyResult.verifications == null) {
+        telemetry.recordFail();
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'PrimaryValidator', trace_id: traceId } });
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'PrimaryValidator',
@@ -695,6 +815,8 @@ ${verificationPrompt}`;
 
       // PATCH 1 — Strict Failure Mode: null agent response check (SecondaryValidator / Sub-process B)
       if (!subProcessBResult || subProcessBResult.verifications == null) {
+        telemetry.recordFail();
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'SecondaryValidator', trace_id: traceId } });
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'SecondaryValidator',
@@ -859,6 +981,8 @@ Write the final verified answer:`;
 
       // PATCH 1 — Strict Failure Mode: null agent response check (Synthesizer)
       if (!synthResult || synthResult.synthesis == null) {
+        telemetry.recordFail();
+        await persistAuditEntry(base44, { action: 'truth_pipeline_null_response', actor: user.email, target: report.id, status: 'failed', metadata: { agent: 'Synthesizer', trace_id: traceId } });
         const nullAudit = {
           action_type: 'validation_incomplete',
           agent: 'Synthesizer',
@@ -981,6 +1105,16 @@ Write the final verified answer:`;
 
       // PATCH 7: Record successful pipeline completion
       circuitBreaker.recordSuccess();
+      // PATCH 9: Telemetry — record completion with latency data
+      telemetry.recordComplete(latency);
+      // PATCH 8: Mandatory audit — persist pipeline success
+      await persistAuditEntry(base44, {
+        action: 'truth_pipeline_complete',
+        actor: user.email,
+        target: report.id,
+        status: 'success',
+        metadata: { report_id: report.id, pipeline_ms: pipelineMs, claims_count: claims.length, policy_decision: leaf5.decision, veracity_avg: finalVeracitySummary.avg_score, report_hash: reportHash.substring(0, 16) },
+      });
 
       return Response.json({
         report_id: report.id,
@@ -1014,7 +1148,7 @@ Write the final verified answer:`;
         validator_07: v07Cal,
         config_guardrail: { bypass_active: false, source: 'config_guardrail' },
         circuit_breaker: circuitBreaker.getStatus(),
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion'],
       });
     }
 
@@ -1024,7 +1158,19 @@ Write the final verified answer:`;
     // PATCH 7 — Circuit breaker: record the failure
     if (error.name === 'AgentTimeoutError') {
       circuitBreaker.recordFailure(error.agent);
+      telemetry.recordTimeout(error.agent);
       console.error(`[truthEngine] PIPELINE ABORT: ${error.agent} timeout after ${error.thresholdMs}ms`, JSON.stringify(error.packet));
+      // PATCH 8: Mandatory audit — persist timeout event
+      try {
+        const base44Fallback = createClientFromRequest(req);
+        await persistAuditEntry(base44Fallback, {
+          action: 'truth_pipeline_timeout',
+          actor: 'system:truth_engine',
+          target: error.agent,
+          status: 'failed',
+          metadata: { agent: error.agent, threshold_ms: error.thresholdMs, packet_digest: error.packet?.packet_digest || null, circuit_breaker: circuitBreaker.getStatus() },
+        });
+      } catch (_) { /* audit best-effort in error handler */ }
       return Response.json({
         status: 'incomplete',
         error: 'AGENT_TIMEOUT',
@@ -1034,7 +1180,7 @@ Write the final verified answer:`;
         packet_digest: error.packet?.packet_digest || null,
         circuit_breaker: circuitBreaker.getStatus(),
         truth_engine_version: ENGINE.version,
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion'],
       }, { status: 504 });
     }
     console.error('[truthEngine]', error);
