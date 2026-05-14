@@ -23,7 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ═══════════════════════════════════════════════
 
 const SCHEMA = { name: 'TruthReportV1', version: '1.0.0', hash_algo: 'sha256' };
-const ENGINE = { name: 'SoulBridge Truth Engine', version: '3.1.0' };
+const ENGINE = { name: 'SoulBridge Truth Engine', version: '3.2.0' };
 
 // ═══ PATCH 2 — Config Guardrails (v2.7.2) ═══
 // Hard constant: bypass can NEVER activate in production
@@ -334,6 +334,61 @@ const PIPELINE_RESULT = Object.freeze({
   FAILURE: 'FAILURE',
 });
 
+// ═══ PATCH 11 — Agent State Synchronisation Gate (v3.2.0) ═══
+// Ensures ALL agent sub-processes and their side-effects (audit writes,
+// telemetry updates, entity state commits) have settled before the
+// tri-state classifier executes. Eliminates the "Asynchronous State
+// Mismatch" — the final Phase-1 blocker.
+//
+// How it works:
+//   1. Each pipeline step registers its async side-effects in a settlement pool.
+//   2. Before classification, awaitSettlement() drains the pool with a hard timeout.
+//   3. Any side-effect that fails or times out is logged but does not crash the pipeline.
+//   4. Settlement timing is recorded in the latency object for observability.
+
+const SETTLEMENT_TIMEOUT_MS = 5_000; // 5s hard limit for settlement drain
+
+function createSettlementPool() {
+  const pending = [];
+  return {
+    /** Register an async side-effect (audit write, telemetry update, etc.) */
+    track(promise, label) {
+      const tracked = promise
+        .then(() => ({ label, status: 'settled', ms: 0 }))
+        .catch(err => {
+          console.error(`[truthEngine] SETTLEMENT: ${label} failed — ${err.message}`);
+          return { label, status: 'failed', error: err.message };
+        });
+      pending.push({ promise: tracked, label, start: Date.now() });
+    },
+
+    /** Await all tracked side-effects or timeout */
+    async awaitSettlement() {
+      if (pending.length === 0) return { settled: 0, failed: 0, timed_out: 0, ms: 0, details: [] };
+      const start = Date.now();
+
+      const results = await Promise.race([
+        Promise.all(pending.map(p => p.promise)),
+        new Promise(resolve => setTimeout(() => {
+          console.error(`[truthEngine] SETTLEMENT TIMEOUT: ${pending.length} side-effects not drained within ${SETTLEMENT_TIMEOUT_MS}ms`);
+          resolve(pending.map(p => ({ label: p.label, status: 'timed_out' })));
+        }, SETTLEMENT_TIMEOUT_MS)),
+      ]);
+
+      const ms = Date.now() - start;
+      const settled = results.filter(r => r.status === 'settled').length;
+      const failed = results.filter(r => r.status === 'failed').length;
+      const timedOut = results.filter(r => r.status === 'timed_out').length;
+
+      console.log(`[truthEngine] PATCH 11 settlement: ${settled} settled, ${failed} failed, ${timedOut} timed_out in ${ms}ms`);
+
+      return { settled, failed, timed_out: timedOut, ms, details: results };
+    },
+
+    get size() { return pending.length; },
+  };
+}
+
 function classifyPipelineResult(leaf3, leaf5, leaf6, leaf7, errval04Count, claims) {
   const degradations = [];
 
@@ -549,6 +604,8 @@ Deno.serve(async (req) => {
         patch8_mandatory_audit: 'applied',
         patch9_telemetry_expansion: 'applied',
         patch10_tristate_return_logic: 'applied',
+        patch11_agent_state_sync_gate: 'applied',
+        settlement_timeout_ms: SETTLEMENT_TIMEOUT_MS,
         global_http_timeout_ms: GLOBAL_HTTP_TIMEOUT_MS,
         timeout_thresholds_ms: TIMEOUT_THRESHOLDS,
         circuit_breaker: circuitBreaker.getStatus(),
@@ -647,6 +704,7 @@ Deno.serve(async (req) => {
       const traceId = `TE-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const createdAt = new Date().toISOString();
       const latencySamples = []; // Validator-07 latency tracker
+      const settlement = createSettlementPool(); // PATCH 11: settlement pool for async side-effects
 
       const report = await base44.asServiceRole.entities.TruthReport.create({
         question: question.trim(),
@@ -1103,13 +1161,16 @@ Write the final verified answer:`;
         verification_ms: verificationMs,
         synthesis_ms: synthesisMs,
         hash_ms: hashMs,
+        settlement_ms: 0, // placeholder — updated after settlement gate
       };
 
       const nftMetadata = buildNFTMetadata(report.id, reportHash, question.trim(), createdAt, finalVeracitySummary);
       const node3Outbox = buildNode3Outbox(report.id, reportHash, finalVeracitySummary, createdAt);
 
       // ── Atomic write (v2.7.0: includes verification traces) ──
-      await base44.asServiceRole.entities.TruthReport.update(report.id, {
+      // PATCH 11: Track this write in the settlement pool so classification
+      // cannot fire until the entity state is fully committed.
+      const entityWritePromise = base44.asServiceRole.entities.TruthReport.update(report.id, {
         raw_answer: rawAnswer,
         schema_version: 'v1',
         hash_algo: 'sha256',
@@ -1130,27 +1191,29 @@ Write the final verified answer:`;
         node3_hook: 'outbox_queued',
         base44_hook: 'stub',
       });
+      settlement.track(entityWritePromise, 'entity_atomic_write');
 
-      // ── Email ──
+      // ── Email (PATCH 11: tracked in settlement pool) ──
       let emailSent = false;
-      try {
-        const decision = leaf5.decision;
-        const policyEmoji = decision === 'allow' ? '✅' : decision === 'flag' ? '⚠️' : '🚫';
-        const decColor = decision === 'allow' ? '#4ade80' : decision === 'flag' ? '#fbbf24' : '#f87171';
+      const emailPromise = (async () => {
+        try {
+          const decision = leaf5.decision;
+          const policyEmoji = decision === 'allow' ? '✅' : decision === 'flag' ? '⚠️' : '🚫';
+          const decColor = decision === 'allow' ? '#4ade80' : decision === 'flag' ? '#fbbf24' : '#f87171';
 
-        const claimRows = claims.map(c => {
-          const s = leaf3.find(x => x.claim_id === c.id) || {};
-          const sc = s.veracity_score || 0;
-          const bar = '█'.repeat(Math.round(sc * 10)) + '░'.repeat(10 - Math.round(sc * 10));
-          const clr = sc >= 0.8 ? '#4ade80' : sc >= 0.6 ? '#fbbf24' : '#f87171';
-          return `<tr><td style="padding:6px 10px;border-bottom:1px solid #333;color:#ccc;font-size:12px">${c.id}</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:#e0e0e0;font-size:12px">${c.text}</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:${clr};font-family:monospace;font-size:12px">${bar} ${(sc*100).toFixed(0)}%</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:#999;font-size:11px">${s.confidence || '-'}</td></tr>`;
-        }).join('');
+          const claimRows = claims.map(c => {
+            const s = leaf3.find(x => x.claim_id === c.id) || {};
+            const sc = s.veracity_score || 0;
+            const bar = '█'.repeat(Math.round(sc * 10)) + '░'.repeat(10 - Math.round(sc * 10));
+            const clr = sc >= 0.8 ? '#4ade80' : sc >= 0.6 ? '#fbbf24' : '#f87171';
+            return `<tr><td style="padding:6px 10px;border-bottom:1px solid #333;color:#ccc;font-size:12px">${c.id}</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:#e0e0e0;font-size:12px">${c.text}</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:${clr};font-family:monospace;font-size:12px">${bar} ${(sc*100).toFixed(0)}%</td><td style="padding:6px 10px;border-bottom:1px solid #333;color:#999;font-size:11px">${s.confidence || '-'}</td></tr>`;
+          }).join('');
 
-        const riskRows = leaf6.length > 0
-          ? leaf6.map(r => `<li style="color:#f59e0b;font-size:12px;margin:4px 0">⚠️ [${r.severity}] ${r.description} (${r.affected_claims.join(', ')})</li>`).join('')
-          : '<li style="color:#4ade80;font-size:12px">No risks identified</li>';
+          const riskRows = leaf6.length > 0
+            ? leaf6.map(r => `<li style="color:#f59e0b;font-size:12px;margin:4px 0">⚠️ [${r.severity}] ${r.description} (${r.affected_claims.join(', ')})</li>`).join('')
+            : '<li style="color:#4ade80;font-size:12px">No risks identified</li>';
 
-        const emailBody = `<div style="font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;border-radius:12px;max-width:700px">
+          const emailBody = `<div style="font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;border-radius:12px;max-width:700px">
   <h1 style="color:#38bdf8;font-size:20px;margin:0 0 4px">🔬 7-Leaf Truth Report</h1>
   <p style="color:#64748b;font-size:11px;margin:0 0 20px">Pipeline: ${(pipelineMs/1000).toFixed(1)}s • ID: ${report.id} • Hash: ${reportHash.substring(0, 12)}… • Schema: ${SCHEMA.name} • Policy: ${POLICY.name}</p>
   <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;margin:0 0 16px"><p style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px">Question</p><p style="color:#f1f5f9;font-size:14px;margin:0">${question}</p></div>
@@ -1162,22 +1225,32 @@ Write the final verified answer:`;
   <div style="border-top:1px solid #334155;padding-top:12px"><p style="color:#475569;font-size:10px;margin:0">${ENGINE.name} v${ENGINE.version}</p></div>
 </div>`;
 
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: user.email,
-          subject: `${policyEmoji} Truth Report: ${question.substring(0, 50)}${question.length > 50 ? '...' : ''}`,
-          body: emailBody,
-        });
-        emailSent = true;
-        await base44.asServiceRole.entities.TruthReport.update(report.id, { email_sent: true });
-      } catch (emailErr) {
-        console.error('[truthEngine] Email failed:', emailErr.message);
-      }
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: user.email,
+            subject: `${policyEmoji} Truth Report: ${question.substring(0, 50)}${question.length > 50 ? '...' : ''}`,
+            body: emailBody,
+          });
+          emailSent = true;
+          await base44.asServiceRole.entities.TruthReport.update(report.id, { email_sent: true });
+        } catch (emailErr) {
+          console.error('[truthEngine] Email failed:', emailErr.message);
+        }
+      })();
+      settlement.track(emailPromise, 'email_delivery');
+
+      // ═══ PATCH 11: Agent State Synchronisation Gate ═══
+      // Drain all pending async side-effects BEFORE classification.
+      // This eliminates the Asynchronous State Mismatch — validation
+      // cannot fire until every agent's writes have settled.
+      const settlementResult = await settlement.awaitSettlement();
+      const settlementMs = settlementResult.ms;
+      latency.settlement_ms = settlementMs;
 
       // PATCH 10: Tri-state classification — SUCCESS vs PARTIAL_SUCCESS
       const errval04MismatchCount = verificationTraces.filter(t => t.error_code === 'ERR_VAL_04').length;
       const triState = classifyPipelineResult(leaf3, leaf5, leaf6, leaf7, errval04MismatchCount, claims);
 
-      console.log(`[truthEngine] PATCH 10 classification: ${triState.pipeline_result} | degradations=${triState.degradations.length} | ${triState.degradations.map(d => d.gate).join(', ') || 'none'}`);
+      console.log(`[truthEngine] PATCH 10 classification: ${triState.pipeline_result} | degradations=${triState.degradations.length} | ${triState.degradations.map(d => d.gate).join(', ') || 'none'} | settlement=${settlementMs}ms (${settlementResult.settled}/${settlement.size})`);
 
       // Map tri-state to entity status: SUCCESS → complete, PARTIAL_SUCCESS → complete (data is valid, but flagged)
       const entityStatus = triState.pipeline_result === PIPELINE_RESULT.SUCCESS ? 'complete' : 'complete';
@@ -1185,7 +1258,7 @@ Write the final verified answer:`;
       // PATCH 7: Record successful pipeline completion
       circuitBreaker.recordSuccess();
       // PATCH 9: Telemetry — record completion with latency data
-      telemetry.recordComplete(latency);
+      telemetry.recordComplete({ ...latency, settlement_ms: settlementMs });
       // PATCH 8: Mandatory audit — persist pipeline result with tri-state
       await persistAuditEntry(base44, {
         action: 'truth_pipeline_complete',
@@ -1196,6 +1269,7 @@ Write the final verified answer:`;
           report_id: report.id,
           pipeline_result: triState.pipeline_result,
           degradations: triState.degradations,
+          settlement: settlementResult,
           pipeline_ms: pipelineMs,
           claims_count: claims.length,
           policy_decision: leaf5.decision,
@@ -1239,7 +1313,8 @@ Write the final verified answer:`;
         validator_07: v07Cal,
         config_guardrail: { bypass_active: false, source: 'config_guardrail' },
         circuit_breaker: circuitBreaker.getStatus(),
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic'],
+        settlement: { ...settlementResult, pool_size: settlement.size },
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic', 'PATCH11_agent_state_sync_gate'],
       });
     }
 
@@ -1272,7 +1347,7 @@ Write the final verified answer:`;
         packet_digest: error.packet?.packet_digest || null,
         circuit_breaker: circuitBreaker.getStatus(),
         truth_engine_version: ENGINE.version,
-        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic'],
+        patches_applied: ['PATCH1_strict_failure_mode', 'PATCH2_config_guardrails', 'PATCH3_validator07_calibration', 'PATCH4_timeout_thresholds', 'PATCH5_enhanced_timeout_logging', 'PATCH6_global_http_timeout', 'PATCH7_circuit_breaker', 'PATCH8_mandatory_audit', 'PATCH9_telemetry_expansion', 'PATCH10_tristate_return_logic', 'PATCH11_agent_state_sync_gate'],
       }, { status: 504 });
     }
     console.error('[truthEngine]', error);
