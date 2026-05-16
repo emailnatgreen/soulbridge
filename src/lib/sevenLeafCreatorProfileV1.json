@@ -1,0 +1,87 @@
+{
+  "schema": "SevenLeafCreatorProfile_v1",
+  "version": "1.0.0",
+  "description": "Defines the 7-Leaf Meaning Pipeline for the ASC-NFT Skill creation process. Each leaf acts as a sequential gate — a skill must pass all 7 to be published.",
+
+  "leaves": {
+    "1_cosmology": {
+      "role": "why_this_skill_exists",
+      "question": "Why should this skill exist?",
+      "checks": ["clarity_of_purpose", "village_alignment", "necessity_gap"],
+      "block_condition": "No clear 'why' beyond profit or vanity",
+      "output": "clarity_score, alignment_score"
+    },
+    "2_purpose": {
+      "role": "intended_outcome",
+      "question": "What outcome does it serve?",
+      "checks": ["concrete_outcome", "no_hidden_exploit", "measurable_success"],
+      "block_condition": "Hidden exploit detected or outcome is vague/manipulative",
+      "output": "outcome_clarity, exploit_risk, locked_outcome"
+    },
+    "3_earth": {
+      "role": "constraints_and_safety",
+      "question": "Is it safe and grounded?",
+      "checks": ["forbidden_patterns", "resource_realism", "safety_assessment"],
+      "block_condition": "Forbidden pattern detected (exploitation, abuse, non-consensual surveillance)",
+      "hard_block": true,
+      "output": "safety_score, resource_feasibility, forbidden_pattern_detected"
+    },
+    "4_practice": {
+      "role": "execution_pattern",
+      "question": "How does it actually behave?",
+      "checks": ["execution_clarity", "failure_modes", "determinism"],
+      "block_condition": "No clear execution steps or unhandled failure modes",
+      "output": "execution_clarity, failure_handling"
+    },
+    "5_language": {
+      "role": "communication_style",
+      "question": "How does it speak?",
+      "checks": ["honesty_vs_manipulation", "citizen_readability", "transparency"],
+      "block_condition": "Manipulative tone or opaque description",
+      "output": "honesty_score, citizen_clarity"
+    },
+    "6_collective": {
+      "role": "social_impact_and_risk",
+      "question": "What does it do to the Village?",
+      "checks": ["social_impact", "power_dynamics", "ecosystem_health"],
+      "block_condition": "Concentrates power or causes social harm",
+      "escalation": "Route to council review if requires_council_review=true",
+      "output": "social_impact_score, power_concentration_risk, requires_council_review"
+    },
+    "7_regeneration": {
+      "role": "honour_and_evolution_rules",
+      "question": "Does it improve or decay the field over time?",
+      "checks": ["honour_generation", "composting_path", "evolution_capability"],
+      "block_condition": "No regeneration plan and no path for correction",
+      "output": "regenerative_score, has_composting_plan"
+    }
+  },
+
+  "pipeline_order": [
+    "cosmology",
+    "purpose",
+    "earth",
+    "practice",
+    "language",
+    "collective",
+    "regeneration"
+  ],
+
+  "state_transitions": {
+    "all_pass": "draft → published (or under_review if council_review required)",
+    "any_warn": "draft → under_review",
+    "any_block": "stays in draft — creator must address blocks and resubmit"
+  },
+
+  "forbidden_patterns": [
+    "exploitation",
+    "abuse",
+    "surveillance_without_consent",
+    "social_engineering",
+    "dark_pattern",
+    "deception_amplification",
+    "data_exfiltration",
+    "identity_theft",
+    "non_consensual_tracking"
+  ]
+}
