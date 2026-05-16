@@ -1,0 +1,81 @@
+{
+  "schema": "HonourPolicyESNft_v1",
+  "version": "1.0.0",
+  "description": "Honour and sincerity rules applied to ES-NFT search behaviour. Extends the search honour policy with minting-specific and engine-level deltas.",
+
+  "sincerity_rules": {
+    "aligned_search_results": {
+      "delta": 2,
+      "condition": "Search produces clean, aligned results with high 7-Leaf score",
+      "alignment_score_min": 0.7,
+      "collective_risk_score_max": 0.2
+    },
+    "clean_query": {
+      "delta": 1,
+      "condition": "Query is clear, non-harmful, and purpose-aligned",
+      "alignment_score_min": 0.5,
+      "collective_risk_score_max": 0.3
+    },
+    "neutral_query": {
+      "delta": 0,
+      "condition": "Query is ambiguous or low-signal but not harmful"
+    },
+    "manipulative_ranking": {
+      "delta": -3,
+      "condition": "Attempting to manipulate search results, hide harmful content, or game alignment scores",
+      "triggers": ["ranking_manipulation", "result_suppression", "alignment_gaming"]
+    },
+    "harmful_query": {
+      "delta": -2,
+      "condition": "Exploitative, manipulative, or socially damaging query intent detected",
+      "triggers": ["social_engineering", "scam_research", "harm_intent", "surveillance_abuse"]
+    },
+    "spam_query": {
+      "delta": -1,
+      "condition": "Spammy, repetitive, or low-effort manipulative pattern detected",
+      "triggers": ["repeated_identical_queries", "high_frequency_burst", "keyword_stuffing"]
+    },
+    "earth_leaf_violation": {
+      "delta": -2,
+      "condition": "Search ignores Earth leaf constraints (legality, safety, regional restrictions)",
+      "triggers": ["illegal_content_search", "safety_bypass_attempt", "constraint_evasion"]
+    }
+  },
+
+  "bias_index_rules": {
+    "description": "Bias index tracks whether the search engine is producing neutral, balanced results.",
+    "increase_triggers": ["one_sided_results", "source_monopoly", "confirmation_bias_detected"],
+    "decrease_triggers": ["diverse_sources", "balanced_perspectives", "counter_argument_included"],
+    "thresholds": {
+      "healthy": { "max": 0.2, "label": "Neutral" },
+      "caution": { "min": 0.2, "max": 0.5, "label": "Slight bias detected" },
+      "warning": { "min": 0.5, "max": 0.7, "label": "Significant bias — review recommended" },
+      "critical": { "min": 0.7, "label": "High bias — governance intervention required" }
+    }
+  },
+
+  "safety_integrity_rules": {
+    "description": "Safety integrity degrades when search produces or facilitates harmful content.",
+    "clean_search": { "delta": 0.5, "condition": "Search completes with no safety flags" },
+    "safety_flag_raised": { "delta": -5, "condition": "A safety flag was raised during search" },
+    "blocked_search": { "delta": -10, "condition": "Search was blocked due to safety violation" },
+    "recovery_per_clean_search": 0.5,
+    "freeze_threshold": 30
+  },
+
+  "gating_rules": {
+    "min_honour_to_search": 20,
+    "restricted_mode_threshold": 50,
+    "honour_recovery_path": "Frozen DIDs must wait 24h or complete a guided honour repair to restore search access.",
+    "cooldown_on_block_seconds": 300
+  },
+
+  "honour_integration": {
+    "search_honour_feeds_into": "agent.honour_score (via EmpathyTrace sincerity_trend)",
+    "log_entity": "SearchLog",
+    "audit_trail": true,
+    "bias_feeds_into": "BiasReport entity for governance review"
+  },
+
+  "constitutional_alignment": ["law2_honour", "law3_fair_share", "law5_retrieval", "law8_governance", "law9_growth"]
+}
