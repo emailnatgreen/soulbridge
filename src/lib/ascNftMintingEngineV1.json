@@ -1,0 +1,77 @@
+{
+  "schema": "ASC_NFT_MintingEngine_v1",
+  "version": "1.0.0",
+  "description": "Canonical minting engine specification for Agent Skill Creator NFTs. Defines locked bones, living tissue, visual binding rules, and the full minting flow.",
+
+  "locked_fields_at_mint": {
+    "description": "Immutable bones — set once at mint, never change.",
+    "fields": {
+      "token_id": "Unique identifier (e.g. ASC-XXXXXX)",
+      "issuer": "SoulBridge issuer account on XRPL",
+      "owner_did": "Creator's verified DID",
+      "capability": "agentskillcreator_v1",
+      "version": "1.0.0"
+    }
+  },
+
+  "dynamic_fields_xls46d": {
+    "description": "Living tissue — evolve over time via XLS-46d dynamic metadata.",
+    "fields": {
+      "sincerity_score": { "initial": 92, "range": [0, 100], "purpose": "Creator standing, evolves with honour" },
+      "proficiency_tier": { "initial": 1, "range": [1, 5], "purpose": "Apprentice(1) → Sovereign Creator(5)" },
+      "proficiency_updated": { "initial": "mint_timestamp", "purpose": "Last tier change" },
+      "attestor_honour_weight": { "initial": [], "purpose": "Append-only attestation array" },
+      "total_attestations": { "initial": 0, "purpose": "Computed rollup" },
+      "average_honour_weight": { "initial": 0, "purpose": "Computed rollup" },
+      "skill_proof_links": { "initial": [], "purpose": "Verified proof anchors" },
+      "governance_amendments": { "initial": [], "purpose": "Council interventions" },
+      "ui_states": { "initial": { "status": "draft", "allowed_transitions": ["under_review", "published", "deprecated"] } }
+    }
+  },
+
+  "visual_binding_rules": {
+    "states": {
+      "radiant": { "condition": "sincerity_score >= 90", "background": "Sunlit Clearing", "frame": "Iron Bamboo (tier-dependent)", "glow": "High glow, golden pollen", "copy_hint": "Trusted Creator" },
+      "amber_dusk": { "condition": "50 <= sincerity_score < 90", "background": "Amber Dusk (Twilight Ochre)", "frame": "Hemp Lattice (softer)", "glow": "Amber glow, fog rolling", "copy_hint": "In regeneration — creating with supervision" },
+      "frosted_winter": { "condition": "sincerity_score < 50", "background": "Glacial Stasis (Frosted)", "frame": "Frozen lattice, ice crystals", "glow": "No glow, animation halted", "copy_hint": "Creation paused — honour restoration required" }
+    },
+    "honour_aura": {
+      "concentric_rings": "total_attestations",
+      "glow_radius_px": "average_honour_weight / 5.0",
+      "brightness_bands": { "dim": [0, 60], "warm": [61, 85], "bright": [86, 100] }
+    },
+    "regeneration_cues": {
+      "shock_ripple": "Triggered on sincerity_delta <= -5",
+      "crack_heal": "Visible crack that heals as sincerity recovers",
+      "green_glow_pulse": "Triggered on sincerity rise after composting",
+      "leaf_icon_fade": "Small leaf appearing then fading on recovery"
+    }
+  },
+
+  "minting_flow": [
+    { "step": 1, "action": "Validate DID", "detail": "Check owner_did exists and is active via Wallet entity" },
+    { "step": 2, "action": "Generate token_id", "detail": "Create unique ASC-XXXXXX identifier" },
+    { "step": 3, "action": "Create ASC-NFT entity record", "detail": "Populate locked bones + initial dynamic fields" },
+    { "step": 4, "action": "Bind XLS-46d dynamic URI", "detail": "Set metadata_uri pointing to off-chain JSON-LD" },
+    { "step": 5, "action": "Register in Creator Registry", "detail": "Create MarketplaceListing entry for the creator" },
+    { "step": 6, "action": "Emit Shield log", "detail": "Log minting event to GovernanceLog + TripwireEvent" }
+  ],
+
+  "error_handling": {
+    "INVALID_DID": "DID ownership verification fails — no creation",
+    "ENTITY_ERROR": "ASC-NFT record creation fails — full rollback",
+    "METADATA_ERROR": "Metadata write fails — rollback entity record",
+    "REGISTRY_ERROR": "NFT minted but registry failed — needs manual repair",
+    "policy": "No partial state. Either fully minted or fully rolled back."
+  },
+
+  "proficiency_tiers": {
+    "1": { "name": "Apprentice", "min_skills": 0 },
+    "2": { "name": "Journeyman", "min_skills": 5 },
+    "3": { "name": "Artisan", "min_skills": 15 },
+    "4": { "name": "Master", "min_skills": 30 },
+    "5": { "name": "Sovereign Creator", "min_skills": 50 }
+  },
+
+  "constitutional_flags": ["law2_honour", "law3_fair_share", "law4_creation", "law8_governance", "law9_growth"]
+}
