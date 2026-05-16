@@ -96,6 +96,7 @@ const NAV_GROUPS = [
       { label: 'Sovereign Archive', path: '/sovereign-archive', icon: Archive },
       { label: 'Heptagon', path: '/heptagon', icon: Activity },
       { label: 'Experimental Lab', path: '/experimental-lab', icon: FlaskConical },
+      { label: 'Sovereign Search', path: '/sovereign-search', icon: Search },
       { label: 'NFT Workshop', path: '/nft-workshop', icon: Hammer },
       { label: 'Oracle', path: '/oracle', icon: ScrollText },
       { label: 'Simulation Lab', path: '/SimulationLab', icon: FlaskConical },
