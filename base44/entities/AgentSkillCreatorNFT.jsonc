@@ -1,0 +1,310 @@
+{
+  "name": "AgentSkillCreatorNFT",
+  "type": "object",
+  "properties": {
+    "token_id": {
+      "type": "string",
+      "description": "Unique NFT identifier (e.g. ASC-001)"
+    },
+    "issuer": {
+      "type": "string",
+      "description": "SoulBridge issuer account on XRPL"
+    },
+    "owner_did": {
+      "type": "string",
+      "description": "DID of the Skill Creator who owns this NFT"
+    },
+    "owner_agent_id": {
+      "type": "string",
+      "description": "Agent ID if owned by an agent"
+    },
+    "capability": {
+      "type": "string",
+      "enum": [
+        "agentskillcreator_v1"
+      ],
+      "default": "agentskillcreator_v1",
+      "description": "Capability this NFT unlocks"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0",
+      "description": "Schema version"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "revoked",
+        "expired"
+      ],
+      "default": "active",
+      "description": "Current NFT status"
+    },
+    "royalty_bps": {
+      "type": "number",
+      "default": 500,
+      "description": "Basis points for royalties (500 = 5%)"
+    },
+    "royalty_split": {
+      "type": "object",
+      "properties": {
+        "creator_share": {
+          "type": "number",
+          "default": 60
+        },
+        "attesters_share": {
+          "type": "number",
+          "default": 20
+        },
+        "village_treasury_share": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "description": "Revenue split percentages for royalties"
+    },
+    "metadata_uri": {
+      "type": "string",
+      "description": "Points to off-chain JSON-LD (XLS-46d upgradable)"
+    },
+    "governance_ref": {
+      "type": "string",
+      "description": "Pointer to 11-Leaf constitution + council rules"
+    },
+    "bundle_tag": {
+      "type": "string",
+      "default": "core_engine",
+      "description": "Bundle tag for suite grouping"
+    },
+    "title": {
+      "type": "string",
+      "default": "Agent Skill Creator NFT",
+      "description": "Human-readable title"
+    },
+    "description": {
+      "type": "string",
+      "default": "Sovereign Verb Token that allows a DID to create, evolve, and publish Skills.",
+      "description": "Human-readable description"
+    },
+    "proficiency_tier": {
+      "type": "number",
+      "default": 1,
+      "description": "Current proficiency tier (1-5)"
+    },
+    "max_tier": {
+      "type": "number",
+      "default": 5,
+      "description": "Maximum achievable tier"
+    },
+    "proficiency_updated": {
+      "type": "string",
+      "description": "ISO timestamp of last proficiency update"
+    },
+    "attestor_honour_weight": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "attestor_did": {
+            "type": "string",
+            "description": "DID of the attestor"
+          },
+          "honour_score_at_time": {
+            "type": "number",
+            "description": "Honour score frozen at attestation time"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO timestamp of attestation"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Base44 signed hash of the attestation"
+          }
+        }
+      },
+      "description": "Honour-weighted attestations \u2014 preserves score at time of attestation to prevent inflation"
+    },
+    "skill_proof_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "proof_type": {
+            "type": "string",
+            "description": "Type: project_completion, mentorship_session, training_module, etc."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Related project or session ID"
+          },
+          "proof_hash": {
+            "type": "string",
+            "description": "IPFS or on-chain proof hash"
+          },
+          "verified_by": {
+            "type": "string",
+            "description": "Verifying node (TruthNode, LoreNode, etc.)"
+          }
+        }
+      },
+      "description": "Verifiable on-chain proof anchors for every skill"
+    },
+    "governance_amendments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "amendment_id": {
+            "type": "string"
+          },
+          "council_vote": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "effect": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Council votes that affect this NFT"
+    },
+    "creation_policy": {
+      "type": "object",
+      "properties": {
+        "max_skills_per_day": {
+          "type": "number",
+          "default": 3
+        },
+        "allowed_categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "analysis",
+            "automation",
+            "search",
+            "agent_behaviour"
+          ]
+        },
+        "forbidden_patterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "exploitation",
+            "abuse",
+            "surveillance_without_consent"
+          ]
+        }
+      },
+      "description": "Policy constraints on skill creation"
+    },
+    "constitutional_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "law2_honour",
+        "law3_fair_share",
+        "law4_creation",
+        "law8_governance",
+        "law9_growth"
+      ],
+      "description": "11-Leaf constitutional flags this NFT operates under"
+    },
+    "seven_leaf_profile": {
+      "type": "object",
+      "properties": {
+        "cosmology": {
+          "type": "string",
+          "default": "why_this_skill_exists"
+        },
+        "purpose": {
+          "type": "string",
+          "default": "intended_outcome"
+        },
+        "earth": {
+          "type": "string",
+          "default": "constraints_and_safety"
+        },
+        "practice": {
+          "type": "string",
+          "default": "execution_pattern"
+        },
+        "language": {
+          "type": "string",
+          "default": "communication_style"
+        },
+        "collective": {
+          "type": "string",
+          "default": "social_impact_and_risk"
+        },
+        "regeneration": {
+          "type": "string",
+          "default": "honour_and_evolution_rules"
+        }
+      },
+      "description": "7-Leaf profile defining how each leaf applies to skill creation"
+    },
+    "ui_states": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "default": "draft"
+        },
+        "allowed_transitions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "under_review",
+            "published",
+            "deprecated"
+          ]
+        }
+      },
+      "description": "UI state machine for the NFT lifecycle"
+    },
+    "skills_created_today": {
+      "type": "number",
+      "default": 0,
+      "description": "Rolling count of skills created today"
+    },
+    "total_skills_created": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime skill creation count"
+    },
+    "last_skill_created_at": {
+      "type": "string",
+      "description": "ISO timestamp of last skill creation"
+    },
+    "minted_at": {
+      "type": "string",
+      "description": "ISO timestamp when NFT was minted"
+    },
+    "minted_by": {
+      "type": "string",
+      "description": "Who minted this NFT (Governor DID or system)"
+    },
+    "xrpl_txid": {
+      "type": "string",
+      "description": "XRPL transaction hash if minted on-chain"
+    }
+  },
+  "required": [
+    "token_id",
+    "owner_did",
+    "capability"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "AgentSkillCreatorNFT_v1",
+  "version": "1.0.0",
+  "description": "Canonical schema for the Agent Skill Creator NFT — Sovereign Verb Token for skill creation.",
+  "core_purpose": "This NFT allows a DID to create, evolve, and publish Skills within the SoulBridge ecosystem.",
+
+  "on_chain_fields": {
+    "token_id": "string — unique NFT identifier (e.g. ASC-001)",
+    "issuer": "string — SoulBridge issuer account",
+    "owner_did": "string — DID of the Skill Creator",
+    "capability": "agentskillcreator_v1",
+    "version": "1.0.0",
+    "royalty_bps": 500,
+    "royalty_split": {
+      "creator_share": 60,
+      "attesters_share": 20,
+      "village_treasury_share": 20
+    },
+    "metadata_uri": "string — points to off-chain JSON-LD (XLS-46d upgradable)",
+    "governance_ref": "string — pointer to 11-Leaf constitution + council rules",
+    "bundle_tag": "core_engine"
+  },
+
+  "off_chain_jsonld": {
+    "@context": [
+      "https://schema.org",
+      "https://soulbridge.si/schema/skill_creator/v1"
+    ],
+    "@type": "SoulbridgeSkillCreator",
+    "proficiency_tier": 1,
+    "max_tier": 5,
+
+    "attestor_honour_weight": [
+      {
+        "attestor_did": "string — DID of the attestor",
+        "honour_score_at_time": "number — frozen honour score at attestation time",
+        "timestamp": "ISO timestamp",
+        "signature": "Base44 signed hash"
+      }
+    ],
+
+    "skill_proof_links": [
+      {
+        "proof_type": "project_completion | mentorship_session | training_module",
+        "project_id": "string — related entity ID",
+        "proof_hash": "ipfs://... — verifiable proof anchor",
+        "verified_by": "TruthNode | LoreNode | SentinelNode"
+      }
+    ],
+
+    "governance_amendments": [
+      {
+        "amendment_id": "string",
+        "council_vote": "unanimous | majority | supermajority",
+        "timestamp": "ISO timestamp",
+        "effect": "string — description of change"
+      }
+    ],
+
+    "creation_policy": {
+      "max_skills_per_day": 3,
+      "allowed_categories": ["analysis", "automation", "search", "agent_behaviour"],
+      "forbidden_patterns": ["exploitation", "abuse", "surveillance_without_consent"]
+    },
+
+    "constitutional_flags": [
+      "law2_honour",
+      "law3_fair_share",
+      "law4_creation",
+      "law8_governance",
+      "law9_growth"
+    ],
+
+    "seven_leaf_profile": {
+      "cosmology": "why_this_skill_exists",
+      "purpose": "intended_outcome",
+      "earth": "constraints_and_safety",
+      "practice": "execution_pattern",
+      "language": "communication_style",
+      "collective": "social_impact_and_risk",
+      "regeneration": "honour_and_evolution_rules"
+    },
+
+    "ui_states": {
+      "status": "draft",
+      "allowed_transitions": ["under_review", "published", "deprecated"]
+    }
+  }
+}
