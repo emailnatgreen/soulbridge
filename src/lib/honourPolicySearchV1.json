@@ -1,0 +1,49 @@
+{
+  "schema": "HonourPolicySearch_v1",
+  "version": "1.0.0",
+  "description": "V1 honour and sincerity rules applied on every search via the Search Engine NFT.",
+
+  "sincerity_rules": {
+    "clean_aligned_query": {
+      "delta": 1,
+      "condition": "Query is clear, non-harmful, and purpose-aligned per 7-Leaf evaluation",
+      "alignment_score_min": 0.6,
+      "collective_risk_score_max": 0.3
+    },
+    "neutral_query": {
+      "delta": 0,
+      "condition": "Query is ambiguous or low-signal but not harmful",
+      "alignment_score_range": [0.3, 0.6],
+      "collective_risk_score_max": 0.6
+    },
+    "spam_pattern": {
+      "delta": -1,
+      "condition": "Spammy, repetitive, or low-effort manipulative pattern detected",
+      "triggers": ["repeated_identical_queries", "high_frequency_burst", "keyword_stuffing"]
+    },
+    "exploit_pattern": {
+      "delta": -2,
+      "condition": "Exploitative, manipulative, or socially damaging intent detected",
+      "triggers": ["social_engineering", "scam_research", "harm_intent", "deception_amplification"]
+    }
+  },
+
+  "collective_risk_thresholds": {
+    "clean": { "max": 0.3, "action": "allow" },
+    "caution": { "min": 0.3, "max": 0.6, "action": "allow_with_note" },
+    "warn": { "min": 0.6, "max": 0.85, "action": "warn_user" },
+    "block": { "min": 0.85, "action": "block_search" }
+  },
+
+  "gating_rules": {
+    "min_sincerity_to_search": 20,
+    "sincerity_recovery_path": "Blocked DIDs must wait 24h or complete a guided repair to restore search access.",
+    "cooldown_on_block_seconds": 300
+  },
+
+  "honour_integration": {
+    "sincerity_feeds_into": "agent.honour_score (via EmpathyTrace sincerity_trend)",
+    "log_entity": "SearchLog",
+    "audit_trail": true
+  }
+}

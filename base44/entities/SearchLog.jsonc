@@ -1,0 +1,141 @@
+{
+  "name": "SearchLog",
+  "type": "object",
+  "properties": {
+    "search_id": {
+      "type": "string",
+      "description": "Unique search identifier (e.g. SRCH-xxxxx)"
+    },
+    "did": {
+      "type": "string",
+      "description": "DID that performed this search"
+    },
+    "nft_token_id": {
+      "type": "string",
+      "description": "Search Engine NFT token_id used"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID if search was agent-initiated"
+    },
+    "query": {
+      "type": "string",
+      "description": "The original search query"
+    },
+    "query_type": {
+      "type": "string",
+      "enum": [
+        "info",
+        "commercial",
+        "sensitive",
+        "protective",
+        "learning",
+        "creative",
+        "other"
+      ],
+      "default": "info",
+      "description": "Classification of the query intent"
+    },
+    "context": {
+      "type": "object",
+      "description": "Optional context: location, intent hint, preferences"
+    },
+    "leaf_summary": {
+      "type": "object",
+      "properties": {
+        "cosmology": {
+          "type": "string",
+          "description": "Inferred intent"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Locked outcome"
+        },
+        "earth": {
+          "type": "string",
+          "description": "Constraints applied"
+        },
+        "practice": {
+          "type": "string",
+          "description": "Structuring approach"
+        },
+        "language": {
+          "type": "string",
+          "description": "Expression quality"
+        },
+        "collective": {
+          "type": "string",
+          "description": "Risk filter result"
+        },
+        "regeneration": {
+          "type": "string",
+          "description": "Honour update summary"
+        }
+      },
+      "description": "Per-leaf summary of processing"
+    },
+    "alignment_score": {
+      "type": "number",
+      "description": "How well query fit the 7-Leaf frame (0.0 to 1.0)"
+    },
+    "collective_risk_score": {
+      "type": "number",
+      "description": "Risk assessment (0.0 = clean, 1.0 = dangerous)"
+    },
+    "sincerity_delta": {
+      "type": "number",
+      "description": "Sincerity adjustment applied (-2 to +2)"
+    },
+    "honour_delta": {
+      "type": "number",
+      "description": "Honour adjustment applied"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "success",
+        "warned",
+        "blocked",
+        "error"
+      ],
+      "default": "success",
+      "description": "Search outcome"
+    },
+    "block_reason": {
+      "type": "string",
+      "description": "Why the search was blocked or warned (if applicable)"
+    },
+    "output_mode": {
+      "type": "string",
+      "enum": [
+        "inline",
+        "email_report"
+      ],
+      "default": "inline",
+      "description": "How the result was delivered"
+    },
+    "result_summary": {
+      "type": "string",
+      "description": "Brief summary of the structured answer returned"
+    },
+    "email_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether an email report was sent"
+    },
+    "processing_ms": {
+      "type": "number",
+      "description": "Total processing time in milliseconds"
+    },
+    "cost_rlusd": {
+      "type": "number",
+      "default": 0,
+      "description": "RLUSD charged for this search"
+    }
+  },
+  "required": [
+    "search_id",
+    "did",
+    "query"
+  ]
+}

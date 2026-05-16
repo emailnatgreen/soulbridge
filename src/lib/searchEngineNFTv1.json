@@ -1,0 +1,43 @@
+{
+  "schema": "SearchEngineNFT_v1",
+  "version": "1.0.0",
+  "description": "Canonical schema for the Search Engine NFT — source of truth for minting.",
+  "core_purpose": "This NFT gives this DID the right to run meaning-filtered searches and receive sincerity-ranked results.",
+
+  "on_chain_fields": {
+    "token_id": "string — unique NFT identifier",
+    "owner_did": "string — DID classic address bound to this NFT",
+    "capability": "meaning_search_v1",
+    "version": "1.0.0",
+    "usage_policy": {
+      "daily_cap": 50,
+      "rate_limit_per_minute": 5,
+      "max_query_length": 500,
+      "cooldown_on_block_seconds": 300
+    },
+    "honour_policy": {
+      "sincerity_gain_clean": 1,
+      "sincerity_loss_spam": -1,
+      "sincerity_loss_exploit": -2,
+      "collective_risk_warn_threshold": 0.6,
+      "collective_risk_block_threshold": 0.85,
+      "min_sincerity_to_search": 20
+    },
+    "pricing_policy": {
+      "free_tier_daily": 10,
+      "cost_per_search_rlusd": 0.001,
+      "premium_multiplier": 2,
+      "treasury_share_percent": 20
+    },
+    "governance_ref": "string — pointer to governance doc / 9-stack ref",
+    "bundle_tag": "core_engine"
+  },
+
+  "off_chain_metadata": {
+    "description": "This NFT gives this DID the right to run meaning-filtered searches and receive sincerity-ranked results.",
+    "seven_leaf_profile": "$ref:seven_leaf_search_profile_v1",
+    "output_modes": ["inline", "email_report"],
+    "supported_locales": ["en"],
+    "sincerity_model_ref": "sincerity_model_v1"
+  }
+}

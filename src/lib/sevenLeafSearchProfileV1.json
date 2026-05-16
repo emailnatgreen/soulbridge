@@ -1,0 +1,60 @@
+{
+  "schema": "SevenLeafSearchProfile_v1",
+  "version": "1.0.0",
+  "description": "Defines how each of the 7 Leaves applies to the Search Engine pipeline.",
+
+  "leaves": {
+    "cosmology": {
+      "function": "infer_intent",
+      "description": "Infer why the DID is searching: learning, buying, checking, protecting, creating, etc.",
+      "input": ["query", "context", "did_history"],
+      "output": "intent_classification"
+    },
+    "purpose": {
+      "function": "lock_outcome",
+      "description": "Lock the desired outcome: 'Find X that helps them achieve Y.'",
+      "input": ["intent_classification", "query"],
+      "output": "outcome_statement"
+    },
+    "earth": {
+      "function": "apply_constraints",
+      "description": "Apply real-world constraints: region, legality, feasibility, time, resources.",
+      "input": ["outcome_statement", "context", "supported_locales"],
+      "output": "constrained_scope"
+    },
+    "practice": {
+      "function": "structure_actions",
+      "description": "Convert raw results into steps, options, comparisons, or checks.",
+      "input": ["constrained_scope", "raw_search_results"],
+      "output": "structured_answer"
+    },
+    "language": {
+      "function": "clean_expression",
+      "description": "Express clearly, non-aggressively, emotionally clean. No manipulation.",
+      "input": ["structured_answer"],
+      "output": "clean_answer"
+    },
+    "collective": {
+      "function": "risk_filter",
+      "description": "Filter out harmful, exploitative, scammy, or socially damaging outputs.",
+      "input": ["clean_answer", "query"],
+      "output": { "filtered_answer": "string", "collective_risk_score": "number" }
+    },
+    "regeneration": {
+      "function": "update_honour",
+      "description": "Update honour + sincerity metrics for this DID and engine.",
+      "input": ["did", "alignment_score", "collective_risk_score", "honour_policy"],
+      "output": { "sincerity_delta": "number", "honour_delta": "number", "log_entry": "SearchLog" }
+    }
+  },
+
+  "pipeline_order": [
+    "cosmology",
+    "purpose",
+    "earth",
+    "practice",
+    "language",
+    "collective",
+    "regeneration"
+  ]
+}

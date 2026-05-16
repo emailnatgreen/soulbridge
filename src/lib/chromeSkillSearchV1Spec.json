@@ -1,0 +1,89 @@
+{
+  "schema": "ChromeSkillSearch_v1",
+  "version": "1.0.0",
+  "description": "Contract between Search Engine NFT, 7-Leaf pipeline, and execution layer.",
+
+  "input": {
+    "did": { "type": "string", "required": true, "description": "DID performing the search" },
+    "query": { "type": "string", "required": true, "description": "The search query" },
+    "preferences": {
+      "type": "object",
+      "required": false,
+      "properties": {
+        "locale": { "type": "string", "default": "en" },
+        "output_mode": { "type": "string", "enum": ["inline", "email_report"], "default": "inline" },
+        "context": { "type": "object", "description": "Optional: location, intent hint, etc." }
+      }
+    }
+  },
+
+  "checks": [
+    {
+      "step": "verify_nft_ownership",
+      "description": "Verify the DID owns a valid, active meaning_search_v1 NFT",
+      "fail_action": "return_error_no_nft"
+    },
+    {
+      "step": "check_usage_policy",
+      "description": "Verify rate limits, daily caps, and query length",
+      "fail_action": "return_error_rate_limited"
+    },
+    {
+      "step": "check_sincerity_gate",
+      "description": "Verify DID meets min_sincerity_to_search threshold",
+      "fail_action": "return_error_sincerity_too_low"
+    }
+  ],
+
+  "process": [
+    {
+      "step": "web_search",
+      "description": "Call web search with the query (via InvokeLLM with add_context_from_internet)",
+      "input": ["query", "constrained_scope"],
+      "output": "raw_search_results"
+    },
+    {
+      "step": "seven_leaf_pipeline",
+      "description": "Run query and results through the 7-Leaf pipeline",
+      "ref": "$ref:seven_leaf_search_profile_v1",
+      "input": ["did", "query", "context", "raw_search_results"],
+      "output": ["structured_answer", "alignment_score", "collective_risk_score"]
+    },
+    {
+      "step": "compute_honour_deltas",
+      "description": "Compute sincerity and honour adjustments per honour_policy",
+      "ref": "$ref:honour_policy_search_v1",
+      "input": ["alignment_score", "collective_risk_score", "query_type"],
+      "output": ["sincerity_delta", "honour_delta"]
+    }
+  ],
+
+  "output": {
+    "answer": {
+      "type": "object",
+      "properties": {
+        "structured_result": { "type": "string", "description": "The 7-Leaf filtered answer" },
+        "intent": { "type": "string", "description": "Inferred intent from Leaf 1" },
+        "outcome": { "type": "string", "description": "Locked outcome from Leaf 2" },
+        "risk_level": { "type": "string", "enum": ["clean", "caution", "warn", "block"] }
+      }
+    },
+    "email_payload": {
+      "type": "object",
+      "optional": true,
+      "properties": {
+        "to": { "type": "string" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" }
+      }
+    },
+    "honour_update": {
+      "type": "object",
+      "properties": {
+        "sincerity_delta": { "type": "number" },
+        "honour_delta": { "type": "number" },
+        "search_log_id": { "type": "string" }
+      }
+    }
+  }
+}

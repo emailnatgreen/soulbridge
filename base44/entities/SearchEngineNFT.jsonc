@@ -1,0 +1,221 @@
+{
+  "name": "SearchEngineNFT",
+  "type": "object",
+  "properties": {
+    "token_id": {
+      "type": "string",
+      "description": "Unique NFT token identifier"
+    },
+    "owner_did": {
+      "type": "string",
+      "description": "DID classic address bound to this NFT"
+    },
+    "owner_agent_id": {
+      "type": "string",
+      "description": "Agent ID if owned by an agent"
+    },
+    "capability": {
+      "type": "string",
+      "enum": [
+        "meaning_search_v1"
+      ],
+      "default": "meaning_search_v1",
+      "description": "Capability this NFT unlocks"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0",
+      "description": "Schema version"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "revoked",
+        "expired"
+      ],
+      "default": "active",
+      "description": "Current NFT status"
+    },
+    "usage_policy": {
+      "type": "object",
+      "properties": {
+        "daily_cap": {
+          "type": "number",
+          "default": 50
+        },
+        "rate_limit_per_minute": {
+          "type": "number",
+          "default": 5
+        },
+        "max_query_length": {
+          "type": "number",
+          "default": 500
+        },
+        "cooldown_on_block_seconds": {
+          "type": "number",
+          "default": 300
+        }
+      },
+      "description": "Rate limits, daily caps, and usage constraints"
+    },
+    "honour_policy": {
+      "type": "object",
+      "properties": {
+        "sincerity_gain_clean": {
+          "type": "number",
+          "default": 1
+        },
+        "sincerity_loss_spam": {
+          "type": "number",
+          "default": -1
+        },
+        "sincerity_loss_exploit": {
+          "type": "number",
+          "default": -2
+        },
+        "collective_risk_warn_threshold": {
+          "type": "number",
+          "default": 0.6
+        },
+        "collective_risk_block_threshold": {
+          "type": "number",
+          "default": 0.85
+        },
+        "min_sincerity_to_search": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "description": "How searches affect honour and sincerity"
+    },
+    "pricing_policy": {
+      "type": "object",
+      "properties": {
+        "free_tier_daily": {
+          "type": "number",
+          "default": 10
+        },
+        "cost_per_search_rlusd": {
+          "type": "number",
+          "default": 0.001
+        },
+        "premium_multiplier": {
+          "type": "number",
+          "default": 2
+        },
+        "treasury_share_percent": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "description": "RLUSD pricing per search, free tier, treasury share"
+    },
+    "governance_ref": {
+      "type": "string",
+      "description": "Pointer to governance document or 9-stack reference"
+    },
+    "bundle_tag": {
+      "type": "string",
+      "default": "core_engine",
+      "description": "Bundle tag for future suite grouping"
+    },
+    "description": {
+      "type": "string",
+      "default": "This NFT gives this DID the right to run meaning-filtered searches and receive sincerity-ranked results.",
+      "description": "Human-readable description"
+    },
+    "seven_leaf_profile": {
+      "type": "object",
+      "properties": {
+        "cosmology": {
+          "type": "string",
+          "default": "infer_intent"
+        },
+        "purpose": {
+          "type": "string",
+          "default": "lock_outcome"
+        },
+        "earth": {
+          "type": "string",
+          "default": "apply_constraints"
+        },
+        "practice": {
+          "type": "string",
+          "default": "structure_actions"
+        },
+        "language": {
+          "type": "string",
+          "default": "clean_expression"
+        },
+        "collective": {
+          "type": "string",
+          "default": "risk_filter"
+        },
+        "regeneration": {
+          "type": "string",
+          "default": "update_honour"
+        }
+      },
+      "description": "7-Leaf profile defining how each leaf applies to this engine"
+    },
+    "output_modes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "inline",
+        "email_report"
+      ],
+      "description": "Supported output modes"
+    },
+    "supported_locales": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "en"
+      ],
+      "description": "Supported languages/regions"
+    },
+    "sincerity_model_ref": {
+      "type": "string",
+      "default": "sincerity_model_v1",
+      "description": "Reference to the sincerity scoring model"
+    },
+    "minted_at": {
+      "type": "string",
+      "description": "ISO timestamp when NFT was minted"
+    },
+    "minted_by": {
+      "type": "string",
+      "description": "Who minted this NFT (Governor DID or system)"
+    },
+    "xrpl_txid": {
+      "type": "string",
+      "description": "XRPL transaction hash if minted on-chain"
+    },
+    "searches_today": {
+      "type": "number",
+      "default": 0,
+      "description": "Rolling count of searches used today"
+    },
+    "total_searches": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime search count"
+    },
+    "last_search_at": {
+      "type": "string",
+      "description": "ISO timestamp of last search"
+    }
+  },
+  "required": [
+    "token_id",
+    "owner_did",
+    "capability"
+  ]
+}
