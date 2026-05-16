@@ -44,6 +44,7 @@ import SkillDevelopment from './pages/SkillDevelopment';
 import AgentProfile_EditProfile from './pages/EditAgentProfile';
 import MyAgentHub from './pages/MyAgentHub';
 import AgentAnalytics from './pages/AgentAnalytics';
+import MyAscNftDisplay from './pages/MyAscNftDisplay';
 
 // ADMIN PAGES
 import AxiCommandDashboard from './pages/AxiCommandDashboard';
@@ -393,6 +394,7 @@ const AuthenticatedApp = () => {
         <Route path="/EditAgentProfile" element={L("edit-profile", AgentProfile_EditProfile)} />
         <Route path="/my-agents" element={L("my-agents", MyAgentHub)} />
         <Route path="/agents/:id/analytics" element={L("agent-analytics", AgentAnalytics)} />
+        <Route path="/my-asc-nft" element={L("my-asc-nft", MyAscNftDisplay)} />
 
         {/* ADMIN/RESTRICTED PAGES */}
         <Route path="/admin/axi-command" element={L("axi-command", AxiCommandDashboard)} />
