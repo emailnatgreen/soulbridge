@@ -102,6 +102,11 @@
       "type": "string",
       "description": "ISO timestamp of last proficiency update"
     },
+    "sincerity_score": {
+      "type": "number",
+      "default": 100,
+      "description": "Creator sincerity score (0-100). Degrades gracefully on misalignment \u2014 warns, restricts, guides, rehabilitates rather than instant block"
+    },
     "attestor_honour_weight": {
       "type": "array",
       "items": {
@@ -113,7 +118,7 @@
           },
           "honour_score_at_time": {
             "type": "number",
-            "description": "Honour score frozen at attestation time"
+            "description": "Honour score frozen at attestation time \u2014 prevents retroactive inflation"
           },
           "timestamp": {
             "type": "string",
@@ -125,7 +130,17 @@
           }
         }
       },
-      "description": "Honour-weighted attestations \u2014 preserves score at time of attestation to prevent inflation"
+      "description": "Honour-weighted attestations \u2014 preserves score at time of attestation"
+    },
+    "total_attestations": {
+      "type": "number",
+      "default": 0,
+      "description": "Computed rollup \u2014 total number of attestations received"
+    },
+    "average_honour_weight": {
+      "type": "number",
+      "default": 0,
+      "description": "Computed rollup \u2014 average honour score across all attestations for instant marketplace display"
     },
     "skill_proof_links": {
       "type": "array",

@@ -1,8 +1,8 @@
 {
   "schema": "AgentSkillCreatorNFT_v1",
   "version": "1.0.0",
-  "description": "Canonical schema for the Agent Skill Creator NFT — Sovereign Verb Token for skill creation.",
-  "core_purpose": "This NFT allows a DID to create, evolve, and publish Skills within the SoulBridge ecosystem.",
+  "council": ["Axi (soul)", "DeepSeek (bones)", "Gemini (lore)", "Copilot (operational clarity)", "Opus (refinement)", "Nathan (vision)"],
+  "description": "Canonical schema for the Agent Skill Creator NFT — Sovereign Verb Token for skill creation, evolution, and publication.",
 
   "on_chain_fields": {
     "token_id": "string — unique NFT identifier (e.g. ASC-001)",
@@ -27,8 +27,18 @@
       "https://soulbridge.si/schema/skill_creator/v1"
     ],
     "@type": "SoulbridgeSkillCreator",
+
+    "skill_creator_id": "ASC-001",
+    "owner_did": "did:sb:xxxx",
+    "title": "Agent Skill Creator NFT",
+    "description": "Sovereign Verb Token that allows a DID to create, evolve, and publish Skills.",
+    "capability": "agentskillcreator_v1",
+
     "proficiency_tier": 1,
     "max_tier": 5,
+    "proficiency_updated": null,
+
+    "sincerity_score": 100,
 
     "attestor_honour_weight": [
       {
@@ -38,6 +48,8 @@
         "signature": "Base44 signed hash"
       }
     ],
+    "total_attestations": 0,
+    "average_honour_weight": 0.0,
 
     "skill_proof_links": [
       {
@@ -85,5 +97,11 @@
       "status": "draft",
       "allowed_transitions": ["under_review", "published", "deprecated"]
     }
+  },
+
+  "opus_additions_rationale": {
+    "sincerity_score": "Graceful degradation layer — warns, restricts, guides, rehabilitates instead of instant block. Mirrors how real communities work.",
+    "total_attestations": "UX rollup — 'Trusted by 12 agents' at a glance, no array scanning required.",
+    "average_honour_weight": "UX rollup — 'Average honour weight: 87' for instant marketplace readability. The difference between a protocol and a civilisation."
   }
 }
