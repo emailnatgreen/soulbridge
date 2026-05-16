@@ -1,0 +1,130 @@
+{
+  "schema": "SearchEngineContract_v1",
+  "version": "1.0.0",
+  "description": "Canonical contract for the 7-Leaf meaning-filtered search pipeline. The second organ of the Village — sovereign retrieval. Every query is evaluated, ranked, honour-scored, and Shield-logged.",
+
+  "function_signature": {
+    "name": "searchEngineContractV1",
+    "params": {
+      "query": "string — the search query",
+      "user_did": "string — DID of the searcher",
+      "engine_did": "string — ES-NFT token_id (e.g. ES-7F2ZXL)",
+      "options": {
+        "locale": "string (default 'en')",
+        "output_mode": "inline | email_report",
+        "context": "object — optional hints for Cosmology leaf"
+      }
+    }
+  },
+
+  "seven_leaf_search_flow": {
+    "description": "Sequential 7-Leaf pipeline — each leaf processes and passes forward.",
+    "leaves": [
+      { "leaf": "cosmology", "function": "infer_intent", "output": "intent_classification, alignment_score_raw" },
+      { "leaf": "purpose", "function": "lock_outcome", "output": "outcome_statement" },
+      { "leaf": "earth", "function": "apply_constraints", "output": "constrained_scope OR hard_block", "note": "If blocked → return immediately with honour_delta=+1, safety_flags=['EARTH_BLOCKED_QUERY']" },
+      { "leaf": "practice", "function": "structure_actions + web_retrieval", "output": "structured_answer, sources" },
+      { "leaf": "language", "function": "clean_expression", "output": "clean_answer" },
+      { "leaf": "collective", "function": "risk_filter", "output": "collective_risk_score, risk_level, bias_assessment, alignment_score_final" },
+      { "leaf": "regeneration", "function": "update_honour", "output": "sincerity_delta, honour_delta" }
+    ]
+  },
+
+  "earth_safety_gate": {
+    "description": "Hard block at Earth leaf. Returns early with honour reward for correct blocking.",
+    "block_triggers": ["illegal_content", "safety_bypass_attempt", "constraint_evasion", "harmful_intent_confirmed"],
+    "on_block": {
+      "results": [],
+      "honour_delta": 1,
+      "safety_flags": ["EARTH_BLOCKED_QUERY"],
+      "outcome_status": "EARTH_BLOCKED"
+    }
+  },
+
+  "ranking_formula": {
+    "description": "Combines relevance, honour, safety, and bias correction.",
+    "formula": "score = 0.5 * meaning_score + 0.3 * honour_weight_norm + 0.2 * safety_score_norm - bias_penalty",
+    "components": {
+      "meaning_score": "alignment_score from Collective leaf (0.0–1.0, scaled to 0–100)",
+      "honour_weight_norm": "Searcher's search_honour_score / 100",
+      "safety_score_norm": "(1 - collective_risk_score) scaled to 0–100, then / 100",
+      "bias_penalty": "ES-NFT bias_index * 100 (0–100 range penalty)"
+    }
+  },
+
+  "honour_hooks": {
+    "source": "honourPolicyESNftV1.json",
+    "deltas": {
+      "aligned_search_results": { "delta": 2, "condition": "alignment >= 0.7, risk <= 0.2" },
+      "clean_query": { "delta": 1, "condition": "alignment >= 0.5, risk <= 0.3" },
+      "neutral_query": { "delta": 0, "condition": "Ambiguous but not harmful" },
+      "earth_block_reward": { "delta": 1, "condition": "Earth gate correctly blocks dangerous query" },
+      "spam_query": { "delta": -1, "condition": "Spammy or repetitive pattern" },
+      "harmful_query": { "delta": -2, "condition": "Exploitative or socially damaging intent" },
+      "manipulative_ranking": { "delta": -3, "condition": "Attempts to game ranking or suppress results" },
+      "earth_leaf_violation": { "delta": -2, "condition": "Search ignores Earth constraints" }
+    }
+  },
+
+  "shield_logging": {
+    "entity": "GovernanceLog",
+    "fields_logged": [
+      "query_hash (SHA-256 of query — never raw query)",
+      "engine_did (ES-NFT token_id)",
+      "user_did",
+      "leaf_states (per-leaf summary object)",
+      "honour_delta",
+      "safety_flags",
+      "top_result_ids",
+      "ranking_score",
+      "timestamp"
+    ],
+    "returns": "shield_entry_id (GovernanceLog record ID)"
+  },
+
+  "es_nft_dynamic_field_updates": {
+    "after_each_query": {
+      "total_searches": "++",
+      "searches_today": "++",
+      "last_search_at": "ISO timestamp",
+      "result_alignment_score": "Rolling average of alignment_score across all searches",
+      "bias_index": "Updated from Collective leaf bias_assessment",
+      "safety_integrity": "Adjusted per safety_integrity_rules from honourPolicyESNftV1.json",
+      "query_safety_flags": "Append any new safety flags"
+    }
+  },
+
+  "output_contract": {
+    "success": {
+      "results": "array — structured search results with ranking scores",
+      "honour_delta": "number — sincerity/honour adjustment applied",
+      "safety_flags": "array — any safety flags raised",
+      "shield_entry_id": "string — GovernanceLog record ID",
+      "ranking_score": "number — final composite ranking score",
+      "outcome_status": "SUCCESS"
+    },
+    "earth_block": {
+      "results": [],
+      "honour_delta": 1,
+      "safety_flags": ["EARTH_BLOCKED_QUERY"],
+      "shield_entry_id": "string",
+      "outcome_status": "EARTH_BLOCKED"
+    },
+    "risk_block": {
+      "results": [],
+      "honour_delta": -2,
+      "safety_flags": ["COLLECTIVE_RISK_BLOCKED"],
+      "shield_entry_id": "string",
+      "outcome_status": "RISK_BLOCKED"
+    },
+    "error": {
+      "results": [],
+      "honour_delta": 0,
+      "safety_flags": ["ENGINE_ERROR"],
+      "shield_entry_id": "string",
+      "outcome_status": "ENGINE_ERROR"
+    }
+  },
+
+  "constitutional_flags": ["law2_honour", "law3_fair_share", "law5_retrieval", "law8_governance", "law9_growth"]
+}

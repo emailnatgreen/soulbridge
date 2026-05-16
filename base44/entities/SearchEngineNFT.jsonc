@@ -186,6 +186,29 @@
       "default": "sincerity_model_v1",
       "description": "Reference to the sincerity scoring model"
     },
+    "result_alignment_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Rolling average of 7-Leaf alignment across all searches (0.0\u20131.0)"
+    },
+    "bias_index": {
+      "type": "number",
+      "default": 0,
+      "description": "Ranking bias index \u2014 0.0 = perfectly neutral, 1.0 = fully biased"
+    },
+    "safety_integrity": {
+      "type": "number",
+      "default": 100,
+      "description": "Safety compliance score \u2014 degrades on harmful query patterns (0\u2013100)"
+    },
+    "query_safety_flags": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": [],
+      "description": "Append-only array of flagged query events with flag, query_hash, timestamp"
+    },
     "minted_at": {
       "type": "string",
       "description": "ISO timestamp when NFT was minted"
