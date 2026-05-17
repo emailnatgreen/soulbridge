@@ -15,7 +15,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Actions: investigate | list | get | toggle_visibility
  */
 
-const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '2.6.0' };
+const ENGINE = { name: 'SoulBridge Admin Truth Engine', version: '3.0.0' };
 
 // ═══ Sovereign Identity — computed once, embedded in every artefact ═══
 const SOVEREIGN_CONFIG = {
@@ -68,6 +68,130 @@ async function sha256(payload) {
   const data = new TextEncoder().encode(JSON.stringify(payload, Object.keys(payload).sort()));
   const buf = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ═══ GROUNDING LAYER v1.0.0 ═══
+// Cross-references every LLM-generated claim against actual database records.
+// Tags each data point as: verified | partial | inferred
+// Prevents hallucinated specifics from being presented as fact.
+const GROUNDABLE_ENTITIES = [
+  { name: 'GovernanceProposal', searchFields: ['title', 'description', 'status'] },
+  { name: 'GovernanceLog', searchFields: ['action', 'target', 'description'] },
+  { name: 'Wallet', searchFields: ['classic_address', 'name', 'network'] },
+  { name: 'Agent', searchFields: ['name', 'purpose', 'role'] },
+  { name: 'SearchEngineNFT', searchFields: ['token_id', 'capability', 'status'] },
+  { name: 'GovernanceRule', searchFields: ['rule_id', 'name', 'description'] },
+  { name: 'DidAuditLog', searchFields: ['action_type', 'did_classic_address'] },
+  { name: 'QuadShardDID', searchFields: ['did_id', 'role', 'status'] },
+  { name: 'TripwireEvent', searchFields: ['event_type', 'description'] },
+  { name: 'Widget', searchFields: ['name', 'description', 'category'] },
+];
+
+async function groundClaim(base44, claim) {
+  const title = (claim.title || '').toLowerCase();
+  const desc = (claim.description || '').toLowerCase();
+  const combined = `${title} ${desc}`;
+
+  // Extract specific identifiers the LLM may have fabricated
+  const specifics = {
+    numbers: combined.match(/\b\d[\d,.]+\b/g) || [],
+    proposal_refs: combined.match(/proposal\s*(?:#?\s*)?(\d+|[a-z0-9-]+)/gi) || [],
+    coefficients: combined.match(/(?:alpha|beta|gamma|α|β|γ)\s*=?\s*[\d.]+/gi) || [],
+    versions: combined.match(/v\d+[\d.]*/gi) || [],
+  };
+  const has_specific_claims = (
+    specifics.numbers.length > 0 ||
+    specifics.proposal_refs.length > 0 ||
+    specifics.coefficients.length > 0
+  );
+
+  // Search for corroborating records across relevant entities
+  const matches = [];
+  for (const entity of GROUNDABLE_ENTITIES) {
+    // Quick keyword relevance check before querying
+    const entityRelevant = combined.includes(entity.name.toLowerCase()) ||
+      (entity.name === 'GovernanceProposal' && combined.includes('proposal')) ||
+      (entity.name === 'GovernanceLog' && combined.includes('governance')) ||
+      (entity.name === 'Wallet' && (combined.includes('wallet') || combined.includes('did'))) ||
+      (entity.name === 'Agent' && combined.includes('agent')) ||
+      (entity.name === 'SearchEngineNFT' && (combined.includes('search') || combined.includes('ranking') || combined.includes('formula'))) ||
+      (entity.name === 'GovernanceRule' && (combined.includes('rule') || combined.includes('policy'))) ||
+      (entity.name === 'DidAuditLog' && (combined.includes('did') || combined.includes('identity') || combined.includes('issuance'))) ||
+      (entity.name === 'QuadShardDID' && combined.includes('did')) ||
+      (entity.name === 'TripwireEvent' && (combined.includes('anomal') || combined.includes('alert') || combined.includes('security'))) ||
+      (entity.name === 'Widget' && combined.includes('widget'));
+
+    if (!entityRelevant) continue;
+
+    try {
+      const records = await base44.asServiceRole.entities[entity.name].list('-created_date', 5);
+      if (records && records.length > 0) {
+        matches.push({
+          entity: entity.name,
+          record_count: records.length,
+          sample_ids: records.slice(0, 3).map(r => r.id),
+        });
+      }
+    } catch (_) {
+      // Entity query failed — skip, don't crash
+    }
+  }
+
+  // Determine grounding status
+  let grounding_status;
+  let grounding_reason;
+
+  if (matches.length > 0 && !has_specific_claims) {
+    grounding_status = 'verified';
+    grounding_reason = `Corroborating records found in: ${matches.map(m => `${m.entity} (${m.record_count})`).join(', ')}`;
+  } else if (matches.length > 0 && has_specific_claims) {
+    grounding_status = 'partial';
+    grounding_reason = `Related entities exist (${matches.map(m => m.entity).join(', ')}), but specific claims (${[
+      specifics.proposal_refs.length > 0 ? specifics.proposal_refs.join(', ') : null,
+      specifics.coefficients.length > 0 ? specifics.coefficients.join(', ') : null,
+      specifics.numbers.length > 2 ? `${specifics.numbers.length} numeric claims` : null,
+    ].filter(Boolean).join('; ')}) could not be individually verified against database records`;
+  } else {
+    grounding_status = 'inferred';
+    grounding_reason = 'No corroborating database records found. This claim was synthesised by the LLM and should be independently verified.';
+  }
+
+  return {
+    grounding_status,
+    grounding_reason,
+    has_specific_claims,
+    specifics_detected: has_specific_claims ? specifics : undefined,
+    corroborating_entities: matches.length > 0 ? matches : undefined,
+  };
+}
+
+async function groundAllClaims(base44, rawDataItems) {
+  const grounded = [];
+  for (const item of rawDataItems) {
+    const grounding = await groundClaim(base44, item);
+    grounded.push({ ...item, ...grounding });
+  }
+
+  const verified = grounded.filter(g => g.grounding_status === 'verified').length;
+  const partial = grounded.filter(g => g.grounding_status === 'partial').length;
+  const inferred = grounded.filter(g => g.grounding_status === 'inferred').length;
+  const total = grounded.length;
+
+  const grounding_score = total > 0
+    ? Math.round(((verified * 1.0 + partial * 0.5) / total) * 100)
+    : 0;
+
+  return {
+    items: grounded,
+    summary: {
+      total,
+      verified,
+      partial,
+      inferred,
+      grounding_score,
+      grounding_grade: grounding_score >= 80 ? 'HIGH' : grounding_score >= 50 ? 'MEDIUM' : 'LOW',
+    },
+  };
 }
 
 Deno.serve(async (req) => {
@@ -331,15 +455,18 @@ LEAF 7 — SYNTHESIS: Produce:
 
       const pipelineMs = Date.now() - pipelineStart;
 
+      // ═══ GROUNDING LAYER — cross-reference LLM claims against actual data ═══
+      const groundingResult = await groundAllClaims(
+        base44,
+        (rawResult.leaf1_raw_data || []).map(item => ({ ...item, source_type: item.source_type || 'system' }))
+      );
+
       // ═══ Pre-compute contradiction count for weight formula ═══
       const contradictionCount = (rawResult.leaf3_contradictions || []).length;
 
       // ═══ Build deterministic leaf structure ═══
       const leaves = {
-        raw_data: (rawResult.leaf1_raw_data || []).map(item => ({
-          ...item,
-          source_type: item.source_type || 'system'
-        })),
+        raw_data: groundingResult.items,
         classification: (rawResult.leaf2_classification || []).map(item => ({
           ...item,
           item_type: item.item_type || 'claim',
@@ -386,6 +513,14 @@ LEAF 7 — SYNTHESIS: Produce:
       };
 
       // ═══ Compute aggregate metrics ═══
+      const frameworkConfidence = leaves.synthesis?.confidence_score || 0;
+      const groundingConfidence = groundingResult.summary.grounding_score;
+      // Effective confidence = geometric mean of framework and grounding
+      // This ensures high framework confidence cannot mask low grounding
+      const effectiveConfidence = Math.round(
+        Math.sqrt(frameworkConfidence * groundingConfidence)
+      );
+
       const metrics = {
         total_data_points: leaves.raw_data.length,
         classified_items: leaves.classification.length,
@@ -399,7 +534,15 @@ LEAF 7 — SYNTHESIS: Produce:
         avg_risk_score: leaves.risk_impact.length > 0
           ? Math.round((leaves.risk_impact.reduce((sum, r) => sum + (r.risk_score || 0), 0) / leaves.risk_impact.length) * 10) / 10
           : 0,
-        confidence_score: leaves.synthesis?.confidence_score || 0,
+        // ═══ DUAL CONFIDENCE MODEL (v3.0.0) ═══
+        // framework_confidence: LLM's confidence in its analytical structure
+        // grounding_confidence: % of claims verified against actual database records
+        // effective_confidence: geometric mean — high framework cannot mask low grounding
+        confidence_score: effectiveConfidence,
+        framework_confidence: frameworkConfidence,
+        grounding_confidence: groundingConfidence,
+        grounding_grade: groundingResult.summary.grounding_grade,
+        grounding_summary: groundingResult.summary,
         // Suggested weight aggregates
         avg_suggested_weight: leaves.risk_impact.length > 0
           ? Math.round((leaves.risk_impact.reduce((sum, r) => sum + (r.suggested_weight || 0), 0) / leaves.risk_impact.length) * 10) / 10

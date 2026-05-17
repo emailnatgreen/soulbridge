@@ -23,6 +23,7 @@ import CrossLinkPanel from '@/components/admin-truth/CrossLinkPanel';
 import MemoryQueryPanel from '@/components/admin-truth/MemoryQueryPanel';
 import { computeSovereignIdentity } from '@/lib/sovereignIdentity';
 import FinalReadinessReport from '@/components/admin-truth/FinalReadinessReport';
+import GroundingPanel from '@/components/admin-truth/GroundingPanel';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -246,7 +247,12 @@ export default function AdminTruthEngine() {
                           )}
                           {currentInvestigation.metrics?.confidence_score > 0 && (
                             <Badge className={`text-[9px] ${currentInvestigation.metrics.confidence_score >= 70 ? 'bg-emerald-600/25 text-emerald-200 border-emerald-500/40' : currentInvestigation.metrics.confidence_score >= 40 ? 'bg-amber-600/25 text-amber-200 border-amber-500/40' : 'bg-red-600/25 text-red-200 border-red-500/40'}`}>
-                              {currentInvestigation.metrics.confidence_score}% confidence
+                              {currentInvestigation.metrics.confidence_score}% effective
+                            </Badge>
+                          )}
+                          {currentInvestigation.metrics?.grounding_grade && (
+                            <Badge className={`text-[9px] ${currentInvestigation.metrics.grounding_grade === 'HIGH' ? 'bg-emerald-600/25 text-emerald-200 border-emerald-500/40' : currentInvestigation.metrics.grounding_grade === 'MEDIUM' ? 'bg-amber-600/25 text-amber-200 border-amber-500/40' : 'bg-red-600/25 text-red-200 border-red-500/40'}`}>
+                              grounding: {currentInvestigation.metrics.grounding_grade}
                             </Badge>
                           )}
                           {currentInvestigation.metrics?.critical_risks > 0 && (
@@ -270,6 +276,9 @@ export default function AdminTruthEngine() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Grounding Layer — data verification before analysis */}
+                <GroundingPanel investigation={currentInvestigation} />
 
                 {/* 7-Leaf Display */}
                 <AdminLeafEngine investigation={currentInvestigation} />
@@ -355,7 +364,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-4">
           <p className="text-slate-500 text-[10px] leading-relaxed">
-          <span className="text-violet-400 font-semibold">Admin Truth Engine v2.6.0:</span> Sovereign Identity → Investigation → 7-Leaf Pipeline → Suggested Weight → Build Order Engine → Phase‑1 Gate → ERE → Visibility Governance → Memory Intelligence (timeline replay, cross-link patterns, forensic query). Seven-layer governance spine: 0. Sovereign Identity (who signs) · 1. Truth Engine (what is true) · 2. Test Suite (what is broken) · 3. Build Order Engine (what must be done) · 4. Phase‑1 Gate (is it structurally sound) · 5. ERE (is it safe to expose) · 6. Memory Intelligence (forensic record, queryable, replayable). Every artefact signed. Deterministic. Auditable. Tamper-proof. Testable.
+          <span className="text-violet-400 font-semibold">Admin Truth Engine v3.0.0:</span> Sovereign Identity → Investigation → <span className="text-amber-400">Grounding Layer</span> → 7-Leaf Pipeline → Suggested Weight → Build Order Engine → Phase‑1 Gate → ERE → Visibility Governance → Memory Intelligence. Eight-layer governance spine: 0. Sovereign Identity (who signs) · <span className="text-amber-400">1. Grounding Layer (what is real vs inferred)</span> · 2. Truth Engine (what is true) · 3. Test Suite (what is broken) · 4. Build Order Engine (what must be done) · 5. Phase‑1 Gate (is it structurally sound) · 6. ERE (is it safe to expose) · 7. Memory Intelligence (forensic record). Dual confidence: framework (analytical structure) × grounding (data-verified). Every artefact signed. Deterministic. Auditable.
           </p>
         </div>
       </div>
