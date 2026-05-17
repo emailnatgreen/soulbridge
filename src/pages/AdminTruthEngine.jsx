@@ -25,6 +25,7 @@ import { computeSovereignIdentity } from '@/lib/sovereignIdentity';
 import FinalReadinessReport from '@/components/admin-truth/FinalReadinessReport';
 import GroundingPanel from '@/components/admin-truth/GroundingPanel';
 import MayaAuditCard from '@/components/admin-truth/MayaAuditCard';
+import MayaChatCard from '@/components/admin-truth/MayaChatCard';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -219,6 +220,9 @@ export default function AdminTruthEngine() {
                 <InvestigationFilters filters={filters} onFilterChange={setFilters} />
               </CardContent>
             </Card>
+
+            {/* Maya Chat */}
+            <MayaChatCard />
 
             {/* History */}
             <Card className="bg-slate-900/80 border-slate-700/60">
