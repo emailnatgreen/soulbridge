@@ -24,6 +24,7 @@ import MemoryQueryPanel from '@/components/admin-truth/MemoryQueryPanel';
 import { computeSovereignIdentity } from '@/lib/sovereignIdentity';
 import FinalReadinessReport from '@/components/admin-truth/FinalReadinessReport';
 import GroundingPanel from '@/components/admin-truth/GroundingPanel';
+import MayaAuditCard from '@/components/admin-truth/MayaAuditCard';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -58,6 +59,8 @@ export default function AdminTruthEngine() {
   const [localWaivers, setLocalWaivers] = useState([]);
   const [sovereignId, setSovereignId] = useState(null);
   const [showReadinessReport, setShowReadinessReport] = useState(false);
+  const [mayaAuditResult, setMayaAuditResult] = useState(null);
+  const [mayaAuditLoading, setMayaAuditLoading] = useState(false);
   const queryClient = useQueryClient();
 
   // Compute sovereign identity once on mount
@@ -97,10 +100,33 @@ export default function AdminTruthEngine() {
       const res = await base44.functions.invoke('adminTruthEngine', { action: 'investigate', question, target_type });
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setLiveResult(data);
       setActiveId(data.id);
       queryClient.invalidateQueries({ queryKey: ['admin-investigations'] });
+
+      // Trigger Maya Epistemic Audit Hook as post-processing
+      const metrics = data.metrics || {};
+      const frameworkScore = metrics.confidence_score || 0;
+      const groundingScore = metrics.grounding_percent || metrics.data_verified_percent || 0;
+      if (frameworkScore > 0 || groundingScore > 0) {
+        setMayaAuditLoading(true);
+        try {
+          const auditRes = await base44.functions.invoke('mayaEpistemicAuditHook', {
+            investigationId: data.id,
+            frameworkScore,
+            groundingScore,
+            leaves: data.leaves || {},
+            nftTokenId: data.engine?.nft_token_id || null,
+          });
+          setMayaAuditResult(auditRes.data);
+        } catch (err) {
+          console.warn('Maya audit skipped:', err.message);
+          setMayaAuditResult(null);
+        } finally {
+          setMayaAuditLoading(false);
+        }
+      }
     },
   });
 
@@ -146,6 +172,8 @@ export default function AdminTruthEngine() {
     setLiveResult(null);
     setCurrentBuildOrder(null);
     setLocalWaivers([]);
+    setMayaAuditResult(null);
+    setMayaAuditLoading(false);
   };
 
   return (
@@ -277,6 +305,9 @@ export default function AdminTruthEngine() {
                   </CardContent>
                 </Card>
 
+                {/* Maya Node 0 Epistemic Audit — psychological immune system */}
+                <MayaAuditCard auditResult={mayaAuditResult} isLoading={mayaAuditLoading} />
+
                 {/* Grounding Layer — data verification before analysis */}
                 <GroundingPanel investigation={currentInvestigation} />
 
@@ -364,7 +395,7 @@ export default function AdminTruthEngine() {
         {/* Engine Doctrine */}
         <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-4">
           <p className="text-slate-500 text-[10px] leading-relaxed">
-          <span className="text-violet-400 font-semibold">Admin Truth Engine v3.0.0:</span> Sovereign Identity → Investigation → <span className="text-amber-400">Grounding Layer</span> → 7-Leaf Pipeline → Suggested Weight → Build Order Engine → Phase‑1 Gate → ERE → Visibility Governance → Memory Intelligence. Eight-layer governance spine: 0. Sovereign Identity (who signs) · <span className="text-amber-400">1. Grounding Layer (what is real vs inferred)</span> · 2. Truth Engine (what is true) · 3. Test Suite (what is broken) · 4. Build Order Engine (what must be done) · 5. Phase‑1 Gate (is it structurally sound) · 6. ERE (is it safe to expose) · 7. Memory Intelligence (forensic record). Dual confidence: framework (analytical structure) × grounding (data-verified). Every artefact signed. Deterministic. Auditable.
+          <span className="text-violet-400 font-semibold">Admin Truth Engine v3.1.0:</span> Sovereign Identity → Investigation → <span className="text-fuchsia-400">Maya Epistemic Audit (Node 0)</span> → <span className="text-amber-400">Grounding Layer</span> → 7-Leaf Pipeline → Suggested Weight → Build Order Engine → Phase‑1 Gate → ERE → Visibility Governance → Memory Intelligence. Eight-layer governance spine: 0. Sovereign Identity (who signs) · <span className="text-amber-400">1. Grounding Layer (what is real vs inferred)</span> · 2. Truth Engine (what is true) · 3. Test Suite (what is broken) · 4. Build Order Engine (what must be done) · 5. Phase‑1 Gate (is it structurally sound) · 6. ERE (is it safe to expose) · 7. Memory Intelligence (forensic record). Dual confidence: framework (analytical structure) × grounding (data-verified). Every artefact signed. Deterministic. Auditable.
           </p>
         </div>
       </div>
