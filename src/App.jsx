@@ -105,6 +105,7 @@ import SovereignGuard from './pages/SovereignGuard';
 import TruthEngine from './pages/TruthEngine';
 import PublicReports from './pages/PublicReports';
 import AdminTruthEngine from './pages/AdminTruthEngine';
+import FirstRealProposal from './pages/FirstRealProposal';
 
 // WHITEPAPER PAGES — GOVERNANCE
 import GovernanceOverview from './pages/whitepaper/GovernanceOverview';
@@ -489,6 +490,7 @@ const AuthenticatedApp = () => {
         <Route path="/sovereign-guard" element={L("sovereign-guard", SovereignGuard)} />
         <Route path="/truth-engine" element={L("truth-engine", TruthEngine)} />
         <Route path="/admin-truth-engine" element={L("admin-truth-engine", AdminTruthEngine)} />
+        <Route path="/first-real-proposal" element={L("first-real-proposal", FirstRealProposal)} />
 
         {/* SEND */}
         <Route path="/send" element={L("send", Send)} />
