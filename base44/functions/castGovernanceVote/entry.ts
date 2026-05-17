@@ -74,6 +74,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Agent not found' }, { status: 404 });
     }
 
+    // ── PERMISSION CHECK: Agent must have can_vote ──────────────────────────
+    if (!voter.permissions?.can_vote) {
+      return Response.json({
+        error: `Agent "${voter.name}" does not have voting permission. Governance participation requires can_vote=true.`,
+        code: 'VOTE_PERMISSION_DENIED'
+      }, { status: 403 });
+    }
+
     // Calculate voting power based on honor score and role
     const baseHonor = voter.honor_score || 100;
     const roleMultipliers = {
