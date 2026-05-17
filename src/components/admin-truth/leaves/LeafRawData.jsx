@@ -9,11 +9,11 @@ const SOURCE_COLORS = {
   external: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
 };
 
-export default function LeafRawData({ leaf, data }) {
-  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} />;
+export default function LeafRawData({ leaf, data, grounding }) {
+  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} grounding={grounding} />;
 
   return (
-    <LeafShell leaf={leaf}>
+    <LeafShell leaf={leaf} grounding={grounding}>
       <div className="space-y-1.5">
         {data.map((item, i) => (
           <div key={i} className="rounded bg-slate-800/60 border border-slate-700/50 p-2.5 text-xs">

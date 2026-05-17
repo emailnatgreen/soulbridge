@@ -10,13 +10,13 @@ const SEVERITY_COLORS = {
   low: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
 };
 
-export default function LeafContradictions({ leaf, data }) {
-  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} />;
+export default function LeafContradictions({ leaf, data, grounding }) {
+  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} grounding={grounding} />;
 
   const integrityFlags = data.filter(c => c.integrity_flag);
 
   return (
-    <LeafShell leaf={leaf}>
+    <LeafShell leaf={leaf} grounding={grounding}>
       {integrityFlags.length > 0 && (
         <div className="rounded border border-red-500/30 bg-red-500/10 p-2.5 mb-2 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-red-400" />

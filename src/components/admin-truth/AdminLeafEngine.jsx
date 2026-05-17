@@ -39,7 +39,7 @@ function hasLeafData(data) {
   return true;
 }
 
-export default function AdminLeafEngine({ investigation }) {
+export default function AdminLeafEngine({ investigation, grounding }) {
   const [activeTab, setActiveTab] = useState('all');
 
   if (!investigation) {
@@ -53,6 +53,11 @@ export default function AdminLeafEngine({ investigation }) {
   }
 
   const leaves = investigation.leaves || {};
+  const metrics = investigation.metrics || {};
+  const groundingCtx = {
+    grade: metrics.grounding_grade || null,
+    confidence: metrics.confidence_score || null,
+  };
 
   return (
     <div className="space-y-4">
@@ -101,24 +106,24 @@ export default function AdminLeafEngine({ investigation }) {
         <TabsContent value="all" className="space-y-3 mt-3">
           {ADMIN_LEAF_CONFIG.map(leaf => {
             const Component = LEAF_COMPONENTS[leaf.key];
-            return <Component key={leaf.num} leaf={leaf} data={leaves[leaf.key]} />;
+            return <Component key={leaf.num} leaf={leaf} data={leaves[leaf.key]} grounding={groundingCtx} />;
           })}
         </TabsContent>
 
         <TabsContent value="risks" className="space-y-3 mt-3">
-          <LeafRiskImpact leaf={ADMIN_LEAF_CONFIG[4]} data={leaves.risk_impact} />
+          <LeafRiskImpact leaf={ADMIN_LEAF_CONFIG[4]} data={leaves.risk_impact} grounding={groundingCtx} />
         </TabsContent>
 
         <TabsContent value="gaps" className="space-y-3 mt-3">
-          <LeafContradictions leaf={ADMIN_LEAF_CONFIG[2]} data={leaves.contradictions} />
+          <LeafContradictions leaf={ADMIN_LEAF_CONFIG[2]} data={leaves.contradictions} grounding={groundingCtx} />
         </TabsContent>
 
         <TabsContent value="actions" className="space-y-3 mt-3">
-          <LeafProposedActions leaf={ADMIN_LEAF_CONFIG[5]} data={leaves.proposed_actions} />
+          <LeafProposedActions leaf={ADMIN_LEAF_CONFIG[5]} data={leaves.proposed_actions} grounding={groundingCtx} />
         </TabsContent>
 
         <TabsContent value="links" className="space-y-3 mt-3">
-          <LeafCrossLinks leaf={ADMIN_LEAF_CONFIG[3]} data={leaves.cross_links} />
+          <LeafCrossLinks leaf={ADMIN_LEAF_CONFIG[3]} data={leaves.cross_links} grounding={groundingCtx} />
         </TabsContent>
       </Tabs>
     </div>

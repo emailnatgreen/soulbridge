@@ -30,13 +30,13 @@ function RiskBar({ score }) {
   );
 }
 
-export default function LeafRiskImpact({ leaf, data }) {
-  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} />;
+export default function LeafRiskImpact({ leaf, data, grounding }) {
+  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} grounding={grounding} />;
 
   const sorted = [...data].sort((a, b) => (b.risk_score || 0) - (a.risk_score || 0));
 
   return (
-    <LeafShell leaf={leaf}>
+    <LeafShell leaf={leaf} grounding={grounding}>
       <div className="space-y-1.5">
         {sorted.map((item, i) => (
           <div key={i} className={`rounded border p-2.5 text-xs ${item.severity === 'critical' ? 'bg-red-950/40 border-red-500/30' : 'bg-slate-800/60 border-slate-700/50'}`}>

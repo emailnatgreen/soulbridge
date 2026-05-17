@@ -16,11 +16,11 @@ const DOMAIN_COLORS = {
   governance: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
 };
 
-export default function LeafClassification({ leaf, data }) {
-  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} />;
+export default function LeafClassification({ leaf, data, grounding }) {
+  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} grounding={grounding} />;
 
   return (
-    <LeafShell leaf={leaf}>
+    <LeafShell leaf={leaf} grounding={grounding}>
       <div className="space-y-1.5">
         {data.map((item, i) => (
           <div key={i} className="rounded bg-slate-800/60 border border-slate-700/50 p-2.5 text-xs">

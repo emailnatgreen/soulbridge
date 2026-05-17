@@ -11,8 +11,8 @@ const PRIORITY_COLORS = {
   low: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
 };
 
-export default function LeafProposedActions({ leaf, data }) {
-  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} />;
+export default function LeafProposedActions({ leaf, data, grounding }) {
+  if (!data || !Array.isArray(data) || data.length === 0) return <LeafShell leaf={leaf} grounding={grounding} />;
 
   // Group by action_group
   const groups = {};
@@ -23,7 +23,7 @@ export default function LeafProposedActions({ leaf, data }) {
   });
 
   return (
-    <LeafShell leaf={leaf}>
+    <LeafShell leaf={leaf} grounding={grounding}>
       <div className="space-y-3">
         {Object.entries(groups).map(([group, actions]) => (
           <div key={group} className="space-y-1.5">

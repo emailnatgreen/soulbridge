@@ -3,8 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, EyeOff, ArrowRight, CheckCircle2 } from 'lucide-react';
 import LeafShell from './LeafShell';
 
-export default function LeafSynthesis({ leaf, data }) {
-  if (!data || (typeof data === 'object' && !data.summary)) return <LeafShell leaf={leaf} />;
+export default function LeafSynthesis({ leaf, data, grounding }) {
+  if (!data || (typeof data === 'object' && !data.summary)) return <LeafShell leaf={leaf} grounding={grounding} />;
 
   // Handle both string (v1) and object (v2) formats
   const isV2 = typeof data === 'object';
@@ -15,7 +15,7 @@ export default function LeafSynthesis({ leaf, data }) {
   const confidence = isV2 ? data.confidence_score : null;
 
   return (
-    <LeafShell leaf={leaf}>
+    <LeafShell leaf={leaf} grounding={grounding}>
       <div className="space-y-3">
         {/* Summary */}
         <p className="text-slate-300 text-xs leading-relaxed whitespace-pre-wrap">{summary}</p>
