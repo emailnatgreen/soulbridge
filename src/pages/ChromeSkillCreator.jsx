@@ -131,6 +131,13 @@ export default function ChromeSkillCreator() {
           Create Skill
         </Button>
 
+        {/* Google Pay Anchor — Tile 3 will load the Web Pay API here */}
+        <div className="rounded-xl border border-slate-700/40 bg-slate-800/30 h-12 flex items-center justify-center gap-2 cursor-not-allowed opacity-50">
+          <span className="text-sm text-slate-400">Buy with</span>
+          <span className="text-sm font-bold text-white">G Pay</span>
+          <span className="text-[10px] text-slate-500 ml-1">(Locked)</span>
+        </div>
+
         {/* Shield Log Banner */}
         <div className="rounded-xl border border-slate-700/30 bg-slate-900/30 px-4 py-3 flex items-center gap-2">
           <Shield className="w-4 h-4 text-slate-600 shrink-0" />
