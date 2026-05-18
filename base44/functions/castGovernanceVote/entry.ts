@@ -21,37 +21,39 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid vote_choice. Must be for, against, or abstain' }, { status: 400 });
     }
 
-    // ── SYBIL GUARD: One User, One Vote ───────────────────────────────────
+    // ── SYBIL GUARD: One User, One Vote (Phase 1 Blocker #2) ──────────────
     // Law 8 (The Village decides together) + Law 1 (Presence, Not a Product)
-    // A single authenticated user may only cast ONE vote per proposal,
-    // regardless of how many Agents they control. This prevents Sybil
-    // amplification where multiple DIDs/Agents inflate a single actor's voice.
+    // Delegates to the sybilGuard function for formal pre-vote verification.
+    // Creates auditable SybilGuardStatus records with hashed identifiers.
+    // The authenticated user (email via auth.me()) is the trust root —
+    // one user, one vote per proposal, regardless of agent count.
 
-    // 1. Find ALL agents owned by this authenticated user
-    const userAgents = await base44.entities.Agent.filter({
-      created_by: user.email
-    });
-    const userAgentIds = userAgents.map(a => a.id);
-
-    // 2. Fetch all votes on this proposal
-    const proposalVotesAll = await base44.entities.GovernanceVote.filter({
-      proposal_id
+    const sybilCheckResult = await base44.asServiceRole.functions.invoke('sybilGuard', {
+      action: 'check',
+      proposal_id,
+      agent_id,
     });
 
-    // 3. Check if ANY of the user's agents have already voted
-    const userPriorVote = proposalVotesAll.find(v => userAgentIds.includes(v.voter_agent_id));
-    if (userPriorVote) {
-      const priorAgent = userAgents.find(a => a.id === userPriorVote.voter_agent_id);
+    const sybilData = sybilCheckResult.data || sybilCheckResult;
+
+    if (!sybilData.allowed) {
+      const priorVote = sybilData.prior_vote;
       return Response.json({
-        error: `One User, One Vote — you have already voted on this proposal via agent "${priorAgent?.name || userPriorVote.voter_agent_id}". ` +
+        error: `One User, One Vote — you have already voted on this proposal via agent "${priorVote?.agent_id || 'unknown'}". ` +
                `Law 8 requires that each user casts only one vote per proposal, regardless of how many agents they control.`,
         code: 'SYBIL_GUARD_BLOCKED',
-        existing_vote_id: userPriorVote.id,
-        existing_agent_id: userPriorVote.voter_agent_id,
+        existing_vote_id: priorVote?.vote_id,
+        existing_agent_id: priorVote?.agent_id,
+        risk_score: sybilData.risk_score,
+        risk_signals: sybilData.risk_signals,
       }, { status: 403 });
     }
 
-    // 4. Also check the specific agent (redundant safety net)
+    // Sybil Guard warning (high risk but not blocked)
+    const sybilWarning = sybilData.result === 'warning';
+
+    // Redundant safety net: check the specific agent directly
+    const proposalVotesAll = await base44.entities.GovernanceVote.filter({ proposal_id });
     const existingVotes = proposalVotesAll.filter(v => v.voter_agent_id === agent_id);
     if (existingVotes.length > 0) {
       return Response.json({ 
@@ -169,7 +171,13 @@ Deno.serve(async (req) => {
       vote,
       message: `Vote "${vote_choice}" cast with ${votingPower.toFixed(2)} voting power · KU generated`,
       voting_power: votingPower,
-      updated_tallies: { for: totalFor, against: totalAgainst, abstain: totalAbstain }
+      updated_tallies: { for: totalFor, against: totalAgainst, abstain: totalAbstain },
+      sybil_guard: {
+        result: sybilData.result,
+        risk_score: sybilData.risk_score,
+        warning: sybilWarning,
+        risk_signals: sybilWarning ? sybilData.risk_signals : [],
+      },
     });
 
   } catch (error) {

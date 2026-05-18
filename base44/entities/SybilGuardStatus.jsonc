@@ -1,0 +1,95 @@
+{
+  "name": "SybilGuardStatus",
+  "type": "object",
+  "properties": {
+    "user_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the authenticated user email \u2014 no raw PII stored"
+    },
+    "check_type": {
+      "type": "string",
+      "enum": [
+        "vote_gate",
+        "pattern_scan",
+        "manual_audit"
+      ],
+      "default": "vote_gate",
+      "description": "Type of Sybil check performed"
+    },
+    "proposal_id": {
+      "type": "string",
+      "description": "Proposal ID if this check was for a governance vote"
+    },
+    "agent_id_used": {
+      "type": "string",
+      "description": "Agent ID that attempted the action"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "blocked",
+        "warning",
+        "flagged"
+      ],
+      "description": "Outcome of the Sybil check"
+    },
+    "risk_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Sybil risk score (0-100). Higher = more suspicious"
+    },
+    "agents_owned_count": {
+      "type": "number",
+      "description": "Number of agents owned by this user at check time"
+    },
+    "wallets_linked_count": {
+      "type": "number",
+      "description": "Number of wallets linked to this user's agents"
+    },
+    "risk_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string",
+            "description": "Type of risk signal detected"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Description of the signal"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          }
+        }
+      },
+      "description": "Risk signals detected during the check"
+    },
+    "prior_votes_on_proposal": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of prior votes by this user's agents on the same proposal"
+    },
+    "blocked_reason": {
+      "type": "string",
+      "description": "Reason the action was blocked (if result=blocked)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional check metadata"
+    }
+  },
+  "required": [
+    "user_hash",
+    "check_type",
+    "result"
+  ]
+}

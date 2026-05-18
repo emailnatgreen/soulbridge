@@ -22,6 +22,7 @@ import CollectiveDIDInfluence from '@/components/governance/CollectiveDIDInfluen
 import VoteCastingPanel from '@/components/governance/VoteCastingPanel';
 import QuorumProgressCard from '@/components/governance/QuorumProgressCard';
 import ConstitutionalBadges from '@/components/governance/ConstitutionalBadges';
+import SybilGuardPanel from '@/components/governance/SybilGuardPanel';
 
 
 // ─── Proposal Detail Dialog ─────────────────────────────────────────────────
@@ -494,6 +495,9 @@ export default function GovernanceVotingDashboard() {
                 <DIDAssertionPanel agent={selectedAgent} />
               </CardContent>
             </Card>
+
+            {/* Sybil Guard Status */}
+            <SybilGuardPanel />
 
             {/* Village Sentiment */}
             {proposals.length > 0 && (
