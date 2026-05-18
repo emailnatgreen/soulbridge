@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Plus, Shield, Heart, Sparkles, ScrollText, X } from 'lucide-react';
+import { Plus, Shield, Heart, Sparkles, ScrollText, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function ChromeSkillCreator() {
   const [title, setTitle] = useState('');
@@ -10,7 +11,27 @@ export default function ChromeSkillCreator() {
   const [triggers, setTriggers] = useState([]);
   const [actions, setActions] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(null); // null | 'success' | 'error'
+
   const canCreate = title.length > 0 && description.length > 0 && triggers.length > 0 && actions.length > 0;
+
+  const handleCreateSkill = async () => {
+    setLoading(true);
+    setStatus(null);
+    const res = await base44.functions.invoke('chromeSkillCreatorHarness', {
+      title,
+      description,
+      triggers,
+      actions,
+    });
+    if (res.data?.success || res.data?.skill_id) {
+      setStatus('success');
+    } else {
+      setStatus('error');
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950 p-4 md:p-8">
@@ -123,12 +144,27 @@ export default function ChromeSkillCreator() {
           </div>
         </div>
 
+        {/* Status Banner */}
+        {status === 'success' && (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <p className="text-sm text-emerald-300">Skill created (stub). Payment not yet wired.</p>
+          </div>
+        )}
+        {status === 'error' && (
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <p className="text-sm text-red-300">Something went wrong. Please try again.</p>
+          </div>
+        )}
+
         {/* Create Skill Button */}
         <Button
-          disabled={!canCreate}
+          disabled={!canCreate || loading}
+          onClick={handleCreateSkill}
           className="w-full h-12 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Create Skill
+          {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : 'Create Skill'}
         </Button>
 
         {/* Google Pay Anchor — Tile 3 will load the Web Pay API here */}
