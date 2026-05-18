@@ -1,0 +1,95 @@
+{
+  "name": "AgentGenesisEvent",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent that was created or attempted"
+    },
+    "user_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the authenticated user \u2014 no raw PII"
+    },
+    "genesis_phase": {
+      "type": "string",
+      "enum": [
+        "initiated",
+        "agent_created",
+        "wallet_bound",
+        "nft_sealed",
+        "complete",
+        "rollback",
+        "failed"
+      ],
+      "default": "initiated",
+      "description": "Current phase of the genesis pipeline"
+    },
+    "wallet_id": {
+      "type": "string",
+      "description": "Wallet bound during genesis"
+    },
+    "classic_address": {
+      "type": "string",
+      "description": "DID classic address bound to the agent"
+    },
+    "lineage_checksum": {
+      "type": "string",
+      "description": "SHA-256 checksum of agent_id + user_hash + classic_address \u2014 immutable lineage proof"
+    },
+    "nft_id": {
+      "type": "string",
+      "description": "Soul-bound NFT record ID if minted"
+    },
+    "honor_score_at_genesis": {
+      "type": "number",
+      "default": 100,
+      "description": "Honor score locked at genesis \u2014 immutable baseline"
+    },
+    "role_at_genesis": {
+      "type": "string",
+      "description": "Role assigned at genesis \u2014 immutable baseline"
+    },
+    "integrity_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check_name": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "checked_at": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Integrity checks performed during genesis"
+    },
+    "rollback_reason": {
+      "type": "string",
+      "description": "Why the genesis was rolled back (if applicable)"
+    },
+    "tripwire_event_id": {
+      "type": "string",
+      "description": "TripwireEvent ID if an alert was fired"
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "ISO timestamp when genesis completed successfully"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional genesis metadata"
+    }
+  },
+  "required": [
+    "agent_id",
+    "user_hash",
+    "genesis_phase"
+  ]
+}

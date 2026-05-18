@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import * as xrpl from 'npm:xrpl@4.1.0';
 
 /**
@@ -142,6 +142,21 @@ Deno.serve(async (req) => {
       } catch (xrplErr) {
         // Log XRPL failure but continue — still create the off-chain record
         console.error('XRPL minting failed:', xrplErr.message);
+        // ── EXISTENTIAL GUARD: Fire tripwire on soul-bound mint failure ──
+        try {
+          await db.entities.TripwireEvent.create({
+            event_type: 'anomaly_detected',
+            severity: 'high',
+            status: 'active',
+            source_node: 'AgentExistentialGuard',
+            description: `Soul-bound NFT minting failed for agent ${agent.name} (${agent_id}): ${xrplErr.message}`,
+            details: { agent_id, agent_name: agent.name, nft_type, badge_name, error: xrplErr.message },
+            affected_entity_type: 'Agent',
+            affected_entity_id: agent_id,
+          });
+        } catch (tw) {
+          console.warn('Tripwire fire failed:', tw.message);
+        }
       }
     }
 

@@ -26,6 +26,7 @@ import FinalReadinessReport from '@/components/admin-truth/FinalReadinessReport'
 import GroundingPanel from '@/components/admin-truth/GroundingPanel';
 import MayaAuditCard from '@/components/admin-truth/MayaAuditCard';
 import MayaChatCard from '@/components/admin-truth/MayaChatCard';
+import AgentExistentialGuardPanel from '@/components/admin-truth/AgentExistentialGuardPanel';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -220,6 +221,9 @@ export default function AdminTruthEngine() {
                 <InvestigationFilters filters={filters} onFilterChange={setFilters} />
               </CardContent>
             </Card>
+
+            {/* Agent Existential Guard */}
+            <AgentExistentialGuardPanel />
 
             {/* Maya Chat */}
             <MayaChatCard />
