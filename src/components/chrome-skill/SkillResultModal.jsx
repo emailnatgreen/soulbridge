@@ -99,11 +99,11 @@ export function SuccessModal({ harnessResult, onClose }) {
         {/* Actions */}
         <div className="px-6 pb-6 pt-4 space-y-2">
           <Button
-            onClick={() => navigate('/sovereign-search')}
+            onClick={() => navigate(`/skill?id=${skillId}`)}
             className="w-full h-10 rounded-xl bg-white hover:bg-slate-100 text-slate-900 text-sm font-semibold flex items-center justify-center gap-2"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            View Skills
+            View Skill
           </Button>
           <Button
             variant="ghost"
