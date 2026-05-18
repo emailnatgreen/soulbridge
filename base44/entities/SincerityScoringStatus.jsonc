@@ -1,0 +1,159 @@
+{
+  "name": "SincerityScoringStatus",
+  "type": "object",
+  "properties": {
+    "check_type": {
+      "type": "string",
+      "enum": [
+        "formalization_audit",
+        "anti_gaming_scan",
+        "weight_verification",
+        "decay_calibration"
+      ],
+      "default": "formalization_audit",
+      "description": "Type of sincerity scoring check"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "formalized",
+        "warning",
+        "heuristic_detected",
+        "gaming_vulnerability"
+      ],
+      "description": "Overall formalisation result"
+    },
+    "formalization_score": {
+      "type": "number",
+      "description": "Composite formalisation score 0-100"
+    },
+    "heuristic_count": {
+      "type": "number",
+      "description": "Number of heuristic (non-formal) scoring paths detected"
+    },
+    "formal_count": {
+      "type": "number",
+      "description": "Number of formally verified scoring paths"
+    },
+    "gaming_vectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "vector_name": {
+            "type": "string"
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": [
+              "none",
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "mitigated": {
+            "type": "boolean"
+          },
+          "mitigation": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Detected gaming vulnerability vectors"
+    },
+    "scoring_model": {
+      "type": "object",
+      "description": "Formal scoring model parameters and verification"
+    },
+    "weight_verification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "weight_name": {
+            "type": "string"
+          },
+          "current_value": {
+            "type": "number"
+          },
+          "formal_basis": {
+            "type": "string"
+          },
+          "bounded": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Verification of each scoring weight"
+    },
+    "agent_score_distribution": {
+      "type": "object",
+      "description": "Statistical distribution of agent honor scores"
+    },
+    "risk_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          }
+        }
+      },
+      "description": "Detected scoring risk signals"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "recommendation": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Actionable formalisation recommendations"
+    },
+    "tripwire_event_id": {
+      "type": "string",
+      "description": "TripwireEvent ID if alert fired"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional audit metadata"
+    }
+  },
+  "required": [
+    "check_type",
+    "result"
+  ]
+}

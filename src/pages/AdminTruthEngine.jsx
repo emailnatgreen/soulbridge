@@ -31,6 +31,7 @@ import MultiSigDiversityPanel from '@/components/admin-truth/MultiSigDiversityPa
 import BraidNodeDiversityPanel from '@/components/admin-truth/BraidNodeDiversityPanel';
 import FairShareGuardPanel from '@/components/admin-truth/FairShareGuardPanel';
 import ZKWellbeingHardenPanel from '@/components/admin-truth/ZKWellbeingHardenPanel';
+import SincerityScoringPanel from '@/components/admin-truth/SincerityScoringPanel';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -240,6 +241,9 @@ export default function AdminTruthEngine() {
 
             {/* ZK Wellbeing Hardening — Phase 2 S005 */}
             <ZKWellbeingHardenPanel />
+
+            {/* Sincerity Scoring Formalisation — Phase 2 S007 */}
+            <SincerityScoringPanel />
 
             {/* Maya Chat */}
             <MayaChatCard />
