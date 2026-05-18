@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Plus, Shield, Heart, Sparkles, ScrollText, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import SimulatedPayDialog from '@/components/chrome-skill/SimulatedPayDialog';
+import HonourSafetyPreview from '@/components/chrome-skill/HonourSafetyPreview';
 
 export default function ChromeSkillCreator() {
   const [title, setTitle] = useState('');
@@ -17,6 +18,37 @@ export default function ChromeSkillCreator() {
   const [showPayDialog, setShowPayDialog] = useState(false);
   const [paymentResult, setPaymentResult] = useState(null);
   const [harnessResult, setHarnessResult] = useState(null);
+
+  // Live preview state
+  const [preview, setPreview] = useState({ honour: null, safety: null, honour_signals: [], safety_signals: [], risk_flag: null });
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const previewAbort = useRef(null);
+
+  // Debounced live preview — 400ms after last change
+  useEffect(() => {
+    if (!title && !description) {
+      setPreview({ honour: null, safety: null, honour_signals: [], safety_signals: [], risk_flag: null });
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      if (previewAbort.current) previewAbort.current.abort();
+      const controller = new AbortController();
+      previewAbort.current = controller;
+      setPreviewLoading(true);
+      try {
+        const res = await base44.functions.invoke('chromeSkillPreview', { title, description, triggers, actions });
+        if (!controller.signal.aborted && res.data?.status === 'scored') {
+          setPreview(res.data);
+        }
+      } catch (e) {
+        if (!controller.signal.aborted) console.warn('Preview failed:', e);
+      }
+      if (!controller.signal.aborted) setPreviewLoading(false);
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [title, description, triggers.length, actions.length]);
 
   const canCreate = title.length > 0 && description.length > 0 && triggers.length > 0 && actions.length > 0;
 
@@ -143,43 +175,12 @@ export default function ChromeSkillCreator() {
           )}
         </div>
 
-        {/* Honour + Safety Previews */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-xl border border-slate-700/40 bg-slate-900/40 p-4">
-            <h3 className="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-pink-400" />
-              Honour
-            </h3>
-            {harnessResult?.honour_score != null ? (
-              <div>
-                <p className="text-2xl font-bold text-pink-300">{harnessResult.honour_score}%</p>
-                <p className="text-[10px] text-slate-500 mt-1">
-                  Sincerity: {harnessResult.sincerity_before} → {harnessResult.sincerity_after}
-                  {harnessResult.sincerity_delta > 0 ? ` (+${harnessResult.sincerity_delta})` : harnessResult.sincerity_delta < 0 ? ` (${harnessResult.sincerity_delta})` : ''}
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-600">Score appears after creation.</p>
-            )}
-          </div>
-          <div className="rounded-xl border border-slate-700/40 bg-slate-900/40 p-4">
-            <h3 className="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-emerald-400" />
-              Safety
-            </h3>
-            {harnessResult?.safety_score != null ? (
-              <div>
-                <p className="text-2xl font-bold text-emerald-300">{harnessResult.safety_score}%</p>
-                <p className="text-[10px] text-slate-500 mt-1">
-                  Pipeline: {harnessResult.pipeline_result}
-                  {harnessResult.shield_status === 'anomaly_logged' && ' · ⚠ Anomaly flagged'}
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-600">Score appears after creation.</p>
-            )}
-          </div>
-        </div>
+        {/* Honour + Safety Live Preview */}
+        <HonourSafetyPreview
+          preview={preview}
+          previewLoading={previewLoading}
+          harnessResult={harnessResult}
+        />
 
         {/* Status Banner */}
         {status === 'success' && (
