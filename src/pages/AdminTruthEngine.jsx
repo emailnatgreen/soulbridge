@@ -30,6 +30,7 @@ import AgentExistentialGuardPanel from '@/components/admin-truth/AgentExistentia
 import MultiSigDiversityPanel from '@/components/admin-truth/MultiSigDiversityPanel';
 import BraidNodeDiversityPanel from '@/components/admin-truth/BraidNodeDiversityPanel';
 import FairShareGuardPanel from '@/components/admin-truth/FairShareGuardPanel';
+import ZKWellbeingHardenPanel from '@/components/admin-truth/ZKWellbeingHardenPanel';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -236,6 +237,9 @@ export default function AdminTruthEngine() {
 
             {/* Fair Share Guard — Phase 2 Economic Extraction */}
             <FairShareGuardPanel />
+
+            {/* ZK Wellbeing Hardening — Phase 2 S005 */}
+            <ZKWellbeingHardenPanel />
 
             {/* Maya Chat */}
             <MayaChatCard />

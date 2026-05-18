@@ -1,0 +1,177 @@
+{
+  "name": "ZKWellbeingHardenedStatus",
+  "type": "object",
+  "properties": {
+    "check_type": {
+      "type": "string",
+      "enum": [
+        "hardened_audit",
+        "leakage_scan",
+        "constraint_verify",
+        "differential_privacy_check"
+      ],
+      "default": "hardened_audit",
+      "description": "Type of ZK hardening check"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "sealed",
+        "warning",
+        "leakage_detected",
+        "constraint_violation"
+      ],
+      "description": "Overall ZK hardening result"
+    },
+    "privacy_score": {
+      "type": "number",
+      "description": "Composite privacy score 0-100"
+    },
+    "metadata_leakage_score": {
+      "type": "number",
+      "description": "Metadata leakage risk score 0-100 (lower = safer)"
+    },
+    "differential_privacy_applied": {
+      "type": "boolean",
+      "description": "Whether differential privacy noise was injected"
+    },
+    "epsilon_budget": {
+      "type": "number",
+      "description": "Differential privacy epsilon value used"
+    },
+    "signals_evaluated": {
+      "type": "number",
+      "description": "Total anonymised signals evaluated"
+    },
+    "signals_scrubbed": {
+      "type": "number",
+      "description": "Signals that had metadata stripped"
+    },
+    "constraint_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "constraint_name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "threshold_value": {
+            "type": "number"
+          },
+          "bounded": {
+            "type": "boolean"
+          },
+          "min_bound": {
+            "type": "number"
+          },
+          "max_bound": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Formal verification of each threshold constraint"
+    },
+    "leakage_vectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "vector_name": {
+            "type": "string"
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": [
+              "none",
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "mitigated": {
+            "type": "boolean"
+          },
+          "mitigation": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Detected metadata leakage vectors"
+    },
+    "sandbox_status": {
+      "type": "object",
+      "description": "Numeric evaluation sandbox verification"
+    },
+    "risk_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          }
+        }
+      },
+      "description": "Detected privacy risk signals"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "recommendation": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Actionable hardening recommendations"
+    },
+    "attestation_id": {
+      "type": "string",
+      "description": "PrivacyAttestation ID created during this check"
+    },
+    "tripwire_event_id": {
+      "type": "string",
+      "description": "TripwireEvent ID if alert fired"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional hardening metadata"
+    }
+  },
+  "required": [
+    "check_type",
+    "result"
+  ]
+}
