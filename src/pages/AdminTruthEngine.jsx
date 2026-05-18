@@ -29,6 +29,7 @@ import MayaChatCard from '@/components/admin-truth/MayaChatCard';
 import AgentExistentialGuardPanel from '@/components/admin-truth/AgentExistentialGuardPanel';
 import MultiSigDiversityPanel from '@/components/admin-truth/MultiSigDiversityPanel';
 import BraidNodeDiversityPanel from '@/components/admin-truth/BraidNodeDiversityPanel';
+import FairShareGuardPanel from '@/components/admin-truth/FairShareGuardPanel';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -232,6 +233,9 @@ export default function AdminTruthEngine() {
 
             {/* Braid Node Diversity Audit — Phase 2 */}
             <BraidNodeDiversityPanel />
+
+            {/* Fair Share Guard — Phase 2 Economic Extraction */}
+            <FairShareGuardPanel />
 
             {/* Maya Chat */}
             <MayaChatCard />

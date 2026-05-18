@@ -1,0 +1,151 @@
+{
+  "name": "EconomicExtractionStatus",
+  "type": "object",
+  "properties": {
+    "check_type": {
+      "type": "string",
+      "enum": [
+        "fair_share_audit",
+        "fee_ceiling_check",
+        "provenance_split_check",
+        "transparency_scan"
+      ],
+      "default": "fair_share_audit",
+      "description": "Type of economic extraction check"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "compliant",
+        "warning",
+        "violation",
+        "critical_extraction"
+      ],
+      "description": "Overall compliance result"
+    },
+    "platform_extraction_pct": {
+      "type": "number",
+      "description": "Calculated platform extraction percentage across all active flows"
+    },
+    "max_extraction_ceiling": {
+      "type": "number",
+      "default": 2.5,
+      "description": "Hard ceiling for platform extraction (Law 3 mandate)"
+    },
+    "creator_minimum_pct": {
+      "type": "number",
+      "default": 97.5,
+      "description": "Minimum percentage that must route to creator"
+    },
+    "flows_audited": {
+      "type": "number",
+      "description": "Number of payment flows audited"
+    },
+    "violations_found": {
+      "type": "number",
+      "description": "Number of flows exceeding extraction ceiling"
+    },
+    "compliant_flows": {
+      "type": "number",
+      "description": "Number of flows within ceiling"
+    },
+    "flow_analysis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "flow_name": {
+            "type": "string"
+          },
+          "flow_type": {
+            "type": "string"
+          },
+          "platform_cut_pct": {
+            "type": "number"
+          },
+          "creator_cut_pct": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Per-flow extraction analysis"
+    },
+    "recent_transactions_sampled": {
+      "type": "number",
+      "description": "Number of recent transactions sampled for compliance"
+    },
+    "transaction_compliance": {
+      "type": "object",
+      "description": "Transaction-level compliance stats"
+    },
+    "risk_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "flow": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Detected extraction risk signals"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "flow": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Actionable recommendations"
+    },
+    "tripwire_event_id": {
+      "type": "string",
+      "description": "TripwireEvent ID if alert fired"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional audit metadata"
+    }
+  },
+  "required": [
+    "check_type",
+    "result"
+  ]
+}
