@@ -1,0 +1,180 @@
+{
+  "name": "BraidNodeDiversityStatus",
+  "type": "object",
+  "properties": {
+    "check_type": {
+      "type": "string",
+      "enum": [
+        "full_audit",
+        "geographic_check",
+        "logical_check",
+        "connectivity_check"
+      ],
+      "default": "full_audit",
+      "description": "Type of braid diversity check"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "warning",
+        "critical",
+        "single_point_failure"
+      ],
+      "description": "Overall diversity health result"
+    },
+    "node_count": {
+      "type": "number",
+      "description": "Total braid nodes analysed"
+    },
+    "published_count": {
+      "type": "number",
+      "description": "Nodes published on XRPL"
+    },
+    "virtual_count": {
+      "type": "number",
+      "description": "Virtual (not on-chain) nodes"
+    },
+    "overall_diversity_score": {
+      "type": "number",
+      "description": "Composite diversity score 0-100"
+    },
+    "geographic_score": {
+      "type": "number",
+      "description": "Geographic diversity score 0-100"
+    },
+    "logical_score": {
+      "type": "number",
+      "description": "Logical role diversity score 0-100"
+    },
+    "connectivity_score": {
+      "type": "number",
+      "description": "Connectivity resilience score 0-100"
+    },
+    "operator_score": {
+      "type": "number",
+      "description": "Operator independence score 0-100"
+    },
+    "geographic_analysis": {
+      "type": "object",
+      "description": "Geographic distribution analysis \u2014 regions, concentration risks"
+    },
+    "logical_analysis": {
+      "type": "object",
+      "description": "Logical role distribution \u2014 AI vs human, purpose diversity"
+    },
+    "connectivity_analysis": {
+      "type": "object",
+      "description": "Graph connectivity \u2014 single points of failure, hub dependence"
+    },
+    "operator_analysis": {
+      "type": "object",
+      "description": "Operator independence \u2014 who controls what nodes"
+    },
+    "risk_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "geographic",
+              "logical",
+              "connectivity",
+              "operator"
+            ]
+          }
+        }
+      },
+      "description": "Risk signals across all diversity dimensions"
+    },
+    "node_profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "node_class": {
+            "type": "string"
+          },
+          "operator": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "virtual": {
+            "type": "boolean"
+          },
+          "connection_count": {
+            "type": "number"
+          },
+          "is_hub": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "Profile of each node at check time"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "dimension": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Actionable recommendations to improve diversity"
+    },
+    "tripwire_event_id": {
+      "type": "string",
+      "description": "TripwireEvent ID if alert fired"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional audit metadata"
+    }
+  },
+  "required": [
+    "check_type",
+    "result"
+  ]
+}
