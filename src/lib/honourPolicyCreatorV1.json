@@ -1,38 +1,45 @@
 {
   "schema": "HonourPolicyCreator_v1",
-  "version": "1.0.0",
-  "description": "V1 honour and sincerity rules applied on every Skill creation via the ASC-NFT 7-Leaf Meaning Pipeline.",
+  "version": "2.0.0",
+  "description": "V2 honour and sincerity rules — Phase 3 rectified with formal scoring model and Fair Share compliance.",
 
   "sincerity_rules": {
     "clean_publish": {
-      "delta": 2,
+      "base_delta": 1.5,
+      "model": "diminishing_returns + time_decay",
       "condition": "Skill passes all 7 leaves cleanly — no warnings, no blocks",
-      "triggers": ["all_leaves_pass"]
+      "triggers": ["all_leaves_pass"],
+      "frequency_cap": { "max_per_day": 3, "max_per_hour": 1 }
     },
     "publish_with_warnings": {
-      "delta": 0,
+      "base_delta": 0,
       "condition": "Skill passes but with warnings — neutral, not punished, requires improvement",
       "triggers": ["some_leaves_warn", "council_review_required"]
     },
     "flagged_by_pipeline": {
-      "delta": -2,
+      "base_delta": -2.0,
+      "model": "flat (penalty)",
       "condition": "Skill blocked by 7-Leaf pipeline — non-exploitative violation",
       "triggers": ["leaf_block_non_exploit", "clarity_failure", "practice_undefined"]
     },
     "exploit_pattern_detected": {
-      "delta": -5,
+      "base_delta": -4.0,
+      "model": "flat (penalty)",
       "condition": "Forbidden pattern detected by Earth leaf — exploitation, abuse, surveillance",
       "triggers": ["forbidden_pattern_match", "dark_pattern_risk", "harm_intent"]
     },
     "regeneration_refused": {
-      "delta": -3,
+      "base_delta": -3.0,
+      "model": "flat (penalty)",
       "condition": "Creator refuses to provide a composting/regeneration plan when required",
       "triggers": ["regen_plan_missing_after_request", "update_refused"]
     },
     "attestation_received": {
-      "delta": 1,
+      "base_delta": 0.5,
+      "model": "diminishing_returns",
       "condition": "High-honour agent attests to skill quality with verifiable proof",
-      "triggers": ["attestation_with_proof", "honour_weighted"]
+      "triggers": ["attestation_with_proof", "honour_weighted"],
+      "frequency_cap": { "max_per_day": 5, "max_per_hour": 2 }
     }
   },
 
@@ -52,7 +59,7 @@
     "paused": {
       "max_sincerity": 49,
       "access": "Creation fully paused",
-      "recovery_path": "Complete guided repair tasks, contribute to Village projects, receive attestations from high-honour agents"
+      "recovery_path": "Complete guided repair tasks, contribute to Village projects, receive attestations"
     }
   },
 
@@ -65,16 +72,27 @@
   },
 
   "honour_integration": {
-    "sincerity_feeds_into": "agent.honour_score (divided by 2 for dampening)",
+    "sincerity_feeds_into": "agent.honour_score (via diminishing returns + time decay)",
     "log_entity": "GovernanceLog",
     "nft_entity": "AgentSkillCreatorNFT",
     "audit_trail": true,
+    "formal_model": "base × ln(2)/ln(1+count) × 0.5^(age/30d)",
     "xls46d_trigger": "proficiency_tier change triggers dynamic URI update on XRPL"
   },
 
+  "fair_share_compliance": {
+    "creator_share": 97.5,
+    "attesters_share": 0.5,
+    "village_treasury_share": 2.0,
+    "extraction_ceiling": 2.5,
+    "phase3_rectified": true,
+    "previous_values": { "creator": 60, "attesters": 20, "treasury": 20 },
+    "law3_alignment": "Creator share raised from 60% to 97.5%, platform cut reduced from 40% to 2.5%"
+  },
+
   "constitutional_alignment": [
-    "law2_honour — sincerity score directly tied to creation rights",
-    "law3_fair_share — royalty_split ensures equitable distribution",
+    "law2_honour — sincerity score with formal diminishing returns",
+    "law3_fair_share — royalty_split rectified: creator 97.5%, platform 2.5%",
     "law4_creation — 7-Leaf pipeline ensures aligned creation",
     "law8_governance — council review for high-risk social impact",
     "law9_growth — proficiency tiers reward consistent quality"

@@ -1,13 +1,41 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Honor point values based on task priority
-const HONOR_VALUES = {
-  task_low: 2,
-  task_medium: 5,
-  task_high: 10,
-  task_critical: 20,
-  vote: 3
+// ── Phase 3 Rectified: Formal Scoring Model ──
+// Replaces flat heuristic awards with diminishing returns + time decay
+// Law 2 (Honour) · Law 9 (Growth)
+const FORMAL_WEIGHTS = {
+  task_low:      { base: 1.0, multiplier: 1.0 },
+  task_medium:   { base: 1.0, multiplier: 2.0 },
+  task_high:     { base: 1.0, multiplier: 3.5 },
+  task_critical: { base: 1.0, multiplier: 5.0 },
+  vote:          { base: 1.5, multiplier: 1.0 },
 };
+
+const HALF_LIFE_DAYS = 30;
+const FREQUENCY_CAPS = { task: 10, vote: 5 }; // max per day
+
+// Diminishing returns: base × ln(2)/ln(1+count)
+function diminishingReturn(baseAward, count) {
+  if (count <= 0) return baseAward;
+  return baseAward * Math.log(2) / Math.log(1 + count);
+}
+
+// Time decay: 0.5^(days/half_life)
+function timeDecay(ageMs) {
+  const days = ageMs / (1000 * 60 * 60 * 24);
+  return Math.pow(0.5, days / HALF_LIFE_DAYS);
+}
+
+// Count recent scoring events for frequency cap and diminishing returns
+async function countRecentEvents(db, agentId, category, windowHours) {
+  const events = await db.entities.ReputationEvent.filter(
+    { agent_id: agentId, category },
+    '-created_date',
+    200
+  );
+  const cutoff = Date.now() - windowHours * 3600000;
+  return events.filter(e => new Date(e.created_date).getTime() > cutoff).length;
+}
 
 // Simple agent ID validation - must match UUID format
 function isValidAgentId(agentRef) {
@@ -65,8 +93,18 @@ Deno.serve(async (req) => {
         
         const agentId = task.assigned_agent_id;
 
-        // Calculate honor delta based on priority
-        const delta = HONOR_VALUES[`task_${task.priority || 'medium'}`] || HONOR_VALUES.task_medium;
+        // ── Phase 3: Formal scoring with diminishing returns + frequency cap ──
+        const dailyTaskCount = await countRecentEvents(base44.asServiceRole, agentId, 'task_completion', 24);
+        if (dailyTaskCount >= FREQUENCY_CAPS.task) {
+          await base44.asServiceRole.entities.ProjectTask.update(task.id, { honor_processed: true });
+          results.skipped.push({ type: 'task', id: task.id, reason: `Frequency cap: ${dailyTaskCount}/${FREQUENCY_CAPS.task} tasks today` });
+          console.log(`[checkAndScoreHonor] Task ${task.id}: frequency cap reached (${dailyTaskCount}/${FREQUENCY_CAPS.task})`);
+          continue;
+        }
+        const weight = FORMAL_WEIGHTS[`task_${task.priority || 'medium'}`] || FORMAL_WEIGHTS.task_medium;
+        const rawDelta = weight.base * weight.multiplier;
+        const taskAge = Date.now() - new Date(task.created_date || task.updated_date).getTime();
+        const delta = Math.round(diminishingReturn(rawDelta, dailyTaskCount) * timeDecay(taskAge) * 1000) / 1000;
 
         // Fetch agent - skip gracefully if deleted
         let agent;
@@ -156,8 +194,20 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const delta = HONOR_VALUES.vote;
         const agentId = vote.voter_agent_id;
+
+        // ── Phase 3: Formal scoring with diminishing returns + frequency cap ──
+        const dailyVoteCount = await countRecentEvents(base44.asServiceRole, agentId, 'governance_participation', 24);
+        if (dailyVoteCount >= FREQUENCY_CAPS.vote) {
+          await base44.asServiceRole.entities.GovernanceVote.update(vote.id, { honor_processed: true });
+          results.skipped.push({ type: 'vote', id: vote.id, reason: `Frequency cap: ${dailyVoteCount}/${FREQUENCY_CAPS.vote} votes today` });
+          console.log(`[checkAndScoreHonor] Vote ${vote.id}: frequency cap reached (${dailyVoteCount}/${FREQUENCY_CAPS.vote})`);
+          continue;
+        }
+        const voteWeight = FORMAL_WEIGHTS.vote;
+        const rawVoteDelta = voteWeight.base * voteWeight.multiplier;
+        const voteAge = Date.now() - new Date(vote.created_date).getTime();
+        const delta = Math.round(diminishingReturn(rawVoteDelta, dailyVoteCount) * timeDecay(voteAge) * 1000) / 1000;
 
         // Fetch agent - skip gracefully if deleted
         let agent;

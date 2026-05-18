@@ -107,7 +107,8 @@
         },
         "treasury_share_percent": {
           "type": "number",
-          "default": 20
+          "default": 2,
+          "description": "Phase 3 rectified: reduced from 20% to 2% \u2014 within 2.5% Fair Share ceiling (Law 3)"
         }
       },
       "description": "RLUSD pricing per search, free tier, treasury share"

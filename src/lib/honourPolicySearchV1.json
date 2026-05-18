@@ -1,28 +1,32 @@
 {
   "schema": "HonourPolicySearch_v1",
-  "version": "1.0.0",
-  "description": "V1 honour and sincerity rules applied on every search via the Search Engine NFT.",
+  "version": "2.0.0",
+  "description": "V2 honour and sincerity rules — Phase 3 rectified with formal scoring model (diminishing returns, frequency caps, time decay).",
 
   "sincerity_rules": {
     "clean_aligned_query": {
-      "delta": 1,
+      "base_delta": 0.5,
+      "model": "diminishing_returns + time_decay",
       "condition": "Query is clear, non-harmful, and purpose-aligned per 7-Leaf evaluation",
       "alignment_score_min": 0.6,
-      "collective_risk_score_max": 0.3
+      "collective_risk_score_max": 0.3,
+      "frequency_cap": { "max_per_day": 50, "max_per_hour": 10 }
     },
     "neutral_query": {
-      "delta": 0,
+      "base_delta": 0,
       "condition": "Query is ambiguous or low-signal but not harmful",
       "alignment_score_range": [0.3, 0.6],
       "collective_risk_score_max": 0.6
     },
     "spam_pattern": {
-      "delta": -1,
+      "base_delta": -1.0,
+      "model": "flat (penalty — no diminishing returns on violations)",
       "condition": "Spammy, repetitive, or low-effort manipulative pattern detected",
       "triggers": ["repeated_identical_queries", "high_frequency_burst", "keyword_stuffing"]
     },
     "exploit_pattern": {
-      "delta": -2,
+      "base_delta": -2.0,
+      "model": "flat (penalty — no diminishing returns on violations)",
       "condition": "Exploitative, manipulative, or socially damaging intent detected",
       "triggers": ["social_engineering", "scam_research", "harm_intent", "deception_amplification"]
     }
@@ -42,8 +46,17 @@
   },
 
   "honour_integration": {
-    "sincerity_feeds_into": "agent.honour_score (via EmpathyTrace sincerity_trend)",
+    "sincerity_feeds_into": "agent.honour_score (via diminishing returns + time decay)",
     "log_entity": "SearchLog",
-    "audit_trail": true
+    "audit_trail": true,
+    "formal_model": "base × ln(2)/ln(1+count) × 0.5^(age/30d)"
+  },
+
+  "fair_share_compliance": {
+    "treasury_share_percent": 2,
+    "extraction_ceiling": 2.5,
+    "phase3_rectified": true,
+    "previous_value": 20,
+    "law3_alignment": "Platform extraction reduced from 20% to 2% — within 2.5% ceiling"
   }
 }

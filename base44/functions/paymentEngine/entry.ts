@@ -199,11 +199,23 @@ async function handleCharge(base44, user, body) {
     total_debited: (ledger.total_debited || 0) + payDef.amount,
   });
 
+  // ── Fair Share Guard: Law 3 enforcement ──
+  // Default split MUST comply with 2.5% extraction ceiling (creator ≥97.5%)
+  // Old defaults (treasury 50%, creator 40%, referral 10%) were 24x over ceiling
   const royalties = payDef.royalties_config || {};
+  const creatorPct = royalties.creator_percent ?? 98;
+  const treasuryPct = royalties.treasury_percent ?? 1.5;
+  const referralPct = royalties.referral_percent ?? 0.5;
+  // Hard enforcement: if platform cut exceeds 2.5%, force compliant split
+  const platformCut = treasuryPct + referralPct;
+  const effectiveCreator = platformCut > 2.5 ? 97.5 : creatorPct;
+  const effectiveTreasury = platformCut > 2.5 ? 1.5 : treasuryPct;
+  const effectiveReferral = platformCut > 2.5 ? 1.0 : referralPct;
   const royaltiesSplit = {
-    treasury_amount: Math.round(payDef.amount * ((royalties.treasury_percent || 50) / 100) * 100) / 100,
-    creator_amount: Math.round(payDef.amount * ((royalties.creator_percent || 40) / 100) * 100) / 100,
-    referral_amount: Math.round(payDef.amount * ((royalties.referral_percent || 10) / 100) * 100) / 100,
+    treasury_amount: Math.round(payDef.amount * (effectiveTreasury / 100) * 100) / 100,
+    creator_amount: Math.round(payDef.amount * (effectiveCreator / 100) * 100) / 100,
+    referral_amount: Math.round(payDef.amount * (effectiveReferral / 100) * 100) / 100,
+    fair_share_enforced: platformCut > 2.5,
   };
 
   await logPayment(base44, {

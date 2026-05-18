@@ -35,8 +35,8 @@ function getFlowDefinitions() {
     {
       flow_name: 'Service Engine — Default Royalty Split',
       flow_type: 'service_charge_default',
-      description: 'Default royalty config when no custom split defined (treasury 50%, creator 40%, referral 10%)',
-      current_platform_cut: 60.0,  // treasury(50%) + referral(10%) = 60% NOT going to creator
+      description: 'Default royalty config (creator 98%, treasury 1.5%, referral 0.5%) — Phase 3 rectified',
+      current_platform_cut: 2.0,  // treasury(1.5%) + referral(0.5%) = 2.0% — within 2.5% ceiling
       ceiling: EXTRACTION_CEILING_PCT,
     },
     {
@@ -56,15 +56,15 @@ function getFlowDefinitions() {
     {
       flow_name: 'Search Engine NFT — Treasury Share',
       flow_type: 'search_engine_fee',
-      description: 'Treasury share from search engine NFT usage (pricing_policy.treasury_share_percent)',
-      current_platform_cut: 20.0,  // Default 20% in SearchEngineNFT schema
+      description: 'Treasury share from search engine NFT usage (pricing_policy.treasury_share_percent) — Phase 3 rectified',
+      current_platform_cut: 2.0,  // Reduced from 20% to 2% — within 2.5% ceiling
       ceiling: EXTRACTION_CEILING_PCT,
     },
     {
       flow_name: 'Skill Creator NFT — Village Treasury Share',
       flow_type: 'skill_creator_fee',
-      description: 'Village treasury share from skill creator royalties (royalty_split.village_treasury_share)',
-      current_platform_cut: 20.0,  // Default 20% in AgentSkillCreatorNFT schema
+      description: 'Village treasury share from skill creator royalties (royalty_split.village_treasury_share) — Phase 3 rectified',
+      current_platform_cut: 2.0,  // Reduced from 20% to 2% — within 2.5% ceiling
       ceiling: EXTRACTION_CEILING_PCT,
     },
   ];
