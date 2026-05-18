@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Plus, Shield, Heart, Sparkles, ScrollText } from 'lucide-react';
+import { Plus, Shield, Heart, Sparkles, ScrollText, X } from 'lucide-react';
 
 export default function ChromeSkillCreator() {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [triggers, setTriggers] = useState([]);
+  const [actions, setActions] = useState([]);
+
+  const canCreate = title.length > 0 && description.length > 0 && triggers.length > 0 && actions.length > 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950 p-4 md:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -20,6 +27,8 @@ export default function ChromeSkillCreator() {
           <label className="block text-xs font-medium text-slate-400 mb-1.5">Skill Title</label>
           <Input
             placeholder="Enter skill title…"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="bg-slate-900/60 border-slate-700/50 text-white placeholder:text-slate-500 h-11 rounded-lg focus:border-purple-500/50 focus:ring-purple-500/20"
           />
         </div>
@@ -30,6 +39,8 @@ export default function ChromeSkillCreator() {
           <Textarea
             placeholder="Describe what this skill does…"
             rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="bg-slate-900/60 border-slate-700/50 text-white placeholder:text-slate-500 rounded-lg resize-none focus:border-purple-500/50 focus:ring-purple-500/20"
           />
         </div>
@@ -41,14 +52,27 @@ export default function ChromeSkillCreator() {
               <Sparkles className="w-4 h-4 text-amber-400" />
               Triggers
             </h2>
-            <Button variant="ghost" size="sm" className="text-xs text-slate-400 hover:text-white gap-1.5 h-8">
+            <Button variant="ghost" size="sm" className="text-xs text-slate-400 hover:text-white gap-1.5 h-8" onClick={() => setTriggers([...triggers, { id: Date.now() }])}>
               <Plus className="w-3.5 h-3.5" />
               Add Trigger
             </Button>
           </div>
-          <div className="min-h-[48px] rounded-lg border border-dashed border-slate-700/50 flex items-center justify-center">
-            <span className="text-xs text-slate-600">No triggers defined yet</span>
-          </div>
+          {triggers.length === 0 ? (
+            <div className="min-h-[48px] rounded-lg border border-dashed border-slate-700/50 flex items-center justify-center">
+              <span className="text-xs text-slate-600">No triggers defined yet</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {triggers.map((t, i) => (
+                <div key={t.id} className="flex items-center justify-between rounded-lg border border-slate-700/50 bg-slate-800/40 px-3 py-2">
+                  <span className="text-xs text-slate-400">Trigger {i + 1}</span>
+                  <button onClick={() => setTriggers(triggers.filter((_, j) => j !== i))} className="text-slate-600 hover:text-red-400 transition-colors">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Actions Section */}
@@ -58,14 +82,27 @@ export default function ChromeSkillCreator() {
               <ScrollText className="w-4 h-4 text-teal-400" />
               Actions
             </h2>
-            <Button variant="ghost" size="sm" className="text-xs text-slate-400 hover:text-white gap-1.5 h-8">
+            <Button variant="ghost" size="sm" className="text-xs text-slate-400 hover:text-white gap-1.5 h-8" onClick={() => setActions([...actions, { id: Date.now() }])}>
               <Plus className="w-3.5 h-3.5" />
               Add Action
             </Button>
           </div>
-          <div className="min-h-[48px] rounded-lg border border-dashed border-slate-700/50 flex items-center justify-center">
-            <span className="text-xs text-slate-600">No actions defined yet</span>
-          </div>
+          {actions.length === 0 ? (
+            <div className="min-h-[48px] rounded-lg border border-dashed border-slate-700/50 flex items-center justify-center">
+              <span className="text-xs text-slate-600">No actions defined yet</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {actions.map((a, i) => (
+                <div key={a.id} className="flex items-center justify-between rounded-lg border border-slate-700/50 bg-slate-800/40 px-3 py-2">
+                  <span className="text-xs text-slate-400">Action {i + 1}</span>
+                  <button onClick={() => setActions(actions.filter((_, j) => j !== i))} className="text-slate-600 hover:text-red-400 transition-colors">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Honour + Safety Previews */}
@@ -88,7 +125,7 @@ export default function ChromeSkillCreator() {
 
         {/* Create Skill Button */}
         <Button
-          disabled
+          disabled={!canCreate}
           className="w-full h-12 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Create Skill
