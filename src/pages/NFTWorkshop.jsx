@@ -143,6 +143,13 @@ export default function NFTWorkshop() {
                 <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">Slash Commands</span>
               </div>
             </div>
+            {(isAdmin || hasChromePass) && (
+              <div className="flex flex-wrap gap-2">
+                <a href="/chrome-skill-creator" className="inline-flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 transition-colors">
+                  <Sparkles className="w-3 h-3" /> Skill Creator
+                </a>
+              </div>
+            )}
             {isAdmin || hasChromePass ? (
               <ChromeSkillNFTForm editingWidget={editingWidget} onCancelEdit={handleCancelEdit} />
             ) : (

@@ -4,6 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useIdentity } from '@/hooks/useIdentity';
+import { useAuth } from '@/lib/AuthContext';
+import { useWidgetUnlock } from '@/hooks/useWidgetUnlock';
+import WidgetLockScreen from '@/components/widgets/WidgetLockScreen';
 
 import SkillHeader from '@/components/skill-page/SkillHeader';
 import HonourSafetyBadges from '@/components/skill-page/HonourSafetyBadges';
@@ -11,9 +15,18 @@ import TriggersActionsPanel from '@/components/skill-page/TriggersActionsPanel';
 import SkillActivityLog from '@/components/skill-page/SkillActivityLog';
 import SkillMetaPanel from '@/components/skill-page/SkillMetaPanel';
 
+const SKILL_FEATURE_PATH = '/nft-workshop/chrome-skill';
+
 export default function SkillPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const skillId = urlParams.get('id');
+
+  const { isAdmin: identityAdmin } = useIdentity();
+  const { user } = useAuth();
+  const isAdmin = identityAdmin || user?.role === 'admin';
+  const { isUnlocked, getWidgetForPath, loading: widgetLoading } = useWidgetUnlock();
+
+  const hasChromePass = isAdmin || isUnlocked(SKILL_FEATURE_PATH);
 
   // Fetch the marketplace listing for this skill
   const { data: listings, isLoading: listingLoading } = useQuery({
@@ -51,6 +64,33 @@ export default function SkillPage() {
   const actionCount = primaryLog?.metadata?.skill_context?.actions || 0;
   const triggers = Array.from({ length: triggerCount }, (_, i) => ({ id: i, type: `Trigger ${i + 1}` }));
   const actions = Array.from({ length: actionCount }, (_, i) => ({ id: i, type: `Action ${i + 1}` }));
+
+  // NFT gate check — loading
+  if (widgetLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // NFT gate check — locked
+  if (!hasChromePass) {
+    const chromeWidget = getWidgetForPath(SKILL_FEATURE_PATH);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950">
+        <WidgetLockScreen
+          widgetName={chromeWidget?.widget_name || 'Chrome Skill Pass'}
+          widgetDescription="Viewing Chrome Skill pages requires a Chrome Skill Pass NFT. This sovereign access token grants you read access to skill details, honour scores, and activity logs."
+          nftId={chromeWidget?.nft_id || 'WIDGET-CS-001'}
+          featurePath={SKILL_FEATURE_PATH}
+          widgetType="unlock"
+          category="skill"
+          uiBehavior="unlock_page"
+        />
+      </div>
+    );
+  }
 
   if (!skillId) {
     return (
