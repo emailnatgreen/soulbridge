@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Plus, Shield, Heart, Sparkles, ScrollText, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import SimulatedPayDialog from '@/components/chrome-skill/SimulatedPayDialog';
 
 export default function ChromeSkillCreator() {
   const [title, setTitle] = useState('');
@@ -13,10 +14,19 @@ export default function ChromeSkillCreator() {
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null); // null | 'success' | 'error'
+  const [showPayDialog, setShowPayDialog] = useState(false);
+  const [paymentResult, setPaymentResult] = useState(null);
 
   const canCreate = title.length > 0 && description.length > 0 && triggers.length > 0 && actions.length > 0;
 
-  const handleCreateSkill = async () => {
+  const handlePayAndCreate = () => {
+    setStatus(null);
+    setShowPayDialog(true);
+  };
+
+  const handlePaymentComplete = async (payment) => {
+    setPaymentResult(payment);
+    setShowPayDialog(false);
     setLoading(true);
     setStatus(null);
     const res = await base44.functions.invoke('chromeSkillCreatorHarness', {
@@ -24,6 +34,11 @@ export default function ChromeSkillCreator() {
       description,
       triggers,
       actions,
+      payment_token: payment.token,
+      payment_method: payment.method,
+      payment_amount: payment.amount,
+      payment_currency: payment.currency,
+      payment_timestamp: payment.timestamp,
     });
     if (res.data?.success || res.data?.skill_id) {
       setStatus('success');
@@ -148,7 +163,12 @@ export default function ChromeSkillCreator() {
         {status === 'success' && (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <p className="text-sm text-emerald-300">Skill created (stub). Payment not yet wired.</p>
+            <div>
+              <p className="text-sm text-emerald-300">Skill created successfully!</p>
+              {paymentResult && (
+                <p className="text-[10px] text-emerald-500/70 mt-0.5 font-mono">Token: {paymentResult.token}</p>
+              )}
+            </div>
           </div>
         )}
         {status === 'error' && (
@@ -158,21 +178,34 @@ export default function ChromeSkillCreator() {
           </div>
         )}
 
-        {/* Create Skill Button */}
+        {/* Pay & Create — Simulated Google Pay Flow */}
         <Button
           disabled={!canCreate || loading}
-          onClick={handleCreateSkill}
-          className="w-full h-12 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={handlePayAndCreate}
+          className="w-full h-12 rounded-xl text-sm font-semibold bg-white hover:bg-slate-100 text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : 'Create Skill'}
+          {loading ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Creating Skill…</>
+          ) : (
+            <>
+              <div className="w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center">
+                <span className="text-[10px] font-bold text-white">G</span>
+              </div>
+              Buy with <span className="font-bold">Google Pay</span>
+            </>
+          )}
         </Button>
 
-        {/* Google Pay Anchor — Tile 3 will load the Web Pay API here */}
-        <div className="rounded-xl border border-slate-700/40 bg-slate-800/30 h-12 flex items-center justify-center gap-2 cursor-not-allowed opacity-50">
-          <span className="text-sm text-slate-400">Buy with</span>
-          <span className="text-sm font-bold text-white">G Pay</span>
-          <span className="text-[10px] text-slate-500 ml-1">(Locked)</span>
-        </div>
+        {/* Simulated Payment Dialog */}
+        {showPayDialog && (
+          <SimulatedPayDialog
+            amount="0.50"
+            currency="RLUSD"
+            skillTitle={title || 'Untitled Skill'}
+            onPaymentComplete={handlePaymentComplete}
+            onCancel={() => setShowPayDialog(false)}
+          />
+        )}
 
         {/* Shield Log Banner */}
         <div className="rounded-xl border border-slate-700/30 bg-slate-900/30 px-4 py-3 flex items-center gap-2">
