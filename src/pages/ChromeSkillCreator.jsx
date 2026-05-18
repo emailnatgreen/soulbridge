@@ -3,9 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Plus, Shield, Heart, Sparkles, ScrollText, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Shield, Heart, Sparkles, ScrollText, X, Loader2 } from 'lucide-react';
 import SimulatedPayDialog from '@/components/chrome-skill/SimulatedPayDialog';
 import HonourSafetyPreview from '@/components/chrome-skill/HonourSafetyPreview';
+import { SuccessModal, ErrorModal } from '@/components/chrome-skill/SkillResultModal';
 
 export default function ChromeSkillCreator() {
   const [title, setTitle] = useState('');
@@ -182,23 +183,18 @@ export default function ChromeSkillCreator() {
           harnessResult={harnessResult}
         />
 
-        {/* Status Banner */}
+        {/* Result Modals */}
         {status === 'success' && (
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <div>
-              <p className="text-sm text-emerald-300">Skill created successfully!</p>
-              {paymentResult && (
-                <p className="text-[10px] text-emerald-500/70 mt-0.5 font-mono">Token: {paymentResult.token}</p>
-              )}
-            </div>
-          </div>
+          <SuccessModal
+            harnessResult={harnessResult}
+            onClose={() => setStatus(null)}
+          />
         )}
         {status === 'error' && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-            <p className="text-sm text-red-300">Something went wrong. Please try again.</p>
-          </div>
+          <ErrorModal
+            harnessResult={harnessResult}
+            onClose={() => setStatus(null)}
+          />
         )}
 
         {/* Pay & Create — Simulated Google Pay Flow */}
