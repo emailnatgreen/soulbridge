@@ -27,6 +27,7 @@ import GroundingPanel from '@/components/admin-truth/GroundingPanel';
 import MayaAuditCard from '@/components/admin-truth/MayaAuditCard';
 import MayaChatCard from '@/components/admin-truth/MayaChatCard';
 import AgentExistentialGuardPanel from '@/components/admin-truth/AgentExistentialGuardPanel';
+import MultiSigDiversityPanel from '@/components/admin-truth/MultiSigDiversityPanel';
 
 function parseInvestigation(memory) {
   if (!memory) return null;
@@ -224,6 +225,9 @@ export default function AdminTruthEngine() {
 
             {/* Agent Existential Guard */}
             <AgentExistentialGuardPanel />
+
+            {/* Multi-Sig Diversity Guard */}
+            <MultiSigDiversityPanel />
 
             {/* Maya Chat */}
             <MayaChatCard />
