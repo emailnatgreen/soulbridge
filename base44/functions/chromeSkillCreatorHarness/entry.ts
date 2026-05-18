@@ -115,15 +115,48 @@ Deno.serve(async (req) => {
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
 
     const body = await req.json().catch(() => ({}));
+
+    // ─── Payment Token Verification (Simulated) ───
+    const paymentToken = body.payment_token || null;
+    const paymentMethod = body.payment_method || null;
+    let chargeResult = null;
+
+    if (paymentToken) {
+      // Simulated token must start with correct prefix
+      if (!paymentToken.startsWith('GPAY_SIM_')) {
+        return Response.json({
+          pipeline_result: 'PAYMENT_FAILED',
+          error: 'Invalid payment token format',
+          success: false
+        }, { status: 400 });
+      }
+
+      // Simulated charge — mirrors real charge structure
+      chargeResult = {
+        charge_id: 'SIMCHARGE_' + Date.now().toString(36),
+        amount: parseFloat(body.payment_amount || '0.50'),
+        currency: body.payment_currency || 'RLUSD',
+        status: 'succeeded',
+        method: paymentMethod,
+        token: paymentToken,
+        timestamp: body.payment_timestamp || new Date().toISOString()
+      };
+    }
+
+    // ─── Map frontend field names to harness fields ───
     const {
       creator_did = 'did:sb:test_creator',
-      skill_name = 'Test Skill',
+      skill_name = body.title || 'Test Skill',
       category = 'analysis',
-      description = 'A simple test skill.',
+      description = body.description || 'A simple test skill.',
       purpose = 'Assist with clarity.',
       proofs = [],
       attestors = []
     } = body;
+
+    // Map frontend triggers/actions into purpose context
+    const triggerCount = Array.isArray(body.triggers) ? body.triggers.length : 0;
+    const actionCount = Array.isArray(body.actions) ? body.actions.length : 0;
 
     // ═══════════════════════════════════════════════
     // A. OWNERSHIP CHECK
@@ -358,16 +391,33 @@ Deno.serve(async (req) => {
     // ═══════════════════════════════════════════════
     // RETURN HARNESS REPORT
     // ═══════════════════════════════════════════════
+    // Compute honour and safety scores for frontend
+    const earthSafety = pipeline.leafResults.earth?.safety_score ?? 0;
+    const langHonesty = pipeline.leafResults.language?.honesty_score ?? 0;
+    const collectiveImpact = pipeline.leafResults.collective?.social_impact_score ?? 0;
+    const regenScore = pipeline.leafResults.regeneration?.regenerative_score ?? 0;
+    const honourScore = Math.round(((langHonesty + regenScore + (sincerityAfter / 100)) / 3) * 100);
+    const safetyScore = Math.round(((earthSafety + (1 - (pipeline.leafResults.purpose?.exploit_risk ?? 0)) + collectiveImpact) / 3) * 100);
+
     return Response.json({
+      success: pipeline.overall !== 'block',
+      skill_id: pipeline.overall !== 'block' ? runId : null,
       harness_run_id: runId,
       pipeline_result: pipeline.overall.toUpperCase(),
 
+      // Payment
+      charge: chargeResult,
+
       // Honour
+      honour_score: honourScore,
       sincerity_before: sincerityBefore,
       sincerity_after: sincerityAfter,
       sincerity_delta: sincerityDelta,
       proficiency_tier_before: proficiencyTierBefore,
       proficiency_tier_after: proficiencyTierAfter,
+
+      // Safety
+      safety_score: safetyScore,
 
       // Attestations
       attestations_added: newAttestations.length,
@@ -395,6 +445,9 @@ Deno.serve(async (req) => {
       warnings: pipeline.warnings,
       blocks: pipeline.blocks,
       regeneration_guidance: pipeline.overall !== 'pass' ? pipeline.blocks.concat(pipeline.warnings) : [],
+
+      // Skill creation context
+      skill_context: { triggers: triggerCount, actions: actionCount },
 
       meta: { processing_ms: Date.now() - start, asc_nft_id: ascNft.token_id, creator_did }
     });

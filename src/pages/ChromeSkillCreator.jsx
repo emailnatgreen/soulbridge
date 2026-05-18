@@ -16,6 +16,7 @@ export default function ChromeSkillCreator() {
   const [status, setStatus] = useState(null); // null | 'success' | 'error'
   const [showPayDialog, setShowPayDialog] = useState(false);
   const [paymentResult, setPaymentResult] = useState(null);
+  const [harnessResult, setHarnessResult] = useState(null);
 
   const canCreate = title.length > 0 && description.length > 0 && triggers.length > 0 && actions.length > 0;
 
@@ -40,6 +41,7 @@ export default function ChromeSkillCreator() {
       payment_currency: payment.currency,
       payment_timestamp: payment.timestamp,
     });
+    setHarnessResult(res.data);
     if (res.data?.success || res.data?.skill_id) {
       setStatus('success');
     } else {
@@ -146,16 +148,36 @@ export default function ChromeSkillCreator() {
           <div className="rounded-xl border border-slate-700/40 bg-slate-900/40 p-4">
             <h3 className="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
               <Heart className="w-3.5 h-3.5 text-pink-400" />
-              Honour Preview
+              Honour
             </h3>
-            <p className="text-sm text-slate-600">Honour score will appear here.</p>
+            {harnessResult?.honour_score != null ? (
+              <div>
+                <p className="text-2xl font-bold text-pink-300">{harnessResult.honour_score}%</p>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Sincerity: {harnessResult.sincerity_before} → {harnessResult.sincerity_after}
+                  {harnessResult.sincerity_delta > 0 ? ` (+${harnessResult.sincerity_delta})` : harnessResult.sincerity_delta < 0 ? ` (${harnessResult.sincerity_delta})` : ''}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600">Score appears after creation.</p>
+            )}
           </div>
           <div className="rounded-xl border border-slate-700/40 bg-slate-900/40 p-4">
             <h3 className="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-emerald-400" />
-              Safety Preview
+              Safety
             </h3>
-            <p className="text-sm text-slate-600">Safety score will appear here.</p>
+            {harnessResult?.safety_score != null ? (
+              <div>
+                <p className="text-2xl font-bold text-emerald-300">{harnessResult.safety_score}%</p>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Pipeline: {harnessResult.pipeline_result}
+                  {harnessResult.shield_status === 'anomaly_logged' && ' · ⚠ Anomaly flagged'}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600">Score appears after creation.</p>
+            )}
           </div>
         </div>
 
