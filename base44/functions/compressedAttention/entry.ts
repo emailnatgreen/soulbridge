@@ -17,8 +17,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * - Behavioral Anomaly Detection: deviation from baselines
  * - Context-Aware Enrichment: add metadata before Sentinel review
  * - Privacy-Preserving Inference: hashed inputs, no raw PII
+ * - ZK Wellbeing Proof Integration: wellbeing checks routed through zkWellbeingProof layer
  *
  * All Memory records tagged with 'compressed_attention'.
+ *
+ * Phase 1 Fix: Privacy vs Oversight — Node 8 no longer inspects raw wellbeing data.
+ * Wellbeing evaluation is delegated to zkWellbeingProof which returns only
+ * threshold verdicts and anonymised flags. Attestation IDs are recorded for audit.
  */
 
 const NODE_8_ID = 'compressed-attention-node8';
@@ -273,7 +278,62 @@ Deno.serve(async (req) => {
         });
       }
 
-      // 4. Behavioral anomaly detection
+      // 4. ZK Wellbeing Proof — privacy-preserving wellbeing evaluation
+      //    Delegated to zkWellbeingProof: returns threshold verdicts only, no raw data
+      let zkWellbeingResult = null;
+      let zkAttestationId = null;
+      try {
+        const zkRes = await base44.asServiceRole.functions.invoke('zkWellbeingProof', {
+          action: 'evaluate',
+        });
+        zkWellbeingResult = zkRes.data || zkRes;
+        zkAttestationId = zkWellbeingResult?.attestation?.id || null;
+
+        // Inject ZK wellbeing flags as synthetic scored vectors (anonymised)
+        if (zkWellbeingResult?.evaluation?.verdicts) {
+          for (const v of zkWellbeingResult.evaluation.verdicts) {
+            if (v.flags.length > 0) {
+              const sevMap = {
+                'honor_critically_low': 'critical',
+                'wellbeing_critical': 'critical',
+                'activity_anomaly_critical': 'critical',
+                'economic_anomaly': 'high',
+                'honor_warning': 'medium',
+                'wellbeing_warning': 'medium',
+                'activity_anomaly_warning': 'medium',
+                'governance_inactive': 'low',
+              };
+              const worstFlag = v.flags.reduce((worst, f) => {
+                const order = ['low', 'medium', 'high', 'critical'];
+                const wIdx = order.indexOf(sevMap[worst] || 'low');
+                const fIdx = order.indexOf(sevMap[f] || 'low');
+                return fIdx > wIdx ? f : worst;
+              }, v.flags[0]);
+              const severity = sevMap[worstFlag] || 'medium';
+              const sevScore = { critical: 70, high: 50, medium: 25, low: 10 };
+
+              scoredVectors.push({
+                id: `zk-wellbeing-${v.signal_hash}`,
+                event_type: `zk_wellbeing_${v.category}`,
+                severity,
+                status: 'active',
+                source_node: 'ZK Wellbeing Proof (Node 8)',
+                affected_entity_type: 'Agent',
+                actor_hash: v.signal_hash,
+                score: sevScore[severity] || 20,
+                tags: ['zk_wellbeing', 'privacy_preserving', ...v.flags],
+                created: new Date().toISOString(),
+                description_hash: await hashValue(v.flags.join(',')),
+                anomaly_detail: `ZK flags: ${v.flags.join(', ')} (category: ${v.category})`,
+              });
+            }
+          }
+        }
+      } catch (zkErr) {
+        console.error('[compressedAttention] ZK wellbeing proof failed (non-blocking):', zkErr.message);
+      }
+
+      // 5. Behavioral anomaly detection
       // Pass ALL tripwire events (not just active) to MWTP detector for deduplication
       const entropyAnomalies = detectEntropyAnomalies(entropyRounds);
       const mwtpAnomalies = detectMWTPAnomalies(mwtpPackets, allTripwireEvents);
@@ -298,10 +358,10 @@ Deno.serve(async (req) => {
         });
       }
 
-      // 5. Loop Computing — iterative cross-signal refinement
+      // 6. Loop Computing — iterative cross-signal refinement
       const { vectors: refinedVectors, loops, converged } = loopCompute(scoredVectors);
 
-      // 6. Compress: top threats sorted by score
+      // 7. Compress: top threats sorted by score
       const sorted = refinedVectors.sort((a, b) => b.score - a.score);
       const topThreats = sorted.slice(0, 10);
       const avgScore = sorted.length > 0
@@ -315,7 +375,7 @@ Deno.serve(async (req) => {
         : maxScore >= 20 ? 'GUARDED'
         : 'NOMINAL';
 
-      // 7. Create enriched TripwireEvents for new anomalies (only high/critical)
+      // 8. Create enriched TripwireEvents for new anomalies (only high/critical)
       // With deduplication: skip if an active alert of the same anomaly_type exists from the last 30 min
       const ALERT_DEDUP_MS = 30 * 60 * 1000;
       const now = Date.now();
@@ -353,10 +413,13 @@ Deno.serve(async (req) => {
 
       const elapsedMs = Date.now() - startTime;
 
-      // 8. Compressed attention summary → Memory (full audit trail — ALL events)
+      // 9. Compressed attention summary → Memory (full audit trail — ALL events)
+      const zkStatus = zkWellbeingResult?.evaluation?.overall_status || 'NOT_RUN';
+      const zkFlags = zkWellbeingResult?.evaluation?.flags_summary?.total || 0;
       const summaryContent = [
         `🧠 Compressed Attention Analysis — Node 8`,
         `Threat Level: ${threatLevel} | Avg Score: ${avgScore}/100 | Max: ${maxScore}/100`,
+        `ZK Wellbeing: ${zkStatus} | Flags: ${zkFlags} | Attestation: ${zkAttestationId || 'none'}`,
         `Mode: ${includeResolved ? 'Full (including resolved)' : 'Active threats only'}`,
         `Signals Processed: ${allTripwireEvents.length} tripwire (${activeEvents.length} active, ${resolvedCount} resolved/excluded), ${entropyRounds.length} entropy, ${mwtpPackets.length} MWTP`,
         `Anomalies Detected: ${allAnomalies.length} (${entropyAnomalies.length} entropy, ${mwtpAnomalies.length} MWTP)`,
@@ -374,7 +437,7 @@ Deno.serve(async (req) => {
         agent_id: NODE_8_ID,
         type: 'observation',
         content: summaryContent,
-        keywords: ['compressed_attention', 'node_8', 'semantic_scoring', 'loop_computing', 'behavioral_anomaly', 'security', 'lab'],
+        keywords: ['compressed_attention', 'node_8', 'semantic_scoring', 'loop_computing', 'behavioral_anomaly', 'security', 'lab', 'zk_compliant'],
         context: `Compressed Attention Analysis — ${new Date().toISOString()}`,
         importance: threatLevel === 'CRITICAL' ? 9 : threatLevel === 'ELEVATED' ? 7 : 5,
       });
@@ -383,6 +446,12 @@ Deno.serve(async (req) => {
         success: true,
         threat_level: threatLevel,
         include_resolved: includeResolved,
+        zk_wellbeing: {
+          status: zkStatus,
+          flags: zkFlags,
+          attestation_id: zkAttestationId,
+          compliant: zkWellbeingResult?.zk_compliant === true,
+        },
         summary: {
           signals_processed: {
             tripwire_total: allTripwireEvents.length,

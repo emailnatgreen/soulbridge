@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Node8RecommendationCard from './Node8RecommendationCard';
 import Phase3ConfigPanel from './Phase3ConfigPanel';
+import ZKComplianceBadge from '@/components/sovereign-guard/ZKComplianceBadge';
 
 const STAT_ICONS = {
   pending: Clock,
@@ -150,6 +151,9 @@ export default function Node8OversightPanel() {
           </div>
         )}
       </div>
+
+      {/* ZK Privacy Compliance Status */}
+      <ZKComplianceBadge />
 
       {/* Phase 3 Config Panel */}
       {showConfig && <Phase3ConfigPanel config={config} />}

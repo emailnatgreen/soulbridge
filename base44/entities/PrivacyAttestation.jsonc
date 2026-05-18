@@ -1,0 +1,93 @@
+{
+  "name": "PrivacyAttestation",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent or system node receiving this privacy attestation"
+    },
+    "attestation_type": {
+      "type": "string",
+      "enum": [
+        "data_minimization",
+        "encryption_compliance",
+        "consent_verified",
+        "audit_compliant",
+        "regulatory_compliant",
+        "zk_wellbeing_proof",
+        "zk_oversight_compliant",
+        "threshold_only_verdict"
+      ],
+      "description": "Type of privacy guarantee being attested"
+    },
+    "issuing_authority": {
+      "type": "string",
+      "description": "DID or entity name of the authority issuing this attestation"
+    },
+    "scope": {
+      "type": "string",
+      "description": "What aspects of agent's data/activity this attestation covers"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "revoked",
+        "under_review"
+      ],
+      "default": "active",
+      "description": "Current attestation status"
+    },
+    "issued_at": {
+      "type": "string",
+      "description": "ISO timestamp of attestation issuance"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "ISO timestamp when attestation expires"
+    },
+    "verification_hash": {
+      "type": "string",
+      "description": "SHA-256 hash linking this attestation to the evaluation data \u2014 verifiable without exposing raw data"
+    },
+    "xrpl_txid": {
+      "type": "string",
+      "description": "XRPL transaction ID where attestation was anchored"
+    },
+    "privacy_guarantees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "guarantee": {
+            "type": "string",
+            "description": "Specific privacy guarantee (e.g., 'all_identifiers_hashed_sha256')"
+          },
+          "compliance_framework": {
+            "type": "string",
+            "description": "Framework this guarantee adheres to (e.g., 'SoulBridge-11-Laws', 'UK-GDPR')"
+          }
+        }
+      },
+      "description": "List of specific privacy guarantees"
+    },
+    "associated_zkproofs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "ZKProof IDs linked to this attestation"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional attestation metadata \u2014 evaluation results, processing info, pattern version"
+    }
+  },
+  "required": [
+    "agent_id",
+    "attestation_type",
+    "issuing_authority",
+    "scope"
+  ]
+}
