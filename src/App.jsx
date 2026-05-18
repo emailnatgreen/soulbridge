@@ -46,6 +46,7 @@ import MyAgentHub from './pages/MyAgentHub';
 import AgentAnalytics from './pages/AgentAnalytics';
 import MyAscNftDisplay from './pages/MyAscNftDisplay';
 import ChromeSkillSearch from './pages/ChromeSkillSearch';
+import ChromeSkillCreator from './pages/ChromeSkillCreator';
 
 // ADMIN PAGES
 import AxiCommandDashboard from './pages/AxiCommandDashboard';
@@ -398,6 +399,7 @@ const AuthenticatedApp = () => {
         <Route path="/agents/:id/analytics" element={L("agent-analytics", AgentAnalytics)} />
         <Route path="/my-asc-nft" element={L("my-asc-nft", MyAscNftDisplay)} />
         <Route path="/sovereign-search" element={L("sovereign-search", ChromeSkillSearch)} />
+        <Route path="/chrome-skill-creator" element={L("chrome-skill-creator", ChromeSkillCreator)} />
 
         {/* ADMIN/RESTRICTED PAGES */}
         <Route path="/admin/axi-command" element={L("axi-command", AxiCommandDashboard)} />
