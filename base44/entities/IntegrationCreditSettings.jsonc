@@ -1,0 +1,111 @@
+{
+  "name": "IntegrationCreditSettings",
+  "type": "object",
+  "properties": {
+    "monthly_budget_credits": {
+      "type": "number",
+      "description": "Monthly budget limit for integration credits"
+    },
+    "alert_threshold_percent": {
+      "type": "number",
+      "default": 80,
+      "description": "Alert when usage reaches this percentage of budget (0-100)"
+    },
+    "critical_threshold_percent": {
+      "type": "number",
+      "default": 95,
+      "description": "Critical alert when usage reaches this percentage (0-100)"
+    },
+    "preferred_llm_model": {
+      "type": "string",
+      "enum": [
+        "gpt_5_mini",
+        "gpt_5",
+        "gpt_5_4",
+        "gemini_3_flash",
+        "gemini_3_pro",
+        "claude_sonnet_4_6",
+        "claude_opus_4_6",
+        "automatic"
+      ],
+      "default": "gpt_5_mini",
+      "description": "Default LLM model to use for cost optimization"
+    },
+    "premium_llm_model": {
+      "type": "string",
+      "enum": [
+        "gpt_5_4",
+        "claude_opus_4_6",
+        "gemini_3_pro"
+      ],
+      "description": "Premium model reserved for critical tasks"
+    },
+    "enable_automation_throttling": {
+      "type": "boolean",
+      "default": false,
+      "description": "Auto-pause low-priority automations if budget is exceeded"
+    },
+    "paused_automation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of automations paused due to budget constraints"
+    },
+    "automation_priority_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "automation_id": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "max_daily_runs": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Rules for automation execution priority and limits"
+    },
+    "enable_notifications": {
+      "type": "boolean",
+      "default": true,
+      "description": "Send alerts when thresholds are reached"
+    },
+    "notification_emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Email addresses to notify about credit usage"
+    },
+    "monthly_reset_day": {
+      "type": "number",
+      "description": "Day of month when credits reset (1-31)"
+    },
+    "estimated_credit_rate": {
+      "type": "number",
+      "description": "Estimated USD cost per integration credit (for budgeting)"
+    },
+    "last_reviewed_date": {
+      "type": "string",
+      "description": "ISO timestamp of last review by admin"
+    },
+    "review_notes": {
+      "type": "string",
+      "description": "Admin notes on optimization and adjustments"
+    }
+  },
+  "required": [
+    "monthly_budget_credits"
+  ]
+}

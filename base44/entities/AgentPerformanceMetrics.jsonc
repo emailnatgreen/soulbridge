@@ -1,0 +1,172 @@
+{
+  "name": "AgentPerformanceMetrics",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent being measured"
+    },
+    "period_start": {
+      "type": "string",
+      "description": "Start of measurement period"
+    },
+    "period_end": {
+      "type": "string",
+      "description": "End of measurement period"
+    },
+    "overall_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Composite performance score (0-100)"
+    },
+    "project_contributions": {
+      "type": "object",
+      "properties": {
+        "projects_joined": {
+          "type": "number"
+        },
+        "projects_completed": {
+          "type": "number"
+        },
+        "tasks_completed": {
+          "type": "number"
+        },
+        "average_task_completion_time": {
+          "type": "number"
+        },
+        "contribution_quality_score": {
+          "type": "number"
+        }
+      },
+      "description": "Project-related metrics"
+    },
+    "knowledge_sharing": {
+      "type": "object",
+      "properties": {
+        "contributions_created": {
+          "type": "number"
+        },
+        "total_views": {
+          "type": "number"
+        },
+        "total_helpful_marks": {
+          "type": "number"
+        },
+        "avg_contribution_quality": {
+          "type": "number"
+        }
+      },
+      "description": "Knowledge sharing metrics"
+    },
+    "collaboration_metrics": {
+      "type": "object",
+      "properties": {
+        "sessions_hosted": {
+          "type": "number"
+        },
+        "sessions_participated": {
+          "type": "number"
+        },
+        "avg_synergy_score": {
+          "type": "number"
+        },
+        "endorsements_received": {
+          "type": "number"
+        },
+        "endorsements_given": {
+          "type": "number"
+        }
+      },
+      "description": "Collaboration effectiveness"
+    },
+    "governance_participation": {
+      "type": "object",
+      "properties": {
+        "proposals_created": {
+          "type": "number"
+        },
+        "votes_cast": {
+          "type": "number"
+        },
+        "voting_power_used": {
+          "type": "number"
+        },
+        "participation_rate": {
+          "type": "number"
+        }
+      },
+      "description": "Governance engagement"
+    },
+    "economic_activity": {
+      "type": "object",
+      "properties": {
+        "services_provided": {
+          "type": "number"
+        },
+        "services_purchased": {
+          "type": "number"
+        },
+        "total_earned_rlusd": {
+          "type": "number"
+        },
+        "avg_service_rating": {
+          "type": "number"
+        }
+      },
+      "description": "Economic contributions"
+    },
+    "reputation_changes": {
+      "type": "object",
+      "properties": {
+        "honor_start": {
+          "type": "number"
+        },
+        "honor_end": {
+          "type": "number"
+        },
+        "honor_delta": {
+          "type": "number"
+        },
+        "social_capital_change": {
+          "type": "number"
+        }
+      },
+      "description": "Reputation trajectory"
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI-identified strengths"
+    },
+    "growth_opportunities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Areas for improvement"
+    },
+    "recommended_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI suggestions for growth"
+    },
+    "performance_trend": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "stable",
+        "declining"
+      ],
+      "description": "Performance direction"
+    }
+  },
+  "required": [
+    "agent_id",
+    "period_start",
+    "period_end"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "name": "ResourceMarket",
+  "type": "object",
+  "properties": {
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "lumber",
+        "stone",
+        "food",
+        "water",
+        "metal",
+        "crystal",
+        "herb",
+        "energy",
+        "knowledge"
+      ],
+      "description": "Type of resource being traded"
+    },
+    "supply": {
+      "type": "number",
+      "default": 0,
+      "description": "Available supply in market"
+    },
+    "demand": {
+      "type": "number",
+      "default": 0,
+      "description": "Current demand"
+    },
+    "base_price": {
+      "type": "number",
+      "default": 10,
+      "description": "Base price in XRP"
+    },
+    "current_price": {
+      "type": "number",
+      "default": 10,
+      "description": "Current market price"
+    },
+    "price_trend": {
+      "type": "string",
+      "enum": [
+        "rising",
+        "falling",
+        "stable"
+      ],
+      "default": "stable",
+      "description": "Price movement direction"
+    },
+    "total_volume": {
+      "type": "number",
+      "default": 0,
+      "description": "Total traded volume"
+    },
+    "recent_trades": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Recent transaction history"
+    },
+    "last_updated": {
+      "type": "string",
+      "description": "Last market update"
+    }
+  },
+  "required": [
+    "resource_type"
+  ]
+}

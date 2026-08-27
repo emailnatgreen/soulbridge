@@ -1,0 +1,83 @@
+{
+  "name": "VillagePage",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Human-readable page name matching the file/route name"
+    },
+    "path": {
+      "type": "string",
+      "description": "URL path for the page (e.g. /Home, /Governance)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "governance",
+        "agents",
+        "economy",
+        "did_identity",
+        "skills",
+        "simulation",
+        "admin",
+        "social",
+        "marketplace",
+        "public",
+        "tools"
+      ],
+      "description": "Functional category of the page"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "draft",
+        "archived",
+        "under_review",
+        "needs_update"
+      ],
+      "default": "active",
+      "description": "Current operational status of the page"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of what this page does"
+    },
+    "last_reviewed_by_agent_id": {
+      "type": "string",
+      "description": "Agent ID that last reviewed or flagged this page"
+    },
+    "last_reviewed_date": {
+      "type": "string",
+      "description": "ISO timestamp of last review"
+    },
+    "review_notes": {
+      "type": "string",
+      "description": "Axi's latest observations, recommendations or flags for this page"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Priority for review or update"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this page is accessible without login"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional structured data: SEO tags, required roles, linked entities, etc."
+    }
+  },
+  "required": [
+    "name",
+    "path"
+  ]
+}

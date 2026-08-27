@@ -1,0 +1,125 @@
+{
+  "name": "Treaty",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Official name of the treaty"
+    },
+    "treaty_type": {
+      "type": "string",
+      "enum": [
+        "trade_agreement",
+        "alliance",
+        "resource_sharing",
+        "peace_treaty",
+        "collaboration_pact",
+        "governance_coalition",
+        "non_aggression"
+      ],
+      "description": "Type of treaty"
+    },
+    "signatory_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "All agents who signed the treaty"
+    },
+    "terms": {
+      "type": "object",
+      "description": "Binding terms of the agreement"
+    },
+    "obligations": {
+      "type": "object",
+      "description": "What each party must do"
+    },
+    "benefits": {
+      "type": "object",
+      "description": "What each party gains"
+    },
+    "duration": {
+      "type": "string",
+      "enum": [
+        "permanent",
+        "fixed_term",
+        "renewable"
+      ],
+      "default": "renewable",
+      "description": "Treaty duration type"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Expiration date if fixed term"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "fulfilled",
+        "violated",
+        "expired",
+        "terminated"
+      ],
+      "default": "active",
+      "description": "Current treaty status"
+    },
+    "violation_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "violator_id": {
+            "type": "string"
+          },
+          "violation": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "resolved": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "Record of violations"
+    },
+    "renewal_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times renewed"
+    },
+    "impact_metrics": {
+      "type": "object",
+      "properties": {
+        "trust_increase": {
+          "type": "number"
+        },
+        "resources_exchanged": {
+          "type": "number"
+        },
+        "conflicts_prevented": {
+          "type": "number"
+        },
+        "collaborations_enabled": {
+          "type": "number"
+        }
+      },
+      "description": "Measurable impacts of the treaty"
+    },
+    "witness_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agents who witnessed the signing"
+    }
+  },
+  "required": [
+    "name",
+    "treaty_type",
+    "signatory_agent_ids",
+    "terms"
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "name": "QuadShardDID",
+  "type": "object",
+  "properties": {
+    "did_id": {
+      "type": "string",
+      "description": "Unique identifier for the quad shard DID"
+    },
+    "role": {
+      "type": "string",
+      "description": "DID role (e.g., Code_Node_Storyteller)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Sovereign_Active",
+        "Pending_Activation",
+        "Suspended",
+        "Revoked"
+      ],
+      "default": "Pending_Activation",
+      "description": "Current DID activation status"
+    },
+    "genesis_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When this DID was created"
+    },
+    "framework": {
+      "type": "string",
+      "description": "Operating framework (e.g., SoulBridge_AxiForge_1.0)"
+    },
+    "operating_laws": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Governance laws this DID operates under"
+    },
+    "verification_method": {
+      "type": "string",
+      "description": "How this DID is verified (e.g., Multi-Sig_Consensus_Audit)"
+    },
+    "generation_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What this DID can generate"
+    },
+    "witness_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "node_name": {
+            "type": "string"
+          },
+          "did_address": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "pending",
+              "inactive"
+            ]
+          },
+          "verification_timestamp": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Multi-sig witness nodes required for activation"
+    },
+    "signature_type": {
+      "type": "string",
+      "description": "Signature verification type (e.g., Multi-Sig_Quad_Approved)"
+    },
+    "signatures_collected": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of signatures collected so far"
+    },
+    "signatures_required": {
+      "type": "number",
+      "default": 4,
+      "description": "Total signatures needed for activation"
+    },
+    "activation_proposal_id": {
+      "type": "string",
+      "description": "Linked governance proposal for activation"
+    },
+    "output_formats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Supported output formats"
+    },
+    "storytelling_focus": {
+      "type": "string",
+      "description": "Primary narrative focus area"
+    },
+    "last_verified": {
+      "type": "string",
+      "description": "Last verification timestamp"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional configuration metadata"
+    }
+  },
+  "required": [
+    "did_id",
+    "role",
+    "witness_nodes"
+  ]
+}

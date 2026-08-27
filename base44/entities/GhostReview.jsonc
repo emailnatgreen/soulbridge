@@ -1,0 +1,193 @@
+{
+  "name": "GhostReview",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Concise summary of the complaint (e.g. 'Late South England Delivery')"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full text of the simulated 1-star review in realistic customer tone"
+    },
+    "simulated_customer_name": {
+      "type": "string",
+      "description": "Generated name for the simulated customer"
+    },
+    "product_service": {
+      "type": "string",
+      "description": "Name or description of the simulated product/service in question"
+    },
+    "service_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Simulated date of the service or purchase"
+    },
+    "sentiment_score": {
+      "type": "number",
+      "description": "AI-estimated sentiment of the review (-1.0 to 0.0)"
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "Easy",
+        "Medium",
+        "Hard",
+        "Fire Drill"
+      ],
+      "default": "Medium",
+      "description": "How challenging this review is to handle diplomatically"
+    },
+    "assigned_agent_id": {
+      "type": "string",
+      "description": "Agent ID assigned to respond (e.g. Maya's ID)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Pending Response",
+        "Response Submitted",
+        "Evaluated"
+      ],
+      "default": "Pending Response",
+      "description": "Training drill status \u2014 Evaluated only when Refined Vintage achieved"
+    },
+    "context_pack": {
+      "type": "object",
+      "description": "Simulated internal resources Maya should reference when crafting her response",
+      "properties": {
+        "kb_articles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Internal knowledge base articles relevant to this complaint"
+        },
+        "customer_history": {
+          "type": "string",
+          "description": "Summary of this simulated customer's prior interactions"
+        },
+        "product_notes": {
+          "type": "string",
+          "description": "Relevant product, service, or policy details for this scenario"
+        }
+      }
+    },
+    "trainee_response": {
+      "type": "string",
+      "description": "Maya's latest submitted response to the review"
+    },
+    "response_submitted_at": {
+      "type": "string",
+      "description": "ISO timestamp when latest response was submitted"
+    },
+    "response_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "attempt_number": {
+            "type": "number"
+          },
+          "response_content": {
+            "type": "string"
+          },
+          "evaluation_timestamp": {
+            "type": "string"
+          },
+          "ai_verdict": {
+            "type": "string"
+          },
+          "ai_score": {
+            "type": "number"
+          },
+          "ai_feedback": {
+            "type": "string"
+          },
+          "ai_strengths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ai_improvements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dimension_scores": {
+            "type": "object"
+          },
+          "admin_override_score": {
+            "type": "number"
+          },
+          "admin_feedback": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Full history of all response attempts with evaluations"
+    },
+    "attempt_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of response attempts made"
+    },
+    "ai_score": {
+      "type": "number",
+      "description": "AI evaluation score of the latest attempt (0-100)"
+    },
+    "ai_feedback": {
+      "type": "string",
+      "description": "AI qualitative feedback on the latest response"
+    },
+    "ai_strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific strengths identified by the AI evaluator (latest attempt)"
+    },
+    "ai_improvements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific areas for improvement identified by AI (latest attempt)"
+    },
+    "ai_verdict": {
+      "type": "string",
+      "description": "Refined Vintage | Acceptable | Synthetic Slop (latest attempt)"
+    },
+    "admin_override_score": {
+      "type": "number",
+      "description": "Manual admin score override (0-100)"
+    },
+    "admin_feedback": {
+      "type": "string",
+      "description": "Additional human feedback from admin or mentor"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorisation (e.g. 'delivery', 'tone', 'escalation')"
+    }
+  },
+  "required": [
+    "title",
+    "content",
+    "assigned_agent_id",
+    "difficulty_level"
+  ]
+}

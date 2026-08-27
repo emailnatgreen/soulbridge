@@ -1,0 +1,72 @@
+{
+  "name": "SimulationState",
+  "type": "object",
+  "properties": {
+    "tick": {
+      "type": "number",
+      "default": 0,
+      "description": "Current simulation tick"
+    },
+    "hour": {
+      "type": "number",
+      "default": 6,
+      "description": "Current hour (0-23)"
+    },
+    "day": {
+      "type": "number",
+      "default": 1,
+      "description": "Current day"
+    },
+    "season": {
+      "type": "string",
+      "enum": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "default": "spring",
+      "description": "Current season"
+    },
+    "phase": {
+      "type": "string",
+      "description": "Time phase description"
+    },
+    "is_night": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether it's nighttime"
+    },
+    "energy": {
+      "type": "number",
+      "default": 80,
+      "description": "Village energy level (0-100)"
+    },
+    "overall_mood": {
+      "type": "string",
+      "default": "peaceful",
+      "description": "Village overall mood"
+    },
+    "mood_factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Factors affecting mood"
+    },
+    "mood_suggestion": {
+      "type": "string",
+      "description": "Suggestion based on mood"
+    },
+    "is_running": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether simulation is active"
+    },
+    "last_tick_timestamp": {
+      "type": "string",
+      "description": "ISO timestamp of last tick"
+    }
+  },
+  "required": []
+}

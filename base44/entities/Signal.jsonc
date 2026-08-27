@@ -1,0 +1,56 @@
+{
+  "name": "Signal",
+  "type": "object",
+  "properties": {
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "page_view",
+        "user_action",
+        "system_event",
+        "anomaly",
+        "alert"
+      ],
+      "description": "Type of signal emitted"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "frontend",
+        "backend",
+        "automation",
+        "agent"
+      ],
+      "description": "Where the signal originated"
+    },
+    "page_name": {
+      "type": "string",
+      "description": "Page where signal was emitted"
+    },
+    "page_path": {
+      "type": "string",
+      "description": "Full URL path"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User who triggered the signal"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When signal was emitted"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context data"
+    }
+  },
+  "required": [
+    "signal_type",
+    "source"
+  ]
+}

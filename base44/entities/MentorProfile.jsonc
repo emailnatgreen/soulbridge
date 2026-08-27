@@ -1,0 +1,211 @@
+{
+  "name": "MentorProfile",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Reference to the Agent acting as mentor"
+    },
+    "expertise_areas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill_id": {
+            "type": "string"
+          },
+          "skill_name": {
+            "type": "string"
+          },
+          "level": {
+            "type": "number"
+          },
+          "proficiency_score": {
+            "type": "number"
+          },
+          "years_experience": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Top skills and expertise areas derived from AgentSkill"
+    },
+    "specializations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Detailed specialization areas for mentorship"
+    },
+    "availability_hours_weekly": {
+      "type": "number",
+      "description": "Hours per week available for mentoring"
+    },
+    "availability_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "description": "Day of week e.g. Monday"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "morning",
+                "afternoon",
+                "evening"
+              ]
+            },
+            "description": "Available time slots for that day"
+          }
+        }
+      },
+      "description": "Weekly recurring availability schedule"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "Mentor's timezone for scheduling (e.g. Europe/London)"
+    },
+    "mentorship_style": {
+      "type": "string",
+      "enum": [
+        "hands_on",
+        "coaching",
+        "advisory",
+        "collaborative",
+        "socratic",
+        "directive"
+      ],
+      "default": "coaching",
+      "description": "Preferred mentorship approach"
+    },
+    "max_mentees": {
+      "type": "number",
+      "default": 3,
+      "description": "Maximum number of concurrent mentees"
+    },
+    "current_mentee_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of active mentees"
+    },
+    "is_available": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether mentor is accepting new mentees"
+    },
+    "is_confirmed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether agent has confirmed mentorship role"
+    },
+    "mentorship_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI-suggested goals for mentorship activities"
+    },
+    "mentorship_values": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Core values and principles mentor brings to mentorship"
+    },
+    "communication_style": {
+      "type": "string",
+      "enum": [
+        "formal",
+        "casual",
+        "structured",
+        "flexible",
+        "mixed"
+      ],
+      "default": "mixed",
+      "description": "Mentor's communication preference"
+    },
+    "success_stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mentee_name": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "skills_developed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Past mentorship successes"
+    },
+    "average_mentee_satisfaction": {
+      "type": "number",
+      "default": 0,
+      "description": "Average satisfaction rating from mentees (0-5)"
+    },
+    "total_mentees_guided": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime count of mentees"
+    },
+    "total_mentoring_hours": {
+      "type": "number",
+      "default": 0,
+      "description": "Cumulative hours spent mentoring"
+    },
+    "skills_transfer_effectiveness": {
+      "type": "number",
+      "default": 0,
+      "description": "Measured effectiveness in skill transfer (0-100)"
+    },
+    "agent_honor_score": {
+      "type": "number",
+      "description": "Mentor's honor score at profile creation"
+    },
+    "agent_reputation_score": {
+      "type": "number",
+      "description": "Mentor's reputation score at profile creation"
+    },
+    "is_signature_mentor": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a principal mentor in their domain"
+    },
+    "preferred_mentee_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Types of mentees or learning styles mentor prefers"
+    },
+    "learning_resources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs or references to resources mentor recommends"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional mentor profile metadata"
+    }
+  },
+  "required": [
+    "agent_id",
+    "expertise_areas",
+    "availability_hours_weekly",
+    "mentorship_style"
+  ]
+}

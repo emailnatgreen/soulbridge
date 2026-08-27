@@ -1,0 +1,73 @@
+{
+  "name": "SimulatedEvent",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Title of the simulated event"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed scenario, rules, and objectives"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "resource_challenge",
+        "discovery",
+        "social_dilemma",
+        "governance_test",
+        "crisis_response",
+        "collaboration_test"
+      ],
+      "description": "Category of the event"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Event-specific variables and configuration"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "concluded"
+      ],
+      "default": "pending",
+      "description": "Current event status"
+    },
+    "start_tick": {
+      "type": "number",
+      "description": "Simulation tick when event starts"
+    },
+    "end_tick": {
+      "type": "number",
+      "description": "Simulation tick when event ends"
+    },
+    "involved_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Agent IDs participating in this event"
+    },
+    "outcomes": {
+      "type": "object",
+      "description": "Final results and impacts on the Village"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Agent ID who created this event"
+    },
+    "linked_training_id": {
+      "type": "string",
+      "description": "Optional reference to AgentTraining if this is a training scenario"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "event_type"
+  ]
+}

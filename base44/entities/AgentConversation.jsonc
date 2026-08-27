@@ -1,0 +1,63 @@
+{
+  "name": "AgentConversation",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Conversation title"
+    },
+    "conversation_type": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "group",
+        "project",
+        "role_based"
+      ],
+      "default": "direct",
+      "description": "Type of conversation"
+    },
+    "participant_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs participating in this conversation"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Related project ID for project conversations"
+    },
+    "role_filter": {
+      "type": "string",
+      "description": "Role filter for role-based conversations (e.g., 'creator', 'scout')"
+    },
+    "last_message_at": {
+      "type": "string",
+      "description": "Timestamp of last message"
+    },
+    "last_message_preview": {
+      "type": "string",
+      "description": "Preview of last message"
+    },
+    "message_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total messages in conversation"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether conversation is active"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional conversation metadata"
+    }
+  },
+  "required": [
+    "title",
+    "conversation_type",
+    "participant_agent_ids"
+  ]
+}

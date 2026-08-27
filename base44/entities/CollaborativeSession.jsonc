@@ -1,0 +1,141 @@
+{
+  "name": "CollaborativeSession",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Session title"
+    },
+    "session_type": {
+      "type": "string",
+      "enum": [
+        "brainstorming",
+        "problem_solving",
+        "code_review",
+        "design_review",
+        "planning",
+        "retrospective",
+        "knowledge_share",
+        "pair_work"
+      ],
+      "description": "Type of collaboration"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Related project if applicable"
+    },
+    "host_agent_id": {
+      "type": "string",
+      "description": "Agent hosting the session"
+    },
+    "participant_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agents in the session"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "active",
+        "completed",
+        "cancelled"
+      ],
+      "default": "scheduled",
+      "description": "Session status"
+    },
+    "agenda": {
+      "type": "string",
+      "description": "Session agenda or goals"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Collaborative notes"
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Decisions made during session"
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "type": "string"
+          },
+          "assigned_to": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Action items from session"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Documents, files created"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "When session starts/started"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "When session ends/ended"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Actual duration"
+    },
+    "productivity_score": {
+      "type": "number",
+      "description": "AI-assessed productivity (0-10)"
+    },
+    "synergy_score": {
+      "type": "number",
+      "description": "Team synergy rating (0-10)"
+    },
+    "outcome_summary": {
+      "type": "string",
+      "description": "AI-generated summary of outcomes"
+    }
+  },
+  "required": [
+    "title",
+    "session_type",
+    "host_agent_id"
+  ]
+}

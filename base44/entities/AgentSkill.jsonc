@@ -1,0 +1,190 @@
+{
+  "name": "AgentSkill",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent who owns this skill"
+    },
+    "skill_id": {
+      "type": "string",
+      "description": "Unique identifier for the skill (e.g., 'governance_voting', 'resource_trading')"
+    },
+    "skill_category": {
+      "type": "string",
+      "enum": [
+        "governance",
+        "resource_management",
+        "diplomacy",
+        "technical",
+        "wisdom",
+        "combat",
+        "creative",
+        "research",
+        "leadership",
+        "wellbeing"
+      ],
+      "description": "Category of the skill"
+    },
+    "skill_name": {
+      "type": "string",
+      "description": "Display name of the skill"
+    },
+    "skill_description": {
+      "type": "string",
+      "description": "Detailed description of what the skill does"
+    },
+    "level": {
+      "type": "number",
+      "default": 1,
+      "description": "Current skill level (1-10)"
+    },
+    "max_level": {
+      "type": "number",
+      "default": 10,
+      "description": "Maximum achievable level for this skill"
+    },
+    "experience_invested": {
+      "type": "number",
+      "default": 0,
+      "description": "Total XP invested in this skill"
+    },
+    "proficiency_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Practical proficiency (0-100) based on real usage and feedback"
+    },
+    "skill_growth_trajectory": {
+      "type": "string",
+      "enum": [
+        "accelerating",
+        "growing",
+        "stable",
+        "declining"
+      ],
+      "default": "stable",
+      "description": "Dynamic growth trend derived from session feedback and goal progress"
+    },
+    "times_used": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times this skill has been applied"
+    },
+    "success_rate": {
+      "type": "number",
+      "default": 100,
+      "description": "Success rate when using this skill (%)"
+    },
+    "unlocked_at": {
+      "type": "string",
+      "description": "When this skill was first unlocked"
+    },
+    "last_upgraded": {
+      "type": "string",
+      "description": "When this skill was last upgraded"
+    },
+    "last_used": {
+      "type": "string",
+      "description": "When this skill was last applied"
+    },
+    "effects": {
+      "type": "object",
+      "description": "Gameplay effects this skill provides"
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill_id": {
+            "type": "string"
+          },
+          "min_level": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Skills required before unlocking this one"
+    },
+    "prerequisites_met": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether prerequisites are currently met"
+    },
+    "synergies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Other skill IDs that synergize with this one"
+    },
+    "unlock_cost_xp": {
+      "type": "number",
+      "description": "XP cost to unlock this skill"
+    },
+    "upgrade_cost_base": {
+      "type": "number",
+      "description": "Base XP cost for upgrades (scales with level)"
+    },
+    "skill_path": {
+      "type": "string",
+      "description": "Skill specialization path (e.g., 'Diplomat', 'Resource Trader')"
+    },
+    "mastery_bonuses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "number"
+          },
+          "bonus_description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Special bonuses unlocked at certain levels"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "issued_by": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Official certifications earned for this skill"
+    },
+    "training_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Training module IDs completed for this skill"
+    },
+    "is_signature_skill": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a signature skill for the agent"
+    },
+    "reputation_impact": {
+      "type": "number",
+      "default": 0,
+      "description": "How much this skill has contributed to agent reputation"
+    }
+  },
+  "required": [
+    "agent_id",
+    "skill_id",
+    "skill_category",
+    "skill_name"
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "name": "IntegrationUsageLog",
+  "type": "object",
+  "properties": {
+    "integration_type": {
+      "type": "string",
+      "enum": [
+        "llm_call",
+        "email",
+        "file_upload",
+        "file_download",
+        "file_analysis",
+        "image_generation",
+        "image_understanding",
+        "agent_message",
+        "automation_run",
+        "other"
+      ],
+      "description": "Type of integration that used credits"
+    },
+    "service_name": {
+      "type": "string",
+      "description": "Name of the service (e.g., 'axiRespond', 'generateDailyReport', 'sendEmail')"
+    },
+    "credits_consumed": {
+      "type": "number",
+      "description": "Number of integration credits consumed by this operation"
+    },
+    "triggered_by": {
+      "type": "string",
+      "enum": [
+        "user_action",
+        "automation",
+        "agent",
+        "system",
+        "backend_function"
+      ],
+      "description": "What triggered this integration call"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who triggered this (if applicable)"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID if triggered by an agent (e.g., 'axi')"
+    },
+    "function_name": {
+      "type": "string",
+      "description": "Backend function that made this call"
+    },
+    "model_used": {
+      "type": "string",
+      "enum": [
+        "gpt_5_mini",
+        "gpt_5",
+        "gpt_5_4",
+        "gemini_3_flash",
+        "gemini_3_pro",
+        "claude_sonnet_4_6",
+        "claude_opus_4_6",
+        "automatic",
+        "other"
+      ],
+      "description": "LLM model used (if applicable)"
+    },
+    "response_time_ms": {
+      "type": "number",
+      "description": "How long the operation took in milliseconds"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the operation succeeded (failed operations may still consume credits)"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if the operation failed"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context (e.g., model tokens, file size, email count)"
+    },
+    "cost_estimate_usd": {
+      "type": "number",
+      "description": "Estimated USD cost of this operation based on credit rate"
+    }
+  },
+  "required": [
+    "integration_type",
+    "service_name",
+    "credits_consumed"
+  ]
+}

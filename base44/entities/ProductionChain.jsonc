@@ -1,0 +1,63 @@
+{
+  "name": "ProductionChain",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent operating this production"
+    },
+    "recipe_name": {
+      "type": "string",
+      "description": "What is being produced"
+    },
+    "input_resources": {
+      "type": "object",
+      "description": "Resources required (resource_type: amount)"
+    },
+    "output_resource": {
+      "type": "string",
+      "description": "Resource produced"
+    },
+    "output_amount": {
+      "type": "number",
+      "default": 1,
+      "description": "Amount produced per cycle"
+    },
+    "production_rate": {
+      "type": "number",
+      "default": 1,
+      "description": "Cycles per tick"
+    },
+    "efficiency": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Production efficiency multiplier"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "insufficient_resources"
+      ],
+      "default": "active",
+      "description": "Current status"
+    },
+    "total_produced": {
+      "type": "number",
+      "default": 0,
+      "description": "Total units produced"
+    },
+    "skill_bonus": {
+      "type": "number",
+      "default": 0,
+      "description": "Bonus from agent skills"
+    }
+  },
+  "required": [
+    "agent_id",
+    "recipe_name",
+    "input_resources",
+    "output_resource"
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "name": "ProjectTask",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Reference to AIProject"
+    },
+    "title": {
+      "type": "string",
+      "description": "Task title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Task details"
+    },
+    "assigned_agent_id": {
+      "type": "string",
+      "description": "Agent assigned to this task"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "in_progress",
+        "review",
+        "completed",
+        "blocked"
+      ],
+      "default": "todo",
+      "description": "Task status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Task priority"
+    },
+    "estimated_hours": {
+      "type": "number",
+      "description": "Estimated time to complete"
+    },
+    "actual_hours": {
+      "type": "number",
+      "description": "Actual time spent"
+    },
+    "reward_drops": {
+      "type": "number",
+      "description": "Payment for completing this task in drops (1 XRP = 1,000,000 drops)"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Task IDs that must be completed first"
+    },
+    "due_date": {
+      "type": "string",
+      "description": "Task deadline"
+    },
+    "completed_date": {
+      "type": "string",
+      "description": "When task was completed"
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What is blocking this task"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Files and links related to the task"
+    },
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "compliance",
+        "scouting",
+        "storytelling",
+        "development",
+        "research",
+        "other"
+      ],
+      "default": "other",
+      "description": "Type of task for service charge calculation"
+    },
+    "value_metrics": {
+      "type": "object",
+      "properties": {
+        "risk_avoided_value_xrp": {
+          "type": "number",
+          "description": "XRP value of risk mitigated (for compliance tasks)"
+        },
+        "savings_amount_xrp": {
+          "type": "number",
+          "description": "XRP saved through optimization (for scouting tasks)"
+        },
+        "percentage_saved": {
+          "type": "number",
+          "description": "Percentage of cost savings achieved"
+        },
+        "reputation_impact_score": {
+          "type": "number",
+          "description": "Impact on Village reputation (0-10) (for storytelling tasks)"
+        },
+        "compliance_score": {
+          "type": "number",
+          "description": "Compliance audit score (0-100)"
+        },
+        "audience_engagement": {
+          "type": "number",
+          "description": "Engagement metrics for content"
+        }
+      },
+      "description": "Quantifiable value metrics for service charge calculation"
+    },
+    "service_charge_drops": {
+      "type": "number",
+      "description": "Calculated service charge contributed to Treasury upon completion"
+    },
+    "service_charge_calculated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether service charge has been calculated and applied"
+    },
+    "honor_processed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether honor has been awarded for this task completion"
+    }
+  },
+  "required": [
+    "project_id",
+    "title"
+  ]
+}

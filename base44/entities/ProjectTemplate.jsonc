@@ -1,0 +1,195 @@
+{
+  "name": "ProjectTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Template name"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this template is for"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "development",
+        "research",
+        "community",
+        "infrastructure",
+        "creative",
+        "governance",
+        "education",
+        "other"
+      ],
+      "default": "other",
+      "description": "Project category"
+    },
+    "creator_agent_id": {
+      "type": "string",
+      "description": "Agent who created this template"
+    },
+    "is_ai_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether template was AI-generated"
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "expert"
+      ],
+      "default": "intermediate",
+      "description": "Project complexity"
+    },
+    "estimated_duration_days": {
+      "type": "number",
+      "description": "Typical project duration"
+    },
+    "recommended_team_size": {
+      "type": "number",
+      "description": "Optimal team size"
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills needed for this project type"
+    },
+    "milestone_templates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "days_from_start": {
+            "type": "number"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Pre-defined milestone structure"
+    },
+    "task_templates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "estimated_hours": {
+            "type": "number"
+          },
+          "required_skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "priority": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Task breakdown"
+    },
+    "budget_guidance": {
+      "type": "object",
+      "properties": {
+        "min_budget_rlusd": {
+          "type": "number"
+        },
+        "recommended_budget_rlusd": {
+          "type": "number"
+        },
+        "max_budget_rlusd": {
+          "type": "number"
+        },
+        "breakdown": {
+          "type": "object"
+        }
+      },
+      "description": "Budget recommendations"
+    },
+    "success_metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "importance": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "How to measure success"
+    },
+    "best_practices": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tips and recommendations"
+    },
+    "common_pitfalls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What to avoid"
+    },
+    "use_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Times this template was used"
+    },
+    "success_rate": {
+      "type": "number",
+      "default": 0,
+      "description": "Success rate of projects using this template (0-100)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether template is publicly available"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "category"
+  ]
+}

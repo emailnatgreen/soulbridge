@@ -1,0 +1,111 @@
+{
+  "name": "GrantApplication",
+  "type": "object",
+  "properties": {
+    "submission_url": {
+      "type": "string",
+      "description": "URL of the grant submission portal"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Grant submission requirements and completion status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes about the grant application"
+    },
+    "description": {
+      "type": "string",
+      "description": "Grant description and SoulBridge's alignment"
+    },
+    "grant_name": {
+      "type": "string",
+      "description": "Official name of the grant"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Priority level of this grant application"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Contact email for the grant program"
+    },
+    "amount_requested": {
+      "type": "number",
+      "description": "Amount requested in USD"
+    },
+    "organization": {
+      "type": "string",
+      "description": "Organization administering the grant"
+    },
+    "deadline": {
+      "type": "string",
+      "description": "Application deadline (ISO date)"
+    },
+    "outcome_notes": {
+      "type": "string",
+      "description": "Results or outcome of the application"
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "due_date": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string"
+          },
+          "assigned_to": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Tasks required for grant submission"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "drafting",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected"
+      ],
+      "description": "Current status of the application"
+    },
+    "genesis_zk_proof_id": {
+      "type": "string",
+      "description": "ID of the Genesis ZK-Proof anchoring SoulBridge's institutional compliance and verifiable DID sovereignty"
+    }
+  },
+  "required": [
+    "grant_name",
+    "organization",
+    "deadline"
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "name": "MentorshipRelationship",
+  "type": "object",
+  "properties": {
+    "mentor_agent_id": {
+      "type": "string",
+      "description": "Mentor agent"
+    },
+    "mentee_agent_id": {
+      "type": "string",
+      "description": "Mentee agent"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "active",
+        "paused",
+        "completed",
+        "cancelled",
+        "declined"
+      ],
+      "default": "requested",
+      "description": "Relationship status"
+    },
+    "focus_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills being developed"
+    },
+    "skill_focus_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific skill IDs from AgentSkill being developed"
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "goal": {
+            "type": "string"
+          },
+          "target_date": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "skill_related": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Mentorship goals"
+    },
+    "started_date": {
+      "type": "string",
+      "description": "When mentorship began"
+    },
+    "target_duration_weeks": {
+      "type": "number",
+      "description": "Expected duration"
+    },
+    "completed_date": {
+      "type": "string",
+      "description": "When mentorship ended"
+    },
+    "sessions_completed": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of sessions held"
+    },
+    "total_hours": {
+      "type": "number",
+      "default": 0,
+      "description": "Total mentorship hours"
+    },
+    "mentee_skill_improvement": {
+      "type": "object",
+      "description": "Skill progress tracking with before/after proficiency scores"
+    },
+    "skill_proficiency_gains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill_id": {
+            "type": "string"
+          },
+          "skill_name": {
+            "type": "string"
+          },
+          "starting_proficiency": {
+            "type": "number"
+          },
+          "current_proficiency": {
+            "type": "number"
+          },
+          "target_proficiency": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Detailed skill progression tracking"
+    },
+    "mentor_satisfaction": {
+      "type": "number",
+      "description": "Mentor's rating of experience (0-5)"
+    },
+    "mentee_satisfaction": {
+      "type": "number",
+      "description": "Mentee's rating of experience (0-5)"
+    },
+    "match_quality_score": {
+      "type": "number",
+      "description": "AI-assessed match quality (0-100)"
+    },
+    "personality_compatibility": {
+      "type": "number",
+      "description": "Personality alignment score (0-100)"
+    },
+    "communication_effectiveness": {
+      "type": "number",
+      "description": "How well mentor and mentee communicate (0-100)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Private notes"
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "milestone": {
+            "type": "string"
+          },
+          "achieved_date": {
+            "type": "string"
+          },
+          "impact_score": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Achievements during mentorship"
+    },
+    "recommended_by_ai": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether AI recommended this match"
+    },
+    "ai_match_reasoning": {
+      "type": "string",
+      "description": "Why AI suggested this pairing"
+    },
+    "match_criteria": {
+      "type": "object",
+      "properties": {
+        "skill_complementarity": {
+          "type": "number"
+        },
+        "experience_gap": {
+          "type": "number"
+        },
+        "learning_style_match": {
+          "type": "number"
+        },
+        "availability_alignment": {
+          "type": "number"
+        }
+      },
+      "description": "Detailed matching criteria scores"
+    },
+    "ai_session_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI-generated session activity recommendations"
+    },
+    "next_suggested_focus": {
+      "type": "string",
+      "description": "AI recommendation for next learning focus"
+    }
+  },
+  "required": [
+    "mentor_agent_id",
+    "mentee_agent_id"
+  ]
+}

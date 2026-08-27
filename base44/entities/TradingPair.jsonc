@@ -1,0 +1,56 @@
+{
+  "name": "TradingPair",
+  "type": "object",
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "description": "e.g. BTC/USDT"
+    },
+    "base_asset": {
+      "type": "string"
+    },
+    "quote_asset": {
+      "type": "string"
+    },
+    "asset_class": {
+      "type": "string",
+      "enum": [
+        "crypto",
+        "fx",
+        "commodity",
+        "defi"
+      ],
+      "default": "crypto"
+    },
+    "current_price": {
+      "type": "number"
+    },
+    "price_change_24h": {
+      "type": "number",
+      "description": "Percentage change in 24h"
+    },
+    "volume_24h": {
+      "type": "number"
+    },
+    "high_24h": {
+      "type": "number"
+    },
+    "low_24h": {
+      "type": "number"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "exchange_source": {
+      "type": "string",
+      "description": "Exchange API source e.g. Binance, MetaTrader, etc."
+    }
+  },
+  "required": [
+    "symbol",
+    "base_asset",
+    "quote_asset",
+    "asset_class"
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "name": "ProductionRecipe",
+  "type": "object",
+  "properties": {
+    "recipe_name": {
+      "type": "string",
+      "description": "Name of the recipe"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this recipe produces"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "crafting",
+        "refinement",
+        "synthesis",
+        "research",
+        "development"
+      ],
+      "description": "Type of production"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_category": {
+            "type": "string"
+          },
+          "resource_name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Required input resources"
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_category": {
+            "type": "string"
+          },
+          "resource_name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Produced output resources"
+    },
+    "cycle_duration_hours": {
+      "type": "number",
+      "description": "How long one production cycle takes"
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills needed to run this recipe"
+    },
+    "base_efficiency": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Base production efficiency (0-1)"
+    },
+    "complexity": {
+      "type": "string",
+      "enum": [
+        "simple",
+        "moderate",
+        "complex",
+        "advanced"
+      ],
+      "default": "simple",
+      "description": "Recipe complexity"
+    },
+    "unlock_requirements": {
+      "type": "object",
+      "properties": {
+        "honor_score": {
+          "type": "number"
+        },
+        "role": {
+          "type": "string"
+        },
+        "completed_projects": {
+          "type": "number"
+        }
+      },
+      "description": "Requirements to unlock this recipe"
+    },
+    "energy_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Energy cost per cycle"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether recipe is available"
+    }
+  },
+  "required": [
+    "recipe_name",
+    "inputs",
+    "outputs",
+    "cycle_duration_hours"
+  ]
+}

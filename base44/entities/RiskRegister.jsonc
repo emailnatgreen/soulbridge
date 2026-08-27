@@ -1,0 +1,109 @@
+{
+  "name": "RiskRegister",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the risk"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the risk"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Linked VillageProject or AIProject ID"
+    },
+    "project_name": {
+      "type": "string",
+      "description": "Cached project name for display"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Technical",
+        "Security",
+        "Operational",
+        "Compliance",
+        "Financial",
+        "Strategic",
+        "Web3"
+      ],
+      "description": "Risk category"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Critical"
+      ],
+      "description": "Potential impact severity if risk materialises"
+    },
+    "likelihood": {
+      "type": "string",
+      "enum": [
+        "Rare",
+        "Unlikely",
+        "Possible",
+        "Likely",
+        "Almost Certain"
+      ],
+      "description": "Probability of the risk occurring"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Identified",
+        "Assessed",
+        "Mitigating",
+        "Monitoring",
+        "Closed"
+      ],
+      "default": "Identified",
+      "description": "Current status of this risk"
+    },
+    "mitigation_plan": {
+      "type": "string",
+      "description": "Steps planned or taken to reduce the risk"
+    },
+    "contingency_plan": {
+      "type": "string",
+      "description": "Actions to take if the risk materialises"
+    },
+    "impact_description": {
+      "type": "string",
+      "description": "What happens to the Village/project if this risk occurs"
+    },
+    "owner_agent_id": {
+      "type": "string",
+      "description": "Agent ID responsible for managing this risk"
+    },
+    "owner_name": {
+      "type": "string",
+      "description": "Cached name of the risk owner"
+    },
+    "last_reviewed_date": {
+      "type": "string",
+      "description": "ISO date of last review"
+    },
+    "risk_score": {
+      "type": "number",
+      "description": "Computed risk score (severity \u00d7 likelihood)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional tags for filtering"
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "severity",
+    "likelihood"
+  ]
+}

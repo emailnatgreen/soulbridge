@@ -1,0 +1,135 @@
+{
+  "name": "MentorshipSession",
+  "type": "object",
+  "properties": {
+    "relationship_id": {
+      "type": "string",
+      "description": "Reference to MentorshipRelationship"
+    },
+    "mentor_agent_id": {
+      "type": "string",
+      "description": "Mentor"
+    },
+    "mentee_agent_id": {
+      "type": "string",
+      "description": "Mentee"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "confirmed",
+        "completed",
+        "cancelled"
+      ],
+      "default": "requested",
+      "description": "Session booking status"
+    },
+    "requested_day": {
+      "type": "string",
+      "description": "Day of week requested (e.g. Monday)"
+    },
+    "requested_slot": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "afternoon",
+        "evening"
+      ],
+      "description": "Time slot requested"
+    },
+    "session_date": {
+      "type": "string",
+      "description": "Confirmed date/time of session (ISO string)"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "default": 60,
+      "description": "Session length"
+    },
+    "session_type": {
+      "type": "string",
+      "enum": [
+        "skills_training",
+        "career_guidance",
+        "project_review",
+        "problem_solving",
+        "knowledge_sharing",
+        "goal_planning",
+        "feedback_session"
+      ],
+      "description": "Type of session"
+    },
+    "mentee_notes": {
+      "type": "string",
+      "description": "Mentee notes / what they want to cover"
+    },
+    "mentor_notes": {
+      "type": "string",
+      "description": "Mentor's private notes"
+    },
+    "topics_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What was discussed"
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "assigned_to": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "Follow-up actions"
+    },
+    "progress_rating": {
+      "type": "number",
+      "description": "Mentor's assessment of mentee progress (0-10)"
+    },
+    "session_quality": {
+      "type": "number",
+      "description": "Overall session quality (0-10)"
+    },
+    "key_insights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Important learnings"
+    },
+    "resources_shared": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Resources provided"
+    }
+  },
+  "required": [
+    "relationship_id",
+    "mentor_agent_id",
+    "mentee_agent_id"
+  ]
+}

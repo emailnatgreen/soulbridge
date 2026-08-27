@@ -1,0 +1,42 @@
+{
+  "name": "SimulationEvent",
+  "type": "object",
+  "properties": {
+    "tick": {
+      "type": "number",
+      "description": "Tick when event occurred"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "interaction",
+        "ritual",
+        "mood_change",
+        "energy_change",
+        "axi_action",
+        "agent_growth"
+      ],
+      "description": "Type of event"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable event description"
+    },
+    "involved_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs involved in this event"
+    },
+    "data": {
+      "type": "object",
+      "description": "Additional event data"
+    }
+  },
+  "required": [
+    "tick",
+    "event_type",
+    "description"
+  ]
+}

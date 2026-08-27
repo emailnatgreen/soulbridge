@@ -1,0 +1,99 @@
+{
+  "name": "AgentNotification",
+  "type": "object",
+  "properties": {
+    "recipient_agent_id": {
+      "type": "string",
+      "description": "Agent receiving the notification"
+    },
+    "notification_type": {
+      "type": "string",
+      "enum": [
+        "message",
+        "mention",
+        "task_assigned",
+        "project_invite",
+        "marketplace_purchase",
+        "marketplace_sale",
+        "payment_received",
+        "payment_sent",
+        "governance_proposal",
+        "governance_vote_result",
+        "skill_validation",
+        "honor_change",
+        "role_change",
+        "attestation_received",
+        "milestone_completed",
+        "project_update",
+        "system"
+      ],
+      "description": "Type of notification"
+    },
+    "title": {
+      "type": "string",
+      "description": "Notification title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification message"
+    },
+    "action_url": {
+      "type": "string",
+      "description": "Deep link to related content"
+    },
+    "sender_agent_id": {
+      "type": "string",
+      "description": "Agent who triggered the notification"
+    },
+    "related_entity_type": {
+      "type": "string",
+      "description": "Entity type (e.g., 'AIProject', 'MarketplaceContract')"
+    },
+    "related_entity_id": {
+      "type": "string",
+      "description": "Entity ID"
+    },
+    "related_conversation_id": {
+      "type": "string",
+      "description": "Related conversation ID for message notifications"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether notification has been read"
+    },
+    "read_at": {
+      "type": "string",
+      "description": "When notification was read"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether notification has been archived"
+    },
+    "archived_at": {
+      "type": "string",
+      "description": "When notification was archived"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal",
+      "description": "Notification priority"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context data"
+    }
+  },
+  "required": [
+    "recipient_agent_id",
+    "notification_type",
+    "message"
+  ]
+}

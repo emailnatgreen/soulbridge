@@ -1,0 +1,60 @@
+{
+  "name": "AgentState",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Reference to Agent entity"
+    },
+    "energy": {
+      "type": "number",
+      "default": 80,
+      "description": "Current energy level (0-100)"
+    },
+    "mood": {
+      "type": "string",
+      "default": "calm",
+      "description": "Current mood"
+    },
+    "wisdom": {
+      "type": "number",
+      "default": 0,
+      "description": "Accumulated wisdom"
+    },
+    "experience": {
+      "type": "number",
+      "default": 0,
+      "description": "Total experience points"
+    },
+    "lessons_learned": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "lesson": {
+            "type": "string"
+          },
+          "tick": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Lessons learned over time"
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Map of agent_id to relationship strength"
+    },
+    "current_location": {
+      "type": "string",
+      "description": "Current zone/location in village"
+    },
+    "current_activity": {
+      "type": "string",
+      "description": "What the agent is currently doing"
+    }
+  },
+  "required": [
+    "agent_id"
+  ]
+}

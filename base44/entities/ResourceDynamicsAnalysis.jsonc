@@ -1,0 +1,242 @@
+{
+  "name": "ResourceDynamicsAnalysis",
+  "type": "object",
+  "properties": {
+    "analysis_period_start": {
+      "type": "string",
+      "description": "Start of analysis period"
+    },
+    "analysis_period_end": {
+      "type": "string",
+      "description": "End of analysis period"
+    },
+    "overall_health_score": {
+      "type": "number",
+      "default": 70,
+      "description": "Overall economic health (0-100)"
+    },
+    "market_velocity": {
+      "type": "number",
+      "description": "Speed of resource transactions"
+    },
+    "liquidity_score": {
+      "type": "number",
+      "description": "How easily resources flow (0-100)"
+    },
+    "resource_metrics": {
+      "type": "object",
+      "properties": {
+        "total_listings": {
+          "type": "number"
+        },
+        "total_transactions": {
+          "type": "number"
+        },
+        "total_volume_rlusd": {
+          "type": "number"
+        },
+        "avg_transaction_size": {
+          "type": "number"
+        },
+        "unique_buyers": {
+          "type": "number"
+        },
+        "unique_sellers": {
+          "type": "number"
+        }
+      },
+      "description": "Marketplace metrics"
+    },
+    "supply_demand_analysis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_category": {
+            "type": "string"
+          },
+          "supply_level": {
+            "type": "string"
+          },
+          "demand_level": {
+            "type": "string"
+          },
+          "balance_score": {
+            "type": "number"
+          },
+          "price_trend": {
+            "type": "string"
+          },
+          "recommendation": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Supply/demand by category"
+    },
+    "bottlenecks_identified": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "bottleneck_type": {
+            "type": "string"
+          },
+          "resource_involved": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string"
+          },
+          "suggested_solution": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Economic bottlenecks detected"
+    },
+    "efficiency_opportunities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "opportunity": {
+            "type": "string"
+          },
+          "potential_impact": {
+            "type": "string"
+          },
+          "implementation_difficulty": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Optimization opportunities"
+    },
+    "production_chain_analysis": {
+      "type": "object",
+      "properties": {
+        "active_chains": {
+          "type": "number"
+        },
+        "efficiency_avg": {
+          "type": "number"
+        },
+        "idle_capacity": {
+          "type": "number"
+        },
+        "resource_utilization": {
+          "type": "number"
+        }
+      },
+      "description": "Production metrics"
+    },
+    "price_trends": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_category": {
+            "type": "string"
+          },
+          "avg_price": {
+            "type": "number"
+          },
+          "price_change": {
+            "type": "number"
+          },
+          "volatility": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Price movement analysis"
+    },
+    "market_concentration": {
+      "type": "object",
+      "properties": {
+        "top_sellers_market_share": {
+          "type": "number"
+        },
+        "top_buyers_market_share": {
+          "type": "number"
+        },
+        "concentration_risk": {
+          "type": "string"
+        }
+      },
+      "description": "Market concentration metrics"
+    },
+    "emerging_trends": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Detected market trends"
+    },
+    "strategic_forecasts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "forecast": {
+            "type": "string"
+          },
+          "timeframe": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "implications": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "AI forecasts"
+    },
+    "governance_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "recommendation": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "urgency": {
+            "type": "string"
+          },
+          "expected_impact": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Policy recommendations"
+    },
+    "resilience_score": {
+      "type": "number",
+      "description": "Economic resilience (0-100)"
+    },
+    "innovation_index": {
+      "type": "number",
+      "description": "New resource development (0-100)"
+    },
+    "ai_insights": {
+      "type": "string",
+      "description": "Comprehensive AI analysis"
+    }
+  },
+  "required": [
+    "analysis_period_start",
+    "analysis_period_end"
+  ]
+}

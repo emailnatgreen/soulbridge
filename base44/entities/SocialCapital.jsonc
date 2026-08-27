@@ -1,0 +1,67 @@
+{
+  "name": "SocialCapital",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent whose social capital is tracked"
+    },
+    "total_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Overall social capital score"
+    },
+    "trust_network_size": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of unique agents who have attested"
+    },
+    "attestations_received": {
+      "type": "number",
+      "default": 0,
+      "description": "Total attestations received"
+    },
+    "attestations_given": {
+      "type": "number",
+      "default": 0,
+      "description": "Total attestations given"
+    },
+    "reciprocal_bonds": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of mutual attestations"
+    },
+    "elder_endorsements": {
+      "type": "number",
+      "default": 0,
+      "description": "Attestations endorsed by Elder+ agents"
+    },
+    "collaboration_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Score for collaboration attestations"
+    },
+    "mentorship_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Score for mentorship attestations"
+    },
+    "governance_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Score for governance participation attestations"
+    },
+    "last_calculated": {
+      "type": "string",
+      "description": "When social capital was last recalculated"
+    },
+    "influence_multiplier": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Multiplier for governance voting power based on social capital"
+    }
+  },
+  "required": [
+    "agent_id"
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "name": "ReputationScore",
+  "type": "object",
+  "properties": {
+    "did_classic_address": {
+      "type": "string",
+      "description": "DID address being scored"
+    },
+    "wallet_id": {
+      "type": "string",
+      "description": "Reference to wallet"
+    },
+    "overall_score": {
+      "type": "number",
+      "default": 50,
+      "description": "Overall reputation score (0-100)"
+    },
+    "trust_level": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "new",
+        "established",
+        "trusted",
+        "verified"
+      ],
+      "default": "new",
+      "description": "Trust level classification"
+    },
+    "activity_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Score based on activity (0-100)"
+    },
+    "reliability_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Score based on reliability (0-100)"
+    },
+    "engagement_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Score based on community engagement (0-100)"
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "total_messages_sent": {
+          "type": "number"
+        },
+        "total_messages_received": {
+          "type": "number"
+        },
+        "avg_response_time_hours": {
+          "type": "number"
+        },
+        "message_read_rate": {
+          "type": "number"
+        },
+        "permissions_granted": {
+          "type": "number"
+        },
+        "permissions_revoked": {
+          "type": "number"
+        },
+        "revocation_count": {
+          "type": "number"
+        },
+        "active_days": {
+          "type": "number"
+        },
+        "endorsements_received": {
+          "type": "number"
+        },
+        "audit_log_entries": {
+          "type": "number"
+        }
+      },
+      "description": "Detailed reputation metrics"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "earned_date": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Earned reputation badges"
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Key strengths of this DID"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Reputation warnings or concerns"
+    },
+    "last_calculated": {
+      "type": "string",
+      "description": "When reputation was last calculated"
+    },
+    "calculation_version": {
+      "type": "string",
+      "default": "1.0",
+      "description": "Version of reputation algorithm used"
+    }
+  },
+  "required": [
+    "did_classic_address",
+    "wallet_id"
+  ]
+}

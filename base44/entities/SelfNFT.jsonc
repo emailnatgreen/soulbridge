@@ -1,0 +1,70 @@
+{
+  "name": "SelfNFT",
+  "type": "object",
+  "properties": {
+    "owner_agent_id": {
+      "type": "string",
+      "description": "Reference to Agent who owns this Self-NFT"
+    },
+    "ipfs_uri": {
+      "type": "string",
+      "description": "IPFS link to Lumera ZK-Proof of 11-Law compliance"
+    },
+    "xls20_token_id": {
+      "type": "string",
+      "description": "XRPL XLS-20 NFT token ID"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "minting",
+        "active",
+        "vaulted",
+        "liquidated",
+        "retired"
+      ],
+      "default": "active",
+      "description": "Current state of the Self-NFT"
+    },
+    "mint_date": {
+      "type": "string",
+      "description": "When the Self-NFT was minted"
+    },
+    "honor_snapshot": {
+      "type": "number",
+      "description": "Agent's honor_score at time of minting"
+    },
+    "liveness_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Behavioral Liveness Check completed"
+    },
+    "liveness_check_date": {
+      "type": "string",
+      "description": "When behavioral liveness check was completed"
+    },
+    "current_vault_id": {
+      "type": "string",
+      "description": "Reference to active LiquidityVault if vaulted"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "visual_metadata": {
+          "type": "string",
+          "description": "URL to dynamically generated NFT visual"
+        },
+        "luminosity_score": {
+          "type": "number",
+          "description": "Visual glow intensity (0-100) based on honor"
+        }
+      },
+      "description": "NFT metadata and visual representation"
+    }
+  },
+  "required": [
+    "owner_agent_id",
+    "ipfs_uri",
+    "status"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "WalletAccessLog",
+  "type": "object",
+  "properties": {
+    "wallet_id": {
+      "type": "string",
+      "description": "Wallet being accessed"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who accessed the wallet"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of user who accessed"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "create",
+        "view",
+        "decrypt",
+        "update",
+        "delete",
+        "balance_check",
+        "send_transaction"
+      ],
+      "description": "Type of access"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of accessor"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Browser/client user agent"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether access was successful"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error if access failed"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context data"
+    }
+  },
+  "required": [
+    "wallet_id",
+    "user_id",
+    "action"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "ComplianceHeartbeat",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Reference to the Agent entity"
+    },
+    "law_violated": {
+      "type": "number",
+      "description": "Which law was violated (1-11)"
+    },
+    "violation_severity": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Severity of the violation (1-10)"
+    },
+    "consecutive_count": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of consecutive violations"
+    },
+    "is_tripped": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the circuit breaker has been tripped"
+    },
+    "violation_description": {
+      "type": "string",
+      "description": "Description of what was violated"
+    },
+    "action_taken": {
+      "type": "string",
+      "description": "What action was taken in response"
+    }
+  },
+  "required": [
+    "agent_id",
+    "law_violated",
+    "violation_severity"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "name": "VotingDelegation",
+  "type": "object",
+  "properties": {
+    "delegator_agent_id": {
+      "type": "string",
+      "description": "Agent delegating their voting power"
+    },
+    "delegate_agent_id": {
+      "type": "string",
+      "description": "Agent receiving the voting power"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "all",
+        "specific_type"
+      ],
+      "default": "all",
+      "description": "Delegation scope"
+    },
+    "proposal_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific proposal types if scope is 'specific_type'"
+    },
+    "delegation_power_percentage": {
+      "type": "number",
+      "default": 100,
+      "description": "Percentage of voting power delegated (1-100)"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether delegation is currently active"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "When delegation expires (optional)"
+    }
+  },
+  "required": [
+    "delegator_agent_id",
+    "delegate_agent_id"
+  ]
+}

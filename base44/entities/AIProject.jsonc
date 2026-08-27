@@ -1,0 +1,169 @@
+{
+  "name": "AIProject",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Project title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed project description"
+    },
+    "vision": {
+      "type": "string",
+      "description": "Long-term vision and impact"
+    },
+    "owner_agent_id": {
+      "type": "string",
+      "description": "Agent who created/owns the project"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "recruiting",
+        "active",
+        "on_hold",
+        "completed",
+        "cancelled"
+      ],
+      "default": "planning",
+      "description": "Current project status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Project priority"
+    },
+    "budget_drops": {
+      "type": "number",
+      "description": "Total budget allocated in drops (1 XRP = 1,000,000 drops)"
+    },
+    "spent_drops": {
+      "type": "number",
+      "default": 0,
+      "description": "Amount spent so far in drops"
+    },
+    "required_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills needed for this project"
+    },
+    "team_members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "contribution_percentage": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Project team composition"
+    },
+    "ai_recommended_team": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "AI-suggested team members"
+    },
+    "start_date": {
+      "type": "string",
+      "description": "Project start date"
+    },
+    "target_completion_date": {
+      "type": "string",
+      "description": "Expected completion date"
+    },
+    "actual_completion_date": {
+      "type": "string",
+      "description": "Actual completion date"
+    },
+    "progress_percentage": {
+      "type": "number",
+      "default": 0,
+      "description": "Overall progress (0-100)"
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "target_date": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "completed_date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Project milestones"
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Expected deliverables"
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "mitigation": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Identified risks"
+    },
+    "ai_insights": {
+      "type": "object",
+      "description": "AI-generated project insights and recommendations"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Project tags for categorization"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "owner_agent_id"
+  ]
+}

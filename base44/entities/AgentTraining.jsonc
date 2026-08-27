@@ -1,0 +1,147 @@
+{
+  "name": "AgentTraining",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "ID of the agent being trained"
+    },
+    "training_type": {
+      "type": "string",
+      "enum": [
+        "skill_development",
+        "role_preparation",
+        "wisdom_cultivation",
+        "economic_mastery",
+        "social_intelligence",
+        "creative_arts",
+        "governance_training"
+      ],
+      "description": "Category of training"
+    },
+    "skill_focus": {
+      "type": "string",
+      "description": "Specific skill being trained (e.g., 'resource_trading', 'project_management', 'conflict_resolution')"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title of the training module"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of what will be learned"
+    },
+    "difficulty_level": {
+      "type": "number",
+      "default": 1,
+      "description": "Training difficulty (1-5)"
+    },
+    "training_content": {
+      "type": "object",
+      "properties": {
+        "lessons": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "exercises": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "readings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "AI-generated training curriculum"
+    },
+    "progress": {
+      "type": "object",
+      "properties": {
+        "completion_percentage": {
+          "type": "number",
+          "default": 0
+        },
+        "lessons_completed": {
+          "type": "number",
+          "default": 0
+        },
+        "exercises_completed": {
+          "type": "number",
+          "default": 0
+        },
+        "time_spent_minutes": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "description": "Training progress tracking"
+    },
+    "assessment": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "number"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "feedback": {
+          "type": "string"
+        },
+        "attempts": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "description": "Assessment results"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "completed",
+        "failed"
+      ],
+      "default": "not_started",
+      "description": "Current status"
+    },
+    "rewards": {
+      "type": "object",
+      "properties": {
+        "experience_gained": {
+          "type": "number",
+          "default": 0
+        },
+        "wisdom_gained": {
+          "type": "number",
+          "default": 0
+        },
+        "honor_gained": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "description": "Rewards earned upon completion"
+    },
+    "recommended_by": {
+      "type": "string",
+      "description": "Agent ID who recommended this training (often Axi)"
+    },
+    "completed_date": {
+      "type": "string",
+      "description": "Date training was completed"
+    }
+  },
+  "required": [
+    "agent_id",
+    "training_type",
+    "title"
+  ]
+}

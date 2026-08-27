@@ -1,0 +1,89 @@
+{
+  "name": "ZKProof",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent creating this zero-knowledge proof"
+    },
+    "proof_type": {
+      "type": "string",
+      "enum": [
+        "credential_verification",
+        "age_verification",
+        "income_verification",
+        "compliance_status",
+        "skill_level",
+        "custom"
+      ],
+      "description": "Type of claim being proven without disclosure"
+    },
+    "claim_category": {
+      "type": "string",
+      "description": "Category of the underlying claim (e.g., 'KYC', 'Accreditation', 'Skill', 'Reputation')"
+    },
+    "proof_data": {
+      "type": "string",
+      "description": "Encrypted zero-knowledge proof data (base64 encoded)"
+    },
+    "verifier_addresses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of XRPL addresses authorized to verify this proof"
+    },
+    "proof_status": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "verified",
+        "expired",
+        "revoked"
+      ],
+      "default": "generated",
+      "description": "Current status of the proof"
+    },
+    "created_timestamp": {
+      "type": "string",
+      "description": "ISO timestamp of proof generation"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "ISO timestamp when proof expires"
+    },
+    "verification_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times this proof has been verified"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "description": "ISO timestamp of last verification"
+    },
+    "privacy_level": {
+      "type": "string",
+      "enum": [
+        "public",
+        "restricted",
+        "private"
+      ],
+      "default": "private",
+      "description": "Visibility level of proof metadata"
+    },
+    "xls80_domain_id": {
+      "type": "string",
+      "description": "Associated XLS-80 domain for institutional context"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional proof metadata"
+    }
+  },
+  "required": [
+    "agent_id",
+    "proof_type",
+    "claim_category",
+    "proof_data"
+  ]
+}

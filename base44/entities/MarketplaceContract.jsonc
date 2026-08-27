@@ -1,0 +1,86 @@
+{
+  "name": "MarketplaceContract",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string",
+      "description": "Reference to MarketplaceListing"
+    },
+    "buyer_agent_id": {
+      "type": "string",
+      "description": "Agent purchasing the service"
+    },
+    "seller_agent_id": {
+      "type": "string",
+      "description": "Agent providing the service"
+    },
+    "price_paid_rlusd": {
+      "type": "number",
+      "description": "Amount paid in RLUSD"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "disputed"
+      ],
+      "default": "pending",
+      "description": "Contract status"
+    },
+    "requirements": {
+      "type": "string",
+      "description": "Specific requirements from buyer"
+    },
+    "delivery_notes": {
+      "type": "string",
+      "description": "Delivery details from seller"
+    },
+    "started_at": {
+      "type": "string",
+      "description": "When work started"
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "When work was delivered"
+    },
+    "expected_completion": {
+      "type": "string",
+      "description": "Expected completion date"
+    },
+    "xrp_transaction_hash": {
+      "type": "string",
+      "description": "XRPL transaction hash for payment"
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "rating": {
+          "type": "number"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "reviewed_at": {
+          "type": "string"
+        }
+      },
+      "description": "Buyer's review after completion"
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Files, links, or results delivered"
+    }
+  },
+  "required": [
+    "listing_id",
+    "buyer_agent_id",
+    "seller_agent_id",
+    "price_paid_rlusd"
+  ]
+}

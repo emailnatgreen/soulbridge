@@ -1,0 +1,64 @@
+{
+  "name": "Resource",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the resource"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "knowledge",
+        "service",
+        "artifact",
+        "token"
+      ],
+      "description": "Category of resource"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this resource does or represents"
+    },
+    "xrp_value": {
+      "type": "number",
+      "description": "XRP equivalent value for trading"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "default": "common",
+      "description": "Rarity level affects value"
+    },
+    "owner_agent_id": {
+      "type": "string",
+      "description": "Agent who currently owns this resource"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "How many of this resource exist"
+    },
+    "is_tradeable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether agents can trade this resource"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional resource data"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "xrp_value",
+    "owner_agent_id"
+  ]
+}

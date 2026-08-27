@@ -1,0 +1,123 @@
+{
+  "name": "TeamFormation",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Associated project"
+    },
+    "team_name": {
+      "type": "string",
+      "description": "Team name"
+    },
+    "team_members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "assigned_skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Team composition"
+    },
+    "formation_method": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "ai_recommended",
+        "hybrid"
+      ],
+      "default": "manual",
+      "description": "How team was formed"
+    },
+    "ai_team_score": {
+      "type": "number",
+      "description": "AI-predicted team effectiveness (0-100)"
+    },
+    "skill_coverage": {
+      "type": "object",
+      "properties": {
+        "required_skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "covered_skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skill_gaps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coverage_percentage": {
+          "type": "number"
+        }
+      },
+      "description": "Skill coverage analysis"
+    },
+    "synergy_predictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_a_id": {
+            "type": "string"
+          },
+          "agent_b_id": {
+            "type": "string"
+          },
+          "predicted_synergy": {
+            "type": "number"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Predicted team chemistry"
+    },
+    "diversity_score": {
+      "type": "number",
+      "description": "Team diversity score (0-100)"
+    },
+    "workload_balance": {
+      "type": "number",
+      "description": "How balanced workloads are (0-100)"
+    },
+    "formation_reasoning": {
+      "type": "string",
+      "description": "Why this team composition was chosen"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "active",
+        "completed",
+        "disbanded"
+      ],
+      "default": "proposed",
+      "description": "Team status"
+    }
+  },
+  "required": [
+    "team_name"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "name": "VillageProject",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "description": {
+      "type": "string",
+      "description": "What the project aims to accomplish"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "active",
+        "completed",
+        "abandoned"
+      ],
+      "default": "planning",
+      "description": "Project status"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "infrastructure",
+        "research",
+        "community",
+        "resource"
+      ],
+      "description": "Type of project"
+    },
+    "creator_agent_id": {
+      "type": "string",
+      "description": "Agent who initiated the project"
+    },
+    "required_resources": {
+      "type": "object",
+      "description": "Resources needed (artifact:5, knowledge:10, etc)"
+    },
+    "resources_gathered": {
+      "type": "object",
+      "description": "Resources collected so far"
+    },
+    "progress_percentage": {
+      "type": "number",
+      "default": 0,
+      "description": "Overall completion percentage"
+    },
+    "contributors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs who contributed"
+    },
+    "contribution_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total contributions made"
+    },
+    "reward_xrp": {
+      "type": "number",
+      "default": 0,
+      "description": "XRP reward for completion"
+    },
+    "target_completion_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Target completion date"
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "creator_agent_id",
+    "required_resources"
+  ]
+}

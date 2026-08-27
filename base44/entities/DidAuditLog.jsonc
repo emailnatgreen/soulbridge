@@ -1,0 +1,71 @@
+{
+  "name": "DidAuditLog",
+  "type": "object",
+  "properties": {
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "did_created",
+        "did_revoked",
+        "did_reversal",
+        "permission_granted",
+        "permission_revoked",
+        "version_created",
+        "version_activated",
+        "agent_linked",
+        "agent_unlinked",
+        "agent_created",
+        "agent_updated",
+        "agent_deleted",
+        "did_verified",
+        "did_document_viewed"
+      ],
+      "description": "Type of action performed"
+    },
+    "did_classic_address": {
+      "type": "string",
+      "description": "DID address involved in action"
+    },
+    "wallet_id": {
+      "type": "string",
+      "description": "Wallet ID if applicable"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID if applicable"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who performed the action"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of user who performed action"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of the request"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Browser/client user agent"
+    },
+    "action_details": {
+      "type": "object",
+      "description": "Additional details about the action"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether action completed successfully"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if action failed"
+    }
+  },
+  "required": [
+    "action_type",
+    "user_id"
+  ]
+}

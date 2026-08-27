@@ -1,0 +1,39 @@
+{
+  "name": "AgentDecision",
+  "type": "object",
+  "properties": {
+    "simulated_event_id": {
+      "type": "string",
+      "description": "Reference to SimulatedEvent"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent making the decision"
+    },
+    "decision_point": {
+      "type": "string",
+      "description": "Identifier for where in the event flow this decision was made"
+    },
+    "decision_data": {
+      "type": "object",
+      "description": "Details of the choice made"
+    },
+    "simulation_tick": {
+      "type": "number",
+      "description": "When the decision was made"
+    },
+    "consequence": {
+      "type": "object",
+      "description": "Immediate impact of this decision"
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Agent's reasoning for the decision"
+    }
+  },
+  "required": [
+    "simulated_event_id",
+    "agent_id",
+    "decision_data"
+  ]
+}

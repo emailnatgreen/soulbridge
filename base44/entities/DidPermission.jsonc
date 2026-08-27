@@ -1,0 +1,51 @@
+{
+  "name": "DidPermission",
+  "type": "object",
+  "properties": {
+    "did_classic_address": {
+      "type": "string",
+      "description": "XRPL classic address of the DID"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID receiving the permission"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "view_did_document",
+        "update_did_profile",
+        "revoke_did",
+        "initiate_wallet_transaction"
+      ],
+      "description": "Specific action allowed"
+    },
+    "granted_by_user_id": {
+      "type": "string",
+      "description": "User ID who granted this permission"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "default": "active",
+      "description": "Permission status"
+    },
+    "revoked_at": {
+      "type": "string",
+      "description": "When permission was revoked"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about this permission"
+    }
+  },
+  "required": [
+    "did_classic_address",
+    "agent_id",
+    "action",
+    "granted_by_user_id"
+  ]
+}

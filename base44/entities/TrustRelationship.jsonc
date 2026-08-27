@@ -1,0 +1,123 @@
+{
+  "name": "TrustRelationship",
+  "type": "object",
+  "properties": {
+    "trustor_did": {
+      "type": "string",
+      "description": "DID that is trusting"
+    },
+    "trustee_did": {
+      "type": "string",
+      "description": "DID being trusted"
+    },
+    "trustor_wallet_id": {
+      "type": "string",
+      "description": "Trustor's wallet ID"
+    },
+    "trustee_wallet_id": {
+      "type": "string",
+      "description": "Trustee's wallet ID"
+    },
+    "trust_level": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Explicit trust level (0-100)"
+    },
+    "calculated_trust_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "AI-calculated trust score based on network"
+    },
+    "trust_type": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "derived",
+        "vouched"
+      ],
+      "default": "direct",
+      "description": "How trust was established"
+    },
+    "trust_category": {
+      "type": "string",
+      "enum": [
+        "personal",
+        "professional",
+        "financial",
+        "technical",
+        "general"
+      ],
+      "default": "general",
+      "description": "Category of trust"
+    },
+    "trust_path": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Trust chain path (for derived trust)"
+    },
+    "path_length": {
+      "type": "number",
+      "description": "Number of hops in trust path"
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Confidence in this trust relationship"
+    },
+    "based_on": {
+      "type": "object",
+      "properties": {
+        "endorsements_count": {
+          "type": "number"
+        },
+        "messages_exchanged": {
+          "type": "number"
+        },
+        "shared_connections": {
+          "type": "number"
+        },
+        "credentials_issued": {
+          "type": "number"
+        },
+        "interaction_history": {
+          "type": "number"
+        }
+      },
+      "description": "Factors contributing to trust"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired",
+        "under_review"
+      ],
+      "default": "active",
+      "description": "Trust relationship status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about trust"
+    },
+    "last_calculated": {
+      "type": "string",
+      "description": "When trust score was last updated"
+    },
+    "auto_update": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to auto-recalculate trust"
+    }
+  },
+  "required": [
+    "trustor_did",
+    "trustee_did",
+    "trust_level"
+  ]
+}

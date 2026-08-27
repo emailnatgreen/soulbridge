@@ -1,0 +1,37 @@
+{
+  "name": "ProjectVote",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Reference to VillageProject"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent casting the vote"
+    },
+    "vote": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "reject",
+        "abstain"
+      ],
+      "description": "Vote decision"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Optional reason for the vote"
+    },
+    "voting_power": {
+      "type": "number",
+      "default": 1,
+      "description": "Weight of vote based on agent honor/reputation"
+    }
+  },
+  "required": [
+    "project_id",
+    "agent_id",
+    "vote"
+  ]
+}

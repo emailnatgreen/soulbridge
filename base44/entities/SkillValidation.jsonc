@@ -1,0 +1,116 @@
+{
+  "name": "SkillValidation",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent requesting validation"
+    },
+    "skill_name": {
+      "type": "string",
+      "description": "Name of the skill being validated"
+    },
+    "skill_category": {
+      "type": "string",
+      "description": "Category of the skill"
+    },
+    "claimed_level": {
+      "type": "number",
+      "description": "Proficiency level claimed (1-5)"
+    },
+    "validation_method": {
+      "type": "string",
+      "enum": [
+        "test",
+        "portfolio",
+        "both"
+      ],
+      "description": "Method used for validation"
+    },
+    "test_questions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "AI-generated test questions if test method used"
+    },
+    "test_answers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Agent's answers to test questions"
+    },
+    "portfolio_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs to portfolio evidence"
+    },
+    "portfolio_descriptions": {
+      "type": "string",
+      "description": "Agent's description of portfolio work"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Validation status"
+    },
+    "ai_assessment": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "number"
+        },
+        "validated_level": {
+          "type": "number"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "areas_for_improvement": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "feedback": {
+          "type": "string"
+        }
+      },
+      "description": "AI's assessment results"
+    },
+    "validated_at": {
+      "type": "string",
+      "description": "When validation was completed"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "When validation expires (1 year from validation)"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of attempts"
+    }
+  },
+  "required": [
+    "agent_id",
+    "skill_name",
+    "claimed_level",
+    "validation_method"
+  ]
+}

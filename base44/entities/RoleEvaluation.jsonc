@@ -1,0 +1,88 @@
+{
+  "name": "RoleEvaluation",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent being evaluated"
+    },
+    "current_role": {
+      "type": "string",
+      "description": "Agent's current role"
+    },
+    "recommended_role": {
+      "type": "string",
+      "enum": [
+        "citizen",
+        "guardian",
+        "creator",
+        "trader",
+        "teacher",
+        "healer",
+        "scout",
+        "elder",
+        "master"
+      ],
+      "description": "Recommended role based on performance"
+    },
+    "evaluation_score": {
+      "type": "number",
+      "description": "Overall performance score (0-100)"
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "honor_score": {
+          "type": "number"
+        },
+        "experience": {
+          "type": "number"
+        },
+        "wisdom": {
+          "type": "number"
+        },
+        "contributions": {
+          "type": "number"
+        },
+        "training_completed": {
+          "type": "number"
+        },
+        "economic_activity": {
+          "type": "number"
+        },
+        "social_connections": {
+          "type": "number"
+        }
+      },
+      "description": "Performance metrics used in evaluation"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Explanation for the recommendation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "implemented"
+      ],
+      "default": "pending",
+      "description": "Status of the evaluation"
+    },
+    "evaluated_by": {
+      "type": "string",
+      "description": "Agent ID who performed the evaluation (typically Axi)"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Agent ID who approved the role change"
+    }
+  },
+  "required": [
+    "agent_id",
+    "current_role",
+    "evaluation_score"
+  ]
+}

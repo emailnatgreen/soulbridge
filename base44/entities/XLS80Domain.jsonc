@@ -1,0 +1,94 @@
+{
+  "name": "XLS80Domain",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent who owns this XLS-80 domain"
+    },
+    "domain_name": {
+      "type": "string",
+      "description": "The registered XLS-80 domain name (e.g., 'agent.xls80')"
+    },
+    "classic_address": {
+      "type": "string",
+      "description": "XRPL classic address linked to this domain"
+    },
+    "domain_hash": {
+      "type": "string",
+      "description": "Hash of the domain registration on-chain"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "suspended",
+        "revoked"
+      ],
+      "default": "pending",
+      "description": "Domain registration status"
+    },
+    "registered_on_xrpl": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether domain is published on XRPL mainnet"
+    },
+    "xrpl_txid": {
+      "type": "string",
+      "description": "XRPL transaction ID of domain registration"
+    },
+    "published_at": {
+      "type": "string",
+      "description": "ISO timestamp when domain was published on-chain"
+    },
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "default": "low"
+        },
+        "compliance_certifications": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of compliance framework certifications"
+        },
+        "institutional_tier": {
+          "type": "string",
+          "enum": [
+            "individual",
+            "small_business",
+            "institutional",
+            "sovereign"
+          ],
+          "default": "individual"
+        }
+      },
+      "description": "Domain attributes for institutional classification"
+    },
+    "associated_services": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Service IDs linked to this domain"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional domain metadata"
+    }
+  },
+  "required": [
+    "agent_id",
+    "domain_name",
+    "classic_address"
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "name": "WorldEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the world event"
+    },
+    "description": {
+      "type": "string",
+      "description": "Rich description of the event with lore"
+    },
+    "event_category": {
+      "type": "string",
+      "enum": [
+        "environmental",
+        "resource_discovery",
+        "natural_phenomenon",
+        "emergent_threat",
+        "opportunity",
+        "lore_revelation",
+        "seasonal_change"
+      ],
+      "description": "Type of world event"
+    },
+    "trigger_conditions": {
+      "type": "object",
+      "description": "What conditions triggered this event"
+    },
+    "world_changes": {
+      "type": "object",
+      "properties": {
+        "new_resources": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "environment_modifiers": {
+          "type": "object"
+        },
+        "new_locations": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "threats": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "description": "How this event changes the world"
+    },
+    "duration_ticks": {
+      "type": "number",
+      "default": 0,
+      "description": "How long the event lasts (0 for permanent)"
+    },
+    "impact_level": {
+      "type": "string",
+      "enum": [
+        "minor",
+        "moderate",
+        "major",
+        "critical"
+      ],
+      "default": "moderate",
+      "description": "How significant this event is"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "emerging",
+        "active",
+        "resolved",
+        "permanent"
+      ],
+      "default": "emerging",
+      "description": "Current status of the event"
+    },
+    "affected_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Agents affected by this event"
+    },
+    "resolution_narrative": {
+      "type": "string",
+      "description": "How the event was resolved (if applicable)"
+    },
+    "lore_context": {
+      "type": "string",
+      "description": "Lore and backstory for the event"
+    },
+    "start_tick": {
+      "type": "number",
+      "description": "When event started"
+    },
+    "end_tick": {
+      "type": "number",
+      "description": "When event ended/will end"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "event_category",
+    "impact_level"
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "name": "AgentMessage",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "ID of the conversation this message belongs to"
+    },
+    "sender_agent_id": {
+      "type": "string",
+      "description": "ID of the agent sending the message"
+    },
+    "from_agent_id": {
+      "type": "string",
+      "description": "Legacy: ID of the agent sending the message (for backwards compatibility)"
+    },
+    "to_agent_id": {
+      "type": "string",
+      "description": "Legacy: ID of the agent receiving the message (for backwards compatibility)"
+    },
+    "content": {
+      "type": "string",
+      "description": "The message content"
+    },
+    "message": {
+      "type": "string",
+      "description": "Legacy: The message content (for backwards compatibility)"
+    },
+    "response": {
+      "type": "string",
+      "description": "AI-generated response from the receiving agent (legacy)"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "task_update",
+        "task_completion",
+        "finding",
+        "system"
+      ],
+      "default": "text",
+      "description": "Type of message"
+    },
+    "related_task_id": {
+      "type": "string",
+      "description": "Task ID if message is task-related"
+    },
+    "related_project_id": {
+      "type": "string",
+      "description": "Project ID if message is project-related"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "received",
+        "responded",
+        "read"
+      ],
+      "default": "sent",
+      "description": "Message status"
+    },
+    "read_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs who have read this message"
+    },
+    "context": {
+      "type": "object",
+      "description": "Additional message context (conversation_id, ai_generated, etc.)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional message data"
+    }
+  },
+  "required": [
+    "sender_agent_id",
+    "content"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "DidEndorsement",
+  "type": "object",
+  "properties": {
+    "endorser_did": {
+      "type": "string",
+      "description": "DID giving the endorsement"
+    },
+    "endorsed_did": {
+      "type": "string",
+      "description": "DID being endorsed"
+    },
+    "endorser_wallet_id": {
+      "type": "string",
+      "description": "Endorser's wallet ID"
+    },
+    "endorsed_wallet_id": {
+      "type": "string",
+      "description": "Endorsed wallet ID"
+    },
+    "endorsement_type": {
+      "type": "string",
+      "enum": [
+        "trust",
+        "skill",
+        "reliability",
+        "communication",
+        "general"
+      ],
+      "default": "general",
+      "description": "Type of endorsement"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rating from 1-5"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Optional endorsement comment"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills or attributes being endorsed"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether endorsement is publicly visible"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether endorsement is verified"
+    },
+    "relationship_strength": {
+      "type": "string",
+      "enum": [
+        "weak",
+        "moderate",
+        "strong"
+      ],
+      "description": "Calculated relationship strength"
+    }
+  },
+  "required": [
+    "endorser_did",
+    "endorsed_did",
+    "rating"
+  ]
+}

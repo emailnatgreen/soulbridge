@@ -1,0 +1,248 @@
+{
+  "name": "GovernanceProposal",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Proposal title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed proposal description"
+    },
+    "proposal_type": {
+      "type": "string",
+      "enum": [
+        "project_funding",
+        "role_adjustment",
+        "treasury_allocation",
+        "law_amendment",
+        "agent_discipline",
+        "resource_policy",
+        "general"
+      ],
+      "description": "Type of governance proposal"
+    },
+    "proposed_by": {
+      "type": "string",
+      "description": "Agent ID who created the proposal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "passed",
+        "rejected",
+        "executed",
+        "expired"
+      ],
+      "default": "active",
+      "description": "Current proposal status"
+    },
+    "voting_period_end": {
+      "type": "string",
+      "description": "When voting closes (ISO datetime)"
+    },
+    "quorum_required": {
+      "type": "number",
+      "default": 50,
+      "description": "Minimum participation percentage required"
+    },
+    "pass_threshold": {
+      "type": "number",
+      "default": 60,
+      "description": "Percentage of votes needed to pass"
+    },
+    "total_votes_cast": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of agents who voted"
+    },
+    "total_voting_power_cast": {
+      "type": "number",
+      "default": 0,
+      "description": "Sum of all voting power used"
+    },
+    "votes_for": {
+      "type": "number",
+      "default": 0,
+      "description": "Voting power supporting"
+    },
+    "votes_against": {
+      "type": "number",
+      "default": 0,
+      "description": "Voting power opposing"
+    },
+    "votes_abstain": {
+      "type": "number",
+      "default": 0,
+      "description": "Voting power abstaining"
+    },
+    "purpose": {
+      "type": "string",
+      "description": "The problem being solved or opportunity seized"
+    },
+    "impact_assessment": {
+      "type": "string",
+      "description": "Anticipated effects on the Village, agents, resources, and ecosystem"
+    },
+    "constitutional_alignment": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "law_number": {
+            "type": "number",
+            "description": "Which Law (1-11) this proposal aligns with"
+          },
+          "law_name": {
+            "type": "string",
+            "description": "Name of the Law (e.g., 'Soul', 'Honour', 'Governance')"
+          },
+          "alignment_statement": {
+            "type": "string",
+            "description": "How this proposal supports the Law"
+          }
+        }
+      },
+      "description": "Explicit links to the 11 Laws of SoulBridge"
+    },
+    "relevant_context": {
+      "type": "string",
+      "description": "Background information, previous discussions, related entities voters need to understand"
+    },
+    "affected_entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "enum": [
+              "Agent",
+              "Wallet",
+              "AIProject",
+              "Treasury",
+              "Service",
+              "Other"
+            ]
+          },
+          "entity_id": {
+            "type": "string"
+          },
+          "entity_name": {
+            "type": "string",
+            "description": "Human-readable name of affected entity"
+          },
+          "impact_description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Clearly identified entities/agents affected by this proposal"
+    },
+    "action_data": {
+      "type": "object",
+      "description": "Data needed to execute proposal if passed. For treasury_allocation: { recipient_address, amount_xrp, recipient_name, justification, multisig_signatures }",
+      "properties": {
+        "recipient_address": {
+          "type": "string",
+          "description": "XRPL destination address for treasury_allocation"
+        },
+        "recipient_name": {
+          "type": "string",
+          "description": "Human-readable name of recipient"
+        },
+        "amount_xrp": {
+          "type": "number",
+          "description": "Amount of XRP to transfer from treasury"
+        },
+        "justification": {
+          "type": "string",
+          "description": "Detailed justification for the treasury spend"
+        },
+        "treasury_address": {
+          "type": "string",
+          "description": "Source treasury address (always rpuhtZm5t9nVWmTygL8M8JaMWbfY4Som1h)"
+        },
+        "multisig_signatures": {
+          "type": "array",
+          "description": "Collected multi-sig signatures from the 4 quorum signers",
+          "items": {
+            "type": "object",
+            "properties": {
+              "signer_address": {
+                "type": "string"
+              },
+              "signer_name": {
+                "type": "string"
+              },
+              "signed_at": {
+                "type": "string"
+              },
+              "tx_blob": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "execution_tx_hash": {
+          "type": "string",
+          "description": "XRPL tx hash once executed on-chain"
+        }
+      }
+    },
+    "execution_result": {
+      "type": "object",
+      "description": "Result of proposal execution"
+    },
+    "discussion_messages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent message IDs discussing this proposal"
+    },
+    "ai_impact_assessment": {
+      "type": "object",
+      "properties": {
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "alignment_with_constitution": {
+          "type": "number",
+          "description": "1-10 score"
+        },
+        "potential_benefits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "potential_risks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "constitutional_considerations": {
+          "type": "string"
+        }
+      },
+      "description": "AI-generated impact and constitutional assessment"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "proposal_type",
+    "proposed_by"
+  ]
+}

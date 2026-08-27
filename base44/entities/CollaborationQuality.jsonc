@@ -1,0 +1,104 @@
+{
+  "name": "CollaborationQuality",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Reference to CollaborativeSession"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Associated project"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs in collaboration"
+    },
+    "quality_score": {
+      "type": "number",
+      "default": 70,
+      "description": "Overall collaboration quality (0-100)"
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "communication_effectiveness": {
+          "type": "number"
+        },
+        "decision_making_speed": {
+          "type": "number"
+        },
+        "conflict_resolution": {
+          "type": "number"
+        },
+        "idea_generation": {
+          "type": "number"
+        },
+        "mutual_support": {
+          "type": "number"
+        },
+        "goal_alignment": {
+          "type": "number"
+        }
+      },
+      "description": "Quality dimensions (0-100 each)"
+    },
+    "interaction_patterns": {
+      "type": "object",
+      "properties": {
+        "participation_balance": {
+          "type": "number"
+        },
+        "interruptions": {
+          "type": "number"
+        },
+        "consensus_level": {
+          "type": "number"
+        }
+      },
+      "description": "Interaction analysis"
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Collaboration strengths"
+    },
+    "areas_for_improvement": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What could be better"
+    },
+    "ai_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "recommendation": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "expected_impact": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "AI suggestions for improvement"
+    },
+    "assessed_at": {
+      "type": "string",
+      "description": "When quality was assessed"
+    }
+  },
+  "required": [
+    "participants"
+  ]
+}

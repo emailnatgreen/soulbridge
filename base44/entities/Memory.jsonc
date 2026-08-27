@@ -1,0 +1,60 @@
+{
+  "name": "Memory",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "ID of the agent who created this memory (typically Axi)"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user this memory relates to (if user-specific)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "conversation_snippet",
+        "user_preference",
+        "village_detail",
+        "observation",
+        "fact",
+        "relationship",
+        "emotion"
+      ],
+      "description": "Category of memory for efficient retrieval"
+    },
+    "content": {
+      "type": "string",
+      "description": "The actual memory content"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Keywords for search and categorization"
+    },
+    "context": {
+      "type": "string",
+      "description": "Additional context about when/where this memory was formed"
+    },
+    "importance": {
+      "type": "number",
+      "default": 5,
+      "description": "Importance score (1-10) for prioritizing memory retrieval"
+    },
+    "related_entity_id": {
+      "type": "string",
+      "description": "ID of related entity (Agent, Wallet, Transaction, etc.)"
+    },
+    "related_entity_type": {
+      "type": "string",
+      "description": "Type of related entity"
+    }
+  },
+  "required": [
+    "agent_id",
+    "type",
+    "content"
+  ]
+}

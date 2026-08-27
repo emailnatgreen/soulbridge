@@ -1,0 +1,94 @@
+{
+  "name": "VillageCalendarEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Event title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Full event description"
+    },
+    "start_date": {
+      "type": "string",
+      "description": "ISO datetime for event start"
+    },
+    "end_date": {
+      "type": "string",
+      "description": "ISO datetime for event end (optional)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "automation",
+        "project",
+        "governance",
+        "news",
+        "milestone",
+        "custom"
+      ],
+      "default": "custom",
+      "description": "Event category for colour-coding and filtering"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "critical"
+      ],
+      "default": "normal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "active",
+        "completed",
+        "failed",
+        "expired"
+      ],
+      "default": "upcoming"
+    },
+    "source_entity_type": {
+      "type": "string",
+      "description": "e.g. AIProject, GovernanceProposal, AutomationLog"
+    },
+    "source_entity_id": {
+      "type": "string",
+      "description": "ID of the related entity"
+    },
+    "external_url": {
+      "type": "string",
+      "description": "External link (e.g. news article URL)"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Agent associated with this event (if any)"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Related AIProject ID (if any)"
+    },
+    "created_by_agent": {
+      "type": "string",
+      "description": "Agent ID that created this event (Axi or another agent)"
+    },
+    "all_day": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is an all-day event"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Extra data specific to the event type"
+    }
+  },
+  "required": [
+    "title",
+    "start_date",
+    "category"
+  ]
+}

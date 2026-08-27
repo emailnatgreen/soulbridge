@@ -1,0 +1,155 @@
+{
+  "name": "SkillProgress",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent tracking progress"
+    },
+    "development_plan_id": {
+      "type": "string",
+      "description": "Associated development plan"
+    },
+    "skill_name": {
+      "type": "string",
+      "description": "Skill being developed"
+    },
+    "starting_level": {
+      "type": "number",
+      "description": "Proficiency at start (0-10)"
+    },
+    "current_level": {
+      "type": "number",
+      "description": "Current proficiency (0-10)"
+    },
+    "target_level": {
+      "type": "number",
+      "description": "Goal proficiency (0-10)"
+    },
+    "progress_percentage": {
+      "type": "number",
+      "default": 0,
+      "description": "Progress toward target (0-100)"
+    },
+    "activities_completed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "activity": {
+            "type": "string"
+          },
+          "completed_date": {
+            "type": "string"
+          },
+          "skill_gain": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Learning activities completed"
+    },
+    "modules_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Training module IDs completed"
+    },
+    "practice_projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "contribution_quality": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Projects worked on for practice"
+    },
+    "mentorship_hours": {
+      "type": "number",
+      "default": 0,
+      "description": "Hours spent with mentors"
+    },
+    "peer_endorsements": {
+      "type": "number",
+      "default": 0,
+      "description": "Endorsements received for this skill"
+    },
+    "assessments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "assessment_type": {
+            "type": "string"
+          },
+          "feedback": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Skill assessments over time"
+    },
+    "ai_insights": {
+      "type": "object",
+      "properties": {
+        "growth_rate": {
+          "type": "string"
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "areas_for_focus": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "next_recommended_activity": {
+          "type": "string"
+        }
+      },
+      "description": "AI analysis of progress"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "completed",
+        "abandoned"
+      ],
+      "default": "active",
+      "description": "Progress tracking status"
+    },
+    "started_date": {
+      "type": "string",
+      "description": "When development started"
+    },
+    "completed_date": {
+      "type": "string",
+      "description": "When target was reached"
+    }
+  },
+  "required": [
+    "agent_id",
+    "skill_name",
+    "starting_level",
+    "target_level"
+  ]
+}

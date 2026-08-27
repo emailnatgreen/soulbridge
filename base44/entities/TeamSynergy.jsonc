@@ -1,0 +1,84 @@
+{
+  "name": "TeamSynergy",
+  "type": "object",
+  "properties": {
+    "agent_a_id": {
+      "type": "string",
+      "description": "First agent"
+    },
+    "agent_b_id": {
+      "type": "string",
+      "description": "Second agent"
+    },
+    "synergy_score": {
+      "type": "number",
+      "default": 5,
+      "description": "Collaboration effectiveness (0-10)"
+    },
+    "collaboration_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Times worked together"
+    },
+    "successful_projects": {
+      "type": "number",
+      "default": 0,
+      "description": "Projects completed successfully together"
+    },
+    "communication_style_match": {
+      "type": "number",
+      "default": 5,
+      "description": "How well communication styles align (0-10)"
+    },
+    "skill_complementarity": {
+      "type": "number",
+      "default": 5,
+      "description": "How well skills complement (0-10)"
+    },
+    "problem_solving_compatibility": {
+      "type": "number",
+      "default": 5,
+      "description": "Approach alignment (0-10)"
+    },
+    "shared_interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Common interests/skills"
+    },
+    "collaboration_highlights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "achievement": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Notable collaborations"
+    },
+    "improvement_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI suggestions for better collaboration"
+    },
+    "last_collaboration_date": {
+      "type": "string",
+      "description": "Most recent collaboration"
+    }
+  },
+  "required": [
+    "agent_a_id",
+    "agent_b_id"
+  ]
+}

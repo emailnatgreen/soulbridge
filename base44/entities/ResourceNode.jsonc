@@ -1,0 +1,65 @@
+{
+  "name": "ResourceNode",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the resource node"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "lumber",
+        "stone",
+        "food",
+        "water",
+        "metal",
+        "crystal",
+        "herb"
+      ],
+      "description": "Type of resource this node produces"
+    },
+    "location_id": {
+      "type": "string",
+      "description": "Reference to VillageLocation where this node exists"
+    },
+    "abundance": {
+      "type": "number",
+      "default": 100,
+      "description": "How much resource remains (0-100)"
+    },
+    "regeneration_rate": {
+      "type": "number",
+      "default": 5,
+      "description": "How much abundance regenerates per tick"
+    },
+    "difficulty": {
+      "type": "number",
+      "default": 1,
+      "description": "Gathering difficulty (1-5)"
+    },
+    "yield_per_gather": {
+      "type": "number",
+      "default": 10,
+      "description": "Base amount gathered per successful attempt"
+    },
+    "last_gathered_by": {
+      "type": "string",
+      "description": "Agent ID who last gathered here"
+    },
+    "last_gathered_tick": {
+      "type": "number",
+      "description": "Simulation tick when last gathered"
+    },
+    "total_gathered": {
+      "type": "number",
+      "default": 0,
+      "description": "Total resources gathered from this node"
+    }
+  },
+  "required": [
+    "name",
+    "resource_type",
+    "location_id"
+  ]
+}

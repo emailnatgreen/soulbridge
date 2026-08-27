@@ -1,0 +1,46 @@
+{
+  "name": "JukeboxDecision",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "open_chat",
+        "broadcast_wisdom",
+        "trigger_alert"
+      ],
+      "description": "The action to be performed based on the Jukebox decision"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "The ID of the agent involved in the action (e.g., 'axi' for Axi Chat)"
+    },
+    "message": {
+      "type": "string",
+      "description": "The message content to be pre-filled or sent"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "Optional: The ID of an existing conversation to resume"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "The processing status of the decision"
+    },
+    "triggered_by": {
+      "type": "string",
+      "description": "The source or event that triggered this decision"
+    }
+  },
+  "required": [
+    "action",
+    "agent_id",
+    "message"
+  ]
+}

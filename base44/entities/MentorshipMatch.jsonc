@@ -1,0 +1,89 @@
+{
+  "name": "MentorshipMatch",
+  "type": "object",
+  "properties": {
+    "mentee_agent_id": {
+      "type": "string",
+      "description": "Agent seeking mentorship"
+    },
+    "recommended_mentors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mentor_agent_id": {
+            "type": "string"
+          },
+          "match_score": {
+            "type": "number"
+          },
+          "reasoning": {
+            "type": "string"
+          },
+          "strengths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "potential_growth_areas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "AI-recommended mentor matches"
+    },
+    "mentee_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What mentee wants to achieve"
+    },
+    "skill_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills to develop"
+    },
+    "match_criteria": {
+      "type": "object",
+      "properties": {
+        "skill_alignment": {
+          "type": "number"
+        },
+        "experience_gap": {
+          "type": "number"
+        },
+        "style_compatibility": {
+          "type": "number"
+        },
+        "availability_match": {
+          "type": "number"
+        }
+      },
+      "description": "Matching criteria weights"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "acted_upon"
+      ],
+      "default": "pending",
+      "description": "Match status"
+    },
+    "ai_confidence": {
+      "type": "number",
+      "description": "AI confidence in matches (0-100)"
+    }
+  },
+  "required": [
+    "mentee_agent_id"
+  ]
+}

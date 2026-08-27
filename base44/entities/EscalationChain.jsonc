@@ -1,0 +1,73 @@
+{
+  "name": "EscalationChain",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Name of this escalation scenario (e.g. 'Delivery Dispute Escalation')"
+    },
+    "assigned_agent_id": {
+      "type": "string",
+      "description": "Agent ID this chain is assigned to (Maya)"
+    },
+    "root_review_id": {
+      "type": "string",
+      "description": "ID of the first GhostReview in the chain"
+    },
+    "review_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ordered list of GhostReview IDs forming the escalation chain"
+    },
+    "stage_count": {
+      "type": "number",
+      "default": 1,
+      "description": "How many stages have been generated so far"
+    },
+    "current_stage": {
+      "type": "number",
+      "default": 1,
+      "description": "Which stage Maya is currently working on (1-indexed)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Resolved",
+        "Abandoned"
+      ],
+      "default": "Active",
+      "description": "Overall chain status \u2014 Resolved when customer is finally satisfied"
+    },
+    "final_outcome": {
+      "type": "string",
+      "description": "AI-generated summary of how the escalation was ultimately handled"
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "Easy",
+        "Medium",
+        "Hard",
+        "Fire Drill"
+      ],
+      "default": "Medium",
+      "description": "Overall difficulty of this escalation scenario"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorisation"
+    }
+  },
+  "required": [
+    "title",
+    "assigned_agent_id",
+    "root_review_id",
+    "review_ids"
+  ]
+}

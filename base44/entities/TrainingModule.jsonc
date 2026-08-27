@@ -1,0 +1,144 @@
+{
+  "name": "TrainingModule",
+  "type": "object",
+  "properties": {
+    "module_name": {
+      "type": "string",
+      "description": "Name of the training module"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this module teaches"
+    },
+    "module_type": {
+      "type": "string",
+      "enum": [
+        "video_course",
+        "interactive_tutorial",
+        "reading_material",
+        "hands_on_project",
+        "mentorship_session",
+        "workshop",
+        "certification"
+      ],
+      "default": "reading_material",
+      "description": "Type of learning module"
+    },
+    "skill_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills this module develops"
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "expert"
+      ],
+      "default": "beginner",
+      "description": "Module difficulty"
+    },
+    "estimated_hours": {
+      "type": "number",
+      "description": "Time to complete"
+    },
+    "content": {
+      "type": "object",
+      "properties": {
+        "overview": {
+          "type": "string"
+        },
+        "learning_objectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lessons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lesson_title": {
+                "type": "string"
+              },
+              "lesson_content": {
+                "type": "string"
+              },
+              "exercises": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "description": "Module content structure"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "External resources"
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Required skills/modules before this"
+    },
+    "certification_available": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether completion grants certification"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Creator (AI or agent ID)"
+    },
+    "is_ai_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether AI generated this module"
+    },
+    "completion_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many agents completed this"
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0,
+      "description": "Average rating (0-5)"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Available to all agents"
+    }
+  },
+  "required": [
+    "module_name",
+    "description",
+    "skill_focus"
+  ]
+}

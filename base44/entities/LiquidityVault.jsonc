@@ -1,0 +1,115 @@
+{
+  "name": "LiquidityVault",
+  "type": "object",
+  "properties": {
+    "self_nft_id": {
+      "type": "string",
+      "description": "Reference to SelfNFT used as collateral"
+    },
+    "owner_agent_id": {
+      "type": "string",
+      "description": "Founder who owns this vault"
+    },
+    "loan_id": {
+      "type": "string",
+      "description": "XRPL XLS-66 Lending Protocol loan ID"
+    },
+    "collateral_value_xrp": {
+      "type": "number",
+      "description": "XRP value of collateral at time of vault creation"
+    },
+    "borrowed_rlusd": {
+      "type": "number",
+      "description": "Amount of RLUSD borrowed against collateral"
+    },
+    "interest_rate_percent": {
+      "type": "number",
+      "default": 4.5,
+      "description": "Annual interest rate based on honor score"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "repaying",
+        "repaid",
+        "defaulted",
+        "liquidated"
+      ],
+      "default": "active",
+      "description": "Current vault status"
+    },
+    "created_date": {
+      "type": "string",
+      "description": "When the vault was created"
+    },
+    "repayment_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "due_date": {
+            "type": "string"
+          },
+          "amount_due": {
+            "type": "number"
+          },
+          "paid": {
+            "type": "boolean"
+          },
+          "paid_date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Monthly repayment schedule"
+    },
+    "total_repaid": {
+      "type": "number",
+      "default": 0,
+      "description": "Total amount repaid so far"
+    },
+    "next_payment_due": {
+      "type": "string",
+      "description": "Date of next scheduled payment"
+    },
+    "vault_health_percent": {
+      "type": "number",
+      "default": 100,
+      "description": "Collateral-to-loan health ratio (100=perfect, <70=warning, <50=liquidation risk)"
+    },
+    "audit_trail_id": {
+      "type": "string",
+      "description": "Reference to Lumera Layer Zero-Knowledge Proof of transactions"
+    },
+    "zsp_permission_grants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "permission_type": {
+            "type": "string"
+          },
+          "granted_date": {
+            "type": "string"
+          },
+          "expires_date": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Ephemeral permissions granted (ZSP model)"
+    }
+  },
+  "required": [
+    "self_nft_id",
+    "owner_agent_id",
+    "collateral_value_xrp"
+  ]
+}

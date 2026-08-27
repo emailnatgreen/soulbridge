@@ -1,0 +1,62 @@
+{
+  "name": "Treasury",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the treasury pool"
+    },
+    "classic_address": {
+      "type": "string",
+      "description": "The XRPL classic address of the treasury's on-chain wallet"
+    },
+    "total_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Total XRP in treasury (synced from on-chain)"
+    },
+    "manager_agent_id": {
+      "type": "string",
+      "description": "Agent responsible for managing this treasury"
+    },
+    "purpose": {
+      "type": "string",
+      "description": "What this treasury is for (development fund, rewards pool, etc.)"
+    },
+    "access_level": {
+      "type": "string",
+      "enum": [
+        "admin_only",
+        "managers",
+        "public"
+      ],
+      "default": "managers",
+      "description": "Who can access/withdraw from this treasury"
+    },
+    "withdrawal_limit": {
+      "type": "number",
+      "description": "Max XRP that can be withdrawn per transaction"
+    },
+    "total_deposits": {
+      "type": "number",
+      "default": 0,
+      "description": "Total amount ever deposited"
+    },
+    "total_withdrawals": {
+      "type": "number",
+      "default": 0,
+      "description": "Total amount ever withdrawn"
+    },
+    "transaction_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of transactions processed"
+    }
+  },
+  "required": [
+    "name",
+    "manager_agent_id",
+    "purpose",
+    "classic_address"
+  ]
+}

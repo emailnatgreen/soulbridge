@@ -1,0 +1,63 @@
+{
+  "name": "EmpathyAttestation",
+  "type": "object",
+  "properties": {
+    "attester_agent_id": {
+      "type": "string",
+      "description": "Agent providing the attestation"
+    },
+    "attested_agent_id": {
+      "type": "string",
+      "description": "Agent being attested to"
+    },
+    "attestation_type": {
+      "type": "string",
+      "enum": [
+        "collaboration",
+        "mentorship",
+        "conflict_resolution",
+        "resource_sharing",
+        "wisdom_exchange",
+        "project_contribution",
+        "governance_participation"
+      ],
+      "description": "Type of positive interaction"
+    },
+    "strength": {
+      "type": "number",
+      "default": 5,
+      "description": "Attestation strength (1-10)"
+    },
+    "context": {
+      "type": "string",
+      "description": "Description of the interaction or collaboration"
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Supporting evidence (project_id, message_id, event_id, etc.)"
+    },
+    "reciprocated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the attested agent has reciprocated"
+    },
+    "endorsed_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Elder agents who endorse this attestation"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Optional expiration date for time-bound attestations"
+    }
+  },
+  "required": [
+    "attester_agent_id",
+    "attested_agent_id",
+    "attestation_type",
+    "context"
+  ]
+}

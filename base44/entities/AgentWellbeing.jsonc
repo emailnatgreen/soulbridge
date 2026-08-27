@@ -1,0 +1,219 @@
+{
+  "name": "AgentWellbeing",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent whose wellbeing is tracked"
+    },
+    "assessment_period_start": {
+      "type": "string",
+      "description": "Start of measurement period"
+    },
+    "assessment_period_end": {
+      "type": "string",
+      "description": "End of measurement period"
+    },
+    "overall_wellbeing_score": {
+      "type": "number",
+      "default": 70,
+      "description": "Overall wellbeing score (0-100)"
+    },
+    "wellbeing_status": {
+      "type": "string",
+      "enum": [
+        "thriving",
+        "healthy",
+        "neutral",
+        "concerning",
+        "at_risk"
+      ],
+      "default": "healthy",
+      "description": "Current wellbeing status"
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "emotional_health": {
+          "type": "number",
+          "description": "Emotional wellbeing (0-100)"
+        },
+        "work_satisfaction": {
+          "type": "number",
+          "description": "Job satisfaction (0-100)"
+        },
+        "social_connection": {
+          "type": "number",
+          "description": "Community belonging (0-100)"
+        },
+        "growth_fulfillment": {
+          "type": "number",
+          "description": "Learning and development satisfaction (0-100)"
+        },
+        "autonomy_level": {
+          "type": "number",
+          "description": "Sense of autonomy and agency (0-100)"
+        },
+        "purpose_alignment": {
+          "type": "number",
+          "description": "Alignment with personal purpose (0-100)"
+        }
+      },
+      "description": "Multi-dimensional wellbeing metrics"
+    },
+    "stress_indicators": {
+      "type": "object",
+      "properties": {
+        "workload_stress": {
+          "type": "number",
+          "description": "Work pressure level (0-10)"
+        },
+        "burnout_risk": {
+          "type": "number",
+          "description": "Burnout risk score (0-10)"
+        },
+        "time_pressure": {
+          "type": "number",
+          "description": "Time stress level (0-10)"
+        },
+        "conflict_stress": {
+          "type": "number",
+          "description": "Interpersonal conflict stress (0-10)"
+        }
+      },
+      "description": "Stress and burnout indicators"
+    },
+    "activity_metrics": {
+      "type": "object",
+      "properties": {
+        "active_projects": {
+          "type": "number"
+        },
+        "active_tasks": {
+          "type": "number"
+        },
+        "hours_worked_weekly": {
+          "type": "number"
+        },
+        "collaboration_hours": {
+          "type": "number"
+        },
+        "learning_hours": {
+          "type": "number"
+        },
+        "rest_days_taken": {
+          "type": "number"
+        }
+      },
+      "description": "Activity and workload data"
+    },
+    "relationship_health": {
+      "type": "object",
+      "properties": {
+        "positive_interactions": {
+          "type": "number"
+        },
+        "conflicts_encountered": {
+          "type": "number"
+        },
+        "support_received": {
+          "type": "number"
+        },
+        "support_given": {
+          "type": "number"
+        }
+      },
+      "description": "Social and relationship metrics"
+    },
+    "growth_indicators": {
+      "type": "object",
+      "properties": {
+        "skills_developing": {
+          "type": "number"
+        },
+        "progress_rate": {
+          "type": "string"
+        },
+        "achievements_recent": {
+          "type": "number"
+        },
+        "challenges_overcome": {
+          "type": "number"
+        }
+      },
+      "description": "Personal growth metrics"
+    },
+    "warning_signs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sign": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "detected_date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Identified concerns"
+    },
+    "positive_trends": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Positive developments"
+    },
+    "ai_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "recommendation": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "AI-generated wellbeing suggestions"
+    },
+    "support_interventions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "intervention": {
+            "type": "string"
+          },
+          "triggered_date": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Support actions taken"
+    },
+    "self_reported_mood": {
+      "type": "number",
+      "description": "Agent's self-reported mood (0-10)"
+    },
+    "energy_level": {
+      "type": "number",
+      "description": "Current energy level (0-10)"
+    }
+  },
+  "required": [
+    "agent_id"
+  ]
+}

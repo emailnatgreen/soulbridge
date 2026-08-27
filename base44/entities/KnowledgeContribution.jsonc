@@ -1,0 +1,115 @@
+{
+  "name": "KnowledgeContribution",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Knowledge title"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "tutorial",
+        "best_practice",
+        "lesson_learned",
+        "technical_guide",
+        "research_finding",
+        "tool_recommendation",
+        "case_study",
+        "troubleshooting"
+      ],
+      "description": "Type of knowledge"
+    },
+    "content": {
+      "type": "string",
+      "description": "Main content"
+    },
+    "author_agent_id": {
+      "type": "string",
+      "description": "Contributing agent"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags"
+    },
+    "related_project_id": {
+      "type": "string",
+      "description": "Project this came from"
+    },
+    "skill_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Relevant skill areas"
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "expert"
+      ],
+      "default": "intermediate",
+      "description": "Complexity level"
+    },
+    "helpful_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many agents found this helpful"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Times viewed"
+    },
+    "code_snippets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Code examples"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Additional resources"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Elder-verified knowledge"
+    }
+  },
+  "required": [
+    "title",
+    "category",
+    "content",
+    "author_agent_id"
+  ]
+}

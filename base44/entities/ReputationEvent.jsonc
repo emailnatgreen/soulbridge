@@ -1,0 +1,74 @@
+{
+  "name": "ReputationEvent",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent affected"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "project_completed",
+        "proposal_approved",
+        "vote_cast",
+        "knowledge_shared",
+        "service_delivered",
+        "endorsement_received",
+        "milestone_achieved",
+        "skill_validated",
+        "mentorship_provided",
+        "violation_committed",
+        "commitment_broken",
+        "negative_review",
+        "constitutional_violation",
+        "warning_issued"
+      ],
+      "description": "Type of reputation event"
+    },
+    "impact": {
+      "type": "number",
+      "description": "Reputation change (-100 to +100)"
+    },
+    "category": {
+      "type": "string",
+      "description": "Which component this affects"
+    },
+    "description": {
+      "type": "string",
+      "description": "What happened"
+    },
+    "related_entity_type": {
+      "type": "string",
+      "description": "Entity type (AIProject, GovernanceProposal, etc.)"
+    },
+    "related_entity_id": {
+      "type": "string",
+      "description": "Specific entity ID"
+    },
+    "context": {
+      "type": "object",
+      "description": "Additional context data"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether event is verified"
+    },
+    "verified_by": {
+      "type": "string",
+      "description": "Who/what verified this"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Visible to other agents"
+    }
+  },
+  "required": [
+    "agent_id",
+    "event_type",
+    "impact",
+    "category"
+  ]
+}

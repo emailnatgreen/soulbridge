@@ -1,0 +1,55 @@
+{
+  "name": "ImageAsset",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "File name"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL of the image stored on the platform"
+    },
+    "mime_type": {
+      "type": "string",
+      "description": "MIME type of the image"
+    },
+    "size_bytes": {
+      "type": "number",
+      "description": "File size in bytes"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "platform_upload",
+        "google_drive",
+        "one_drive"
+      ],
+      "default": "platform_upload",
+      "description": "Where the image originated from"
+    },
+    "google_drive_id": {
+      "type": "string",
+      "description": "Google Drive file ID if synced to Drive"
+    },
+    "google_drive_url": {
+      "type": "string",
+      "description": "Google Drive shareable link"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorization"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description"
+    }
+  },
+  "required": [
+    "name",
+    "file_url"
+  ]
+}

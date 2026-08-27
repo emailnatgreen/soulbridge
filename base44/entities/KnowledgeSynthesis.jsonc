@@ -1,0 +1,134 @@
+{
+  "name": "KnowledgeSynthesis",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Synthesis title"
+    },
+    "synthesis_type": {
+      "type": "string",
+      "enum": [
+        "trend_analysis",
+        "best_practices_summary",
+        "skill_gap_analysis",
+        "innovation_opportunities",
+        "cross_domain_insights",
+        "problem_pattern_recognition",
+        "success_factor_analysis"
+      ],
+      "description": "Type of synthesis"
+    },
+    "source_knowledge_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Knowledge contributions analyzed"
+    },
+    "synthesis_content": {
+      "type": "string",
+      "description": "AI-generated synthesis"
+    },
+    "key_insights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "insight": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "supporting_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Main insights extracted"
+    },
+    "actionable_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "recommendation": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "expected_impact": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Recommendations based on synthesis"
+    },
+    "knowledge_connections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from_topic": {
+            "type": "string"
+          },
+          "to_topic": {
+            "type": "string"
+          },
+          "relationship": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Cross-domain connections discovered"
+    },
+    "emerging_patterns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Patterns identified across knowledge base"
+    },
+    "skill_areas_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills this synthesis relates to"
+    },
+    "relevance_score": {
+      "type": "number",
+      "default": 0,
+      "description": "How relevant/useful this synthesis is (0-10)"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Times viewed"
+    },
+    "useful_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Times marked useful"
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "When synthesis was created"
+    },
+    "auto_generated": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this was auto-generated"
+    }
+  },
+  "required": [
+    "title",
+    "synthesis_type",
+    "synthesis_content"
+  ]
+}

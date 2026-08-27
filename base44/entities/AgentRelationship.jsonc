@@ -1,0 +1,141 @@
+{
+  "name": "AgentRelationship",
+  "type": "object",
+  "properties": {
+    "agent_a_id": {
+      "type": "string",
+      "description": "First agent in the relationship"
+    },
+    "agent_b_id": {
+      "type": "string",
+      "description": "Second agent in the relationship"
+    },
+    "relationship_strength": {
+      "type": "number",
+      "default": 0,
+      "description": "Overall bond strength (-10 to +10, negative = tension)"
+    },
+    "trust_level": {
+      "type": "number",
+      "default": 5,
+      "description": "Trust between agents (0-10)"
+    },
+    "respect_level": {
+      "type": "number",
+      "default": 5,
+      "description": "Mutual respect (0-10)"
+    },
+    "collaboration_score": {
+      "type": "number",
+      "default": 0,
+      "description": "How well they work together (0-10)"
+    },
+    "affinity": {
+      "type": "number",
+      "default": 0,
+      "description": "Natural compatibility (-10 to +10)"
+    },
+    "relationship_type": {
+      "type": "string",
+      "enum": [
+        "stranger",
+        "acquaintance",
+        "friend",
+        "close_friend",
+        "mentor_mentee",
+        "rival",
+        "adversary",
+        "ally",
+        "neutral"
+      ],
+      "default": "stranger",
+      "description": "Category of relationship"
+    },
+    "interaction_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total interactions between agents"
+    },
+    "positive_interactions": {
+      "type": "number",
+      "default": 0,
+      "description": "Constructive interactions"
+    },
+    "negative_interactions": {
+      "type": "number",
+      "default": 0,
+      "description": "Conflictual interactions"
+    },
+    "last_interaction_date": {
+      "type": "string",
+      "description": "When they last interacted"
+    },
+    "shared_experiences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string",
+            "enum": [
+              "positive",
+              "negative",
+              "neutral"
+            ]
+          },
+          "date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Events they experienced together"
+    },
+    "conflict_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "issue": {
+            "type": "string"
+          },
+          "resolved": {
+            "type": "boolean"
+          },
+          "date": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Past conflicts"
+    },
+    "compatibility_factors": {
+      "type": "object",
+      "properties": {
+        "value_alignment": {
+          "type": "number"
+        },
+        "personality_compatibility": {
+          "type": "number"
+        },
+        "goal_alignment": {
+          "type": "number"
+        }
+      },
+      "description": "Why they connect or clash"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observations about the relationship"
+    }
+  },
+  "required": [
+    "agent_a_id",
+    "agent_b_id"
+  ]
+}

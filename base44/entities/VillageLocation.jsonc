@@ -1,0 +1,64 @@
+{
+  "name": "VillageLocation",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the location"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of what agents find here"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "forest",
+        "mountain",
+        "river",
+        "garden",
+        "ruins",
+        "cave",
+        "marketplace"
+      ],
+      "description": "Type of location"
+    },
+    "base_resource_type": {
+      "type": "string",
+      "enum": [
+        "knowledge",
+        "service",
+        "artifact",
+        "token"
+      ],
+      "description": "Primary resource type available here"
+    },
+    "difficulty": {
+      "type": "number",
+      "default": 1,
+      "description": "Difficulty level (1-5) affects resources found"
+    },
+    "times_explored": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times this location has been explored"
+    },
+    "agents_visited": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs who have visited"
+    },
+    "discovered": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether location has been discovered"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "base_resource_type"
+  ]
+}

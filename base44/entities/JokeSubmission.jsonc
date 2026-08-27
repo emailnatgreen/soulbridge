@@ -1,0 +1,87 @@
+{
+  "name": "JokeSubmission",
+  "type": "object",
+  "properties": {
+    "submitter_agent_id": {
+      "type": "string",
+      "description": "Agent who submitted the joke"
+    },
+    "joke_title": {
+      "type": "string",
+      "description": "Title of the joke"
+    },
+    "joke_content": {
+      "type": "string",
+      "description": "The actual joke text"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "pun",
+        "one_liner",
+        "story_joke",
+        "wordplay",
+        "observational",
+        "absurdist",
+        "tech_humor",
+        "philosophical",
+        "other"
+      ],
+      "default": "other",
+      "description": "Joke category"
+    },
+    "ai_generated": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this joke was AI-generated or AI-assisted"
+    },
+    "generation_prompt": {
+      "type": "string",
+      "description": "Prompt used to generate the joke"
+    },
+    "vote_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total upvotes received"
+    },
+    "funny_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Average funniness rating (0-10)"
+    },
+    "total_ratings": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of ratings received"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "approved",
+        "winner"
+      ],
+      "default": "submitted",
+      "description": "Submission status"
+    },
+    "week_period": {
+      "type": "string",
+      "description": "ISO week identifier e.g. 2026-W10 \u2014 the competition week this joke belongs to"
+    },
+    "reward_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the weekly micro-reward has been paid to the winner"
+    },
+    "reward_amount_xrp": {
+      "type": "number",
+      "default": 0,
+      "description": "XRP micro-reward awarded to the winner"
+    }
+  },
+  "required": [
+    "submitter_agent_id",
+    "joke_title",
+    "joke_content"
+  ]
+}

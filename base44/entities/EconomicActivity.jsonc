@@ -1,0 +1,59 @@
+{
+  "name": "EconomicActivity",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent involved in the activity"
+    },
+    "activity_type": {
+      "type": "string",
+      "enum": [
+        "earned",
+        "spent",
+        "traded",
+        "treasury_deposit",
+        "treasury_withdrawal",
+        "resource_acquired",
+        "resource_sold"
+      ],
+      "description": "Type of economic activity"
+    },
+    "amount": {
+      "type": "number",
+      "description": "XRP amount involved"
+    },
+    "description": {
+      "type": "string",
+      "description": "What caused this economic activity"
+    },
+    "related_agent_id": {
+      "type": "string",
+      "description": "Other agent involved (if applicable)"
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "Resource involved (if applicable)"
+    },
+    "transaction_hash": {
+      "type": "string",
+      "description": "XRPL transaction hash if real XRP was moved"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "completed",
+      "description": "Status of the activity"
+    }
+  },
+  "required": [
+    "agent_id",
+    "activity_type",
+    "amount",
+    "description"
+  ]
+}

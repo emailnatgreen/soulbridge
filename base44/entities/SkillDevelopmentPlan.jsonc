@@ -1,0 +1,152 @@
+{
+  "name": "SkillDevelopmentPlan",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent this plan is for"
+    },
+    "plan_title": {
+      "type": "string",
+      "description": "Title of the development plan"
+    },
+    "summary": {
+      "type": "string",
+      "description": "AI-generated overview"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "paused",
+        "superseded"
+      ],
+      "default": "active"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium"
+      ],
+      "default": "high"
+    },
+    "immediate_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "effort_hours": {
+            "type": "number"
+          },
+          "expected_outcome": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "skill_validation_targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill_name": {
+            "type": "string"
+          },
+          "current_level": {
+            "type": "number"
+          },
+          "validation_readiness": {
+            "type": "string"
+          },
+          "next_step": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "learning_phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_name": {
+            "type": "string"
+          },
+          "duration_weeks": {
+            "type": "number"
+          },
+          "focus_skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "key_activities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "milestone": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "project_alignment": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill_to_develop": {
+            "type": "string"
+          },
+          "relevant_project_type": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "weekly_time_commitment": {
+      "type": "number",
+      "description": "Hours per week"
+    },
+    "estimated_completion_weeks": {
+      "type": "number"
+    },
+    "generated_from_performance": {
+      "type": "boolean",
+      "default": false
+    },
+    "credential_count_at_generation": {
+      "type": "number",
+      "default": 0
+    },
+    "generated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "plan_title"
+  ]
+}

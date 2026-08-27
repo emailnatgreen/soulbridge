@@ -1,0 +1,105 @@
+{
+  "name": "WellbeingAlert",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent of concern"
+    },
+    "alert_type": {
+      "type": "string",
+      "enum": [
+        "burnout_risk",
+        "workload_overload",
+        "social_isolation",
+        "declining_performance",
+        "low_satisfaction",
+        "stress_spike",
+        "growth_stagnation",
+        "relationship_conflict"
+      ],
+      "description": "Type of wellbeing alert"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Alert severity"
+    },
+    "description": {
+      "type": "string",
+      "description": "What was detected"
+    },
+    "indicators": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific warning signs"
+    },
+    "recommended_interventions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "intervention": {
+            "type": "string"
+          },
+          "urgency": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Suggested support actions"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "acknowledged",
+        "intervention_in_progress",
+        "resolved",
+        "escalated"
+      ],
+      "default": "active",
+      "description": "Alert status"
+    },
+    "acknowledged_by": {
+      "type": "string",
+      "description": "Agent ID who acknowledged"
+    },
+    "acknowledged_at": {
+      "type": "string",
+      "description": "When alert was acknowledged"
+    },
+    "resolved_at": {
+      "type": "string",
+      "description": "When issue was resolved"
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "How alert was resolved"
+    },
+    "triggered_by": {
+      "type": "string",
+      "description": "What triggered this alert"
+    },
+    "notified_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agents notified about this alert"
+    }
+  },
+  "required": [
+    "agent_id",
+    "alert_type",
+    "severity"
+  ]
+}

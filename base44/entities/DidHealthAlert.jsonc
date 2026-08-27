@@ -1,0 +1,88 @@
+{
+  "name": "DidHealthAlert",
+  "type": "object",
+  "properties": {
+    "did_classic_address": {
+      "type": "string",
+      "description": "DID address this alert concerns"
+    },
+    "wallet_id": {
+      "type": "string",
+      "description": "Associated wallet ID"
+    },
+    "alert_type": {
+      "type": "string",
+      "enum": [
+        "revocation_detected",
+        "permission_removed",
+        "agent_unlinked",
+        "version_anomaly",
+        "audit_gap",
+        "credentials_revoked"
+      ],
+      "description": "Category of alert"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium"
+      ],
+      "default": "high",
+      "description": "Alert severity level"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short alert title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed alert message"
+    },
+    "triggered_by_event_id": {
+      "type": "string",
+      "description": "DidAuditLog event ID that triggered this alert"
+    },
+    "notified_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs who have been notified"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "acknowledged",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "active",
+      "description": "Alert lifecycle status"
+    },
+    "acknowledged_at": {
+      "type": "string",
+      "description": "When alert was acknowledged"
+    },
+    "acknowledged_by_agent_id": {
+      "type": "string",
+      "description": "Agent who acknowledged this alert"
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "Notes on how alert was resolved"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional context (affected permissions, endpoints, etc.)"
+    }
+  },
+  "required": [
+    "did_classic_address",
+    "alert_type",
+    "severity",
+    "title"
+  ]
+}

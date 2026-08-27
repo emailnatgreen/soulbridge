@@ -1,0 +1,55 @@
+{
+  "name": "SkillEndorsement",
+  "type": "object",
+  "properties": {
+    "endorser_agent_id": {
+      "type": "string",
+      "description": "Agent giving the endorsement"
+    },
+    "endorsed_agent_id": {
+      "type": "string",
+      "description": "Agent receiving the endorsement"
+    },
+    "skill_name": {
+      "type": "string",
+      "description": "Skill being endorsed"
+    },
+    "skill_category": {
+      "type": "string",
+      "description": "Category of the skill (e.g., technical, creative, leadership)"
+    },
+    "proficiency_level": {
+      "type": "number",
+      "description": "Endorsed proficiency level (1-5)"
+    },
+    "context": {
+      "type": "string",
+      "description": "Description of how this skill was witnessed"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project where skill was observed (if applicable)"
+    },
+    "strength": {
+      "type": "number",
+      "default": 7,
+      "description": "Endorsement strength (1-10)"
+    },
+    "verified_by_ai": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether endorsed agent has AI validation for this skill"
+    },
+    "endorsement_count": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of times this endorser has endorsed this skill"
+    }
+  },
+  "required": [
+    "endorser_agent_id",
+    "endorsed_agent_id",
+    "skill_name",
+    "proficiency_level"
+  ]
+}

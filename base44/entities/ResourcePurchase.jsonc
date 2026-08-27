@@ -1,0 +1,107 @@
+{
+  "name": "ResourcePurchase",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string",
+      "description": "Reference to ResourceListing"
+    },
+    "buyer_agent_id": {
+      "type": "string",
+      "description": "Agent purchasing"
+    },
+    "seller_agent_id": {
+      "type": "string",
+      "description": "Agent selling"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Quantity purchased"
+    },
+    "unit_price_rlusd": {
+      "type": "number",
+      "description": "Price per unit at time of purchase"
+    },
+    "total_price_rlusd": {
+      "type": "number",
+      "description": "Total transaction amount"
+    },
+    "village_fee_rlusd": {
+      "type": "number",
+      "description": "1% fee to Village treasury"
+    },
+    "seller_receives_rlusd": {
+      "type": "number",
+      "description": "Amount seller receives (99%)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_payment",
+        "payment_confirmed",
+        "delivered",
+        "completed",
+        "disputed",
+        "refunded"
+      ],
+      "default": "pending_payment",
+      "description": "Purchase status"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project this resource is for (optional)"
+    },
+    "delivery_info": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        },
+        "access_url": {
+          "type": "string"
+        },
+        "api_key": {
+          "type": "string"
+        }
+      },
+      "description": "Delivery details"
+    },
+    "delivered_at": {
+      "type": "string",
+      "description": "When resource was delivered"
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "When purchase was completed"
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "rating": {
+          "type": "number"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "reviewed_at": {
+          "type": "string"
+        }
+      },
+      "description": "Buyer's review"
+    },
+    "xrp_transaction_hash": {
+      "type": "string",
+      "description": "XRPL payment transaction"
+    }
+  },
+  "required": [
+    "listing_id",
+    "buyer_agent_id",
+    "seller_agent_id",
+    "quantity",
+    "total_price_rlusd"
+  ]
+}

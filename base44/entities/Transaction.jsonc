@@ -1,0 +1,49 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "from_wallet_id": {
+      "type": "string",
+      "description": "Wallet ID to send from"
+    },
+    "recipient_name": {
+      "type": "string",
+      "description": "Name of the recipient"
+    },
+    "recipient_address": {
+      "type": "string",
+      "description": "XRPL address of the recipient"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount of XRP to send"
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional note or message"
+    },
+    "destination_tag": {
+      "type": "number",
+      "description": "Optional destination tag for XRPL payments"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Transaction status"
+    },
+    "hash": {
+      "type": "string",
+      "description": "XRPL transaction hash"
+    }
+  },
+  "required": [
+    "recipient_address",
+    "amount",
+    "status"
+  ]
+}

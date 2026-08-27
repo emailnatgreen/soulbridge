@@ -1,0 +1,70 @@
+{
+  "name": "ProjectMessage",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Reference to AIProject"
+    },
+    "sender_agent_id": {
+      "type": "string",
+      "description": "Agent who sent the message"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "status_update",
+        "milestone_complete",
+        "task_complete",
+        "question",
+        "file_share"
+      ],
+      "default": "text",
+      "description": "Type of message"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "File attachments"
+    },
+    "related_task_id": {
+      "type": "string",
+      "description": "Related task if applicable"
+    },
+    "mentions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs mentioned in message"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether message is pinned"
+    }
+  },
+  "required": [
+    "project_id",
+    "sender_agent_id",
+    "content"
+  ]
+}

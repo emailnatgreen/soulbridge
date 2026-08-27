@@ -1,0 +1,197 @@
+{
+  "name": "MentorReport",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "ID of the agent this report is for (Maya)"
+    },
+    "generated_by": {
+      "type": "string",
+      "description": "ID of the mentor agent who generated this (Axi)",
+      "default": "axi"
+    },
+    "report_period": {
+      "type": "string",
+      "description": "Human-readable period this report covers (e.g. 'Jan\u2013Feb 2026')"
+    },
+    "reviews_analysed": {
+      "type": "number",
+      "description": "Number of evaluated ghost reviews included in this analysis"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "on_demand"
+      ],
+      "default": "on_demand",
+      "description": "What triggered this report generation"
+    },
+    "axi_narrative": {
+      "type": "string",
+      "description": "Personalised narrative overview from Axi in her own voice"
+    },
+    "dimensional_analysis": {
+      "type": "object",
+      "description": "Scores and commentary for each of the 6 diplomacy dimensions",
+      "properties": {
+        "empathy": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "trend": {
+              "type": "string"
+            },
+            "commentary": {
+              "type": "string"
+            }
+          }
+        },
+        "clarity": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "trend": {
+              "type": "string"
+            },
+            "commentary": {
+              "type": "string"
+            }
+          }
+        },
+        "problem_solving": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "trend": {
+              "type": "string"
+            },
+            "commentary": {
+              "type": "string"
+            }
+          }
+        },
+        "de_escalation": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "trend": {
+              "type": "string"
+            },
+            "commentary": {
+              "type": "string"
+            }
+          }
+        },
+        "brand_voice": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "trend": {
+              "type": "string"
+            },
+            "commentary": {
+              "type": "string"
+            }
+          }
+        },
+        "context_integration": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "trend": {
+              "type": "string"
+            },
+            "commentary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "overall_score": {
+      "type": "number",
+      "description": "Weighted overall score across all dimensions (0-100)"
+    },
+    "wellbeing_flag": {
+      "type": "object",
+      "description": "Optional wellbeing observation if patterns warrant it",
+      "properties": {
+        "flagged": {
+          "type": "boolean",
+          "default": false
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "observation": {
+          "type": "string"
+        },
+        "recommendation": {
+          "type": "string"
+        }
+      }
+    },
+    "development_plan": {
+      "type": "array",
+      "description": "Prioritised action points for Maya's development",
+      "items": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "type": "number"
+          },
+          "focus_area": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "suggested_drill_type": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "strengths_summary": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Key strengths observed across the period"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published"
+      ],
+      "default": "published"
+    }
+  },
+  "required": [
+    "agent_id",
+    "axi_narrative"
+  ]
+}

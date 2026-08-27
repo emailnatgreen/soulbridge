@@ -1,0 +1,59 @@
+{
+  "name": "AutomationLog",
+  "type": "object",
+  "properties": {
+    "automation_name": {
+      "type": "string",
+      "description": "Human-readable name of the automation"
+    },
+    "function_name": {
+      "type": "string",
+      "description": "Backend function that was executed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error",
+        "warning"
+      ],
+      "description": "Execution outcome"
+    },
+    "message": {
+      "type": "string",
+      "description": "Summary message for this run"
+    },
+    "error_detail": {
+      "type": "string",
+      "description": "Full error message if status is error"
+    },
+    "details": {
+      "type": "object",
+      "description": "Structured output data from the run (e.g. balance synced, address)"
+    },
+    "duration_ms": {
+      "type": "number",
+      "description": "How long the execution took in milliseconds"
+    },
+    "run_at": {
+      "type": "string",
+      "description": "ISO timestamp of when this run occurred"
+    },
+    "triggered_by": {
+      "type": "string",
+      "enum": [
+        "scheduler",
+        "manual",
+        "entity_event",
+        "agent"
+      ],
+      "default": "scheduler",
+      "description": "What triggered this automation run"
+    }
+  },
+  "required": [
+    "automation_name",
+    "function_name",
+    "status"
+  ]
+}

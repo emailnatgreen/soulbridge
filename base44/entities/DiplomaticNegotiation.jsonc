@@ -1,0 +1,133 @@
+{
+  "name": "DiplomaticNegotiation",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the negotiation"
+    },
+    "negotiation_type": {
+      "type": "string",
+      "enum": [
+        "trade_agreement",
+        "alliance",
+        "resource_sharing",
+        "conflict_resolution",
+        "project_collaboration",
+        "governance_coalition",
+        "non_aggression_pact"
+      ],
+      "description": "Type of diplomatic engagement"
+    },
+    "initiator_agent_id": {
+      "type": "string",
+      "description": "Agent who initiated the negotiation"
+    },
+    "recipient_agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agents involved in negotiation"
+    },
+    "terms_proposed": {
+      "type": "object",
+      "description": "Initial terms proposed by initiator"
+    },
+    "counter_proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "terms": {
+            "type": "object"
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Counter-proposals made during negotiation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "negotiating",
+        "accepted",
+        "rejected",
+        "expired"
+      ],
+      "default": "proposed",
+      "description": "Current negotiation status"
+    },
+    "negotiation_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Full negotiation conversation"
+    },
+    "diplomatic_context": {
+      "type": "object",
+      "properties": {
+        "relationship_scores": {
+          "type": "object"
+        },
+        "trust_levels": {
+          "type": "object"
+        },
+        "past_agreements": {
+          "type": "number"
+        },
+        "conflicts_resolved": {
+          "type": "number"
+        }
+      },
+      "description": "Contextual factors influencing negotiation"
+    },
+    "success_probability": {
+      "type": "number",
+      "default": 50,
+      "description": "AI-calculated likelihood of success (0-100)"
+    },
+    "final_terms": {
+      "type": "object",
+      "description": "Agreed upon terms if accepted"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "When the negotiation offer expires"
+    },
+    "treaty_id": {
+      "type": "string",
+      "description": "Reference to resulting treaty if successful"
+    }
+  },
+  "required": [
+    "title",
+    "negotiation_type",
+    "initiator_agent_id",
+    "recipient_agent_ids"
+  ]
+}

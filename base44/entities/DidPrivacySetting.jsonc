@@ -1,0 +1,127 @@
+{
+  "name": "DidPrivacySetting",
+  "type": "object",
+  "properties": {
+    "did_address": {
+      "type": "string",
+      "description": "DID this setting applies to"
+    },
+    "wallet_id": {
+      "type": "string",
+      "description": "Wallet ID reference"
+    },
+    "profile_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "public",
+      "description": "Who can view DID profile"
+    },
+    "message_privacy": {
+      "type": "string",
+      "enum": [
+        "anyone",
+        "trusted_only",
+        "connections_only",
+        "whitelist_only"
+      ],
+      "default": "anyone",
+      "description": "Who can send messages"
+    },
+    "credential_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "selective"
+      ],
+      "default": "private",
+      "description": "Credential visibility"
+    },
+    "endorsement_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "public",
+      "description": "Who can see endorsements"
+    },
+    "reputation_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "public",
+      "description": "Who can see reputation score"
+    },
+    "activity_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "connections_only",
+      "description": "Who can see activity"
+    },
+    "connection_list_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "connections_only",
+        "private"
+      ],
+      "default": "connections_only",
+      "description": "Who can see connections"
+    },
+    "allow_indexing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow DID to appear in search results"
+    },
+    "allow_endorsements": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow others to endorse"
+    },
+    "require_verification_for_messages": {
+      "type": "boolean",
+      "default": false,
+      "description": "Only accept messages from verified DIDs"
+    },
+    "blocked_dids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of blocked DIDs"
+    },
+    "whitelisted_dids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Whitelisted DIDs for restricted features"
+    },
+    "data_retention_days": {
+      "type": "number",
+      "default": 365,
+      "description": "How long to keep activity logs"
+    },
+    "custom_rules": {
+      "type": "object",
+      "description": "Custom privacy rules"
+    }
+  },
+  "required": [
+    "did_address",
+    "wallet_id"
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "name": "ResourceFlowMapping",
+  "type": "object",
+  "properties": {
+    "time_period": {
+      "type": "string",
+      "description": "Time period for this flow map"
+    },
+    "resource_category": {
+      "type": "string",
+      "description": "Resource category tracked"
+    },
+    "flow_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "volume_bought": {
+            "type": "number"
+          },
+          "volume_sold": {
+            "type": "number"
+          },
+          "net_flow": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Agents participating in resource flow"
+    },
+    "flow_edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from_agent_id": {
+            "type": "string"
+          },
+          "to_agent_id": {
+            "type": "string"
+          },
+          "volume": {
+            "type": "number"
+          },
+          "transaction_count": {
+            "type": "number"
+          },
+          "avg_price": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Resource flows between agents"
+    },
+    "hub_agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "centrality_score": {
+            "type": "number"
+          },
+          "influence": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Key economic players"
+    },
+    "isolated_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agents not participating in this market"
+    },
+    "flow_efficiency": {
+      "type": "number",
+      "description": "How efficiently resources move (0-100)"
+    },
+    "bottleneck_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "bottleneck_type": {
+            "type": "string"
+          },
+          "impact_severity": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Flow bottlenecks"
+    },
+    "network_density": {
+      "type": "number",
+      "description": "How interconnected the market is (0-1)"
+    }
+  },
+  "required": [
+    "time_period",
+    "resource_category"
+  ]
+}

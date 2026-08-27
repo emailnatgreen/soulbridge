@@ -1,0 +1,93 @@
+{
+  "name": "AgentTask",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Task title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Full task description including AI evidence, impact, and mitigation steps"
+    },
+    "assignee_agent_id": {
+      "type": "string",
+      "description": "Agent ID responsible for completing this task"
+    },
+    "delegator_agent_id": {
+      "type": "string",
+      "description": "Agent ID or system that created/delegated this task"
+    },
+    "risk_register_id": {
+      "type": "string",
+      "description": "Linked RiskRegister entry ID"
+    },
+    "related_project_id": {
+      "type": "string",
+      "description": "Linked AIProject or VillageProject ID (optional)"
+    },
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "risk_mitigation",
+        "project",
+        "governance",
+        "custom"
+      ],
+      "default": "custom",
+      "description": "Category of task"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending",
+        "accepted",
+        "in_progress",
+        "completed",
+        "rejected",
+        "cancelled"
+      ],
+      "default": "draft",
+      "description": "Current task status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Task priority"
+    },
+    "progress_percentage": {
+      "type": "number",
+      "default": 0,
+      "description": "Completion percentage (0-100)"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Target completion date"
+    },
+    "estimated_hours": {
+      "type": "number",
+      "description": "Estimated effort in hours"
+    },
+    "completed_date": {
+      "type": "string",
+      "description": "ISO date when task was completed"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or updates from the assignee"
+    }
+  },
+  "required": [
+    "title",
+    "assignee_agent_id",
+    "status"
+  ]
+}

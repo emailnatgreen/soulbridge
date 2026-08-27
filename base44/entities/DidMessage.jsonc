@@ -1,0 +1,79 @@
+{
+  "name": "DidMessage",
+  "type": "object",
+  "properties": {
+    "from_did": {
+      "type": "string",
+      "description": "Sender's DID address (did:xrpl:...)"
+    },
+    "to_did": {
+      "type": "string",
+      "description": "Recipient's DID address (did:xrpl:...)"
+    },
+    "from_wallet_id": {
+      "type": "string",
+      "description": "Sender's wallet ID"
+    },
+    "to_wallet_id": {
+      "type": "string",
+      "description": "Recipient's wallet ID"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Message subject"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "permission_request",
+        "permission_grant",
+        "verification_request",
+        "system"
+      ],
+      "default": "direct",
+      "description": "Type of message"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "delivered",
+        "read",
+        "archived"
+      ],
+      "default": "sent",
+      "description": "Message status"
+    },
+    "read_at": {
+      "type": "string",
+      "description": "When message was read"
+    },
+    "reply_to_message_id": {
+      "type": "string",
+      "description": "ID of message being replied to"
+    },
+    "thread_id": {
+      "type": "string",
+      "description": "Conversation thread identifier"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional message metadata"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether sender's DID was verified"
+    }
+  },
+  "required": [
+    "from_did",
+    "to_did",
+    "content"
+  ]
+}

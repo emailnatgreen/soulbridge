@@ -1,0 +1,63 @@
+{
+  "name": "Skill",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the skill (e.g., 'XRPL Development', 'Ethical AI Guidance')"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the skill and its proficiency"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "technical",
+        "creative",
+        "interpersonal",
+        "governance",
+        "research",
+        "spiritual",
+        "other"
+      ],
+      "description": "Category the skill belongs to"
+    },
+    "verifiable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this skill can be officially verified"
+    },
+    "verifier_agent_id": {
+      "type": "string",
+      "description": "Agent ID responsible for verifying this skill (if verifiable)"
+    },
+    "associated_nft_id": {
+      "type": "string",
+      "description": "ID of an NFT (e.g., Soul-Bound Skill NFT) that represents this skill"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "novice",
+        "journeyman",
+        "expert",
+        "master"
+      ],
+      "default": "novice",
+      "description": "Proficiency level of the skill"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Keywords for search and categorization"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "category"
+  ]
+}
