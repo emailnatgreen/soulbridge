@@ -1,0 +1,44 @@
+{
+  "name": "XRPL Monitoring Scan \u2014 Every 30 Minutes",
+  "description": "Scans all Village wallets and treasury addresses on XRPL every 30 minutes for large transfers, escrow activity, and network health degradation. Fires tiered AgentNotifications to Ripple Architect and Axi on critical/warning events.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 30,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-03-04T07:35:49.885000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "xrpl_monitoring_scan_every_30_minutes",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "xrplMonitoringScan",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "xrplMonitoringScan"
+  }
+}

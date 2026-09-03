@@ -1,0 +1,37 @@
+{
+  "name": "KU \u2014 Collaborative Action (CollaborativeSession created)",
+  "description": "Fires a collaborative_action KU whenever a new CollaborativeSession is created.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "CollaborativeSession"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ku_collaborative_action_collaborativesession_created",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoGenerateKineticUnit",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoGenerateKineticUnit"
+  }
+}

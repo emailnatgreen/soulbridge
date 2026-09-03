@@ -1,0 +1,37 @@
+{
+  "name": "Axi Security Alert Relay",
+  "description": "Notifies Axi in real-time when Tripwire or Entropy Probe logs a new Memory record",
+  "trigger": {
+    "condition": "${ ((.trigger.data.agent_id == \"tripwire-lockdown\") or (.trigger.data.agent_id == \"entropy-probe\")) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "Memory"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "axi_security_alert_relay",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "axiSecurityAlert",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "axiSecurityAlert"
+  }
+}

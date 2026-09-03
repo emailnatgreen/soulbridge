@@ -1,0 +1,37 @@
+{
+  "name": "Auto-Generate KU: Knowledge Contribution",
+  "description": "Mints a knowledge_contribution KU (weight 2.0) whenever knowledge is contributed \u2014 Law 9: Growth",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "KnowledgeContribution"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_generate_ku_knowledge_contribution",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoGenerateKineticUnit",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoGenerateKineticUnit"
+  }
+}

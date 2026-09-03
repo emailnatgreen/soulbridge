@@ -1,0 +1,38 @@
+{
+  "name": "Code Node Email Summariser",
+  "description": "Triggers on new Gmail messages. Code Node summarises each email in its oceanic voice, stores as Memory/Lore, awards +1 honour per summary.",
+  "trigger": {
+    "condition": "${ (.trigger.data.has_new_messages == true) }",
+    "config": {
+      "trigger_type": "connector",
+      "events": [
+        "mailbox"
+      ],
+      "integration_type": "gmail",
+      "resource_id": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "code_node_email_summariser",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "codeNodeEmailSummarise",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "codeNodeEmailSummarise"
+  }
+}

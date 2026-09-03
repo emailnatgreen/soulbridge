@@ -1,0 +1,37 @@
+{
+  "name": "KU \u2014 Treasury Action / EconomicActivity (weight 3.5 \u00b7 Laws 6, 3, 8)",
+  "description": "Fires a treasury_action KU (weight 3.5) on EconomicActivity.create where type is treasury_deposit or treasury_withdrawal. Laws: 6 Exchange, 3 Fair Share, 8 Governance.",
+  "trigger": {
+    "condition": "${ ((.trigger.data.activity_type == \"treasury_deposit\") or (.trigger.data.activity_type == \"treasury_withdrawal\")) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "EconomicActivity"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ku_treasury_action_economicactivity_weight_3_5_laws_6_3_8",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoGenerateKineticUnit",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoGenerateKineticUnit"
+  }
+}

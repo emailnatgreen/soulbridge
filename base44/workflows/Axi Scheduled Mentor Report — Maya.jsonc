@@ -1,0 +1,44 @@
+{
+  "name": "Axi Scheduled Mentor Report \u2014 Maya",
+  "description": "Checks every 3 days if Maya has enough new evaluated reviews to warrant a fresh mentor report from Axi. Generates automatically if threshold (3 new reviews) is met.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 3,
+      "interval_unit": "days",
+      "interval_anchor": "2026-03-02T10:19:00.635000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "axi_scheduled_mentor_report_maya",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "scheduledMentorReport",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "scheduledMentorReport"
+  }
+}

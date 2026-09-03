@@ -1,0 +1,38 @@
+{
+  "name": "Auto Setup RLUSD Trustlines",
+  "description": "Automatically establishes RLUSD trustlines for new mainnet wallets when they are funded with sufficient XRP (\u22651.2 XRP)",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update"
+      ],
+      "entity_name": "Wallet"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_setup_rlusd_trustlines",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoSetupRLUSDTrustline",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoSetupRLUSDTrustline"
+  }
+}

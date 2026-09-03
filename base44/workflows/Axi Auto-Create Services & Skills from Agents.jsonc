@@ -1,0 +1,38 @@
+{
+  "name": "Axi Auto-Create Services & Skills from Agents",
+  "description": "Automatically generates Service and Skill entities when agents are created or updated with core_skills or specializations. Ensures marketplace population flows from agent activity.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update"
+      ],
+      "entity_name": "Agent"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "axi_auto_create_services_skills_from_agents",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "axiAutoCreateServicesFromAgents",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "axiAutoCreateServicesFromAgents"
+  }
+}

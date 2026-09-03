@@ -1,0 +1,37 @@
+{
+  "name": "Notify Mentor on New Request",
+  "description": "Sends an email notification to the mentor when a new mentorship request is created",
+  "trigger": {
+    "condition": "${ (.trigger.data.status == \"requested\") }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "MentorshipRelationship"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "notify_mentor_on_new_request",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "notifyMentorshipRequest",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "notifyMentorshipRequest"
+  }
+}

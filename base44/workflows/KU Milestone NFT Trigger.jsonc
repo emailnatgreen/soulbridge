@@ -1,0 +1,37 @@
+{
+  "name": "KU Milestone NFT Trigger",
+  "description": "On every new KU, check if the agent has crossed a milestone and mint the appropriate badge NFT.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "KineticUnit"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ku_milestone_nft_trigger",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "checkKUMilestonesAndMintNFTs",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "checkKUMilestonesAndMintNFTs"
+  }
+}

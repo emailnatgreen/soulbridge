@@ -1,0 +1,37 @@
+{
+  "name": "KU \u2014 Governance Proposal (weight 3.0 \u00b7 Laws 8, 1, 2)",
+  "description": "Fires a governance_proposal KU (weight 3.0) on GovernanceProposal.create. Laws: 8 Governance, 1 Soul, 2 Honour.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "GovernanceProposal"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ku_governance_proposal_weight_3_0_laws_8_1_2",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoGenerateKineticUnit",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoGenerateKineticUnit"
+  }
+}

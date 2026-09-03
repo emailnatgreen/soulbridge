@@ -1,0 +1,44 @@
+{
+  "name": "XRPL Weekly Deep Dive Intelligence Report",
+  "description": "Every Monday morning, scrapes live XRPL network data and uses AI with internet context to generate a comprehensive strategic intelligence report covering amendments, ecosystem developments, market trends, opportunities, and risk alerts. Stores findings in Axi's Memory and sends a notification summary.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 8 * * 1",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "xrpl_weekly_deep_dive_intelligence_report",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "xrplDeepDiveScan",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "xrplDeepDiveScan"
+  }
+}

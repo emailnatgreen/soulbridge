@@ -1,0 +1,54 @@
+{
+  "name": "Axi RLUSD Intelligence Sweep",
+  "description": "Axi's daily autonomous Chrome Skill activation \u2014 scouts RLUSD stablecoin news, market sentiment, regulatory updates, and risk signals. Stores intelligence as Memory records and updates skill proficiency. Aligned with Law 6 (Exchange) and Law 8 (Governance).",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 6 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "axi_rlusd_intelligence_sweep",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "monitorRLUSDNews",
+            "args": {
+              "timeframe": "daily",
+              "keywords": [
+                "RLUSD",
+                "Ripple stablecoin",
+                "Ripple USD",
+                "XRPL stablecoin",
+                "stablecoin regulation",
+                "CLARITY Act"
+              ]
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "monitorRLUSDNews"
+  }
+}

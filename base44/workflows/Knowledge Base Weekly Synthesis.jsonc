@@ -1,0 +1,44 @@
+{
+  "name": "Knowledge Base Weekly Synthesis",
+  "description": "Every Monday morning synthesizes insights from Memory, active projects, governance proposals, and XRPL deep dives into structured knowledge articles, identifies knowledge gaps, sends proactive role-targeted nudges to agents, and logs a summary to Axi's Memory.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 10 * * 1",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "knowledge_base_weekly_synthesis",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "knowledgeBaseSynthesis",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "knowledgeBaseSynthesis"
+  }
+}

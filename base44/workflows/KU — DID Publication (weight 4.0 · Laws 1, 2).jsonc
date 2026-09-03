@@ -1,0 +1,37 @@
+{
+  "name": "KU \u2014 DID Publication (weight 4.0 \u00b7 Laws 1, 2)",
+  "description": "Fires a did_publication KU (weight 4.0) when a Wallet is_published flips to true. Laws: 1 Soul, 2 Honour.",
+  "trigger": {
+    "condition": "${ ((.trigger.data.is_published == true) and (.trigger.changed_fields | index(\"is_published\") != null)) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "Wallet"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ku_did_publication_weight_4_0_laws_1_2",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoGenerateKineticUnit",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoGenerateKineticUnit"
+  }
+}

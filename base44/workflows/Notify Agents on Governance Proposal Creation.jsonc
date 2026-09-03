@@ -1,0 +1,42 @@
+{
+  "name": "Notify Agents on Governance Proposal Creation",
+  "description": "",
+  "trigger": {
+    "condition": "${ (.trigger.data.status == \"active\") }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "GovernanceProposal"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "notify_agents_on_governance_proposal_creation",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "notifyGovernanceProposalCreated",
+            "args": {
+              "proposal_id": "data.id",
+              "proposal_title": "data.title",
+              "proposal_type": "data.proposal_type",
+              "proposed_by": "data.proposed_by"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "notifyGovernanceProposalCreated"
+  }
+}
